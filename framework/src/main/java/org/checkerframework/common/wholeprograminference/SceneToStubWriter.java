@@ -25,6 +25,7 @@ import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -47,10 +48,10 @@ import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * SceneToStubWriter provides a static method that writes an {@link AScene} in stub file format to a
- * file {@link #write(ASceneWrapper,String)}. This class is the equivalent of {@code
- * IndexFileWriter} from the Annotation File Utilities, but outputs the results in the stub file
- * format instead of jaif format. This class is not part of the Annotation File Utilities, a library
- * for manipulating .jaif files, because it has nothing to do with .jaif files.
+ * file {@link #write}. This class is the equivalent of {@code IndexFileWriter} from the Annotation
+ * File Utilities, but outputs the results in the stub file format instead of jaif format. This
+ * class is not part of the Annotation File Utilities, a library for manipulating .jaif files,
+ * because it has nothing to do with .jaif files.
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
  * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). {@link
@@ -67,11 +68,13 @@ import scenelib.annotations.io.IndexFileWriter;
 public final class SceneToStubWriter {
 
     /**
-     * The entry point to this class is {@link #write(ASceneWrapper, String)}.
+     * The entry point to this class is {@link #write}.
      *
      * <p>This is a utility class with only static methods. It is not instantiable.
      */
-    private SceneToStubWriter() {}
+    private SceneToStubWriter() {
+        throw new Error("Do not instantiate");
+    }
 
     /**
      * A pattern matching the name of an anonymous inner class, a local class, or a class nested
@@ -91,9 +94,10 @@ public final class SceneToStubWriter {
      *
      * @param scene the scene to write out
      * @param filename the name of the file to write (must end with .astub)
+     * @param checker the type-checker whose annotations are being written
      */
-    public static void write(ASceneWrapper scene, String filename) {
-        writeImpl(scene, filename);
+    public static void write(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
+        writeImpl(scene, filename, checker);
     }
 
     /**
@@ -173,79 +177,29 @@ public final class SceneToStubWriter {
      * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
-        int levels =
-                2; // 1 for the final non-array component type, another for the original array type.
         TypeMirror componentType = javacRep.getComponentType();
+        ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
         while (componentType.getKind() == TypeKind.ARRAY) {
             componentType = ((ArrayType) componentType).getComponentType();
-            levels++;
+            scenelibComponent = getNextArrayLevel(scenelibComponent);
         }
-
-        List<ATypeElement> scenelibRepInJavacOrder =
-                getSceneLibRepInJavacOrder(scenelibRep, levels);
-        return formatArrayTypeImpl(scenelibRepInJavacOrder, javacRep);
-    }
-
-    /**
-     * This method returns each array level in scenelib's representation of an array in a list in
-     * the same order used by javac. This is necessary because javac's TypeMirror and its
-     * derivatives represent arrays differently than scene-lib does.
-     *
-     * <p>If we label an array as such: (0) int (1) [] (2) [] (3) [], then level 0 is the component
-     * type, level 1 is the "outermost" type, and 3 is the "innermost" array type. Scene-lib's
-     * representation of this type is a nested ATypeElement, with this structure: (1) - (2) - (3) -
-     * (0). The TypeMirror, on the other hand, represents the type like this: (3) - (2) - (1) - (0),
-     * for ease of printing. This method therefore descends through the scenelib structure until it
-     * finds the component, adding each item to a list. It then reverses the list, and then adds the
-     * component type to the end.
-     *
-     * <p><a
-     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">The
-     * JSR 308 specification</a> explains the reasoning for scenelib's representation.
-     *
-     * @param scenelibRep scenelib's representation of an array type
-     * @param levels the number of component types the type should have, derived from the javac
-     *     representation
-     * @return a list of the array levels in scenelib's representation, but in the order used by
-     *     javac. Guaranteed to have exactly {@code levels} entries. Entries may be null, if the
-     *     corresponding parts of {@code scenelibRep} are null. See <a
-     *     href="https://github.com/typetools/checker-framework/issues/3422">issue 3422</a> for an
-     *     example of code that causes a null ATypeElement, because the component type is unknown,
-     *     but the primary type of the array is known.
-     */
-    private static List<@Nullable ATypeElement> getSceneLibRepInJavacOrder(
-            ATypeElement scenelibRep, int levels) {
-        List<ATypeElement> result = new ArrayList<>();
-        ATypeElement array = scenelibRep;
-        ATypeElement component = getNextArrayLevel(scenelibRep);
-        for (int i = 0; i < levels - 1; i++) {
-            result.add(array);
-            array = component;
-            component = getNextArrayLevel(array);
-        }
-        Collections.reverse(result);
-        // at this point, array has become the actual base component
-        result.add(array);
-        return result;
+        return formatType(scenelibComponent, componentType)
+                + formatArrayTypeImpl(scenelibRep, javacRep);
     }
 
     /**
      * Formats the type of an array to be printable in Java source code, with the annotations from
-     * the scenelib representation added. This method formats a single level of the array, and then
-     * either calls itself recursively (if the component is an array) or formats the component type
-     * using {@link #formatType(ATypeElement, TypeMirror)}.
+     * the scenelib representation added. This method formats only the "array" parts of an array
+     * type; it does not format (or attempt to format) the ultimate component type (that is, the
+     * non-array part of the array type).
      *
-     * @param scenelibRepInJavacOrder the scenelib representation, reordered to match javac's order.
-     *     See {@link #getSceneLibRepInJavacOrder} for an explanation of why this is necessary and
-     *     why the elements may be null.
+     * @param scenelibRep the scene-lib representation
      * @param javacRep the javac representation of the array type
      * @return the type formatted to be written to Java source code, followed by a space character
      */
-    private static String formatArrayTypeImpl(
-            List<@Nullable ATypeElement> scenelibRepInJavacOrder, ArrayType javacRep) {
+    private static String formatArrayTypeImpl(ATypeElement scenelibRep, ArrayType javacRep) {
         TypeMirror javacComponent = javacRep.getComponentType();
-        ATypeElement scenelibRep = scenelibRepInJavacOrder.get(0);
-        ATypeElement scenelibComponent = scenelibRepInJavacOrder.get(1);
+        ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
         String result = "";
         List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
         for (AnnotationMirror explicitAnno : explicitAnnos) {
@@ -257,12 +211,10 @@ public final class SceneToStubWriter {
         }
         result += "[] ";
         if (javacComponent.getKind() == TypeKind.ARRAY) {
-            return formatArrayTypeImpl(
-                            scenelibRepInJavacOrder.subList(1, scenelibRepInJavacOrder.size()),
-                            (ArrayType) javacComponent)
-                    + result;
+            return result + formatArrayTypeImpl(scenelibComponent, (ArrayType) javacComponent);
+        } else {
+            return result;
         }
-        return formatType(scenelibComponent, javacComponent) + result;
     }
 
     /**
@@ -300,7 +252,12 @@ public final class SceneToStubWriter {
      * @return the formatted formal parameter, as if it were written in Java source code
      */
     private static String formatParameter(AField param, String parameterName, String basename) {
-        return formatAFieldImpl(param, parameterName, basename);
+        StringJoiner result = new StringJoiner(" ");
+        for (Annotation declAnno : param.tlAnnotationsHere) {
+            result.add(formatAnnotation(declAnno));
+        }
+        result.add(formatAFieldImpl(param, parameterName, basename));
+        return result.toString();
     }
 
     /**
@@ -457,10 +414,11 @@ public final class SceneToStubWriter {
      * @param basename the binary name of the class without the package part
      * @param aClass the AClass for {@code basename}
      * @param printWriter the writer where the class definition should be printed
+     * @param checker the type-checker whose annotations are being written
      * @return the number of outer classes within which this class is nested
      */
     private static int printClassDefinitions(
-            String basename, AClass aClass, PrintWriter printWriter) {
+            String basename, AClass aClass, PrintWriter printWriter, BaseTypeChecker checker) {
         String[] classNames = basename.split("\\$");
         TypeElement innermostTypeElt = aClass.getTypeElement();
         if (innermostTypeElt == null) {
@@ -470,6 +428,11 @@ public final class SceneToStubWriter {
 
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
+            if (i == classNames.length - 1) {
+                printWriter.print(indents(i));
+                printWriter.println(
+                        "@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
+            }
             printWriter.print(indents(i));
             if (aClass.isEnum(nameToPrint)) {
                 printWriter.print("enum ");
@@ -553,6 +516,11 @@ public final class SceneToStubWriter {
             return;
         }
 
+        for (Annotation declAnno : aField.tlAnnotationsHere) {
+            printWriter.print(indentLevel);
+            printWriter.println(formatAnnotation(declAnno));
+        }
+
         printWriter.print(indentLevel);
         printWriter.print(formatAFieldImpl(aField, fieldName, /*enclosing class=*/ null));
         printWriter.println(";");
@@ -574,6 +542,11 @@ public final class SceneToStubWriter {
         if (aMethod.getTypeParameters() == null) {
             // aMethod.setFieldsFromMethodElement has not been called
             return;
+        }
+
+        for (Annotation declAnno : aMethod.tlAnnotationsHere) {
+            printWriter.print(indentLevel);
+            printWriter.println(formatAnnotation(declAnno));
         }
 
         printWriter.print(indentLevel);
@@ -606,13 +579,14 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The implementation of {@link #write(ASceneWrapper, String)}. Prints imports, classes, method
-     * signatures, and fields in stub file format, all with appropriate annotations.
+     * The implementation of {@link #write}. Prints imports, classes, method signatures, and fields
+     * in stub file format, all with appropriate annotations.
      *
      * @param scene the scene to write
      * @param filename the name of the file to write (must end in .astub)
+     * @param checker the type-checker whose annotations are being written
      */
-    private static void writeImpl(ASceneWrapper scene, String filename) {
+    private static void writeImpl(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
         // Sort by package name first so that output is deterministic and default package
         // comes first; within package sort by class name.
         @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
@@ -653,10 +627,11 @@ public final class SceneToStubWriter {
                         throw new BugInCF(e);
                     }
                     importDefWriter.visit();
+                    printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
                     printWriter.println();
                     anyClassPrintable = true;
                 }
-                printClass(clazz, scene.getAScene().getClasses().get(clazz), printWriter);
+                printClass(clazz, scene.getAScene().getClasses().get(clazz), printWriter, checker);
             }
         }
         if (printWriter != null) {
@@ -701,9 +676,13 @@ public final class SceneToStubWriter {
      * @param classname the class name
      * @param aClass the representation of the class
      * @param printWriter the writer on which to print
+     * @param checker the type-checker whose annotations are being written
      */
     private static void printClass(
-            @BinaryName String classname, AClass aClass, PrintWriter printWriter) {
+            @BinaryName String classname,
+            AClass aClass,
+            PrintWriter printWriter,
+            BaseTypeChecker checker) {
 
         String basename = basenamePart(classname);
         String innermostClassname =
@@ -716,7 +695,7 @@ public final class SceneToStubWriter {
             printWriter.println("package " + pkg + ";");
         }
 
-        int curlyCount = printClassDefinitions(basename, aClass, printWriter);
+        int curlyCount = printClassDefinitions(basename, aClass, printWriter, checker);
 
         String indentLevel = indents(curlyCount);
 

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolyLength;
@@ -25,16 +26,16 @@ import org.checkerframework.checker.index.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -83,7 +84,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(PolyLength.class, POLY);
+        addAliasedTypeAnnotation(PolyLength.class, POLY);
 
         this.postInit();
     }
@@ -105,8 +106,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new SameLenQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new SameLenQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     // Handles case "user-written SameLen"
@@ -118,15 +119,15 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror anm = atm.getAnnotation(SameLen.class);
             if (anm != null) {
 
-                Receiver r;
+                JavaExpression je;
                 try {
-                    r = FlowExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
-                } catch (FlowExpressionParseException ex) {
-                    r = null;
+                    je = JavaExpressionParseUtil.fromVariableTree(this, (VariableTree) tree);
+                } catch (JavaExpressionParseException ex) {
+                    je = null;
                 }
 
-                if (r != null) {
-                    String varName = r.toString();
+                if (je != null) {
+                    String varName = je.toString();
 
                     List<String> exprs =
                             ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
@@ -146,13 +147,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Returns true if the given expression may appear in a @SameLen annotation. */
-    public static boolean mayAppearInSameLen(Receiver receiver) {
-        return !receiver.containsUnknown()
-                && !(receiver instanceof FlowExpressions.ArrayCreation)
-                && !(receiver instanceof FlowExpressions.ClassName)
-                // Big expressions cause a stack overflow in FlowExpressionParseUtil.
+    public static boolean mayAppearInSameLen(JavaExpression expr) {
+        return !expr.containsUnknown()
+                && !(expr instanceof ArrayCreation)
+                && !(expr instanceof ClassName)
+                // Big expressions cause a stack overflow in JavaExpressionParseUtil.
                 // So limit them to an arbitrary length of 999.
-                && receiver.toString().length() < 1000;
+                && expr.toString().length() < 1000;
     }
 
     /**
@@ -162,15 +163,17 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * so @SameLen({"a","b","c"} and @SameLen({"c","f","g"} are actually the same type -- both
      * should usually be replaced by a SameLen with the union of the lists of names.
      */
-    private final class SameLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    private final class SameLenQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
-         * Create a SameLenQualifierHierarchy.
+         * Creates a SameLenQualifierHierarchy from the given classes.
          *
-         * @param factory the MultiGraphFactory to use to construct this
+         * @param qualifierClasses classes of annotations that are the qualifiers
+         * @param elements element utils
          */
-        public SameLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-            super(factory);
+        public SameLenQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override
@@ -299,9 +302,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationMirror sequenceAnno =
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
-                    Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
-                    if (mayAppearInSameLen(rec)) {
-                        String recString = rec.toString();
+                    JavaExpression sequenceExpr =
+                            JavaExpression.fromTree(this.atypeFactory, sequenceTree);
+                    if (mayAppearInSameLen(sequenceExpr)) {
+                        String recString = sequenceExpr.toString();
                         if (areSameByClass(sequenceAnno, SameLenUnknown.class)) {
                             sequenceAnno = createSameLen(Collections.singletonList(recString));
                         } else if (areSameByClass(sequenceAnno, SameLen.class)) {
@@ -334,7 +338,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             sameLenAnno =
                     getAnnotationFromJavaExpressionString(
                             sequenceExpression, tree, currentPath, SameLen.class);
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             // ignore parse errors
             sameLenAnno = null;
         }
@@ -366,39 +370,39 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * #createCombinedSameLen(List, List)}.
      */
     public AnnotationMirror createCombinedSameLen(
-            Receiver rec1, Receiver rec2, AnnotationMirror a1, AnnotationMirror a2) {
-        List<Receiver> receivers = new ArrayList<>();
-        receivers.add(rec1);
-        receivers.add(rec2);
+            JavaExpression expr1, JavaExpression expr2, AnnotationMirror a1, AnnotationMirror a2) {
+        List<JavaExpression> exprs = new ArrayList<>();
+        exprs.add(expr1);
+        exprs.add(expr2);
         List<AnnotationMirror> annos = new ArrayList<>();
         annos.add(a1);
         annos.add(a2);
-        return createCombinedSameLen(receivers, annos);
+        return createCombinedSameLen(exprs, annos);
     }
 
     /**
-     * Generates a SameLen that includes each receiver, as well as everything in the annotations2,
+     * Generates a SameLen that includes each expression, as well as everything in the annotations2,
      * if they are SameLen annotations.
      *
-     * @param receivers a list of receivers representing arrays to be included in the combined
+     * @param exprs a list of expressions representing arrays to be included in the combined
      *     annotation
      * @param annos a list of annotations
      * @return a combined SameLen annotation
      */
     public AnnotationMirror createCombinedSameLen(
-            List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
+            List<JavaExpression> exprs, List<AnnotationMirror> annos) {
 
-        Set<String> exprs = new TreeSet<>();
-        for (Receiver rec : receivers) {
-            if (mayAppearInSameLen(rec)) {
-                exprs.add(rec.toString());
+        Set<String> strings = new TreeSet<>();
+        for (JavaExpression expr : exprs) {
+            if (mayAppearInSameLen(expr)) {
+                strings.add(expr.toString());
             }
         }
         for (AnnotationMirror anno : annos) {
             if (areSameByClass(anno, SameLen.class)) {
-                exprs.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno));
+                strings.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno));
             }
         }
-        return createSameLen(exprs);
+        return createSameLen(strings);
     }
 }

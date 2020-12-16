@@ -1,3 +1,3 @@
-warning: StubParser: Field not found: NonNull
-warning: StubParser: Annotation expression, NonNull, could not be processed for annotation: @DefaultQualifier(NonNull).
+- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): Field NonNull [class com.github.javaparser.ast.expr.NameExpr] not found in getValueOfExpressionInAnnotation(value, NonNull [class com.github.javaparser.ast.expr.NameExpr], DECLARED)
+- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): For annotation @DefaultQualifier(NonNull), could not add value NonNull because null expression for name=value expr=NonNull, valueKind=DECLARED
 2 warnings

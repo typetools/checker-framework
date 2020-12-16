@@ -27,7 +27,7 @@ else
 fi
 
 # Clone the annotated JDK into ../jdk .
-"/tmp/$USER/plume-scripts/git-clone-related" typetools jdk ../jdk --depth 1
+"/tmp/$USER/plume-scripts/git-clone-related" typetools jdk
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 # Don't use `AT=${AFU}/..` which causes a git failure.
@@ -49,6 +49,24 @@ echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
+
+
+## Build JSpecify, only for the purpose of using its tests.
+"/tmp/$USER/plume-scripts/git-clone-related" jspecify jspecify
+if type -p java; then
+  _java=java
+elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
+  _java="$JAVA_HOME/bin/java"
+else
+  echo "Can't find java"
+  exit 1
+fi
+version=$("$_java" -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+if [[ "$version" -ge 9 ]]; then
+  echo "Running:  (cd ../jspecify/ && ./gradlew build)"
+  (cd ../jspecify/ && ./gradlew build)
+  echo "... done: (cd ../jspecify/ && ./gradlew build)"
+fi
 
 
 ## Compile

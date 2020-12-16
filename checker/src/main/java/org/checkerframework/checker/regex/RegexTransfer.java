@@ -3,8 +3,6 @@ package org.checkerframework.checker.regex;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -17,6 +15,7 @@ import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -86,8 +85,8 @@ public class RegexTransfer extends CFTransfer {
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-            Receiver firstParam =
-                    FlowExpressions.internalReprOf(
+            JavaExpression firstParam =
+                    JavaExpression.fromNode(
                             factory.getContext().getAnnotationProvider(), n.getArgument(0));
 
             // add annotation with correct group count (if possible,
@@ -197,8 +196,8 @@ public class RegexTransfer extends CFTransfer {
         MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
         Node receiver = methodAccessNode.getReceiver();
 
-        Receiver matcherReceiver =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
+        JavaExpression matcherReceiver =
+                JavaExpression.fromNode(analysis.getTypeFactory(), receiver);
 
         IntegerLiteralNode iln = (IntegerLiteralNode) possibleConstant;
         int groupCount;

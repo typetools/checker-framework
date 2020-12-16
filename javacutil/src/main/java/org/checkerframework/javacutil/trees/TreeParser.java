@@ -13,7 +13,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * A Utility class for parsing Java expression snippets, and converting them to proper Javac AST
+ * A utility class for parsing Java expression snippets, and converting them to proper Javac AST
  * nodes.
  *
  * <p>This is useful for parsing {@code EnsuresNonNull*}, and {@code KeyFor} values.

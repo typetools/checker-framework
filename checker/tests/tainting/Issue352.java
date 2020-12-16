@@ -1,4 +1,3 @@
-// @skip-test
 // Test case for Issue 352:
 // https://github.com/typetools/checker-framework/issues/352
 

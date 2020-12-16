@@ -160,7 +160,7 @@ qualifier at all.
 Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
-In particular, qualifiers in method bodies are rare (except occasionally on
+particular, programmers rarely write qualifiers in method bodies (except occasionally on
 type arguments and array component types).
 
 The following steps determine the effective
@@ -208,7 +208,7 @@ rules are used in order, until one applies.
 
 \begin{enumerate}
 \item
-  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of the \<MyClass>.
+  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of \<MyClass>.
   (Section~\ref{default-for-use})
 \item
   If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
@@ -224,8 +224,7 @@ rules are used in order, until one applies.
 \item
   The qualifier in the meta-annotation \<@DefaultFor> for the location of the use of \<MyClass>.
   These are defaults specified by the type system designer (Section~\ref{creating-typesystem-defaults});
-  this is usually CLIMB-to-top (Section~\ref{climb-to-top}) (CLIMB means \textbf{C}asts, \textbf{L}ocals,
-  \textbf{I}nstanceof, and (some) i\textbf{M}plicit \textbf{B}ounds).
+  this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
 \item
   The qualifier with the meta-annotation \refqualclass{framework/qual}{DefaultQualifierInHierarchy}.
 \end{enumerate}
@@ -347,12 +346,13 @@ The type system applies that default qualifier to most but
 not all type uses.  In particular, unless otherwise stated, every type system
 uses the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is the default for
-the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
-and (some) i\textbf{M}plicit \textbf{B}ounds.
+the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals,
+and (some) \textbf{Im}plicit \textbf{B}ounds.
 For example, when the user writes an unqualified type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \refqualclass{checker/nullness/qual}{Nullable} is the top qualifier in the
 hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
+(Casts are treated a bit specially; see below.)
 
 % TODO:  Add wildcard bounds to the set of type-refined locations?
 % Especially in light of
@@ -379,17 +379,37 @@ locations.
 Variables defaulted to top include local variables, resource variables in the
 try-with-resources construct, variables in \<for> statements, and \<catch>
 arguments (known as exception parameters in the Java Language Specification).
-Exception parameters need to have the top type because
-exceptions of arbitrary qualified types can be thrown and the Checker Framework
-does not provide run-time checks.
+
+Exception parameters default to the top type because they might catch an
+exception thrown anywhere in the program.
+
+An alternate design for exception parameters would be to default exception
+parameters some other type T (instead of the top type); then the Checker
+Framework would need to issue a warning at every \<throw> statement whose
+argument might not be a subtype of T\@.  A checker can implement this
+alternate design by overriding a few methods.  The alternative is not
+appropriate for all type systems.  The alternative is unsound for deep type
+systems because the JDK's annotations are trusted rather than checked.  A
+deep type system is one where the type of a field can determine the type of
+its containing instance, such as tainting, Example: a user passes a secret
+regex to the JDK, and the JDK throws a format exception that includes the
+regex.  This could be caught by a \<catch> clause in the program whose
+exception parameter is not annotated as secret.  As another example, the
+user passes a secret integer and the JDK throws a DivideByZeroException
+that reveals the value.
+
+% (An even more precise analysis would be for the Checker Framework to
+% compute the feasibility of every pair of $\langle$throw statement, catch
+% clauses$\rangle$ in the program, but such an analysis might be expensive
+% or non-modular, and it still does not address the issue of unchecked
+% library methods.)
 
 \item
-Cast and instanceof types
-are given the same type as their argument expression.  This has the same
-effect as if they were given the
+Cast types are defaulted to the same type as their argument expression.
+This has the same effect as if they were given the
 top type and then flow-sensitively refined to the type of their argument.
 However, note that programmer-written type qualifiers are \emph{not}
-refined.
+refined, so writing the top annotation is not the same as writing no annotation.
 % Programmer-written type qualifiers could be refined, but it has never
 % been a priority.  The code that defaults casts in this manner predates
 % the dataflow framework and we never reimplemented casts in the dataflow
@@ -410,7 +430,7 @@ upper bound as desired.
 
 This rule means that the upper bound of \code{class C<T>} is defaulted
 differently than the upper bound of \code{class C<T extends Object>}.
-This may seem confusing, but it is the least bad option.  The
+This is a bit unfortunate, but it is the least bad option.  The
 more confusing alternative would be for ``\code{Object}'' to be defaulted
 differently in \code{class C<T extends Object>} and in an
 instantiation \code{C<Object>}, and for the upper bounds to be defaulted
@@ -449,17 +469,18 @@ the CLIMB-to-top rule.
 
 In certain situations, it would be convenient for an annotation on a
 superclass member to be automatically inherited by subclasses that override
-it.  Such a feature would reduce annotation effort, but it would also reduce program
+it.  (An example is that programmers must add `@Nullable` to the formal
+parameter type of every implementation of the `equals()` method.)
+Such a feature would reduce annotation effort, but it would also reduce program
 comprehensibility.  In general, a program is read more often than it is
 edited/annotated, so the Checker Framework does not currently support this
-feature.
+feature.  In the future, this feature may be added.
 
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
-
 Computation is necessary because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
@@ -467,9 +488,6 @@ annotations on overridden implementations in supertypes.  For method
 parameters, the inherited type should be the greatest lower bound of all
 annotations on overridden implementations in supertypes.  In each case, an
 error would be thrown if no such annotations existed.
-
-In the future, this feature may be added optionally, and each type-checker
-implementation can enable it if desired.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
@@ -614,7 +632,6 @@ misbehave at run time.
 % external libraries.
 
 
-\newpage
 \sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
@@ -681,15 +698,18 @@ suppress the warning if the code is correct.
 
 \sectionAndLabel{Type refinement (flow-sensitive type qualifier inference)}{type-refinement}
 
-The
-checkers treat expressions within a method body as having a
-subtype of their declared or defaulted (Section~\ref{defaults})
-type.
+A checker can sometimes deduce that an expression's type is more specific
+than --- that is, a subtype of --- its declared or defaulted (Section~\ref{defaults}).
+This is called ``flow-sensitive type refinement'' or ``local type inference''.
 
-Type refinement eliminates some false positive warnings.
-Type refinement also
-reduces your burden of writing type qualifiers in your program,
-since you do not need to write type qualifiers on local variables.
+Due to local type refinement, a programmer typically
+does not have to write any qualifiers on local variables within a method body
+(except occasionally on type arguments).
+However, the programmer must write type annotations for method
+signatures (arguments and return values) and fields, unless the default
+annotations are correct.
+Local type refinement does not change the source code; it re-runs every time
+you run a checker.
 
 
 \subsectionAndLabel{Type refinement examples}{type-refinement-examples}
@@ -761,7 +781,7 @@ The checker never treats a variable as
 a supertype of its declared type.  For example, an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
 type is never treated as possibly-null, and such an assignment is always illegal.
 
-The functionality has a variety of names:  automatic type refinement,
+The functionality has a variety of names:  type refinement,
 flow-sensitive type qualifier inference, local type inference, and
 sometimes just ``flow''.
 
@@ -941,11 +961,15 @@ Type systems that cannot support a run-time test are:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{purity-checker})
+\item
+  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  fields are set in the constructor (see
+  \chapterpageref{initialization-checker})
+\item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
-  \ahrefloc{purity-checker}{Purity Checker} to identify whether
-  methods have side effects (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -1505,20 +1529,20 @@ class @Marsupial-Animal {
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
 % LocalWords:  myLocalVar myClass getPackage getSuperclass myString Regex
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
-%  LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
-%  LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-%  LocalWords:  computeValue AsuggestPureMethods Instanceof arg myInt Anno
-%  LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit instanceof m2
-%  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
-%  LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
-%  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
-%  LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
-%%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
-%%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
-%%  LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
-%%  LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
-% LocalWords:  EnsuresKeyFor EnsuresKeyForIf
+% LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
+% LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
+% LocalWords:  computeValue AsuggestPureMethods arg myInt Anno Im
+% LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
+% LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
+% LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
+% LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
+% LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
+% LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
+% LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
+% LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
+% LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
+% LocalWords:  EnsuresKeyFor EnsuresKeyForIf DivideByZeroException
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
-%%  LocalWords:  Signedness MonotonicNonNull UpperBoundFor
+% LocalWords:  Signedness MonotonicNonNull UpperBoundFor
 % LocalWords:  getTypeDeclarationBounds identityHashCode

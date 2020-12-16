@@ -75,6 +75,7 @@ public class I18nFormatForTest {
     }
 
     // @I18nFormatFor needs to be annotated to a string.
+    // :: error: (anno.on.irrelevant)
     static void e(@I18nFormatFor("#2") int f, Object... args) {}
 
     // The parameter type is not necessary to an array of objects

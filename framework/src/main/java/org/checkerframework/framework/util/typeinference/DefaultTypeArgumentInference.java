@@ -754,6 +754,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
+                } else {
+                    typeFactory.addDefaultAnnotations(inferredType);
                 }
             }
         }

@@ -13,7 +13,7 @@ class WildcardSuper {
 
     // TODO: THIS SHOULD JUST ISSUE A WARNING, WHY WOULD PEOPLE WANT TO WRITE CONTRADICTING BOUNDS?
     void testWithContradiction(Cell<? super @Nullable String> cell) {
-        // This is actually valid, because it's a contradiction, b/c
+        // This is actually valid, because it's a contradiction, because
         // the implicit upper bound is NonNull.
         // We are free to do anything, as the method is not callable.
         // TODO: test whether all calls of method fail.

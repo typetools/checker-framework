@@ -1,3 +1,172 @@
+Version 3.9.0
+
+The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
+
+The Format String Checker recognizes Error Prone's `@FormatMethod` annotation.
+
+Implementation details:
+
+Class renamings:
+ * `StubParser` => `AnnotationFileParser`
+ * `Receiver` => `JavaExpression`
+     *  also related class and method renamings
+ * In the Dataflow Framework:
+    * `ThisLiteralNode` => `ThisNode`
+    * `ExplicitThisLiteralNode` => `ExplicitThisNode`
+    * `ImplicitThisLiteralNode` => `ImplicitThisNode`
+
+Method deprecations:
+ * Deprecated `AnnotatedTypeFactory.addAliasedAnnotation`; use `addAliasedTypeAnnotation`
+
+---------------------------------------------------------------------------
+
+Version 3.8.0, December 1, 2020
+
+The Initialized Fields Checker warns when a field is not initialized by a
+constructor.  This is more general than the Initialization Checker, which
+only checks that `@NonNull` fields are initialized.
+
+The manual describes how to modify an sbt build file to run the Checker
+Framework.
+
+The -AwarnUnneededSuppressions command-line option warns only about
+suppression strings that contain a checker name.
+
+The -AwarnUnneededSuppressionsExceptions=REGEX command-line option
+partially disables -AwarnUnneededSuppressions.  Most users don't need this.
+
+Implementation details:
+
+Added classes `SubtypeIsSubsetQualifierHierarchy` and
+`SubtypeIsSupersetQualifierHierarchy`.
+
+Moved the `contractsUtils` field from the visitor to the type factory.
+
+Class renamings:
+ * `ContractsUtils` => `ContractsFromMethod`
+
+Method renamings:
+ * `ElementUtils.getVerboseName` => `ElementUtils.getQualifiedName`
+ * `ElementUtils.getSimpleName` => `ElementUtils.getSimpleSignature`
+
+Field renamings:
+ * `AnnotatedTypeMirror.actualType` => `AnnotatedTypeMirror.underlyingType`
+
+Added a formal parameter to methods in `MostlyNoElementQualifierHierarchy`:
+ * `leastUpperBoundWithElements`
+ * `greatestLowerBoundWithElements`
+
+Removed a formal parameter from methods in `BaseTypeVisitor`:
+ * `checkPostcondition`
+ * `checkConditionalPostcondition`
+
+In `Analysis.runAnalysisFor()`, changed `boolean` parameter to enum `BeforeOrAfter`.
+
+Removed `org.checkerframework.framework.util.AnnotatedTypes#getIteratedType`; use
+`AnnotatedTypeFactory#getIterableElementType(ExpressionTree)` instead.
+
+Closed issues:
+#3287, #3390, #3681, #3839, #3850, #3851, #3862, #3871, #3884, #3888, #3908,
+#3929, #3932, #3935.
+
+---------------------------------------------------------------------------
+
+Version 3.7.1, November 2, 2020
+
+The Constant Value Checker supports two new annotations: @EnumVal and @MatchesRegex.
+
+The Nullness Checker supports annotation org.jspecify.annotations.NullnessUnspecified.
+
+Implementation details:
+
+AnnotatedIntersectionType#directSuperTypes now returns
+List<? extends AnnotatedTypeMirror>.
+
+The @RelevantJavaTypes annotation is now enforced:  a checker issues a warning
+if the programmer writes a type annotation on a type that is not listed.
+
+Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
+longer used.  Added new methods getWidenedValue() and getNarrowedValue().
+
+Renamed TestUtilities.assertResultsAreValid() to TestUtilities.assertTestDidNotFail().
+
+Renamed BaseTypeValidator.isValidType() to BaseTypeValidator.isValidStructurally().
+
+New method BaseTypeVisitor#visitAnnotatedType(List, Tree) centralizes checking
+of user-written type annotations, even when parsed in declaration locations.
+
+Closed issues:
+#868, #1908, #2075, #3349, #3362, #3569, #3614, #3637, #3709, #3710, #3711,
+#3720, #3730, #3742, #3760, #3770, #3775, #3776, #3792, #3793, #3794, #3819,
+#3831.
+
+---------------------------------------------------------------------------
+
+Version 3.7.0, October 1, 2020
+
+The new Called Methods Checker tracks methods that have definitely been
+called on an object. It automatically supports detecting mis-uses of the
+builder pattern in code that uses Lombok or AutoValue.
+
+Accumulation analysis is now supported via a generic Accumulation Checker.
+An accumulation analysis is a restricted form of typestate analysis that does
+not require a precise alias analysis for soundness. The Called Methods Checker
+is an accumulation analysis.
+
+The Nullness Checker supports annotations
+org.codehaus.commons.nullanalysis.NotNull,
+org.codehaus.commons.nullanalysis.Nullable, and
+org.jspecify.annotations.Nullable.
+
+The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
+The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
+
+The shorthand syntax for the -processor command-line argument applies to
+utility checkers, such as the Constant Value Checker.
+
+Implementation details:
+
+A checker implementation may override AnnotatedTypeFactory.getWidenedAnnotations
+to provide special behavior for primitive widening conversions.
+
+Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
+org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
+AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
+AnnotatedTypeFactory#createQualifierHierarchyFactory.  See Javadoc of
+MultiGraphQualifierHierarchy for instructions on how to use the new classes and
+methods.
+
+Renamed methods:
+  NumberUtils.isFloatingPoint => TypesUtils.isFloatingPoint
+  NumberUtils.isIntegral => TypesUtils.isIntegralPrimitiveOrBoxed
+  NumberUtils.isPrimitiveFloatingPoint => TypeKindUtils.isFloatingPoint
+  NumberUtils.isPrimitiveIntegral => TypeKindUtils.isIntegral
+  NumberUtils.unboxPrimitive => TypeKindUtils.primitiveOrBoxedToTypeKind
+  TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
+  TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
+  TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
+
+The CFStore copy constructor now takes only one argument.
+
+Closed issues:
+#352, #354, #553, #722, #762, #2208, #2239, #3033, #3105, #3266, #3275, #3408,
+#3561, #3616, #3619, #3622, #3625, #3630, #3632, #3648, #3650, #3667, #3668,
+#3669, #3700, #3701.
+
+---------------------------------------------------------------------------
+
+Version 3.6.1, September 2, 2020
+
+Documented that the Checker Framework can issue false positive warnings in
+dead code.
+
+Documented when the Signedness Checker permits right shift operations.
+
+Closed issues:
+#3484, #3562, #3565, #3566, #3570, #3584, #3594, #3597, #3598.
+
+---------------------------------------------------------------------------
+
 Version 3.6.0, August 3, 2020
 
 The Interning Checker supports method annotations @EqualsMethod and
@@ -27,8 +196,9 @@ Removed org.checkerframework.framework.test.FrameworkPer(Directory/File)Test cla
 Use CheckerFrameworkPer(Directory/File)Test instead.
 
 Closed issues:
-1395, 2483, 3207, 3223, 3224, 3313, 3381, 3422, 3424, 3428, 3429, 3438, 3442,
-3443, 3447, 3449, 3461, 3482, 3485, 3495, 3500, 3528.
+
+#1395, #2483, #3207, #3223, #3224, #3313, #3381, #3422, #3424, #3428, #3429,
+#3438, #3442, #3443, #3447, #3449, #3461, #3482, #3485, #3495, #3500, #3528.
 
 ---------------------------------------------------------------------------
 
@@ -492,9 +662,10 @@ Introduce checker-qual-android artifact that is just like the checker-qual
 artifact, but the qualifiers have classfile retention.  This is useful for
 Android projects.
 
-Remove the checker-compat-qual artifact, which was only useful for Java 7,
-which the Checker Framework no longer supports.  It remains available on
-Maven Central, with versions 2.5.5 and earlier.
+Removed the code for the checker-compat-qual artifact.  It was only useful
+for Java 7, which the Checker Framework no longer supports.  The
+checker-compat-qual artifact remains available on Maven Central, with
+versions 2.5.5 and earlier.
 
 Closed issues:
 #2135, #2157, #2158, #2164, #2171.

@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -16,7 +17,6 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +28,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -37,7 +38,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -58,9 +61,10 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -97,7 +101,7 @@ public class NullnessAnnotatedTypeFactory
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nonnull}. */
-    private static final List<String> NONNULL_ALIASES =
+    private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
                     "android.annotation.NonNull",
@@ -123,6 +127,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
                     "org.checkerframework.checker.nullness.compatqual.NonNullType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
+                    "org.codehaus.commons.nullanalysis.NotNull",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -139,7 +145,7 @@ public class NullnessAnnotatedTypeFactory
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nullable}. */
-    private static final List<String> NULLABLE_ALIASES =
+    private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
                     "android.annotation.Nullable",
@@ -168,6 +174,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NullableDecl",
                     "org.checkerframework.checker.nullness.compatqual.NullableType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
+                    "org.codehaus.commons.nullanalysis.Nullable",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
@@ -176,6 +184,9 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
+                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/annotations
+                    "org.jspecify.annotations.Nullable",
+                    "org.jspecify.annotations.NullnessUnspecified",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
@@ -200,18 +211,18 @@ public class NullnessAnnotatedTypeFactory
         tempNullnessAnnos.add(PolyNull.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
-        NONNULL_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NONNULL));
-        NULLABLE_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NULLABLE));
+        NONNULL_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NONNULL));
+        NULLABLE_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NULLABLE));
 
         // Add compatibility annotations:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullDecl", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl",
                 MONOTONIC_NONNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullType", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
@@ -224,7 +235,10 @@ public class NullnessAnnotatedTypeFactory
 
         classGetCanonicalName =
                 TreeUtils.getMethod(
-                        java.lang.Class.class.getName(), "getCanonicalName", 0, processingEnv);
+                        java.lang.Class.class.getCanonicalName(),
+                        "getCanonicalName",
+                        0,
+                        processingEnv);
 
         postInit();
 
@@ -248,8 +262,8 @@ public class NullnessAnnotatedTypeFactory
 
     /**
      * For types of left-hand side of an assignment, this method replaces {@link PolyNull} with
-     * {@link Nullable} if the org.checkerframework.dataflow analysis has determined that this is
-     * allowed soundly. For example:
+     * {@link Nullable} (or with {@link NonNull} if the org.checkerframework.dataflow analysis has
+     * determined that this is allowed soundly. For example:
      *
      * <pre> @PolyNull String foo(@PolyNull String param) {
      *    if (param == null) {
@@ -267,29 +281,30 @@ public class NullnessAnnotatedTypeFactory
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
         if (lhsType.hasAnnotation(PolyNull.class)) {
             NullnessValue inferred = getInferredValueFor(context);
-            if (inferred != null && inferred.isPolyNullNull) {
-                lhsType.replaceAnnotation(NULLABLE);
+            if (inferred != null) {
+                if (inferred.isPolyNullNonNull) {
+                    lhsType.replaceAnnotation(NONNULL);
+                } else if (inferred.isPolyNullNull) {
+                    lhsType.replaceAnnotation(NULLABLE);
+                }
             }
         }
     }
 
     @Override
-    public List<VariableTree> getUninitializedInvariantFields(
+    public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
             NullnessStore store,
             TreePath path,
             boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> candidates =
-                super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
-        List<VariableTree> result = new ArrayList<>();
-        for (VariableTree c : candidates) {
-            AnnotatedTypeMirror type = getAnnotatedType(c);
-            boolean isPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
-            if (!isPrimitive) {
-                // primitives do not need to be initialized
-                result.add(c);
-            }
-        }
+        Pair<List<VariableTree>, List<VariableTree>> result =
+                super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
+        // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
+        // warning when they are not initialized.
+        result.first.removeIf(
+                vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
+        result.second.removeIf(
+                vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
         return result;
     }
 
@@ -577,30 +592,146 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new NullnessQualifierHierarchy(factory, (Object[]) null);
+    public QualifierHierarchy createQualifierHierarchy() {
+        return new NullnessQualifierHierarchy();
     }
 
+    /** NullnessQualifierHierarchy. */
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
 
-        public NullnessQualifierHierarchy(MultiGraphFactory f, Object[] arg) {
-            super(f, arg);
+        /** Qualifier kind for the @{@link Nullable} annotation. */
+        private final QualifierKind NULLABLE;
+
+        /** Creates NullnessQualifierHierarchy. */
+        public NullnessQualifierHierarchy() {
+            super();
+            NULLABLE = getQualifierKind(NullnessAnnotatedTypeFactory.this.NULLABLE);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (isInitializationAnnotation(subAnno) || isInitializationAnnotation(superAnno)) {
-                return this.isSubtypeInitialization(subAnno, superAnno);
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (!subKind.isInSameHierarchyAs(NULLABLE)
+                    || !superKind.isInSameHierarchyAs(NULLABLE)) {
+                return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
             }
-            return super.isSubtype(subAnno, superAnno);
+            throw new BugInCF(
+                    "Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (isInitializationAnnotation(a1) || isInitializationAnnotation(a2)) {
-                return this.leastUpperBoundInitialization(a1, a2);
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
+                return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
             }
-            return super.leastUpperBound(a1, a2);
+            throw new BugInCF("Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
         }
+
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
+                return this.greatestLowerBoundInitialization(
+                        a1, qualifierKind1, a2, qualifierKind2);
+            }
+            throw new BugInCF(
+                    "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
+        }
+    }
+
+    /**
+     * Returns true if some annotation in the given list is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * <p>This method ignores aliases of nullness annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
+     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
+     *     not from such a location
+     * @param typeTree the type whose annotations to test
+     * @return true if some annotation is a nullness annotation
+     */
+    protected boolean containsNullnessAnnotation(
+            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        List<? extends AnnotationTree> annos =
+                TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+
+        for (AnnotationTree annoTree : annos) {
+            AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
+            if (isNullnessAnnotation(am) && !AnnotationUtils.isDeclarationAnnotation(am)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the given annotation is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * @param am an annotation
+     * @return true if the given annotation is a nullness annotation
+     */
+    protected boolean isNullnessAnnotation(AnnotationMirror am) {
+        return isNonNullOrAlias(am)
+                || isNullableOrAlias(am)
+                || AnnotationUtils.areSameByName(am, MONOTONIC_NONNULL)
+                || AnnotationUtils.areSameByName(am, POLYNULL);
+    }
+
+    /**
+     * Returns true if the given annotation is @NonNull or an alias for it.
+     *
+     * @param am an annotation
+     * @return true if the given annotation is @NonNull or an alias for it
+     */
+    protected boolean isNonNullOrAlias(AnnotationMirror am) {
+        AnnotationMirror canonical = canonicalAnnotation(am);
+        if (canonical != null) {
+            am = canonical;
+        }
+        return AnnotationUtils.areSameByName(am, NONNULL);
+    }
+
+    /**
+     * Returns true if the given annotation is @Nullable or an alias for it.
+     *
+     * @param am an annotation
+     * @return true if the given annotation is @Nullable or an alias for it
+     */
+    protected boolean isNullableOrAlias(AnnotationMirror am) {
+        AnnotationMirror canonical = canonicalAnnotation(am);
+        if (canonical != null) {
+            am = canonical;
+        }
+        return AnnotationUtils.areSameByName(am, NULLABLE);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        AnnotatedTypeMirror result = super.getDefaultValueAnnotatedType(typeMirror);
+        if (getAnnotationByClass(result.getAnnotations(), Nullable.class) != null) {
+            result.replaceAnnotation(MONOTONIC_NONNULL);
+        }
+        return result;
+    }
+
+    @Override
+    public WholeProgramInference createWholeProgramInference() {
+        return new NullnessWholeProgramInferenceScenes(this);
     }
 }

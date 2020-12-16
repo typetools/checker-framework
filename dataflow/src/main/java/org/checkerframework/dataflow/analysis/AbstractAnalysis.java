@@ -73,7 +73,7 @@ public abstract class AbstractAnalysis<
      * invariant holds:
      *
      * <pre>
-     *   !isRunning ==&gt; (currentNode == null)
+     *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
     protected @InternedDistinct @Nullable Node currentNode;
@@ -328,7 +328,8 @@ public abstract class AbstractAnalysis<
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         if (node.isLValue()) {
             // TODO: should the default behavior return a regular transfer result, a conditional
-            //  transfer result (depending on store.hasTwoStores()), or is the following correct?
+            //  transfer result (depending on store.containsTwoStores()), or is the following
+            //  correct?
             return new RegularTransferResult<>(null, transferInput.getRegularStore());
         }
         transferInput.node = node;
@@ -365,8 +366,8 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Initialize class fields based on a given control flow graph. Sub-class may override this
-     * method to initialize customized fields.
+     * Initialize fields of this object based on a given control flow graph. Sub-class may override
+     * this method to initialize customized fields.
      *
      * @param cfg a given control flow graph
      */

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.util.UtilPlume;
@@ -50,7 +51,7 @@ public class TestConfigurationBuilder {
             File outputClassDirectory,
             String classPath,
             Iterable<File> testSourceFiles,
-            Iterable<String> processors,
+            Iterable<@BinaryName String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
 
@@ -86,6 +87,37 @@ public class TestConfigurationBuilder {
      *
      * @param testSourcePath the path to the Checker test file sources, usually this is the
      *     directory of Checker's tests
+     * @param testFile a single test java file to compile
+     * @param processor a single checker to include in the processors field
+     * @param options the options to the compiler/processors
+     * @param shouldEmitDebugInfo whether or not debug information should be emitted
+     * @return a TestConfiguration with input parameters added plus the normal default options,
+     *     compiler, and file manager used by Checker Framework tests
+     */
+    @SuppressWarnings(
+            "signature:argument.type.incompatible" // for non-array non-primitive class, getName():
+    // @BinaryName
+    )
+    public static TestConfiguration buildDefaultConfiguration(
+            String testSourcePath,
+            File testFile,
+            Class<?> processor,
+            List<String> options,
+            boolean shouldEmitDebugInfo) {
+        return buildDefaultConfiguration(
+                testSourcePath,
+                Arrays.asList(testFile),
+                Collections.emptyList(),
+                Arrays.asList(processor.getName()),
+                options,
+                shouldEmitDebugInfo);
+    }
+
+    /**
+     * This is the default configuration used by Checker Framework JUnit tests.
+     *
+     * @param testSourcePath the path to the Checker test file sources, usually this is the
+     *     directory of Checker's tests
      * @param testSourceFiles the Java files that compose the test
      * @param processors the checkers or other annotation processors to run over the testSourceFiles
      * @param options the options to the compiler/processors
@@ -96,7 +128,7 @@ public class TestConfigurationBuilder {
     public static TestConfiguration buildDefaultConfiguration(
             String testSourcePath,
             Iterable<File> testSourceFiles,
-            Iterable<String> processors,
+            Iterable<@BinaryName String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
         return buildDefaultConfiguration(
@@ -125,7 +157,7 @@ public class TestConfigurationBuilder {
             String testSourcePath,
             Iterable<File> testSourceFiles,
             Collection<String> classpathExtra,
-            Iterable<String> processors,
+            Iterable<@BinaryName String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
 
@@ -150,36 +182,6 @@ public class TestConfigurationBuilder {
         return builder.validateThenBuild(true);
     }
 
-    /**
-     * This is the default configuration used by Checker Framework JUnit tests.
-     *
-     * @param testSourcePath the path to the Checker test file sources, usually this is the
-     *     directory of Checker's tests
-     * @param testFile a single test java file to compile
-     * @param checkerName a single Checker to include in the processors field
-     * @param options the options to the compiler/processors
-     * @param shouldEmitDebugInfo whether or not debug information should be emitted
-     * @return a TestConfiguration with input parameters added plus the normal default options,
-     *     compiler, and file manager used by Checker Framework tests
-     */
-    public static TestConfiguration buildDefaultConfiguration(
-            String testSourcePath,
-            File testFile,
-            String checkerName,
-            List<String> options,
-            boolean shouldEmitDebugInfo) {
-        List<File> javaFiles = Arrays.asList(testFile);
-        List<String> processors = Arrays.asList(checkerName);
-
-        return buildDefaultConfiguration(
-                testSourcePath,
-                javaFiles,
-                Collections.emptyList(),
-                processors,
-                options,
-                shouldEmitDebugInfo);
-    }
-
     /** The list of files that contain Java diagnostics to compare against. */
     private List<File> diagnosticFiles;
 
@@ -187,7 +189,7 @@ public class TestConfigurationBuilder {
     private List<File> testSourceFiles;
 
     /** The set of Checker Framework processors to test with. */
-    private Set<String> processors;
+    private Set<@BinaryName String> processors;
 
     /** The set of options to the Javac command line used to run the test. */
     private SimpleOptionMap options;
@@ -330,7 +332,13 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder setProcessors(Iterable<String> processors) {
+    /**
+     * Set the processors.
+     *
+     * @param processors the processors to run
+     * @return this
+     */
+    public TestConfigurationBuilder setProcessors(Iterable<@BinaryName String> processors) {
         this.processors.clear();
         for (String proc : processors) {
             this.processors.add(proc);
@@ -338,12 +346,24 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder addProcessor(String processor) {
+    /**
+     * Add a processor.
+     *
+     * @param processor a processor to run
+     * @return this
+     */
+    public TestConfigurationBuilder addProcessor(@BinaryName String processor) {
         this.processors.add(processor);
         return this;
     }
 
-    public TestConfigurationBuilder addProcessors(Iterable<String> processors) {
+    /**
+     * Add processors.
+     *
+     * @param processors processors to run
+     * @return this
+     */
+    public TestConfigurationBuilder addProcessors(Iterable<@BinaryName String> processors) {
         for (String processor : processors) {
             this.processors.add(processor);
         }

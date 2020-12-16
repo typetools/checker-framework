@@ -87,7 +87,7 @@ fully-qualified type name?
 
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
-\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs or Error Prone)?
+\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs, SpotBugs, or Error Prone)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
 \\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
@@ -210,7 +210,7 @@ Java type-checker would reject.  Here are a few examples.
 \item[Less code clutter]
   The programmer does not have to convert primitive types to wrappers,
   which would make the code both uglier and slower.  Thanks to defaults and
-  type inference (Section~\ref{defaults}),
+  type refinement (Section~\ref{defaults}),
   you may be able to write and think in terms of the
   original Java type, rather than having to explicitly write one of the
   subtypes in all locations.
@@ -377,20 +377,22 @@ and less ambiguous.
 \subsectionAndLabel{Will using the Checker Framework slow down my program?  Will it slow down the compiler?}{faq-slowdown}
 
 Using the Checker Framework has no impact on the execution of your program:
-the compiler emits the identical bytecodes as the Java 8
+the compiler emits the identical bytecodes as the javac
 compiler and so there is no run-time effect.  Because there is no run-time
 representation of type qualifiers, there is no way to use reflection to
 query the qualifier on a given object, though you can use reflection to
 examine a class/method/field declaration.
 
-Using the Checker Framework does increase compilation time.  In theory it
-should only add a few percent overhead, but our current implementation
-can double the compilation time --- or more, if you run many pluggable
+Using the Checker Framework does increase compilation time.
+% In theory it
+% should only add a few percent overhead, but our current implementation
+It can double the compilation time --- or more, if you run many pluggable
 type-checkers at once.  This is especially true if you run pluggable
-type-checking on every file (as we recommend) instead of just on the ones
+type-checking on every file, instead of incremental compilation of just the files
 that have recently changed.
 Nonetheless, compilation with pluggable type-checking still feels like
-compilation, and you can do it as part of your normal development process.
+compilation, and you can do it as part of your normal development process,
+or during continuous integration.
 
 
 \subsectionAndLabel{How do I shorten the command line when invoking a checker?}{faq-shorten-command-line}
@@ -1546,7 +1548,7 @@ Here are some reasons that the Checker Framework is so slow.
 \sectionAndLabel{Relationship to other tools}{faq-other-tools-section}
 
 
-\subsectionAndLabel{Why not just use a bug detector (like FindBugs or Error Prone)?}{faq-type-checking-vs-bug-detectors}
+\subsectionAndLabel{Why not just use a bug detector (like FindBugs, SpotBugs, or Error Prone)?}{faq-type-checking-vs-bug-detectors}
 
 A pluggable type-checker
 is a verification tool that prevents or detects all errors of a given
@@ -1557,8 +1559,11 @@ Section~\ref{checker-guarantees}).
 An alternate approach is to use a bug detector such as
 \href{https://errorprone.info/}{Error Prone},
 \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
-\href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
-\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005}, or the
+\href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001},
+\href{https://github.com/spotbugs/spotbugs}{SpotBugs},
+or
+\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005},
+or the
 tools built into Eclipse (see Section~\ref{faq-eclipse}) and IntelliJ\@.
 
 A pluggable type-checker or verifier

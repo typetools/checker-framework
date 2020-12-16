@@ -33,7 +33,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/** A Utility class to find symbols corresponding to string references. */
+/** A utility class to find symbols corresponding to string references. */
 // This class reflectively accesses jdk.compiler/com.sun.tools.javac.comp.
 // This is why --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED is required when
 // running the Checker Framework.  If this class is re-written, then that --add-opens should be
@@ -282,7 +282,7 @@ public class Resolver {
                             pck,
                             names.fromString(name),
                             Kinds.KindSelector.TYP);
-            if (ElementUtils.isClassElement(res)) {
+            if (ElementUtils.isTypeElement(res)) {
                 return (ClassSymbol) res;
             } else {
                 return null;

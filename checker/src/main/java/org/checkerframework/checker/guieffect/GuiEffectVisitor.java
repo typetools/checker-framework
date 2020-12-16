@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -36,6 +35,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -128,12 +128,12 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 checker.reportError(
                         overriderTree,
                         "override.receiver.invalid",
+                        overrider.getReceiverType(),
+                        overridden.getReceiverType(),
                         overriderMeth,
                         overriderTyp,
                         overriddenMeth,
-                        overriddenTyp,
-                        overrider.getReceiverType(),
-                        overridden.getReceiverType());
+                        overriddenTyp);
                 return false;
             }
             return true;
@@ -372,8 +372,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
         if (debugSpew) {
-            System.err.println();
-            System.err.println("Visiting method " + methElt);
+            System.err.println(
+                    "Visiting method " + methElt + " of " + methElt.getEnclosingElement());
         }
 
         // Check for conflicting (multiple) annotations
@@ -490,7 +490,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
                 AnnotatedExecutableType invokedMethod = mType.executableType;
                 ExecutableElement method = invokedMethod.getElement();
-                Name methodName = method.getSimpleName();
+                CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
                 List<? extends VariableElement> methodParams = method.getParameters();
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(
@@ -528,7 +528,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     }
 
                     if (ret != null) {
-                        Pair<Tree, AnnotatedTypeMirror> preAssCtxt =
+                        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                                 visitorState.getAssignmentContext();
                         try {
                             visitorState.setAssignmentContext(Pair.of((Tree) returnTree, ret));
@@ -538,7 +538,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                                     returnTree.getExpression(),
                                     "return.type.incompatible");
                         } finally {
-                            visitorState.setAssignmentContext(preAssCtxt);
+                            visitorState.setAssignmentContext(preAssignmentContext);
                         }
                     }
                 }

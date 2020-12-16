@@ -91,11 +91,6 @@ However, as noted in Sections~\ref{get-started-with-legacy-code} and~\ref{librar
 should annotate an entire class at a time.
 You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
 when getting started, but you should always examine their results.
-%% This text does not feel so relevant.
-% You can determine the correct annotations for a library either
-% automatically by running an inference tool, or manually by reading the
-% documentation.  Presently, automated type inference tools are available for the
-% Nullness (Section~\ref{nullness-inference}) type system.
 
 
 \sectionAndLabel{Tips for annotating a library}{library-tips}
@@ -264,7 +259,8 @@ This section describes how to create an annotated library.
     made.
 
   Adjust the library's
-  build process, such as an Ant, Gradle, or Maven buildfile.
+  build process, such as an Ant, Gradle, or Maven buildfile (for guidance,
+  see \chapterpageref{external-tools}).
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
@@ -443,7 +439,7 @@ original library classes.  For example:
 
 \begin{myxsmall}
 \begin{Verbatim}
-  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
+  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
@@ -679,20 +675,41 @@ if an entry could not be found.
 \end{enumerate}
 
 
-\subsectionAndLabel{Distributing stub files}{stub-creating}
+\subsectionAndLabel{Distributing stub files}{stub-distributing}
 
 If you are writing stub files but are not writing a checker, you can place
 the stub files anywhere that is convenient.  However, please consider
 providing your stub files to the checker author, so that other users can
 also benefit from the stub files you wrote.
 
-If you are distributing stub files with a checker implementation, the stub
-files appear in the same directory as the checker class, which is a subtype of
-\<BaseTypeChecker>.  A \refqualclass{framework/qual}{StubFiles} annotation
-on the checker class lists stub files that are always used.  For stub files
-whose use is optional (for example, because the behavior is unsound, or
-unsound except in certain circumstances), users must supply the
+If you are distributing stub files with a checker implementation, you must
+configure your build system to copy the stub files into the distributed jar for
+your checker.  Here are instructions if you are using the Checker Framework
+Gradle plugin:
+\begin{itemize}
+\item
+  If the stub files appear in the same directory as the checker class, which is
+  a subtype of \<BaseTypeChecker>, use the following build configuration:
+\begin{Verbatim}
+  sourceSets {
+    main {
+        resources {
+            srcDirs += ['src/main/java']
+        }
+    }
+  }
+\end{Verbatim}
+\item
+  If the stub files appear under the \<src/main/resources/>
+  directory in a sub-directory matching the package of your checker class,
+  the default Gradle build configuration is sufficient.
+\end{itemize}
+In either case, recall that a \refqualclass{framework/qual}{StubFiles}
+annotation on the checker class lists stub files that are always used.  For
+stub files whose use is optional (for example, because the behavior is
+unsound, or unsound except in certain circumstances), users must supply the
 \<-Astubs=...> command-line option.
+
 
 If a stub file contains annotations that are used by the framework rather
 than by any specific checker (such as purity annotations), and you wish to
@@ -736,7 +753,7 @@ Some command-line options make the stub parser issue more warnings:
 Finally,
 use command-line option {\bf\<-AstubDebug>} to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
-annotations.  This overrides the \<@NoStubParserWarning> annotation.
+annotations.  This overrides the \<@NoAnnotationFileParserWarning> annotation.
 
 
 
@@ -748,7 +765,7 @@ exist.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method isLLowerCase(char) not found in type java.lang.Character
+AnnotationFileParser: Method isLLowerCase(char) not found in type java.lang.Character
 \end{Verbatim}
 
 \noindent
@@ -756,7 +773,7 @@ by removing the extra ``L'' in the method name.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
+AnnotationFileParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
 
@@ -791,7 +808,7 @@ read whether the library's annotations are parsed.
 % LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
-%%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
+%%  LocalWords:  NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd

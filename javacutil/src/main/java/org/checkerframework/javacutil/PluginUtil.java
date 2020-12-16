@@ -328,10 +328,10 @@ public class PluginUtil {
     }
 
     /**
-     * Any options found in props to the cmd list.
+     * Add options found in props to the cmd list.
      *
      * @param cmd a list to which the options should be added
-     * @param props the map of checker properties too search for options in
+     * @param props the map of checker properties to search for options in
      */
     private static void addOptions(final List<String> cmd, Map<CheckerProp, Object> props) {
         for (CheckerProp cp : CheckerProp.values()) {

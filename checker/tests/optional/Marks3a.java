@@ -23,6 +23,13 @@ public class Marks3a {
         return opt.isPresent() ? opt.get().getName() : "UNKNOWN";
     }
 
+    String customerNameByID_acceptable2(List<Customer> custList, int custID) {
+        Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
+
+        // :: warning: (prefer.map.and.orelse)
+        return !opt.isPresent() ? "UNKNOWN" : opt.get().getName();
+    }
+
     String customerNameByID_better(List<Customer> custList, int custID) {
         Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 

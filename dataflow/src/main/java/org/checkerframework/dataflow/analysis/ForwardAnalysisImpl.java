@@ -4,6 +4,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,6 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -66,8 +67,8 @@ public class ForwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
@@ -155,8 +156,6 @@ public class ForwardAnalysisImpl<
                     Block succ = eb.getSuccessor();
                     if (succ != null) {
                         currentInput = new TransferInput<>(node, this, transferResult);
-                        // TODO: Variable wasn't used.
-                        // Store.FlowRule storeFlow = eb.getFlowRule();
                         propagateStoresTo(
                                 succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                     }
@@ -239,8 +238,8 @@ public class ForwardAnalysisImpl<
     @Override
     public S runAnalysisFor(
             @FindDistinct Node node,
-            boolean before,
-            TransferInput<V, S> transferInput,
+            Analysis.BeforeOrAfter preOrPost,
+            TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         Block block = node.getBlock();
@@ -250,10 +249,10 @@ public class ForwardAnalysisImpl<
         // Prepare cache
         IdentityHashMap<Node, TransferResult<V, S>> cache;
         if (analysisCaches != null) {
-            cache = analysisCaches.get(transferInput);
+            cache = analysisCaches.get(blockTransferInput);
             if (cache == null) {
                 cache = new IdentityHashMap<>();
-                analysisCaches.put(transferInput, cache);
+                analysisCaches.put(blockTransferInput, cache);
             }
         } else {
             cache = null;
@@ -272,11 +271,11 @@ public class ForwardAnalysisImpl<
                         RegularBlock rb = (RegularBlock) block;
                         // Apply transfer function to contents until we found the node we are
                         // looking for.
-                        TransferInput<V, S> store = transferInput;
+                        TransferInput<V, S> store = blockTransferInput;
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getNodes()) {
                             setCurrentNode(n);
-                            if (n == node && before) {
+                            if (n == node && preOrPost == Analysis.BeforeOrAfter.BEFORE) {
                                 return store.getRegularStore();
                             }
                             if (cache != null && cache.containsKey(n)) {
@@ -294,9 +293,7 @@ public class ForwardAnalysisImpl<
                             }
                             store = new TransferInput<>(n, this, transferResult);
                         }
-                        // This point should never be reached. If the block of 'node' is
-                        // 'block', then 'node' must be part of the contents of 'block'.
-                        throw new BugInCF("This point should never be reached.");
+                        throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
                     }
                 case EXCEPTION_BLOCK:
                     {
@@ -309,14 +306,14 @@ public class ForwardAnalysisImpl<
                                             + "\teb.getNode(): "
                                             + eb.getNode());
                         }
-                        if (before) {
-                            return transferInput.getRegularStore();
+                        if (preOrPost == Analysis.BeforeOrAfter.BEFORE) {
+                            return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput.copy());
+                                callTransferFunction(node, blockTransferInput.copy());
                         return transferResult.getRegularStore();
                     }
                 default:
@@ -346,30 +343,46 @@ public class ForwardAnalysisImpl<
         worklist.process(cfg);
         Block entry = cfg.getEntryBlock();
         worklist.add(entry);
-        List<LocalVariableNode> parameters = null;
         UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-        if (underlyingAST.getKind() == Kind.METHOD) {
-            MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-            parameters = new ArrayList<>();
-            for (VariableTree p : tree.getParameters()) {
-                LocalVariableNode var = new LocalVariableNode(p);
-                parameters.add(var);
-                // TODO: document that LocalVariableNode has no block that it belongs to
-            }
-        } else if (underlyingAST.getKind() == Kind.LAMBDA) {
-            LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-            parameters = new ArrayList<>();
-            for (VariableTree p : lambda.getParameters()) {
-                LocalVariableNode var = new LocalVariableNode(p);
-                parameters.add(var);
-                // TODO: document that LocalVariableNode has no block that it belongs to
-            }
-        }
+        List<LocalVariableNode> parameters = getParameters(underlyingAST);
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         S initialStore = transferFunction.initialStore(underlyingAST, parameters);
         thenStores.put(entry, initialStore);
         elseStores.put(entry, initialStore);
         inputs.put(entry, new TransferInput<>(null, this, initialStore));
+    }
+
+    /**
+     * Returns the formal parameters for a method.
+     *
+     * @param underlyingAST the AST for the method
+     * @return the formal parameters for the method
+     */
+    @SideEffectFree
+    private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
+        List<LocalVariableNode> result;
+        switch (underlyingAST.getKind()) {
+            case METHOD:
+                MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
+                result = new ArrayList<>();
+                for (VariableTree p : tree.getParameters()) {
+                    LocalVariableNode var = new LocalVariableNode(p);
+                    result.add(var);
+                    // TODO: document that LocalVariableNode has no block that it belongs to
+                }
+                return result;
+            case LAMBDA:
+                LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
+                result = new ArrayList<>();
+                for (VariableTree p : lambda.getParameters()) {
+                    LocalVariableNode var = new LocalVariableNode(p);
+                    result.add(var);
+                    // TODO: document that LocalVariableNode has no block that it belongs to
+                }
+                return result;
+            default:
+                return Collections.emptyList();
+        }
     }
 
     @Override
@@ -444,6 +457,22 @@ public class ForwardAnalysisImpl<
                         succ,
                         node,
                         currentInput.getElseStore(),
+                        Store.Kind.ELSE,
+                        addToWorklistAgain);
+                break;
+            case BOTH_TO_THEN:
+                addStoreBefore(
+                        succ,
+                        node,
+                        currentInput.getRegularStore(),
+                        Store.Kind.THEN,
+                        addToWorklistAgain);
+                break;
+            case BOTH_TO_ELSE:
+                addStoreBefore(
+                        succ,
+                        node,
+                        currentInput.getRegularStore(),
                         Store.Kind.ELSE,
                         addToWorklistAgain);
                 break;
@@ -572,7 +601,7 @@ public class ForwardAnalysisImpl<
             case ELSE:
                 return readFromStore(elseStores, b);
             default:
-                throw new BugInCF("Unexpected Store Kind: " + kind);
+                throw new BugInCF("Unexpected Store.Kind: " + kind);
         }
     }
 

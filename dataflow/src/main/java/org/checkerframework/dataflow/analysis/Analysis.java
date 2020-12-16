@@ -30,6 +30,17 @@ public interface Analysis<
     }
 
     /**
+     * In calls to {@code Analysis#runAnalysisFor}, whether to return the store before or after the
+     * given node.
+     */
+    public static enum BeforeOrAfter {
+        /** Return the pre-store. */
+        BEFORE,
+        /** Return the post-store. */
+        AFTER
+    }
+
+    /**
      * Get the direction of this analysis.
      *
      * @return the direction of this analysis
@@ -68,10 +79,9 @@ public interface Analysis<
      * the nodes.
      *
      * @param node the node to analyze
-     * @param before the boolean value to indicate which store to return (if it is true, return the
-     *     store immediately before {@code node}; otherwise, the store after {@code node} is
-     *     returned)
-     * @param transferInput the transfer input of the block of this node
+     * @param preOrPost indicates which store to return: the store immediately before {@code node}
+     *     or the store after {@code node}
+     * @param blockTransferInput the transfer input of the block of this node
      * @param nodeValues abstract values of nodes
      * @param analysisCaches caches of analysis results
      * @return the store before or after {@code node} (depends on the value of {@code before}) after
@@ -79,8 +89,8 @@ public interface Analysis<
      */
     S runAnalysisFor(
             Node node,
-            boolean before,
-            TransferInput<V, S> transferInput,
+            Analysis.BeforeOrAfter preOrPost,
+            TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches);
 

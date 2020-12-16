@@ -4,13 +4,17 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import java.util.concurrent.atomic.AtomicLong;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.plumelib.util.UniqueId;
 import org.plumelib.util.UtilPlume;
 
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow
  * graph.
  */
-public abstract class UnderlyingAST {
+public abstract class UnderlyingAST implements UniqueId {
+    /** The kinds of underlying ASTs. */
     public enum Kind {
         /** The underlying code is a whole method. */
         METHOD,
@@ -21,8 +25,24 @@ public abstract class UnderlyingAST {
         ARBITRARY_CODE,
     }
 
+    /** The kind of the underlying AST. */
     protected final Kind kind;
 
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
+    /** The unique ID of this object. */
+    final transient long uid = nextUid.getAndIncrement();
+
+    @Override
+    public long getUid(@UnknownInitialization UnderlyingAST this) {
+        return uid;
+    }
+
+    /**
+     * Creates an UnderlyingAST.
+     *
+     * @param kind the kind of the AST
+     */
     protected UnderlyingAST(Kind kind) {
         this.kind = kind;
     }
@@ -62,8 +82,31 @@ public abstract class UnderlyingAST {
             return method;
         }
 
+        /**
+         * Returns the name of the method.
+         *
+         * @return the name of the method
+         */
+        public String getMethodName() {
+            return method.getName().toString();
+        }
+
+        /**
+         * Returns the class tree this method belongs to.
+         *
+         * @return the class tree this method belongs to
+         */
         public ClassTree getClassTree() {
             return classTree;
+        }
+
+        /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
         }
 
         @Override
@@ -122,12 +165,30 @@ public abstract class UnderlyingAST {
         }
 
         /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
+        }
+
+        /**
          * Returns the enclosing method of the lambda.
          *
          * @return the enclosing method of the lambda
          */
         public MethodTree getMethod() {
             return method;
+        }
+
+        /**
+         * Returns the name of the enclosing method of the lambda.
+         *
+         * @return the name of the enclosing method of the lambda
+         */
+        public String getMethodName() {
+            return method.getName().toString();
         }
 
         @Override
@@ -157,6 +218,15 @@ public abstract class UnderlyingAST {
 
         public ClassTree getClassTree() {
             return classTree;
+        }
+
+        /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
         }
 
         @Override

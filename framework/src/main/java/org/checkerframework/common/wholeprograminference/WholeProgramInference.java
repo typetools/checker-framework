@@ -5,6 +5,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -13,12 +15,14 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 /**
- * Interface for a whole-program inference implementation.
+ * Interface for recording facts at (pseudo-)assignments. It is used by the -Ainfer command-line
+ * argument. The -Ainfer command-line argument is used by the whole-program-inference loop, but this
+ * class does not implement that loop and its name {@code WholeProgramInference} is misleading.
  *
  * <p>This interface has update* methods that should be called at certain (pseudo-)assignments, and
  * they may update the type of the LHS of the (pseudo-)assignment based on the type of the RHS. In
@@ -45,13 +49,9 @@ public interface WholeProgramInference {
      *
      * @param objectCreationNode the Node that invokes the constructor
      * @param constructorElt the Element of the constructor
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the constructor's parameters' types
      */
     void updateFromObjectCreation(
-            ObjectCreationNode objectCreationNode,
-            ExecutableElement constructorElt,
-            AnnotatedTypeFactory atf);
+            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt);
 
     /**
      * Updates the parameter types of the method {@code methodElt} based on the arguments in the
@@ -70,14 +70,9 @@ public interface WholeProgramInference {
      * @param methodInvNode the node representing a method invocation
      * @param receiverTree the Tree of the class that contains the method being invoked
      * @param methodElt the element of the method being invoked
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method parameters' types
      */
     void updateFromMethodInvocation(
-            MethodInvocationNode methodInvNode,
-            Tree receiverTree,
-            ExecutableElement methodElt,
-            AnnotatedTypeFactory atf);
+            MethodInvocationNode methodInvNode, Tree receiverTree, ExecutableElement methodElt);
 
     /**
      * Updates the parameter types (including the receiver) of the method {@code methodTree} based
@@ -96,14 +91,11 @@ public interface WholeProgramInference {
      * @param methodTree the tree of the method that contains the parameter(s)
      * @param methodElt the element of the method
      * @param overriddenMethod the AnnotatedExecutableType of the overridden method
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
      */
     void updateFromOverride(
             MethodTree methodTree,
             ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod,
-            AnnotatedTypeFactory atf);
+            AnnotatedExecutableType overriddenMethod);
 
     /**
      * Updates the type of {@code lhs} based on an assignment of {@code rhs} to {@code lhs}.
@@ -119,15 +111,9 @@ public interface WholeProgramInference {
      * @param rhs the node being assigned to the parameter in the method body
      * @param classTree the tree of the class that contains the parameter
      * @param methodTree the tree of the method that contains the parameter
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
      */
     void updateFromLocalAssignment(
-            LocalVariableNode lhs,
-            Node rhs,
-            ClassTree classTree,
-            MethodTree methodTree,
-            AnnotatedTypeFactory atf);
+            LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree);
 
     /**
      * Updates the type of {@code field} based on an assignment of {@code rhs} to {@code field}. If
@@ -142,11 +128,20 @@ public interface WholeProgramInference {
      *     LocalVariableNode whose element kind is FIELD.
      * @param rhs the expression being assigned to the field
      * @param classTree the ClassTree for the enclosing class of the assignment
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the field's type
      */
-    void updateFromFieldAssignment(
-            Node field, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf);
+    void updateFromFieldAssignment(Node field, Node rhs, ClassTree classTree);
+
+    /**
+     * Updates the type of {@code field} based on an assignment whose right-hand side has type
+     * {@code rhsATM}. See more details at {@link #updateFromFieldAssignment}.
+     *
+     * @param lhsTree the tree for the field whose type will be refined
+     * @param element the element for the field whose type will be refined
+     * @param fieldName the name of the field whose type will be refined
+     * @param rhsATM the type of the expression being assigned to the field
+     */
+    void updateFieldFromType(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
 
     /**
      * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
@@ -163,19 +158,25 @@ public interface WholeProgramInference {
      * @param methodTree the tree of the method whose return type may be updated
      * @param overriddenMethods the methods that the given method return overrides, indexed by the
      *     annotated type of the superclass in which each method is defined
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method's return type
      */
     void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
-            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
-            AnnotatedTypeFactory atf);
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods);
 
     /**
-     * Writes the inferred results to a file. Ideally should be called at the end of the
-     * type-checking process.
+     * Updates a method to add a declaration annotation.
+     *
+     * @param methodElt the method to annotate
+     * @param anno the declaration annotation to add to the method
+     */
+    void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
+
+    /**
+     * Writes the inferred results to a file. Ideally, it should be called at the end of the
+     * type-checking process. In practice, it is called after each class, because we don't know
+     * which class will be the last one in the type-checking process.
      *
      * @param format the file format in which to write the results
      * @param checker the checker from which this method is called, for naming stub files

@@ -13,9 +13,9 @@ How to run all the tests for the Checker Framework
 
 Other Gradle tasks also exist to run a subset of the tests; for example,
   # Run from the checker-framework directory:
-  ./gradlew :checker:NullnessFbcTest
+  ./gradlew :checker:NullnessTest
   # Run from the checker directory:
-  ../gradlew NullnessFbcTest
+  ../gradlew NullnessTest
   # To see all tasks
   ./gradlew tasks
 
@@ -104,7 +104,7 @@ directly preceding the expected error line.
 If a warning rather than an error is expected, insert the line
   // :: warning: (<warning-message-key>)
 If a stub parser warning is expected, insert the line
-  //warning: StubParser: <stub parser warning>
+  //warning: AnnotationFileParser: <stub parser warning>
 If multiple errors are expected on a single line, duplicate everthing
 except the "//" comment characters, as in
   // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
