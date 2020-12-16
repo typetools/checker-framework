@@ -1748,4 +1748,27 @@ public final class TreeUtils {
         ((JCLiteral) result).type = (Type) typeMirror;
         return result;
     }
+
+    /**
+     * Returns true if the given tree evaluates to {@code null}.
+     *
+     * @param t a tree
+     * @return true if the given tree evaluates to {@code null}
+     */
+    public static boolean isNullExpression(Tree t) {
+        while (true) {
+            switch (t.getKind()) {
+                case PARENTHESIZED:
+                    t = ((ParenthesizedTree) t).getExpression();
+                    break;
+                case TYPE_CAST:
+                    t = ((TypeCastTree) t).getExpression();
+                    break;
+                case NULL_LITERAL:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
 }

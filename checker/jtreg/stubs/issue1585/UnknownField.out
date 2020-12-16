@@ -1,4 +1,4 @@
-- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 1): Field NonNull [class com.github.javaparser.ast.expr.NameExpr] not found in getValueOfExpressionInAnnotation(value, NonNull [class com.github.javaparser.ast.expr.NameExpr], DECLARED)
+- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): Field NonNull [class com.github.javaparser.ast.expr.NameExpr] not found in getValueOfExpressionInAnnotation(value, NonNull [class com.github.javaparser.ast.expr.NameExpr], DECLARED)
 - compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): in builderAddElement, getValueOfExpressionInAnnotation(value, NonNull, DECLARED) => null
-- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 1): For annotation @DefaultQualifier(NonNull), could not add NonNull to builder
+- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): For annotation @DefaultQualifier(NonNull), could not add NonNull to builder
 3 warnings

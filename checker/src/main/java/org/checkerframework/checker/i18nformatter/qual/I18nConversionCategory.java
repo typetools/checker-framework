@@ -179,6 +179,9 @@ public enum I18nConversionCategory {
         if (types == null) {
             return true;
         }
+        if (argType == void.class) {
+            return true;
+        }
         for (Class<?> c : types) {
             if (c.isAssignableFrom(argType)) {
                 return true;
