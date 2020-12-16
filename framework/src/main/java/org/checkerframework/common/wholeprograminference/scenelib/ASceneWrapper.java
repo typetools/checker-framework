@@ -144,7 +144,7 @@ public class ASceneWrapper {
             try {
                 switch (outputFormat) {
                     case STUB:
-                        SceneToStubWriter.write(this, filepath);
+                        SceneToStubWriter.write(this, filepath, checker);
                         break;
                     case JAIF:
                         IndexFileWriter.write(scene, new FileWriter(filepath));

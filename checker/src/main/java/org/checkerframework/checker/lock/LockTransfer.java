@@ -17,7 +17,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TreeUtils;
@@ -43,13 +42,13 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
 
     /** Sets a given {@link Node} to @LockHeld in the given {@code store}. */
     protected void makeLockHeld(LockStore store, Node node) {
-        JavaExpression internalRepr = JavaExpressions.fromNode(atypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(atypeFactory, node);
         store.insertValue(internalRepr, atypeFactory.LOCKHELD);
     }
 
     /** Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}. */
     protected void makeLockPossiblyHeld(LockStore store, Node node) {
-        JavaExpression internalRepr = JavaExpressions.fromNode(atypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(atypeFactory, node);
 
         // insertValue cannot change an annotation to a less
         // specific type (e.g. LockHeld to LockPossiblyHeld),

@@ -1,16 +1,16 @@
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
-public class ThisLiteral {
-    public ThisLiteral() {
+public class ThisNodeTest {
+    public ThisNodeTest() {
         new Object() {
             void test() {
-                @UnderInitialization ThisLiteral l1 = ThisLiteral.this;
+                @UnderInitialization ThisNodeTest l1 = ThisNodeTest.this;
                 // :: error: (assignment.type.incompatible)
-                @Initialized ThisLiteral l2 = ThisLiteral.this;
+                @Initialized ThisNodeTest l2 = ThisNodeTest.this;
 
                 // :: error: (method.invocation.invalid)
-                ThisLiteral.this.foo();
+                ThisNodeTest.this.foo();
                 // :: error: (method.invocation.invalid)
                 foo();
             }

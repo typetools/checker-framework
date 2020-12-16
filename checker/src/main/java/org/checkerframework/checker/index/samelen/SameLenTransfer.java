@@ -22,7 +22,6 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -92,9 +91,9 @@ public class SameLenTransfer extends CFTransfer {
 
                     // targetRec is the receiver for the left hand side of the assignment.
                     JavaExpression targetRec =
-                            JavaExpressions.fromNode(analysis.getTypeFactory(), node.getTarget());
+                            JavaExpression.fromNode(analysis.getTypeFactory(), node.getTarget());
                     JavaExpression otherRec =
-                            JavaExpressions.fromNode(analysis.getTypeFactory(), lengthNodeReceiver);
+                            JavaExpression.fromNode(analysis.getTypeFactory(), lengthNodeReceiver);
 
                     AnnotationMirror lengthNodeAnnotation =
                             aTypeFactory
@@ -123,10 +122,10 @@ public class SameLenTransfer extends CFTransfer {
         // left side be SameLen of each other.
 
         JavaExpression targetRec =
-                JavaExpressions.fromNode(analysis.getTypeFactory(), node.getTarget());
+                JavaExpression.fromNode(analysis.getTypeFactory(), node.getTarget());
 
         JavaExpression exprRec =
-                JavaExpressions.fromNode(analysis.getTypeFactory(), node.getExpression());
+                JavaExpression.fromNode(analysis.getTypeFactory(), node.getExpression());
 
         if (IndexUtil.isSequenceType(node.getTarget().getType())
                 || (rightAnno != null && aTypeFactory.areSameByClass(rightAnno, SameLen.class))) {
@@ -187,11 +186,11 @@ public class SameLenTransfer extends CFTransfer {
         List<JavaExpression> exprs = new ArrayList<>();
         List<AnnotationMirror> annos = new ArrayList<>();
         for (Node internal : splitAssignments(left)) {
-            exprs.add(JavaExpressions.fromNode(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpression.fromNode(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
         }
         for (Node internal : splitAssignments(right)) {
-            exprs.add(JavaExpressions.fromNode(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpression.fromNode(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
         }
 
