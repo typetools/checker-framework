@@ -10,6 +10,10 @@ Class renamings:
  * `StubParser` => `AnnotationFileParser`
  * `Receiver` => `JavaExpression`
      *  also related class and method renamings
+ * In the Dataflow Framework:
+    * `ThisLiteralNode` => `ThisNode`
+    * `ExplicitThisLiteralNode` => `ExplicitThisNode`
+    * `ImplicitThisLiteralNode` => `ImplicitThisNode`
 
 Method deprecations:
  * Deprecated `AnnotatedTypeFactory.addAliasedAnnotation`; use `addAliasedTypeAnnotation`
