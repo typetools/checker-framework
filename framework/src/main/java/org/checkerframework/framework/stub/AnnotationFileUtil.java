@@ -33,7 +33,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
-/** Utility class for stub and ajava files. */
+/** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
     /** The types of files that can contain annotations. */
     public enum AnnotationFileType {
@@ -306,8 +306,8 @@ public class AnnotationFileUtil {
     /**
      * Return annotation files found in the file system (does not look on classpath).
      *
-     * @param location of a stub file, ajava file, jarfile, or a directory. Look for it as an
-     *     absolute file and relative to the current directory.
+     * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
+     *     for it as an absolute file and absolute file and relative to the current directory.
      * @param fileType file type of files to collect
      * @return annotation files with the given file type found in the file system (does not look on
      *     classpath)
@@ -332,7 +332,7 @@ public class AnnotationFileUtil {
     }
 
     /**
-     * Determines if a file represents a particular type of annotation storage file.
+     * Returns true if the given file is an annotation file of the given type.
      *
      * @param f the file to check
      * @param fileType the type of file to check against
@@ -343,9 +343,9 @@ public class AnnotationFileUtil {
     }
 
     /**
-     * Determines if a path represents a particular type of annotation storage file.
+     * Returns true if the given file is an annotation file of the given kind.
      *
-     * @param path the path to check
+     * @param path a file
      * @param fileType the type of file to check against
      * @return true if {@code path} represents a file with file type matching {@code fileType},
      *     false otherwise
@@ -368,9 +368,10 @@ public class AnnotationFileUtil {
     /**
      * Side-effects {@code resources} by adding annotation files of the given file type to it.
      *
-     * @param location a stub file, ajava file, jarfile, or a directory. If a stub file or ajava
-     *     file, add it to the {@code resources} list. If a jarfile, use all stub files contained in
-     *     it. If a directory, recurse on all files contained in it.
+     * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If
+     *     a stub file or ajava file, add it to the {@code resources} list. If a jarfile, use all
+     *     annotation files (of type {@code fileType}) contained in it. If a directory, recurse on
+     *     all files contained in it.
      * @param resources the list to add the found files to
      * @param fileType type of annotation files to add
      */

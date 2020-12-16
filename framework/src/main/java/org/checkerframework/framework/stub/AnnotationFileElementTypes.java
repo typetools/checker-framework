@@ -42,7 +42,7 @@ import org.checkerframework.javacutil.SystemUtil;
  * using an ajava file, only holds information on public elements as with stub files.
  */
 public class AnnotationFileElementTypes {
-    /** Annotations from annotation files (but not annotated JDK files). */
+    /** Annotations from annotation files (but not from annotated JDK files). */
     private final AnnotationFileAnnotations annotationFileAnnos;
 
     /**

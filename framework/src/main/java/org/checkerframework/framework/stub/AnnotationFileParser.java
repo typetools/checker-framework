@@ -497,15 +497,15 @@ public class AnnotationFileParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param stubAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
      */
     public static void parse(
             String filename,
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            AnnotationFileAnnotations stubAnnos) {
-        parse(filename, inputStream, atypeFactory, processingEnv, stubAnnos, false);
+            AnnotationFileAnnotations annotationFileAnnos) {
+        parse(filename, inputStream, atypeFactory, processingEnv, annotationFileAnnos, false);
     }
 
     /**
@@ -568,13 +568,13 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Parse a stub file and adds annotations to {@code stubAnnos}.
+     * Parse a stub file and adds annotations to {@code annotationFileAnnos}.
      *
      * @param filename name of stub file, used only for diagnostic messages
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param stubAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
      * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
      */
     private static void parse(
@@ -582,13 +582,13 @@ public class AnnotationFileParser {
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            AnnotationFileAnnotations stubAnnos,
+            AnnotationFileAnnotations annotationFileAnnos,
             boolean isJdkAsStub) {
         AnnotationFileParser afp =
                 new AnnotationFileParser(filename, atypeFactory, processingEnv, isJdkAsStub, true);
         try {
             afp.parseStubUnit(inputStream);
-            afp.process(stubAnnos);
+            afp.process(annotationFileAnnos);
         } catch (ParseProblemException e) {
             for (Problem p : e.getProblems()) {
                 afp.warn(null, p.getVerboseMessage());
@@ -1445,19 +1445,19 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Adds to {@code stubAnnos} all the annotations in {@code annotations} that are applicable to
-     * {@code elt}'s location. For example, if an annotation is a type annotation but {@code elt} is
-     * a field declaration, the type annotation will be ignored.
+     * Adds to {@code annotationFileAnnos} all the annotations in {@code annotations} that are
+     * applicable to {@code elt}'s location. For example, if an annotation is a type annotation but
+     * {@code elt} is a field declaration, the type annotation will be ignored.
      *
      * @param elt the element to be annotated
      * @param annotations set of annotations that may be applicable to elt
-     * @param stubAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
      * @param astNode where to report errors
      */
     private void recordDeclAnnotation(
             Element elt,
             List<AnnotationExpr> annotations,
-            AnnotationFileAnnotations stubAnnos,
+            AnnotationFileAnnotations annotationFileAnnos,
             NodeWithRange<?> astNode) {
         if (annotations == null) {
             return;
@@ -1479,7 +1479,7 @@ public class AnnotationFileParser {
             }
         }
         String eltName = ElementUtils.getQualifiedName(elt);
-        putOrAddToMap(stubAnnos.declAnnos, eltName, annos);
+        putOrAddToMap(annotationFileAnnos.declAnnos, eltName, annos);
     }
 
     /**
@@ -1503,7 +1503,7 @@ public class AnnotationFileParser {
     private void annotateTypeParameters(
             BodyDeclaration<?> decl, // for debugging
             Object elt, // for debugging; TypeElement or ExecutableElement
-            AnnotationFileAnnotations stubAnnos,
+            AnnotationFileAnnotations annotationFileAnnos,
             List<? extends AnnotatedTypeMirror> typeArguments,
             List<TypeParameter> typeParameters) {
         if (typeParameters == null) {
@@ -1543,7 +1543,10 @@ public class AnnotationFileParser {
                             param, "Annotations on intersection types are not yet supported");
                 }
             }
-            putMerge(stubAnnos.atypes, paramType.getUnderlyingType().asElement(), paramType);
+            putMerge(
+                    annotationFileAnnos.atypes,
+                    paramType.getUnderlyingType().asElement(),
+                    paramType);
         }
     }
 
