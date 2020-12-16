@@ -3,6 +3,7 @@ package org.checkerframework.framework.ajava;
 import com.github.javaparser.Position;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -24,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -100,6 +102,58 @@ public class InsertAjavaAnnotations {
             node1ArrayTypes.a.accept(this, node2ArrayTypes.a);
         }
 
+        @Override
+        public void visit(final CompilationUnit node1, final Node other) {
+            CompilationUnit node2 = (CompilationUnit) other;
+            defaultAction(node1, node2);
+
+            // Transfer import statements.
+            Set<String> existingImports = new HashSet<>();
+            for (ImportDeclaration importDecl : node2.getImports()) {
+                existingImports.add(printer.print(importDecl));
+            }
+
+            List<String> newImports = new ArrayList<>();
+            for (ImportDeclaration importDecl : node1.getImports()) {
+                String importString = printer.print(importDecl);
+                if (!existingImports.contains(importString)) {
+                    newImports.add(importString);
+                }
+            }
+
+            if (!newImports.isEmpty()) {
+                int position;
+                int lineBreaks;
+                if (!node2.getImports().isEmpty()) {
+                    Position lastImportPosition =
+                            node2.getImports().get(node2.getImports().size() - 1).getEnd().get();
+                    position = getAbsolutePosition(lastImportPosition) + 1;
+                    lineBreaks = 1;
+                } else if (node2.getPackageDeclaration().isPresent()) {
+                    Position packagePosition = node2.getPackageDeclaration().get().getEnd().get();
+                    position = getAbsolutePosition(packagePosition) + 1;
+                    lineBreaks = 2;
+                } else {
+                    position = 0;
+                    lineBreaks = 0;
+                }
+
+                String insertionContent = String.join("", newImports);
+                for (int i = 0; i < lineBreaks; i++) {
+                    insertionContent = System.lineSeparator() + insertionContent;
+                }
+
+                insertions.add(new Insertion(position, insertionContent));
+            }
+
+            node1.getModule().ifPresent(l -> l.accept(this, node2.getModule().get()));
+            node1.getPackageDeclaration()
+                    .ifPresent(l -> l.accept(this, node2.getPackageDeclaration().get()));
+            for (int i = 0; i < node1.getTypes().size(); i++) {
+                node1.getTypes().get(i).accept(this, node2.getTypes().get(i));
+            }
+        }
+
         private void addAnnotations(
                 Position position,
                 Iterable<AnnotationExpr> annotations,
@@ -119,10 +173,13 @@ public class InsertAjavaAnnotations {
                 insertionContent.insert(0, " ");
             }
 
-            int absolutePosition =
-                    cumulativeLineSizes.get(position.line - 1) + (position.column - 1);
+            int absolutePosition = getAbsolutePosition(position);
             absolutePosition += offset;
             insertions.add(new Insertion(absolutePosition, insertionContent.toString()));
+        }
+
+        private int getAbsolutePosition(Position position) {
+            return cumulativeLineSizes.get(position.line - 1) + (position.column - 1);
         }
     }
 
@@ -163,12 +220,12 @@ public class InsertAjavaAnnotations {
 
     public static void main(String[] args) {
         AnnotationFileStore annotationFiles = new AnnotationFileStore();
-        annotationFiles.addFile(new File(args[1]));
+        annotationFiles.addFile(new File(args[0]));
         FileVisitor<Path> visitor =
                 new SimpleFileVisitor<Path>() {
                     @Override
                     public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-                        if (!path.getFileName().endsWith(".java")) {
+                        if (!path.getFileName().toString().endsWith(".java")) {
                             return FileVisitResult.CONTINUE;
                         }
 
@@ -203,9 +260,9 @@ public class InsertAjavaAnnotations {
                 };
 
         try {
-            Files.walkFileTree(Paths.get(args[2]), visitor);
+            Files.walkFileTree(Paths.get(args[1]), visitor);
         } catch (IOException e) {
-            System.out.println("Error while adding annotations to: " + args[2]);
+            System.out.println("Error while adding annotations to: " + args[1]);
         }
     }
 }
