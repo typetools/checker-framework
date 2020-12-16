@@ -204,8 +204,8 @@ public class AnnotationFileElementTypes {
                             annotationFileAnnos);
                 }
             } else {
-                // We didn't find the files.
-                // If the file has a prefix of "checker.jar/" then look for the file in the top
+                // We didn't find the stub files.
+                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
                 if (path.startsWith("checker.jar/")) {
                     path = path.substring("checker.jar/".length());

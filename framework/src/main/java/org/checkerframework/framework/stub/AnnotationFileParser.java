@@ -102,8 +102,8 @@ import org.checkerframework.javacutil.Pair;
  *
  * <p>The main entry point is {@link AnnotationFileParser#parse(String, InputStream,
  * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
- * last two arguments. It operates in two steps. First, it calls the Stub Parser to parse a stub
- * file. Then, it walks the Stub Parser's AST to create/collect types and declaration annotations.
+ * last argument. It operates in two steps. First, it calls the Annotation File Parser to parse an
+ * annotation file. Then, it walks the AST to create/collect types and declaration annotations.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
@@ -456,7 +456,7 @@ public class AnnotationFileParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     public static void parse(
             String filename,
@@ -493,7 +493,7 @@ public class AnnotationFileParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
      */
     private static void parse(
@@ -558,7 +558,7 @@ public class AnnotationFileParser {
      * Process the given StubUnit.
      *
      * @param su the StubUnit to process
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processStubUnit(StubUnit su, AnnotationFileAnnotations annotationFileAnnos) {
         for (CompilationUnit cu : su.getCompilationUnits()) {
@@ -570,7 +570,7 @@ public class AnnotationFileParser {
      * Process the given CompilationUnit.
      *
      * @param cu the CompilationUnit to process
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processCompilationUnit(
             CompilationUnit cu, AnnotationFileAnnotations annotationFileAnnos) {
@@ -594,7 +594,7 @@ public class AnnotationFileParser {
      * Process the given package declaration
      *
      * @param packDecl the package declaration to process
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processPackage(
             PackageDeclaration packDecl, AnnotationFileAnnotations annotationFileAnnos) {
@@ -616,7 +616,7 @@ public class AnnotationFileParser {
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
      *     otherwise null
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processTypeDecl(
             TypeDeclaration<?> typeDecl,
@@ -756,7 +756,7 @@ public class AnnotationFileParser {
      *
      * @param decl a type declaration
      * @param elt the type's element
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @return the type's type parameter declarations
      */
     private List<AnnotatedTypeVariable> processType(
@@ -822,7 +822,7 @@ public class AnnotationFileParser {
      *
      * @param decl enum declaration
      * @param elt element representing enum
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @return the enum's type parameter declarations
      */
     private List<AnnotatedTypeVariable> processEnum(
@@ -892,7 +892,7 @@ public class AnnotationFileParser {
      *
      * @param decl a method or constructor declaration
      * @param elt the method or constructor's element
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processCallableDeclaration(
             CallableDeclaration<?> decl,
@@ -993,7 +993,7 @@ public class AnnotationFileParser {
      * @param method a Method or Constructor declaration
      * @param elt ExecutableElement of {@code method}
      * @param methodType annotated type of {@code method}
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processParameters(
             CallableDeclaration<?> method,
@@ -1040,7 +1040,7 @@ public class AnnotationFileParser {
      * does so.
      *
      * @param atype the type to modify
-     * @param typeDef the type from the stub file, used only for diagnostic messages
+     * @param typeDef the type from the annotation file, used only for diagnostic messages
      */
     @SuppressWarnings("unused") // for disabled warning message
     private void clearAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
@@ -1257,7 +1257,7 @@ public class AnnotationFileParser {
      *
      * @param decl the declaration in the annotation file
      * @param elt the element representing that same declaration
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processField(
             FieldDeclaration decl,
@@ -1295,7 +1295,7 @@ public class AnnotationFileParser {
      *
      * @param decl the enum constant, in Javaparser AST form (the source of annotations)
      * @param elt the enum constant declaration, as an element (the destination for annotations)
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void processEnumConstant(
             EnumConstantDeclaration decl,
@@ -1364,7 +1364,7 @@ public class AnnotationFileParser {
      *
      * @param elt the element to be annotated
      * @param annotations set of annotations that may be applicable to elt
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @param astNode where to report errors
      */
     private void recordDeclAnnotation(
