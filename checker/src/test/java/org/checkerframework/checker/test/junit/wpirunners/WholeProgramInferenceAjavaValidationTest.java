@@ -1,9 +1,9 @@
-package org.checkerframework.framework.test.junit.wpirunners;
+package org.checkerframework.checker.test.junit.wpirunners;
 
 import java.io.File;
 import java.util.List;
+import org.checkerframework.checker.testchecker.wholeprograminference.WholeProgramInferenceTestChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
-import org.checkerframework.framework.testchecker.wholeprograminference.WholeProgramInferenceTestChecker;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 
