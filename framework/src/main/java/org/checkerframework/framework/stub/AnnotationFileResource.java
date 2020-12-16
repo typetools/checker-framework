@@ -3,7 +3,7 @@ package org.checkerframework.framework.stub;
 import java.io.IOException;
 import java.io.InputStream;
 
-/** Contract for sources of stub data. */
+/** Interface for annotation files (stub files). */
 public interface AnnotationFileResource {
     /**
      * Returns a user-friendly description of the resource (e.g. a filesystem path).
