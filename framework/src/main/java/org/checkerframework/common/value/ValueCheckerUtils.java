@@ -9,10 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
@@ -20,69 +17,15 @@ import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** Utility methods for the Value Checker. */
 public class ValueCheckerUtils {
-    public static Class<?> getClassFromType(TypeMirror type) {
 
-        switch (type.getKind()) {
-            case INT:
-                return int.class;
-            case LONG:
-                return long.class;
-            case SHORT:
-                return short.class;
-            case BYTE:
-                return byte.class;
-            case CHAR:
-                return char.class;
-            case DOUBLE:
-                return double.class;
-            case FLOAT:
-                return float.class;
-            case BOOLEAN:
-                return boolean.class;
-            case ARRAY:
-                return getArrayClassObject(((ArrayType) type).getComponentType());
-            case DECLARED:
-                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
-                @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-                if (typeString.equals("<nulltype>")) {
-                    return Object.class;
-                }
-
-                try {
-                    return Class.forName(typeString);
-                } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                    return Object.class;
-                }
-
-            default:
-                return Object.class;
-        }
-    }
-
-    public static Class<?> getArrayClassObject(TypeMirror componentType) {
-        switch (componentType.getKind()) {
-            case INT:
-                return int[].class;
-            case LONG:
-                return long[].class;
-            case SHORT:
-                return short[].class;
-            case BYTE:
-                return byte[].class;
-            case CHAR:
-                return char[].class;
-            case DOUBLE:
-                return double[].class;
-            case FLOAT:
-                return float[].class;
-            case BOOLEAN:
-                return boolean[].class;
-            default:
-                return Object[].class;
-        }
+    /** Do not instantiate. */
+    private ValueCheckerUtils() {
+        throw new BugInCF("do not instantiate");
     }
 
     /**
@@ -93,7 +36,7 @@ public class ValueCheckerUtils {
      * @return a list of values after the casting
      */
     public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
-        Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
+        Class<?> castType = TypesUtils.getClassFromType(castTo);
         List<?> values;
         switch (AnnotationUtils.annotationName(anno)) {
             case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:

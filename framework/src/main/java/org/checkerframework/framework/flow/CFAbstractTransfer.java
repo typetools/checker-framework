@@ -52,13 +52,12 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -683,7 +682,7 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
-    public TransferResult<V, S> visitThisLiteral(ThisLiteralNode n, TransferInput<V, S> in) {
+    public TransferResult<V, S> visitThis(ThisNode n, TransferInput<V, S> in) {
         S store = in.getRegularStore();
         V valueFromStore = store.getValue(n);
 
@@ -807,7 +806,7 @@ public abstract class CFAbstractTransfer<
                 List<Node> secondParts = splitAssignments(secondNode);
                 for (Node secondPart : secondParts) {
                     JavaExpression secondInternal =
-                            JavaExpressions.fromNode(analysis.getTypeFactory(), secondPart);
+                            JavaExpression.fromNode(analysis.getTypeFactory(), secondPart);
                     if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                         S thenStore = res.getThenStore();
                         S elseStore = res.getElseStore();
@@ -1038,7 +1037,7 @@ public abstract class CFAbstractTransfer<
                     && !refType.getAnnotations().equals(expType.getAnnotations())
                     && !expType.getAnnotations().isEmpty()) {
                 JavaExpression expr =
-                        JavaExpressions.fromTree(
+                        JavaExpression.fromTree(
                                 analysis.getTypeFactory(), node.getTree().getExpression());
                 for (AnnotationMirror anno : refType.getAnnotations()) {
                     in.getRegularStore().insertOrRefine(expr, anno);
@@ -1193,7 +1192,7 @@ public abstract class CFAbstractTransfer<
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
         V switchValue =
                 store.getValue(
-                        JavaExpressions.fromNode(analysis.getTypeFactory(), assign.getTarget()));
+                        JavaExpression.fromNode(analysis.getTypeFactory(), assign.getTarget()));
         result =
                 strengthenAnnotationOfEqualTo(
                         result,
