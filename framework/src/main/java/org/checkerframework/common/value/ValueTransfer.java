@@ -503,11 +503,12 @@ public class ValueTransfer extends CFTransfer {
      * @param store the Checker Framework store
      */
     private void refineAtLengthInvocation(MethodInvocationNode lengthNode, CFStore store) {
-        if (atypefactory
+        if (atypeFactory
                 .getMethodIdentifier()
                 .isStringLengthMethod(lengthNode.getTarget().getMethod())) {
+            MethodAccessNode methodAccessNode = lengthNode.getTarget();
             refineAtLengthAccess(lengthNode, methodAccessNode.getReceiver(), store);
-        } else if (atypefactory
+        } else if (atypeFactory
                 .getMethodIdentifier()
                 .isArrayGetLengthMethod(lengthNode.getTarget().getMethod())) {
             Node node = lengthNode.getArguments().get(0);
