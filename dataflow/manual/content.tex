@@ -745,9 +745,9 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \code{ArrayAccess} & & \code{args[i]} \\
         \code{FieldAccess} & & \code{f}, \code{obj.f} \\
         \code{MethodAccess} & & \code{obj.hashCode} \\
-        \code{ThisLiteral} & Base class of references to \code{this} & \\
-        \code{ExplicitThisLiteral} & Explicit use of \code{this} in an expression & \\
-        \code{ImplicitThisLiteral} & Implicit use of \code{this} in an expression & \\
+        \code{This} & Base class of references to \code{this} & \\
+        \code{ExplicitThis} & Explicit use of \code{this} in an expression & \\
+        \code{ImplicitThis} & Implicit use of \code{this} in an expression & \\
         \code{Super} & Explicit use of \code{super} in expression. & \code{super(x, y)} \\
         \code{LocalVariable} & Use of a local variable, either as l-value or r-value & \\
         \midrule
@@ -877,12 +877,6 @@ to able to execute JVM and handle in an application.
         \caption{All node types that could throw Exception, and the types to be thrown.}
         \label{tab:nodesWithException}
 \end{table}
-
-\begin{workinprogress}
-ThisLiteral shouldn't be considered a literal value node, because a use of
-\code{this} is not a literal expression.  I would change the name and group
-it with accessor expressions.
-\end{workinprogress}
 
 \begin{workinprogress}
 Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
@@ -1959,8 +1953,8 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  BaseAnnotatedTypeFactory CFGSimple ValueLiteral txt
 %  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
-%  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess ThisLiteral
-%  LocalWords:  MethodAccess ExplicitThisLiteral ImplicitThisLiteral java
+%  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess This
+%  LocalWords:  MethodAccess ExplicitThis ImplicitThis java
 %  LocalWords:  LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType
 %  LocalWords:  BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot
 %  LocalWords:  ConditionalOr FloatingDivision FloatingRemainder LeftShift

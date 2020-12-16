@@ -10,6 +10,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
@@ -39,6 +40,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     @Override
+    @SuppressWarnings("fallthrough")
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil tu = atypeFactory.treeUtil;
         if (tu.isFormatCall(node, atypeFactory)) {
@@ -85,7 +87,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                         break;
                                     case NULL:
                                         // I.3
-                                        tu.failure(arg, "format.specifier.null", " " + (1 + i));
+                                        if (argType.getKind() == TypeKind.NULL) {
+                                            tu.warning(arg, "format.specifier.null", " " + (1 + i));
+                                        } else {
+                                            tu.failure(arg, "format.specifier.null", " " + (1 + i));
+                                        }
                                         break;
                                     case GENERAL:
                                         break;
@@ -99,7 +105,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                             tu.failure(
                                                     arg,
                                                     "argument.type.incompatible",
-                                                    "", // argeter name is not useful
+                                                    "in varargs position",
                                                     methodName,
                                                     argType,
                                                     formatCat);
@@ -109,22 +115,29 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             }
                         }
                         break;
-                    case NULLARRAY:
-                        /* continue */
                     case ARRAY:
+                        // III
+                        if (!isWrappedFormatCall(fc, enclosingMethod)) {
+                            tu.warning(invc, "format.indirect.arguments");
+                        }
+                        // TODO:  If it is explict array construction, such as "new Object[] {
+                        // ... }", then we could treat it like the VARARGS case, analyzing each
+                        // argument.  "new array" is probably rare, in the varargs position.
+                        /* fallthrough */
+                    case NULLARRAY:
                         for (ConversionCategory cat : formatCats) {
                             if (cat == ConversionCategory.NULL) {
                                 // I.3
-                                tu.failure(invc, "format.specifier.null", "");
+                                if (invc.value() == FormatterTreeUtil.InvocationType.NULLARRAY) {
+                                    tu.warning(invc, "format.specifier.null", "");
+                                } else {
+                                    tu.failure(invc, "format.specifier.null", "");
+                                }
                             }
                             if (cat == ConversionCategory.UNUSED) {
                                 // I.2
                                 tu.warning(invc, "format.argument.unused", "");
                             }
-                        }
-                        // III
-                        if (!isWrappedFormatCall(fc, enclosingMethod)) {
-                            tu.warning(invc, "format.indirect.arguments");
                         }
                         break;
                 }

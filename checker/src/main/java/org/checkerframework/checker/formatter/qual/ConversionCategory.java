@@ -329,6 +329,9 @@ public enum ConversionCategory {
         if (types == null) {
             return true;
         }
+        if (argType == void.class) {
+            return true;
+        }
         for (Class<?> c : types) {
             if (c.isAssignableFrom(argType)) {
                 return true;
