@@ -4618,8 +4618,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<String> annoForCheckers =
                 AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         for (String annoForChecker : annoForCheckers) {
-            if (CheckerMain.matchesFullyQualifiedProcessor(
-                    annoForChecker, this.checker.getUpstreamCheckerNames(), true)) {
+            if (checker.getUpstreamCheckerNames().contains(annoForChecker)
+                    || CheckerMain.matchesFullyQualifiedProcessor(
+                            annoForChecker, checker.getUpstreamCheckerNames(), true)) {
                 return true;
             }
         }
