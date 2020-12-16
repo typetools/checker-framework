@@ -129,7 +129,7 @@ public final class TypesUtils {
                 @DotSeparatedIdentifiers String typeString =
                         TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
                 if (typeString.equals("<nulltype>")) {
-                    return Object.class;
+                    return void.class;
                 }
 
                 try {
