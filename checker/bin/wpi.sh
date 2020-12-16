@@ -175,13 +175,14 @@ function configure_and_exec_dljc {
 
   export PATH="${PATH_BACKUP}"
 
+  echo "=== DLJC standard out/err follows: ==="
+  cat "${dljc_stdout}"
+  echo "=== End of DLJC standard out/err.  ==="
+
   if [[ $DLJC_STATUS -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
       WPI_RESULTS_AVAILABLE="no"
       return
-  elif [[ $DLJC_STATUS -ne 0 ]]; then
-    echo "DLJC has failed. Standard out/err follows:"
-    cat "${dljc_stdout}"
   fi
 
   if [ -f dljc-out/wpi.log ]; then
