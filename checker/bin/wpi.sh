@@ -177,6 +177,9 @@ function configure_and_exec_dljc {
       echo "dljc timed out for ${DIR}"
       WPI_RESULTS_AVAILABLE="no"
       return
+  elif [[ $DLJC_STATUS -ne 0 ]]; then
+    echo "DLJC has failed. Standard out/err follows:"
+    cat $dljc_stdout
   fi
 
   if [ -f dljc-out/wpi.log ]; then
