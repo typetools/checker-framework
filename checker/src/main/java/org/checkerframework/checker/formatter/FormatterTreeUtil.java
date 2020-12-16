@@ -58,7 +58,7 @@ public class FormatterTreeUtil {
     }
 
     /** Describes the ways a format method may be invoked. */
-    public enum InvocationType {
+    public static enum InvocationType {
         /**
          * The parameters are passed as varargs. For example:
          *
@@ -305,7 +305,12 @@ public class FormatterTreeUtil {
             Result<TypeMirror>[] res = new Result[args.size()];
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
-                TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
+                TypeMirror argType;
+                if (TreeUtils.isNullExpression(arg)) {
+                    argType = atypeFactory.getProcessingEnv().getTypeUtils().getNullType();
+                } else {
+                    argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
+                }
                 res[i] = new Result<>(argType, arg);
             }
             return res;
@@ -320,11 +325,10 @@ public class FormatterTreeUtil {
          * @return true if the argument can be passed to the format specifier
          */
         public final boolean isValidArgument(ConversionCategory formatCat, TypeMirror argType) {
-            Class<? extends Object> type = TypesUtils.getClassFromType(argType);
-            if (type == null) {
-                // we did not recognize the argument type
-                return false;
+            if (argType.getKind() == TypeKind.NULL || isArgumentNull(argType)) {
+                return true;
             }
+            Class<? extends Object> type = TypesUtils.getClassFromType(argType);
             return formatCat.isAssignableFrom(type);
         }
 
