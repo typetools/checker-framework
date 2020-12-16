@@ -8,7 +8,7 @@ import org.plumelib.util.UtilPlume;
  * This class provides a little syntactic sugar and a better toString over TreeSet.
  */
 @SuppressWarnings("serial")
-public class DefaultSet extends TreeSet<Default> {
+class DefaultSet extends TreeSet<Default> {
 
     /** Creates a DefaultSet. */
     public DefaultSet() {

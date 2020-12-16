@@ -19,7 +19,7 @@ import org.plumelib.util.UtilPlume;
  * <p>Tracks Ints in the list, and creates ArrayLen or ArrayLenRange annotations, because it's meant
  * to be used to reason about ArrayLen and ArrayLenRange values.
  */
-public class RangeOrListOfValues {
+class RangeOrListOfValues {
     private Range range;
     private List<Integer> values;
     private boolean isRange;

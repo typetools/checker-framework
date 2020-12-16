@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * @see Types#directSupertypes(TypeMirror)
  */
-public class SupertypeFinder {
+class SupertypeFinder {
 
     // Version of method below for declared types
     /**

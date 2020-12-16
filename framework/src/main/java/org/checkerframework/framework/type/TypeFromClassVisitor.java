@@ -9,7 +9,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
-public class TypeFromClassVisitor extends TypeFromTreeVisitor {
+class TypeFromClassVisitor extends TypeFromTreeVisitor {
 
     @Override
     public AnnotatedTypeMirror visitClass(ClassTree node, AnnotatedTypeFactory f) {
