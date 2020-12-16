@@ -475,15 +475,15 @@ public class AnnotationFileParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param stubAnnos annotations from the stub file; side-effected by this method
      */
     public static void parseJdkFileAsStub(
             String filename,
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            AnnotationFileAnnotations annotationFileAnnos) {
-        parse(filename, inputStream, atypeFactory, processingEnv, annotationFileAnnos, true);
+            AnnotationFileAnnotations stubAnnos) {
+        parse(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
     }
 
     /**
