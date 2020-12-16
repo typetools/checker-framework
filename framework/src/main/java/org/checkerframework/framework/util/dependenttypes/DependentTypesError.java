@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -62,7 +62,7 @@ public class DependentTypesError {
      * @param expression the incorrect Java expression
      * @param e wraps an error message about the expression
      */
-    public DependentTypesError(String expression, FlowExpressionParseException e) {
+    public DependentTypesError(String expression, JavaExpressionParseException e) {
         this.expression = expression;
         this.error = e.getDiagMessage().getArgs()[0].toString();
     }

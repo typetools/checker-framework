@@ -91,11 +91,6 @@ However, as noted in Sections~\ref{get-started-with-legacy-code} and~\ref{librar
 should annotate an entire class at a time.
 You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
 when getting started, but you should always examine their results.
-%% This text does not feel so relevant.
-% You can determine the correct annotations for a library either
-% automatically by running an inference tool, or manually by reading the
-% documentation.  Presently, automated type inference tools are available for the
-% Nullness (Section~\ref{nullness-inference}) type system.
 
 
 \sectionAndLabel{Tips for annotating a library}{library-tips}
@@ -444,7 +439,7 @@ original library classes.  For example:
 
 \begin{myxsmall}
 \begin{Verbatim}
-  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
+  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
@@ -758,7 +753,7 @@ Some command-line options make the stub parser issue more warnings:
 Finally,
 use command-line option {\bf\<-AstubDebug>} to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
-annotations.  This overrides the \<@NoStubParserWarning> annotation.
+annotations.  This overrides the \<@NoAnnotationFileParserWarning> annotation.
 
 
 
@@ -770,7 +765,7 @@ exist.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method isLLowerCase(char) not found in type java.lang.Character
+AnnotationFileParser: Method isLLowerCase(char) not found in type java.lang.Character
 \end{Verbatim}
 
 \noindent
@@ -778,7 +773,7 @@ by removing the extra ``L'' in the method name.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
+AnnotationFileParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
 
@@ -864,7 +859,7 @@ read whether the library's annotations are parsed.
 % LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
-%%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
+%%  LocalWords:  NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd

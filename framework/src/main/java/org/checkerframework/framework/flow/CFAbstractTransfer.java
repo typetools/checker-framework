@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -51,14 +52,13 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -71,10 +71,10 @@ import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
-import org.checkerframework.framework.util.ContractsUtils;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.ContractsFromMethod;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -225,7 +225,14 @@ public abstract class CFAbstractTransfer<
                                         assignmentContext));
             }
         }
-        AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
+        AnnotatedTypeMirror at;
+        if (node instanceof MethodInvocationNode
+                && ((MethodInvocationNode) node).getIterableExpression() != null) {
+            ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
+            at = factory.getIterableElementType(iter);
+        } else {
+            at = factory.getAnnotatedType(tree);
+        }
         analysis.setCurrentTree(preTree);
         factory.getVisitorState().setAssignmentContext(preContext);
         return analysis.createAbstractValue(at);
@@ -316,11 +323,7 @@ public abstract class CFAbstractTransfer<
                     // on the overridden method.
                     analysis.atypeFactory
                             .getWholeProgramInference()
-                            .updateFromOverride(
-                                    methodTree,
-                                    methodElem,
-                                    overriddenMethod,
-                                    analysis.getTypeFactory());
+                            .updateFromOverride(methodTree, methodElem, overriddenMethod);
                 }
             }
 
@@ -420,14 +423,14 @@ public abstract class CFAbstractTransfer<
             VariableElement element = p.first;
             V value = p.second;
             if (ElementUtils.isFinal(element) || TreeUtils.isConstructor(methodTree)) {
-                Receiver receiver;
+                JavaExpression receiver;
                 if (ElementUtils.isStatic(element)) {
                     receiver = new ClassName(classType);
                 } else {
                     receiver = new ThisReference(classType);
                 }
                 TypeMirror fieldType = ElementUtils.getType(element);
-                Receiver field = new FieldAccess(receiver, fieldType, element);
+                JavaExpression field = new FieldAccess(receiver, fieldType, element);
                 info.insertValue(field, value);
             }
         }
@@ -446,7 +449,7 @@ public abstract class CFAbstractTransfer<
                 AnnotatedTypeMirror type =
                         ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory).getAnnotatedTypeLhs(vt);
                 TypeMirror fieldType = ElementUtils.getType(element);
-                Receiver receiver;
+                JavaExpression receiver;
                 if (ElementUtils.isStatic(element)) {
                     receiver = new ClassName(classType);
                 } else {
@@ -474,7 +477,7 @@ public abstract class CFAbstractTransfer<
                         continue;
                     }
                 }
-                Receiver field = new FieldAccess(receiver, fieldType, element);
+                JavaExpression field = new FieldAccess(receiver, fieldType, element);
                 info.insertValue(field, value);
             }
         }
@@ -542,8 +545,8 @@ public abstract class CFAbstractTransfer<
             CFGMethod method,
             MethodTree methodTree,
             ExecutableElement methodElement) {
-        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
-        FlowExpressionContext flowExprContext = null;
+        ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
+        JavaExpressionContext flowExprContext = null;
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
@@ -552,7 +555,7 @@ public abstract class CFAbstractTransfer<
 
             if (flowExprContext == null) {
                 flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
+                        JavaExpressionContext.buildContextForMethodDeclaration(
                                 methodTree, method.getClassTree(), analysis.checker.getContext());
             }
 
@@ -565,12 +568,12 @@ public abstract class CFAbstractTransfer<
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                Receiver expr =
-                        FlowExpressionParseUtil.parse(
+                JavaExpression expr =
+                        JavaExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
-            } catch (FlowExpressionParseException e) {
-                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
+            } catch (JavaExpressionParseException e) {
+                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
             }
         }
     }
@@ -578,7 +581,7 @@ public abstract class CFAbstractTransfer<
     /** Standardize a type qualifier annotation obtained from a contract. */
     private AnnotationMirror standardizeAnnotationFromContract(
             AnnotationMirror annoFromContract,
-            FlowExpressionContext flowExprContext,
+            JavaExpressionContext flowExprContext,
             TreePath path) {
         // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
         if (analysis.dependentTypesHelper != null) {
@@ -679,7 +682,7 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
-    public TransferResult<V, S> visitThisLiteral(ThisLiteralNode n, TransferInput<V, S> in) {
+    public TransferResult<V, S> visitThis(ThisNode n, TransferInput<V, S> in) {
         S store = in.getRegularStore();
         V valueFromStore = store.getValue(n);
 
@@ -802,9 +805,9 @@ public abstract class CFAbstractTransfer<
             if (!firstValue.equals(secondValue)) {
                 List<Node> secondParts = splitAssignments(secondNode);
                 for (Node secondPart : secondParts) {
-                    Receiver secondInternal =
-                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), secondPart);
-                    if (CFAbstractStore.canInsertReceiver(secondInternal)) {
+                    JavaExpression secondInternal =
+                            JavaExpression.fromNode(analysis.getTypeFactory(), secondPart);
+                    if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                         S thenStore = res.getThenStore();
                         S elseStore = res.getElseStore();
                         if (notEqualTo) {
@@ -860,10 +863,7 @@ public abstract class CFAbstractTransfer<
                 analysis.atypeFactory
                         .getWholeProgramInference()
                         .updateFromFieldAssignment(
-                                lhs,
-                                rhs,
-                                analysis.getContainingClass(n.getTree()),
-                                analysis.getTypeFactory());
+                                lhs, rhs, analysis.getContainingClass(n.getTree()));
             } else if (lhs instanceof LocalVariableNode
                     && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
                 analysis.atypeFactory
@@ -872,8 +872,7 @@ public abstract class CFAbstractTransfer<
                                 (LocalVariableNode) lhs,
                                 rhs,
                                 analysis.getContainingClass(n.getTree()),
-                                analysis.getContainingMethod(n.getTree()),
-                                analysis.getTypeFactory());
+                                analysis.getContainingMethod(n.getTree()));
             }
         }
 
@@ -884,12 +883,14 @@ public abstract class CFAbstractTransfer<
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitReturn(n, p);
+
         if (shouldPerformWholeProgramInference(n.getTree())) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             // classTree is null e.g. if this is a return statement in a lambda.
             if (classTree == null) {
-                return super.visitReturn(n, p);
+                return result;
             }
             ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
 
@@ -909,10 +910,10 @@ public abstract class CFAbstractTransfer<
                             n,
                             classSymbol,
                             analysis.getContainingMethod(n.getTree()),
-                            overriddenMethods,
-                            analysis.getTypeFactory());
+                            overriddenMethods);
         }
-        return super.visitReturn(n, p);
+
+        return result;
     }
 
     @Override
@@ -941,10 +942,7 @@ public abstract class CFAbstractTransfer<
             analysis.atypeFactory
                     .getWholeProgramInference()
                     .updateFromFieldAssignment(
-                            (FieldAccessNode) lhs,
-                            rhs,
-                            analysis.getContainingClass(n.getTree()),
-                            analysis.getTypeFactory());
+                            (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()));
         }
 
         processCommonAssignment(in, lhs, rhs, info, resultValue);
@@ -973,7 +971,7 @@ public abstract class CFAbstractTransfer<
                             .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateFromObjectCreation(n, constructorElt, analysis.getTypeFactory());
+                    .updateFromObjectCreation(n, constructorElt);
         }
         return super.visitObjectCreation(n, p);
     }
@@ -985,28 +983,7 @@ public abstract class CFAbstractTransfer<
         S store = in.getRegularStore();
         ExecutableElement method = n.getTarget().getMethod();
 
-        V factoryValue = null;
-
-        Tree tree = n.getTree();
-        if (tree != null) {
-            // look up the value from factory
-            factoryValue = getValueFromFactory(tree, n);
-        }
-        // look up the value in the store (if possible)
-        V storeValue = store.getValue(n);
-        V resValue = moreSpecificValue(factoryValue, storeValue);
-
-        store.updateForMethodCall(n, analysis.atypeFactory, resValue);
-
-        // add new information based on postcondition
-        processPostconditions(n, store, method, tree);
-
-        S thenStore = store;
-        S elseStore = thenStore.copy();
-
-        // add new information based on conditional postcondition
-        processConditionalPostconditions(n, method, tree, thenStore, elseStore);
-
+        // Perform WPI before the store has been side-effected.
         if (shouldPerformWholeProgramInference(n.getTree(), method)) {
             // Finds the receiver's type
             Tree receiverTree = n.getTarget().getReceiver().getTree();
@@ -1020,8 +997,28 @@ public abstract class CFAbstractTransfer<
             // Updates the inferred parameter type of the invoked method
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
+                    .updateFromMethodInvocation(n, receiverTree, method);
         }
+
+        Tree tree = n.getTree();
+
+        // Determine the abstract value for the method call.
+        // look up the call's value from factory
+        V factoryValue = (tree == null) ? null : getValueFromFactory(tree, n);
+        // look up the call's value in the store (if possible)
+        V storeValue = store.getValue(n);
+        V resValue = moreSpecificValue(factoryValue, storeValue);
+
+        store.updateForMethodCall(n, analysis.atypeFactory, resValue);
+
+        // add new information based on postcondition
+        processPostconditions(n, store, method, tree);
+
+        S thenStore = store;
+        S elseStore = thenStore.copy();
+
+        // add new information based on conditional postcondition
+        processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
         return new ConditionalTransferResult<>(
                 finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
@@ -1039,11 +1036,11 @@ public abstract class CFAbstractTransfer<
             if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
                     && !refType.getAnnotations().equals(expType.getAnnotations())
                     && !expType.getAnnotations().isEmpty()) {
-                Receiver receiver =
-                        FlowExpressions.internalReprOf(
+                JavaExpression expr =
+                        JavaExpression.fromTree(
                                 analysis.getTypeFactory(), node.getTree().getExpression());
                 for (AnnotationMirror anno : refType.getAnnotations()) {
-                    in.getRegularStore().insertOrRefine(receiver, anno);
+                    in.getRegularStore().insertOrRefine(expr, anno);
                 }
                 return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
             }
@@ -1104,7 +1101,7 @@ public abstract class CFAbstractTransfer<
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
         Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
@@ -1119,7 +1116,7 @@ public abstract class CFAbstractTransfer<
             Tree tree,
             S thenStore,
             S elseStore) {
-        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
         Set<ConditionalPostcondition> conditionalPostconditions =
                 contractsUtils.getConditionalPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(
@@ -1132,7 +1129,7 @@ public abstract class CFAbstractTransfer<
             S thenStore,
             S elseStore,
             Set<? extends Contract> postconditions) {
-        FlowExpressionContext flowExprContext = null;
+        JavaExpressionContext flowExprContext = null;
 
         for (Contract p : postconditions) {
             String expression = p.expression;
@@ -1140,7 +1137,7 @@ public abstract class CFAbstractTransfer<
 
             if (flowExprContext == null) {
                 flowExprContext =
-                        FlowExpressionContext.buildContextForMethodUse(
+                        JavaExpressionContext.buildContextForMethodUse(
                                 n, analysis.checker.getContext());
             }
 
@@ -1149,8 +1146,8 @@ public abstract class CFAbstractTransfer<
             anno = standardizeAnnotationFromContract(anno, flowExprContext, localScope);
 
             try {
-                Receiver r =
-                        FlowExpressionParseUtil.parse(
+                JavaExpression je =
+                        JavaExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
@@ -1158,14 +1155,14 @@ public abstract class CFAbstractTransfer<
                 // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
                     if (((ConditionalPostcondition) p).resultValue) {
-                        thenStore.insertOrRefine(r, anno);
+                        thenStore.insertOrRefine(je, anno);
                     } else {
-                        elseStore.insertOrRefine(r, anno);
+                        elseStore.insertOrRefine(je, anno);
                     }
                 } else {
-                    thenStore.insertOrRefine(r, anno);
+                    thenStore.insertOrRefine(je, anno);
                 }
-            } catch (FlowExpressionParseException e) {
+            } catch (JavaExpressionParseException e) {
                 // report errors here
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];
@@ -1195,8 +1192,7 @@ public abstract class CFAbstractTransfer<
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
         V switchValue =
                 store.getValue(
-                        FlowExpressions.internalReprOf(
-                                analysis.getTypeFactory(), assign.getTarget()));
+                        JavaExpression.fromNode(analysis.getTypeFactory(), assign.getTarget()));
         result =
                 strengthenAnnotationOfEqualTo(
                         result,

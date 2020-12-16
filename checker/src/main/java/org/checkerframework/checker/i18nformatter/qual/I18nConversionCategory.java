@@ -25,13 +25,13 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 public enum I18nConversionCategory {
 
     /**
-     * Use if a parameter is not used by the formatter.
+     * Use if a parameter is not used by the formatter. For example, in
      *
      * <pre>
      * MessageFormat.format(&quot;{1}&quot;, a, b);
      * </pre>
      *
-     * Only the second argument ("b") is used. The first argument ("a") is ignored
+     * only the second argument ("b") is used. The first argument ("a") is ignored.
      */
     UNUSED(null /* everything */, null),
 
@@ -167,6 +167,27 @@ public enum I18nConversionCategory {
             return DATE;
         }
         return NUMBER;
+    }
+
+    /**
+     * Returns true if {@code argType} can be an argument used by this format specifier.
+     *
+     * @param argType an argument type
+     * @return true if {@code argType} can be an argument used by this format specifier
+     */
+    public boolean isAssignableFrom(Class<?> argType) {
+        if (types == null) {
+            return true;
+        }
+        if (argType == void.class) {
+            return true;
+        }
+        for (Class<?> c : types) {
+            if (c.isAssignableFrom(argType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Returns a pretty printed {@link I18nConversionCategory}. */

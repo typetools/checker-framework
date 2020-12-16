@@ -7,11 +7,11 @@ import java.io.InputStream;
 
 /** {@link File}-based implementation of {@link AnnotationFileResource}. */
 public class FileAnnotationFileResource implements AnnotationFileResource {
-    /** File for the resource. */
+    /** The underlying file. */
     private final File file;
 
     /**
-     * Constructs a {@code AnnotationFileResource} for the specified annotation file.
+     * Constructs a {@code AnnotationFileResource} for the specified stub file.
      *
      * @param file the annotation file
      */

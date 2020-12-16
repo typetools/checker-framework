@@ -556,7 +556,8 @@ public class NullnessVisitor
                 method.getReceiverType() != null) {
             // TODO: should all or some constructors be excluded?
             // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-            Set<AnnotationMirror> recvAnnos = atypeFactory.getReceiverType(node).getAnnotations();
+            Set<AnnotationMirror> receiverAnnos =
+                    atypeFactory.getReceiverType(node).getAnnotations();
             AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
             AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
             AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
@@ -564,7 +565,7 @@ public class NullnessVisitor
             // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
-            if (treeReceiver.hasAnnotation(NULLABLE) || recvAnnos.contains(MONOTONIC_NONNULL)) {
+            if (treeReceiver.hasAnnotation(NULLABLE) || receiverAnnos.contains(MONOTONIC_NONNULL)) {
                 return;
             }
         }

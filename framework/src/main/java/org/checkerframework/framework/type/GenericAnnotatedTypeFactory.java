@@ -57,9 +57,8 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -91,9 +90,9 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ContractsUtils;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.ContractsFromMethod;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -151,7 +150,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected DependentTypesHelper dependentTypesHelper;
 
     /** to handle method pre- and postconditions */
-    protected ContractsUtils contractsUtils;
+    protected ContractsFromMethod contractsUtils;
 
     /**
      * The Java types on which users may write this type system's type annotations. null means no
@@ -243,7 +242,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected Store initializationStaticStore;
 
     /**
-     * Caches for {@link AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput,
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
@@ -313,7 +312,7 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        contractsUtils = createContractsUtils();
+        contractsUtils = createContractsFromMethod();
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -575,12 +574,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates an {@link ContractsUtils} and returns it.
+     * Creates an {@link ContractsFromMethod} and returns it.
      *
-     * @return a new {@link ContractsUtils}
+     * @return a new {@link ContractsFromMethod}
      */
-    protected ContractsUtils createContractsUtils() {
-        return new ContractsUtils(this);
+    protected ContractsFromMethod createContractsFromMethod() {
+        return new ContractsFromMethod(this);
     }
 
     /**
@@ -588,7 +587,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return the helper for method pre- and postconditions
      */
-    public ContractsUtils getContractsUtils() {
+    public ContractsFromMethod getContractsFromMethod() {
         return contractsUtils;
     }
 
@@ -800,46 +799,46 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param path location at which expression is evaluated
      * @param clazz class of the annotation
      * @return the annotation on expression or null if one does not exist
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
-            throws FlowExpressionParseException {
+            throws JavaExpressionParseException {
 
-        Receiver expressionObj = getReceiverFromJavaExpressionString(expression, path);
-        return getAnnotationFromReceiver(expressionObj, tree, clazz);
+        JavaExpression expressionObj = parseJavaExpressionString(expression, path);
+        return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
     }
     /**
-     * Returns the primary annotation on a receiver.
+     * Returns the primary annotation on an expression.
      *
-     * @param receiver the receiver for which the annotation is returned
+     * @param expr the expression for which the annotation is returned
      * @param tree current tree
      * @param clazz the Class of the annotation
      * @return the annotation on expression or null if one does not exist
      */
-    public AnnotationMirror getAnnotationFromReceiver(
-            Receiver receiver, Tree tree, Class<? extends Annotation> clazz) {
+    public AnnotationMirror getAnnotationFromJavaExpression(
+            JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
 
         AnnotationMirror annotationMirror = null;
-        if (CFAbstractStore.canInsertReceiver(receiver)) {
+        if (CFAbstractStore.canInsertJavaExpression(expr)) {
             Store store = getStoreBefore(tree);
-            Value value = store.getValue(receiver);
+            Value value = store.getValue(expr);
             if (value != null) {
                 annotationMirror = getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         // If the specific annotation wasn't in the store, look in the type factory.
         if (annotationMirror == null) {
-            if (receiver instanceof LocalVariable) {
-                Element ele = ((LocalVariable) receiver).getElement();
+            if (expr instanceof LocalVariable) {
+                Element ele = ((LocalVariable) expr).getElement();
                 // Because of
                 // https://github.com/eisop/checker-framework/issues/14
                 // and the workaround in
                 // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
                 // The annotationMirror may not contain all explicitly written annotations.
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
-            } else if (receiver instanceof FieldAccess) {
-                Element ele = ((FieldAccess) receiver).getField();
+            } else if (expr instanceof FieldAccess) {
+                Element ele = ((FieldAccess) expr).getField();
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             }
         }
@@ -847,40 +846,40 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Produces the receiver associated with expression on currentPath.
+     * Produces the JavaExpression associated with expression on currentPath.
      *
      * @param expression a Java expression
      * @param currentPath location at which expression is evaluated
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
-    public Receiver getReceiverFromJavaExpressionString(String expression, TreePath currentPath)
-            throws FlowExpressionParseException {
+    public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
+            throws JavaExpressionParseException {
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
-        Receiver r = FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
-        FlowExpressionParseUtil.FlowExpressionContext context =
-                new FlowExpressionParseUtil.FlowExpressionContext(
+        JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
+        JavaExpressionParseUtil.JavaExpressionContext context =
+                new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
-                        FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
+                        JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
                         this.getContext());
 
-        return FlowExpressionParseUtil.parse(expression, context, currentPath, true);
+        return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
     }
 
     /**
-     * Produces the receiver and offset associated with an expression. For instance, "n+1" has no
-     * associated Receiver, but this method produces a pair of a Receiver (for "n") and an offset
-     * ("1").
+     * Produces the JavaExpression and offset associated with an expression. For instance, "n+1" has
+     * no associated JavaExpression, but this method produces a pair of a JavaExpression (for "n")
+     * and an offset ("1").
      *
      * @param expression a Java expression, possibly with a constant offset
      * @param currentPath location at which expression is evaluated
-     * @return receiver and offset for the given expression
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @return the JavaExpression and offset for the given expression
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
-    public Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
-            String expression, TreePath currentPath) throws FlowExpressionParseException {
+    public Pair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
+            String expression, TreePath currentPath) throws JavaExpressionParseException {
         Pair<String, String> p = getExpressionAndOffset(expression);
-        Receiver r = getReceiverFromJavaExpressionString(p.first, currentPath);
+        JavaExpression r = parseJavaExpressionString(p.first, currentPath);
         return Pair.of(r, p.second);
     }
 
@@ -894,19 +893,19 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param expression a Java expression
      * @param tree the tree at the location to parse the expression
      * @param currentPath location at which expression is evaluated
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      * @return an AnnotationMirror representing the type in the store at the given location from
      *     this type factory's type system, or null if one is not available
      */
     public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
             String expression, Tree tree, TreePath currentPath)
-            throws FlowExpressionParseException {
-        Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
-        if (rec == null || !CFAbstractStore.canInsertReceiver(rec)) {
+            throws JavaExpressionParseException {
+        JavaExpression je = parseJavaExpressionString(expression, currentPath);
+        if (je == null || !CFAbstractStore.canInsertJavaExpression(je)) {
             return null;
         }
         Store store = getStoreBefore(tree);
-        Value value = store.getValue(rec);
+        Value value = store.getValue(je);
         return value != null ? value.getAnnotations().iterator().next() : null;
     }
 
@@ -1182,7 +1181,7 @@ public abstract class GenericAnnotatedTypeFactory<
             AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
             MethodTree preMT = visitorState.getMethodTree();
 
-            // Don't use getPath, b/c that depends on the visitorState path.
+            // Don't use getPath, because that depends on the visitorState path.
             visitorState.setPath(TreePath.getPath(this.root, ct));
             visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
             visitorState.setClassTree(ct);

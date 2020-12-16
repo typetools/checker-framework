@@ -40,6 +40,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -210,18 +212,18 @@ public class NullnessAnnotatedTypeFactory
         tempNullnessAnnos.add(PolyNull.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
-        NONNULL_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NONNULL));
-        NULLABLE_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NULLABLE));
+        NONNULL_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NONNULL));
+        NULLABLE_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NULLABLE));
 
         // Add compatibility annotations:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullDecl", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl",
                 MONOTONIC_NONNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullType", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
@@ -291,16 +293,19 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public List<VariableTree> getUninitializedInvariantFields(
+    public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
             NullnessStore store,
             TreePath path,
             boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> result =
-                super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
+        Pair<List<VariableTree>, List<VariableTree>> result =
+                super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
         // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
         // warning when they are not initialized.
-        result.removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
+        result.first.removeIf(
+                vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
+        result.second.removeIf(
+                vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
         return result;
     }
 
@@ -653,6 +658,9 @@ public class NullnessAnnotatedTypeFactory
      * Returns true if some annotation in the given list is a nullness annotation such
      * as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
+     * <p>This method ignores aliases of nullness annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
      * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
      *     not from such a location
      * @param typeTree the type whose annotations to test
@@ -665,7 +673,7 @@ public class NullnessAnnotatedTypeFactory
 
         for (AnnotationTree annoTree : annos) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
-            if (isNullnessAnnotation(am)) {
+            if (isNullnessAnnotation(am) && !AnnotationUtils.isDeclarationAnnotation(am)) {
                 return true;
             }
         }
@@ -721,5 +729,14 @@ public class NullnessAnnotatedTypeFactory
             result.replaceAnnotation(MONOTONIC_NONNULL);
         }
         return result;
+    }
+
+    @Override
+    public WholeProgramInference createWholeProgramInference() {
+        if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
+            return new WholeProgramInferenceJavaParser(this, false);
+        }
+
+        return new NullnessWholeProgramInferenceScenes(this);
     }
 }

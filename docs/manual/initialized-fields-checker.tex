@@ -117,13 +117,14 @@ because its default value (0) is consistent with its annotations.
 
 The Initialized Fields type system uses the following type annotations:
 \begin{description}
-\item[\refqualclass{checker/initializedfields/qual}{InitializedFields}]
+\item[\refqualclass{common/initializedfields/qual}{InitializedFields}]
   indicates which fields have definitely been initialized so far.
-\item[\refqualclass{checker/initializedfields/qual}{InitializedFieldsBottom}]
+\item[\refqualclass{common/initializedfields/qual}{InitializedFieldsBottom}]
   is the type of \<null>.  Programmers rarely write this type.
-\item[\refqualclass{checker/initializedfields/qual}{PolyInitializedFields}]
-  is a qualifier that is polymorphic over field initialization (see
-  Section~\ref{method-qualifier-polymorphism}).
+\item[\refqualclass{common/initializedfields/qual}{PolyInitializedFields}]
+  is a qualifier that is polymorphic over field initialization.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
 \end{description}
 
 \begin{figure}
@@ -139,7 +140,7 @@ relationships among the type qualifiers.
 There is also a method declaration annotation:
 
 \begin{description}
-\item[\refqualclass{checker/initializedfields/qual}{EnsuresInitializedFields}]
+\item[\refqualclass{common/initializedfields/qual}{EnsuresInitializedFields}]
   indicates which fields the method sets.  Use this for helper methods that
   are called from a constructor.
 \end{description}

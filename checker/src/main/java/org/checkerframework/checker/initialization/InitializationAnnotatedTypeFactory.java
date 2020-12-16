@@ -56,6 +56,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -534,38 +535,74 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the (non-static) fields that have the invariant annotation and are not yet
-     * initialized in a given store.
+     * Returns the fields that are not yet initialized in a given store. The result is a pair of
+     * lists:
+     *
+     * <ul>
+     *   <li>fields that are not yet initialized and have the invariant annotation
+     *   <li>fields that are not yet initialized and do not have the invariant annotation
+     * </ul>
+     *
+     * @param store a store
+     * @param path the current path, used to determine the current class
+     * @param isStatic whether to report static fields or instance fields
+     * @param receiverAnnotations the annotations on the receiver
+     * @return the fields that are not yet initialized in a given store (a pair of lists)
      */
-    public List<VariableTree> getUninitializedInvariantFields(
+    public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
             Store store,
             TreePath path,
             boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
-        List<VariableTree> violatingFields = new ArrayList<>();
+        List<VariableTree> uninitWithInvariantAnno = new ArrayList<>();
+        List<VariableTree> uninitWithoutInvariantAnno = new ArrayList<>();
         for (VariableTree field : fields) {
             if (isUnused(field, receiverAnnotations)) {
                 continue; // don't consider unused fields
             }
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (ElementUtils.isStatic(fieldElem) == isStatic) {
-                // Does this field need to satisfy the invariant?
-                if (hasFieldInvariantAnnotation(field)) {
-                    // Has the field been initialized?
-                    if (!store.isFieldInitialized(fieldElem)) {
-                        violatingFields.add(field);
+                // Has the field been initialized?
+                if (!store.isFieldInitialized(fieldElem)) {
+                    // Does this field need to satisfy the invariant?
+                    if (hasFieldInvariantAnnotation(field)) {
+                        uninitWithInvariantAnno.add(field);
+                    } else {
+                        uninitWithoutInvariantAnno.add(field);
                     }
                 }
             }
         }
-        return violatingFields;
+        return Pair.of(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
     }
 
     /**
-     * Returns the (non-static) fields that have the invariant annotation and are initialized in a
-     * given store.
+     * Returns the fields that have the invariant annotation and are not yet initialized in a given
+     * store.
+     *
+     * @param store a store
+     * @param path the current path, used to determine the current class
+     * @param isStatic whether to report static fields or instance fields
+     * @param receiverAnnotations the annotations on the receiver
+     * @return the fields that have the invariant annotation and are not yet initialized in a given
+     *     store (a pair of lists)
+     */
+    public final List<VariableTree> getUninitializedInvariantFields(
+            Store store,
+            TreePath path,
+            boolean isStatic,
+            List<? extends AnnotationMirror> receiverAnnotations) {
+        return getUninitializedFields(store, path, isStatic, receiverAnnotations).first;
+    }
+
+    /**
+     * Returns the fields that have the invariant annotation and are initialized in a given store.
+     *
+     * @param store a store
+     * @param path the current path; used to compute the current class
+     * @return the fields that have the invariant annotation and are initialized in a given store
      */
     public List<VariableTree> getInitializedInvariantFields(Store store, TreePath path) {
         // TODO: Instead of passing the TreePath around, can we use

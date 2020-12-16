@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.8.0-SNAPSHOT'
+    version '3.8.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -822,14 +822,14 @@ subprojects {
                 dependsOn('jtregTests')
             }
             if (project.name.is('framework')) {
-                dependsOn('wholeProgramInferenceTests', 'loaderTests')
+                dependsOn('loaderTests')
             }
 
             if (project.name.is('checker')) {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                 }
-                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests', 'wholeProgramInferenceTests')
             }
 
             if (project.name.is('dataflow')) {

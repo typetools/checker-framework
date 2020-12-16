@@ -197,7 +197,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.7.1.zip}
+  \url{https://checkerframework.org/checker-framework-3.8.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -868,7 +868,8 @@ A checker guarantees two things:  type annotations reflect facts about
 run-time values, and illegal operations are not performed.
 
 For example, the Nullness Checker (Chapter~\ref{nullness-checker})
-guarantees lack of null pointer exceptions.  More precisely, it guarantees
+guarantees lack of null pointer exceptions (Java \<NullPointerException>).
+More precisely, it guarantees
 that expressions whose type is annotated with
 \refqualclass{checker/nullness/qual}{NonNull} never evaluate to null,
 and it forbids other expressions from being dereferenced.
@@ -1186,7 +1187,7 @@ as an argument.  Examples include
 \begin{Verbatim}
   java.lang.Double.valueOf(String)
   java.lang.String.contains(CharSequence)
-  java.lang.Object.checkNotNull(Object)
+  java.lang.Objects.requireNotNull(Object)
   org.junit.Assert.assertNotNull(Object)
   com.google.common.base.Preconditions.checkNotNull(Object)
 \end{Verbatim}
@@ -1511,7 +1512,7 @@ same methodology in different words.
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer
 % LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
 % LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics here''
-% LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
+% LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound ajava
 % LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
 % LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
 % LocalWords:  EnsuresNonNull EnsuresNonNullIf checkername orElseThrow
@@ -1519,5 +1520,5 @@ same methodology in different words.
 % LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
-%%  LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
-% LocalWords:  specification''
+% LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
+% LocalWords:  specification'' AwarnUnneededSuppressionsExceptions

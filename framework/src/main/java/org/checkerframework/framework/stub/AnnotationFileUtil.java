@@ -306,10 +306,11 @@ public class AnnotationFileUtil {
     /**
      * Return annotation files found in the file system (does not look on classpath).
      *
-     * @param location a stub file, ajava file, a jarfile, or a directory. Look for it as an
+     * @param location of a stub file, ajava file, jarfile, or a directory. Look for it as an
      *     absolute file and relative to the current directory.
      * @param fileType file type of files to collect
-     * @return a list of all files found when searching {@code stub} withe the given file type.
+     * @return annotation files with the given file type found in the file system (does not look on
+     *     classpath)
      */
     public static List<AnnotationFileResource> allAnnotationFiles(
             String location, AnnotationFileType fileType) {
@@ -367,7 +368,7 @@ public class AnnotationFileUtil {
     /**
      * Side-effects {@code resources} by adding annotation files of the given file type to it.
      *
-     * @param location a stub file, ajava file, a jarfile, or a directory. If a stub file or ajava
+     * @param location a stub file, ajava file, jarfile, or a directory. If a stub file or ajava
      *     file, add it to the {@code resources} list. If a jarfile, use all stub files contained in
      *     it. If a directory, recurse on all files contained in it.
      * @param resources the list to add the found files to

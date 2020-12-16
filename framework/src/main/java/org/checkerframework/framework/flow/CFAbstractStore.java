@@ -19,16 +19,15 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -40,10 +39,11 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
 /**
- * A store for the checker framework analysis tracks the annotations of memory locations such as
+ * A store for the Checker Framework analysis. It tracks the annotations of memory locations such as
  * local variables and fields.
  *
  * <p>When adding a new field to track values for a code construct (similar to {@code
@@ -52,11 +52,11 @@ import org.plumelib.util.UniqueId;
  * constructor and {@code clearValue}), as well as all constructors/methods in subclasses of {code
  * CFAbstractStore}. Note that this includes not only overridden methods in the subclasses, but new
  * methods in the subclasses as well. Also check if
- * BaseTypeVisitor#getFlowExpressionContextFromNode(Node) needs to be updated. Failing to do so may
+ * BaseTypeVisitor#getJavaExpressionContextFromNode(Node) needs to be updated. Failing to do so may
  * result in silent failures that are time consuming to debug.
  */
-// TODO: this class should be split into parts that are reusable generally, and
-// parts specific to the checker framework
+// TODO: Split this class into two parts: one that is reusable generally and
+// one that is specific to the Checker Framework.
 public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
         implements Store<S>, UniqueId {
 
@@ -278,49 +278,49 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // store information about method call if possible
-        Receiver methodCall = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
+        JavaExpression methodCall = JavaExpression.fromNode(analysis.getTypeFactory(), n);
         replaceValue(methodCall, val);
     }
 
     /**
-     * Add the annotation {@code a} for the expression {@code r} (correctly deciding where to store
-     * the information depending on the type of the expression {@code r}).
+     * Add the annotation {@code a} for the expression {@code expr} (correctly deciding where to
+     * store the information depending on the type of the expression {@code expr}).
      *
      * <p>This method does not take care of removing other information that might be influenced by
      * changes to certain parts of the state.
      *
-     * <p>If there is already a value {@code v} present for {@code r}, then the stronger of the new
-     * and old value are taken (according to the lattice). Note that this happens per hierarchy, and
-     * if the store already contains information about a hierarchy other than {@code a}s hierarchy,
-     * that information is preserved.
+     * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the
+     * new and old value are taken (according to the lattice). Note that this happens per hierarchy,
+     * and if the store already contains information about a hierarchy other than {@code a}s
+     * hierarchy, that information is preserved.
      */
-    public void insertValue(Receiver r, AnnotationMirror a) {
-        insertValue(r, analysis.createSingleAnnotationValue(a, r.getType()));
+    public void insertValue(JavaExpression expr, AnnotationMirror a) {
+        insertValue(expr, analysis.createSingleAnnotationValue(a, expr.getType()));
     }
 
     /**
-     * Add the annotation {@code newAnno} for the expression {@code r} (correctly deciding where to
-     * store the information depending on the type of the expression {@code r}).
+     * Add the annotation {@code newAnno} for the expression {@code expr} (correctly deciding where
+     * to store the information depending on the type of the expression {@code expr}).
      *
      * <p>This method does not take care of removing other information that might be influenced by
      * changes to certain parts of the state.
      *
-     * <p>If there is already a value {@code v} present for {@code r}, then the greatest lower bound
-     * of the new and old value is inserted into the store unless it's bottom. Some checkers do not
-     * override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror, AnnotationMirror)}
-     * and the default implementation will return the bottom qualifier incorrectly. So this method
-     * conservatively does not insert the glb if it is bottom.
+     * <p>If there is already a value {@code v} present for {@code expr}, then the greatest lower
+     * bound of the new and old value is inserted into the store unless it's bottom. Some checkers
+     * do not override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror,
+     * AnnotationMirror)} and the default implementation will return the bottom qualifier
+     * incorrectly. So this method conservatively does not insert the glb if it is bottom.
      *
      * <p>Note that this happens per hierarchy, and if the store already contains information about
      * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
      */
-    public void insertOrRefine(Receiver r, AnnotationMirror newAnno) {
-        if (!canInsertReceiver(r)) {
+    public void insertOrRefine(JavaExpression expr, AnnotationMirror newAnno) {
+        if (!canInsertJavaExpression(expr)) {
             return;
         }
-        V oldValue = getValue(r);
+        V oldValue = getValue(expr);
         if (oldValue == null) {
-            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            insertValue(expr, analysis.createSingleAnnotationValue(newAnno, expr.getType()));
             return;
         }
         QualifierHierarchy qualifierHierarchy = analysis.getTypeFactory().getQualifierHierarchy();
@@ -328,7 +328,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         AnnotationMirror oldAnno =
                 qualifierHierarchy.findAnnotationInHierarchy(oldValue.annotations, top);
         if (oldAnno == null) {
-            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            insertValue(expr, analysis.createSingleAnnotationValue(newAnno, expr.getType()));
             return;
         }
 
@@ -337,53 +337,53 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             glb = newAnno;
         }
 
-        insertValue(r, analysis.createSingleAnnotationValue(glb, r.getType()));
+        insertValue(expr, analysis.createSingleAnnotationValue(glb, expr.getType()));
     }
 
-    /** Returns true if the receiver {@code r} can be stored in this store. */
-    public static boolean canInsertReceiver(Receiver r) {
-        if (r instanceof FieldAccess
-                || r instanceof ThisReference
-                || r instanceof LocalVariable
-                || r instanceof MethodCall
-                || r instanceof ArrayAccess
-                || r instanceof ClassName) {
-            return !r.containsUnknown();
+    /** Returns true if {@code expr} can be stored in this store. */
+    public static boolean canInsertJavaExpression(JavaExpression expr) {
+        if (expr instanceof FieldAccess
+                || expr instanceof ThisReference
+                || expr instanceof LocalVariable
+                || expr instanceof MethodCall
+                || expr instanceof ArrayAccess
+                || expr instanceof ClassName) {
+            return !expr.containsUnknown();
         }
         return false;
     }
 
     /**
-     * Add the abstract value {@code value} for the expression {@code r} (correctly deciding where
-     * to store the information depending on the type of the expression {@code r}).
+     * Add the abstract value {@code value} for the expression {@code expr} (correctly deciding
+     * where to store the information depending on the type of the expression {@code expr}).
      *
      * <p>This method does not take care of removing other information that might be influenced by
      * changes to certain parts of the state.
      *
-     * <p>If there is already a value {@code v} present for {@code r}, then the stronger of the new
-     * and old value are taken (according to the lattice). Note that this happens per hierarchy, and
-     * if the store already contains information about a hierarchy for which {@code value} does not
-     * contain information, then that information is preserved.
+     * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the
+     * new and old value are taken (according to the lattice). Note that this happens per hierarchy,
+     * and if the store already contains information about a hierarchy for which {@code value} does
+     * not contain information, then that information is preserved.
      */
-    public void insertValue(Receiver r, @Nullable V value) {
+    public void insertValue(JavaExpression expr, @Nullable V value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
             return;
         }
-        if (r.containsUnknown()) {
+        if (expr.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
             return;
         }
-        if (r instanceof LocalVariable) {
-            LocalVariable localVar = (LocalVariable) r;
+        if (expr instanceof LocalVariable) {
+            LocalVariable localVar = (LocalVariable) expr;
             V oldValue = localVariableValues.get(localVar);
             V newValue = value.mostSpecific(oldValue, null);
             if (newValue != null) {
                 localVariableValues.put(localVar, newValue);
             }
-        } else if (r instanceof FieldAccess) {
-            FieldAccess fieldAcc = (FieldAccess) r;
+        } else if (expr instanceof FieldAccess) {
+            FieldAccess fieldAcc = (FieldAccess) expr;
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
@@ -394,8 +394,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     fieldValues.put(fieldAcc, newValue);
                 }
             }
-        } else if (r instanceof MethodCall) {
-            MethodCall method = (MethodCall) r;
+        } else if (expr instanceof MethodCall) {
+            MethodCall method = (MethodCall) expr;
             // Don't store any information if concurrent semantics are enabled.
             if (sequentialSemantics) {
                 V oldValue = methodValues.get(method);
@@ -404,8 +404,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     methodValues.put(method, newValue);
                 }
             }
-        } else if (r instanceof ArrayAccess) {
-            ArrayAccess arrayAccess = (ArrayAccess) r;
+        } else if (expr instanceof ArrayAccess) {
+            ArrayAccess arrayAccess = (ArrayAccess) expr;
             if (sequentialSemantics) {
                 V oldValue = arrayValues.get(arrayAccess);
                 V newValue = value.mostSpecific(oldValue, null);
@@ -413,8 +413,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     arrayValues.put(arrayAccess, newValue);
                 }
             }
-        } else if (r instanceof ThisReference) {
-            ThisReference thisRef = (ThisReference) r;
+        } else if (expr instanceof ThisReference) {
+            ThisReference thisRef = (ThisReference) expr;
             if (sequentialSemantics || thisRef.isUnassignableByOtherCode()) {
                 V oldValue = thisValue;
                 V newValue = value.mostSpecific(oldValue, null);
@@ -422,8 +422,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     thisValue = newValue;
                 }
             }
-        } else if (r instanceof ClassName) {
-            ClassName className = (ClassName) r;
+        } else if (expr instanceof ClassName) {
+            ClassName className = (ClassName) expr;
             if (sequentialSemantics || className.isUnassignableByOtherCode()) {
                 V oldValue = classValues.get(className);
                 V newValue = value.mostSpecific(oldValue, null);
@@ -490,41 +490,41 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Completely replaces the abstract value {@code value} for the expression {@code r} (correctly
-     * deciding where to store the information depending on the type of the expression {@code r}).
-     * Any previous information is discarded.
+     * Completely replaces the abstract value {@code value} for the expression {@code expr}
+     * (correctly deciding where to store the information depending on the type of the expression
+     * {@code expr}). Any previous information is discarded.
      *
      * <p>This method does not take care of removing other information that might be influenced by
      * changes to certain parts of the state.
      */
-    public void replaceValue(Receiver r, @Nullable V value) {
-        clearValue(r);
-        insertValue(r, value);
+    public void replaceValue(JavaExpression expr, @Nullable V value) {
+        clearValue(expr);
+        insertValue(expr, value);
     }
 
     /**
-     * Remove any knowledge about the expression {@code r} (correctly deciding where to remove the
-     * information depending on the type of the expression {@code r}).
+     * Remove any knowledge about the expression {@code expr} (correctly deciding where to remove
+     * the information depending on the type of the expression {@code expr}).
      */
-    public void clearValue(Receiver r) {
-        if (r.containsUnknown()) {
+    public void clearValue(JavaExpression expr) {
+        if (expr.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
             return;
         }
-        if (r instanceof LocalVariable) {
-            LocalVariable localVar = (LocalVariable) r;
+        if (expr instanceof LocalVariable) {
+            LocalVariable localVar = (LocalVariable) expr;
             localVariableValues.remove(localVar);
-        } else if (r instanceof FieldAccess) {
-            FieldAccess fieldAcc = (FieldAccess) r;
+        } else if (expr instanceof FieldAccess) {
+            FieldAccess fieldAcc = (FieldAccess) expr;
             fieldValues.remove(fieldAcc);
-        } else if (r instanceof MethodCall) {
-            MethodCall method = (MethodCall) r;
+        } else if (expr instanceof MethodCall) {
+            MethodCall method = (MethodCall) expr;
             methodValues.remove(method);
-        } else if (r instanceof ArrayAccess) {
-            ArrayAccess a = (ArrayAccess) r;
+        } else if (expr instanceof ArrayAccess) {
+            ArrayAccess a = (ArrayAccess) expr;
             arrayValues.remove(a);
-        } else if (r instanceof ClassName) {
-            ClassName c = (ClassName) r;
+        } else if (expr instanceof ClassName) {
+            ClassName c = (ClassName) expr;
             classValues.remove(c);
         } else { // thisValue ...
             // No other types of expressions are stored.
@@ -532,13 +532,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns current abstract value of a flow expression, or {@code null} if no information is
+     * Returns the current abstract value of a Java expression, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a flow expression, or {@code null} if no information is
+     * @return the current abstract value of a Java expression, or {@code null} if no information is
      *     available
      */
-    public @Nullable V getValue(Receiver expr) {
+    public @Nullable V getValue(JavaExpression expr) {
         if (expr instanceof LocalVariable) {
             LocalVariable localVar = (LocalVariable) expr;
             return localVariableValues.get(localVar);
@@ -562,27 +562,26 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns current abstract value of a field access, or {@code null} if no information is
+     * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a field access, or {@code null} if no information is
+     * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(FieldAccessNode n) {
-        FieldAccess fieldAccess =
-                FlowExpressions.internalReprOfFieldAccess(analysis.getTypeFactory(), n);
+        FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(analysis.getTypeFactory(), n);
         return fieldValues.get(fieldAccess);
     }
 
     /**
-     * Returns current abstract value of a method call, or {@code null} if no information is
+     * Returns the current abstract value of a method call, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a method call, or {@code null} if no information is
+     * @return the current abstract value of a method call, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(MethodInvocationNode n) {
-        Receiver method = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n, true);
+        JavaExpression method = JavaExpression.fromNode(analysis.getTypeFactory(), n, true);
         if (method == null) {
             return null;
         }
@@ -590,29 +589,28 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns current abstract value of a field access, or {@code null} if no information is
+     * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a field access, or {@code null} if no information is
+     * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(ArrayAccessNode n) {
-        ArrayAccess arrayAccess =
-                FlowExpressions.internalReprOfArrayAccess(analysis.getTypeFactory(), n);
+        ArrayAccess arrayAccess = JavaExpression.fromArrayAccess(analysis.getTypeFactory(), n);
         return arrayValues.get(arrayAccess);
     }
 
     /** Update the information in the store by considering an assignment with target {@code n}. */
     public void updateForAssignment(Node n, @Nullable V val) {
-        Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
-        if (receiver instanceof ArrayAccess) {
-            updateForArrayAssignment((ArrayAccess) receiver, val);
-        } else if (receiver instanceof FieldAccess) {
-            updateForFieldAccessAssignment((FieldAccess) receiver, val);
-        } else if (receiver instanceof LocalVariable) {
-            updateForLocalVariableAssignment((LocalVariable) receiver, val);
+        JavaExpression je = JavaExpression.fromNode(analysis.getTypeFactory(), n);
+        if (je instanceof ArrayAccess) {
+            updateForArrayAssignment((ArrayAccess) je, val);
+        } else if (je instanceof FieldAccess) {
+            updateForFieldAccessAssignment((FieldAccess) je, val);
+        } else if (je instanceof LocalVariable) {
+            updateForLocalVariableAssignment((LocalVariable) je, val);
         } else {
-            throw new BugInCF("Unexpected receiver of class " + receiver.getClass());
+            throw new BugInCF("Unexpected je of class " + je.getClass());
         }
     }
 
@@ -772,9 +770,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         while (fieldValuesIterator.hasNext()) {
             Map.Entry<FieldAccess, V> entry = fieldValuesIterator.next();
             FieldAccess otherFieldAccess = entry.getKey();
-            Receiver receiver = otherFieldAccess.getReceiver();
-            if (receiver.containsModifiableAliasOf(this, arrayAccess)
-                    && receiver.containsOfClass(ArrayAccess.class)) {
+            JavaExpression otherReceiver = otherFieldAccess.getReceiver();
+            if (otherReceiver.containsModifiableAliasOf(this, arrayAccess)
+                    && otherReceiver.containsOfClass(ArrayAccess.class)) {
                 // remove information completely
                 fieldValuesIterator.remove();
             }
@@ -804,7 +802,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             Map.Entry<FieldAccess, V> entry = fieldValuesIterator.next();
             FieldAccess otherFieldAccess = entry.getKey();
             // case 1:
-            if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
+            if (otherFieldAccess.containsSyntacticEqualJavaExpression(var)) {
                 fieldValuesIterator.remove();
             }
         }
@@ -815,7 +813,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             Map.Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
             ArrayAccess otherArrayAccess = entry.getKey();
             // case 2:
-            if (otherArrayAccess.containsSyntacticEqualReceiver(var)) {
+            if (otherArrayAccess.containsSyntacticEqualJavaExpression(var)) {
                 arrayValuesIterator.remove();
             }
         }
@@ -826,7 +824,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             Map.Entry<MethodCall, V> entry = methodValuesIterator.next();
             MethodCall otherMethodAccess = entry.getKey();
             // case 3:
-            if (otherMethodAccess.containsSyntacticEqualReceiver(var)
+            if (otherMethodAccess.containsSyntacticEqualJavaExpression(var)
                     || otherMethodAccess.containsSyntacticEqualParameter(var)) {
                 methodValuesIterator.remove();
             }
@@ -838,7 +836,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * returns {@code true} if not enough information is available to determine aliasing).
      */
     @Override
-    public boolean canAlias(Receiver a, Receiver b) {
+    public boolean canAlias(JavaExpression a, JavaExpression b) {
         TypeMirror tb = b.getType();
         TypeMirror ta = a.getType();
         Types types = analysis.getTypes();
@@ -850,10 +848,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* --------------------------------------------------------- */
 
     /**
-     * Returns current abstract value of a local variable, or {@code null} if no information is
+     * Returns the current abstract value of a local variable, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a local variable, or {@code null} if no information is
+     * @return the current abstract value of a local variable, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(LocalVariableNode n) {
@@ -866,13 +864,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* --------------------------------------------------------- */
 
     /**
-     * Returns current abstract value of the current object, or {@code null} if no information is
-     * available.
+     * Returns the current abstract value of the current object, or {@code null} if no information
+     * is available.
      *
-     * @return current abstract value of the current object, or {@code null} if no information is
-     *     available
+     * @param n a reference to "this"
+     * @return the current abstract value of the current object, or {@code null} if no information
+     *     is available
      */
-    public @Nullable V getValue(ThisLiteralNode n) {
+    public @Nullable V getValue(ThisNode n) {
         return thisValue;
     }
 
@@ -1081,17 +1080,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (thisValue != null) {
             res.add(viz.visualizeStoreThisVal(thisValue));
         }
-        for (Map.Entry<FieldAccess, V> entry : fieldValues.entrySet()) {
-            res.add(viz.visualizeStoreFieldVal(entry.getKey(), entry.getValue()));
+        for (FieldAccess fa : ToStringComparator.sorted(fieldValues.keySet())) {
+            res.add(viz.visualizeStoreFieldVal(fa, fieldValues.get(fa)));
         }
-        for (Map.Entry<ArrayAccess, V> entry : arrayValues.entrySet()) {
-            res.add(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
+        for (ArrayAccess fa : ToStringComparator.sorted(arrayValues.keySet())) {
+            res.add(viz.visualizeStoreArrayVal(fa, arrayValues.get(fa)));
         }
-        for (Map.Entry<MethodCall, V> entry : methodValues.entrySet()) {
-            res.add(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
+        for (MethodCall fa : ToStringComparator.sorted(methodValues.keySet())) {
+            res.add(viz.visualizeStoreMethodVals(fa, methodValues.get(fa)));
         }
-        for (Map.Entry<ClassName, V> entry : classValues.entrySet()) {
-            res.add(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
+        for (ClassName fa : ToStringComparator.sorted(classValues.keySet())) {
+            res.add(viz.visualizeStoreClassVals(fa, classValues.get(fa)));
         }
         return res.toString();
     }
