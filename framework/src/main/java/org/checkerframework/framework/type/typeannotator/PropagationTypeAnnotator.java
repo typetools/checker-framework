@@ -84,7 +84,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
             List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
             for (int i = 0; i < typeArgs.size(); i++) {
                 if (typeArgs.get(i).getKind() != TypeKind.WILDCARD
-                        || ((AnnotatedWildcardType) typeArgs.get(i)).isUninferredTypeArgument()) {
+                        || !((AnnotatedWildcardType) typeArgs.get(i)).isUninferredTypeArgument()) {
                     // Sometimes the framework infers a more precise type argument, so just us it.
                     continue;
                 }
