@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
-class TypeFromMemberVisitor extends TypeFromTreeVisitor {
+public class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
     @Override
     public AnnotatedTypeMirror visitVariable(VariableTree variableTree, AnnotatedTypeFactory f) {

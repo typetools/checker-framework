@@ -35,7 +35,7 @@ public class Extends {
     }
 }
 
-class TestWrapper {
+public class TestWrapper {
     public static String wrap(String... method) {
         return String.join(
                 System.lineSeparator(),

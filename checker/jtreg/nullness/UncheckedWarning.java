@@ -9,7 +9,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-class Test<T> {
+public class Test<T> {
     List<T> foo() {
         List<String> ret = new ArrayList<>();
         ret.add("Hi there!");

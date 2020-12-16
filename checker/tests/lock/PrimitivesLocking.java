@@ -4,7 +4,7 @@
 
 // Note that testing of the immutable.type.guardedby error message is done in TestTreeKinds.java
 
-class PrimitivesLocking {
+public class PrimitivesLocking {
     // @GuardedByName("lock")
     int primitive = 1;
 

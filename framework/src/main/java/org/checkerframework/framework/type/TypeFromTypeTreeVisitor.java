@@ -47,7 +47,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
-class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
+public class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     private final Map<Tree, AnnotatedTypeMirror> visitedBounds = new HashMap<>();
 

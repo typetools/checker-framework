@@ -1,5 +1,5 @@
 @SuppressWarnings({"unchecked", "all"}) // check for crashes
-class Misc<T> {
+public class Misc<T> {
     Misc<? super T> forward;
 
     public <E extends T> E min(E a, E b) {

@@ -3,6 +3,6 @@
 
 import java.util.*;
 
-class AnonymousClassField {
+public class AnonymousClassField {
     public static final List foo = new ArrayList<String>() {};
 }

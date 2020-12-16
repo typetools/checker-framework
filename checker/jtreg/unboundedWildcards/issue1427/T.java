@@ -6,7 +6,7 @@
  * @compile B.java
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker T.java
  */
-class Test {
+public class Test {
     {
         Three.c().g().f().build();
     }

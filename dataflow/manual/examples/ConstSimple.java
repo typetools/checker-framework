@@ -1,4 +1,4 @@
-class Test {
+public class Test {
   void test(boolean b, int a) {
     int x = 1;
     int y = 0;

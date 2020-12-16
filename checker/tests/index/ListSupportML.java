@@ -3,7 +3,7 @@ import org.checkerframework.common.value.qual.MinLen;
 
 // @skip-test until we bring list support back
 
-class ListSupportML {
+public class ListSupportML {
 
     void newListMinLen() {
         List<Integer> list = new ArrayList<>();

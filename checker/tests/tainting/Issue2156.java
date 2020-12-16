@@ -11,7 +11,7 @@ enum SampleEnum {
     @Tainted SECOND;
 }
 
-class Issue2156 {
+public class Issue2156 {
     void test() {
         requireUntainted(SampleEnum.FIRST);
         // :: error: assignment.type.incompatible

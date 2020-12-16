@@ -1,4 +1,4 @@
-class Test {
+public class Test {
   void test(int x) {
     switch (x) {
       case 1:

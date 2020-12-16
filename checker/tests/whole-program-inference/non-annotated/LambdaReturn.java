@@ -3,7 +3,7 @@
 
 import java.io.FileFilter;
 
-class LambdaReturn {
+public class LambdaReturn {
     void test() {
         FileFilter docxFilter =
                 pathname -> {

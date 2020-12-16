@@ -1,4 +1,4 @@
-class InnerTypeTest {
+public class InnerTypeTest {
     public static String toStringQuoted(Object[] a) {
         return toString(a, true);
     }

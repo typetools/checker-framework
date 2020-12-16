@@ -7,7 +7,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Stores methods that have special handling in the value checker. */
-class ValueMethodIdentifier {
+public class ValueMethodIdentifier {
 
     /** String.length() method. */
     private final ExecutableElement lengthMethod;

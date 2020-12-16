@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>This class should only be used by {@link AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
  * AnnotatedTypeMirror, AnnotatedTypeMirror)}.
  */
-class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
+public class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
     private final AnnotatedTypeFactory atypeFactory;
     private final QualifierHierarchy qualifierHierarchy;

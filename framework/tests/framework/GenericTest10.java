@@ -1,6 +1,6 @@
 // Test case for (a part of) Issue 142:
 // https://github.com/typetools/checker-framework/issues/142
-class GenericTest10 {
+public class GenericTest10 {
     abstract static class Bijection<A, B> {
         abstract B apply(A a);
 

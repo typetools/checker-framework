@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class Wellformed {
+public class Wellformed {
     // :: error: (type.invalid.conflicting.annos)
     @NonNull @Nullable Object f = null;
 

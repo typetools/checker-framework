@@ -67,7 +67,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>{@code IntersectionTypeTree}
  * </ul>
  */
-class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
+public class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     @Override
     public AnnotatedTypeMirror visitBinary(BinaryTree node, AnnotatedTypeFactory f) {

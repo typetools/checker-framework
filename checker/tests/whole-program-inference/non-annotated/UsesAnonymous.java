@@ -2,7 +2,7 @@ import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibli
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Top;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
 
-class UsesAnonymous {
+public class UsesAnonymous {
     void method() {
         Anonymous a =
                 new Anonymous() {

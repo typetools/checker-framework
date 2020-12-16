@@ -7,7 +7,7 @@ interface Bar {}
 
 class Baz implements Foo, Bar {}
 
-class IntersectionTypes {
+public class IntersectionTypes {
     void foo() {
         Baz baz = new Baz();
         call(baz);

@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.MinLen;
 
 @SuppressWarnings("nullness") // Don't want to depend on @Nullable
-class AssignmentContext {
+public class AssignmentContext {
 
     void foo(String[] a) {}
 

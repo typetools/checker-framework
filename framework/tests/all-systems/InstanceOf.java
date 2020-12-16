@@ -7,7 +7,7 @@ class GETFIELD extends FieldInstruction {}
 
 class PUTFIELD extends FieldInstruction {}
 
-class InstanceOf {
+public class InstanceOf {
     public void emptyGLB(FieldInstruction f) {
         if (f instanceof GETFIELD || f instanceof PUTFIELD) {
             if (f instanceof PUTFIELD) {

@@ -5,7 +5,7 @@
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.testchecker.lib.Issue3105Fields;
 
-class Issue3105 {
+public class Issue3105 {
     class Demo1 {
         @StringVal("foo") String m() {
             return Issue3105Fields.FIELD1;

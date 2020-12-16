@@ -14,7 +14,7 @@ import org.checkerframework.javacutil.Pair;
  * A TryCatchFrame contains an ordered list of catch labels that apply to exceptions with specific
  * types.
  */
-class TryCatchFrame implements TryFrame {
+public class TryCatchFrame implements TryFrame {
     /** The Types utilities. */
     protected final Types types;
 

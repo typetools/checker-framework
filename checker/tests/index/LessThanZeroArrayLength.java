@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.LessThan;
 
-class LessThanZeroArrayLength {
+public class LessThanZeroArrayLength {
     void test(int[] a) {
         foo(0, a.length);
     }

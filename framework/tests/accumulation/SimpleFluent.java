@@ -4,7 +4,7 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
 /* Simple inference of a fluent builder. */
-class SimpleFluent {
+public class SimpleFluent {
     SimpleFluent build(@TestAccumulation({"a", "b"}) SimpleFluent this) {
         return this;
     }

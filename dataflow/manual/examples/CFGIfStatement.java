@@ -1,4 +1,4 @@
-class Test {
+public class Test {
   void testIf(boolean b1) {
     int x = 0;
     if (b1) {
