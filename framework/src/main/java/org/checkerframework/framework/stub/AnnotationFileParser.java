@@ -78,6 +78,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -597,6 +598,9 @@ public class AnnotationFileParser {
      */
     private void processPackage(PackageDeclaration packDecl, StubAnnotations stubAnnos) {
         assert (packDecl != null);
+        if (!isAnnotatedForThisChecker(packDecl.getAnnotations())) {
+            return;
+        }
         String packageName = packDecl.getNameAsString();
         typeBeingParsed = new FqName(packageName, null);
         Element elem = elements.getPackageElement(packageName);
@@ -622,6 +626,10 @@ public class AnnotationFileParser {
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
+            return;
+        }
+
+        if (!isAnnotatedForThisChecker(typeDecl.getAnnotations())) {
             return;
         }
         String innerName =
@@ -882,6 +890,9 @@ public class AnnotationFileParser {
      */
     private void processCallableDeclaration(
             CallableDeclaration<?> decl, ExecutableElement elt, StubAnnotations stubAnnos) {
+        if (!isAnnotatedForThisChecker(decl.getAnnotations())) {
+            return;
+        }
         // Declaration annotations
         recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos, decl);
         if (decl.isMethodDeclaration()) {
@@ -1020,27 +1031,21 @@ public class AnnotationFileParser {
      */
     @SuppressWarnings("unused") // for disabled warning message
     private void clearAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
-        Set<AnnotationMirror> annos = atype.getAnnotations();
-        // TODO: This should check whether the annotation file is @AnnotatedFor the current type
-        // system.
-        // @AnnotatedFor isn't integrated in stub files yet.
-        if (annos != null && !annos.isEmpty()) {
-            // TODO: only produce output if the removed annotation isn't the top and default
-            // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
-            /*
-            if (false) {
-                stubWarnOverwritesBytecode(
-                        String.format(
-                                "in file %s at line %s removed existing annotations on type: %s",
-                                filename.substring(filename.lastIndexOf('/') + 1),
-                                typeDef.getBegin().get().line,
-                                atype.toString(true)));
-            }
-            */
-            // Clear existing annotations, which only makes a difference for
-            // type variables, but doesn't hurt in other cases.
-            atype.clearAnnotations();
+        // TODO: only produce output if the removed annotation isn't the top or default
+        // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
+        /*
+        if (!atype.getAnnotations().isEmpty()) {
+            stubWarnOverwritesBytecode(
+                    String.format(
+                            "in file %s at line %s removed existing annotations on type: %s",
+                            filename.substring(filename.lastIndexOf('/') + 1),
+                            typeDef.getBegin().get().line,
+                            atype.toString(true)));
         }
+        */
+        // Clear existing annotations, which only makes a difference for
+        // type variables, but doesn't hurt in other cases.
+        atype.clearAnnotations();
     }
 
     /**
@@ -1817,6 +1822,33 @@ public class AnnotationFileParser {
     }
 
     /**
+     * Returns true if one of the annotations is {@link AnnotatedFor} and this checker is in its
+     * list of checkers. If none of the annotations are {@code AnnotatedFor}, then also return true.
+     *
+     * @param annotations a list of JavaParser annotations
+     * @return true if one of the annotations is {@link AnnotatedFor} and its list of checkers does
+     *     not contain this checker
+     */
+    private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
+        if (isJdkAsStub) {
+            // The Jdk stubs have purity annotations that should be read for all checkers.
+            // TODO: Parse the jdk stubs, but only save the declaration annotations.
+            return true;
+        }
+        for (AnnotationExpr ae : annotations) {
+            if (ae.getNameAsString().equals("AnnotatedFor")
+                    || ae.getNameAsString()
+                            .equals("org.checkerframework.framework.qual.AnnotatedFor")) {
+                AnnotationMirror af = getAnnotation(ae, allAnnotations);
+                if (atypeFactory.areSameByClass(af, AnnotatedFor.class)) {
+                    return atypeFactory.doesAnnotatedForApplyToThisChecker(af);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Convert {@code annotation} into an AnnotationMirror. Returns null if the annotation isn't
      * supported by the checker or if some error occurred while converting it.
      *
@@ -1859,15 +1891,15 @@ public class AnnotationFileParser {
                 for (MemberValuePair mvp : pairs) {
                     String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    boolean success = builderAddElement(builder, member, exp);
-                    if (!success) {
+                    String failure = builderAddElement(builder, member, exp);
+                    if (failure != null) {
                         warn(
                                 exp,
-                                "getAnnotation(%s) => null because builderAddElement(%s, %s, %s) => false",
+                                "For annotation %s, could not add %s %s because %s",
                                 annotation,
-                                builder,
                                 member,
-                                exp);
+                                exp,
+                                failure);
                         return null;
                     }
                 }
@@ -1877,14 +1909,14 @@ public class AnnotationFileParser {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
             Expression valExpr = sglanno.getMemberValue();
-            boolean success = builderAddElement(builder, "value", valExpr);
-            if (!success) {
+            String failure = builderAddElement(builder, "value", valExpr);
+            if (failure != null) {
                 warn(
                         valExpr,
-                        "For annotation %s, could not add %s to builder",
+                        "For annotation %s, could not add value %s because %s",
                         annotation,
                         valExpr,
-                        builder);
+                        failure);
                 return null;
             }
             return builder.build();
@@ -2080,9 +2112,10 @@ public class AnnotationFileParser {
      * @param builder the builder to side-effect
      * @param name the element name
      * @param expr the element value
-     * @return true if the expression was parsed and added to {@code builder}, false otherwise
+     * @return an error description, or null if the expression was parsed and added to {@code
+     *     builder}
      */
-    private boolean builderAddElement(AnnotationBuilder builder, String name, Expression expr) {
+    private String builderAddElement(AnnotationBuilder builder, String name, Expression expr) {
         ExecutableElement var = builder.findElement(name);
         TypeMirror declaredType = var.getReturnType();
         TypeKind valueKind;
@@ -2093,30 +2126,30 @@ public class AnnotationFileParser {
         }
         if (expr instanceof ArrayInitializerExpr) {
             if (declaredType.getKind() != TypeKind.ARRAY) {
-                warn(
-                        expr,
-                        "unhandled annotation attribute type: "
-                                + expr
-                                + " and declaredType: "
-                                + declaredType);
-                return false;
+                return "unhandled annotation attribute type: "
+                        + expr
+                        + " and declaredType: "
+                        + declaredType;
             }
 
             List<Expression> arrayExpressions = ((ArrayInitializerExpr) expr).getValues();
             Object[] values = new Object[arrayExpressions.size()];
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
-                values[i] =
-                        getValueOfExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
+                expr = arrayExpressions.get(i);
+                values[i] = getValueOfExpressionInAnnotation(name, expr, valueKind);
                 if (values[i] == null) {
-                    return false;
+                    return String.format(
+                            "null expression for name=%s expr=%s, valueKind=%s",
+                            name, expr, valueKind);
                 }
             }
             builder.setValue(name, values);
         } else {
             Object value = getValueOfExpressionInAnnotation(name, expr, valueKind);
             if (value == null) {
-                return false;
+                return String.format(
+                        "null expression for name=%s expr=%s, valueKind=%s", name, expr, valueKind);
             }
             if (declaredType.getKind() == TypeKind.ARRAY) {
                 Object[] valueArray = {value};
@@ -2125,7 +2158,8 @@ public class AnnotationFileParser {
                 builderSetValue(builder, name, value);
             }
         }
-        return true;
+        // success
+        return null;
     }
 
     /**
