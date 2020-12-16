@@ -4,7 +4,7 @@ import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 
 /** A TryFinallyFrame applies to exceptions of any type. */
-public class TryFinallyFrame implements TryFrame {
+class TryFinallyFrame implements TryFrame {
     /** The finally label. */
     protected final Label finallyLabel;
 

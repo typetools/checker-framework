@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /** An extended node of type {@code EXCEPTION_NODE}. */
-public class NodeWithExceptionsHolder extends ExtendedNode {
+class NodeWithExceptionsHolder extends ExtendedNode {
 
     /** The node to hold. */
     protected final Node node;

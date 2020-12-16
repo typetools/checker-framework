@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.cfg.builder;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /** Storage cell for a single Label, with tracking whether it was accessed. */
-public class TryFinallyScopeCell {
+class TryFinallyScopeCell {
     private @MonotonicNonNull Label label;
     private boolean accessed;
 

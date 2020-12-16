@@ -10,7 +10,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 /* --------------------------------------------------------- */
 
 /** Represents a missing edge that will be added later. */
-public class MissingEdge {
+class MissingEdge {
     /** The source of the edge. */
     final SingleSuccessorBlockImpl source;
     /** The index (target?) of the edge. Null means go to exceptional exit. */
