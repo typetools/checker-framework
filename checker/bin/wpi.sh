@@ -165,10 +165,12 @@ function configure_and_exec_dljc {
   PATH_BACKUP="${PATH}"
   export PATH="${JAVA_HOME}/bin:${PATH}"
 
-  { echo "JAVA_HOME: ${JAVA_HOME}"; \
-    echo "PATH: ${PATH}"; \
-    echo "DLJC_CMD: ${DLJC_CMD}"; \
-    eval "${DLJC_CMD}" < /dev/null; } > "$dljc_stdout" 2>&1
+  # use simpler syntax because this line was crashing mysteriously in CI, to get better debugging output
+  # shellcheck disable=SC2129
+  echo "JAVA_HOME: ${JAVA_HOME}" >> "$dljc_stdout"
+  echo "PATH: ${PATH}" >> "$dljc_stdout"
+  echo "DLJC_CMD: ${DLJC_CMD}" >> "$dljc_stdout"
+  eval "${DLJC_CMD}" < /dev/null >> "$dljc_stdout" 2>&1
   DLJC_STATUS=$?
 
   export PATH="${PATH_BACKUP}"
@@ -179,7 +181,7 @@ function configure_and_exec_dljc {
       return
   elif [[ $DLJC_STATUS -ne 0 ]]; then
     echo "DLJC has failed. Standard out/err follows:"
-    cat $dljc_stdout
+    cat "${dljc_stdout}"
   fi
 
   if [ -f dljc-out/wpi.log ]; then
