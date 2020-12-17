@@ -215,12 +215,12 @@ public class AnnotationFileElementTypes {
                     AnnotationFileParser.parse(
                             path, in, factory, processingEnv, annotationFileAnnos);
                 } else {
-                    // Didn't find the file.  Issue a warning.
+                    // Didn't find the stub file.  Issue a warning.
 
-                    // When using a compound checker, the target file may be found by the
+                    // When using a compound checker, the target stub file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
                     // warning. Currently, only the original checker will try to parse the target
-                    // file, the parent checkers are only used to reduce false warnings.
+                    // stub file, the parent checkers are only used to reduce false warnings.
                     SourceChecker currentChecker = checker;
                     boolean findByParentCheckers = false;
                     while (currentChecker != null) {
@@ -239,7 +239,7 @@ public class AnnotationFileElementTypes {
                             currentChecker = currentChecker.getParentChecker();
                         }
                     }
-                    // If there exists one parent checker that can find this file, don't
+                    // If there exists one parent checker that can find this stub file, don't
                     // report an warning.
                     if (!findByParentCheckers) {
                         File parentPath = new File(path).getParentFile();
