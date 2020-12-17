@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class Underflows {
+public class Underflows {
     static void bytes() {
         byte min = Byte.MIN_VALUE;
         // :: warning: (cast.unsafe)

@@ -1,7 +1,7 @@
 import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
-class MetaPostcondition {
+public class MetaPostcondition {
 
     String f1, f2, f3;
     MetaPostcondition p;

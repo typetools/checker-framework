@@ -6,7 +6,7 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 import org.checkerframework.common.value.qual.IntVal;
 
-class ValueCheck {
+public class ValueCheck {
 
     // return value should be @Sibling1 @IntVal(5) int
     int getSibling1withValue5() {

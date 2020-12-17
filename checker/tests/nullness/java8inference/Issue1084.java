@@ -13,7 +13,7 @@ class MyOpt<T extends Object> {
     }
 }
 
-class Issue1084 {
+public class Issue1084 {
     MyOpt<Long> get() {
         return this.hashCode() > 0 ? MyOpt.of(5L) : MyOpt.empty();
     }

@@ -1,6 +1,6 @@
 // Tests using the index returned from String.indexOf
 
-class StringIndexOf {
+public class StringIndexOf {
 
     public static String remove(String l, String s) {
         int i = l.indexOf(s);

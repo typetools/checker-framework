@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(
         org.checkerframework.checker.nullness.qual.NonNull.class)
-class ThisTest {
+public class ThisTest {
 
     public String field;
 

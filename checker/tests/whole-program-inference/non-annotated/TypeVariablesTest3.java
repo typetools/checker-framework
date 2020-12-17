@@ -1,7 +1,7 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
 
-class Generic<@Sibling1 T extends @Sibling1 Object> {
+public class TypeVariablesTest3<@Sibling1 T extends @Sibling1 Object> {
     public @Sibling2 T sibling2;
     public @Sibling1 T sibling1;
 

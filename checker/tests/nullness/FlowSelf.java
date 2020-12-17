@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class FlowSelf {
+public class FlowSelf {
 
     void test(@Nullable String s) {
 

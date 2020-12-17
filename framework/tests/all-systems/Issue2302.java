@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/2302
 
 @SuppressWarnings("unchecked")
-class Issue2302 {
+public class Issue2302 {
     static class StrangeConstructorTypeArgs<V> {
         // The constructor does not use the type parameter V.
         public StrangeConstructorTypeArgs(MyClass<byte[]> abs) {}

@@ -4,7 +4,7 @@
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue1032 {
+public class Issue1032 {
 
     @SuppressWarnings("nullness")
     static @NonNull String castStringToNonNull(@Nullable String arg) {

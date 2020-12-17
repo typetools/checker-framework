@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
-class PureTest {
+public class PureTest {
     @org.checkerframework.dataflow.qual.Pure
     @Nullable Object puremethod(@Nullable Object a) {
         return a;

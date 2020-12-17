@@ -14,7 +14,7 @@ class ISOuter {
     }
 }
 
-class InferenceSimpler {
+public class InferenceSimpler {
     List<List<String>> foo() {
         return ISOuter.wrap(ISOuter.empty());
     }

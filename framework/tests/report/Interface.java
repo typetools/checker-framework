@@ -4,7 +4,7 @@
 
 import org.checkerframework.common.util.report.qual.*;
 
-class Interface {
+public class Interface {
     interface A {
         @ReportCall
         boolean equals(Object o);

@@ -3,7 +3,7 @@
 
 import java.util.List;
 
-class Issue953 {
+public class Issue953 {
     class MyCollector<A, B, C> {}
 
     class MyStream<E> {

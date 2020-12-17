@@ -3,6 +3,6 @@
 import java.util.HashMap;
 import java.util.Map;
 
-class DoubleGeneric {
+public class DoubleGeneric {
     static Map<String, Map<String, String>> map10 = new HashMap<String, Map<String, String>>();
 }

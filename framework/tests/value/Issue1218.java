@@ -4,7 +4,7 @@
 import java.io.Serializable;
 import org.checkerframework.common.value.qual.*;
 
-class Issue1218 {
+public class Issue1218 {
 
     enum MyEnum {
         A,

@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.zip.ZipFile;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class TryWithResources {
+public class TryWithResources {
     void m1(InputStream stream) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
             in.toString();

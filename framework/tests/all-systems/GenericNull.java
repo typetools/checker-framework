@@ -16,7 +16,7 @@
 //    consider if this is desirable.
 //
 
-class GenericNull {
+public class GenericNull {
     /**
      * In most type systems, null's type is bottom and therefore the generic return type T is a
      * supertype of null's type.

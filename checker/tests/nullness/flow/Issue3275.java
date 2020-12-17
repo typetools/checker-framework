@@ -4,7 +4,7 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue3275 {
+public class Issue3275 {
     public @NonNull Object f = new Object();
     public boolean b = false;
 

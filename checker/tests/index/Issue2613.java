@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
 
-class Issue2613 {
+public class Issue2613 {
 
     private static final String STRING_CONSTANT = "Hello";
 

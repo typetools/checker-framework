@@ -1,6 +1,6 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
-class Xor {
+public class Xor {
 
     class Foo {
         void a() {}

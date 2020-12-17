@@ -5,7 +5,7 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue314 {
+public class Issue314 {
     <T extends @NonNull Object> List<T> m1(List<@NonNull T> l1) {
         return l1;
     }

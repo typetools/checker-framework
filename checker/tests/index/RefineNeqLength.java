@@ -8,7 +8,7 @@ import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.common.value.qual.IntVal;
 
-class RefineNeqLength {
+public class RefineNeqLength {
     void refineNeqLength(int[] array, @IndexOrHigh("#1") int i) {
         // Refines i <= array.length to i < array.length
         if (i != array.length) {
