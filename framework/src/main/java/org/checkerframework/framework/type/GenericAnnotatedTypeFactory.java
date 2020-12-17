@@ -2331,6 +2331,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected AnnotationMirror requiresQualifierAnno(
             VariableElement fieldElement, AnnotationMirror qualifier) {
         if (!qualifier.getElementValues().isEmpty()) {
+            // @RequiresQualifier does not yet support annotations with elements/arguments.
             return null;
         }
 
