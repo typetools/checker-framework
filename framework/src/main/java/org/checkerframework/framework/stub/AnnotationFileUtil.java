@@ -307,7 +307,7 @@ public class AnnotationFileUtil {
      * Return annotation files found in the file system (does not look on classpath).
      *
      * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
-     *     for it as an absolute file and absolute file and relative to the current directory.
+     *     for it as an absolute file and relative to the current directory.
      * @param fileType file type of files to collect
      * @return annotation files with the given file type found in the file system (does not look on
      *     classpath)

@@ -86,6 +86,7 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -111,8 +112,8 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>The first main entry point is {@link AnnotationFileParser#parse(String, InputStream,
  * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
- * last two arguments. It operates in two steps. First, it calls the Stub Parser to parse a stub
- * file. Then, it walks the Stub Parser's AST to create/collect types and declaration annotations.
+ * last argument. It operates in two steps. First, it calls the Annotation File Parser to parse an
+ * annotation file. Then, it walks the AST to create/collect types and declaration annotations.
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
  * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
@@ -684,6 +685,9 @@ public class AnnotationFileParser {
      */
     private void processPackage(PackageDeclaration packDecl) {
         assert (packDecl != null);
+        if (!isAnnotatedForThisChecker(packDecl.getAnnotations())) {
+            return;
+        }
         String packageName = packDecl.getNameAsString();
         typeBeingParsed = new FqName(packageName, null);
         Element elem = elements.getPackageElement(packageName);
@@ -728,6 +732,10 @@ public class AnnotationFileParser {
             typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
             fqTypeName = typeBeingParsed.toString();
             typeElt = elements.getTypeElement(fqTypeName);
+        }
+
+        if (!isAnnotatedForThisChecker(typeDecl.getAnnotations())) {
+            return null;
         }
         if (typeElt == null) {
             if (debugAnnotationFileParser
@@ -983,6 +991,9 @@ public class AnnotationFileParser {
      */
     private List<AnnotatedTypeVariable> processCallableDeclaration(
             CallableDeclaration<?> decl, ExecutableElement elt) {
+        if (!isAnnotatedForThisChecker(decl.getAnnotations())) {
+            return null;
+        }
         // Declaration annotations
         recordDeclAnnotation(elt, decl.getAnnotations(), annotationFileAnnos, decl);
         if (decl.isMethodDeclaration()) {
@@ -1139,27 +1150,21 @@ public class AnnotationFileParser {
      */
     @SuppressWarnings("unused") // for disabled warning message
     private void clearAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
-        Set<AnnotationMirror> annos = atype.getAnnotations();
-        // TODO: This should check whether the annotation file is @AnnotatedFor the current type
-        // system.
-        // @AnnotatedFor isn't integrated in stub files yet.
-        if (annos != null && !annos.isEmpty()) {
-            // TODO: only produce output if the removed annotation isn't the top and default
-            // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
-            /*
-            if (false) {
-                stubWarnOverwritesBytecode(
-                        String.format(
-                                "in file %s at line %s removed existing annotations on type: %s",
-                                filename.substring(filename.lastIndexOf('/') + 1),
-                                typeDef.getBegin().get().line,
-                                atype.toString(true)));
-            }
-            */
-            // Clear existing annotations, which only makes a difference for
-            // type variables, but doesn't hurt in other cases.
-            atype.clearAnnotations();
+        // TODO: only produce output if the removed annotation isn't the top or default
+        // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
+        /*
+        if (!atype.getAnnotations().isEmpty()) {
+            stubWarnOverwritesBytecode(
+                    String.format(
+                            "in file %s at line %s removed existing annotations on type: %s",
+                            filename.substring(filename.lastIndexOf('/') + 1),
+                            typeDef.getBegin().get().line,
+                            atype.toString(true)));
         }
+        */
+        // Clear existing annotations, which only makes a difference for
+        // type variables, but doesn't hurt in other cases.
+        atype.clearAnnotations();
     }
 
     /**
@@ -1934,6 +1939,33 @@ public class AnnotationFileParser {
             stubWarnNotFound(astNode, "Imported package not found: " + packageName);
         }
         return packageElement;
+    }
+
+    /**
+     * Returns true if one of the annotations is {@link AnnotatedFor} and this checker is in its
+     * list of checkers. If none of the annotations are {@code AnnotatedFor}, then also return true.
+     *
+     * @param annotations a list of JavaParser annotations
+     * @return true if one of the annotations is {@link AnnotatedFor} and its list of checkers does
+     *     not contain this checker
+     */
+    private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
+        if (isJdkAsStub) {
+            // The Jdk stubs have purity annotations that should be read for all checkers.
+            // TODO: Parse the jdk stubs, but only save the declaration annotations.
+            return true;
+        }
+        for (AnnotationExpr ae : annotations) {
+            if (ae.getNameAsString().equals("AnnotatedFor")
+                    || ae.getNameAsString()
+                            .equals("org.checkerframework.framework.qual.AnnotatedFor")) {
+                AnnotationMirror af = getAnnotation(ae, allAnnotations);
+                if (atypeFactory.areSameByClass(af, AnnotatedFor.class)) {
+                    return atypeFactory.doesAnnotatedForApplyToThisChecker(af);
+                }
+            }
+        }
+        return true;
     }
 
     /**

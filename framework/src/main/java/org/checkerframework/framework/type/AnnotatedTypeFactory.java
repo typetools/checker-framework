@@ -107,6 +107,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
@@ -4767,5 +4768,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return new WholeProgramInferenceScenes(this);
+    }
+
+    /**
+     * Does {@code anno}, which is an {@link org.checkerframework.framework.qual.AnnotatedFor}
+     * annotation, apply to this checker?
+     *
+     * @param anno an {@link org.checkerframework.framework.qual.AnnotatedFor} annotation
+     * @return whether {@code anno} applies to this checker
+     */
+    public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror anno) {
+        List<String> annoForCheckers =
+                AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+        for (String annoForChecker : annoForCheckers) {
+            if (checker.getUpstreamCheckerNames().contains(annoForChecker)
+                    || CheckerMain.matchesFullyQualifiedProcessor(
+                            annoForChecker, checker.getUpstreamCheckerNames(), true)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

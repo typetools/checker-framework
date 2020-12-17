@@ -316,6 +316,7 @@ task testWPIStubs(type: Test) {
     dependsOn(compileTestJava)
     doFirst {
         delete("tests/whole-program-inference/annotated")
+        delete("${buildDir}/whole-program-inference/")
     }
     outputs.upToDateWhen { false }
     include '**/WholeProgramInferenceStubsTest.class'
