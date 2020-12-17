@@ -1216,6 +1216,13 @@ possible if your program has a bug.  However, it is never the programmer's
 intent for \<null> to flow there; preventing such bugs is the purpose of
 the Nullness Checker.)
 
+A method like \<requireNonNull> is useless for making your code correct,
+but it does have a benefit:  its stack trace may help developers to track
+down the bug.  (For users, the stack trace is scary, confusing, and usually
+non-actionable.)  But if you are using the Checker Framework, you can
+prevent errors rather than needing extra help in debugging the ones that
+occur at run time.
+
 
 \paragraphAndLabel{Optional example}{annotate-normal-behavior-optional-example}
 Another example is the Optional Checker (\chapterpageref{optional-checker})
