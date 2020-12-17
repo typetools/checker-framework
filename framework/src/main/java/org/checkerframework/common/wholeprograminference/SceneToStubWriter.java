@@ -687,7 +687,6 @@ public final class SceneToStubWriter {
      * @param aClass the representation of the class
      * @param checker the checker, for computing preconditions
      * @param printWriter the writer on which to print
-     * @param checker the type-checker whose annotations are being written
      */
     private static void printClass(
             @BinaryName String classname,
