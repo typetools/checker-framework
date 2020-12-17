@@ -16,7 +16,7 @@ interface Consumer<T> {
     "initialization.fields.uninitialized",
     "initialization.static.fields.uninitialized"
 })
-class LambdaInit {
+public class LambdaInit {
     String f1;
     String f2 = "";
     @Nullable String f3 = "";

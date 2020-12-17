@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class AnonymousClass {
+public class AnonymousClass {
 
     class Bound<X extends @NonNull Object> {}
 

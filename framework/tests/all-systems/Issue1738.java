@@ -4,7 +4,7 @@
 import java.util.Iterator;
 
 @SuppressWarnings("all") // Only check for crashes
-class Issue1738 {
+public class Issue1738 {
     static class TwoParamIterator<T, R> implements Iterator<T> {
         @Override
         public boolean hasNext() {

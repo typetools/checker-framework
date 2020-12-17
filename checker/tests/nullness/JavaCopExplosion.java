@@ -2,13 +2,13 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
-class Explosion {
+public class JavaCopExplosion {
     public static class ExplosiveException extends Exception {}
 
     @NonNull Integer m_nni = 1;
     final String m_astring;
 
-    Explosion() {
+    JavaCopExplosion() {
         // m_nni = 1;\
         m_astring = "hi";
         try {

@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class Constructors {
+public class Constructors {
     // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @H1S2 @H2S2 Constructors() {}
 

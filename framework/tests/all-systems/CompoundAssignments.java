@@ -1,4 +1,4 @@
-class CompoundAssignments {
+public class CompoundAssignments {
     static final int SIZE = 4;
 
     // There used to be a bug creating the LeftShiftAssignmentNode

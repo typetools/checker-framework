@@ -37,7 +37,7 @@ import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
  * 2: #11(): FIELD
  * </pre>
  */
-class Issue681 {
+public class Issue681 {
     class Inner {
         @H1S2 Inner explicitH1S2;
         Issue681.@H1S2 Inner explicitNestedH1S2;

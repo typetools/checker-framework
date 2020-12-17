@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/1775
 
 @SuppressWarnings("all") // just check for crashes
-class Issue1775 {
+public class Issue1775 {
     interface Box<A> {
         <B extends A> B get();
     }

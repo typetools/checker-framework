@@ -4,7 +4,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
-class Postcondition {
+public class Postcondition {
 
     String f1, f2, f3;
     Postcondition p;

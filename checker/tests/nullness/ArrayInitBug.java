@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class ArrayInitBug {
+public class ArrayInitBug {
 
     @Nullable Object @Nullable [] aa;
 

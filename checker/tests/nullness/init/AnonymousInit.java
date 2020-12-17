@@ -1,6 +1,6 @@
 // Ensure field initialization checks for anonymous
 // classes work.
-class AnonymousInit {
+public class AnonymousInit {
     Object o1 =
             // :: error: (initialization.fields.uninitialized)
             new Object() {

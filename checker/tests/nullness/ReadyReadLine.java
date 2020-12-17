@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-class ReadyReadLine {
+public class ReadyReadLine {
 
     void m(MyBufferedReader buf) throws Exception {
         if (buf.ready()) {

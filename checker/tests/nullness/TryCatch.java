@@ -7,7 +7,7 @@ class EntryReader {
     public EntryReader() throws IOException {}
 }
 
-class TryCatch {
+public class TryCatch {
     void constructorException() throws IOException {
         List<Exception> file_errors = new ArrayList<>();
         try {

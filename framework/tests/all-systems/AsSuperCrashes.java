@@ -8,7 +8,7 @@ import org.checkerframework.dataflow.qual.Pure;
 
 // This class has code that used to cause AsSuper to crash
 @SuppressWarnings("all")
-class AsSuperTest {
+public class AsSuperCrashes {
     // TODO: Value Checker crashes on this
     /*    void primitiveNarrowing() {
             Byte b = 100;

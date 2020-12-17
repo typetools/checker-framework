@@ -4,6 +4,6 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=NoPackage.astub Driver2.java  -Werror
  */
 
-class Driver2 {
+public class Driver2 {
     void test() {}
 }

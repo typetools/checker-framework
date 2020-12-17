@@ -1,4 +1,4 @@
-class IndexForTwoArrays {
+public class IndexForTwoArrays {
 
     public int compare(double[] a1, double[] a2) {
         if (a1 == a2) {

@@ -3,7 +3,7 @@
 // Issue 579 test case is in checker/tests/nullness/java8/Issue579.java
 // A similar test case appears in checker/tests/nullness/InferTypeArgsConditionalExpression.java
 
-class InferTypeArgsConditionalExpression {
+public class InferTypeArgsConditionalExpression {
 
     public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
         bar(flag ? real : other);

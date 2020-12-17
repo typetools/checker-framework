@@ -5,7 +5,7 @@
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
-class Issue813 {
+public class Issue813 {
     static interface MyInterface {}
 
     static class MyClass {

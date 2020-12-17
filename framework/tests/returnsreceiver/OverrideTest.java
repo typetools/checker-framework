@@ -1,7 +1,7 @@
 import org.checkerframework.common.returnsreceiver.qual.*;
 
 // Test basic subtyping relationships for the Returns Receiver Checker.
-class OverrideTest {
+public class OverrideTest {
 
     static class Super {
 

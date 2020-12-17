@@ -5,7 +5,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 // @skip-test until we bring list support back
 // @skip-test can't handle until TreeUtils.getMethod has a way to precisly handle method overloading
 
-class ListRemove {
+public class ListRemove {
 
     List<Integer> listField;
 

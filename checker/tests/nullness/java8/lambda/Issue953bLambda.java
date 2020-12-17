@@ -7,7 +7,7 @@ import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 @SuppressWarnings("all")
-class Issue953bLambda {
+public class Issue953bLambda {
     private static List<List<?>> strs = new ArrayList<>();
 
     public static <R, T> List<@NonNull R> mapList(

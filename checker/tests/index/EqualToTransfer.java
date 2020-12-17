@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.MinLen;
 
-class EqualToTransfer {
+public class EqualToTransfer {
     void eq_check(int[] a) {
         if (1 == a.length) {
             int @MinLen(1) [] b = a;

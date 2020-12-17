@@ -13,7 +13,7 @@ class TestStatic {
     public static final @MyFenum int CCONST2 = 6;
 }
 
-class FenumDemo {
+public class FenumDemo {
     @Fenum("A") int state1 = TestStatic.ACONST1; // ok
 
     @Fenum("B") int state2 = TestStatic.ACONST1; // Incompatible fenums forbidden!

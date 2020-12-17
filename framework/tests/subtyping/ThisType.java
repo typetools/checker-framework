@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.util.*;
 
-class ThisType {
+public class ThisType {
     void t1(@Encrypted ThisType this) {
         @Encrypted ThisType l1 = this;
         ThisType l2 = this;

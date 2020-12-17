@@ -1,6 +1,6 @@
 import org.checkerframework.common.util.report.qual.*;
 
-class Creation {
+public class Creation {
     class TestOne {
         TestOne() {}
 

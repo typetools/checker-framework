@@ -1,6 +1,6 @@
 // Tests for index annotations on string methods in the annotated JDK
 
-class StringMethods {
+public class StringMethods {
 
     void testCharAt(String s, int i) {
         // ::  error: (argument.type.incompatible)

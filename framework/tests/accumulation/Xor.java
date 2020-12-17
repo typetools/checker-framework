@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class Xor {
+public class Xor {
 
     class Foo {
         void a() {}
