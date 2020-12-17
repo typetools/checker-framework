@@ -4,7 +4,7 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
 
-class TwoMethodsSameName {
+public class TwoMethodsSameName {
 
     void test(int x, int y) {
         // :: error: assignment.type.incompatible

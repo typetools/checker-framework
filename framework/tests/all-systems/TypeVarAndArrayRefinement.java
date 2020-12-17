@@ -1,4 +1,4 @@
-class TypeVarAndArrayRefinement {
+public class TypeVarAndArrayRefinement {
 
     private <T extends Enum<T>> T getEnumValue(Class<T> enumType, String name) {
         T[] constants = enumType.getEnumConstants();

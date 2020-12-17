@@ -3,7 +3,7 @@
 
 import java.util.List;
 
-class Issue1981 {
+public class Issue1981 {
 
     void test(List<Integer> ids) {
         for (List<Integer> l : func2(func1(ids))) {}

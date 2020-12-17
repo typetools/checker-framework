@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class SuppressWarningsTest {
+public class SuppressWarningsTest {
 
     @SuppressWarnings("all")
     void test() {

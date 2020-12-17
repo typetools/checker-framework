@@ -1,6 +1,6 @@
 import java.util.Date;
 
-class GetClassTest {
+public class GetClassTest {
 
     // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver
 

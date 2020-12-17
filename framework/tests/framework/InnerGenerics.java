@@ -30,6 +30,4 @@ public class InnerGenerics {
         // :: error: (assignment.type.incompatible)
         ListInner<@Odd String> i = new ListInner<String>();
     }
-
-    // more examples
 }

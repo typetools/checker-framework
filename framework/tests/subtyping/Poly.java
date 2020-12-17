@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.Map;
 import org.checkerframework.framework.testchecker.util.*;
 
-class Poly {
+public class Poly {
 
     void test() {
 

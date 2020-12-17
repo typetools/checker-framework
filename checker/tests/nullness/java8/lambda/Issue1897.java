@@ -3,7 +3,7 @@
 
 import java.util.function.Function;
 
-class Issue1897 {
+public class Issue1897 {
     Issue1897() {
         final int length = 1;
         takesLambda(s -> length);

@@ -6,7 +6,7 @@
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue306 {
+public class Issue306 {
     @MonotonicNonNull Object x;
 
     static <T> T check(T var) {

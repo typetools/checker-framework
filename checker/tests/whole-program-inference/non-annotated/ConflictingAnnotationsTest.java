@@ -5,7 +5,7 @@
 // their fully-qualified names, making namespace collisions
 // impossible.
 
-class ConflictingAnnotationsTest {
+public class ConflictingAnnotationsTest {
 
     int getWPINamespaceSibling1() {
         return getSibling1();

@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class RequiresNonNullTest {
+public class RequiresNonNullTest {
 
     @Nullable Object field1;
     @Nullable Object field2;

@@ -1,7 +1,7 @@
 // Test case for Issue 1417.
 // https://github.com/typetools/checker-framework/issues/1417
 
-class Issue1417 {
+public class Issue1417 {
     interface Bar {}
 
     interface SubBar extends Bar {}

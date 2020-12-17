@@ -4,7 +4,7 @@
 import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.RegexUtil;
 
-class Issue3267 {
+public class Issue3267 {
     void foo(String s) {
         if (RegexUtil.isRegex(s)) {
         } else {

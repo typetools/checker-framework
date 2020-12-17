@@ -3,7 +3,7 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class OtherAnnotations {
+public class OtherAnnotations {
 
     void requireSibling1(@Sibling1 int a) {}
 

@@ -2,7 +2,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.testchecker.util.*;
 
-class Arrays {
+public class Arrays {
     Object[] @Odd [] objB1 = new Object[] @Odd [] {};
     Object[][] @Odd [] objB1a = new Object[][] @Odd [] {};
     Object @Odd [][][] objB1b = new Object @Odd [][][] {};

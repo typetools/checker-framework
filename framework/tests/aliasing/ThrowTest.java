@@ -1,6 +1,6 @@
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class ThrowTest {
+public class ThrowTest {
 
     void foo() throws Exception {
         @Unique Exception e = new Exception();

@@ -16,7 +16,7 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 // However even without a fix for issue 524 in place, the test sometimes type checks.
 // Unfortunately a test case that always fails to typecheck using a Checker Framework build
 // prior to the fix for issue 524 has not been found.
-class Issue524 {
+public class Issue524 {
     class MyClass {
         public Object field;
     }

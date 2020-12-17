@@ -5,7 +5,7 @@ import org.checkerframework.checker.index.qual.LTOMLengthOf;
 
 // @skip-test until we bring list support back
 
-class ListAdd {
+public class ListAdd {
 
     List<Integer> listField;
 

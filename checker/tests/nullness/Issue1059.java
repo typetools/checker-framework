@@ -4,7 +4,7 @@
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue1059 {
+public class Issue1059 {
     @Nullable Object f;
 
     @EnsuresNonNull({"f"})
