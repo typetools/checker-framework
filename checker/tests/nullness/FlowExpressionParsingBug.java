@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 public abstract class FlowExpressionParsingBug {
 
-    //// Check that flow expressions with explicit and implicit 'this' work
+    //// Check that JavaExpressions with explicit and implicit 'this' work
 
     protected @Nullable JMenuBar menuBar = null;
 
@@ -14,7 +14,7 @@ public abstract class FlowExpressionParsingBug {
     @RequiresNonNull("this.menuBar")
     public void addFavorite1() {}
 
-    //// Check flow expressions for static fields with different ways to access the field
+    //// Check JavaExpressions for static fields with different ways to access the field
 
     static @Nullable String i = null;
 

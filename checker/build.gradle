@@ -21,6 +21,11 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':dataflow')
     implementation project(':framework')
+    // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
+        exclude group: 'com.google.errorprone', module: 'javac'
+    }
     implementation project(':checker-qual')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
@@ -220,7 +225,7 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     String jtregOutput = "${buildDir}/jtregJdk11"
     String name = 'all'
     doLast {
-        if(isJava8) {
+        if (isJava8) {
             println "This test is only run with JDK 11."
             return;
         }
@@ -291,3 +296,225 @@ task delombok {
 }
 
 tasks.test.dependsOn("delombok")
+
+///
+/// Whole-program inference tests
+///
+
+test {
+    useJUnit {
+        // These are run in task wholeProgramInferenceTests.
+        excludeCategories 'org.checkerframework.checker.test.junit.wpirunners.WholeProgramInferenceJaifsTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.wpirunners.WholeProgramInferenceStubsTest'
+    }
+}
+
+task wpiScriptsTests(group: "Verification") {
+    description 'Tests that the wpi-many.sh and wpi.sh scripts are working as expected. Requires an internet connection.'
+
+    // This test must always be re-run when requested.
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        delete("${project.projectDir}/build/wpi-many-tests-results/")
+    }
+
+    doLast {
+        // Run wpi-many.sh
+        exec {
+            commandLine 'bin/wpi-many.sh',
+                    '-i', "${project.projectDir}/tests/whole-program-inference/wpi-many/testin.txt",
+                    '-o', "${project.projectDir}/build/wpi-many-tests",
+                    '--', '--checker', 'nullness,interning,lock,regex,signature'
+        }
+        // collect the logs from running WPI
+        def logFiles = fileTree("${project.projectDir}/build/wpi-many-tests-results/").matching {
+            include "**/*.log"
+        }
+        if (logFiles.size() == 0) {
+            throw new GradleException("Failure: WPI scripts did not produce any log files.")
+        }
+
+        // check that WPI causes the expected builds to succeed
+        logFiles.visit { FileVisitDetails details ->
+            def content = details.getFile().readLines()
+            // TODO: why does the call to get() below throw an exception if the log files
+            // are empty if this check isn't present?
+            if (content.size() - 1 < 0) {
+                throw new GradleException("Failure: WPI produced empty log files.")
+            } else {
+                // iterate backwards and look for errors in the last WPI loop,
+                // and set success to false if any are found
+                for (int i = content.size() - 1; i--; i >= 0) {
+                    def line = content.get(i)
+                    // DLJC prints this string before each command that it runs.
+                    if (line.startsWith("Running ")) {
+                        break
+                    }
+                    if (line.toLowerCase().contains("error")) {
+                        throw new GradleException("Failure: WPI scripts produced at least one error. " +
+                                "See ${project.projectDir}/build/wpi-many-tests-results/" + details.getName() + ". " +
+                                "Failing line is the following: " + line)
+                    }
+                }
+            }
+        }
+    }
+}
+
+task testWPIStubs(type: Test) {
+    description 'Internal task to run the whole-program-inference tests with -Ainfer=stubs to generate stub files'
+
+    dependsOn(compileTestJava)
+    doFirst {
+        delete("tests/whole-program-inference/annotated")
+        delete("${buildDir}/whole-program-inference/")
+    }
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceStubsTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+
+    doLast {
+        commonWPIlogic()
+        // The stub file format doesn't support annotations on anonymous inner classes, so
+        // this test also expects errors on UsesAnonymous.java.
+        delete('tests/whole-program-inference/annotated/UsesAnonymous.java')
+        copy {
+            from file('tests/whole-program-inference/non-annotated/UsesAnonymous.java')
+            into file('tests/whole-program-inference/annotated')
+        }
+    }
+}
+
+task testWPIStubsValidate(type: Test) {
+    description 'Internal task to re-run the whole-program-inference tests using the stub files generated by testWPIStubs'
+
+    dependsOn(testWPIStubs)
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceStubsValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+// Common logic for copying and deleting whole-program inference tests.
+void commonWPIlogic() {
+    // Copying all test files to another directory, removing all expected errors that should not
+    // occur after inserting inferred annotations from .jaif files.
+    copy {
+        from files('tests/whole-program-inference/non-annotated')
+        into file('tests/whole-program-inference/annotated')
+        filter { String line ->
+            line.contains('// :: error:') ? null : line
+        }
+    }
+    // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
+    delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
+    copy {
+        from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')
+        into file('tests/whole-program-inference/annotated')
+    }
+}
+
+// This task is similar to the wholeProgramInferenceJaifTests task below, but it doesn't
+// run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
+// and the -AmergeStubsWithSource feature to do WPI using stub files.
+task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using stub files'
+    dependsOn(testWPIStubsValidate)
+    outputs.upToDateWhen { false }
+}
+
+task testWPIJaifs(type: Test) {
+    description 'Internal task to run the whole-program-inference tests with -Ainfer=jaifs to generate .jaif files'
+
+    dependsOn(compileTestJava)
+    doFirst {
+        delete("tests/whole-program-inference/annotated")
+    }
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceJaifsTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+
+    doLast {
+        commonWPIlogic()
+
+        // JAIF-based WPI fails these tests, which was added for stub-based WPI.
+        // See issue here: https://github.com/typetools/checker-framework/issues/3009
+        delete('tests/whole-program-inference/annotated/ConflictingAnnotationsTest.java')
+        delete('tests/whole-program-inference/annotated/MultiDimensionalArrays.java')
+
+        // Inserting annotations from .jaif files in-place.
+        List<File> jaifs = fileTree("${buildDir}/whole-program-inference/").matching {
+            include '*.jaif'
+        }.asList()
+        if (jaifs.isEmpty()) {
+            throw new GradleException("no .jaif files found in ${buildDir}/whole-program-inference/")
+        }
+        List<File> javas = fileTree("tests/whole-program-inference/annotated/").matching {
+            include '*.java'
+        }.asList()
+        if (javas.isEmpty()) {
+            throw new GradleException("no .java files found in tests/whole-program-inference/annotated/")
+        }
+        exec {
+            executable "${afu}/scripts/insert-annotations-to-source"
+            args = ['-i']
+            for (File jaif : jaifs) {
+                args += [jaif.toString()]
+            }
+            for (File javaFile : javas) {
+                args += [javaFile.toString()]
+            }
+        }
+    }
+}
+
+task testWPIJaifsValidate(type: Test) {
+    description 'Internal task to re-run the whole-program-inference tests using the .jaif files generated by testWPIJaifs'
+
+    dependsOn(testWPIJaifs)
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceJaifsValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+task wholeProgramInferenceJaifTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using .jaif files'
+    dependsOn(testWPIJaifsValidate)
+    outputs.upToDateWhen { false }
+}
+
+// Empty task that just runs both the jaif and stub WPI tests.
+// It is run as part of the nonJunitTests task.
+task wholeProgramInferenceTests() {
+    description "Run tests for all whole program inference modes."
+    dependsOn('wholeProgramInferenceJaifTests')
+    dependsOn('wholeProgramInferenceStubTests')
+}

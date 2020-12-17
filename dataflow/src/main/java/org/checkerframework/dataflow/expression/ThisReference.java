@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class ThisReference extends Receiver {
+public class ThisReference extends JavaExpression {
     public ThisReference(TypeMirror type) {
         super(type);
     }
@@ -26,12 +26,12 @@ public class ThisReference extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         return other instanceof ThisReference;
     }
 
@@ -46,7 +46,7 @@ public class ThisReference extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // 'this' is not modifiable
     }
 }

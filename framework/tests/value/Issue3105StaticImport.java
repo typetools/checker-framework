@@ -4,7 +4,7 @@ import static org.checkerframework.framework.testchecker.lib.Issue3105Fields.FIE
 
 import org.checkerframework.common.value.qual.StringVal;
 
-class Issue3105StaticImport {
+public class Issue3105StaticImport {
 
     @StringVal("bar") String m2() {
         return FIELD2;

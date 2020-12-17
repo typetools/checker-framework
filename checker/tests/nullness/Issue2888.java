@@ -1,6 +1,6 @@
 import com.sun.istack.internal.Nullable;
 
-class Issue2888 {
+public class Issue2888 {
     @Nullable Object[] noa;
 
     void foo() {

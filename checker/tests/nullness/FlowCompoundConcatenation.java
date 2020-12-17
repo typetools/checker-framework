@@ -1,4 +1,4 @@
-class FlowCompoundConcatenation {
+public class FlowCompoundConcatenation {
     static String getNonNullString() {
         return "";
     }

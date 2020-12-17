@@ -2,7 +2,7 @@ import org.checkerframework.framework.testchecker.util.*;
 
 // Test case for Issue 136:
 // https://github.com/typetools/checker-framework/issues/136
-class GenericTest6 {
+public class GenericTest6 {
     interface Foo<T extends Foo<?>> {}
 
     class Strange implements Foo<Strange> {}

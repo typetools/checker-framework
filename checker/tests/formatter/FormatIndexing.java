@@ -43,13 +43,13 @@ public class FormatIndexing {
         @Format({ConversionCategory.NULL, ConversionCategory.INT}) String tf = "%TT %<f %2$d";
         @Format({ConversionCategory.NULL}) String icf = "%d %<c %<f";
         @Format({ConversionCategory.NULL}) String itc = "%d %<TT %<c";
-        // :: error: (format.specifier.null)
+        // :: warning: (format.specifier.null)
         f.format(tf, null, 0);
-        // :: warning: (format.indirect.arguments) :: error: (format.specifier.null)
+        // :: warning: (format.specifier.null)
         f.format(tf, (Object[]) null);
         // :: error: (format.specifier.null)
         f.format(tf, 'c', 0);
-        // :: error: (format.specifier.null)
+        // :: warning: (format.specifier.null)
         f.format(tf, (Object) null, 0);
 
         // test UNUSED
@@ -57,7 +57,7 @@ public class FormatIndexing {
         f.format("%1$s %3$s", "Hello", "Missing", "World");
         // :: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
         f.format("%1$s %3$s", new Object[5]);
-        // :: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
+        // :: warning: (format.argument.unused)
         f.format("%5$s", (Object[]) null);
         // :: warning: (format.argument.unused)
         f.format("%3$s", null, null, null);

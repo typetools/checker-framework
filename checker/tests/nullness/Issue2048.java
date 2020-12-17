@@ -7,7 +7,7 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue2048 {
+public class Issue2048 {
     interface Foo {}
 
     static class Fooer<R extends Foo> {}

@@ -9,7 +9,7 @@ interface ToOverride<T> {
     public abstract int transform(List<? super T> function);
 }
 
-class WildcardOverride implements ToOverride<Object> {
+public class WildcardOverride implements ToOverride<Object> {
     @Override
     public int transform(List<Object> function) {
         return 0;

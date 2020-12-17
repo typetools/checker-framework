@@ -1,9 +1,2 @@
-warning: AnnotationFileParser: exception from AnnotationFileParser.parse for file checker/jtreg/stubs/issue1585/ParseErrors.astub. Encountered problems: Encountered unexpected token: "{" "{"
-      at line 3, column 17.
-
-  Was expecting one of:
-
-      ","
-      ">"
-      "extends"
+- compiler.warn.proc.messager: ParseError.astub: (line 3,col 12) Parse error. Found "{", expected one of  "," ">" "extends"
 1 warning

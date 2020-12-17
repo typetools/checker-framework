@@ -15,7 +15,7 @@ abstract class Ordering<T> implements Comparator<T> {
     }
 }
 
-class PolyCollectorTypeVars {
+public class PolyCollectorTypeVars {
     // Both of these come from the extends Comparable on line 9
     @SuppressWarnings({"rawtypes", "type.argument.type.incompatible"})
     public static MyGen<Comparable> treeKeys2() {

@@ -3,7 +3,7 @@
 import org.checkerframework.checker.i18n.qual.Localized;
 import org.checkerframework.checker.regex.qual.Regex;
 
-class NullnessAndRegex {
+public class NullnessAndRegex {
     // :: error: (assignment.type.incompatible)
     @Regex String s1 = "De(mo";
     // :: error: (assignment.type.incompatible)

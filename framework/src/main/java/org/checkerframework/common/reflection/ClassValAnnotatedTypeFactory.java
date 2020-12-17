@@ -67,16 +67,26 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         ClassValBottom.class));
     }
 
+    /**
+     * Create a {@code @ClassVal} annotation with the given values.
+     *
+     * @param values the "value" field of the resulting {@code @ClassVal} annotation
+     * @return a {@code @ClassVal} annotation with the given values
+     */
     private AnnotationMirror createClassVal(List<String> values) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, ClassVal.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ClassVal.class);
         builder.setValue("value", values);
         return builder.build();
     }
 
+    /**
+     * Create a {@code @ClassBound} annotation with the given values.
+     *
+     * @param values the "value" field of the resulting {@code @ClassBound} annotation
+     * @return a {@code @ClassBound} annotation with the given values
+     */
     private AnnotationMirror createClassBound(List<String> values) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, ClassBound.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ClassBound.class);
         builder.setValue("value", values);
         return builder.build();
     }

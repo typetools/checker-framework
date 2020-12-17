@@ -3,7 +3,7 @@
 
 // @skip-test Commented out until the bug is fixed
 
-class Issue653 {
+public class Issue653 {
 
     public static @PolyNull String[] concat(
             @PolyNull String @Nullable [] a, @PolyNull String @Nullable [] b) {

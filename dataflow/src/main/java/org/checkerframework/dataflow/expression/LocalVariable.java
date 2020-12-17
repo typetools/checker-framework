@@ -9,7 +9,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class LocalVariable extends Receiver {
+public class LocalVariable extends JavaExpression {
     protected final Element element;
 
     public LocalVariable(LocalVariableNode localVar) {
@@ -59,12 +59,12 @@ public class LocalVariable extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         if (!(other instanceof LocalVariable)) {
             return false;
         }
@@ -73,7 +73,7 @@ public class LocalVariable extends Receiver {
     }
 
     @Override
-    public boolean containsSyntacticEqualReceiver(Receiver other) {
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return syntacticEquals(other);
     }
 

@@ -54,8 +54,7 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -536,15 +535,15 @@ public class ValueTransfer extends CFTransfer {
      * or @ArrayLenRange annotation for the array or string.
      */
     private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
-        Receiver lengthRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
+        JavaExpression lengthExpr = JavaExpression.fromNode(analysis.getTypeFactory(), lengthNode);
 
         // If the expression is not representable (for example if String.length() for some reason is
         // not marked @Pure, then do not refine.
-        if (lengthRec instanceof Unknown) {
+        if (lengthExpr instanceof Unknown) {
             return;
         }
 
-        CFValue value = store.getValue(lengthRec);
+        CFValue value = store.getValue(lengthExpr);
         if (value == null) {
             return;
         }
@@ -556,7 +555,7 @@ public class ValueTransfer extends CFTransfer {
         if (AnnotationUtils.areSameByName(lengthAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             // If the length is bottom, then this is dead code, so the receiver type
             // should also be bottom.
-            Receiver receiver = FlowExpressions.internalReprOf(atypeFactory, receiverNode);
+            JavaExpression receiver = JavaExpression.fromNode(atypeFactory, receiverNode);
             store.insertValue(receiver, lengthAnno);
             return;
         }
@@ -583,7 +582,7 @@ public class ValueTransfer extends CFTransfer {
         } else {
             combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
         }
-        Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
+        JavaExpression receiver = JavaExpression.fromNode(analysis.getTypeFactory(), receiverNode);
         store.insertValue(receiver, combinedRecAnno);
     }
 
@@ -1380,10 +1379,10 @@ public class ValueTransfer extends CFTransfer {
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
         // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            JavaExpression je = JavaExpression.fromNode(analysis.getTypeFactory(), internal);
             CFValue currentValueFromStore;
-            if (CFAbstractStore.canInsertReceiver(rec)) {
-                currentValueFromStore = store.getValue(rec);
+            if (CFAbstractStore.canInsertJavaExpression(je)) {
+                currentValueFromStore = store.getValue(je);
             } else {
                 // Don't just `continue;` which would skip the calls to refine{Array,String}...
                 currentValueFromStore = null;
@@ -1395,7 +1394,7 @@ public class ValueTransfer extends CFTransfer {
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
             AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
-            store.insertValue(rec, newAnno);
+            store.insertValue(je, newAnno);
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
@@ -1536,8 +1535,8 @@ public class ValueTransfer extends CFTransfer {
             int minLength = atypeFactory.getMinLenValue(argumentAnno);
             // Update the annotation of the receiver
             if (minLength != 0) {
-                Receiver receiver =
-                        FlowExpressions.internalReprOf(atypeFactory, n.getTarget().getReceiver());
+                JavaExpression receiver =
+                        JavaExpression.fromNode(atypeFactory, n.getTarget().getReceiver());
 
                 AnnotationMirror minLenAnno =
                         atypeFactory.createArrayLenRangeAnnotation(minLength, Integer.MAX_VALUE);

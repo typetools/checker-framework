@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.Segment;
 import org.checkerframework.checker.regex.qual.Regex;
 
-class AllowedTypes {
+public class AllowedTypes {
     @Regex CharSequence cs;
     @Regex String s11;
     @Regex StringBuilder sb;

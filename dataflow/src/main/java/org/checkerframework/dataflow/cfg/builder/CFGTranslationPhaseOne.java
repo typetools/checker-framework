@@ -110,7 +110,7 @@ import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
 import org.checkerframework.dataflow.cfg.node.DoubleLiteralNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
-import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
@@ -118,7 +118,7 @@ import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
 import org.checkerframework.dataflow.cfg.node.FunctionalInterfaceNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
@@ -155,7 +155,7 @@ import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
@@ -1272,7 +1272,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
         ExecutableElement element = TreeUtils.elementFromUse(tree);
-        if (ElementUtils.isStatic(element) || receiver instanceof ThisLiteralNode) {
+        if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
             // No NullPointerException can be thrown, use normal node
             extendWithNode(target);
         } else {
@@ -1454,7 +1454,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             target.setLValue();
 
             Element element = TreeUtils.elementFromUse(variable);
-            if (ElementUtils.isStatic(element) || receiver instanceof ThisLiteralNode) {
+            if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
                 // No NullPointerException can be thrown, use normal node
                 extendWithNode(target);
             } else {
@@ -1515,7 +1515,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 extendWithNode(node);
                 return node;
             } else {
-                Node node = new ImplicitThisLiteralNode(type);
+                Node node = new ImplicitThisNode(type);
                 extendWithNode(node);
                 return node;
             }
@@ -2677,7 +2677,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 case FIELD:
                     // Note that "this"/"super" is a field, but not a field access.
                     if (element.getSimpleName().contentEquals("this")) {
-                        node = new ExplicitThisLiteralNode(tree);
+                        node = new ExplicitThisNode(tree);
                     } else {
                         node = new SuperNode(tree);
                     }
@@ -2949,7 +2949,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         if (!TreeUtils.isFieldAccess(tree)) {
             // Could be a selector of a class or package
             Element element = TreeUtils.elementFromUse(tree);
-            if (ElementUtils.isClassElement(element)) {
+            if (ElementUtils.isTypeElement(element)) {
                 Node result = new ClassNameNode(tree, expr);
                 extendWithNode(result);
                 return result;
@@ -2966,8 +2966,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         Element element = TreeUtils.elementFromUse(tree);
         if (ElementUtils.isStatic(element)
-                || expr instanceof ImplicitThisLiteralNode
-                || expr instanceof ExplicitThisLiteralNode) {
+                || expr instanceof ImplicitThisNode
+                || expr instanceof ExplicitThisNode) {
             // No NullPointerException can be thrown, use normal node
             extendWithNode(node);
         } else {
@@ -3024,13 +3024,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         "start of try statement #" + TreeUtils.treeUids.get(tree),
                         env.getTypeUtils()));
 
-        // TODO: Should we handle try-with-resources blocks by also generating code
-        // for automatically closing the resources?
-        List<? extends Tree> resources = tree.getResources();
-        for (Tree resource : resources) {
-            scan(resource, p);
-        }
-
         List<Pair<TypeMirror, Label>> catchLabels = new ArrayList<>();
         for (CatchTree c : catches) {
             TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
@@ -3066,6 +3059,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         Label doneLabel = new Label();
 
         tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
+
+        // Must scan the resources *after* we push frame to tryStack. Otherwise we can
+        // lose catch blocks.
+        // TODO: Should we handle try-with-resources blocks by also generating code
+        // for automatically closing the resources?
+        List<? extends Tree> resources = tree.getResources();
+        for (Tree resource : resources) {
+            scan(resource, p);
+        }
 
         extendWithNode(
                 new MarkerNode(
@@ -3535,7 +3537,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
         TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
-        Node receiver = new ImplicitThisLiteralNode(classElem.asType());
+        Node receiver = new ImplicitThisNode(classElem.asType());
 
         if (isField) {
             ExpressionTree initializer = tree.getInitializer();

@@ -55,7 +55,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -67,7 +67,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -118,13 +118,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(IndexFor.class, LTLengthOf.class, true);
-        addAliasedAnnotation(IndexOrLow.class, LTLengthOf.class, true);
-        addAliasedAnnotation(IndexOrHigh.class, LTEqLengthOf.class, true);
-        addAliasedAnnotation(SearchIndexFor.class, LTLengthOf.class, true);
-        addAliasedAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
-        addAliasedAnnotation(LengthOf.class, LTEqLengthOf.class, true);
-        addAliasedAnnotation(PolyIndex.class, POLY);
+        addAliasedTypeAnnotation(IndexFor.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(IndexOrLow.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(IndexOrHigh.class, LTEqLengthOf.class, true);
+        addAliasedTypeAnnotation(SearchIndexFor.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(LengthOf.class, LTEqLengthOf.class, true);
+        addAliasedTypeAnnotation(PolyIndex.class, POLY);
 
         imf = new IndexMethodIdentifier(this);
 
@@ -796,24 +796,24 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Tree tree, TreePath treePath, List<String> lessThanExpressions) {
         UBQualifier ubQualifier = null;
         for (String expression : lessThanExpressions) {
-            Pair<Receiver, String> receiverAndOffset;
+            Pair<JavaExpression, String> exprAndOffset;
             try {
-                receiverAndOffset =
-                        getReceiverAndOffsetFromJavaExpressionString(expression, treePath);
-            } catch (FlowExpressionParseException e) {
-                receiverAndOffset = null;
+                exprAndOffset =
+                        getExpressionAndOffsetFromJavaExpressionString(expression, treePath);
+            } catch (JavaExpressionParseException e) {
+                exprAndOffset = null;
             }
-            if (receiverAndOffset == null) {
+            if (exprAndOffset == null) {
                 continue;
             }
-            Receiver receiver = receiverAndOffset.first;
-            String offset = receiverAndOffset.second;
+            JavaExpression je = exprAndOffset.first;
+            String offset = exprAndOffset.second;
 
-            if (!CFAbstractStore.canInsertReceiver(receiver)) {
+            if (!CFAbstractStore.canInsertJavaExpression(je)) {
                 continue;
             }
             CFStore store = getStoreBefore(tree);
-            CFValue value = store.getValue(receiver);
+            CFValue value = store.getValue(je);
             if (value != null && value.getAnnotations().size() == 1) {
                 UBQualifier newUBQ =
                         UBQualifier.createUBQualifier(

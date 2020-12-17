@@ -1,7 +1,7 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
 // basic subtyping checks
-class Subtyping {
+public class Subtyping {
     @CalledMethods({}) Object top_top(@CalledMethods({}) Object o) {
         return o;
     }

@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class AnnotatedJdkTest {
+public class AnnotatedJdkTest {
     // This code should type-check because of the annotated JDK, which contains:
     //   class Arrays {
     //     public static <T> List<T> asList(T... a);

@@ -3,7 +3,7 @@
 
 import java.util.List;
 
-interface Issue428<T extends Number> {}
+public interface Issue428<T extends Number> {}
 
 class Test428 {
     void m(List<Issue428<? extends Object>> is) {

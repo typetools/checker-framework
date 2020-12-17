@@ -7,7 +7,7 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 
-class Polymorphic2 {
+public class Polymorphic2 {
     public static boolean flag = false;
 
     int @PolySameLen [] mergeSameLen(int @PolySameLen [] a, int @PolySameLen [] b) {

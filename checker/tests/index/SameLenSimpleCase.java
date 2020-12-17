@@ -1,4 +1,4 @@
-class SameLenSimpleCase {
+public class SameLenSimpleCase {
     public int compare(int[] a1, int[] a2) {
         if (a1.length != a2.length) {
             return a1.length - a2.length;

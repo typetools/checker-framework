@@ -2,7 +2,7 @@
 
 import java.util.StringJoiner;
 
-class Issue1147 {
+public class Issue1147 {
 
     public static void main(String[] args) {
 

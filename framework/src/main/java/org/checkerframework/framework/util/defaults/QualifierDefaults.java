@@ -26,7 +26,6 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -41,7 +40,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -84,9 +82,6 @@ public class QualifierDefaults {
 
     /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
-
-    /** List of the upstream checker binary names. */
-    private final List<@FullyQualifiedName String> upstreamCheckerNames;
 
     /** Defaults for checked code. */
     private final DefaultSet checkedCodeDefaults = new DefaultSet();
@@ -175,8 +170,6 @@ public class QualifierDefaults {
     public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
-        this.upstreamCheckerNames =
-                atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
         this.useConservativeDefaultsBytecode =
                 atypeFactory.getContext().getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
@@ -538,21 +531,12 @@ public class QualifierDefaults {
             return elementAnnotatedFors.get(elt);
         }
 
-        final AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
+        final AnnotationMirror annotatedFor =
+                atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
 
-        if (af != null) {
-            List<String> checkers =
-                    AnnotationUtils.getElementValueArray(af, "value", String.class, false);
-
-            if (checkers != null) {
-                for (String checker : checkers) {
-                    if (CheckerMain.matchesFullyQualifiedProcessor(
-                            checker, upstreamCheckerNames, true)) {
-                        elementAnnotatedForThisChecker = true;
-                        break;
-                    }
-                }
-            }
+        if (annotatedFor != null) {
+            elementAnnotatedForThisChecker =
+                    atypeFactory.doesAnnotatedForApplyToThisChecker(annotatedFor);
         }
 
         if (!elementAnnotatedForThisChecker) {

@@ -1,4 +1,4 @@
-class ConditionalInterning {
+public class ConditionalInterning {
     int a, b, c;
 
     boolean cmp() {

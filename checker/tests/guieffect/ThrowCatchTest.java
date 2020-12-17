@@ -3,7 +3,7 @@ import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUIType;
 import org.checkerframework.checker.guieffect.qual.UI;
 
-class ThrowCatchTest {
+public class ThrowCatchTest {
     List<? extends @UI Object> ooo;
 
     // :: error: (type.invalid.annotations.on.use)

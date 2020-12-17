@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 /*
  * Tests parsing annotations on parameter represented by an array or vararg to the constructor.
  */
-class ProcessBuilding2 {
+public class VarargConstructorParameterAnnotationTest {
 
     public void strArraysNonNull(@NonNull String[] parameter) {
         new ProcessBuilder(parameter);
