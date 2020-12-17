@@ -1,5 +1,8 @@
 Version 3.9.0
 
+New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program
+inference, without modifying the source code of the target program(s).
+
 The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
 
 The Format String Checker recognizes Error Prone's `@FormatMethod` annotation.

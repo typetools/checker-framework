@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
-class Issue448Ext {
+public class Issue448Ext {
     void getFor(int[] ia, int index) {
         Arrays.stream(ia).filter(x -> true);
     }

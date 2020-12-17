@@ -1,7 +1,7 @@
 // Test case for issue #341:
 // https://github.com/typetools/checker-framework/issues/341
 
-class Test {
+public class Issue341 {
 
     static class Provider {
         public final Object get = new Object();

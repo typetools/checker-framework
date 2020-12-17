@@ -8,7 +8,7 @@ interface FunctionAC2 {
     String apply(@Nullable String s);
 }
 
-class AssignmentContext {
+public class AssignmentContext {
     // Test assign
     FunctionAC f1 = String::toString;
     // :: error: (methodref.receiver.invalid)

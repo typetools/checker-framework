@@ -13,7 +13,7 @@ import org.checkerframework.checker.nullness.qual.*;
 //
 // class Source<SA,SB,SC,SD,SE> extends HashMap<SA,SB> implements Inter2<SA,SB,SB,SD,SE> {}
 
-class KeyForPropagation {
+public class KeyForPropagation {
 
     {
         List<@KeyFor("a") String> a = new ArrayList<String>();

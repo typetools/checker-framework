@@ -3,7 +3,7 @@
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
-class ParametersInBodyGenerics {
+public class ParametersInBodyGenerics {
     interface NullableConsumer {
         void method(List<@Nullable String> s);
     }

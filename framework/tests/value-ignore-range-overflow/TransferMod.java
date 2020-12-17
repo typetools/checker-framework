@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class TransferMod {
+public class TransferMod {
 
     void test() {
         int aa = -100;

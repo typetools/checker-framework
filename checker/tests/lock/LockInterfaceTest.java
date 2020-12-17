@@ -7,7 +7,7 @@ import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 
-class LockInterfaceTest {
+public class LockInterfaceTest {
 
     static final Lock myStaticLock = new ReentrantLock(true);
 

@@ -3,7 +3,7 @@
 
 import java.util.Map;
 
-class MapKeyConstant {
+public class Issue388 {
     static class Holder {
         static final String KEY = "key";
     }

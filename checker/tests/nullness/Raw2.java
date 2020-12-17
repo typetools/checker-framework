@@ -1,7 +1,7 @@
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.*;
 
-class Raw2 {
+public class Raw2 {
     private @NonNull Object field;
     // :: error: (initialization.fields.uninitialized)
     public Raw2(int i) {

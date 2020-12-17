@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class ArrayInit {
+public class ArrayInit {
     public void raggedArrays() {
         int @ArrayLen(4) [] @ArrayLen({1, 3, 4}) [] @ArrayLen({1, 2, 3, 4, 7}) [] alpha =
                 new int[][][] {

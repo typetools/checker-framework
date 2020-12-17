@@ -2,7 +2,7 @@
 
 // @skip-test until bug is fixed
 
-class Pilot4Subtraction {
+public class Pilot4Subtraction {
 
     private static int[] getSecondHalf(int[] array) {
         int len = array.length / 2;

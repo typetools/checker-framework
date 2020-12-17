@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("all") // check for crashes
-class Issue1331 {
+public class Issue1331 {
     List<Long> ll;
     long result = getOnlyElement(ll.stream().collect(Collectors.toSet()));
 

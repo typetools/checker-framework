@@ -4,7 +4,7 @@
 // Any arbitrary annotation can be used.
 import org.checkerframework.common.aliasing.qual.MaybeAliased;
 
-class Issue3277 {
+public class Issue3277 {
     <T> void f() {
         Object o = new @MaybeAliased Generic<?>[0];
         o = new Generic<@MaybeAliased ?>[0];

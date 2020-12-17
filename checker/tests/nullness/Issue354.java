@@ -1,4 +1,4 @@
-class Issue354 {
+public class Issue354 {
 
     String a;
 

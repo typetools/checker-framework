@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue3033 {
+public class Issue3033 {
 
     class Test {
 

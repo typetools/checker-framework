@@ -1,6 +1,6 @@
 import java.util.List;
 
-class RawTypes {
+public class RawTypes {
     public void m(ClassLoader cl) throws ClassNotFoundException {
         Class clazz = cl.loadClass("java.lang.Object");
     }

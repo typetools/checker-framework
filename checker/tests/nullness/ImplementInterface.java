@@ -4,7 +4,7 @@ interface TestInterface {
     public char @Nullable [] getChars();
 }
 
-class ImplementInterface implements TestInterface {
+public class ImplementInterface implements TestInterface {
     @Override
     public char @Nullable [] getChars() {
         return null;

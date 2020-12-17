@@ -5,7 +5,7 @@
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 
-class MinMaxIndex {
+public class MinMaxIndex {
     // Both min and max preserve IndexFor
     void indexFor(char[] array, @IndexFor("#1") int i1, @IndexFor("#1") int i2) {
         char c = array[Math.max(i1, i2)];

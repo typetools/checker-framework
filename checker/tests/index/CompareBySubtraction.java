@@ -1,6 +1,6 @@
 // @skip-test until fixed.
 
-class CompareBySubtraction {
+public class CompareBySubtraction {
     public int compare(int[] a1, int[] a2) {
         if (a1 == a2) {
             return 0;

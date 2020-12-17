@@ -3,7 +3,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-class Issue867 {
+public class Issue867 {
     void test1() {
         @IntVal({0, 1}) int x = 0;
         @IntVal(0) int zero = x++;

@@ -151,7 +151,7 @@ code stays completely backward-compatible:  your code compiles with any
 Java compiler, it runs on any JVM, and your coworkers don't have to use the
 enhanced type system if they don't want to.  You can check part of
 your program, or the whole thing.  Type inference tools exist to help you annotate your
-code; see Section~\ref{type-inference-to-annotate}.
+code; see Section~\ref{type-inference}.
 
 Most programmers will use type systems created by other people, such as
 those listed at the start of the introduction (\chapterpageref{introduction}).
@@ -292,8 +292,8 @@ described in Sections~\ref{writing-annotations} and~\ref{running}.
 
 \item The programmer writes annotations, such as \refqualclass{checker/nullness/qual}{NonNull} and
   \refqualclass{checker/interning/qual}{Interned}, that specify additional information about Java types.
-  (Or, the programmer uses an inference tool to automatically insert
-  annotations in his code:  see Section~\ref{type-inference-to-annotate}.)
+  (Or, the programmer uses an inference tool to automatically infer
+  annotations that are consistent with their code:  see Section~\ref{type-inference}.)
   It is possible to annotate only part of your code:  see
   Section~\ref{unannotated-code}.
 

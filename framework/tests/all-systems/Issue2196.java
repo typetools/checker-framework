@@ -1,6 +1,6 @@
 // Test case for Issue 2196.
 @SuppressWarnings("unchecked")
-class Issue2196 {
+public class Issue2196 {
     interface A {}
 
     interface B<V extends A, T> {}

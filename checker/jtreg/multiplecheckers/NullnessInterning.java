@@ -15,7 +15,7 @@
  * @compile/ref=NullnessInterning4.out -XDrawDiagnostics -Anomsgtext -processor org.checkerframework.checker.nullness.NullnessChecker,org.checkerframework.checker.interning.InterningChecker NullnessInterning.java -Awarns -Aorg.checkerframework.common.basetype.BaseTypeChecker_skipDefs=NullnessInterning
  */
 
-class NullnessInterning {
+public class NullnessInterning {
     Object f = null;
 
     void m(Object p) {

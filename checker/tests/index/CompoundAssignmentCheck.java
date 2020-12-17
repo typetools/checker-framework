@@ -1,4 +1,4 @@
-class CompoundAssignmentCheck {
+public class CompoundAssignmentCheck {
     void test() {
         int a = 9;
         a += 5;
