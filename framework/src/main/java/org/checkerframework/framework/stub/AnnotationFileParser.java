@@ -497,7 +497,7 @@ public class AnnotationFileParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     public static void parse(
             String filename,
@@ -574,7 +574,7 @@ public class AnnotationFileParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
      */
     private static void parse(
@@ -1135,7 +1135,7 @@ public class AnnotationFileParser {
      * does so.
      *
      * @param atype the type to modify
-     * @param typeDef the type from the stub file, used only for diagnostic messages
+     * @param typeDef the type from the annotation file, used only for diagnostic messages
      */
     @SuppressWarnings("unused") // for disabled warning message
     private void clearAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
@@ -1451,7 +1451,7 @@ public class AnnotationFileParser {
      *
      * @param elt the element to be annotated
      * @param annotations set of annotations that may be applicable to elt
-     * @param annotationFileAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @param astNode where to report errors
      */
     private void recordDeclAnnotation(
