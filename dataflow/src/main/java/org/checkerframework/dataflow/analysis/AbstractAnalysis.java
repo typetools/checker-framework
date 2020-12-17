@@ -185,13 +185,12 @@ public abstract class AbstractAnalysis<
     public @Nullable V getValue(Node n) {
         if (isRunning) {
             // we don't have a org.checkerframework.dataflow fact about the current node yet
-            if (currentNode == null
-                    || currentNode == n
-                    || (currentTree != null && currentTree == n.getTree())) {
+            if (currentNode == n || (currentTree != null && currentTree == n.getTree())) {
                 return null;
             }
             // check that 'n' is a subnode of 'node'. Check immediate operands
             // first for efficiency.
+            assert currentNode != null;
             assert !n.isLValue() : "Did not expect an lvalue, but got " + n;
             if (currentNode == n
                     || (!currentNode.getOperands().contains(n)
