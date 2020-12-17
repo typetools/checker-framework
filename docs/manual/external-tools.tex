@@ -325,7 +325,7 @@ You can learn more about Buck and annotation processors at these URLs:
 
 In order to use Checker Framework with Buck on JDK 8, you first need
 to place the Error Prone JDK 9 compiler in Buck's bootclasspath
-(further explanation in Section~\ref{java8-install}).  To do so,
+(further explanation in Section~\ref{javac-jdk8}).  To do so,
 follow the instructions on this page:
 
 {\codesize\url{https://github.com/uber/okbuck/wiki/Using-Error-Prone-with-Buck-and-OkBuck#using-error-prone-javac-on-jdk-8}}
@@ -522,7 +522,7 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
-(Section~\ref{java8-install}) and for JDK 9+ (Section~\ref{java11-install}).
+(Section~\ref{javac-jdk8}) and for JDK 9+ (Section~\ref{javac-jdk11}).
 
 
 \subsectionAndLabel{JDK 8}{javac-jdk8}
@@ -909,7 +909,7 @@ latest bug fixes and new features:
 \end{Verbatim}
 
 The need for the \<com.google.errorprone:javac> artifact when running under
-JDK 8 is explained in Section~\ref{java8-install}.
+JDK 8 is explained in Section~\ref{javac-jdk8}.
 
 \end{enumerate}
 
