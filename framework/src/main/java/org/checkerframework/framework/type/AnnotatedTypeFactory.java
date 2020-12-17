@@ -1276,12 +1276,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Merges types from stub files for {@code tree} into {@code type} by taking the greatest lower
-     * bound of the annotations in both.
+     * Merges types from annotation files for {@code tree} into {@code type} by taking the greatest
+     * lower bound of the annotations in both.
      *
-     * @param type the type to apply stub types to
-     * @param tree the tree from which to read stub types
-     * @return the given type, side-effected to add the stub types
+     * @param type the type to apply annotation file types to
+     * @param tree the tree from which to read annotation file types
+     * @return the given type, side-effected to add the annotation file types
      */
     private AnnotatedTypeMirror mergeStubsIntoType(@Nullable AnnotatedTypeMirror type, Tree tree) {
         Element elt = TreeUtils.elementFromTree(tree);
