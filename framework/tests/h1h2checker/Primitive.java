@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class Primitive {
+public class Primitive {
     @SuppressWarnings("type.incompatible")
     @H1S2 int o = 4;
 

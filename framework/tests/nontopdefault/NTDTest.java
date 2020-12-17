@@ -12,7 +12,7 @@ import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDTop;
 // DefaultQualifierInHierarchy is @NTDMiddle
 // DefaultFor receivers is @NTDTop
 
-class NTDConstructorReceiverTest {
+public class NTDConstructorReceiverTest {
 
     // default method receiver is @NTDTop
     void DefaultMethodReceiver() {

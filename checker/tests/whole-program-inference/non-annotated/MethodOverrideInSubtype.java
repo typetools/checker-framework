@@ -1,6 +1,6 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 
-class MethodOverrideInSubtype extends MethodDefinedInSupertype {
+public class MethodOverrideInSubtype extends MethodDefinedInSupertype {
     @java.lang.Override
     public int shouldReturnSibling1() {
         return getSibling1();

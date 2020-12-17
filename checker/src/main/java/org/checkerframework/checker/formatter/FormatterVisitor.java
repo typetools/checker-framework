@@ -40,7 +40,6 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil tu = atypeFactory.treeUtil;
         if (tu.isFormatCall(node, atypeFactory)) {
@@ -123,7 +122,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                         // TODO:  If it is explict array construction, such as "new Object[] {
                         // ... }", then we could treat it like the VARARGS case, analyzing each
                         // argument.  "new array" is probably rare, in the varargs position.
-                        /* fallthrough */
+                        // fall through
                     case NULLARRAY:
                         for (ConversionCategory cat : formatCats) {
                             if (cat == ConversionCategory.NULL) {

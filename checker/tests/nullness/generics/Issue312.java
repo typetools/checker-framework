@@ -20,7 +20,7 @@ class Ordering312<T> {
     }
 }
 
-class Issue312 {
+public class Issue312 {
     void test(List<String> list) {
         Ordering312.natural().reverse().sortedCopy(list);
     }
@@ -32,7 +32,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering312;
 import java.util.List;
 
-class Issue312 {
+public class Issue312 {
     void test() {
         List<String> list = Lists.newArrayList();
         Ordering.natural().reverse().sortedCopy(list);

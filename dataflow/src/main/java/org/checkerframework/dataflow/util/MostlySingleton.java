@@ -21,7 +21,6 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
     public boolean add(T e) {
         switch (state) {
             case EMPTY:
@@ -34,7 +33,7 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
                 assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
                 set.add(value);
                 value = null;
-                // fallthrough
+                // fall through
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.add(e);

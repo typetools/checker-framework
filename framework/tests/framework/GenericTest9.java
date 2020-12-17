@@ -2,7 +2,7 @@ import org.checkerframework.framework.testchecker.util.*;
 
 // Test case for Issue 140:
 // https://github.com/typetools/checker-framework/issues/140
-class GenericTest9 {
+public class GenericTest9 {
     // Make sure that substitutions on classes work correctly
 
     class C<X, Y extends X> {}

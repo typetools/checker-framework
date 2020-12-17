@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.Opt;
 import org.checkerframework.checker.nullness.qual.*;
 
 /** Test class org.checkerframework.checker.nullness.Opt. */
-class TestOpt {
+public class TestOpt {
     void foo1(@Nullable Object p) {
         if (Opt.isPresent(p)) {
             p.toString(); // Flow refinement

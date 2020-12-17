@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class WildcardReturn {
+public class WildcardReturn {
     public Set<Object> getCredentialIdsForUsername(String username) {
         return getRegistrationsByUsername(username).stream()
                 .map(registration -> registration.toString())

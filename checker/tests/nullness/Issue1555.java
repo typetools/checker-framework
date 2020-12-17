@@ -4,7 +4,7 @@
 import org.checkerframework.checker.nullness.NullnessUtil;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-class Issue1555 {
+public class Issue1555 {
 
     private @MonotonicNonNull String x;
 

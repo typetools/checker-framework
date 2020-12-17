@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class Issue579Error {
+public class Issue579Error {
 
     public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
         // :: error: (type.argument.type.incompatible)

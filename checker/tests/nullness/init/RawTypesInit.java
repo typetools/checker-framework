@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-class RawTypesInit {
+public class RawTypesInit {
 
     class Bad {
         @NonNull String field;

@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 
-class OverloadedMethodsTest {
+public class OverloadedMethodsTest {
 
     String f;
 

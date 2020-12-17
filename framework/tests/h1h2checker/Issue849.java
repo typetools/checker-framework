@@ -4,7 +4,7 @@
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Top;
 
-class Issue849 {
+public class Issue849 {
     class Gen<G> {}
 
     void polyAll(Gen<Gen<@H1S2 Object>> genGenNonNull) {

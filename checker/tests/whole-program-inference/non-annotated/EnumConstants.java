@@ -8,7 +8,7 @@
 
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 
-class EnumConstants {
+public class EnumConstants {
     enum MyEnum {
         ONE,
         TWO;

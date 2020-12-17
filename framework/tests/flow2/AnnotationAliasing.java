@@ -3,7 +3,7 @@ import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
 /** Various tests for annotation aliasing. */
-class AnnotationAliasing {
+public class AnnotationAliasing {
 
     String f1, f2, f3;
 

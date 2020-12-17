@@ -5,7 +5,7 @@
 // framework/tests/all-systems
 // checker/tests/nullness
 
-class Issue2048 {
+public class Issue2048 {
     interface Foo {}
 
     interface Fooer<R extends Foo> {}

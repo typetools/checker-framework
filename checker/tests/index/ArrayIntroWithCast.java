@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-class ArrayIntroWithCast<T> {
+public class ArrayIntroWithCast<T> {
 
     void test(String[] a, String[] b) {
         Object result = new Object[a.length + b.length];

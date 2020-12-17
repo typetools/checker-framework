@@ -1,4 +1,4 @@
-class InnerTypeTest3 {
+public class InnerTypeTest3 {
     private int[] nums;
 
     private static byte[] buffer = new byte[4096];

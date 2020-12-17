@@ -2,7 +2,7 @@ import java.lang.annotation.ElementType;
 
 class MyEnumSet<E extends Enum<E>> {}
 
-class Enumeration {
+public class Enums {
     public enum VarFlags {
         IS_PARAM,
         NO_DUPS

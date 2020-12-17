@@ -5,7 +5,7 @@ import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
 // various tests for the @Pure annotation
-class Purity {
+public class Purity {
 
     String f1, f2, f3;
     String[] a;

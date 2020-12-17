@@ -1,7 +1,7 @@
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
-class WildcardSubtypingTypeArray<A extends @Nullable Object> {
+public class WildcardSubtypingTypeArray<A extends @Nullable Object> {
     void test(List<? extends A> list) {
         test2(list.get(0));
     }

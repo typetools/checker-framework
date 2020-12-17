@@ -2,7 +2,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-class RegexPatternSyntaxException {
+public class RegexPatternSyntaxException {
     // :: warning: invalid.matches.regex
     void stringConstants(@MatchesRegex("(a*") String a) {}
 }

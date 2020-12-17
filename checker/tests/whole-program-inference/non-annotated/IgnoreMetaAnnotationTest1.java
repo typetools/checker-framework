@@ -1,7 +1,7 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 
 // See ExpectedErrors#IgnoreMetaAnnotationTest2
-class IgnoreMetaAnnotationTest1 {
+public class IgnoreMetaAnnotationTest1 {
 
     int field2;
 

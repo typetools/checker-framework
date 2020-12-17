@@ -1,5 +1,5 @@
 @SuppressWarnings("all") // Check for crashes.
-class Issue3570 {
+public class Issue3570 {
     public interface Freezable<T extends Freezable> extends Cloneable {}
 
     public static final class Key<T extends Keyed> extends Iced<Key<T>> implements Comparable {

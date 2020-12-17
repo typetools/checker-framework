@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Styleable {}
 
-class BoundedWildcardTest {
+public class BoundedWildcardTest {
 
     private void locChildren(Styleable c) {
         // ...

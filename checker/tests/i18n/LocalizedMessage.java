@@ -1,6 +1,6 @@
 import org.checkerframework.checker.i18n.qual.Localized;
 
-class LocalizedMessage {
+public class LocalizedMessage {
     @Localized String localize(String s) {
         throw new RuntimeException();
     }

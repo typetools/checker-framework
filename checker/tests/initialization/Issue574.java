@@ -10,7 +10,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
     // However, for the purposes of this test, fields must be annotated with @UnderInitialization.
     "initialization.invalid.field.type"
 })
-class Issue574 {
+public class Issue574 {
     @UnderInitialization(Object.class) Object o1;
 
     @UnderInitialization(String.class) Object o2;

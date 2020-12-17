@@ -3,7 +3,7 @@
 
 import org.checkerframework.dataflow.qual.*;
 
-class SuperClass {
+public class SuperClass {
     static int count = 0;
 
     public SuperClass() {

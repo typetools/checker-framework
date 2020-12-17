@@ -5,7 +5,7 @@ interface Supply946<R> {
     R supply();
 }
 
-class Issue946 {
+public class Issue946 {
     class MethodRefInnerA {
         // this line of code causes a crash in CF
         Supply946<MethodRefInnerB> constructorReferenceField = MethodRefInnerB::new;

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
-class Issue3850 {
+public class Issue3850 {
 
     private static Iterable<@PolyNull String> toPos(Iterable<? extends @PolyNull Object> nodes) {
         // :: error: (return.type.incompatible)

@@ -9,7 +9,7 @@ import org.checkerframework.common.aliasing.qual.MaybeAliased;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class MultiDimensionalArrays {
+public class MultiDimensionalArrays {
 
     // two dimensional arrays
 

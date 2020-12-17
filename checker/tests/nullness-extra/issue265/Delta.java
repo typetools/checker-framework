@@ -1,6 +1,6 @@
 import java.util.List;
 
-class Delta<E> {
+public class Delta<E> {
     List<E> field;
 
     Delta(List<E> field) {

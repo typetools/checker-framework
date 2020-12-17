@@ -211,8 +211,10 @@ allprojects {
             options.compilerArgs += [
                     '-g',
                     '-Werror',
-                    // To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
-                    "-Xlint:-options",
+                    // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
+                    // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+                    // are suppressible warns with a "// fall through" comment.
+                    "-Xlint:-options,-fallthrough",
                     "-Xlint",
             ]
 
@@ -913,6 +915,7 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
+            'securerandom.*',
             'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
             'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']

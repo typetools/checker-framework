@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.index.qual.*;
 
-class SizeVsLength {
+public class SizeVsLength {
 
     public int[] getArray(@NonNegative int size) {
         int[] values = new int[size];
