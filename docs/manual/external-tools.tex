@@ -893,7 +893,6 @@ checker as an annotation processor directly.
       <artifactId>checker-qual</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
-    <!-- If using JDK 8, add the following additional dependency. -->
     <dependency>
       <groupId>com.google.errorprone</groupId>
       <artifactId>javac</artifactId>
@@ -901,6 +900,9 @@ checker as an annotation processor directly.
     </dependency>
   </dependencies>
 \end{alltt}
+
+Java 11 and later do not need the \<com.google.errorprone.javac>
+dependency.  If you will never use Java 8, you can omit it.
 
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:
