@@ -21,7 +21,7 @@ public class WholeProgramInferenceTestCheckerJaifsTest extends CheckerFrameworkP
         super(
                 testFiles,
                 WholeProgramInferenceTestChecker.class,
-                "value",
+                "wpi-testchecker/non-annotated",
                 "-Anomsgtext",
                 "-Ainfer=jaifs");
     }
