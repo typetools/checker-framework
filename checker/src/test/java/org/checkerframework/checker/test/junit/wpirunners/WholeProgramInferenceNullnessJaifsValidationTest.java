@@ -11,12 +11,12 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests whole-program type inference with the aid of .jaif files. This test is the second pass,
  * which ensures that with the annotations inserted, the errors are no longer issued.
  */
-@Category(WholeProgramInferenceNullnessJaifsValidationTest.class)
+@Category(WholeProgramInferenceNullnessJaifsTest.class)
 public class WholeProgramInferenceNullnessJaifsValidationTest
         extends CheckerFrameworkPerDirectoryTest {
     /** @param testFiles the files containing test code, which will be type-checked */
     public WholeProgramInferenceNullnessJaifsValidationTest(List<File> testFiles) {
-        super(testFiles, NullnessChecker.class, "value", "-Anomsgtext");
+        super(testFiles, NullnessChecker.class, "nullness", "-Anomsgtext");
     }
 
     @Override

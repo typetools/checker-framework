@@ -16,7 +16,11 @@ public class WholeProgramInferenceTestCheckerJaifsValidationTest
         extends CheckerFrameworkPerDirectoryTest {
     /** @param testFiles the files containing test code, which will be type-checked */
     public WholeProgramInferenceTestCheckerJaifsValidationTest(List<File> testFiles) {
-        super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
+        super(
+                testFiles,
+                WholeProgramInferenceTestChecker.class,
+                "wpi-testchecker/non-annotated",
+                "-Anomsgtext");
     }
 
     @Override
