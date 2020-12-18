@@ -136,6 +136,7 @@ clean {
     delete("tests/wpi-testchecker/annotated")
     delete("tests/wpi-testchecker/inference-output")
     delete("tests/wpi-nullness/annotated")
+    delete("tests/wpi-nullness/inference-output")
 }
 
 // Add non-junit tests
@@ -442,7 +443,7 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
 // This task is similar to the wholeProgramInferenceTestCheckerJaifTests task below, but it doesn't
 // run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
 // and the -AmergeStubsWithSource feature to do WPI using stub files.
-task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
+task wholeProgramInferenceTestCheckerStubTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using stub files'
     dependsOn(testWpiTestCheckerStubsValidate)
     outputs.upToDateWhen { false }
@@ -475,17 +476,19 @@ task testWpiTestCheckerJaifs(type: Test) {
         delete('tests/wpi-testchecker/annotated/MultiDimensionalArrays.java')
 
         // Inserting annotations from .jaif files in-place.
-        List<File> jaifs = fileTree("tests/wpi-testchecker/inference-output").matching {
+        String jaifsDir = "tests/wpi-testchecker/inference-output";
+        List<File> jaifs = fileTree(jaifsDir).matching {
             include '*.jaif'
         }.asList()
         if (jaifs.isEmpty()) {
-            throw new GradleException("no .jaif files found in ${buildDir}/wpi-testchecker/")
+            throw new GradleException("no .jaif files found in ${jaifsDir}")
         }
-        List<File> javas = fileTree("tests/wpi-testchecker/annotated/").matching {
+        String javasDir = "tests/wpi-testchecker/annotated/";
+        List<File> javas = fileTree(javasDir).matching {
             include '*.java'
         }.asList()
         if (javas.isEmpty()) {
-            throw new GradleException("no .java files found in tests/wpi-testchecker/annotated/")
+            throw new GradleException("no .java files found in ${javasDir}")
         }
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
@@ -553,17 +556,19 @@ task testWpiNullnessJaifs(type: Test) {
         delete('tests/wpi-nullness/annotated/MultiDimensionalArrays.java')
 
         // Inserting annotations from .jaif files in-place.
-        List<File> jaifs = fileTree("tests/wpi-nullness/inference-output").matching {
+        String jaifsDir = "tests/wpi-nullness/inference-output";
+        List<File> jaifs = fileTree(jaifsDir).matching {
             include '*.jaif'
         }.asList()
         if (jaifs.isEmpty()) {
-            throw new GradleException("no .jaif files found in ${buildDir}/wpi-nullness")
+            throw new GradleException("no .jaif files found in ${jaifsDir}")
         }
-        List<File> javas = fileTree("tests/wpi-nullness/annotated/").matching {
+        String javasDir = "tests/wpi-nullness/annotated/";
+        List<File> javas = fileTree(javasDir).matching {
             include '*.java'
         }.asList()
         if (javas.isEmpty()) {
-            throw new GradleException("no .java files found in tests/wpi-nullness/annotated/")
+            throw new GradleException("no .java files found in ${javasDir}")
         }
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
@@ -597,7 +602,7 @@ task testWpiNullnessJaifsValidate(type: Test) {
     }
 }
 
-task wholeProgramInferenceJaifNullnessTests(dependsOn: 'shadowJar', group: 'Verification') {
+task wholeProgramInferenceNullnessJaifTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using .jaif files'
     dependsOn(testWpiNullnessJaifsValidate)
     outputs.upToDateWhen { false }
@@ -609,6 +614,6 @@ task wholeProgramInferenceJaifNullnessTests(dependsOn: 'shadowJar', group: 'Veri
 task wholeProgramInferenceTests() {
     description "Run tests for all whole program inference modes."
     dependsOn('wholeProgramInferenceTestCheckerJaifTests')
-    dependsOn('wholeProgramInferenceStubTests')
+    dependsOn('wholeProgramInferenceTestCheckerStubTests')
     dependsOn('wholeProgramInferenceNullnessJaifTests')
 }
