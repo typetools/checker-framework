@@ -272,8 +272,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * Obtain the AField for an expression in scope at method entry or exit.
      *
      * @param amethod AFU representation of a method
-     * @param preOrPost indicates whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or
-     *     {@code vivifyAndAddTypeMirrorToPostcondition}
+     * @param preOrPost whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or {@code
+     *     vivifyAndAddTypeMirrorToPostcondition}
      * @param fieldElement the field
      * @return an AField representing the expression
      */

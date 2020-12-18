@@ -2244,8 +2244,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Return the string representation of precondition annotations for the given AMethod. Does not
-     * modify the AMethod.
+     * Return the precondition annotations for the given AMethod. Does not modify the AMethod.
      *
      * @param m AFU representation of a method
      * @return precondition annotations for the method
@@ -2260,8 +2259,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Return the string representation of postcondition annotations for the given AMethod. Does not
-     * modify the AMethod.
+     * Return the postcondition annotations for the given AMethod. Does not modify the AMethod.
      *
      * @param m AFU representation of a method
      * @param preconds the precondition annotations for the method; used to suppress redundant
@@ -2330,6 +2328,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param elt element for a field
      * @param f AFU representation of a field's postcondition annotations
+     * @param preOrPost whether to return preconditions or postconditions
      * @param preconds the precondition annotations for the method; used to suppress redundant
      *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
      * @return a postcondition annotation for the element, or null if none is appropriate
@@ -2406,6 +2405,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param fieldElement a field
      * @param qualifier the qualifier that must be present
+     * @param preOrPost whether to return a precondition or postcondition annotation
      * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
      *     the given field, or null
      */
