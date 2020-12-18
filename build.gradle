@@ -1114,11 +1114,3 @@ void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {
             project.tasks.getByName('sourcesJar').archiveFile.get().toString(),
             project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom)
 }
-
-allprojects {
-  tasks.withType(Exec) {
-    doFirst {
-      println commandLine
-    }
-  }
-}
