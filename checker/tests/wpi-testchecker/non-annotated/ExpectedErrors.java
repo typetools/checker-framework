@@ -204,6 +204,7 @@ public class ExpectedErrors {
         // The types of both fields are not refined to @WholeProgramInferenceBottom,
         // as whole-program inference never performs refinement in the presence
         // of the null literal.
+        @SuppressWarnings("value")
         void assignFieldsToBottom() {
             privateField = null;
             publicField = null;
