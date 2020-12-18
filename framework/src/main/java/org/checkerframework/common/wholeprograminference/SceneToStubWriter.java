@@ -554,7 +554,7 @@ public final class SceneToStubWriter {
             printWriter.println(formatAnnotation(declAnno));
         }
 
-        for (AnnotationMirror contractAnno : atf.getContractAnnotations(aMethod)) {
+        for (Annotation contractAnno : aMethod.contracts) {
             printWriter.print(indentLevel);
             printWriter.println(contractAnno);
         }

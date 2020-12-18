@@ -12,14 +12,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.AnnotationConverter;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
@@ -145,28 +143,22 @@ public class ASceneWrapper {
                 throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
         new File(filepath).delete();
+        // Only write non-empty scenes into files.
         if (!scene.isEmpty()) {
-            // Only write non-empty scenes into files.
             try {
+                for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+                    AClass aClass = classEntry.getValue();
+                    for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
+                        AMethod aMethod = methodEntry.getValue();
+                        checker.getTypeFactory().setContractAnnotations(aMethod);
+                    }
+                }
+
                 switch (outputFormat) {
                     case STUB:
                         SceneToStubWriter.write(this, filepath, checker);
                         break;
                     case JAIF:
-                        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
-                            AClass aClass = classEntry.getValue();
-                            for (Map.Entry<String, AMethod> methodEntry :
-                                    aClass.getMethods().entrySet()) {
-                                AMethod aMethod = methodEntry.getValue();
-                                List<AnnotationMirror> contractAnnotationMirrors =
-                                        checker.getTypeFactory().getContractAnnotations(aMethod);
-                                List<Annotation> contractAnnotations =
-                                        mapList(
-                                                AnnotationConverter::annotationMirrorToAnnotation,
-                                                contractAnnotationMirrors);
-                                aMethod.contracts = contractAnnotations;
-                            }
-                        }
                         IndexFileWriter.write(scene, new FileWriter(filepath));
                         break;
                     default:

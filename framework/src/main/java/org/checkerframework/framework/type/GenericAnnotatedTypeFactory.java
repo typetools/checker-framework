@@ -2229,11 +2229,26 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Return the string representation of contract annotations (that is, pre- and post-conditions)
-     * for the given AMethod. Does not modify the AMethod.
+     * Sets the {@code contracts} field of the given AMethod.
+     *
+     * @param aMethod AFU representation of a method
+     */
+    public void setContractAnnotations(AMethod aMethod) {
+        List<AnnotationMirror> contractAnnotationMirrors =
+                checker.getTypeFactory().getContractAnnotations(aMethod);
+        List<Annotation> contractAnnotations =
+                mapList(
+                        AnnotationConverter::annotationMirrorToAnnotation,
+                        contractAnnotationMirrors);
+        aMethod.contracts = contractAnnotations;
+    }
+
+    /**
+     * Return the contract annotations (that is, pre- and post-conditions) for the given AMethod.
+     * Does not modify the AMethod.
      *
      * @param m AFU representation of a method
-     * @return precondition annotations for the method
+     * @return contract annotations for the method
      */
     public List<AnnotationMirror> getContractAnnotations(AMethod m) {
         List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
