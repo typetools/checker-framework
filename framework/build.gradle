@@ -179,7 +179,6 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
 }
 
 clean {
-    delete("tests/whole-program-inference/annotated")
     delete("tests/returnsreceiverdelomboked")
     delete('dist')
 }
