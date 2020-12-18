@@ -18,7 +18,7 @@ public class ExpectedErrors {
 
     // The type of both privateDeclaredField and publicDeclaredField are
     // not refined to @WholeProgramInferenceBottom.
-    void assignFieldsToBottom() {
+    void assignFieldsToSibling1() {
         privateDeclaredField = getSibling1();
         publicDeclaredField = getSibling1();
     }
