@@ -40,7 +40,12 @@ class EnsuresQualifierTest {
     }
 
     void parentIsSibling1() {
-        parent = sibling2;
+        parent = sibling1;
+    }
+
+    // Prevent refinement of the `parent` field variable.
+    void parentIsParent(@Parent int x) {
+        parent = x;
     }
 
     void noEnsures() {}
