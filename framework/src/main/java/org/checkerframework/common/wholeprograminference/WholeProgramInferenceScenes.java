@@ -232,31 +232,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
-        // TODO: Handle more than just fields of "this".
-
-        // Process the store's fields.
-        for (Map.Entry<FieldAccess, ? extends CFAbstractValue<?>> entry :
-                store.getFieldValues().entrySet()) {
-            FieldAccess fa = entry.getKey();
-            CFAbstractValue<?> v = entry.getValue();
-
-            VariableElement fieldElement = fa.getField();
-            AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fieldElement);
-
-            if (!ElementUtils.inSameClass(methodElt, fieldElement)) {
-                continue;
-            }
-
-            AnnotatedTypeMirror atm = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldType);
-            adjustForUpdateNonField(atm);
-
-            AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
-
-            updateAnnotationSetInScene(
-                    afield.type, TypeUseLocation.FIELD, atm, fieldType, jaifPath, false);
-        }
-
-        // Process fields that are not in the store.
+        // This code only handles fields of "this", for now.  In the future, extend it to other
+        // expressions.
         TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
         ThisReference thisReference = new ThisReference(containingClass.asType());
         ClassName classNameReceiver = new ClassName(containingClass.asType());
@@ -269,13 +246,25 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                                     : thisReference),
                             fieldElement.asType(),
                             fieldElement);
-            if (store.getFieldValue(fa) == null) {
+            CFAbstractValue<?> v = store.getFieldValue(fa);
+            AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
+            AnnotatedTypeMirror inferredType;
+            if (v != null) {
+                // This field is in the store.
+                inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
+                adjustForUpdateNonField(inferredType);
+            } else {
                 // This field is not in the store. Add its declared type.
-                AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fieldElement);
-                AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
-                updateAnnotationSetInScene(
-                        afield.type, TypeUseLocation.FIELD, fieldType, fieldType, jaifPath, false);
+                inferredType = atypeFactory.getAnnotatedType(fieldElement);
             }
+            AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
+            updateAnnotationSetInScene(
+                    afield.type,
+                    TypeUseLocation.FIELD,
+                    inferredType,
+                    fieldDeclType,
+                    jaifPath,
+                    false);
         }
     }
 

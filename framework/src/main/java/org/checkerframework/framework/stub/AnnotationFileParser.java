@@ -2277,6 +2277,8 @@ public class AnnotationFileParser {
 
         if (res == null) {
             if (importFound) {
+                // TODO: Is this warning redundant?  Maybe imported but invalid types or fields will
+                // have warnings from above.
                 stubWarnNotFound(nexpr, nexpr.getName() + " was imported but not found");
             } else {
                 stubWarnNotFound(nexpr, "Static field " + nexpr.getName() + " is not imported");
