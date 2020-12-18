@@ -439,11 +439,6 @@ public class TestUtilities {
             }
             Assert.fail(testResult.summarize());
         }
-        if (getShouldEmitDebugInfo()) {
-            System.out.println("---------------- start of javac ouput ----------------");
-            System.out.println(testResult.getCompilationResult().getJavacOutput());
-            System.out.println("---------------- end of javac ouput ----------------");
-        }
     }
 
     /**
