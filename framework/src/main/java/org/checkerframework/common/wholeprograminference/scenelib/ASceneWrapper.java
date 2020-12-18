@@ -12,12 +12,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.AnnotationConverter;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
@@ -150,7 +152,13 @@ public class ASceneWrapper {
                     AClass aClass = classEntry.getValue();
                     for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
                         AMethod aMethod = methodEntry.getValue();
-                        checker.getTypeFactory().setContractAnnotations(aMethod);
+                        List<AnnotationMirror> contractAnnotationMirrors =
+                                checker.getTypeFactory().getContractAnnotations(aMethod);
+                        List<Annotation> contractAnnotations =
+                                mapList(
+                                        AnnotationConverter::annotationMirrorToAnnotation,
+                                        contractAnnotationMirrors);
+                        aMethod.contracts = contractAnnotations;
                     }
                 }
 
@@ -172,7 +180,7 @@ public class ASceneWrapper {
         }
     }
 
-    // TODO: Move to plume-lib.
+    // TODO: Use the version in plume-lib.
     /**
      * Applies the function to each element of the given collection, producing a list of the
      * results.

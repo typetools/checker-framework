@@ -28,7 +28,6 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
@@ -535,14 +534,9 @@ public final class SceneToStubWriter {
      *     constructor names
      * @param printWriter where to print the method signature
      * @param indentLevel the indent string
-     * @param atf the type factory, for computing preconditions and postconditions
      */
     private static void printMethodDeclaration(
-            AMethod aMethod,
-            String simplename,
-            PrintWriter printWriter,
-            String indentLevel,
-            GenericAnnotatedTypeFactory<?, ?, ?, ?> atf) {
+            AMethod aMethod, String simplename, PrintWriter printWriter, String indentLevel) {
 
         if (aMethod.getTypeParameters() == null) {
             // aMethod.setFieldsFromMethodElement has not been called
@@ -730,11 +724,7 @@ public final class SceneToStubWriter {
             printWriter.println();
             for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
                 printMethodDeclaration(
-                        methodEntry.getValue(),
-                        innermostClassname,
-                        printWriter,
-                        indentLevel,
-                        checker.getTypeFactory());
+                        methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }
         }
         for (int i = 0; i < curlyCount; i++) {
