@@ -440,7 +440,7 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
 // This task is similar to the wholeProgramInferenceTestCheckerJaifTests task below, but it doesn't
 // run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
 // and the -AmergeStubsWithSource feature to do WPI using stub files.
-task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
+task wholeProgramInferenceTestCheckerStubTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using stub files'
     dependsOn(testWpiTestCheckerStubsValidate)
     outputs.upToDateWhen { false }
@@ -525,5 +525,5 @@ task wholeProgramInferenceTestCheckerJaifTests(dependsOn: 'shadowJar', group: 'V
 task wholeProgramInferenceTests() {
     description "Run tests for all whole program inference modes."
     dependsOn('wholeProgramInferenceTestCheckerJaifTests')
-    dependsOn('wholeProgramInferenceStubTests')
+    dependsOn('wholeProgramInferenceTestCheckerStubTests')
 }
