@@ -940,18 +940,6 @@ public abstract class AnnotatedTypeMirror {
             } else if (wasRaw()) {
                 // Initialize the type arguments with uninferred wildcards.
                 BoundsInitializer.initializeTypeArgs(this);
-
-                // Copy annotations from the declaration to the wildcards.
-                AnnotatedDeclaredType declaration =
-                        atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
-                for (int i = 0; i < typeArgs.size(); i++) {
-                    AnnotatedTypeVariable typeParam =
-                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
-                    AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    wct.getExtendsBound().replaceAnnotations(typeParam.getUpperBound().annotations);
-                    wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
-                    wct.replaceAnnotations(typeParam.annotations);
-                }
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
                 typeArgs = Collections.emptyList();
