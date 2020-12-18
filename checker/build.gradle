@@ -134,6 +134,7 @@ clean {
     delete "${projectDir}/dist"
     delete "tests/calledmethods-delomboked"
     delete("tests/wpi-testchecker/annotated")
+    delete("tests/wpi-testchecker/inference-output")
 }
 
 // Add non-junit tests

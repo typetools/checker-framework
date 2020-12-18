@@ -18,9 +18,8 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.util.UtilPlume;
 
 /**
- * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
- * builder pattern. That is, it returns itself after every call so you can string together
- * configuration methods as follows:
+ * Used to create an instance of TestConfiguration. TestConfigurationBuilder is fluent: it returns
+ * itself after every call so you can string together configuration methods as follows:
  *
  * <p>{@code new TestConfigurationBuilder() .addOption("-Awarns") .addSourceFile("src1.java")
  * .addDiagnosticFile("src1.out") }

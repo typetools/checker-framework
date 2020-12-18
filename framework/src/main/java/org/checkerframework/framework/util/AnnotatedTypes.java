@@ -1009,7 +1009,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns true if atm is an Annotation interface, i.e. an implementation of
+     * Returns true if atm is an Annotation interface, i.e., an implementation of
      * java.lang.annotation.Annotation. Given {@code @interface MyAnno}, a call to {@code
      * implementsAnnotation} returns true when called on an AnnotatedDeclaredType representing a use
      * of MyAnno.

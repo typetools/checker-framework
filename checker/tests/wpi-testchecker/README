@@ -25,7 +25,7 @@ the temporary "annotated" folder. The expected error comments were removed,
 but the inferred types that were inserted should remove their occurrence during
 the type-checking.
 
-If an error should persist even after the whole-program inference, add it
+If an error should persist even after the whole-program inference, add the test
 to the "non-annotated/ExpectedErrors.java" file. This is the only file
 where the expected error comments are not removed when copied to
 "annotated/ExpectedErrors.java".
