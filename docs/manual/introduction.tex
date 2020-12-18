@@ -1156,63 +1156,75 @@ program has a bug.
 
 \subsubsectionAndLabel{Methods that crash when passed certain values}{annotate-normal-behavior-always-crash}
 
-As an example, the goal of the Nullness Checker is to guarantee that your
-program does not crash due to a null value.  In a method like this:
+\paragraphAndLabel{Nullness example}{annotate-normal-behavior-nullness-example}
+As an example, consider the Nullness Checker.  Its goal is to guarantee that your
+program does not crash due to a null value.
+
+This method crashes if \<null> is passed to it:
 
 \begin{Verbatim}
-  /** @throws IllegalArgumentException if arg is null */
-  void m(Object arg) {
-    if (arg == null) {
-      throw new IllegalArgumentException();
-    }
+  /** @throws NullPointerException if arg is null */
+  void m1(Object arg) {
+    arg.toString();
     ...
   }
 \end{Verbatim}
 
 \noindent
-the program crashes if \<null> is passed.  Therefore, the type of \<arg>
+Therefore, the type of \<arg>
 should be \<@NonNull Object> (which you can write as just \<Object> due to
 defaulting).  The Nullness Checker (\chapterpageref{nullness-checker})
-will warn whenever a client passes a
-value that might cause m to crash.  If you wrote the type of the formal
-parameter as \<@Nullable Object>, the Nullness Checker would permit clients
-to make calls that lead to a crash.
+prevents null pointer exceptions by warning you whenever a client passes a
+value that might cause \<m1> to crash.
 
-
-The same argument applies to methods that guaranteed to throw an exception
-if they are passed \code{null}
-as an argument.  Examples include
+Here is another method:
 
 \begin{Verbatim}
-  java.lang.Double.valueOf(String)
-  java.lang.String.contains(CharSequence)
-  java.lang.Objects.requireNotNull(Object)
-  org.junit.Assert.assertNotNull(Object)
-  com.google.common.base.Preconditions.checkNotNull(Object)
+  /** @throws NullPointerException if arg is null */
+  void m2(Object arg) {
+    Objects.requireNonNull(arg);
+    ...
+  }
 \end{Verbatim}
 
-\refqualclass{checker/nullness/qual}{Nullable} (see Section~\ref{nullness-annotations})
-might seem like a reasonable annotation for the parameter,
-for two reasons.  First, \code{null} is a legal argument with a
-well-defined semantics:  throw an exception.  Second, \code{@Nullable}
-describes a possible program execution:  it might be possible for
-\code{null} to flow there, if your program has a bug.
+Method \<m2> behaves just like \<m1> in that it throws
+\<NullPointerException> if a client passes \<null>.  Therefore, a checker
+should issue the same warning if a client might pass \<null>.
 
-% (Checking for such a bug is the whole purpose of the \code{assertNotNull}
-% and \code{checkNotNull} methods.)
+The same argument applies to any method that is guaranteed to throw an exception
+if it receives \code{null} as an argument.  Examples include:
 
-However, it is never useful for a programmer to pass \code{null}.  It is
-the programmer's intention that \code{null} never flows there.  If
-\code{null} does flow there, the program will not continue normally
-(whether or not it throws a NullPointerException).
+\begin{Verbatim}
+  com.google.common.base.Preconditions.checkNotNull(Object)
+  java.lang.Double.valueOf(String)
+  java.lang.Objects.requireNonNull(Object)
+  java.lang.String.contains(CharSequence)
+  org.junit.Assert.assertNotNull(Object)
+\end{Verbatim}
 
-Therefore, you should specify such parameters as
-\refqualclass{checker/nullness/qual}{NonNull}, indicating
-the intended use of the method.  When you specify the parameter as the \code{@NonNull}
-annotation, the checker is able to issue compile-time warnings about
-possible run-time exceptions, which is its purpose.
+Their formal parameter type is annotated as \<@NonNull>, because otherwise the
+program might crash.  Adding a call to a method like \<requireNonNull>
+never prevents a crash:  your code still crashes, but with a slightly
+different stack trace.  In order to prevent all exceptions in your program
+caused by null pointers, you need to prevent those thrown by methods like
+\<requireNonNull>.
+
+(Here is a counterargument that the formal parameter should be annotated as
+\refqualclass{checker/nullness/qual}{Nullable}:  passing \code{null} has a
+well-defined semantics (throw an exception) and such an execution may be
+possible if your program has a bug.  However, it is never the programmer's
+intent for \<null> to flow there; preventing such bugs is the purpose of
+the Nullness Checker.)
+
+A method like \<requireNonNull> is useless for making your code correct,
+but it does have a benefit:  its stack trace may help developers to track
+down the bug.  (For users, the stack trace is scary, confusing, and usually
+non-actionable.)  But if you are using the Checker Framework, you can
+prevent errors rather than needing extra help in debugging the ones that
+occur at run time.
 
 
+\paragraphAndLabel{Optional example}{annotate-normal-behavior-optional-example}
 Another example is the Optional Checker (\chapterpageref{optional-checker})
 and the \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow} method.
 The goal of the Optional Checker is to ensure that the program does not
