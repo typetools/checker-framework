@@ -440,8 +440,9 @@ task testWpiTestCheckerJaifs(type: Test) {
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
+            // The framework is needed for Constant Value Checker annotations.
             // TODO: There must be a variable that holds this test directory.
-            args = ['-cp', "${buildDir}/classes/java/test"]
+            args = ['-cp', "${buildDir}/classes/java/test:${buildDir}/../../framework/build/classes/java/main"]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
