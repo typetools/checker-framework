@@ -183,6 +183,9 @@ public class InitializationVisitor<
                 || !(expr instanceof FieldAccess)) {
             return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
         }
+        if (expr.containsUnknown()) {
+            return false;
+        }
 
         FieldAccess fa = (FieldAccess) expr;
         if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {

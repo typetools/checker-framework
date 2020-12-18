@@ -129,7 +129,7 @@ checker/jtreg/multipleexecutions/Main.class
 checker-qual/src
 checker-qual-android/src
 
-# Tests that produce output into tests/ directory instead of build/ directory.
+# Some tests produce output into the tests/ directory instead of the build/ directory.
 checker/tests/wpi-testchecker/annotated/
 checker/tests/wpi-testchecker/inference-output/
 checker/tests/wpi-nullness/annotated/
