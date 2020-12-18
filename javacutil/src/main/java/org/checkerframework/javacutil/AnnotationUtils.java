@@ -1050,4 +1050,18 @@ public class AnnotationUtils {
         }
         return result.toString();
     }
+
+    /**
+     * Converts an AnnotationMirror to a Class. Throws an exception if it is not able to do so.
+     *
+     * @param am an AnnotationMirror
+     * @return the Class corresponding to the given AnnotationMirror
+     */
+    public static Class<?> annotationMirrorToClass(AnnotationMirror am) {
+        try {
+            return Class.forName(AnnotationUtils.annotationBinaryName(am));
+        } catch (ClassNotFoundException e) {
+            throw new BugInCF(e);
+        }
+    }
 }

@@ -745,6 +745,8 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
         if (!(declaredType.hasAnnotation(NULLABLE)
                 || declaredType.hasAnnotation(POLYNULL)
                 || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
@@ -778,6 +780,8 @@ public class NullnessAnnotatedTypeFactory
     public List<AnnotationMirror> getPostconditionAnnotation(
             VariableElement elt, AField f, List<AnnotationMirror> preconds) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
         if (!(declaredType.hasAnnotation(NULLABLE)
                 || declaredType.hasAnnotation(POLYNULL)
                 || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
