@@ -12,7 +12,8 @@ import org.junit.runners.Parameterized.Parameters;
  * which ensures that with the annotations inserted, the errors are no longer issued.
  */
 @Category(WholeProgramInferenceTestCheckerJaifsTest.class)
-public class WholeProgramInferenceTestCheckerJaifsValidationTest extends CheckerFrameworkPerDirectoryTest {
+public class WholeProgramInferenceTestCheckerJaifsValidationTest
+        extends CheckerFrameworkPerDirectoryTest {
     /** @param testFiles the files containing test code, which will be type-checked */
     public WholeProgramInferenceTestCheckerJaifsValidationTest(List<File> testFiles) {
         super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
@@ -24,7 +25,8 @@ public class WholeProgramInferenceTestCheckerJaifsValidationTest extends Checker
         // See wholeProgramInferenceTests task.
         if (!new File("tests/wpi-testchecker/annotated/").exists()) {
             throw new RuntimeException(
-                    WholeProgramInferenceTestCheckerJaifsTest.class + " must be run before this test.");
+                    WholeProgramInferenceTestCheckerJaifsTest.class
+                            + " must be run before this test.");
         }
         super.run();
     }
