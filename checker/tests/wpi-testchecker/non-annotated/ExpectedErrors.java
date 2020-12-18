@@ -59,7 +59,7 @@ public class ExpectedErrors {
     private static int lubPrivateField;
     public static int lubPublicField;
 
-    void assignFieldsToSibling1() {
+    void assignLubFieldsToSibling1() {
         lubPrivateField = getSibling1();
         lubPublicField = getSibling1();
     }
