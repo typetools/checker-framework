@@ -1444,19 +1444,19 @@ public class AnnotationFileParser {
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
+        Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
-            putNewElement(result, typeElt, member, typeDecl.getNameAsString(), astNode);
+            putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
         }
         // For an enum type declaration, also add the enum constants
         if (typeDecl instanceof EnumDeclaration) {
             EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
             // getEntries() gives the list of enum constant declarations
             for (BodyDeclaration<?> member : enumDecl.getEntries()) {
-                putNewElement(result, typeElt, member, typeDecl.getNameAsString(), astNode);
+                putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
             }
         }
-        return result;
+        return elementsToDecl;
     }
 
     // Used only by getMembers
