@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Implementation of a {@link TransferResult} with just one non-exceptional store. The result of
@@ -136,10 +136,12 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     public String toString() {
         StringJoiner result = new StringJoiner(System.lineSeparator());
         result.add("RegularTransferResult(");
-        result.add("  resultValue = " + UtilPlume.indentLinesExceptFirst(2, resultValue));
+        result.add("  resultValue = " + StringsPlume.indentLinesExceptFirst(2, resultValue));
         // "toString().trim()" works around bug where toString ends with a newline.
         result.add(
-                "  store = " + UtilPlume.indentLinesExceptFirst(2, store.toString().trim()) + ")");
+                "  store = "
+                        + StringsPlume.indentLinesExceptFirst(2, store.toString().trim())
+                        + ")");
         return result.toString();
     }
 
