@@ -1483,7 +1483,7 @@ public class AnnotationFileParser {
             MethodDeclaration method = (MethodDeclaration) member;
             Element elt = findElement(typeElt, method);
             if (elt != null) {
-                putIfAbsent(elementsToDecl, elt, member);
+                putIfAbsent(elementsToDecl, elt, method);
             }
         } else if (member instanceof ConstructorDeclaration) {
             Element elt = findElement(typeElt, (ConstructorDeclaration) member);
