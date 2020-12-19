@@ -28,6 +28,7 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
@@ -533,10 +534,15 @@ public final class SceneToStubWriter {
      * @param simplename the simple name of the enclosing class, for receiver parameters and
      *     constructor names
      * @param printWriter where to print the method signature
+     * @param atf the type factory, for computing preconditions and postconditions
      * @param indentLevel the indent string
      */
     private static void printMethodDeclaration(
-            AMethod aMethod, String simplename, PrintWriter printWriter, String indentLevel) {
+            AMethod aMethod,
+            String simplename,
+            PrintWriter printWriter,
+            String indentLevel,
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> atf) {
 
         if (aMethod.getTypeParameters() == null) {
             // aMethod.setFieldsFromMethodElement has not been called
@@ -548,7 +554,7 @@ public final class SceneToStubWriter {
             printWriter.println(formatAnnotation(declAnno));
         }
 
-        for (Annotation contractAnno : aMethod.contracts) {
+        for (AnnotationMirror contractAnno : atf.getContractAnnotations(aMethod)) {
             printWriter.print(indentLevel);
             printWriter.println(contractAnno);
         }
@@ -724,7 +730,11 @@ public final class SceneToStubWriter {
             printWriter.println();
             for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
                 printMethodDeclaration(
-                        methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
+                        methodEntry.getValue(),
+                        innermostClassname,
+                        printWriter,
+                        indentLevel,
+                        checker.getTypeFactory());
             }
         }
         for (int i = 0; i < curlyCount; i++) {

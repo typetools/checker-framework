@@ -164,9 +164,29 @@ public class ASceneWrapper {
 
                 switch (outputFormat) {
                     case STUB:
+                        // For stub files, pass in the checker to compute contracts on the fly;
+                        // precomputing yields incorrect annotations, most likely due to nested
+                        // classes.
                         SceneToStubWriter.write(this, filepath, checker);
                         break;
                     case JAIF:
+                        // For .jaif files, precompute contracts because the Annotation File
+                        // Utilities knows nothing about (and cannot depend on) the Checker
+                        // Framework.
+                        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+                            AClass aClass = classEntry.getValue();
+                            for (Map.Entry<String, AMethod> methodEntry :
+                                    aClass.getMethods().entrySet()) {
+                                AMethod aMethod = methodEntry.getValue();
+                                List<AnnotationMirror> contractAnnotationMirrors =
+                                        checker.getTypeFactory().getContractAnnotations(aMethod);
+                                List<Annotation> contractAnnotations =
+                                        mapList(
+                                                AnnotationConverter::annotationMirrorToAnnotation,
+                                                contractAnnotationMirrors);
+                                aMethod.contracts = contractAnnotations;
+                            }
+                        }
                         IndexFileWriter.write(scene, new FileWriter(filepath));
                         break;
                     default:
