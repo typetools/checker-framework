@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1443,7 +1444,7 @@ public class AnnotationFileParser {
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration<?>> elementsToDecl = new HashMap<>();
+        Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
 
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
             putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
@@ -1456,7 +1457,6 @@ public class AnnotationFileParser {
                 putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
             }
         }
-
         return elementsToDecl;
     }
 
