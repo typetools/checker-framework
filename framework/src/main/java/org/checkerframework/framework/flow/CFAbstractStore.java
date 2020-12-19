@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.ToStringComparator;
+import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
 /**

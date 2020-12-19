@@ -255,7 +255,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
-     * @see AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput, IdentityHashMap, Map)
+     * @see AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
+     *     IdentityHashMap, Map)
      */
     protected final Map<
                     TransferInput<Value, Store>,
