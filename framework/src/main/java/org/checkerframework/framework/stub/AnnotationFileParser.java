@@ -1430,6 +1430,8 @@ public class AnnotationFileParser {
      *   <li>Otherwise, does nothing.
      * </ul>
      *
+     * This method does not read or write the field {@link #annotationFileAnnos}.
+     *
      * @param typeDecl a JavaParser type declaration
      * @param typeElt the element for {@code typeDecl}
      * @return a mapping from elements to their declaration in a stub file
@@ -1465,6 +1467,8 @@ public class AnnotationFileParser {
      *
      * <p>Does nothing if it cannot find member's element.
      *
+     * <p>This method does not read or write field {@link annotationFileAnnos}.
+     *
      * @param elementsToDecl the mapping that is side-effected by this method
      * @param typeElt the class in which {@code member} is declared
      * @param member the stub file declaration of a method
@@ -1477,7 +1481,8 @@ public class AnnotationFileParser {
             String typeDeclName,
             NodeWithRange<?> astNode) {
         if (member instanceof MethodDeclaration) {
-            Element elt = findElement(typeElt, (MethodDeclaration) member);
+            MethodDeclaration method = (MethodDeclaration) member;
+            Element elt = findElement(typeElt, method);
             if (elt != null) {
                 putIfAbsent(elementsToDecl, elt, member);
             }
