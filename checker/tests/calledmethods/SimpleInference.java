@@ -1,7 +1,7 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
 /* The simplest inference test case Martin could think of */
-class SimpleInference {
+public class SimpleInference {
     void build(@CalledMethods({"a"}) SimpleInference this) {}
 
     void a() {}

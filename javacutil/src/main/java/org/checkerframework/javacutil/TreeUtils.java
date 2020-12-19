@@ -1015,6 +1015,35 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns the ExecutableElement for a method declaration. Returns null there is no matching
+     * method. Errs if there is more than one matching method. If more than one method takes the
+     * same number of formal parameters, then use {@link #getMethod(String, String,
+     * ProcessingEnvironment, String...)}.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElement for the specified method, or null
+     */
+    public static @Nullable ExecutableElement getMethodOrNull(
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
+        List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
+        if (methods.size() == 0) {
+            return null;
+        } else if (methods.size() == 1) {
+            return methods.get(0);
+        } else {
+            throw new BugInCF(
+                    "TreeUtils.getMethod(%s, %s, %d): expected 0 or 1 match, found %d",
+                    typeName, methodName, params, methods.size());
+        }
+    }
+
+    /**
      * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
      * params formal parameters.
      *
@@ -1706,5 +1735,28 @@ public final class TreeUtils {
         LiteralTree result = maker.Literal(typeTag, value);
         ((JCLiteral) result).type = (Type) typeMirror;
         return result;
+    }
+
+    /**
+     * Returns true if the given tree evaluates to {@code null}.
+     *
+     * @param t a tree
+     * @return true if the given tree evaluates to {@code null}
+     */
+    public static boolean isNullExpression(Tree t) {
+        while (true) {
+            switch (t.getKind()) {
+                case PARENTHESIZED:
+                    t = ((ParenthesizedTree) t).getExpression();
+                    break;
+                case TYPE_CAST:
+                    t = ((TypeCastTree) t).getExpression();
+                    break;
+                case NULL_LITERAL:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 }

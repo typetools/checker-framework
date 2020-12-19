@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.index.qual.*;
 
-class SameLenSelf {
+public class SameLenSelf {
     int @SameLen("this.field") [] field = new int[10];
     int @SameLen("field2") [] field2 = new int[10];
     int @SameLen("field3") [] field3 = field2;

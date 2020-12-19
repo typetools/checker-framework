@@ -623,18 +623,14 @@ def wget_file(source_url, destination_dir):
     print "DEST DIR: " + destination_dir
     execute("wget %s" % source_url, True, False, destination_dir)
 
-def download_binary(source_url, destination, max_size):
+def download_binary(source_url, destination):
     """Download a file from the given URL and save its contents to the
-    destination filename. Raise an exception if the source file is larger than
-    max_size."""
+    destination filename."""
     http_response = urllib2.urlopen(url=source_url)
     content_length = http_response.headers['content-length']
 
     if content_length is None:
         raise Exception("No content-length when downloading: " + source_url)
-
-    if int(content_length) > max_size:
-        raise Exception("Content-length (" + content_length + ") greater than max_size (" + max_size + ") ")
 
     dest_file = open(destination, 'wb')
     dest_file.write(http_response.read())

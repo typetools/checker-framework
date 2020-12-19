@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 // Allow searching through nullable arrays components
 // and for nullable keys.
-class BinarySearch {
+public class BinarySearch {
     @Nullable Object @NonNull [] arr = {"a", "b", null};
 
     void search(@Nullable Object key) {

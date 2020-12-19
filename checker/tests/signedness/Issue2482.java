@@ -1,4 +1,4 @@
-class Issue2482 {
+public class Issue2482 {
 
     void regularAssignment(byte[] b, int c) {
         int a = b.length;

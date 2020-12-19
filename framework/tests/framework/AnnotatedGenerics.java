@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.util.*;
 
-class AnnotatedGenerics {
+public class AnnotatedGenerics {
 
     public static void testNullableTypeVariable() {
         class Test<T> {

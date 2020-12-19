@@ -1,4 +1,4 @@
-class WildcardSuper {
+public class WildcardSuper {
     interface Consumer<T> {
         void consume(T object);
     }

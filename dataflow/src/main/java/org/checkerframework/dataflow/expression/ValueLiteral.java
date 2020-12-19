@@ -8,8 +8,8 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** FlowExpression.Receiver for literals. */
-public class ValueLiteral extends Receiver {
+/** FlowExpression.JavaExpression for literals. */
+public class ValueLiteral extends JavaExpression {
 
     /** The value of the literal. */
     protected final @Nullable Object value;
@@ -38,7 +38,7 @@ public class ValueLiteral extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
     }
 
@@ -82,12 +82,12 @@ public class ValueLiteral extends Receiver {
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         return this.equals(other);
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // not modifiable
     }
 

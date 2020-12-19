@@ -6,9 +6,11 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.List;
@@ -19,14 +21,15 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -45,6 +48,8 @@ public class OptionalVisitor
     private final ExecutableElement optionalGet;
     /** The element for java.util.Optional.isPresent(). */
     private final ExecutableElement optionalIsPresent;
+    /** The element for java.util.Optional.isEmpty(), or null if running under JDK 8. */
+    private final @Nullable ExecutableElement optionalIsEmpty;
     /** The element for java.util.Optional.of(). */
     private final ExecutableElement optionalOf;
     /** The element for java.util.Optional.ofNullable(). */
@@ -54,7 +59,9 @@ public class OptionalVisitor
     /** The element for java.util.Optional.orElseGet(). */
     private final ExecutableElement optionalOrElseGet;
     /** The element for java.util.Optional.orElseThrow(). */
-    private final ExecutableElement optionalOrElseThrow;
+    private final @Nullable ExecutableElement optionalOrElseThrow;
+    /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
+    private final ExecutableElement optionalOrElseThrowSupplier;
 
     /** Create an OptionalVisitor. */
     public OptionalVisitor(BaseTypeChecker checker) {
@@ -64,11 +71,15 @@ public class OptionalVisitor
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);
         optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
+        optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
         optionalOf = TreeUtils.getMethod("java.util.Optional", "of", 1, env);
         optionalOfNullable = TreeUtils.getMethod("java.util.Optional", "ofNullable", 1, env);
         optionalOrElse = TreeUtils.getMethod("java.util.Optional", "orElse", 1, env);
         optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
-        optionalOrElseThrow = TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
+        optionalOrElseThrow =
+                TreeUtils.getMethodOrNull("java.util.Optional", "orElseThrow", 0, env);
+        optionalOrElseThrowSupplier =
+                TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
     }
 
     @Override
@@ -82,10 +93,42 @@ public class OptionalVisitor
         return TreeUtils.isMethodInvocation(expression, optionalGet, env);
     }
 
-    /** @return true iff expression is a call to java.util.Optional.isPresent */
-    private boolean isCallToIsPresent(ExpressionTree expression) {
+    /**
+     * Is the expression a call to {@code isPresent} or {@code isEmpty}? If not, returns null. If
+     * so, returns a pair of (boolean, receiver expression). The boolean is true if the given
+     * expression is a call to {@code isPresent} and is false if the given expression is a call to
+     * {@code isEmpty}.
+     *
+     * @param expression an expression
+     * @return a pair of a boolean (indicating whether the expression is a call to {@code
+     *     Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver; or null if not a
+     *     call to either of the methods
+     */
+    private @Nullable Pair<Boolean, ExpressionTree> isCallToIsPresent(ExpressionTree expression) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        return TreeUtils.isMethodInvocation(expression, optionalIsPresent, env);
+        boolean negate = false;
+        while (true) {
+            switch (expression.getKind()) {
+                case PARENTHESIZED:
+                    expression = ((ParenthesizedTree) expression).getExpression();
+                    break;
+                case LOGICAL_COMPLEMENT:
+                    expression = ((UnaryTree) expression).getExpression();
+                    negate = !negate;
+                    break;
+                case METHOD_INVOCATION:
+                    if (TreeUtils.isMethodInvocation(expression, optionalIsPresent, env)) {
+                        return Pair.of(!negate, TreeUtils.getReceiverTree(expression));
+                    } else if (optionalIsEmpty != null
+                            && TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
+                        return Pair.of(negate, TreeUtils.getReceiverTree(expression));
+                    } else {
+                        return null;
+                    }
+                default:
+                    return null;
+            }
+        }
     }
 
     /** @return true iff expression is a call to Optional creation: of, ofNullable. */
@@ -104,7 +147,9 @@ public class OptionalVisitor
         return TreeUtils.isMethodInvocation(methInvok, optionalGet, env)
                 || TreeUtils.isMethodInvocation(methInvok, optionalOrElse, env)
                 || TreeUtils.isMethodInvocation(methInvok, optionalOrElseGet, env)
-                || TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrow, env);
+                || (optionalIsEmpty != null
+                        && TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrow, env))
+                || TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrowSupplier, env);
     }
 
     @Override
@@ -124,13 +169,17 @@ public class OptionalVisitor
     public void handleTernaryIsPresentGet(ConditionalExpressionTree node) {
 
         ExpressionTree condExpr = TreeUtils.withoutParens(node.getCondition());
-        ExpressionTree trueExpr = TreeUtils.withoutParens(node.getTrueExpression());
-        ExpressionTree falseExpr = TreeUtils.withoutParens(node.getFalseExpression());
-
-        if (!isCallToIsPresent(condExpr)) {
+        Pair<Boolean, ExpressionTree> isPresentCall = isCallToIsPresent(condExpr);
+        if (isPresentCall == null) {
             return;
         }
-        ExpressionTree receiver = TreeUtils.getReceiverTree(condExpr);
+        ExpressionTree trueExpr = TreeUtils.withoutParens(node.getTrueExpression());
+        ExpressionTree falseExpr = TreeUtils.withoutParens(node.getFalseExpression());
+        if (!isPresentCall.first) {
+            ExpressionTree tmp = trueExpr;
+            trueExpr = falseExpr;
+            falseExpr = tmp;
+        }
 
         if (trueExpr.getKind() != Kind.METHOD_INVOCATION) {
             return;
@@ -143,6 +192,7 @@ public class OptionalVisitor
 
         // What is a better way to do this than string comparison?
         // Use transfer functions and Store entries.
+        ExpressionTree receiver = isPresentCall.second;
         if (sameExpression(receiver, getReceiver)) {
             ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
 
@@ -160,8 +210,8 @@ public class OptionalVisitor
 
     /** Return true if the two trees represent the same expression. */
     private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
-        Receiver r1 = FlowExpressions.internalReprOf(atypeFactory, tree1);
-        Receiver r2 = FlowExpressions.internalReprOf(atypeFactory, tree1);
+        JavaExpression r1 = JavaExpression.fromTree(atypeFactory, tree1);
+        JavaExpression r2 = JavaExpression.fromTree(atypeFactory, tree1);
         if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
             return r1.equals(r2);
         } else {
@@ -185,8 +235,18 @@ public class OptionalVisitor
     public void handleConditionalStatementIsPresentGet(IfTree node) {
 
         ExpressionTree condExpr = TreeUtils.withoutParens(node.getCondition());
+        Pair<Boolean, ExpressionTree> isPresentCall = isCallToIsPresent(condExpr);
+        if (isPresentCall == null) {
+            return;
+        }
+
         StatementTree thenStmt = skipBlocks(node.getThenStatement());
         StatementTree elseStmt = skipBlocks(node.getElseStatement());
+        if (!isPresentCall.first) {
+            StatementTree tmp = thenStmt;
+            thenStmt = elseStmt;
+            elseStmt = tmp;
+        }
 
         if (!(elseStmt == null
                 || (elseStmt.getKind() == Tree.Kind.BLOCK
@@ -194,10 +254,7 @@ public class OptionalVisitor
             // else block is missing or is an empty block: "{}"
             return;
         }
-        if (!isCallToIsPresent(condExpr)) {
-            return;
-        }
-        ExpressionTree receiver = TreeUtils.getReceiverTree(condExpr);
+
         if (thenStmt.getKind() != Kind.EXPRESSION_STATEMENT) {
             return;
         }
@@ -214,6 +271,7 @@ public class OptionalVisitor
         if (!isCallToGet(arg)) {
             return;
         }
+        ExpressionTree receiver = isPresentCall.second;
         ExpressionTree getReceiver = TreeUtils.getReceiverTree(arg);
         if (!receiver.toString().equals(getReceiver.toString())) {
             return;

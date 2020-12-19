@@ -34,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -733,7 +733,7 @@ public class AnnotationBuilder {
                 toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
                 List<?> list = (List<?>) value;
-                toStringVal = "{" + UtilPlume.join(", ", list) + "}";
+                toStringVal = "{" + StringsPlume.join(", ", list) + "}";
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;

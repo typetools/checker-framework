@@ -1,6 +1,6 @@
 // Test case for Issue 2198.
 @SuppressWarnings("unchecked")
-class Issue2198 {
+public class Issue2198 {
     interface A {}
 
     class B {}

@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Dataflow {
+public class Dataflow {
     void context() {
         FunctionDF<@Nullable Object, Object> o =
                 a -> {

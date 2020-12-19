@@ -1,8 +1,25 @@
 Version 3.9.0
 
+New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program
+inference, without modifying the source code of the target program(s).
+
+The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
+
+The Format String Checker recognizes Error Prone's `@FormatMethod` annotation.
+
 Implementation details:
 
-Renamed StubParser to AnnotationFileParser
+Class renamings:
+ * `StubParser` => `AnnotationFileParser`
+ * `Receiver` => `JavaExpression`
+     *  also related class and method renamings
+ * In the Dataflow Framework:
+    * `ThisLiteralNode` => `ThisNode`
+    * `ExplicitThisLiteralNode` => `ExplicitThisNode`
+    * `ImplicitThisLiteralNode` => `ImplicitThisNode`
+
+Method deprecations:
+ * Deprecated `AnnotatedTypeFactory.addAliasedAnnotation`; use `addAliasedTypeAnnotation`
 
 ---------------------------------------------------------------------------
 

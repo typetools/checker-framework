@@ -3,10 +3,10 @@
 
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-class Outer {
+public class Issue352 {
     class Nested {
-        @Untainted Outer context(@Untainted Outer.@Untainted Nested this) {
-            return Outer.this;
+        @Untainted Issue352 context(@Untainted Issue352.@Untainted Nested this) {
+            return Issue352.this;
         }
     }
 }

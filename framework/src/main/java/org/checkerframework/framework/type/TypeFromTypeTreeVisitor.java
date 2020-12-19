@@ -126,7 +126,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         result.addAnnotations(atype.getAnnotations());
         // new ArrayList<>() type is AnnotatedExecutableType for some reason
 
-        if (result instanceof AnnotatedDeclaredType) {
+        // Don't initialize the type arguments if they are empty. The type arguments might be a
+        // diamond which should be inferred.
+        if (result instanceof AnnotatedDeclaredType && !args.isEmpty()) {
             assert result instanceof AnnotatedDeclaredType : node + " --> " + result;
             ((AnnotatedDeclaredType) result).setTypeArguments(args);
         }

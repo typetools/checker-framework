@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.common.value.qual.*;
 
-class PredecrementTest {
+public class PredecrementTest {
 
     public static void warningForLoop(int @MinLen(1) [] a) {
         for (int i = a.length; --i >= 0; ) {

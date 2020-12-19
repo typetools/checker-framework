@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class TestAssumeAssertionsAreEnabled {
+public class TestAssumeAssertionsAreEnabled {
 
     void foo(@Nullable String s1, @Nullable String s2) {
         // :: error: (dereference.of.nullable)

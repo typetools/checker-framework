@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class BoxingGenerics {
+public class BoxingGenerics {
     static class X<T> {
         public static <T> X<T> foo(T x) {
             return new X<>();

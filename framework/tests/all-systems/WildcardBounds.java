@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-class WildcardBounds {
+public class WildcardBounds {
     class BoundedGeneric<B extends Cloneable> {}
 
     class BoundedGeneric2<B extends Number> {}

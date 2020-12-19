@@ -52,7 +52,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
@@ -527,7 +527,7 @@ public class AnnotatedTypes {
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "Type arguments of a declaration should be type variables",
                                 "enclosingClassOfElem=" + enclosingClassOfElem,
                                 "enclosingType=" + enclosingType,
@@ -539,7 +539,7 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
             throw new BugInCF(
-                    UtilPlume.joinLines(
+                    StringsPlume.joinLines(
                             "Unexpected number of parameters.",
                             "enclosingType=" + enclosingType,
                             "baseType=" + base));
@@ -1009,7 +1009,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns true if atm is an Annotation interface, i.e. an implementation of
+     * Returns true if atm is an Annotation interface, i.e., an implementation of
      * java.lang.annotation.Annotation. Given {@code @interface MyAnno}, a call to {@code
      * implementsAnnotation} returns true when called on an AnnotatedDeclaredType representing a use
      * of MyAnno.
@@ -1172,7 +1172,7 @@ public class AnnotatedTypes {
                     }
 
                     throw new BugInCF(
-                            UtilPlume.joinLines(
+                            StringsPlume.joinLines(
                                     "Unexpected AnnotatedTypeMirror with no primary annotation.",
                                     "toSearch=" + toSearch,
                                     "top=" + top,

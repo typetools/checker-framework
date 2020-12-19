@@ -4,7 +4,7 @@
 
 import javax.annotation.Nullable;
 
-class Issue471<T> {
+public class Issue471<T> {
     @Nullable T t;
 
     Issue471(@Nullable T t) {

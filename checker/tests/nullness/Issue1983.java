@@ -6,7 +6,7 @@ import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 @SuppressWarnings("initialization.fields.uninitialized")
-class Issue1983 {
+public class Issue1983 {
 
     Converter<String> converter;
 

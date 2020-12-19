@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-class Issue2407 {
+public class Issue2407 {
 
     @RequiresNonNull("#1")
     void setMessage(String message) {}

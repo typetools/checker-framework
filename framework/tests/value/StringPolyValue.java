@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.StringVal;
 
-class StringPolyValue {
+public class StringPolyValue {
     void stringValArrayLen(@StringVal({"a", "b", "c"}) String abc) {
 
         @StringVal({"a", "b", "c"}) String ns = new String(abc);

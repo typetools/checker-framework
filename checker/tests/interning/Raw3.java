@@ -9,7 +9,7 @@ import org.checkerframework.checker.interning.qual.*;
  *     List<@Interned String> sl = new ArrayList<String>();
  * and then the assignment fails.
  */
-class Raw3 {
+public class Raw3 {
 
     // We would like behavior that is as similar as possible between the
     // versions with no raw types and those with raw types.

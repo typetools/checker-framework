@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class RawTypesGenerics {
+public class RawTypesGenerics {
     void m() throws ClassNotFoundException {
         Class c1 = Class.forName("bla");
         Class<? extends @Nullable Object> c2 = Class.forName("bla");

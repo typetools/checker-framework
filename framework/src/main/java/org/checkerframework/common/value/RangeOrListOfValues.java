@@ -8,7 +8,7 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An abstraction that can be either a range or a list of values that could come from an {@link
@@ -123,7 +123,7 @@ class RangeOrListOfValues {
                 return "[]";
             }
             String res = "[";
-            res += UtilPlume.join(", ", values);
+            res += StringsPlume.join(", ", values);
             res += "]";
             return res;
         }

@@ -1,1 +1,1 @@
-class Simple {}
+public class Simple {}

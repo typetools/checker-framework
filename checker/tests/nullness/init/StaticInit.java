@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/353
 // @skip-test
 
-class StaticInit {
+public class StaticInit {
 
     static String a;
 

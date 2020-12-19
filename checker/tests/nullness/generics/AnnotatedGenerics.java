@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
-class AnnotatedGenerics {
+public class AnnotatedGenerics {
     public static void testNullableTypeVariable() {
         // :: error: (initialization.fields.uninitialized)
         class Test<T extends @Nullable Object> {
