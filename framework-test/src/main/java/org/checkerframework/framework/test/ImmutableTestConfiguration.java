@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Represents all of the information needed to execute the Javac compiler for a given set of test
@@ -102,9 +102,9 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     @Override
     public String toString() {
-        return UtilPlume.joinLines(
+        return StringsPlume.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + UtilPlume.join(" ", testSourceFiles),
+                "testSourceFiles=" + StringsPlume.join(" ", testSourceFiles),
                 "processors=" + String.join(", ", processors),
                 "options=" + String.join(", ", getFlatOptions()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
