@@ -107,8 +107,8 @@ import org.checkerframework.javacutil.TreeUtils;
 // ajava file), notably its annotated types and its declaration annotations.  From a client
 // perspective, it has static methods as described below in the Javadoc.
 /**
- * This class has three static methods. Each method parses an annotation file and adds annotations
- * to two maps passed as arguments.
+ * This class has two static methods. Each method parses an annotation file and adds annotations to
+ * the AnnotationFileAnnotations passed as an argument.
  *
  * <p>The first main entry point is {@link AnnotationFileParser#parse(String, InputStream,
  * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
