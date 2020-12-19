@@ -90,7 +90,7 @@ public enum ConversionCategory {
     /**
      * Use if the parameter is both an int and a time.
      *
-     * @see CHAR_AND_INT
+     * @see #CHAR_AND_INT
      */
     INT_AND_TIME(null, Long.class),
 
