@@ -1445,7 +1445,6 @@ public class AnnotationFileParser {
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
-
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
             putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
         }
