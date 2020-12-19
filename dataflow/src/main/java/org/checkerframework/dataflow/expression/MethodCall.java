@@ -8,7 +8,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /** A call to a @Deterministic method. */
 public class MethodCall extends JavaExpression {
@@ -172,7 +172,7 @@ public class MethodCall extends JavaExpression {
         String methodName = method.getSimpleName().toString();
         result.append(methodName);
         result.append("(");
-        result.append(UtilPlume.join(", ", parameters));
+        result.append(StringsPlume.join(", ", parameters));
         result.append(")");
         return result.toString();
     }

@@ -47,7 +47,7 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Determines the default qualifiers on a type. Default qualifiers are specified via the {@link
@@ -179,11 +179,11 @@ public class QualifierDefaults {
     @Override
     public String toString() {
         // displays the checked and unchecked code defaults
-        return UtilPlume.joinLines(
+        return StringsPlume.joinLines(
                 "Checked code defaults: ",
-                UtilPlume.joinLines(checkedCodeDefaults),
+                StringsPlume.joinLines(checkedCodeDefaults),
                 "Unchecked code defaults: ",
-                UtilPlume.joinLines(uncheckedCodeDefaults),
+                StringsPlume.joinLines(uncheckedCodeDefaults),
                 "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
                 "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
     }
@@ -1137,7 +1137,7 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "Unexpected tree type for typeVar Element:",
                                 "typeParamElem=" + typeParamElem,
                                 typeParamDecl));

@@ -55,7 +55,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
@@ -492,10 +492,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
-                    UtilPlume.joinLines(
+                    StringsPlume.joinLines(
                             "Mismatch between formal parameter count and argument count.",
-                            "paramTypes=" + UtilPlume.join(",", paramTypes),
-                            "argTypes=" + UtilPlume.join(",", argTypes)));
+                            "paramTypes=" + StringsPlume.join(",", paramTypes),
+                            "argTypes=" + StringsPlume.join(",", argTypes)));
         }
 
         final int numberOfParams = paramTypes.size();
@@ -812,10 +812,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "All afConstraints should be irreducible before conversion.",
-                                "afConstraints=[ " + UtilPlume.join(", ", afConstraints) + " ]",
-                                "targets=[ " + UtilPlume.join(", ", targets) + "]"));
+                                "afConstraints=[ " + StringsPlume.join(", ", afConstraints) + " ]",
+                                "targets=[ " + StringsPlume.join(", ", targets) + "]"));
             }
 
             outgoing.add(afConstraint.toTUConstraint());
