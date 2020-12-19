@@ -199,8 +199,8 @@ public class AnnotationFileParser {
     private FqName typeBeingParsed;
 
     /**
-     * Contains the annotations of the file currently being processed, which is the output of the
-     * parsing process. Contains null if not currently processing a file.
+     * Contains the annotations of the file currently being processed, or null if not currently
+     * processing a file. The {@code process*} methods side-effect this data structure.
      */
     @Nullable AnnotationFileAnnotations annotationFileAnnos;
 
@@ -553,7 +553,8 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}.
+     * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
+     * means copying annotations from Stub Parser data structures to {@code annotationFileAnnos}.
      *
      * @param annotationFileAnnos annotations from the file; side-effected by this method
      */
@@ -564,7 +565,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Process the given StubUnit.
+     * Process the given StubUnit: copy its annotations to {@code #annotationFileAnnos}.
      *
      * @param su the StubUnit to process
      */
@@ -575,7 +576,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Process the given CompilationUnit.
+     * Process the given CompilationUnit: copy its annotations to {@code #annotationFileAnnos}.
      *
      * @param cu the CompilationUnit to process
      */
@@ -597,7 +598,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Process the given package declaration
+     * Process the given package declaration: copy its annotations to {@code #annotationFileAnnos}.
      *
      * @param packDecl the package declaration to process
      */
@@ -618,7 +619,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Process a type declaration.
+     * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
      *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
@@ -748,8 +749,8 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Processes the type's declaration but not any of its members. Returns the type's type
-     * parameter declarations.
+     * Process the type's declaration: copy its annotations to {@code #annotationFileAnnos}. Does
+     * not process any of its members. Returns the type's type parameter declarations.
      *
      * @param decl a type declaration
      * @param elt the type's element
@@ -812,7 +813,8 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns an enum's type parameter declarations.
+     * Process an enum: copy its annotations to {@code #annotationFileAnnos}. Returns the enum's
+     * type parameter declarations.
      *
      * @param decl enum declaration
      * @param elt element representing enum
@@ -880,9 +882,10 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Adds type and declaration annotations from {@code decl}.
+     * Process a method or constructor declaration: copy its annotations to {@code
+     * #annotationFileAnnos}.
      *
-     * @param decl a method or constructor declaration
+     * @param decl a method or constructor declaration, as read from an annotation file
      * @param elt the method or constructor's element
      */
     private void processCallableDeclaration(CallableDeclaration<?> decl, ExecutableElement elt) {
@@ -893,7 +896,7 @@ public class AnnotationFileParser {
         recordDeclAnnotation(elt, decl.getAnnotations(), annotationFileAnnos, decl);
         if (decl.isMethodDeclaration()) {
             // AnnotationFileParser parses all annotations in type annotation position as type
-            // annotations
+            // annotations.
             recordDeclAnnotation(
                     elt,
                     ((MethodDeclaration) decl).getType().getAnnotations(),
@@ -978,8 +981,8 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Adds declaration and type annotations to the parameters of {@code methodType}, which is
-     * either a method or constructor.
+     * Process the parameters of a method or constructor declaration: copy their annotations to
+     * {@code #annotationFileAnnos}.
      *
      * @param method a Method or Constructor declaration
      * @param elt ExecutableElement of {@code method}
@@ -1235,8 +1238,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Process the field declaration in decl, and attach any type qualifiers to the type of elt in
-     * {@code annotationFileAnnos}.
+     * Process the field declaration in decl: copy its annotations to {@code #annotationFileAnnos}.
      *
      * @param decl the declaration in the annotation file
      * @param elt the element representing that same declaration
