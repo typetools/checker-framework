@@ -92,11 +92,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public static final String AJAVA_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
+    // TODO: What is a "source file added for inference"?
     /**
-     * Mapping of binary class names to the wrapper containing those classes. Contains all classes
-     * in source files added for inference.
+     * Maps from binary class name to the wrapper containing the class. Contains all classes in
+     * source files added for inference.
      */
-    private Map<@BinaryName String, ClassOrInterfaceWrapper> classes;
+    private Map<@BinaryName String, ClassOrInterfaceAnnos> classToAnnos;
 
     /**
      * Files containing classes for which an annotation has been inferred since the last time files
@@ -104,10 +105,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      */
     private Set<String> modifiedFiles;
 
-    /**
-     * Mapping of source file paths to the wrapper for the compilation unit parsed from that file.
-     */
-    private Map<String, CompilationUnitWrapper> sourceFiles;
+    /** Mapping from source file to the wrapper for the compilation unit parsed from that file. */
+    private Map<String, CompilationUnitAnnos> sourceToAnnos;
 
     /** For calling declarationFromElement. */
     private AnnotatedTypeFactory atypeFactory;
@@ -116,19 +115,19 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     private final boolean ignoreNullAssignments;
 
     /**
-     * Constructs a {@code WholeProgramInferenceJavaParser} which has not yet inferred any
+     * Constructs a {@code WholeProgramInferenceJavaParser} that has not yet inferred any
      * annotations.
      *
-     * @param atypeFactory annotated type factory for type system to use
+     * @param atypeFactory the associated type factory
      * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
      *     ignored
      */
     public WholeProgramInferenceJavaParser(
             AnnotatedTypeFactory atypeFactory, boolean ignoreNullAssignments) {
         this.atypeFactory = atypeFactory;
-        classes = new HashMap<>();
+        classToAnnos = new HashMap<>();
         modifiedFiles = new HashSet<>();
-        sourceFiles = new HashMap<>();
+        sourceToAnnos = new HashMap<>();
         this.ignoreNullAssignments = ignoreNullAssignments;
     }
 
@@ -142,11 +141,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         String file = addClassesForElement(constructorElt);
         String className = getEnclosingClassName(constructorElt);
-        ClassOrInterfaceWrapper clazz = classes.get(className);
-        CallableDeclarationWrapper constructor =
-                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(constructorElt));
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+        CallableDeclarationAnnos constructorAnnos =
+                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(constructorElt));
         List<Node> arguments = objectCreationNode.getArguments();
-        updateInferredExecutableParameterTypes(constructorElt, file, constructor, arguments);
+        updateInferredExecutableParameterTypes(constructorElt, file, constructorAnnos, arguments);
     }
 
     @Override
@@ -159,38 +158,40 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(methodElt);
-        ClassOrInterfaceWrapper clazz = classes.get(className);
-        CallableDeclarationWrapper method =
-                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
-        if (method == null && methodElt.getSimpleName().contentEquals("valueOf")) {
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+        CallableDeclarationAnnos methodAnnos =
+                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        // TODO: Under what circumstances is `methodAnnos` null?
+        // TODO: Why is "valueOf" treated specially (no matter what the class or signature)?
+        if (methodAnnos == null && methodElt.getSimpleName().contentEquals("valueOf")) {
             return;
         }
 
         List<Node> arguments = methodInvNode.getArguments();
-        updateInferredExecutableParameterTypes(methodElt, file, method, arguments);
+        updateInferredExecutableParameterTypes(methodElt, file, methodAnnos, arguments);
     }
 
     /**
-     * Given an executable such as method or constructor invocation using the given list of
-     * arguments, updates the inferred types of each parameter.
+     * Updates inferred parameter types based on a call to a method or constructor.
      *
-     * @param methodElt element for the executable that was called
-     * @param file path to the source file containing the executable
-     * @param executable the wrapper containing the currently stored annotations for the executable
+     * @param methodElt the element of the method or constructor being invoked
+     * @param file path to the source file containing the executable; used for marking the class as
+     *     modified (needing to be written to disk)
+     * @param executableAnnos the representation of the executable's annotations
      * @param arguments arguments of the invocation
      */
     private void updateInferredExecutableParameterTypes(
             ExecutableElement methodElt,
             String file,
-            CallableDeclarationWrapper executable,
+            CallableDeclarationAnnos executableAnnos,
             List<Node> arguments) {
         for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
 
             Node arg = arguments.get(i);
-            Tree treeNode = arg.getTree();
-            if (treeNode == null) {
+            Tree argTree = arg.getTree();
+            if (argTree == null) {
                 // TODO: Handle variable-length list as parameter.
                 // An ArrayCreationNode with a null tree is created when the
                 // parameter is a variable-length list. We are ignoring it for now.
@@ -198,13 +199,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 // https://github.com/typetools/checker-framework/issues/682
                 continue;
             }
-            AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(treeNode);
+            AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
             updateAnnotationSetAtLocation(
-                    executable.getParameterType(argATM, atypeFactory, i),
-                    file,
+                    executableAnnos.getParameterType(argATM, atypeFactory, i),
+                    TypeUseLocation.PARAMETER,
                     argATM,
                     paramATM,
-                    TypeUseLocation.PARAMETER);
+                    file);
         }
     }
 
@@ -220,16 +221,16 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(methodElt);
-        ClassOrInterfaceWrapper clazz = classes.get(className);
-        CallableDeclarationWrapper method =
-                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+        CallableDeclarationAnnos methodAnnos =
+                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
-            AnnotatedTypeMirror param = method.getParameterType(argATM, atypeFactory, i);
-            updateAnnotationSetAtLocation(param, file, argATM, paramATM, TypeUseLocation.PARAMETER);
+            AnnotatedTypeMirror param = methodAnnos.getParameterType(argATM, atypeFactory, i);
+            updateAnnotationSetAtLocation(param, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
@@ -237,9 +238,9 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             AnnotatedTypeMirror paramATM =
                     atypeFactory.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                AnnotatedTypeMirror receiver = method.getReceiverType(paramATM, atypeFactory);
+                AnnotatedTypeMirror receiver = methodAnnos.getReceiverType(paramATM, atypeFactory);
                 updateAnnotationSetAtLocation(
-                        receiver, file, argADT, paramATM, TypeUseLocation.RECEIVER);
+                        receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file);
             }
         }
     }
@@ -255,16 +256,16 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
         String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(lhs);
-        ClassOrInterfaceWrapper clazz = classes.get(className);
-        CallableDeclarationWrapper method =
-                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+        CallableDeclarationAnnos methodAnnos =
+                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
         for (int i = 0; i < params.size(); i++) {
             VariableTree vt = params.get(i);
             if (vt.getName().contentEquals(lhs.getName())) {
-                Tree treeNode = rhs.getTree();
-                if (treeNode == null) {
+                Tree rhsTree = rhs.getTree();
+                if (rhsTree == null) {
                     // TODO: Handle variable-length list as parameter.
                     // An ArrayCreationNode with a null tree is created when the
                     // parameter is a variable-length list. We are ignoring it for now.
@@ -273,10 +274,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     continue;
                 }
                 AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(vt);
-                AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(treeNode);
-                AnnotatedTypeMirror param = method.getParameterType(paramATM, atypeFactory, i);
+                AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
+                AnnotatedTypeMirror param = methodAnnos.getParameterType(paramATM, atypeFactory, i);
                 updateAnnotationSetAtLocation(
-                        param, file, argATM, paramATM, TypeUseLocation.PARAMETER);
+                        param, TypeUseLocation.PARAMETER, argATM, paramATM, file);
                 break;
             }
         }
@@ -321,11 +322,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         String file = addClassesForElement(element);
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = enclosingClass.flatname.toString();
-        ClassOrInterfaceWrapper clazz = classes.get(className);
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
 
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
-        AnnotatedTypeMirror field = clazz.fields.get(fieldName).getType(lhsATM, atypeFactory);
-        updateAnnotationSetAtLocation(field, file, rhsATM, lhsATM, TypeUseLocation.FIELD);
+        AnnotatedTypeMirror field = classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
+        updateAnnotationSetAtLocation(field, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
     }
 
     /**
@@ -380,7 +381,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        // See Issue 682
+        // Whole-program inference ignores some locations.  See Issue 682:
         // https://github.com/typetools/checker-framework/issues/682
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
@@ -390,16 +391,16 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         String file = addClassesForElement(methodElt);
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = classSymbol.flatname.toString();
-        ClassOrInterfaceWrapper clazz = classes.get(className);
-        CallableDeclarationWrapper method =
-                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+        CallableDeclarationAnnos methodAnnos =
+                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodTree).getReturnType();
 
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
                 atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
-        AnnotatedTypeMirror returnType = method.getReturnType(lhsATM, atypeFactory);
-        updateAnnotationSetAtLocation(returnType, file, rhsATM, lhsATM, TypeUseLocation.RETURN);
+        AnnotatedTypeMirror returnType = methodAnnos.getReturnType(lhsATM, atypeFactory);
+        updateAnnotationSetAtLocation(returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -430,9 +431,9 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
             String superClassFile = addClassesForElement(overriddenMethodElement);
             String superClassName = getEnclosingClassName(overriddenMethodElement);
-            ClassOrInterfaceWrapper superClazz = classes.get(superClassName);
-            CallableDeclarationWrapper overriddenMethodInSuperclass =
-                    superClazz.callableDeclarations.get(
+            ClassOrInterfaceAnnos superClassAnnos = classToAnnos.get(superClassName);
+            CallableDeclarationAnnos overriddenMethodInSuperclass =
+                    superClassAnnos.callableDeclarations.get(
                             JVMNames.getJVMMethodSignature(overriddenMethodElement));
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
             AnnotatedTypeMirror storedOverriddenMethodReturnType =
@@ -441,10 +442,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
             updateAnnotationSetAtLocation(
                     storedOverriddenMethodReturnType,
-                    superClassFile,
+                    TypeUseLocation.RETURN,
                     rhsATM,
                     overriddenMethodReturnType,
-                    TypeUseLocation.RETURN);
+                    superClassFile);
         }
     }
 
@@ -457,14 +458,14 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(methodElt);
-        ClassOrInterfaceWrapper clazz = classes.get(className);
-        CallableDeclarationWrapper method =
-                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
-        if (method.declarationAnnotations == null) {
-            method.declarationAnnotations = new LinkedHashSet<AnnotationMirror>();
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+        CallableDeclarationAnnos methodAnnos =
+                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        if (methodAnnos.declarationAnnotations == null) {
+            methodAnnos.declarationAnnotations = new LinkedHashSet<AnnotationMirror>();
         }
 
-        boolean isNewAnnotation = method.declarationAnnotations.add(anno);
+        boolean isNewAnnotation = methodAnnos.declarationAnnotations.add(anno);
         if (isNewAnnotation) {
             modifiedFiles.add(file);
         }
@@ -482,7 +483,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         for (String path : modifiedFiles) {
-            CompilationUnitWrapper root = sourceFiles.get(path);
+            CompilationUnitAnnos root = sourceToAnnos.get(path);
             root.transferAnnotations();
             String packageDir = AJAVA_FILES_PATH;
             if (root.declaration.getPackageDeclaration().isPresent()) {
@@ -539,17 +540,17 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * </ul>
      *
      * @param typeToUpdate the {@code AnnotatedTypeMirror} for the location which will be modified
-     * @param file path to the source file containing the executable
+     * @param defLoc the location where the annotation will be added
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
-     * @param defLoc the location where the annotation will be added
+     * @param file path to the source file containing the executable
      */
     protected void updateAnnotationSetAtLocation(
             AnnotatedTypeMirror typeToUpdate,
-            String file,
+            TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
-            TypeUseLocation defLoc) {
+            String file) {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
@@ -710,19 +711,19 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public void addClassTree(ClassTree tree) {
         TypeElement element = TreeUtils.elementFromDeclaration(tree);
         String className = getClassName(element);
-        if (classes.containsKey(className)) {
+        if (classToAnnos.containsKey(className)) {
             return;
         }
 
         TypeElement mostEnclosing = mostEnclosingClass(element);
         String path = AjavaUtils.getSourceFilePath(mostEnclosing);
         addSourceFile(path);
-        CompilationUnitWrapper wrapper = sourceFiles.get(path);
+        CompilationUnitAnnos sourceAnnos = sourceToAnnos.get(path);
         TypeDeclaration<?> javaParserNode =
-                wrapper.getClassOrInterfaceDeclarationByName(
+                sourceAnnos.getClassOrInterfaceDeclarationByName(
                         mostEnclosing.getSimpleName().toString());
         ClassTree mostEnclosingTree = atypeFactory.getTreeUtils().getTree(mostEnclosing);
-        createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
+        createWrappersForClass(mostEnclosingTree, javaParserNode, sourceAnnos);
     }
 
     /**
@@ -732,15 +733,15 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param path path to source file to read
      */
     private void addSourceFile(String path) {
-        if (sourceFiles.containsKey(path)) {
+        if (sourceToAnnos.containsKey(path)) {
             return;
         }
 
         try {
             CompilationUnit root = StaticJavaParser.parse(new File(path));
             new StringLiteralCombineVisitor().visit(root, null);
-            CompilationUnitWrapper wrapper = new CompilationUnitWrapper(root);
-            sourceFiles.put(path, wrapper);
+            CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
+            sourceToAnnos.put(path, sourceAnnos);
         } catch (FileNotFoundException e) {
             throw new BugInCF("Failed to read java file: " + path, e);
         }
@@ -752,12 +753,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      *
      * @param javacClass javac tree for class
      * @param javaParserClass JavaParser node corresponding to the same class as {@code javacClass}
-     * @param wrapper compilation unit wrapper to add new wrappers to
+     * @param sourceAnnos compilation unit wrapper to add new wrappers to
      */
     private void createWrappersForClass(
             ClassTree javacClass,
             TypeDeclaration<?> javaParserClass,
-            CompilationUnitWrapper wrapper) {
+            CompilationUnitAnnos sourceAnnos) {
         JointJavacJavaParserVisitor visitor =
                 new DefaultJointVisitor() {
                     @Override
@@ -787,12 +788,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     private void addClass(ClassTree tree) {
                         TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
                         String className = getClassName(classElt);
-                        ClassOrInterfaceWrapper typeWrapper = new ClassOrInterfaceWrapper();
-                        if (!classes.containsKey(className)) {
-                            classes.put(className, typeWrapper);
+                        ClassOrInterfaceAnnos typeWrapper = new ClassOrInterfaceAnnos();
+                        if (!classToAnnos.containsKey(className)) {
+                            classToAnnos.put(className, typeWrapper);
                         }
 
-                        wrapper.types.add(typeWrapper);
+                        sourceAnnos.types.add(typeWrapper);
                     }
 
                     @Override
@@ -818,11 +819,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                             MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
                         ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
                         String className = getEnclosingClassName(elt);
-                        ClassOrInterfaceWrapper enclosingClass = classes.get(className);
+                        ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
                         String executableName = JVMNames.getJVMMethodSignature(javacTree);
                         if (!enclosingClass.callableDeclarations.containsKey(executableName)) {
                             enclosingClass.callableDeclarations.put(
-                                    executableName, new CallableDeclarationWrapper(javaParserNode));
+                                    executableName, new CallableDeclarationAnnos(javaParserNode));
                         }
                     }
 
@@ -842,10 +843,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                         }
 
                         String className = getEnclosingClassName(elt);
-                        ClassOrInterfaceWrapper enclosingClass = classes.get(className);
+                        ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
                         String fieldName = javacTree.getName().toString();
                         if (!enclosingClass.fields.containsKey(fieldName)) {
-                            enclosingClass.fields.put(fieldName, new FieldWrapper(javaParserNode));
+                            enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode));
                         }
                     }
                 };
@@ -865,18 +866,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         TypeElement mostEnclosing = mostEnclosingClass(element);
         String path = AjavaUtils.getSourceFilePath(mostEnclosing);
-        if (classes.containsKey(getClassName(mostEnclosing))) {
+        if (classToAnnos.containsKey(getClassName(mostEnclosing))) {
             return path;
         }
 
         addSourceFile(path);
-        CompilationUnitWrapper wrapper = sourceFiles.get(path);
+        CompilationUnitAnnos sourceAnnos = sourceToAnnos.get(path);
         ClassTree mostEnclosingTree =
                 (ClassTree) atypeFactory.declarationFromElement(mostEnclosing);
         TypeDeclaration<?> javaParserNode =
-                wrapper.getClassOrInterfaceDeclarationByName(
+                sourceAnnos.getClassOrInterfaceDeclarationByName(
                         mostEnclosing.getSimpleName().toString());
-        createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
+        createWrappersForClass(mostEnclosingTree, javaParserNode, sourceAnnos);
         return path;
     }
 
@@ -1004,18 +1005,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes
      * and interfaces in that compilation unit.
      */
-    private static class CompilationUnitWrapper {
+    private static class CompilationUnitAnnos {
         /** Compilation unit being wrapped. */
         public CompilationUnit declaration;
         /** Wrappers for classes and interfaces in {@code declaration} */
-        public List<ClassOrInterfaceWrapper> types;
+        public List<ClassOrInterfaceAnnos> types;
 
         /**
          * Constructs a wrapper around the given declaration.
          *
          * @param declaration compilation unit to wrap
          */
-        public CompilationUnitWrapper(CompilationUnit declaration) {
+        public CompilationUnitAnnos(CompilationUnit declaration) {
             this.declaration = declaration;
             types = new ArrayList<>();
         }
@@ -1027,8 +1028,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         public void transferAnnotations() {
             ClearAnnotationsVisitor annotationClearer = new ClearAnnotationsVisitor();
             declaration.accept(annotationClearer, null);
-            for (ClassOrInterfaceWrapper type : types) {
-                type.transferAnnotations();
+            for (ClassOrInterfaceAnnos typeAnnos : types) {
+                typeAnnos.transferAnnotations();
             }
         }
 
@@ -1046,17 +1047,17 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Stores wrappers for the locations where annotations may be inferred in a class or interface.
      */
-    private static class ClassOrInterfaceWrapper {
+    private static class ClassOrInterfaceAnnos {
         /**
          * Mapping from JVM method signatures to the wrapper containing the corresponding
          * executable.
          */
-        public Map<String, CallableDeclarationWrapper> callableDeclarations;
+        public Map<String, CallableDeclarationAnnos> callableDeclarations;
         /** Mapping from field names to wrappers for those fields. */
-        public Map<String, FieldWrapper> fields;
+        public Map<String, FieldAnnos> fields;
 
         /** Creates an empty class or interface wrapper. */
-        public ClassOrInterfaceWrapper() {
+        public ClassOrInterfaceAnnos() {
             callableDeclarations = new HashMap<>();
             fields = new HashMap<>();
         }
@@ -1066,18 +1067,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * in the wrapper class or interface to their corresponding JavaParser locations.
          */
         public void transferAnnotations() {
-            for (CallableDeclarationWrapper callable : callableDeclarations.values()) {
-                callable.transferAnnotations();
+            for (CallableDeclarationAnnos callableAnnos : callableDeclarations.values()) {
+                callableAnnos.transferAnnotations();
             }
 
-            for (FieldWrapper field : fields.values()) {
+            for (FieldAnnos field : fields.values()) {
                 field.transferAnnotations();
             }
         }
 
         @Override
         public String toString() {
-            return "ClassOrInterfaceWrapper [callableDeclarations="
+            return "ClassOrInterfaceAnnos [callableDeclarations="
                     + callableDeclarations
                     + ", fields="
                     + fields
@@ -1089,7 +1090,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * Stores the JavaParser node for a method or constructor and the annotations that have been
      * inferred about its parameters and return type.
      */
-    private static class CallableDeclarationWrapper {
+    private static class CallableDeclarationAnnos {
         /** Wrapped method or constructor declaration. */
         public CallableDeclaration<?> declaration;
         /** Path to file containing the declaration. */
@@ -1117,7 +1118,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          *
          * @param declaration method or constructor declaration to wrap
          */
-        public CallableDeclarationWrapper(CallableDeclaration<?> declaration) {
+        public CallableDeclarationAnnos(CallableDeclaration<?> declaration) {
             this.declaration = declaration;
             this.returnType = null;
             this.receiverType = null;
@@ -1239,7 +1240,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         @Override
         public String toString() {
-            return "CallableDeclarationWrapper [declaration="
+            return "CallableDeclarationAnnos [declaration="
                     + declaration
                     + ", file="
                     + file
@@ -1256,7 +1257,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Stores the JavaParser node for a field and the annotations that have been inferred for it.
      */
-    private static class FieldWrapper {
+    private static class FieldAnnos {
         /** Wrapped field declaration. */
         public VariableDeclarator declaration;
         /** Inferred type for field, initialized the first time it's accessed. */
@@ -1267,7 +1268,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          *
          * @param declaration field declaration to wrap
          */
-        public FieldWrapper(VariableDeclarator declaration) {
+        public FieldAnnos(VariableDeclarator declaration) {
             this.declaration = declaration;
             type = null;
         }
@@ -1307,7 +1308,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         @Override
         public String toString() {
-            return "FieldWrapper [declaration=" + declaration + ", type=" + type + "]";
+            return "FieldAnnos [declaration=" + declaration + ", type=" + type + "]";
         }
     }
 
