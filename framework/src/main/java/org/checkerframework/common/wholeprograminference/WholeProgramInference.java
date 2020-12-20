@@ -195,6 +195,6 @@ public interface WholeProgramInference {
          * Output the results of whole-program inference as a Java annotation index file. The
          * Annotation File Utilities project contains code for reading and writing .jaif files.
          */
-        JAIF()
+        JAIF(),
     }
 }
