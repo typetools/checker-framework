@@ -12,7 +12,7 @@ import org.checkerframework.javacutil.BugInCF;
 /** A utility class for working with javac and JavaParser representations of a source file. */
 public class AjavaUtils {
     /**
-     * Returns the path to the source file containing {@code element}
+     * Returns the path to the source file containing {@code element}.
      *
      * @param element the type element to look at
      * @return path to the source file containing {@code element}
