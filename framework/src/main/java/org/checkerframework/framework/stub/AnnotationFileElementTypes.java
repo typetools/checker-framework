@@ -204,8 +204,8 @@ public class AnnotationFileElementTypes {
                             annotationFileAnnos);
                 }
             } else {
-                // We didn't find the stub files.
-                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
+                // We didn't find the files.
+                // If the file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
                 if (path.startsWith("checker.jar/")) {
                     path = path.substring("checker.jar/".length());
@@ -215,12 +215,12 @@ public class AnnotationFileElementTypes {
                     AnnotationFileParser.parse(
                             path, in, factory, processingEnv, annotationFileAnnos);
                 } else {
-                    // Didn't find the stub file.  Issue a warning.
+                    // Didn't find the file.  Issue a warning.
 
-                    // When using a compound checker, the target stub file may be found by the
+                    // When using a compound checker, the target file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
                     // warning. Currently, only the original checker will try to parse the target
-                    // stub file, the parent checkers are only used to reduce false warnings.
+                    // file, the parent checkers are only used to reduce false warnings.
                     SourceChecker currentChecker = checker;
                     boolean findByParentCheckers = false;
                     while (currentChecker != null) {
@@ -239,7 +239,7 @@ public class AnnotationFileElementTypes {
                             currentChecker = currentChecker.getParentChecker();
                         }
                     }
-                    // If there exists one parent checker that can find this stub file, don't
+                    // If there exists one parent checker that can find this file, don't
                     // report an warning.
                     if (!findByParentCheckers) {
                         File parentPath = new File(path).getParentFile();
@@ -250,7 +250,7 @@ public class AnnotationFileElementTypes {
                                                 + new File(path).getParentFile().getAbsolutePath());
                         checker.message(
                                 Kind.WARNING,
-                                "Did not find stub file "
+                                "Did not find annotation file "
                                         + path
                                         + " on classpath or within "
                                         + parentPathDescription
