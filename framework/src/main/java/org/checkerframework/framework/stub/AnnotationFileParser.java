@@ -679,7 +679,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Process the given package declaration
+     * Process the given package declaration.
      *
      * @param packDecl the package declaration to process
      */

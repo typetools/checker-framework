@@ -87,7 +87,7 @@ import scenelib.annotations.util.JVMNames;
 public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Directory where .ajava files will be written to and read from. This directory is relative to
-     * where the CF's javac command is executed.
+     * where the javac command is executed.
      */
     public static final String AJAVA_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
@@ -99,8 +99,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     private Map<@BinaryName String, ClassOrInterfaceWrapper> classes;
 
     /**
-     * The list of paths to files containing classes for which an annotation has been inferred since
-     * the last time files were written to disk.
+     * Files containing classes for which an annotation has been inferred since the last time files
+     * were written to disk.
      */
     private Set<String> modifiedFiles;
 
@@ -883,7 +883,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Returns the binary name of the type declaration in {@code element}
      *
-     * @param element Element of a type declaration
+     * @param element a type declaration
      * @return the binary name of {@code element}
      */
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
@@ -894,7 +894,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Returns outermost class containing {@code element}.
      *
-     * @param element Element to find enclosing class of
+     * @param element the element wose enclosing class to find
      * @return an element for a class containing {@code element} that isn't contained in another
      *     class
      */
@@ -1005,13 +1005,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * and interfaces in that compilation unit.
      */
     private static class CompilationUnitWrapper {
-        /** Compilation unit being wrapped */
+        /** Compilation unit being wrapped. */
         public CompilationUnit declaration;
         /** Wrappers for classes and interfaces in {@code declaration} */
         public List<ClassOrInterfaceWrapper> types;
 
         /**
-         * Constructs a wrapper around the given declaration
+         * Constructs a wrapper around the given declaration.
          *
          * @param declaration compilation unit to wrap
          */

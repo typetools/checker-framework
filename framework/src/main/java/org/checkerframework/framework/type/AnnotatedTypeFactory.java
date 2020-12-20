@@ -690,7 +690,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param root the new compilation unit to use
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
-        setRoot(root, true);
+        setRoot(root, /*shouldCheckVisitor=*/ true);
     }
 
     /**

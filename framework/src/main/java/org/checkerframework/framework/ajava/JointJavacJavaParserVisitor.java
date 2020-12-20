@@ -372,7 +372,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      *
      * @param statement the statement to check
      * @return true if statement is a method invocation named "super" with no arguments, false
-     *     otherwise.
+     *     otherwise
      */
     public static boolean isDefaultSuperConstructorCall(StatementTree statement) {
         if (statement.getKind() != Kind.EXPRESSION_STATEMENT) {
@@ -402,7 +402,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      *
      * @param statement the statement to check
      * @return true if statement is an explicit super constructor invocation with no arguments,
-     *     false otherwise.
+     *     false otherwise
      */
     private boolean isDefaultSuperConstructorCall(Statement statement) {
         if (!statement.isExplicitConstructorInvocationStmt()) {
