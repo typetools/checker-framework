@@ -93,7 +93,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public static final String AJAVA_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
-    // TODO: What is a "source file added for inference"?
+    // TODO JWAATAJA: What is a "source file added for inference"?
     /**
      * Maps from binary class name to the wrapper containing the class. Contains all classes in
      * source files added for inference.
@@ -162,9 +162,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
         CallableDeclarationAnnos methodAnnos =
                 classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
-        // TODO: Under what circumstances is `methodAnnos` null?
-        // TODO: Why is "valueOf" treated specially?
-        // TODO: This treats all methods named "valueOf" the same, regardless of their signature.
+        // TODO JWAATAJA: Under what circumstances is `methodAnnos` null?
+        // TODO JWAATAJA: Why is "valueOf" treated specially?
+        // TODO JWAATAJA: This treats all methods named "valueOf" the same, regardless of their
+        // signature.
         if (methodAnnos == null && methodElt.getSimpleName().contentEquals("valueOf")) {
             return;
         }
@@ -951,9 +952,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         TypeElement result = ElementUtils.enclosingClass(element);
-        // TODO: This loop calls enclosingClass twice.  Can you make it just one invocation?
+        // TODO JWAATAJA: This loop calls enclosingClass twice.  Please make it just one
+        // invocation.  You could use a local variable.
         while (ElementUtils.enclosingClass(result) != null
-                // TODO: Why is the test against equality necessary?  The contract of
+                // TODO JWAATAJA: Why is the test against equality necessary?  The contract of
                 // ElementUtils.enclosingClass() does not permit it to return its argument.
                 && !ElementUtils.enclosingClass(result).equals(result)) {
             result = ElementUtils.enclosingClass(result);
@@ -983,7 +985,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     // a scene may be modifed and written at any time, including before or after
     // postProcessClassTree is called.
 
-    // TODO: Implement
+    // TODO JWAATAJA: Implement
     // /**
     //  * Side-effects the AScene to make any desired changes before writing to a file.
     //  *
