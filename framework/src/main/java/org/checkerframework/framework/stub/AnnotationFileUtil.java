@@ -324,7 +324,7 @@ public class AnnotationFileUtil {
     /**
      * Returns true if the given file is an annotation file.
      *
-     * @param f a file
+     * @param f the file to check
      * @return true if the given file is an annotation file
      */
     private static boolean isAnnotationFile(File f) {
