@@ -59,7 +59,7 @@ import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
-import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
+import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -690,7 +690,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         try {
             CompilationUnit root = StaticJavaParser.parse(new File(path));
-            new StringLiteralCombineVisitor().visit(root, null);
+            new StringLiteralConcatenateVisitor().visit(root, null);
             CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
             sourceToAnnos.put(path, sourceAnnos);
         } catch (FileNotFoundException e) {

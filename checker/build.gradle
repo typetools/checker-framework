@@ -434,7 +434,7 @@ task wholeProgramInferenceTestCheckerStubTests(dependsOn: 'shadowJar', group: 'V
     outputs.upToDateWhen { false }
 }
 
-// Like wholeProgramInferenceStubTests, but with ajava files instead
+// Like wholeProgramInferenceTestCheckerStubTests, but with ajava files instead
 task wholeProgramInferenceTestCheckerAjavaTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using ajava files'
     dependsOn(testWpiTestCheckerAjavaValidate)

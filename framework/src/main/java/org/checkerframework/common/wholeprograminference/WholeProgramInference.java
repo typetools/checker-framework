@@ -201,6 +201,6 @@ public interface WholeProgramInference {
          * Output the results of whole-program inference as an ajava file that can be read in using
          * the -Aajava option.
          */
-        AJAVA()
+        AJAVA(),
     }
 }

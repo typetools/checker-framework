@@ -65,7 +65,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -85,7 +84,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
-import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
+import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -110,7 +109,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * This class has two static methods. Each method parses an annotation file and adds annotations to
  * the AnnotationFileAnnotations passed as an argument.
  *
- * <p>The first main entry point is {@link AnnotationFileParser#parse(String, InputStream,
+ * <p>The first main entry point is {@link AnnotationFileParser#parseStubFile(String, InputStream,
  * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
  * last argument. It operates in two steps. First, it calls the Annotation File Parser to parse an
  * annotation file. Then, it walks the AST to create/collect types and declaration annotations.
@@ -500,13 +499,14 @@ public class AnnotationFileParser {
      * @param processingEnv ProcessingEnvironment to use
      * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
-    public static void parse(
+    public static void parseStubFile(
             String filename,
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
             AnnotationFileAnnotations annotationFileAnnos) {
-        parse(filename, inputStream, atypeFactory, processingEnv, annotationFileAnnos, false);
+        parseStubFile(
+                filename, inputStream, atypeFactory, processingEnv, annotationFileAnnos, false);
     }
 
     /**
@@ -527,25 +527,17 @@ public class AnnotationFileParser {
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
             AnnotationFileAnnotations ajavaAnnos) {
-        AnnotationFileParser sp =
+        AnnotationFileParser afp =
                 new AnnotationFileParser(filename, atypeFactory, processingEnv, false, false);
         try {
-            sp.parseStubUnit(inputStream);
-            sp.combineStringLiterals();
-            sp.setRoot(root);
-            sp.process(ajavaAnnos);
+            afp.parseStubUnit(inputStream);
+            afp.concatenateStringLiterals();
+            afp.setRoot(root);
+            afp.process(ajavaAnnos);
         } catch (ParseProblemException e) {
-            StringJoiner message = new StringJoiner(LINE_SEPARATOR);
-            message.add(
-                    e.getProblems().size()
-                            + " problems while parsing ajava file "
-                            + filename
-                            + ":");
-            // Manually build up the message, to get verbose location information.
             for (Problem p : e.getProblems()) {
-                message.add(p.getVerboseMessage());
+                afp.warn(null, p.getVerboseMessage());
             }
-            sp.warn(null, message.toString());
         }
     }
 
@@ -565,7 +557,7 @@ public class AnnotationFileParser {
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
             AnnotationFileAnnotations stubAnnos) {
-        parse(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
+        parseStubFile(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
     }
 
     /**
@@ -578,7 +570,7 @@ public class AnnotationFileParser {
      * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
      */
-    private static void parse(
+    private static void parseStubFile(
             String filename,
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
@@ -1130,11 +1122,11 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Combines added String literals into a single String literal containing their concatenation
-     * for the JavaParser unit currently stored. See {@link StringLiteralCombineVisitor}.
+     * Changes {@code "a" + "b"} into {@code "ab"} for the JavaParser unit currently stored. See
+     * {@link StringLiteralConcatenateVisitor}.
      */
-    private void combineStringLiterals() {
-        new StringLiteralCombineVisitor().visit(stubUnit, null);
+    private void concatenateStringLiterals() {
+        new StringLiteralConcatenateVisitor().visit(stubUnit, null);
     }
 
     /**

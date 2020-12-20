@@ -11,7 +11,7 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
  * "b"} we might imagine that {@code 1 + "a"} is evaluated and then {@code "b"} is added.
  * Regardless, this is transformed into {@code 1 + "ab"}.
  */
-public class StringLiteralCombineVisitor extends VoidVisitorAdapter<Void> {
+public class StringLiteralConcatenateVisitor extends VoidVisitorAdapter<Void> {
     @Override
     public void visit(BinaryExpr node, Void p) {
         super.visit(node, p);

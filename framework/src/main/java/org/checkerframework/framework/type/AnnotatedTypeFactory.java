@@ -86,7 +86,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceSc
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
-import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
+import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
@@ -724,7 +724,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 com.github.javaparser.ast.CompilationUnit javaParserRoot =
                         StaticJavaParser.parse(reader);
                 reader.close();
-                new StringLiteralCombineVisitor().visit(javaParserRoot, null);
+                new StringLiteralConcatenateVisitor().visit(javaParserRoot, null);
                 new JointVisitorWithDefaultAction() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {
@@ -1421,7 +1421,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type the type to apply stub types to
      * @param elt the element from which to read stub types
-     * @param source storage for current stub file annotations
+     * @param source storage for current annotation file annotations
      * @return the type, side-effected to add the stub types
      */
     protected AnnotatedTypeMirror mergeStubsIntoType(

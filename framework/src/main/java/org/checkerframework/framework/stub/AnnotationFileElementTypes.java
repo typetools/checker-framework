@@ -129,7 +129,7 @@ public class AnnotationFileElementTypes {
         if (!checker.hasOption("ignorejdkastub")) {
             InputStream jdkStubIn = checker.getClass().getResourceAsStream("jdk.astub");
             if (jdkStubIn != null) {
-                AnnotationFileParser.parse(
+                AnnotationFileParser.parseStubFile(
                         checker.getClass().getResource("jdk.astub").toString(),
                         jdkStubIn,
                         factory,
@@ -139,7 +139,7 @@ public class AnnotationFileElementTypes {
             String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
             InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
             if (jdkVersionStubIn != null) {
-                AnnotationFileParser.parse(
+                AnnotationFileParser.parseStubFile(
                         checker.getClass().getResource(jdkVersionStub).toString(),
                         jdkVersionStubIn,
                         factory,
@@ -186,7 +186,7 @@ public class AnnotationFileElementTypes {
         parsing = false;
     }
 
-    /** Parser the ajava files passed through the -Aajava option. */
+    /** Parses the ajava files passed through the -Aajava option. */
     public void parseAjavaFiles() {
         parsing = true;
         // TODO: Error if this is called more than once?
@@ -255,7 +255,7 @@ public class AnnotationFileElementTypes {
                                 "Could not read annotation resource: " + resource.getDescription());
                         continue;
                     }
-                    AnnotationFileParser.parse(
+                    AnnotationFileParser.parseStubFile(
                             resource.getDescription(),
                             annotationFileStream,
                             factory,
@@ -271,7 +271,7 @@ public class AnnotationFileElementTypes {
                 }
                 InputStream in = checker.getClass().getResourceAsStream(path);
                 if (in != null) {
-                    AnnotationFileParser.parse(
+                    AnnotationFileParser.parseStubFile(
                             path, in, factory, processingEnv, annotationFileAnnos);
                 } else {
                     // Didn't find the file.  Issue a warning.
@@ -309,7 +309,7 @@ public class AnnotationFileElementTypes {
                                                 + new File(path).getParentFile().getAbsolutePath());
                         checker.message(
                                 Kind.WARNING,
-                                "Did not find stub file "
+                                "Did not find annotation file "
                                         + path
                                         + " on classpath or within "
                                         + parentPathDescription
