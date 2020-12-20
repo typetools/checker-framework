@@ -85,6 +85,7 @@ import scenelib.annotations.util.JVMNames;
  * for documentation on behavior.
  */
 public class WholeProgramInferenceJavaParser implements WholeProgramInference {
+
     /**
      * Directory where .ajava files will be written to and read from. This directory is relative to
      * where the javac command is executed.
@@ -226,6 +227,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
         CallableDeclarationAnnos methodAnnos =
                 classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
@@ -260,6 +262,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
         CallableDeclarationAnnos methodAnnos =
                 classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
         for (int i = 0; i < params.size(); i++) {
@@ -471,64 +474,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         if (isNewAnnotation) {
             modifiedFiles.add(file);
         }
-    }
-
-    @Override
-    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
-        if (outputFormat != OutputFormat.AJAVA) {
-            throw new BugInCF("WholeProgramInferenceJavaParser used with format " + outputFormat);
-        }
-
-        File outputDir = new File(AJAVA_FILES_PATH);
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
-        }
-
-        for (String path : modifiedFiles) {
-            CompilationUnitAnnos root = sourceToAnnos.get(path);
-            root.transferAnnotations();
-            String packageDir = AJAVA_FILES_PATH;
-            if (root.declaration.getPackageDeclaration().isPresent()) {
-                packageDir +=
-                        File.separator
-                                + root.declaration
-                                        .getPackageDeclaration()
-                                        .get()
-                                        .getNameAsString()
-                                        .replaceAll("\\.", File.separator);
-            }
-
-            File packageDirFile = new File(packageDir);
-            if (!packageDirFile.exists()) {
-                packageDirFile.mkdirs();
-            }
-
-            String name = new File(path).getName();
-            if (name.endsWith(".java")) {
-                name = name.substring(0, name.length() - ".java".length());
-            }
-
-            name += "-" + checker.getClass().getCanonicalName() + ".ajava";
-            String outputPath = packageDir + File.separator + name;
-            try {
-                FileWriter writer = new FileWriter(outputPath);
-
-                // JavaParser can output using lexical preserving printing, which writes the file
-                // such that its formatting is close to the original source file it was parsed from
-                // as possible. Currently, this feature is very buggy and crashes when adding
-                // annotations in certain locations. This implementation could be used instead if
-                // it's fixed in JavaParser.
-                // LexicalPreservingPrinter.print(root.declaration, writer);
-
-                PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
-                writer.write(prettyPrinter.print(root.declaration));
-                writer.close();
-            } catch (IOException e) {
-                throw new BugInCF("Error while writing ajava file", e);
-            }
-        }
-
-        modifiedFiles.clear();
     }
 
     /**
@@ -887,88 +832,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     }
 
     /**
-     * Returns the binary name of the type declaration in {@code element}
-     *
-     * @param element a type declaration
-     * @return the binary name of {@code element}
-     */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getClassName(Element element) {
-        return ((ClassSymbol) element).flatName().toString();
-    }
-
-    /**
-     * Returns the top-level class that contains {@code element}.
-     *
-     * @param element the element wose enclosing class to find
-     * @return an element for a class containing {@code element} that isn't contained in another
-     *     class
-     */
-    private TypeElement toplevelEnclosingClass(Element element) {
-        if (ElementUtils.enclosingClass(element) == null) {
-            return (TypeElement) element;
-        }
-
-        TypeElement result = ElementUtils.enclosingClass(element);
-        // TODO: This loop calls enclosingClass twice.  Can you make it just one invocation?
-        while (ElementUtils.enclosingClass(result) != null
-                // TODO: Why is the test against equality necessary?  The contract of
-                // ElementUtils.enclosingClass() does not permit it to return its argument.
-                && !ElementUtils.enclosingClass(result).equals(result)) {
-            result = ElementUtils.enclosingClass(result);
-        }
-
-        return result;
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code executableElement}.
-     *
-     * @param executableElement the ExecutableElement
-     * @return the "flatname" of the class enclosing {@code executableElement}
-     */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
-        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code variableElement}
-     *
-     * @param variableElement the VariableElement
-     * @return the "flatname" of the class enclosing {@code variableElement}
-     */
-    private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
-        return getClassName(ElementUtils.enclosingClass(variableElement));
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code localVariableNode}
-     *
-     * @param localVariableNode the {@link LocalVariableNode}
-     * @return the "flatname" of the class enclosing {@code localVariableNode}
-     */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
-                .flatName()
-                .toString();
-    }
-
-    /**
-     * Checks whether a given local variable came from a source file or not.
-     *
-     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
-     * a classfile for the given element, whether or not there is also a source file.
-     *
-     * @param localVariableNode the local variable declaration to check
-     * @return true if a source file containing the variable is being compiled
-     */
-    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
-        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
-    }
-
-    /**
      * Adds an explicit receiver type to a JavaParser method declaration.
      *
      * @param methodDeclaration declaration to add a receiver to
@@ -1007,6 +870,214 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         methodDeclaration.setReceiverParameter(new ReceiverParameter(receiver, "this"));
     }
+
+    /**
+     * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
+     * which is the JavaParser node representing the same type. Does nothing if {@code
+     * annotatedType} is null.
+     *
+     * @param annotatedType type to transfer annotations from
+     * @param target type to transfer annotation to, must represent the same type as {@code
+     *     annotatedType}
+     */
+    private static void transferAnnotations(
+            @Nullable AnnotatedTypeMirror annotatedType, Type target) {
+        if (annotatedType == null) {
+            return;
+        }
+
+        target.accept(new AnnotationTransferVisitor(), annotatedType);
+    }
+
+    ///
+    /// Classes and class names
+    ///
+
+    /**
+     * Returns the binary name of the type declaration in {@code element}
+     *
+     * @param element a type declaration
+     * @return the binary name of {@code element}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getClassName(Element element) {
+        return ((ClassSymbol) element).flatName().toString();
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code executableElement}.
+     *
+     * @param executableElement the ExecutableElement
+     * @return the "flatname" of the class enclosing {@code executableElement}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code variableElement}
+     *
+     * @param variableElement the VariableElement
+     * @return the "flatname" of the class enclosing {@code variableElement}
+     */
+    private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
+        return getClassName(ElementUtils.enclosingClass(variableElement));
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}
+     *
+     * @param localVariableNode the {@link LocalVariableNode}
+     * @return the "flatname" of the class enclosing {@code localVariableNode}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
+                .flatName()
+                .toString();
+    }
+
+    /**
+     * Returns the top-level class that contains {@code element}.
+     *
+     * @param element the element wose enclosing class to find
+     * @return an element for a class containing {@code element} that isn't contained in another
+     *     class
+     */
+    private TypeElement toplevelEnclosingClass(Element element) {
+        if (ElementUtils.enclosingClass(element) == null) {
+            return (TypeElement) element;
+        }
+
+        TypeElement result = ElementUtils.enclosingClass(element);
+        // TODO: This loop calls enclosingClass twice.  Can you make it just one invocation?
+        while (ElementUtils.enclosingClass(result) != null
+                // TODO: Why is the test against equality necessary?  The contract of
+                // ElementUtils.enclosingClass() does not permit it to return its argument.
+                && !ElementUtils.enclosingClass(result).equals(result)) {
+            result = ElementUtils.enclosingClass(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Checks whether a given local variable came from a source file or not.
+     *
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, whether or not there is also a source file.
+     *
+     * @param localVariableNode the local variable declaration to check
+     * @return true if a source file containing the variable is being compiled
+     */
+    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
+        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
+    }
+
+    ///
+    /// Writing to a file
+    ///
+
+    // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
+    // a scene may be modifed and written at any time, including before or after
+    // postProcessClassTree is called.
+
+    // TODO: Implement
+    // /**
+    //  * Side-effects the AScene to make any desired changes before writing to a file.
+    //  *
+    //  * @param scene the AScene to modify
+    //  */
+    // public void prepareSceneForWriting(AScene scene) {
+    //     for (Map.Entry<String, ClassOrInterfaceAnnos> classEntry : scene.classes.entrySet()) {
+    //         prepareClassForWriting(classEntry.getValue());
+    //     }
+    // }
+
+    /**
+     * Side-effects the class annotations to make any desired changes before writing to a file.
+     *
+     * @param classAnnos the class annotations to modify
+     */
+    public void prepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
+        for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
+                classAnnos.callableDeclarations.entrySet()) {
+            prepareMethodForWriting(methodEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the method or constructor annotations to make any desired changes before writing
+     * to a file.
+     *
+     * @param methodAnnos the method or constructor annotations to modify
+     */
+    public void prepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
+        // This implementation does nothing.
+    }
+
+    @Override
+    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
+        if (outputFormat != OutputFormat.AJAVA) {
+            throw new BugInCF("WholeProgramInferenceJavaParser used with format " + outputFormat);
+        }
+
+        File outputDir = new File(AJAVA_FILES_PATH);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+
+        for (String path : modifiedFiles) {
+            CompilationUnitAnnos root = sourceToAnnos.get(path);
+            root.transferAnnotations();
+            String packageDir = AJAVA_FILES_PATH;
+            if (root.declaration.getPackageDeclaration().isPresent()) {
+                packageDir +=
+                        File.separator
+                                + root.declaration
+                                        .getPackageDeclaration()
+                                        .get()
+                                        .getNameAsString()
+                                        .replaceAll("\\.", File.separator);
+            }
+
+            File packageDirFile = new File(packageDir);
+            if (!packageDirFile.exists()) {
+                packageDirFile.mkdirs();
+            }
+
+            String name = new File(path).getName();
+            if (name.endsWith(".java")) {
+                name = name.substring(0, name.length() - ".java".length());
+            }
+
+            name += "-" + checker.getClass().getCanonicalName() + ".ajava";
+            String outputPath = packageDir + File.separator + name;
+            try {
+                FileWriter writer = new FileWriter(outputPath);
+
+                // JavaParser can output using lexical preserving printing, which writes the file
+                // such that its formatting is close to the original source file it was parsed from
+                // as possible. Currently, this feature is very buggy and crashes when adding
+                // annotations in certain locations. This implementation could be used instead if
+                // it's fixed in JavaParser.
+                // LexicalPreservingPrinter.print(root.declaration, writer);
+
+                PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
+                writer.write(prettyPrinter.print(root.declaration));
+                writer.close();
+            } catch (IOException e) {
+                throw new BugInCF("Error while writing ajava file", e);
+            }
+        }
+
+        modifiedFiles.clear();
+    }
+
+    ///
+    /// Storing annotations
+    ///
 
     /**
      * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes
@@ -1317,23 +1388,5 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         public String toString() {
             return "FieldAnnos [declaration=" + declaration + ", type=" + type + "]";
         }
-    }
-
-    /**
-     * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
-     * which is the JavaParser node representing the same type. Does nothing if {@code
-     * annotatedType} is null.
-     *
-     * @param annotatedType type to transfer annotations from
-     * @param target type to transfer annotation to, must represent the same type as {@code
-     *     annotatedType}
-     */
-    private static void transferAnnotations(
-            @Nullable AnnotatedTypeMirror annotatedType, Type target) {
-        if (annotatedType == null) {
-            return;
-        }
-
-        target.accept(new AnnotationTransferVisitor(), annotatedType);
     }
 }

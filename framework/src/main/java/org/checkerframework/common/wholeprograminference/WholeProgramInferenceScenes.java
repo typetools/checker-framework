@@ -489,54 +489,33 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         method.tlAnnotationsHere.add(sceneAnno);
     }
 
-    @Override
-    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
-        if (outputFormat != OutputFormat.JAIF) {
-            throw new BugInCF("WholeProgramInferenceScenes used with format " + outputFormat);
-        }
-
-        for (String file : storage.modifiedScenes) {
-            ASceneWrapper scene = storage.scenes.get(file);
-            prepareSceneForWriting(scene.getAScene());
-        }
-
-        storage.writeScenes(outputFormat, checker);
-    }
-
-    // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
-    // a scene may be modifed and written at any time, including before or after
-    // postProcessClassTree is called.
-
     /**
-     * Side-effects the AScene to make any desired changes before writing to a file.
+     * Updates the set of annotations in a location in a program.
      *
-     * @param scene the AScene to modify
+     * <p>Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding
+     * the arguments.
+     *
+     * <p>Subclasses can customize its behavior.
+     *
+     * @param typeToUpdate the type whose annotations are modified by this method
+     * @param defLoc the location where the annotation will be added
+     * @param rhsATM the RHS of the annotated type on the source code
+     * @param lhsATM the LHS of the annotated type on the source code
+     * @param file path to the annotation file containing the executable; used for marking the scene
+     *     as modified (needing to be written to disk)
      */
-    public void prepareSceneForWriting(AScene scene) {
-        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
-            prepareClassForWriting(classEntry.getValue());
-        }
+    protected void updateAnnotationSet(
+            ATypeElement typeToUpdate,
+            TypeUseLocation defLoc,
+            AnnotatedTypeMirror rhsATM,
+            AnnotatedTypeMirror lhsATM,
+            String file) {
+        storage.updateAnnotationSetInScene(typeToUpdate, defLoc, rhsATM, lhsATM, file);
     }
 
-    /**
-     * Side-effects the AClass to make any desired changes before writing to a file.
-     *
-     * @param classAnnos the AClass to modify
-     */
-    public void prepareClassForWriting(AClass classAnnos) {
-        for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
-            prepareMethodForWriting(methodEntry.getValue());
-        }
-    }
-
-    /**
-     * Side-effects the AMethod to make any desired changes before writing to a file.
-     *
-     * @param method the AMethod to modify
-     */
-    public void prepareMethodForWriting(AMethod method) {
-        // This implementation does nothing.
-    }
+    ///
+    /// Classes and class names
+    ///
 
     /**
      * Returns the "flatname" of the class enclosing {@code localVariableNode}.
@@ -575,27 +554,57 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 
+    ///
+    /// Writing to a file
+    ///
+
+    // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
+    // a scene may be modifed and written at any time, including before or after
+    // postProcessClassTree is called.
+
     /**
-     * Updates the set of annotations in a location in a program.
+     * Side-effects the AScene to make any desired changes before writing to a file.
      *
-     * <p>Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding
-     * the arguments.
-     *
-     * <p>Subclasses can customize its behavior.
-     *
-     * @param typeToUpdate the type whose annotations are modified by this method
-     * @param defLoc the location where the annotation will be added
-     * @param rhsATM the RHS of the annotated type on the source code
-     * @param lhsATM the LHS of the annotated type on the source code
-     * @param file path to the annotation file containing the executable; used for marking the scene
-     *     as modified (needing to be written to disk)
+     * @param scene the AScene to modify
      */
-    protected void updateAnnotationSet(
-            ATypeElement typeToUpdate,
-            TypeUseLocation defLoc,
-            AnnotatedTypeMirror rhsATM,
-            AnnotatedTypeMirror lhsATM,
-            String file) {
-        storage.updateAnnotationSetInScene(typeToUpdate, defLoc, rhsATM, lhsATM, file);
+    public void prepareSceneForWriting(AScene scene) {
+        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+            prepareClassForWriting(classEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the class annotations to make any desired changes before writing to a file.
+     *
+     * @param classAnnos the class annotations to modify
+     */
+    public void prepareClassForWriting(AClass classAnnos) {
+        for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
+            prepareMethodForWriting(methodEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the method or constructor annotations to make any desired changes before writing
+     * to a file.
+     *
+     * @param methodAnnos the method or constructor annotations to modify
+     */
+    public void prepareMethodForWriting(AMethod methodAnnos) {
+        // This implementation does nothing.
+    }
+
+    @Override
+    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
+        if (outputFormat == OutputFormat.AJAVA) {
+            throw new BugInCF("WholeProgramInferenceScenes used with format " + outputFormat);
+        }
+
+        for (String file : storage.modifiedScenes) {
+            ASceneWrapper scene = storage.scenes.get(file);
+            prepareSceneForWriting(scene.getAScene());
+        }
+
+        storage.writeScenes(outputFormat, checker);
     }
 }
