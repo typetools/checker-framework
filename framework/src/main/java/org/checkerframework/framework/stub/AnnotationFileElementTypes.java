@@ -55,9 +55,7 @@ public class AnnotationFileElementTypes {
      */
     private final Map<String, Path> jdkStubFiles = new HashMap<>();
 
-    /**
-     * Mapping from fully-qualified class name to corresponding JDK stub files from the checker.jar.
-     */
+    /** Mapping from fully-qualified class name to corresponding JDK stub files from checker.jar. */
     private final Map<String, String> jdkStubFilesJar = new HashMap<>();
 
     /** Which version number of the annotated JDK should be used? */
