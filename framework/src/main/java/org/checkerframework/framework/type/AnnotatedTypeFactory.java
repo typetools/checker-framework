@@ -1942,7 +1942,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param typeElement type of the enclosing type to return
      * @param tree location to use
-     * @return he enclosing type at the location of {@code tree} that is the same type as {@code
+     * @return the enclosing type at the location of {@code tree} that is the same type as {@code
      *     typeElement}
      */
     public AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
