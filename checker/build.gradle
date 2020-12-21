@@ -441,7 +441,7 @@ task testWpiTestCheckerJaifs(type: Test) {
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
-            // The framework is needed for Constant Value Checker annotations.
+            // checker-qual is needed for Constant Value Checker annotations.
             args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}"]
             args += ['-i']
             for (File jaif : jaifs) {
