@@ -184,7 +184,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, of the specified kind.
+     * Gets the first (innermost) enclosing tree in path, of the specified kind.
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
@@ -195,7 +195,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, with any one of the specified kinds.
+     * Gets the first (innermost) enclosing tree in path, with any one of the specified kinds.
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
@@ -217,8 +217,8 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the first enclosing class tree, where class is defined by the classTreeKinds
-     * method.
+     * Gets path to the first (innermost) enclosing class tree, where class is defined by the
+     * classTreeKinds method.
      *
      * @param path the path defining the tree node
      * @return the path to the enclosing class tree, {@code null} otherwise
@@ -228,7 +228,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the first enclosing tree of the specified kind.
+     * Gets path to the first (innermost) enclosing tree of the specified kind.
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
@@ -239,7 +239,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the first enclosing tree with any one of the specified kinds.
+     * Gets path to the first (innermost) enclosing tree with any one of the specified kinds.
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
@@ -262,7 +262,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, of the specified class.
+     * Gets the first (innermost) enclosing tree in path, of the specified class.
      *
      * @param path the path defining the tree node
      * @param treeClass the class of the desired tree
@@ -373,7 +373,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, that is not a parenthesis.
+     * Gets the first (innermost) enclosing tree in path, that is not a parenthesis.
      *
      * @param path the path defining the tree node
      * @return a pair of a non-parenthesis tree that contains the argument, and its child that is

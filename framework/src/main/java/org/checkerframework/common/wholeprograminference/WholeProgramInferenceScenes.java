@@ -183,7 +183,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param file the annotation file containing the executable; used for marking the class as
      *     modified (needing to be written to disk)
      * @param executableAnnos the representation of the executable's annotations
-     * @param arguments the arguments to the method or constructor
+     * @param arguments the arguments of the invocation
      */
     private void updateInferredExecutableParameterTypes(
             ExecutableElement methodElt,
@@ -575,9 +575,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             JVMNames.getJVMMethodSignature(overriddenMethodElement));
             overriddenMethodInSuperclass.setFieldsFromMethodElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
+            ATypeElement storedOverriddenMethodReturnType = overriddenMethodInSuperclass.returnType;
 
             updateAnnotationSet(
-                    overriddenMethodInSuperclass.returnType,
+                    storedOverriddenMethodReturnType,
                     TypeUseLocation.RETURN,
                     rhsATM,
                     overriddenMethodReturnType,
