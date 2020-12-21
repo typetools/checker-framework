@@ -264,7 +264,7 @@ public class AnnotationFileElementTypes {
 
     /**
      * Returns the annotated type for {@code e} containing only annotations explicitly written in an
-     * annotation file or {@code null} if {@code e} does not appear in a file.
+     * annotation file or {@code null} if {@code e} does not appear in an annotation file.
      *
      * @param e an Element whose type is returned
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
