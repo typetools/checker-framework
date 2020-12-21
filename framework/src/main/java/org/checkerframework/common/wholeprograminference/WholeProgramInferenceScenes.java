@@ -106,7 +106,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     protected final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Create a WholeProgramInferenceScenes.
+     * Constructs a new {@code WholeProgramInferenceScenes} that has not yet inferred any
+     * annotations.
      *
      * @param atypeFactory the associated type factory
      */
@@ -115,7 +116,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Create a WholeProgramInferenceScenes.
+     * Constructs a new {@code WholeProgramInferenceScenes} that has not yet inferred any
+     * annotations.
      *
      * @param atypeFactory the associated type factory
      * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
@@ -133,20 +135,21 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement constructorElt,
             CFAbstractStore<?, ?> store) {
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
         }
 
         String className = getEnclosingClassName(constructorElt);
-        String jaifPath = storage.getJaifPath(className);
+        String file = storage.getJaifPath(className);
         AClass clazz =
-                storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
-        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(constructorElt));
-        method.setFieldsFromMethodElement(constructorElt);
+                storage.getAClass(className, file, ((MethodSymbol) constructorElt).enclClass());
+        AMethod constructorAnnos =
+                clazz.methods.getVivify(JVMNames.getJVMMethodSignature(constructorElt));
+        constructorAnnos.setFieldsFromMethodElement(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
-        updateInferredExecutableParameterTypes(constructorElt, jaifPath, method, arguments);
+        updateInferredExecutableParameterTypes(constructorElt, file, constructorAnnos, arguments);
         updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
     }
 
@@ -157,34 +160,36 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement methodElt,
             CFAbstractStore<?, ?> store) {
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
         String className = getEnclosingClassName(methodElt);
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz =
-                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
-        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
-        method.setFieldsFromMethodElement(methodElt);
+        String file = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, file, ((MethodSymbol) methodElt).enclClass());
+        AMethod methodAnnos = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        methodAnnos.setFieldsFromMethodElement(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
-        updateInferredExecutableParameterTypes(methodElt, jaifPath, method, arguments);
+        updateInferredExecutableParameterTypes(methodElt, file, methodAnnos, arguments);
         updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
     }
 
     /**
-     * Helper method for updating parameter types based on calls to a method or constructor.
+     * Updates inferred parameter types based on a call to a method or constructor.
      *
      * @param methodElt the element of the method or constructor being invoked
-     * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
-     *     (needing to be written to disk)
-     * @param method the AFU representation of a method's annotations
+     * @param file the annotation file containing the executable; used for marking the class as
+     *     modified (needing to be written to disk)
+     * @param executableAnnos the representation of the executable's annotations
      * @param arguments the arguments to the method or constructor
      */
     private void updateInferredExecutableParameterTypes(
-            ExecutableElement methodElt, String jaifPath, AMethod method, List<Node> arguments) {
+            ExecutableElement methodElt,
+            String file,
+            AMethod executableAnnos,
+            List<Node> arguments) {
 
         for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -203,10 +208,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
             adjustForUpdateNonField(argATM);
             AField param =
-                    method.vivifyAndAddTypeMirrorToParameter(
+                    executableAnnos.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
-            updateAnnotationSetInScene(
-                    param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
+            updateAnnotationSet(param.type, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
     }
 
@@ -223,9 +227,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
 
         String className = getEnclosingClassName(methodElt);
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz =
-                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
+        String file = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, file, ((MethodSymbol) methodElt).enclClass());
         AMethod amethod = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
 
         amethod.setFieldsFromMethodElement(methodElt);
@@ -258,13 +261,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 inferredType = atypeFactory.getAnnotatedType(fieldElement);
             }
             AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
-            updateAnnotationSetInScene(
-                    afield.type,
-                    TypeUseLocation.FIELD,
-                    inferredType,
-                    fieldDeclType,
-                    jaifPath,
-                    false);
+            updateAnnotationSet(
+                    afield.type, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
         }
     }
 
@@ -311,15 +309,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement methodElt,
             AnnotatedExecutableType overriddenMethod) {
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
         String className = getEnclosingClassName(methodElt);
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz =
-                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
+        String file = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, file, ((MethodSymbol) methodElt).enclClass());
         AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
         method.setFieldsFromMethodElement(methodElt);
 
@@ -332,8 +329,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AField param =
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
-            updateAnnotationSetInScene(
-                    param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
+            updateAnnotationSet(param.type, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
@@ -342,8 +338,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     atypeFactory.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
                 AField receiver = method.receiver;
-                updateAnnotationSetInScene(
-                        receiver.type, TypeUseLocation.RECEIVER, argADT, paramATM, jaifPath);
+                updateAnnotationSet(
+                        receiver.type, TypeUseLocation.RECEIVER, argADT, paramATM, file);
             }
         }
     }
@@ -352,19 +348,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateFromLocalAssignment(
             LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree) {
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (!isElementFromSourceCode(lhs)) {
             return;
         }
 
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
         String className = getEnclosingClassName(lhs);
-        String jaifPath = storage.getJaifPath(className);
+        String file = storage.getJaifPath(className);
         AClass clazz =
                 storage.getAClass(
-                        className,
-                        jaifPath,
-                        (ClassSymbol) TreeUtils.elementFromDeclaration(classTree));
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+                        className, file, (ClassSymbol) TreeUtils.elementFromDeclaration(classTree));
         AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
         method.setFieldsFromMethodElement(methodElt);
 
@@ -390,8 +384,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                         method.vivifyAndAddTypeMirrorToParameter(
                                 i, argATM.getUnderlyingType(), ve.getSimpleName());
 
-                updateAnnotationSetInScene(
-                        param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
+                updateAnnotationSet(param.type, TypeUseLocation.PARAMETER, argATM, paramATM, file);
                 break;
             }
         }
@@ -434,14 +427,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = enclosingClass.flatname.toString();
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath, enclosingClass);
+        String file = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, file, enclosingClass);
 
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
         AField field = clazz.fields.getVivify(fieldName);
         field.setTypeMirror(lhsATM.getUnderlyingType());
 
-        updateAnnotationSetInScene(field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, jaifPath);
+        updateAnnotationSet(field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
     }
 
     /**
@@ -475,7 +468,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
             return true;
         }
@@ -507,7 +500,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             MethodTree methodTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (methodTree == null
                 || !ElementUtils.isElementFromSourceCode(
                         TreeUtils.elementFromDeclaration(methodTree))) {
@@ -519,13 +512,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
         }
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @BinaryName String className = classSymbol.flatname.toString();
-
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath, classSymbol);
 
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = classSymbol.flatname.toString();
+        String file = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, file, classSymbol);
+
         AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
         method.setFieldsFromMethodElement(methodElt);
 
@@ -541,8 +534,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             dependentTypesHelper.standardizeReturnType(
                     methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
-        updateAnnotationSetInScene(
-                method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, jaifPath);
+        updateAnnotationSet(method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -559,7 +551,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedDeclaredType superclassDecl = pair.getKey();
             ExecutableElement overriddenMethodElement = pair.getValue();
 
-            // do not infer types for code that isn't presented as source
+            // Don't infer types for code that isn't presented as source.
             if (!ElementUtils.isElementFromSourceCode(overriddenMethodElement)) {
                 continue;
             }
@@ -572,24 +564,24 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             overriddenMethodElement);
 
             String superClassName = getEnclosingClassName(overriddenMethodElement);
-            String superJaifPath = storage.getJaifPath(superClassName);
-            AClass superClazz =
+            String superClassFile = storage.getJaifPath(superClassName);
+            AClass superClassAnnos =
                     storage.getAClass(
                             superClassName,
-                            superJaifPath,
+                            superClassFile,
                             ((MethodSymbol) overriddenMethodElement).enclClass());
             AMethod overriddenMethodInSuperclass =
-                    superClazz.methods.getVivify(
+                    superClassAnnos.methods.getVivify(
                             JVMNames.getJVMMethodSignature(overriddenMethodElement));
             overriddenMethodInSuperclass.setFieldsFromMethodElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
-            updateAnnotationSetInScene(
+            updateAnnotationSet(
                     overriddenMethodInSuperclass.returnType,
                     TypeUseLocation.RETURN,
                     rhsATM,
                     overriddenMethodReturnType,
-                    superJaifPath);
+                    superClassFile);
         }
     }
 
@@ -613,10 +605,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
 
         String className = getEnclosingClassName(methodElt);
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz =
-                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
-        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        String file = storage.getJaifPath(className);
+        AClass classAnnos =
+                storage.getAClass(className, file, ((MethodSymbol) methodElt).enclClass());
+        AMethod method = classAnnos.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
 
         scenelib.annotations.Annotation sceneAnno =
                 AnnotationConverter.annotationMirrorToAnnotation(anno);
@@ -624,49 +616,50 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding the
-     * arguments and setting ignoreIfAnnotated to true.
+     * Updates the set of annotations in a location in a program.
      *
-     * @param type ATypeElement of the Scene which will be modified
-     * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
-     *     (needing to be written to disk)
+     * @param typeToUpdate the type whose annotations are modified by this method
+     * @param defLoc the location where the annotation will be added
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
-     * @param defLoc the location where the annotation will be added
+     * @param file path to the annotation file containing the executable; used for marking the scene
+     *     as modified (needing to be written to disk)
      */
-    protected final void updateAnnotationSetInScene(
-            ATypeElement type,
+    protected final void updateAnnotationSet(
+            ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
-            String jaifPath) {
-        updateAnnotationSetInScene(type, defLoc, rhsATM, lhsATM, jaifPath, true);
+            String file) {
+        updateAnnotationSet(typeToUpdate, defLoc, rhsATM, lhsATM, file, true);
     }
 
     /**
-     * Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding the
-     * arguments.
+     * Updates the set of annotations in a location in a program.
      *
-     * <p>Exists so that subclasses can customize it.
+     * <p>Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding
+     * the arguments.
      *
-     * @param type ATypeElement of the Scene which will be modified
-     * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
-     *     (needing to be written to disk)
+     * <p>Subclasses can customize its behavior.
+     *
+     * @param typeToUpdate the type whose annotations are modified by this method
+     * @param defLoc the location where the annotation will be added
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
-     * @param defLoc the location where the annotation will be added
+     * @param file path to a .jaif file for a Scene; used for marking the scene as modified (needing
+     *     to be written to disk)
      * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
      *     source code
      */
-    protected void updateAnnotationSetInScene(
-            ATypeElement type,
+    protected void updateAnnotationSet(
+            ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
-            String jaifPath,
+            String file,
             boolean ignoreIfAnnotated) {
         storage.updateAnnotationSetInScene(
-                type, defLoc, rhsATM, lhsATM, jaifPath, ignoreIfAnnotated);
+                typeToUpdate, defLoc, rhsATM, lhsATM, file, ignoreIfAnnotated);
     }
 
     ///
@@ -742,29 +735,30 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Side-effects the AClass to make any desired changes before writing to a file.
+     * Side-effects the class annotations to make any desired changes before writing to a file.
      *
-     * @param clazz the AClass to modify
+     * @param classAnnos the class annotations to modify
      */
-    public void prepareClassForWriting(AClass clazz) {
-        for (Map.Entry<String, AMethod> methodEntry : clazz.methods.entrySet()) {
+    public void prepareClassForWriting(AClass classAnnos) {
+        for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
             prepareMethodForWriting(methodEntry.getValue());
         }
     }
 
     /**
-     * Side-effects the AMethod to make any desired changes before writing to a file.
+     * Side-effects the method or constructor annotations to make any desired changes before writing
+     * to a file.
      *
-     * @param method the AMethod to modify
+     * @param methodAnnos the method or constructor annotations to modify
      */
-    public void prepareMethodForWriting(AMethod method) {
+    public void prepareMethodForWriting(AMethod methodAnnos) {
         // This implementation does nothing.
     }
 
     @Override
     public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
-        for (String jaifPath : storage.modifiedScenes) {
-            ASceneWrapper scene = storage.scenes.get(jaifPath);
+        for (String file : storage.modifiedScenes) {
+            ASceneWrapper scene = storage.scenes.get(file);
             prepareSceneForWriting(scene.getAScene());
         }
 
