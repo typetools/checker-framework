@@ -400,6 +400,7 @@ task testWpiTestCheckerJaifs(type: Test) {
     description 'Internal task to run the wpi-testchecker tests with -Ainfer=jaifs to generate .jaif files'
 
     dependsOn(compileTestJava)
+    dependsOn(':checker-qual:jar')  // For the Value Checker annotations.
     doFirst {
         delete("tests/wpi-testchecker/annotated")
     }
@@ -441,8 +442,7 @@ task testWpiTestCheckerJaifs(type: Test) {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
             // The framework is needed for Constant Value Checker annotations.
-            // TODO: There must be a variable that holds this test directory.
-            args = ['-cp', "${buildDir}/classes/java/test:${buildDir}/../../framework/build/classes/java/main"]
+            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}"]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
@@ -521,8 +521,7 @@ task testWpiNullnessJaifs(type: Test) {
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
-            // TODO: There must be a variable that holds this test directory.
-            args = ['-cp', "${buildDir}/classes/java/test"]
+            args = ['-cp', "${sourceSets.test.output.asPath}"]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
