@@ -623,88 +623,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         method.tlAnnotationsHere.add(sceneAnno);
     }
 
-    @Override
-    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
-        for (String jaifPath : storage.modifiedScenes) {
-            ASceneWrapper scene = storage.scenes.get(jaifPath);
-            prepareSceneForWriting(scene.getAScene());
-        }
-
-        storage.writeScenes(outputFormat, checker);
-    }
-
-    // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
-    // a scene may be modifed and written at any time, including before or after
-    // postProcessClassTree is called.
-
-    /**
-     * Side-effects the AScene to make any desired changes before writing to a file.
-     *
-     * @param scene the AScene to modify
-     */
-    public void prepareSceneForWriting(AScene scene) {
-        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
-            prepareClassForWriting(classEntry.getValue());
-        }
-    }
-
-    /**
-     * Side-effects the AClass to make any desired changes before writing to a file.
-     *
-     * @param clazz the AClass to modify
-     */
-    public void prepareClassForWriting(AClass clazz) {
-        for (Map.Entry<String, AMethod> methodEntry : clazz.methods.entrySet()) {
-            prepareMethodForWriting(methodEntry.getValue());
-        }
-    }
-
-    /**
-     * Side-effects the AMethod to make any desired changes before writing to a file.
-     *
-     * @param method the AMethod to modify
-     */
-    public void prepareMethodForWriting(AMethod method) {
-        // This implementation does nothing.
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
-     *
-     * @param localVariableNode the {@link LocalVariableNode}
-     * @return the "flatname" of the class enclosing {@code localVariableNode}
-     */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
-                .flatName()
-                .toString();
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code executableElement}.
-     *
-     * @param executableElement the ExecutableElement
-     * @return the "flatname" of the class enclosing {@code executableElement}
-     */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
-        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
-    }
-
-    /**
-     * Checks whether a given local variable came from a source file or not.
-     *
-     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
-     * a classfile for the given element, whether or not there is also a source file.
-     *
-     * @param localVariableNode the local variable declaration to check
-     * @return true if a source file containing the variable is being compiled
-     */
-    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
-        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
-    }
-
     /**
      * Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding the
      * arguments and setting ignoreIfAnnotated to true.
@@ -751,6 +669,47 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 type, defLoc, rhsATM, lhsATM, jaifPath, ignoreIfAnnotated);
     }
 
+    ///
+    /// Classes and class names
+    ///
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
+     *
+     * @param localVariableNode the {@link LocalVariableNode}
+     * @return the "flatname" of the class enclosing {@code localVariableNode}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
+                .flatName()
+                .toString();
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code executableElement}.
+     *
+     * @param executableElement the ExecutableElement
+     * @return the "flatname" of the class enclosing {@code executableElement}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    }
+
+    /**
+     * Checks whether a given local variable came from a source file or not.
+     *
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, whether or not there is also a source file.
+     *
+     * @param localVariableNode the local variable declaration to check
+     * @return true if a source file containing the variable is being compiled
+     */
+    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
+        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
+    }
+
     /**
      * Obtain the type from an ATypeElement (which is part of a Scene).
      *
@@ -761,5 +720,54 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     public AnnotatedTypeMirror atmFromATypeElement(TypeMirror typeMirror, ATypeElement type) {
         return storage.atmFromATypeElement(typeMirror, type);
+    }
+
+    ///
+    /// Writing to a file
+    ///
+
+    // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
+    // a scene may be modifed and written at any time, including before or after
+    // postProcessClassTree is called.
+
+    /**
+     * Side-effects the AScene to make any desired changes before writing to a file.
+     *
+     * @param scene the AScene to modify
+     */
+    public void prepareSceneForWriting(AScene scene) {
+        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+            prepareClassForWriting(classEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the AClass to make any desired changes before writing to a file.
+     *
+     * @param clazz the AClass to modify
+     */
+    public void prepareClassForWriting(AClass clazz) {
+        for (Map.Entry<String, AMethod> methodEntry : clazz.methods.entrySet()) {
+            prepareMethodForWriting(methodEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the AMethod to make any desired changes before writing to a file.
+     *
+     * @param method the AMethod to modify
+     */
+    public void prepareMethodForWriting(AMethod method) {
+        // This implementation does nothing.
+    }
+
+    @Override
+    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
+        for (String jaifPath : storage.modifiedScenes) {
+            ASceneWrapper scene = storage.scenes.get(jaifPath);
+            prepareSceneForWriting(scene.getAScene());
+        }
+
+        storage.writeScenes(outputFormat, checker);
     }
 }
