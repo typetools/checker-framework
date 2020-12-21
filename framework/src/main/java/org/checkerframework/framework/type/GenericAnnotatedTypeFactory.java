@@ -2410,7 +2410,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
      *     the given field, or null
      */
-    protected AnnotationMirror requiresOrEnsuresQualifierAnno(
+    protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnno(
             VariableElement fieldElement,
             AnnotationMirror qualifier,
             Analysis.BeforeOrAfter preOrPost) {
