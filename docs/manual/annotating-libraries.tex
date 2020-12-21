@@ -454,6 +454,9 @@ A checker automatically reads some of its own stub files, even without a
 \<-Astubs> command-line argument; see
 Section~\ref{creating-a-checker-annotated-jdk}.
 
+User-supplied stub files override a checker's built-in stub files and the
+annotated JDK\@.
+
 
 \subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
 
@@ -504,6 +507,19 @@ As another example, the GLB of
 \refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map2", "map3"\}} is
 \refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map1", "map2", "map3"\}}
 since the value is known to be a key for all three maps.
+
+
+\subsectionAndLabel{Stub methods in subclasses of the declaring class}{stub-fake-override}
+
+Sometimes, a method's return type is different in a subclass than in a
+superclass, even though the subtype does not define the method and just
+inherits the superclass's definition.  An example is when method \<m1>
+calls method \<m2>, and the subclass overrides \<m2> but not \<m1>.
+
+You may write a ``fake override'' in a stub file.  This is a declaration of
+a method that is inherited.  The Java signature of the method must be
+identical to that in the superclass where it is actually defined, but you
+can change its annotations.
 
 
 \subsectionAndLabel{Stub file format}{stub-format}

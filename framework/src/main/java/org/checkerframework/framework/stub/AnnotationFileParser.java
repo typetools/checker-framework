@@ -44,10 +44,12 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
+import com.sun.tools.javac.code.Type.ClassType;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Target;
@@ -55,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +72,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -216,7 +218,12 @@ public class AnnotationFileParser {
      */
     public static class AnnotationFileAnnotations {
 
-        /** Map from element to its type as declared in the annotation file. */
+        /**
+         * Map from element to its type as declared in the annotation file.
+         *
+         * <p>This is a fine-grained mapping that contains all sorts of elements; contrast with
+         * {@link #fakeOverrides}.
+         */
         public final Map<Element, AnnotatedTypeMirror> atypes = new HashMap<>();
 
         /**
@@ -228,6 +235,16 @@ public class AnnotationFileParser {
          * ElementUtils.getQualifiedName.
          */
         public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>();
+
+        /**
+         * Map from an element to all the fake overrides of it (including fake overrides of real
+         * overrides of it).
+         *
+         * <p>This mapping never contains keys that are (for example) formal parameters, return
+         * types, or type parameters.
+         */
+        public final Map<Element, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
+                new HashMap<>();
     }
 
     /**
@@ -693,11 +710,9 @@ public class AnnotationFileParser {
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
-        // `elementsToDecl` is for members of a single type.  It does not contain any stub
-        // declaration that does not match some member of the element.
-        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeDecl, typeElt, typeDecl);
-        // This loop converts each JavaParser declaration into an AnnotatedTypeMirror.
-        for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
+        Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
+                getMembers(typeDecl, typeElt, typeDecl);
+        for (Map.Entry<Element, BodyDeclaration<?>> entry : members.first.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
             switch (elt.getKind()) {
@@ -725,6 +740,14 @@ public class AnnotationFileParser {
                     break;
             }
         }
+        for (Map.Entry<Element, List<BodyDeclaration<?>>> entry : members.second.entrySet()) {
+            ExecutableElement fakeOverridden = (ExecutableElement) entry.getKey();
+            List<BodyDeclaration<?>> fakeOverrides = entry.getValue();
+            for (BodyDeclaration<?> bodyDecl : fakeOverrides) {
+                processFakeOverride(fakeOverridden, (CallableDeclaration<?>) bodyDecl, typeElt);
+            }
+        }
+
         if (typeDeclTypeParameters != null) {
             typeParameters.removeAll(typeDeclTypeParameters);
         }
@@ -1423,40 +1446,58 @@ public class AnnotationFileParser {
     }
 
     /**
-     * For each member of the JavaParser type declaration {@code typeDecl}:
+     * Returns a pair of mappings. For each member declaration of the JavaParser type declaration
+     * {@code typeDecl}:
      *
      * <ul>
-     *   <li>If {@code typeElt} contains a member element for it, returns a mapping from the member
+     *   <li>If {@code typeElt} contains a member element for it, the first mapping maps the member
      *       element to it.
+     *   <li>If it is a fake override, the second mapping maps each element it overrides to it.
      *   <li>Otherwise, does nothing.
      * </ul>
      *
      * This method does not read or write the field {@link #annotationFileAnnos}.
      *
      * @param typeDecl a JavaParser type declaration
-     * @param typeElt the element for {@code typeDecl}
-     * @return a mapping from elements to their declaration in a stub file
+     * @param typeElt the javac element for {@code typeDecl}
+     * @return two mappings: from javac elements to their JavaParser declaration, and from javac
+     *     elements to fake overrides of them
      * @param astNode where to report errors
      */
-    private Map<Element, BodyDeclaration<?>> getMembers(
-            TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
+    private Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>>
+            getMembers(TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
+        Map<Element, BodyDeclaration<?>> elementsToDecl = new HashMap<>();
+        Map<Element, List<BodyDeclaration<?>>> fakeOverrides = new HashMap<>();
+
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
-            putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
+            putNewElement(
+                    elementsToDecl,
+                    fakeOverrides,
+                    typeElt,
+                    member,
+                    typeDecl.getNameAsString(),
+                    astNode);
         }
         // For an enum type declaration, also add the enum constants
         if (typeDecl instanceof EnumDeclaration) {
             EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
             // getEntries() gives the list of enum constant declarations
             for (BodyDeclaration<?> member : enumDecl.getEntries()) {
-                putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
+                putNewElement(
+                        elementsToDecl,
+                        fakeOverrides,
+                        typeElt,
+                        member,
+                        typeDecl.getNameAsString(),
+                        astNode);
             }
         }
-        return elementsToDecl;
+
+        return Pair.of(elementsToDecl, fakeOverrides);
     }
 
     // Used only by getMembers
@@ -1464,17 +1505,22 @@ public class AnnotationFileParser {
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
      *
-     * <p>Does nothing if it cannot find member's element.
+     * <p>Otherwise (if there is no element for {@code member}), adds to {@code fakeOverrides} zero
+     * or more mappings. Each mapping is from an element that {@code member} would override to
+     * {@code member}.
      *
      * <p>This method does not read or write field {@link annotationFileAnnos}.
      *
      * @param elementsToDecl the mapping that is side-effected by this method
+     * @param fakeOverrides fake overrides, also side-effected by this method
      * @param typeElt the class in which {@code member} is declared
      * @param member the stub file declaration of a method
      * @param typeDeclName used only for debugging
+     * @param astNode where to report errors
      */
     private void putNewElement(
             Map<Element, BodyDeclaration<?>> elementsToDecl,
+            Map<Element, List<BodyDeclaration<?>>> fakeOverrides,
             TypeElement typeElt,
             BodyDeclaration<?> member,
             String typeDeclName,
@@ -1484,6 +1530,16 @@ public class AnnotationFileParser {
             Element elt = findElement(typeElt, method);
             if (elt != null) {
                 putIfAbsent(elementsToDecl, elt, method);
+            } else {
+                List<ExecutableElement> overriddenMethods = fakeOverriddenMethods(typeElt, method);
+                for (ExecutableElement overriddenMethod : overriddenMethods) {
+                    List<BodyDeclaration<?>> l = fakeOverrides.get(overriddenMethod);
+                    if (l == null) {
+                        l = new ArrayList<>();
+                        fakeOverrides.put(overriddenMethod, l);
+                    }
+                    l.add(member);
+                }
             }
         } else if (member instanceof ConstructorDeclaration) {
             Element elt = findElement(typeElt, (ConstructorDeclaration) member);
@@ -1518,6 +1574,168 @@ public class AnnotationFileParser {
                     String.format(
                             "Ignoring element of type %s in %s", member.getClass(), typeDeclName));
         }
+    }
+
+    /**
+     * Given a method declaration that does not correspond to an element, returns all the methods
+     * that it would override. This includes transitively overridden methods.
+     *
+     * <p>The parameter types must be exact matches; covariance is not permitted.
+     *
+     * @param typeElt the type in which the method appears
+     * @param methodDecl the method declaration that does not correspond to an element
+     * @return all the methods that the method declaration would override
+     */
+    private List<ExecutableElement> fakeOverriddenMethods(
+            TypeElement typeElt, MethodDeclaration methodDecl) {
+        NodeList<Parameter> declParams = methodDecl.getParameters();
+        List<ExecutableElement> result = new ArrayList<>();
+        for (TypeElement supertype : ElementUtils.getAllSupertypes(typeElt, processingEnv)) {
+            if (supertype.equals(typeElt)) {
+                continue;
+            }
+            for (Element elt : supertype.getEnclosedElements()) {
+                if (elt.getKind() != ElementKind.METHOD) {
+                    continue;
+                }
+                ExecutableElement candidate = (ExecutableElement) elt;
+                if (!candidate
+                        .getSimpleName()
+                        .contentEquals(methodDecl.getName().getIdentifier())) {
+                    continue;
+                }
+                List<? extends VariableElement> candidateParams = candidate.getParameters();
+                if (sameSignature(candidateParams, declParams)) {
+                    result.add(candidate);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns true if the two signatures are the same. No covariance is permitted.
+     *
+     * @param javacParams parameter list in javac form
+     * @param javaParserParams parameter list in JavaParser form
+     * @return true if the two signatures are the same
+     */
+    boolean sameSignature(
+            List<? extends VariableElement> javacParams, NodeList<Parameter> javaParserParams) {
+        if (javacParams.size() != javaParserParams.size()) {
+            return false;
+        }
+        for (int i = 0; i < javacParams.size(); i++) {
+            TypeMirror javacType = javacParams.get(i).asType();
+            Parameter javaParserParam = javaParserParams.get(i);
+            Type javaParserType = javaParserParam.getType();
+            if (javacType.getKind() == TypeKind.TYPEVAR) {
+                // TODO: Hack, need to viewpoint-adapt.
+                javacType = ((TypeVariable) javacType).getUpperBound();
+            }
+            if (!sameType(javacType, javaParserType)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if the two types are the same.
+     *
+     * @param javacType type in javac form
+     * @param javaParserType type in JavaParser form
+     * @return true if the two types are the same
+     */
+    boolean sameType(TypeMirror javacType, Type javaParserType) {
+
+        switch (javacType.getKind()) {
+            case BOOLEAN:
+                return javaParserType.equals(PrimitiveType.booleanType());
+            case BYTE:
+                return javaParserType.equals(PrimitiveType.byteType());
+            case CHAR:
+                return javaParserType.equals(PrimitiveType.charType());
+            case DOUBLE:
+                return javaParserType.equals(PrimitiveType.doubleType());
+            case FLOAT:
+                return javaParserType.equals(PrimitiveType.floatType());
+            case INT:
+                return javaParserType.equals(PrimitiveType.intType());
+            case LONG:
+                return javaParserType.equals(PrimitiveType.longType());
+            case SHORT:
+                return javaParserType.equals(PrimitiveType.shortType());
+
+            case DECLARED:
+                if (!(javaParserType instanceof ClassOrInterfaceType)) {
+                    return false;
+                }
+                ClassType javacClassType = (ClassType) javacType;
+                ClassOrInterfaceType javaParserClassType = (ClassOrInterfaceType) javaParserType;
+
+                // Use asString() because toString() includes annotations.
+                String javaParserString = javaParserClassType.asString();
+                Element javacElement = javacClassType.asElement();
+                // Check both fully-qualified name and simple name.
+                return javacElement.toString().equals(javaParserString)
+                        || javacElement.getSimpleName().contentEquals(javaParserString);
+
+            case ARRAY:
+                return javaParserType.isArrayType()
+                        && sameType(
+                                ((ArrayType) javacType).getComponentType(),
+                                javaParserType.asArrayType().getComponentType());
+
+            case TYPEVAR:
+                throw new BugInCF(
+                        "not yet implemented: %s [%s %s], %s [%s]",
+                        javacType,
+                        javacType.getKind(),
+                        javacType.getClass(),
+                        javaParserType,
+                        javaParserType.getClass());
+
+            default:
+                throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
+        }
+    }
+
+    /**
+     * Process a fake override: copy its annotations to the fake overrides part of {@code
+     * #annotationFileAnnos}.
+     *
+     * @param element a real element
+     * @param decl a fake override of the element
+     * @param fakeLocation where the fake override was defined
+     */
+    private void processFakeOverride(
+            ExecutableElement element, CallableDeclaration<?> decl, TypeElement fakeLocation) {
+
+        // This is a fresh type, which this code may side-effect.
+        AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);
+
+        // TODO: Walk the type and the declaration, copying annotations from the declaration to the
+        // element.  I think Jason has a visitor that does that, which I should use.
+
+        // Here is a hacky solution that does not use the visitor.  It just handles the return type.
+        // Return type
+        // The annotations on the method.  These include type annotations on the return type.
+        NodeList<AnnotationExpr> annotations = decl.getAnnotations();
+        annotate(
+                methodType.getReturnType(),
+                ((MethodDeclaration) decl).getType(),
+                annotations,
+                // /*isFakeOverride*/ true,
+                decl);
+
+        List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
+                annotationFileAnnos.fakeOverrides.get(element);
+        if (l == null) {
+            l = new ArrayList<>();
+            annotationFileAnnos.fakeOverrides.put(element, l);
+        }
+        l.add(Pair.of(fakeLocation.asType(), methodType));
     }
 
     /**

@@ -1,3 +1,11 @@
+Version 3.9.1
+
+In a stub file for a class C, you may write a declaration for a method that
+is inherited by C but not defined by it.  See the manual's documentation of
+"fake overrides".
+
+---------------------------------------------------------------------------
+
 Version 3.9.0
 
 New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program

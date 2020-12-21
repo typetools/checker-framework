@@ -36,6 +36,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.framework.stub.AnnotationFileElementTypes;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -346,7 +347,22 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror t,
             ExecutableElement elem,
             AnnotatedExecutableType type) {
-        return (AnnotatedExecutableType) asMemberOf(types, atypeFactory, t, (Element) elem, type);
+        AnnotatedTypeMirror result = asMemberOf(types, atypeFactory, t, (Element) elem, type);
+        try {
+            // TODO: This may be a union, for example when calling a method within a catch block.
+            return (AnnotatedExecutableType) result;
+        } catch (Throwable e) {
+            throw new Error(
+                    String.format(
+                            "trying to cast %s in asMemberOf(%s, receiver=%s, elem=%s in %s, unsubstituted type=%s)",
+                            result,
+                            atypeFactory.getClass().getSimpleName(),
+                            t,
+                            elem,
+                            elem.getEnclosingElement(),
+                            type),
+                    e);
+        }
     }
 
     /**
@@ -471,14 +487,59 @@ public class AnnotatedTypes {
                 }
                 return result;
             case UNION:
-            case DECLARED:
                 return substituteTypeVariables(
-                        types, atypeFactory, receiverType, member, memberType);
+                        types, atypeFactory, receiverType, member, receiverType);
+            case DECLARED:
+                AnnotatedTypeMirror withOverrides =
+                        applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
+                return substituteTypeVariables(
+                        types, atypeFactory, receiverType, member, withOverrides);
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
         }
     }
 
+    /**
+     * Given a member and its type, returns the type with fake overrides applied to it.
+     *
+     * @param types type utilities
+     * @param atypeFactory the type factory
+     * @param receiverType the type of the class that contains member (or a subtype of it)
+     * @param member a type member, such as a method or field
+     * @param memberType the type of {@code member}
+     * @return {@code memberType}, adjusted according to fake overrides
+     */
+    @SuppressWarnings("UnusedVariable") // TEMPORARY
+    private static AnnotatedTypeMirror applyFakeOverrides(
+            Types types,
+            AnnotatedTypeFactory atypeFactory,
+            AnnotatedTypeMirror receiverType,
+            Element member,
+            AnnotatedTypeMirror memberType) {
+        // Currently, handle only methods, not fields.  TODO: Handle fields.
+        if (memberType.getKind() != TypeKind.EXECUTABLE) {
+            return memberType;
+        }
+
+        AnnotationFileElementTypes afet = atypeFactory.stubTypes;
+        AnnotatedExecutableType methodType =
+                (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
+        if (methodType == null) {
+            methodType = (AnnotatedExecutableType) memberType;
+        }
+        return methodType;
+    }
+
+    /**
+     * Substitute type variables.
+     *
+     * @param types type utilities
+     * @param atypeFactory the type factory
+     * @param receiverType the type of the class that contains member (or a subtype of it)
+     * @param member a type member, such as a method or field
+     * @param memberType the type of {@code member}
+     * @return {@code memberType}, substituted
+     */
     private static AnnotatedTypeMirror substituteTypeVariables(
             Types types,
             AnnotatedTypeFactory atypeFactory,
