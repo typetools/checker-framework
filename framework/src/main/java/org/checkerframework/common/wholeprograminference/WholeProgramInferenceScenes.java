@@ -134,7 +134,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ObjectCreationNode objectCreationNode,
             ExecutableElement constructorElt,
             CFAbstractStore<?, ?> store) {
-
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
@@ -159,7 +158,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             Tree receiverTree,
             ExecutableElement methodElt,
             CFAbstractStore<?, ?> store) {
-
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
@@ -308,7 +306,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             MethodTree methodTree,
             ExecutableElement methodElt,
             AnnotatedExecutableType overriddenMethod) {
-
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
@@ -347,7 +344,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     @Override
     public void updateFromLocalAssignment(
             LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree) {
-
         // Don't infer types for code that isn't presented as source.
         if (!isElementFromSourceCode(lhs)) {
             return;
@@ -499,7 +495,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ClassSymbol classSymbol,
             MethodTree methodTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
-
         // Don't infer types for code that isn't presented as source.
         if (methodTree == null
                 || !ElementUtils.isElementFromSourceCode(
