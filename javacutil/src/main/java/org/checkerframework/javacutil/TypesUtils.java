@@ -872,7 +872,7 @@ public final class TypesUtils {
      * @param processingEnv the {@link ProcessingEnvironment} to use
      * @return the most specific of the types, or null if none exists
      */
-    public static TypeMirror mostSpecific(
+    public static @Nullable TypeMirror mostSpecific(
             List<TypeMirror> typeMirrors, ProcessingEnvironment processingEnv) {
         if (typeMirrors.size() == 1) {
             return typeMirrors.get(0);
