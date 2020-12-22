@@ -1935,15 +1935,7 @@ public class AnnotationFileParser {
                 elem = findVariableElement((FieldAccessExpr) expr);
             }
             if (elem == null) {
-                warn(
-                        expr,
-                        "Field %s [%s] not found in getValueOfExpressionInAnnotation(%s, %s [%s], %s)",
-                        expr,
-                        expr.getClass(),
-                        name,
-                        expr,
-                        expr.getClass(),
-                        valueKind);
+                // A caller will print a diagnostic.
                 return null;
             }
             Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
@@ -2128,12 +2120,12 @@ public class AnnotationFileParser {
             Object[] values = new Object[arrayExpressions.size()];
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
-                expr = arrayExpressions.get(i);
-                values[i] = getValueOfExpressionInAnnotation(name, expr, valueKind);
+                Expression expri = arrayExpressions.get(i);
+                values[i] = getValueOfExpressionInAnnotation(name, expri, valueKind);
                 if (values[i] == null) {
                     return String.format(
-                            "null expression for name=%s expr=%s, valueKind=%s",
-                            name, expr, valueKind);
+                            "while building %s, could not process \"%s=%s\"; trouble with element name %s or array element #%d: %s",
+                            builder.getAnnotationElt(), name, expr, name, i, expri);
                 }
             }
             builder.setValue(name, values);
