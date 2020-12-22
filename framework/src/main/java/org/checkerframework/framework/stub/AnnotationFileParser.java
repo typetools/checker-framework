@@ -1926,7 +1926,7 @@ public class AnnotationFileParser {
      * @param expr the expression to determine the value of
      * @param valueKind the type of the result
      * @return the value of {@code expr}
-     * @throw AnnotationFileParserException if a problem occurred getting the value
+     * @throws AnnotationFileParserException if a problem occurred getting the value
      */
     private Object getValueOfExpressionInAnnotation(
             String name, Expression expr, TypeKind valueKind) throws AnnotationFileParserException {
