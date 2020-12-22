@@ -479,7 +479,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, p);
-        refineStringAtLengthInvocation(n, result.getRegularStore());
+        refineAtLengthInvocation(n, result.getRegularStore());
         return result;
     }
 
@@ -496,15 +496,23 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /**
-     * If string.length() is encountered, transform its @IntVal annotation into an @ArrayLen
-     * annotation for string.
+     * If length method is invoked for a sequence, transform its @IntVal annotation into
+     * an @ArrayLen annotation.
+     *
+     * @param lengthNode the length method invocation node
+     * @param store the Checker Framework store
      */
-    private void refineStringAtLengthInvocation(
-            MethodInvocationNode stringLengthNode, CFStore store) {
-        MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
-
-        if (atypeFactory.getMethodIdentifier().isStringLengthMethod(methodAccessNode.getMethod())) {
-            refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
+    private void refineAtLengthInvocation(MethodInvocationNode lengthNode, CFStore store) {
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isStringLengthMethod(lengthNode.getTarget().getMethod())) {
+            MethodAccessNode methodAccessNode = lengthNode.getTarget();
+            refineAtLengthAccess(lengthNode, methodAccessNode.getReceiver(), store);
+        } else if (atypeFactory
+                .getMethodIdentifier()
+                .isArrayGetLengthMethod(lengthNode.getTarget().getMethod())) {
+            Node node = lengthNode.getArguments().get(0);
+            refineAtLengthAccess(lengthNode, node, store);
         }
     }
 
@@ -1399,7 +1407,8 @@ public class ValueTransfer extends CFTransfer {
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
             } else if (node instanceof MethodInvocationNode) {
-                refineStringAtLengthInvocation((MethodInvocationNode) internal, store);
+                MethodInvocationNode miNode = (MethodInvocationNode) node;
+                refineAtLengthInvocation(miNode, store);
             }
         }
     }
