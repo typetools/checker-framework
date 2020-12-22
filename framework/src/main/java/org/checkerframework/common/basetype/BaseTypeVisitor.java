@@ -77,6 +77,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -751,6 +752,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             checkContractsAtMethodDeclaration(
                     node, methodElement, formalParamNames, abstractMethod);
+
+            // Infer postconditions
+            if (atypeFactory.getWholeProgramInference() != null) {
+                assert ElementUtils.isElementFromSourceCode(methodElement);
+
+                // TODO: Infer conditional postconditions too.
+                CFAbstractStore<?, ?> store = atypeFactory.getRegularExitStore(node);
+                // The store is null if the method has no normal exit, for example if its body is a
+                // throw statement.
+                if (store != null) {
+                    atypeFactory
+                            .getWholeProgramInference()
+                            .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
+                }
+            }
 
             return super.visitMethod(node, p);
         } finally {

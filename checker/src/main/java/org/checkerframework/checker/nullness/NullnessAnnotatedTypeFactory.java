@@ -17,6 +17,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,10 +35,12 @@ import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
@@ -68,6 +71,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import scenelib.annotations.el.AField;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -731,7 +735,84 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public WholeProgramInference createWholeProgramInference() {
+    protected WholeProgramInference createWholeProgramInference() {
         return new NullnessWholeProgramInferenceScenes(this);
+    }
+
+    // This implementation overrides the superclass implementation to:
+    //  * check for @MonotonicNonNull
+    //  * output @RequiresNonNull rather than @RequiresQualifier.
+    @Override
+    public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return Collections.emptyList();
+        }
+
+        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
+            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
+                return requiresNonNullAnno(elt);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns a {@code RequiresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code RequiresNonNull("...")} annotation for the given field
+     */
+    private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
+        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        AnnotationMirror am = builder.build();
+        List<AnnotationMirror> result = new ArrayList<>(1);
+        result.add(am);
+        return result;
+    }
+
+    @Override
+    public List<AnnotationMirror> getPostconditionAnnotation(
+            VariableElement elt, AField f, List<AnnotationMirror> preconds) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return Collections.emptyList();
+        }
+        if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
+                && preconds.contains(requiresNonNullAnno(elt))) {
+            // The postcondition is implied by the precondition and the field being
+            // @MonotonicNonNull.
+            return Collections.emptyList();
+        }
+        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
+            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
+                return ensuresNonNullAnno(elt);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns a {@code EnsuresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code EnsuresNonNull("...")} annotation for the given field
+     */
+    private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
+        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        AnnotationMirror am = builder.build();
+        List<AnnotationMirror> result = new ArrayList<>(1);
+        result.add(am);
+        return result;
     }
 }
