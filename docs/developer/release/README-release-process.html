@@ -189,7 +189,7 @@ TreeAnnotator
     (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
-      <code>python release_build.py all</code><br/><br/>
+      <code>git pull && python release_build.py all</code><br/><br/>
       [TODO: Add <code>--auto</code> here, or not?]<br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
