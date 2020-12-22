@@ -2159,7 +2159,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * See {@link #shouldSuppress(String[], String)}
+     * Helper method for {@link #shouldSuppress(String[], String)}.
      *
      * @param prefixes the SuppressWarnings prefixes used by this checker
      * @param suppressWarningsStrings the SuppressWarnings strings that are in effect. May be null,
