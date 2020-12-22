@@ -488,7 +488,7 @@ public class AnnotatedTypes {
                 return result;
             case UNION:
                 return substituteTypeVariables(
-                        types, atypeFactory, receiverType, member, receiverType);
+                        types, atypeFactory, receiverType, member, memberType);
             case DECLARED:
                 AnnotatedTypeMirror withOverrides =
                         applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
