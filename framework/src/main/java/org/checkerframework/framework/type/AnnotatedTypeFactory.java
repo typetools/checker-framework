@@ -1860,18 +1860,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type of the receiver of expression
      */
     public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
-        Element element = TreeUtils.elementFromUse(expression);
         ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
         if (receiver != null) {
-            AnnotatedTypeMirror result = getAnnotatedType(receiver);
-            // Some clients assume the receiver type is an AnnotatedExecutableType.
-            // But, is this premature and the LUB should be performed later?
-            if (result.getKind() == TypeKind.UNION) {
-                result = lubUnion((AnnotatedUnionType) result, element);
-            }
-            return result;
+            return getAnnotatedType(receiver);
+            // Experimentally commenting out.
+            // AnnotatedTypeMirror result = getAnnotatedType(receiver);
+            // // Some clients assume the receiver type is an AnnotatedExecutableType.
+            // // But, is this premature and the LUB should be performed later?
+            // if (result.getKind() == TypeKind.UNION) {
+            //     result =
+            //             lubUnion((AnnotatedUnionType) result,
+            // TreeUtils.elementFromUse(expression));
+            // }
+            // return result;
         }
 
+        Element element = TreeUtils.elementFromUse(expression);
         if (element != null && ElementUtils.hasReceiver(element)) {
             // The tree references an element that has a receiver, but the tree does not have an
             // explicit receiver. So, the tree must have an implicit receiver of "this" or

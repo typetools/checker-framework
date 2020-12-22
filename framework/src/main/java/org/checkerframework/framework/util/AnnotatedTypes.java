@@ -347,22 +347,24 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror t,
             ExecutableElement elem,
             AnnotatedExecutableType type) {
-        AnnotatedTypeMirror result = asMemberOf(types, atypeFactory, t, (Element) elem, type);
-        try {
-            // TODO: This may be a union, for example when calling a method within a catch block.
-            return (AnnotatedExecutableType) result;
-        } catch (Throwable e) {
-            throw new Error(
-                    String.format(
-                            "trying to cast %s in asMemberOf(%s, receiver=%s, elem=%s in %s, unsubstituted type=%s)",
-                            result,
-                            atypeFactory.getClass().getSimpleName(),
-                            t,
-                            elem,
-                            elem.getEnclosingElement(),
-                            type),
-                    e);
-        }
+        return (AnnotatedExecutableType) asMemberOf(types, atypeFactory, t, (Element) elem, type);
+        // AnnotatedTypeMirror result = asMemberOf(types, atypeFactory, t, (Element) elem, type);
+        // try {
+        //     // TODO: This may be a union, for example when calling a method within a catch block.
+        //     return (AnnotatedExecutableType) result;
+        // } catch (Throwable e) {
+        //     throw new Error(
+        //             String.format(
+        //                     "trying to cast %s in asMemberOf(%s, receiver=%s, elem=%s in %s,
+        // unsubstituted type=%s)",
+        //                     result,
+        //                     atypeFactory.getClass().getSimpleName(),
+        //                     t,
+        //                     elem,
+        //                     elem.getEnclosingElement(),
+        //                     type),
+        //             e);
+        // }
     }
 
     /**

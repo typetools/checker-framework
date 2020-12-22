@@ -2669,9 +2669,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
-        if (varType.getKind() == TypeKind.UNION) {
-            varType = atypeFactory.lubUnion((AnnotatedUnionType) varType, null);
-        }
+        // Experimentally commenting out.
+        // if (varType.getKind() == TypeKind.UNION) {
+        //     varType = atypeFactory.lubUnion((AnnotatedUnionType) varType, null);
+        // }
 
         AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
         boolean success = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
