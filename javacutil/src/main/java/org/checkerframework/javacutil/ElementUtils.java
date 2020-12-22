@@ -732,4 +732,16 @@ public class ElementUtils {
         JavacTypes t = (JavacTypes) types;
         return t.getOverriddenMethods(m);
     }
+
+    /**
+     * Returns true if the two elements are in the same class. The two elements should be class
+     * members, such as methods or fields.
+     *
+     * @param e1 an element
+     * @param e2 an element
+     * @return true if the two elements are in the same class
+     */
+    public static boolean inSameClass(Element e1, Element e2) {
+        return e1.getEnclosingElement().equals(e2.getEnclosingElement());
+    }
 }

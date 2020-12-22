@@ -27,7 +27,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         // Notes:
         //   * "fbc" suppresses *all* warnings, not just those related to initialization.  See
         //     https://checkerframework.org/manual/#initialization-checking-suppressing-warnings .
-        //   * "initialization" not a heckername/prefix.
+        //   * "initialization" is not a checkername/prefix.
         result.add("fbc");
         return result;
     }

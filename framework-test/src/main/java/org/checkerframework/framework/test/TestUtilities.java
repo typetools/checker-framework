@@ -433,6 +433,9 @@ public class TestUtilities {
                 System.out.println("---------------- start of javac ouput ----------------");
                 System.out.println(testResult.getCompilationResult().getJavacOutput());
                 System.out.println("---------------- end of javac ouput ----------------");
+            } else {
+                System.out.println(
+                        "To see the javac command line and output, run with: -Pemit.test.debug");
             }
             Assert.fail(testResult.summarize());
         }
