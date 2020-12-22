@@ -75,6 +75,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected Map<FieldAccess, V> fieldValues;
 
     /**
+     * Returns information about fields. Clients should not side-effect the returned value, which is
+     * aliased to internal state.
+     *
+     * @return information about fields
+     */
+    public Map<FieldAccess, V> getFieldValues() {
+        return fieldValues;
+    }
+
+    /**
      * Information collected about arrays, using the internal representation {@link ArrayAccess}.
      */
     protected Map<ArrayAccess, V> arrayValues;
@@ -570,6 +580,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public @Nullable V getValue(FieldAccessNode n) {
         FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(analysis.getTypeFactory(), n);
+        return fieldValues.get(fieldAccess);
+    }
+
+    /**
+     * Returns the current abstract value of a field access, or {@code null} if no information is
+     * available.
+     *
+     * @param fieldAccess the field access to look up in this store
+     * @return current abstract value of a field access, or {@code null} if no information is
+     *     available
+     */
+    public @Nullable V getFieldValue(FieldAccess fieldAccess) {
         return fieldValues.get(fieldAccess);
     }
 
