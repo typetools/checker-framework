@@ -2122,8 +2122,8 @@ public class AnnotationFileParser {
             Object[] values = new Object[arrayExpressions.size()];
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
-                Expression expri = arrayExpressions.get(i);
-                values[i] = getValueOfExpressionInAnnotation(name, expri, valueKind);
+                Expression eltExpr = arrayExpressions.get(i);
+                values[i] = getValueOfExpressionInAnnotation(name, eltExpr, valueKind);
             }
             builder.setValue(name, values);
         } else {
@@ -2217,10 +2217,14 @@ public class AnnotationFileParser {
             }
         }
 
-        // Imported but invalid types or fields will have warnings from above,
-        // only warn on fields missing an import
-        if (res == null && !importFound) {
-            stubWarnNotFound(nexpr, "Static field " + nexpr.getName() + " is not imported");
+        if (res == null) {
+            if (importFound) {
+                // TODO: Is this warning redundant?  Maybe imported but invalid types or fields will
+                // have warnings from above.
+                stubWarnNotFound(nexpr, nexpr.getName() + " was imported but not found");
+            } else {
+                stubWarnNotFound(nexpr, "Static field " + nexpr.getName() + " is not imported");
+            }
         }
 
         findVariableElementNameCache.put(nexpr, res);

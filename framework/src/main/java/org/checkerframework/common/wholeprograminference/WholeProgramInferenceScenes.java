@@ -13,16 +13,25 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -35,6 +44,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -121,7 +131,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     @Override
     public void updateFromObjectCreation(
-            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt) {
+            ObjectCreationNode objectCreationNode,
+            ExecutableElement constructorElt,
+            CFAbstractStore<?, ?> store) {
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
@@ -137,11 +149,15 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, file, constructorAnnos, arguments);
+        updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
     }
 
     @Override
     public void updateFromMethodInvocation(
-            MethodInvocationNode methodInvNode, Tree receiverTree, ExecutableElement methodElt) {
+            MethodInvocationNode methodInvNode,
+            Tree receiverTree,
+            ExecutableElement methodElt,
+            CFAbstractStore<?, ?> store) {
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
@@ -155,6 +171,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, file, methodAnnos, arguments);
+        updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
     }
 
     /**
@@ -187,11 +204,101 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
+            adjustForUpdateNonField(argATM);
             AField param =
                     executableAnnos.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
             updateAnnotationSet(param.type, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
+    }
+
+    @Override
+    public void updateContracts(
+            Analysis.BeforeOrAfter preOrPost,
+            ExecutableElement methodElt,
+            CFAbstractStore<?, ?> store) {
+
+        if (store == null) {
+            throw new BugInCF(
+                    "updateContracts(%s, %s, null) for %s",
+                    preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
+        }
+
+        String className = getEnclosingClassName(methodElt);
+        String file = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, file, ((MethodSymbol) methodElt).enclClass());
+        AMethod amethod = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+
+        amethod.setFieldsFromMethodElement(methodElt);
+
+        // TODO: Probably move some part of this into the AnnotatedTypeFactory.
+
+        // This code only handles fields of "this", for now.  In the future, extend it to other
+        // expressions.
+        TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
+        ThisReference thisReference = new ThisReference(containingClass.asType());
+        ClassName classNameReceiver = new ClassName(containingClass.asType());
+        for (VariableElement fieldElement :
+                ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
+            FieldAccess fa =
+                    new FieldAccess(
+                            (ElementUtils.isStatic(fieldElement)
+                                    ? classNameReceiver
+                                    : thisReference),
+                            fieldElement.asType(),
+                            fieldElement);
+            CFAbstractValue<?> v = store.getFieldValue(fa);
+            AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
+            AnnotatedTypeMirror inferredType;
+            if (v != null) {
+                // This field is in the store.
+                inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
+                adjustForUpdateNonField(inferredType);
+            } else {
+                // This field is not in the store. Add its declared type.
+                inferredType = atypeFactory.getAnnotatedType(fieldElement);
+            }
+            AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
+            updateAnnotationSet(
+                    afield.type, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
+        }
+    }
+
+    /**
+     * Obtain the AField for an expression in scope at method entry or exit.
+     *
+     * @param amethod AFU representation of a method
+     * @param preOrPost whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or {@code
+     *     vivifyAndAddTypeMirrorToPostcondition}
+     * @param fieldElement the field
+     * @return an AField representing the expression
+     */
+    private AField vivifyAndAddTypeMirrorToContract(
+            AMethod amethod, Analysis.BeforeOrAfter preOrPost, VariableElement fieldElement) {
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+
+        switch (preOrPost) {
+            case BEFORE:
+                return amethod.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror);
+            case AFTER:
+                return amethod.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror);
+            default:
+                throw new BugInCF("Unexpected " + preOrPost);
+        }
+    }
+
+    /**
+     * Converts a CFAbstractValue to an AnnotatedTypeMirror.
+     *
+     * @param v a value to convert to an AnnotatedTypeMirror
+     * @param fieldType a type that is copied, then updated to use {@code v}'s annotations
+     * @return a copy of {@code fieldType} with {@code v}'s annotations
+     */
+    private AnnotatedTypeMirror convertCFAbstractValueToAnnotatedTypeMirror(
+            CFAbstractValue<?> v, AnnotatedTypeMirror fieldType) {
+        AnnotatedTypeMirror result = fieldType.deepCopy();
+        result.replaceAnnotations(v.getAnnotations());
+        return result;
     }
 
     @Override
@@ -215,6 +322,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
+            adjustForUpdateNonField(argATM);
             AField param =
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
@@ -266,6 +374,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 }
                 AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(vt);
                 AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
+                adjustForUpdateNonField(argATM);
                 VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AField param =
                         method.vivifyAndAddTypeMirrorToParameter(
@@ -297,6 +406,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atypeFactory.getAnnotatedType(rhs.getTree());
+        adjustForUpdateField(lhs.getTree(), element, fieldName, rhsATM);
 
         updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM);
     }
@@ -330,7 +440,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param fieldName the field's name
      * @return true if an assignment to the given field should be ignored by WPI
      */
-    private boolean ignoreFieldInWPI(Element element, String fieldName) {
+    protected boolean ignoreFieldInWPI(Element element, String fieldName) {
         // Do not attempt to infer types for fields that do not have valid
         // names. For example, compiler-generated temporary variables will
         // have invalid names. Recording facts about fields with
@@ -354,7 +464,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
             return true;
         }
@@ -412,6 +522,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
                 atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
+        adjustForUpdateNonField(rhsATM);
         DependentTypesHelper dependentTypesHelper =
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
         if (dependentTypesHelper != null) {
@@ -471,6 +582,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     @Override
+    public void adjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+        // This implementation does nothing
+    }
+
+    @Override
+    public void adjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+        // This implementation does nothing
+    }
+
+    @Override
     public void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno) {
 
         // Do not infer types for library code, only for type-checked source code.
@@ -492,6 +614,25 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Updates the set of annotations in a location in a program.
      *
+     * @param typeToUpdate the type whose annotations are modified by this method
+     * @param defLoc the location where the annotation will be added
+     * @param rhsATM the RHS of the annotated type on the source code
+     * @param lhsATM the LHS of the annotated type on the source code
+     * @param file path to the annotation file containing the executable; used for marking the scene
+     *     as modified (needing to be written to disk)
+     */
+    protected final void updateAnnotationSet(
+            ATypeElement typeToUpdate,
+            TypeUseLocation defLoc,
+            AnnotatedTypeMirror rhsATM,
+            AnnotatedTypeMirror lhsATM,
+            String file) {
+        updateAnnotationSet(typeToUpdate, defLoc, rhsATM, lhsATM, file, true);
+    }
+
+    /**
+     * Updates the set of annotations in a location in a program.
+     *
      * <p>Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding
      * the arguments.
      *
@@ -501,16 +642,20 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param defLoc the location where the annotation will be added
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
-     * @param file path to the annotation file containing the executable; used for marking the scene
-     *     as modified (needing to be written to disk)
+     * @param file path to a .jaif file for a Scene; used for marking the scene as modified (needing
+     *     to be written to disk)
+     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
+     *     source code
      */
     protected void updateAnnotationSet(
             ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
-            String file) {
-        storage.updateAnnotationSetInScene(typeToUpdate, defLoc, rhsATM, lhsATM, file);
+            String file,
+            boolean ignoreIfAnnotated) {
+        storage.updateAnnotationSetInScene(
+                typeToUpdate, defLoc, rhsATM, lhsATM, file, ignoreIfAnnotated);
     }
 
     ///
@@ -552,6 +697,18 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
+    }
+
+    /**
+     * Obtain the type from an ATypeElement (which is part of a Scene).
+     *
+     * @param typeMirror the underlying type for the result
+     * @param type the ATypeElement from which to obtain annotations
+     * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
+     *     {@code type}
+     */
+    public AnnotatedTypeMirror atmFromATypeElement(TypeMirror typeMirror, ATypeElement type) {
+        return storage.atmFromATypeElement(typeMirror, type);
     }
 
     ///
