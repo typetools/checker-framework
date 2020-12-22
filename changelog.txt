@@ -1,9 +1,3 @@
-Version 3.9.1
-
-Use of the "fbc" SuppressWarnings prefix is deprecated (but still supported).
-
----------------------------------------------------------------------------
-
 Version 3.9.0, December 22, 2020
 
 New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program
@@ -17,6 +11,8 @@ The `-Ainfer` command-line argument now infers
 The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
 
 The Format String Checker recognizes Error Prone's `@FormatMethod` annotation.
+
+Use of the "fbc" SuppressWarnings prefix is deprecated (but still supported).
 
 Implementation details:
 
