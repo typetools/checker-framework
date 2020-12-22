@@ -1,8 +1,5 @@
 package org.checkerframework.framework.type;
 
-import static org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter.AFTER;
-import static org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter.BEFORE;
-
 import com.google.common.collect.Ordering;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -46,6 +43,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -2278,9 +2276,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Return a list of precondition annotations for the given field. Returns null if none can be
-     * created, because the qualifier has elements/arguments, which {@code @RequiresQualifier} does
-     * not support.
+     * Return a list of precondition annotations for the given field. Returns an empty list if none
+     * can be created, because the qualifier has elements/arguments, which
+     * {@code @RequiresQualifier} does not support.
      *
      * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
      * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
@@ -2288,16 +2286,16 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param elt element for a field, which is declared in the same class as the method
      * @param f AFU representation of a field's precondition annotations
-     * @return a precondition annotation for the element, or null if none is appropriate
+     * @return precondition annotations for the element (possibly an empty list)
      */
     public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
-        return getPreOrPostconditionAnnotation(elt, f, BEFORE, null);
+        return getPreOrPostconditionAnnotation(elt, f, BeforeOrAfter.BEFORE, null);
     }
 
     /**
-     * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns null if none can
-     * be created, because the qualifier has elements/arguments, which {@code @EnsuresQualifier}
-     * does not support.
+     * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns an empty list if
+     * none can be created, because the qualifier has elements/arguments, which
+     * {@code @EnsuresQualifier} does not support.
      *
      * <p>This implementation makes no assumptions about preconditions suppressing postconditions,
      * but subclasses may do so.
@@ -2310,19 +2308,20 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param f AFU representation of a field's postcondition annotations
      * @param preconds the precondition annotations for the method; used to suppress redundant
      *     postconditions
-     * @return a postcondition annotation for the element, or null if none is appropriate
+     * @return postcondition annotations for the element (possibly an empty list)
      */
     public List<AnnotationMirror> getPostconditionAnnotation(
             VariableElement elt, AField f, List<AnnotationMirror> preconds) {
-        return getPreOrPostconditionAnnotation(elt, f, AFTER, preconds);
+        return getPreOrPostconditionAnnotation(elt, f, BeforeOrAfter.AFTER, preconds);
     }
 
     /**
      * Helper method for {@link #getPreconditionAnnotation} and {@link #getPostconditionAnnotation}.
      *
      * <p>Returns an {@code @EnsuresQualifier} or {@code @EnsuresQualifier} annotation for the given
-     * field. Returns null if none can be created, because the qualifier has elements/arguments,
-     * which {@code @EnsuresQualifier} and {@code @RequiresQualifier} do not support.
+     * field. Returns an empty list if none can be created, because the qualifier has
+     * elements/arguments, which {@code @EnsuresQualifier} and {@code @RequiresQualifier} do not
+     * support.
      *
      * <p>This implementation makes no assumptions about preconditions suppressing postconditions,
      * but subclasses may do so.
@@ -2332,14 +2331,14 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param preOrPost whether to return preconditions or postconditions
      * @param preconds the precondition annotations for the method; used to suppress redundant
      *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
-     * @return a postcondition annotation for the element, or null if none is appropriate
+     * @return postcondition annotations for the element (possibly an empty list)
      */
     protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
             VariableElement elt,
             AField f,
             Analysis.BeforeOrAfter preOrPost,
             @Nullable List<AnnotationMirror> preconds) {
-        assert (preOrPost == BEFORE) == (preconds == null);
+        assert (preOrPost == BeforeOrAfter.BEFORE) == (preconds == null);
 
         WholeProgramInferenceScenes wholeProgramInference =
                 (WholeProgramInferenceScenes) getWholeProgramInference();
@@ -2422,7 +2421,9 @@ public abstract class GenericAnnotatedTypeFactory<
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         processingEnv,
-                        preOrPost == BEFORE ? RequiresQualifier.class : EnsuresQualifier.class);
+                        preOrPost == BeforeOrAfter.BEFORE
+                                ? RequiresQualifier.class
+                                : EnsuresQualifier.class);
 
         builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
         builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
