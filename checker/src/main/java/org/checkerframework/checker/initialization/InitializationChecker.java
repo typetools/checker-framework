@@ -23,9 +23,10 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     @Override
     public SortedSet<String> getSuppressWarningsPrefixes() {
         SortedSet<String> result = super.getSuppressWarningsPrefixes();
-        // The SuppressesWarnings string "initialization" is not useful here: it suppresses *all*
-        // warnings, not just those related to initialization.  Instead, if the user writes
-        // @SuppressWarnings("initialization"), let that match keys containing that string.
+        // "fbc" is for backward compatibility only.  Note that the SuppressesWarnings strings
+        // "initialization" and "fbc" suppress *all* warnings, not just those related to
+        // initialization.  See manual section
+        // https://checkerframework.org/manual/#initialization-checking-suppressing-warnings .
         result.add("fbc");
         return result;
     }
