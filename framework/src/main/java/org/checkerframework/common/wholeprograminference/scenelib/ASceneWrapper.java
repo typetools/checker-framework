@@ -147,20 +147,6 @@ public class ASceneWrapper {
         // Only write non-empty scenes into files.
         if (!scene.isEmpty()) {
             try {
-                for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
-                    AClass aClass = classEntry.getValue();
-                    for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
-                        AMethod aMethod = methodEntry.getValue();
-                        List<AnnotationMirror> contractAnnotationMirrors =
-                                checker.getTypeFactory().getContractAnnotations(aMethod);
-                        List<Annotation> contractAnnotations =
-                                mapList(
-                                        AnnotationConverter::annotationMirrorToAnnotation,
-                                        contractAnnotationMirrors);
-                        aMethod.contracts = contractAnnotations;
-                    }
-                }
-
                 switch (outputFormat) {
                     case STUB:
                         // For stub files, pass in the checker to compute contracts on the fly;
