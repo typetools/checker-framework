@@ -194,7 +194,7 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
     # Check that updating versions didn't overlook anything.
     print "Here are occurrences of the old version number, " + old_cf_version
     grep_cmd = 'grep -r --exclude-dir=build --exclude-dir=.git -F %s' % old_cf_version
-    execute(find_cmd, False, False, CHECKER_FRAMEWORK)
+    execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
 
     if not manual_only:
