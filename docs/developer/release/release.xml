@@ -136,10 +136,6 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${cf.docs.examples}/MavenExampleJDK11/pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
     </target>
 
     <target name="zip-checker-framework" description="Creates a zip archive for the Checker Framework.">
