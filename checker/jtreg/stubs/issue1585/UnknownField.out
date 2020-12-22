@@ -1,2 +1,2 @@
-- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): For annotation @DefaultQualifier(NonNull), could not add value NonNull because null expression for name=value expr=NonNull, valueKind=DECLARED
+- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): For annotation @DefaultQualifier(NonNull), could not add  value=NonNull  because variable NonNull not found
 1 warning
