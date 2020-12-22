@@ -2066,9 +2066,9 @@ public class AnnotationFileParser {
      * @param annotation syntax tree for an annotation
      * @param allAnnotations map from simple name to annotation definition; side-effected by this
      *     method
-     * @return the AnnotationMirror for the annotation
+     * @return the AnnotationMirror for the annotation, or null if it cannot be built
      */
-    private AnnotationMirror getAnnotation(
+    private @Nullable AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allAnnotations) {
 
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
@@ -2102,15 +2102,16 @@ public class AnnotationFileParser {
                 for (MemberValuePair mvp : pairs) {
                     String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    String failure = builderAddElement(builder, member, exp);
-                    if (failure != null) {
+                    try {
+                        builderAddElement(builder, member, exp);
+                    } catch (AnnotationFileParserException e) {
                         warn(
                                 exp,
-                                "For annotation %s, could not add %s %s because %s",
+                                "For annotation %s, could not add  %s=%s  because %s",
                                 annotation,
                                 member,
                                 exp,
-                                failure);
+                                e.getMessage());
                         return null;
                     }
                 }
@@ -2120,14 +2121,15 @@ public class AnnotationFileParser {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
             Expression valExpr = sglanno.getMemberValue();
-            String failure = builderAddElement(builder, "value", valExpr);
-            if (failure != null) {
+            try {
+                builderAddElement(builder, "value", valExpr);
+            } catch (AnnotationFileParserException e) {
                 warn(
                         valExpr,
-                        "For annotation %s, could not add value %s because %s",
+                        "For annotation %s, could not add  value=%s  because %s",
                         annotation,
                         valExpr,
-                        failure);
+                        e.getMessage());
                 return null;
             }
             return builder.build();
@@ -2137,15 +2139,16 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns the value of {@code expr}, or null if some problem occurred getting the value.
+     * Returns the value of {@code expr}.
      *
      * @param name the name of an annotation element/argument, used for diagnostic messages
      * @param expr the expression to determine the value of
      * @param valueKind the type of the result
-     * @return the value of {@code expr}, or null if some problem occurred getting the value
+     * @return the value of {@code expr}
+     * @throw AnnotationFileParserException if a problem occurred getting the value
      */
-    private @Nullable Object getValueOfExpressionInAnnotation(
-            String name, Expression expr, TypeKind valueKind) {
+    private Object getValueOfExpressionInAnnotation(
+            String name, Expression expr, TypeKind valueKind) throws AnnotationFileParserException {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
             VariableElement elem;
             if (expr instanceof NameExpr) {
@@ -2154,16 +2157,8 @@ public class AnnotationFileParser {
                 elem = findVariableElement((FieldAccessExpr) expr);
             }
             if (elem == null) {
-                warn(
-                        expr,
-                        "Field %s [%s] not found in getValueOfExpressionInAnnotation(%s, %s [%s], %s)",
-                        expr,
-                        expr.getClass(),
-                        name,
-                        expr,
-                        expr.getClass(),
-                        valueKind);
-                return null;
+                throw new AnnotationFileParserException(
+                        String.format("variable %s not found", expr));
             }
             Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
             if (value instanceof Number) {
@@ -2204,8 +2199,8 @@ public class AnnotationFileParser {
                             return convert((Number) value, valueKind, true);
                         }
                     }
-                    warn(expr, "Unexpected Unary annotation expression: " + expr);
-                    return null;
+                    throw new AnnotationFileParserException(
+                            "unexpected Unary annotation expression: " + expr);
             }
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
@@ -2216,17 +2211,14 @@ public class AnnotationFileParser {
             }
             TypeElement typeElement = findTypeOfName(className);
             if (typeElement == null) {
-                warn(expr, "AnnotationFileParser: unknown class name " + className);
-                return null;
+                throw new AnnotationFileParserException("unknown class name " + className);
             }
 
             return typeElement.asType();
         } else if (expr instanceof NullLiteralExpr) {
-            warn(expr, "Illegal annotation value null, for %s", name);
-            return null;
+            throw new AnnotationFileParserException("Illegal annotation value null, for " + name);
         } else {
-            warn(expr, "Unexpected annotation expression: " + expr);
-            return null;
+            throw new AnnotationFileParserException("Unexpected annotation expression: " + expr);
         }
     }
 
@@ -2323,10 +2315,11 @@ public class AnnotationFileParser {
      * @param builder the builder to side-effect
      * @param name the element name
      * @param expr the element value
-     * @return an error description, or null if the expression was parsed and added to {@code
+     * @throws AnnotationFileParserException if the expression cannot be parsed and added to {@code
      *     builder}
      */
-    private String builderAddElement(AnnotationBuilder builder, String name, Expression expr) {
+    private void builderAddElement(AnnotationBuilder builder, String name, Expression expr)
+            throws AnnotationFileParserException {
         ExecutableElement var = builder.findElement(name);
         TypeMirror declaredType = var.getReturnType();
         TypeKind valueKind;
@@ -2337,31 +2330,23 @@ public class AnnotationFileParser {
         }
         if (expr instanceof ArrayInitializerExpr) {
             if (declaredType.getKind() != TypeKind.ARRAY) {
-                return "unhandled annotation attribute type: "
-                        + expr
-                        + " and declaredType: "
-                        + declaredType;
+                throw new AnnotationFileParserException(
+                        "unhandled annotation attribute type: "
+                                + expr
+                                + " and declaredType: "
+                                + declaredType);
             }
 
             List<Expression> arrayExpressions = ((ArrayInitializerExpr) expr).getValues();
             Object[] values = new Object[arrayExpressions.size()];
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
-                expr = arrayExpressions.get(i);
-                values[i] = getValueOfExpressionInAnnotation(name, expr, valueKind);
-                if (values[i] == null) {
-                    return String.format(
-                            "null expression for name=%s expr=%s, valueKind=%s",
-                            name, expr, valueKind);
-                }
+                Expression expri = arrayExpressions.get(i);
+                values[i] = getValueOfExpressionInAnnotation(name, expri, valueKind);
             }
             builder.setValue(name, values);
         } else {
             Object value = getValueOfExpressionInAnnotation(name, expr, valueKind);
-            if (value == null) {
-                return String.format(
-                        "null expression for name=%s expr=%s, valueKind=%s", name, expr, valueKind);
-            }
             if (declaredType.getKind() == TypeKind.ARRAY) {
                 Object[] valueArray = {value};
                 builder.setValue(name, valueArray);
@@ -2369,8 +2354,6 @@ public class AnnotationFileParser {
                 builderSetValue(builder, name, value);
             }
         }
-        // success
-        return null;
     }
 
     /**
@@ -2673,6 +2656,21 @@ public class AnnotationFileParser {
         Optional<Position> begin = astNode == null ? Optional.empty() : astNode.getBegin();
         String lineAndColumn = (begin.isPresent() ? begin.get() + ":" : "");
         return filenamePrinted + ":" + lineAndColumn + " ";
+    }
+
+    /** An exception indicating a problem while parsing an annotation file. */
+    public static class AnnotationFileParserException extends Exception {
+
+        private static final long serialVersionUID = 20201222;
+
+        /**
+         * Create a new AnnotationFileParserException.
+         *
+         * @param message a description of the problem
+         */
+        AnnotationFileParserException(String message) {
+            super(message);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
