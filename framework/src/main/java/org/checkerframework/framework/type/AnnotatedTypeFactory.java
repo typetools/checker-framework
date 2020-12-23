@@ -2015,6 +2015,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
+        System.out.printf(
+                "methodFromUse(%s): methodElt=%s, enclosing=%s%n",
+                tree, methodElt, methodElt.getEnclosingElement());
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
         if (receiverType == null && TreeUtils.isSuperConstructorCall(tree)) {
             // super() calls don't have a receiver, but they should be view-point adapted as if

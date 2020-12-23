@@ -283,6 +283,9 @@ public class AnnotationFileElementTypes {
         }
         parseEnclosingClass(e);
         AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
+        System.out.printf(
+                "getAnnotatedTypeMirror(%s, enclosing=%s) => %s%n",
+                e, e.getEnclosingElement(), type);
         return type == null ? null : type.deepCopy();
     }
 

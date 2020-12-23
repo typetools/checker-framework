@@ -528,6 +528,10 @@ public class AnnotatedTypes {
                 (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
         if (methodType == null) {
             methodType = (AnnotatedExecutableType) memberType;
+        } else {
+            System.out.printf(
+                    "applied a fake override:%n  before:  %s%n  after : %s%n",
+                    memberType, methodType);
         }
         return methodType;
     }
@@ -912,7 +916,7 @@ public class AnnotatedTypes {
 
     /**
      * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter
-     * type expect at the indexth position (unwrapping var args if necessary).
+     * type expected at the indexth position (unwrapping varargs if necessary).
      *
      * @param methodType AnnotatedExecutableType of method or constructor containing parameter to
      *     return

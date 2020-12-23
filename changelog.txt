@@ -1,8 +1,10 @@
 Version 3.9.1
 
 In a stub file for a class C, you may write a declaration for a method that
-is inherited by C but not defined by it.  See the manual's documentation of
-"fake overrides".
+is inherited by C but not defined by it.  Until this release, such stub
+declarations were ignored, so this might change the behavior of your
+type-checking jobs.  For more information, see the manual's documentation
+of "fake overrides".
 
 ---------------------------------------------------------------------------
 

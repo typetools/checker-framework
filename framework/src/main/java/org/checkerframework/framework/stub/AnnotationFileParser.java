@@ -1712,6 +1712,12 @@ public class AnnotationFileParser {
      */
     private void processFakeOverride(
             ExecutableElement element, CallableDeclaration<?> decl, TypeElement fakeLocation) {
+        System.out.printf(
+                "Found a fake override:%n  real: %s%n    in %s%n  fake: %s%n    in %s%n",
+                element,
+                element.getEnclosingElement(),
+                decl.toString().trim().replaceAll("\\s+", " "),
+                fakeLocation);
 
         // This is a fresh type, which this code may side-effect.
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);

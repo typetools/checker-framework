@@ -565,7 +565,7 @@ public final class TreeUtils {
 
     /**
      * Returns the ExecutableElement for the called method, from a call. Might return null if no
-     * element wasfound.
+     * element was found.
      *
      * @param node a method call
      * @return the ExecutableElement for the called method
