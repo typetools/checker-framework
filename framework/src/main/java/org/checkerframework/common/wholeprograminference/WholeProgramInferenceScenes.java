@@ -113,12 +113,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     public WholeProgramInferenceScenes(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
-        boolean ignoreNullAssignments =
+        boolean isNullness =
                 atypeFactory
                         .getClass()
                         .toString()
                         .equals(
                                 "org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory");
+        boolean ignoreNullAssignments = !isNullness;
         this.storage = new WholeProgramInferenceScenesStorage(atypeFactory, ignoreNullAssignments);
     }
 
