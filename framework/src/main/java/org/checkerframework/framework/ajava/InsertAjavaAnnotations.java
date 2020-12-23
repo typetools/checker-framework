@@ -5,6 +5,8 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
@@ -13,6 +15,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.printer.PrettyPrinter;
 import com.github.javaparser.utils.Pair;
+import com.sun.source.util.JavacTask;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,12 +28,63 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.javacutil.BugInCF;
 
 public class InsertAjavaAnnotations {
+    private Elements elements;
+
+    public static Elements createElements() {
+        JavaCompiler compiler = javax.tools.ToolProvider.getSystemJavaCompiler();
+        if (compiler == null) {
+            System.err.println("Could not get compiler instance");
+            System.exit(0);
+        }
+
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+        JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
+        if (fileManager == null) {
+            System.err.println("Could not get file manager");
+        }
+
+        CompilationTask cTask =
+                compiler.getTask(
+                        null,
+                        fileManager,
+                        diagnostics,
+                        Collections.emptyList(),
+                        null,
+                        Collections.emptyList());
+        if (!(cTask instanceof JavacTask)) {
+            System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
+        }
+
+        return ((JavacTask) cTask).getElements();
+    }
+
+    public InsertAjavaAnnotations(Elements elements) {
+        this.elements = elements;
+    }
+
     private static class Insertion {
         public int position;
         public String contents;
@@ -41,15 +95,28 @@ public class InsertAjavaAnnotations {
         }
     }
 
-    private static class BuildInsertionsVisitor extends DoubleJavaParserVisitor {
+    private class BuildInsertionsVisitor extends DoubleJavaParserVisitor {
+        /**
+         * The set of annotations found in the file. Keys are both fully-qualified and simple names.
+         * There are two entries for each annotation: the annotation's simple name and its
+         * fully-qualified name.
+         *
+         * <p>The map is populated from import statements and also by when parsing a file that uses
+         * the fully qualified name of an annotation it doesn't import.
+         */
+        private Map<String, TypeElement> allAnnotations;
+
         public List<Insertion> insertions;
         private PrettyPrinter printer;
+        private List<String> lines;
         private List<Integer> cumulativeLineSizes;
 
         public BuildInsertionsVisitor(String destFileContents) {
+            allAnnotations = null;
             insertions = new ArrayList<>();
             printer = new PrettyPrinter();
             String[] lines = destFileContents.split(System.lineSeparator());
+            this.lines = Arrays.asList(lines);
             cumulativeLineSizes = new ArrayList<>();
             cumulativeLineSizes.add(0);
             for (int i = 1; i < lines.length; i++) {
@@ -65,7 +132,15 @@ public class InsertAjavaAnnotations {
                 return;
             }
 
-            NodeWithAnnotations<?> node1Annos = (NodeWithAnnotations<?>) node1;
+            NodeWithAnnotations<?> node1WithAnnos = (NodeWithAnnotations<?>) node1;
+            if (node1 instanceof MethodDeclaration) {
+                addAnnotationOnOwnLine(node2.getBegin().get(), node1WithAnnos.getAnnotations());
+                return;
+            } else if (node1 instanceof FieldDeclaration) {
+                addAnnotationOnOwnLine(node2.getBegin().get(), node1WithAnnos.getAnnotations());
+                return;
+            }
+
             Position position;
             if (node2 instanceof ClassOrInterfaceType) {
                 // In a multi-part name like my.package.MyClass, annotations go directly in front of
@@ -75,7 +150,7 @@ public class InsertAjavaAnnotations {
                 position = node2.getBegin().get();
             }
 
-            addAnnotations(position, node1Annos.getAnnotations(), 0, false);
+            addAnnotations(position, node1WithAnnos.getAnnotations(), 0, false);
         }
 
         @Override
@@ -107,7 +182,14 @@ public class InsertAjavaAnnotations {
             CompilationUnit node2 = (CompilationUnit) other;
             defaultAction(node1, node2);
 
-            // Transfer import statements.
+            // Gather annotations used in the ajava file.
+            allAnnotations = getAllAnnotations(node1);
+
+            // Move any annotations that appear in the declaration position but belong only in the
+            // type position.
+            node1.accept(new TypeAnnotationMover(allAnnotations, elements), null);
+
+            // Transfer import statements from the ajava file to the Java file.
             Set<String> existingImports = new HashSet<>();
             for (ImportDeclaration importDecl : node2.getImports()) {
                 existingImports.add(printer.print(importDecl));
@@ -154,6 +236,40 @@ public class InsertAjavaAnnotations {
             }
         }
 
+        private void addAnnotationOnOwnLine(Position position, List<AnnotationExpr> annotations) {
+            String line = lines.get(position.line - 1);
+            int insertionColumn = position.column - 1;
+            boolean ownLine = true;
+            for (int i = 0; i < insertionColumn; i++) {
+                if (line.charAt(i) != ' ' && line.charAt(i) != '\t') {
+                    ownLine = false;
+                    break;
+                }
+            }
+
+            if (ownLine) {
+                StringBuilder insertionContent = new StringBuilder();
+                for (int i = 0; i < annotations.size(); i++) {
+                    insertionContent.append(printer.print(annotations.get(i)));
+                    if (i < annotations.size() - 1) {
+                        insertionContent.append(" ");
+                    }
+                }
+
+                if (insertionContent.length() == 0) {
+                    return;
+                }
+
+                String whitespaceCopy = line.substring(0, position.column - 1);
+                insertionContent.append(System.lineSeparator());
+                insertionContent.append(whitespaceCopy);
+                int absolutePosition = getAbsolutePosition(position);
+                insertions.add(new Insertion(absolutePosition, insertionContent.toString()));
+            } else {
+                addAnnotations(position, annotations, 0, false);
+            }
+        }
+
         private void addAnnotations(
                 Position position,
                 Iterable<AnnotationExpr> annotations,
@@ -183,7 +299,177 @@ public class InsertAjavaAnnotations {
         }
     }
 
-    public static String insertAnnotations(InputStream annotationFile, String fileContents) {
+    // TODO: BEGIN from AnnotationFileParser. Factor out of both.
+    private Map<String, TypeElement> getAllAnnotations(CompilationUnit cu) {
+        Map<String, TypeElement> result = new HashMap<>();
+        if (cu.getImports() == null) {
+            return result;
+        }
+
+        for (ImportDeclaration importDecl : cu.getImports()) {
+            try {
+                if (importDecl.isAsterisk()) {
+                    @SuppressWarnings("signature" // https://tinyurl.com/cfissue/3094:
+                    // com.github.javaparser.ast.expr.Name inherits toString,
+                    // so there can be no annotation for it
+                    )
+                    @DotSeparatedIdentifiers String imported = importDecl.getName().toString();
+                    if (importDecl.isStatic()) {
+                        // Wildcard import of members of a type (class or interface)
+                        TypeElement element = getTypeElement(imported);
+                        if (element != null) {
+                            // Find nested annotations
+                            // Find compile time constant fields, or values of an enum
+                            putAllNew(result, annosInType(element));
+                        }
+
+                    } else {
+                        // Wildcard import of members of a package
+                        PackageElement element = findPackage(imported);
+                        if (element != null) {
+                            putAllNew(result, annosInPackage(element));
+                        }
+                    }
+                } else {
+                    // A single (non-wildcard) import.
+                    @SuppressWarnings("signature" // importDecl is non-wildcard, so its name is
+                    // @FullyQualifiedName
+                    )
+                    @FullyQualifiedName String imported = importDecl.getNameAsString();
+
+                    final TypeElement importType = elements.getTypeElement(imported);
+                    if (importType == null && !importDecl.isStatic()) {
+                        // Class or nested class (according to JSL), but we can't resolve
+
+                        // stubWarnNotFound(importDecl, "type not found: " + imported);
+                    } else if (importType == null) {
+                        // static import of field or method.
+                    } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
+                        // Single annotation or nested annotation
+                        TypeElement annoElt = elements.getTypeElement(imported);
+                        if (annoElt != null) {
+                            putIfAbsent(result, annoElt.getSimpleName().toString(), annoElt);
+                        } else {
+                            // stubWarnNotFound(importDecl, "Could not load import: " + imported);
+                        }
+                    } else {
+                        // Class or nested class
+                        // TODO: Is this needed?
+                        // importedConstants.add(imported);
+                        // TypeElement element =
+                        // getTypeElement(imported, "Imported type not found");
+                        // importedTypes.put(element.getSimpleName().toString(), element);
+                    }
+                }
+            } catch (AssertionError error) {
+                // stubWarnNotFound(importDecl, error.toString());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the element for the given package.
+     *
+     * @param packageName the package's name
+     * @return the element for the given package
+     */
+    private PackageElement findPackage(String packageName) {
+        PackageElement packageElement = elements.getPackageElement(packageName);
+        // if (packageElement == null) {
+        // stubWarnNotFound(astNode, "Imported package not found: " + packageName);
+        // }
+        return packageElement;
+    }
+
+    /**
+     * Just like Map.putAll, but modifies existing values using {@link #putIfAbsent(Map, Object,
+     * Object)}.
+     *
+     * @param m the destination map
+     * @param m2 the source map
+     * @param <K> the key type for the maps
+     * @param <V> the value type for the maps
+     */
+    public static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
+        for (Map.Entry<K, V> e2 : m2.entrySet()) {
+            putIfAbsent(m, e2.getKey(), e2.getValue());
+        }
+    }
+
+    /**
+     * Get the type element for the given fully-qualified type name. If none is found, issue a
+     * warning and return null.
+     *
+     * @param typeName a type name
+     * @return the type element for the given fully-qualified type name, or null
+     */
+    private TypeElement getTypeElement(@FullyQualifiedName String typeName) {
+        TypeElement classElement = elements.getTypeElement(typeName);
+        return classElement;
+    }
+
+    /**
+     * All annotations defined in the package (but not those nested within classes in the package).
+     * Keys are both fully-qualified and simple names.
+     *
+     * @param packageElement a package
+     * @return a map from annotation name to TypeElement
+     */
+    private Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
+        return createNameToAnnotationMap(
+                ElementFilter.typesIn(packageElement.getEnclosedElements()));
+    }
+
+    /**
+     * All annotations declared (directly) within a class. Keys are both fully-qualified and simple
+     * names.
+     *
+     * @param typeElement a type
+     * @return a map from annotation name to TypeElement
+     */
+    private Map<String, TypeElement> annosInType(TypeElement typeElement) {
+        return createNameToAnnotationMap(ElementFilter.typesIn(typeElement.getEnclosedElements()));
+    }
+
+    /**
+     * All annotations declared within any of the given elements.
+     *
+     * @param typeElements the elements whose annotations to retrieve
+     * @return a map from annotation names (both fully-qualified and simple names) to TypeElement
+     */
+    public static Map<String, TypeElement> createNameToAnnotationMap(
+            List<TypeElement> typeElements) {
+        Map<String, TypeElement> result = new HashMap<>();
+        for (TypeElement typeElm : typeElements) {
+            if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
+                putIfAbsent(result, typeElm.getSimpleName().toString(), typeElm);
+                putIfAbsent(result, typeElm.getQualifiedName().toString(), typeElm);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Just like Map.put, but does not override any existing value in the map.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @param m a map
+     * @param key a key
+     * @param value the value to associate with the key, if the key isn't already in the map
+     */
+    private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
+        if (key == null) {
+            throw new BugInCF("AnnotationFileParser: key is null for value " + value);
+        }
+        if (!m.containsKey(key)) {
+            m.put(key, value);
+        }
+    }
+    // TODO: END from AnnotationFileParser
+
+    public String insertAnnotations(InputStream annotationFile, String fileContents) {
         CompilationUnit annotationCu = StaticJavaParser.parse(annotationFile);
         CompilationUnit fileCu = StaticJavaParser.parse(fileContents);
         BuildInsertionsVisitor insertionVisitor = new BuildInsertionsVisitor(fileContents);
@@ -200,7 +486,7 @@ public class InsertAjavaAnnotations {
         return result.toString();
     }
 
-    public static void insertAnnotations(String annotationFilePath, String javaFilePath) {
+    public void insertAnnotations(String annotationFilePath, String javaFilePath) {
         try {
             Path path = Paths.get(javaFilePath);
             String fileContents = new String(Files.readAllBytes(path));
@@ -221,6 +507,7 @@ public class InsertAjavaAnnotations {
     public static void main(String[] args) {
         AnnotationFileStore annotationFiles = new AnnotationFileStore();
         annotationFiles.addFile(new File(args[0]));
+        InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
         FileVisitor<Path> visitor =
                 new SimpleFileVisitor<Path>() {
                     @Override
@@ -252,7 +539,7 @@ public class InsertAjavaAnnotations {
                         }
 
                         for (String annotationFile : annotationFilesForRoot) {
-                            insertAnnotations(annotationFile, path.toString());
+                            inserter.insertAnnotations(annotationFile, path.toString());
                         }
 
                         return FileVisitResult.CONTINUE;

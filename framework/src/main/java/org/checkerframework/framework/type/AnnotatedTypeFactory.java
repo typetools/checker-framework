@@ -821,9 +821,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         String withoutAnnotations = printer.print(astWithoutAnnotations);
         String withAnnotations;
         try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
+            // TODO: Make inserter a field for reuse.
             withAnnotations =
-                    InsertAjavaAnnotations.insertAnnotations(
-                            annotationInputStream, withoutAnnotations);
+                    new InsertAjavaAnnotations(elements)
+                            .insertAnnotations(annotationInputStream, withoutAnnotations);
         } catch (IOException e) {
             throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
         }
