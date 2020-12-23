@@ -696,7 +696,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param root the new compilation unit to use
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
-        setRoot(root, /*shouldCheckVisitor=*/ true);
+        setRoot(root, /*shouldRunAjavaChecks=*/ true);
     }
 
     /**
@@ -787,7 +787,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             com.github.javaparser.ast.CompilationUnit javaParserRoot =
                     StaticJavaParser.parse(reader);
             reader.close();
-            new StringLiteralCombineVisitor().visit(javaParserRoot, null);
+            new StringLiteralConcatenateVisitor().visit(javaParserRoot, null);
             new JointVisitorWithDefaultAction() {
                 @Override
                 public void defaultAction(Tree javacTree, Node javaParserNode) {

@@ -66,7 +66,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
             NodeWithAnnotations<?> node, ElementType declarationType) {
         List<AnnotationExpr> annosToMove = new ArrayList<>();
         for (AnnotationExpr annotation : node.getAnnotations()) {
-            if (isPossiblyDeclarationAnnotation(annotation, declarationType)) {
+            if (!isPossiblyDeclarationAnnotation(annotation, declarationType)) {
                 annosToMove.add(annotation);
             }
         }
