@@ -16,6 +16,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +44,6 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -734,9 +734,32 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
+    // If
+    //  1. rhs is @Nullable
+    //  2. lhs is a field of this
+    //  3. in a constructor
+    // then change rhs to @MonotonicNonNull.
     @Override
-    protected WholeProgramInference createWholeProgramInference() {
-        return new NullnessWholeProgramInferenceScenes(this);
+    public void wpiAdjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+        if (!rhsATM.hasAnnotation(Nullable.class)) {
+            return;
+        }
+        TreePath lhsPath = getPath(lhsTree);
+        if (TreeUtils.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
+                && TreeUtils.inConstructor(lhsPath)) {
+            rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
+        }
+    }
+
+    // If
+    //  1. rhs is @MonotonicNonNull
+    // then change rhs to @Nullable
+    @Override
+    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+        if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
+            rhsATM.replaceAnnotation(NULLABLE);
+        }
     }
 
     // This implementation overrides the superclass implementation to:
