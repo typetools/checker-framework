@@ -166,7 +166,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // TODO JWAATAJA: Why is "valueOf" treated specially?
         // TODO JWAATAJA: This treats all methods named "valueOf" the same, regardless of their
         // signature.
-        if (methodAnnos == null && methodElt.getSimpleName().contentEquals("valueOf")) {
+        if (methodAnnos == null) {
             return;
         }
 
