@@ -839,9 +839,10 @@ public abstract class AnnotatedTypeMirror {
          */
         private boolean wasRaw;
 
-        /** The enclosing Type. */
-        protected AnnotatedDeclaredType enclosingType;
+        /** The enclosing type. May be null. */
+        protected @Nullable AnnotatedDeclaredType enclosingType;
 
+        /** True if this represents a declaration, rather than a use, of a type. */
         private boolean declaration;
 
         /**
@@ -861,7 +862,9 @@ public abstract class AnnotatedTypeMirror {
             if (encl.getKind() == TypeKind.DECLARED) {
                 this.enclosingType =
                         (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
-            } else if (encl.getKind() != TypeKind.NONE) {
+            } else if (encl.getKind() == TypeKind.NONE) {
+                this.enclosingType = null;
+            } else {
                 throw new BugInCF(
                         "AnnotatedDeclaredType: unsupported enclosing type: "
                                 + type.getEnclosingType()
@@ -940,18 +943,6 @@ public abstract class AnnotatedTypeMirror {
             } else if (wasRaw()) {
                 // Initialize the type arguments with uninferred wildcards.
                 BoundsInitializer.initializeTypeArgs(this);
-
-                // Copy annotations from the declaration to the wildcards.
-                AnnotatedDeclaredType declaration =
-                        atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
-                for (int i = 0; i < typeArgs.size(); i++) {
-                    AnnotatedTypeVariable typeParam =
-                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
-                    AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    wct.getExtendsBound().replaceAnnotations(typeParam.getUpperBound().annotations);
-                    wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
-                    wct.replaceAnnotations(typeParam.annotations);
-                }
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
                 typeArgs = Collections.emptyList();
@@ -1033,17 +1024,23 @@ public abstract class AnnotatedTypeMirror {
             return erased;
         }
 
-        /** Sets the enclosing type. */
-        /*default-visibility*/ void setEnclosingType(AnnotatedDeclaredType enclosingType) {
+        /**
+         * Sets the enclosing type.
+         *
+         * @param enclosingType the new enclosing type
+         */
+        /*default-visibility*/ void setEnclosingType(
+                @Nullable AnnotatedDeclaredType enclosingType) {
             this.enclosingType = enclosingType;
         }
 
         /**
-         * Returns the enclosing type, as in the type of {@code A} in the type {@code A.B}.
+         * Returns the enclosing type, as in the type of {@code A} in the type {@code A.B}. May
+         * return null.
          *
-         * @return enclosingType the enclosing type
+         * @return enclosingType the enclosing type, or null if this is a top-level type
          */
-        public AnnotatedDeclaredType getEnclosingType() {
+        public @Nullable AnnotatedDeclaredType getEnclosingType() {
             return enclosingType;
         }
     }

@@ -1,6 +1,6 @@
 // test case for https://github.com/typetools/checker-framework/issues/2345
 
-class IndexConditionalReport {
+public class IndexConditionalReport {
 
     public int getI(int len) {
         for (int i = 0; i < len; i++) {

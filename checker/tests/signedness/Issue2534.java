@@ -1,7 +1,7 @@
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.value.qual.IntRange;
 
-class Issue2534 {
+public class Issue2534 {
 
     @IntRange(from = 0, to = Integer.MAX_VALUE) int field = 3;
 

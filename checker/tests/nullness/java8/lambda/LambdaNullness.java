@@ -18,7 +18,7 @@ interface BiFunctionNull<T, U, R> {
     R apply(T t, U u);
 }
 
-class LambdaNullness {
+public class LambdaNullness {
 
     // Annotations in lamba expressions, in static, instance of fields initializers are stored on
     // the last declared constructor.

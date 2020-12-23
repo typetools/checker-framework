@@ -1,0 +1,11 @@
+package annotatedforlib;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
+
+public class Test<T> {
+    @AnnotatedFor("tainting")
+    public void method1(@Nullable T t){}
+    @AnnotatedFor("nullness")
+    public void method2(T t){}
+}

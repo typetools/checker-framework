@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.StringVal;
 
-class StringValOfArrays {
+public class StringValOfArrays {
     void chars() {
         String s = "$-hello@";
         char @StringVal("$-hello@") [] chars = s.toCharArray();

@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.NullnessUtil;
 import org.checkerframework.checker.nullness.qual.*;
 
 /** Test class org.checkerframework.checker.nullness.NullnessUtil. */
-class TestNullnessUtil {
+public class TestNullnessUtil {
     void testRef1(@Nullable Object o) {
         // one way to use as a cast:
         @NonNull Object l1 = NullnessUtil.castNonNull(o);

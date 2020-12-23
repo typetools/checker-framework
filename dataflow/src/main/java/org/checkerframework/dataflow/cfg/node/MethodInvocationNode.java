@@ -12,7 +12,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * A node for method invocation.
@@ -130,7 +130,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public String toString() {
-        return target + "(" + UtilPlume.join(", ", arguments) + ")";
+        return target + "(" + StringsPlume.join(", ", arguments) + ")";
     }
 
     @Override

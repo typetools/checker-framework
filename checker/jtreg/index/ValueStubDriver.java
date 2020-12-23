@@ -6,4 +6,4 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker valuestub/UseTest.java
  */
 
-class ValueStubDriver {}
+public class ValueStubDriver {}

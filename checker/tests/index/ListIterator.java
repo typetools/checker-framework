@@ -4,7 +4,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 
 // @skip-test until we bring list support back
 
-class ListIterator {
+public class ListIterator {
 
     List<Integer> listField;
 

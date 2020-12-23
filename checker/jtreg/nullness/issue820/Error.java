@@ -9,6 +9,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  *
  */
 
-class Error {
+public class Error {
     @NonNull Object o = null;
 }

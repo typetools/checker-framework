@@ -3,7 +3,7 @@
 import lombok.Builder;
 
 @Builder(toBuilder = true)
-class LombokToBuilderExample {
+public class LombokToBuilderExample {
     @lombok.NonNull String req;
 
     static void test(LombokToBuilderExample foo) {

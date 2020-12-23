@@ -3,7 +3,7 @@
 
 import java.util.Comparator;
 
-class Issue403 {
+public class Issue403 {
     Comparator<Issue403> COMPARATOR = Comparator.comparing(w -> w.value);
 
     String value;

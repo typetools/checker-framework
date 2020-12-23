@@ -54,7 +54,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
@@ -823,7 +823,7 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = UtilPlume.joinLines(errors);
+        String error = StringsPlume.joinLines(errors);
         checker.reportError(errorTree, "flowexpr.parse.error", error);
     }
 

@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 
-class MultipleBinaryExpressions {
+public class MultipleBinaryExpressions {
 
     private final String ONE_STRING = "1";
     private final String TWO_STRING = "2";

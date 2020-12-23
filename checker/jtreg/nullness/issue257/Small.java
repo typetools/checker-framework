@@ -7,7 +7,7 @@ class Gen<T extends Gen<T>> {
     }
 }
 
-class Small {
+public class Small {
     void buildGen() {
         Gen<? extends Gen<?>> builder = Gen.newBuilder();
     }

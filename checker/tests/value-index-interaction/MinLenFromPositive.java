@@ -3,7 +3,7 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.MinLen;
 
-class MinLenFromPositive {
+public class MinLenFromPositive {
 
     public @Positive int x = 0;
 

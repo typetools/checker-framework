@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.8.1-SNAPSHOT'
+    version '3.9.0'
 
     repositories {
         mavenCentral()
@@ -211,8 +211,10 @@ allprojects {
             options.compilerArgs += [
                     '-g',
                     '-Werror',
-                    // To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
-                    "-Xlint:-options",
+                    // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
+                    // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+                    // are suppressible warns with a "// fall through" comment.
+                    "-Xlint:-options,-fallthrough",
                     "-Xlint",
             ]
 
@@ -428,7 +430,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.0"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.1"
 }
 task requireJavadoc(type: JavaExec) {
     description = 'Ensures that Javadoc documentation exists.'
@@ -829,7 +831,8 @@ subprojects {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                 }
-                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests', 'wholeProgramInferenceTests')
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
+                          'wholeProgramInferenceTests', 'wpiScriptsTests')
             }
 
             if (project.name.is('dataflow')) {
@@ -910,6 +913,7 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
+            'securerandom.*',
             'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
             'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']

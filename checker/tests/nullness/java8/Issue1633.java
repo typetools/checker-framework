@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.Covariant;
 
-class Issue1633 {
+public class Issue1633 {
 
     // supplyNullable is a supplier that may return null.
     // supplyNonNull is a supplier that does not return null.

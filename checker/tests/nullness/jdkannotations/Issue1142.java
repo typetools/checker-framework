@@ -3,7 +3,7 @@
 import java.util.concurrent.ConcurrentHashMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue1142 {
+public class Issue1142 {
 
     void foo() {
         // :: error: (type.argument.type.incompatible)

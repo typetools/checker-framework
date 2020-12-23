@@ -1,4 +1,4 @@
-class LengthOfArrayMinusOne {
+public class LengthOfArrayMinusOne {
     void test(int[] arr) {
         // :: error: (array.access.unsafe.low)
         int i = arr[arr.length - 1];

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class TestPolyNull {
+public class TestPolyNull {
     @PolyNull String identity(@PolyNull String str) {
         return str;
     }

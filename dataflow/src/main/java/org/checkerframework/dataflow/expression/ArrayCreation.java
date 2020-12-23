@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /** FlowExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {
@@ -110,7 +110,7 @@ public class ArrayCreation extends JavaExpression {
         }
         if (!initializers.isEmpty()) {
             sb.append(" {");
-            sb.append(UtilPlume.join(", ", initializers));
+            sb.append(StringsPlume.join(", ", initializers));
             sb.append("}");
         }
         return sb.toString();

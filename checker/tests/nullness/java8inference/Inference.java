@@ -10,7 +10,7 @@ class MyStream<T> {
 
 interface MyCollector<T, A, R> {}
 
-class Inference {
+public class Inference {
 
     @SuppressWarnings("nullness")
     static <E> MyCollector<E, ?, MyStream<E>> toImmutableStream() {

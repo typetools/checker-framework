@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class AnnotatedGenerics3 {
+public class AnnotatedGenerics3 {
     class Cell<T extends @Nullable Object> {
         T f;
 

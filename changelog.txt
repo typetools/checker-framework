@@ -1,4 +1,7 @@
-Version 3.9.0
+Version 3.9.0, December 22, 2020
+
+New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program
+inference, without modifying the source code of the target program(s).
 
 The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
 
@@ -17,6 +20,11 @@ Class renamings:
 
 Method deprecations:
  * Deprecated `AnnotatedTypeFactory.addAliasedAnnotation`; use `addAliasedTypeAnnotation`
+
+Closed issues:
+#765, #2452, #2953, #3287, #3294, #3377, #3390, #3496, #3499, #3681, #3826,
+#3839, #3850, #3851, #3862, #3871, #3884, #3888, #3908, #3929, #3932,
+#3935, #3956, #3971, #3974, #3994, #4004, #4005, #4018.
 
 ---------------------------------------------------------------------------
 

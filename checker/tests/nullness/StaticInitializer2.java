@@ -8,7 +8,7 @@
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
-class StaticInitializer2 {
+public class StaticInitializer2 {
 
     static String a;
 

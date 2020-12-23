@@ -92,7 +92,7 @@ import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
-import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
+import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
@@ -113,6 +113,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
@@ -695,7 +696,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param root the new compilation unit to use
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
-        setRoot(root, true);
+        setRoot(root, /*shouldCheckVisitor=*/ true);
     }
 
     /**
@@ -1485,7 +1486,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type the type to apply stub types to
      * @param elt the element from which to read stub types
-     * @param source storage for current stub file annotations
+     * @param source storage for current annotation file annotations
      * @return the type, side-effected to add the stub types
      */
     protected AnnotatedTypeMirror mergeStubsIntoType(
@@ -2006,7 +2007,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param typeElement type of the enclosing type to return
      * @param tree location to use
-     * @return he enclosing type at the location of {@code tree} that is the same type as {@code
+     * @return the enclosing type at the location of {@code tree} that is the same type as {@code
      *     typeElement}
      */
     public AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
@@ -4832,5 +4833,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return new WholeProgramInferenceScenes(this);
+    }
+
+    /**
+     * Does {@code anno}, which is an {@link org.checkerframework.framework.qual.AnnotatedFor}
+     * annotation, apply to this checker?
+     *
+     * @param anno an {@link org.checkerframework.framework.qual.AnnotatedFor} annotation
+     * @return whether {@code anno} applies to this checker
+     */
+    public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror anno) {
+        List<String> annoForCheckers =
+                AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+        for (String annoForChecker : annoForCheckers) {
+            if (checker.getUpstreamCheckerNames().contains(annoForChecker)
+                    || CheckerMain.matchesFullyQualifiedProcessor(
+                            annoForChecker, checker.getUpstreamCheckerNames(), true)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
-class KeyForShadowing {
+public class KeyForShadowing {
     public static void main(String... p) {
         Map<String, Integer> m0 = new HashMap<>();
         Map<String, Integer> m1 = new HashMap<>();

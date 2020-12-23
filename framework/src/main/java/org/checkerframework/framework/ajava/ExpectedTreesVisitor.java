@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * Visitor that stores each visited tree that should match with some JavaParser node if the same
  * Java file was parsed with both. The primary purpose is to test the {@link
- * JointJavacJavaParserVisitor} class when the -AajavaChecks flag is used. That classes traverses a
+ * JointJavacJavaParserVisitor} class when the -AajavaChecks flag is used. That class traverses a
  * javac tree and JavaParser AST simultaneously, so the trees this class stores can be used to test
  * if the entirety of the javac tree was visited.
  *

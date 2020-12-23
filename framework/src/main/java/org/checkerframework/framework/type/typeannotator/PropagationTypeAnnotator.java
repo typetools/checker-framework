@@ -2,6 +2,7 @@ package org.checkerframework.framework.type.typeannotator;
 
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -15,7 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier to add should be
@@ -75,6 +76,28 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         if (pause) {
             return null;
         }
+        if (declaredType.wasRaw()) {
+            // Copy annotations from the declaration to the wildcards.
+            AnnotatedDeclaredType declaration =
+                    (AnnotatedDeclaredType)
+                            typeFactory.fromElement(declaredType.getUnderlyingType().asElement());
+            List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+            for (int i = 0; i < typeArgs.size(); i++) {
+                if (typeArgs.get(i).getKind() != TypeKind.WILDCARD
+                        || !((AnnotatedWildcardType) typeArgs.get(i)).isUninferredTypeArgument()) {
+                    // Sometimes the framework infers a more precise type argument, so just use it.
+                    continue;
+                }
+                AnnotatedTypeVariable typeParam =
+                        (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
+                wct.getExtendsBound()
+                        .replaceAnnotations(typeParam.getUpperBound().getAnnotations());
+                wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().getAnnotations());
+                wct.replaceAnnotations(typeParam.getAnnotations());
+            }
+        }
+
         parents.addFirst(declaredType);
         super.visitDeclared(declaredType, aVoid);
         parents.removeFirst();
@@ -163,7 +186,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
                 final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
                 if (typeParamAnno == null) {
                     throw new BugInCF(
-                            UtilPlume.joinLines(
+                            StringsPlume.joinLines(
                                     "Missing annotation on type parameter",
                                     "top=" + top,
                                     "wildcardBound=" + wildcardBound,

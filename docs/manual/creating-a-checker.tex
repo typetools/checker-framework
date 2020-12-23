@@ -14,10 +14,10 @@ the checker verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
-There is also a
-\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{developer
-  manual} for people who wish to edit the Checker Framework source code or
-make pull requests.
+People who wish to edit the Checker Framework source code or
+make pull requests should read the
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker
+  Framework Developer Manual}.
 
 
 Writing a simple checker is easy!  For example, here is a complete, useful
@@ -196,7 +196,7 @@ the rules differ from the built in framework rules
 
 \item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
-  type qualifier inference (also known as local variable type inference).
+  type qualifier inference (also sometimes called ``local variable type inference'').
 \end{description}
 
 
@@ -1263,8 +1263,7 @@ which is the Checker Framework's representation of an annotated type.
 
 \sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
 
-By default, every checker performs flow-sensitive type refinement, also known as
-local type inference, as described
+By default, every checker performs flow-sensitive type refinement, as described
 in Section~\ref{type-refinement}.
 
 This section of the manual explains how to enhance the Checker Framework's

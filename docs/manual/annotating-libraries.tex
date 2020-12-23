@@ -89,7 +89,7 @@ Sharing your annotations is useful even if the library is only partially
 annotated.
 However, as noted in Sections~\ref{get-started-with-legacy-code} and~\ref{library-tips-fully-annotate}, you
 should annotate an entire class at a time.
-You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
+You may find type inference tools (\chapterpageref{type-inference}) helpful
 when getting started, but you should always examine their results.
 
 
@@ -439,7 +439,8 @@ original library classes.  For example:
 
 \begin{myxsmall}
 \begin{Verbatim}
-  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
+  javac -processor org.checkerframework.checker.interning.InterningChecker \
+    -Astubs=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
@@ -490,10 +491,6 @@ The command-line option \<-AmergeStubsWithSource> tells the checker to use
 both source files and stub files.  The checker permits only values that are
 permitted by \emph{both} the source and stub annotations.  (This is called
 the greatest lower bound, or GLB, of the types.)
-% Note for maintainers:
-% The choice of GLB is made for the convenience of whole-program inference.
-Do not use \<-AmergeStubsWithSource> if the default qualifier
-is other than top (e.g., the Nullness Checker).
 
 As an example of GLB, suppose the source annotation says the value is in
 the range [1..20] and the stub file says the value is in the range
@@ -785,7 +782,7 @@ in the version of the library you are using.
 
 \sectionAndLabel{Ajava Files}{ajava-files}
 
-Like stub files, ajava files store annotations that can be read in by the
+Like stub files, ajava files store annotations that can be read by the
 Checker Framework.  Ajava files are mostly used as
 the output of whole program inference and not for annotating libraries.
 
@@ -801,7 +798,8 @@ For example:
 
 \begin{myxsmall}
 \begin{Verbatim}
-  javac -processor org.checkerframework.checker.interning.InterningChecker -Aajava=String.astub:stubs MyFile.java MyOtherFile.java ...
+  javac -processor org.checkerframework.checker.interning.InterningChecker \
+    -Aajava=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
@@ -824,14 +822,14 @@ ajava file and source file must match exactly with the following exceptions:
 
 \subsectionAndLabel{Annotations in Ajava Files}{ajava-annotations}
 
-Like stub files, annotations on method parameters, method returns, and fields
-are read. Unlike stub files, if there's an annotation in both an ajava file and
-a source file, the greatest lower bound is used as with the
-\code{-AmergeStubsWithSource} option.
+Annotations on method parameters, method returns, and fields are read (this
+is like stub files).
+If there's an annotation in both an ajava file and
+a source file, the greatest lower bound is used (as with the
+\code{-AmergeStubsWithSource} option).
 
-Annotations in ajava files take effect in more places than stub files. Stub
-files ignore annotations in anonymous inner classes, but annotations inside
-anonymous classes and local classes are read in ajava files.
+Ajava files may contain annotations within anonymous classes and local classes.
+Annotations in such locations are ignored in stub files.x
 
 
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
@@ -852,20 +850,20 @@ read whether the library's annotations are parsed.
 \end{description}
 
 
-% LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
-% LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
-% LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
-%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
-%  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
-%%  LocalWords:  NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
-%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
-%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
-%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
-%%  LocalWords:  TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
-%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
-%  LocalWords:  AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
-%%  LocalWords:  Makefile PuseLocalJdk jdkShaHash AonlyDefs
-%%  LocalWords:  AuseConservativeDefaultsForUncheckedCodesource
-%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses
+% LocalWords: plugin utils util dist RuntimeException NonNull TODO AFU enum
+% LocalWords: sourcepath Nullness javac classpath src quals pathSeparator JDKs
+% LocalWords: jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
+% LocalWords: CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
+% LocalWords: Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
+% LocalWords: Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
+% LocalWords: enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
+% LocalWords: NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
+% LocalWords: AuseConservativeDefaultsForUnannotatedCode buildfile qual
+% LocalWords: AprintUnannotatedMethods checkername AskipDefs bcel mkdir
+% LocalWords: AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
+% LocalWords: TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
+% LocalWords: mychecker DIRS README TypeSystem un debugJSR org boolean
+% LocalWords: AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
+% LocalWords: Makefile PuseLocalJdk jdkShaHash AonlyDefs
+% LocalWords: AuseConservativeDefaultsForUncheckedCodesource
+% LocalWords: AstubWarnIfNotFoundIgnoresClasses

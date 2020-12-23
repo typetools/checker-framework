@@ -23,7 +23,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Evaluates expressions (such as method calls and field accesses) at compile time, to determine
@@ -117,7 +117,7 @@ public class ReflectiveEvaluator {
                     return null;
                 } catch (IllegalArgumentException e) {
                     if (reportWarnings) {
-                        String args = UtilPlume.join(", ", arguments);
+                        String args = StringsPlume.join(", ", arguments);
                         checker.reportWarning(
                                 tree,
                                 "method.evaluation.exception",
@@ -337,7 +337,7 @@ public class ReflectiveEvaluator {
                             tree,
                             "constructor.evaluation.failed",
                             typeToCreate,
-                            UtilPlume.join(", ", arguments));
+                            StringsPlume.join(", ", arguments));
                 }
                 return null;
             }

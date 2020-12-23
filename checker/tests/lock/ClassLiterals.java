@@ -2,7 +2,7 @@ package testpackage;
 
 import org.checkerframework.checker.lock.qual.Holding;
 
-class ClassLiterals {
+public class ClassLiterals {
     @Holding("ClassLiterals.class")
     static Object method1() {
         return new Object();

@@ -5,7 +5,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 // -AuseConservativeDefaultsForUncheckedCode=source is supplied.
 
 @AnnotatedFor("nullness")
-class BasicSafeDefaultsTest {
+public class BasicSafeDefaultsTest {
 
     void m1() {
         @NonNull Object x1 = SdfuscLib.unannotated();

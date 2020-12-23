@@ -20,6 +20,7 @@ import java.util.zip.ZipEntry;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
@@ -684,6 +685,15 @@ public class CheckerMain {
         }
 
         if (!missingFiles.isEmpty()) {
+            if (missingFiles.size() == 1) {
+                File missingFile = missingFiles.get(0);
+                if (missingFile.getName().equals("javac.jar")) {
+                    throw new UserError(
+                            "Could not find "
+                                    + missingFile.getAbsolutePath()
+                                    + ". This may be because you built the Checker Framework under Java 11 but are running it under Java 8.");
+                }
+            }
             List<String> missingAbsoluteFilenames = new ArrayList<>(missingFiles.size());
             for (File missingFile : missingFiles) {
                 missingAbsoluteFilenames.add(missingFile.getAbsolutePath());

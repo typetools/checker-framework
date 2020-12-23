@@ -2,7 +2,7 @@ import java.util.regex.*;
 
 // this is a test-case for initialization that covers multiple initializer blocks, field
 // initializers and a few other things
-class TwoStaticInitBlocks {
+public class TwoStaticInitBlocks {
 
     String f2;
     String f1 = (f2 = "");

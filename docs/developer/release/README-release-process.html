@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+  <link rel="icon" type="image/png" href="../../manual/favicon-checkerframework.png" />
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <title>Checker Framework release process</title>
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -188,7 +189,7 @@ TreeAnnotator
     (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
-      <code>python release_build.py all</code><br/><br/>
+      <code>git pull && python release_build.py all</code><br/><br/>
       [TODO: Add <code>--auto</code> here, or not?]<br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
