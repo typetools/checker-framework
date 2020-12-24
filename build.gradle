@@ -47,6 +47,7 @@ ext {
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
+    htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -397,7 +398,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
-    dependsOn(':checker:shadowJar', 'getPlumeScripts')
+    dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
@@ -413,12 +414,16 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
             workingDir "${rootDir}/docs/api"
             executable "${plumeScriptsHome}/preplace"
             args += ['<a href="https://docs.oracle.com/javase/9/docs/api/com/sun/tools/javac/.*?>(.*?)</a>', '\\1']
-
         }
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
             rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
             into "${rootDir}/docs/api"
+        }
+        exec {
+            workingDir "${rootDir}/docs/api"
+            executable "${htmlToolsHome}/html-add-favicon"
+            args += ['.', 'favicon-checkerframework.png']
         }
     }
 }
@@ -541,6 +546,24 @@ task getPlumeScripts() {
             workingDir "${plumeScriptsHome}/../"
             executable 'git'
             args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
+        }
+    }
+}
+
+task getHtmlTools() {
+    description 'Obtain or update html-tools'
+    if (file(htmlToolsHome).exists()) {
+        exec {
+            workingDir htmlToolsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${htmlToolsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/html-tools.git', '.html-tools']
         }
     }
 }
@@ -878,6 +901,7 @@ task checkBasicStyle(group: 'Format') {
     description 'Check basic style guidelines.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
+                                  '.html-tools',
                                   '.idea',
                                   '.plume-scripts',
                                   '.run-google-java-format',
