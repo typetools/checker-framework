@@ -1,0 +1,2 @@
+This directory contains the expected result of type-checking projects from
+https://github.com/plume-lib/, after whole-program inference.

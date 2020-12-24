@@ -566,7 +566,7 @@ task wholeProgramInferenceTests() {
 }
 
 // This is run as part of the nonJunitTests task.
-task wpiScriptsTests(group: "Verification") {
+task wpiManyTests(group: "Verification") {
     description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
 
     // This test must always be re-run when requested.
@@ -606,6 +606,22 @@ task wpiScriptsTests(group: "Verification") {
                             "Failing line is the following: " + line)
                 }
             }
+        }
+    }
+}
+
+// This is run as part of the nonJunitTests task.
+task wpiPlumeLibTests(group: "Verification") {
+    description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+
+    // This test must always be re-run when requested.
+    outputs.upToDateWhen { false }
+
+    doLast {
+        // Run wpi-many.sh
+        exec {
+            commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
+            ignoreExitValue = false
         }
     }
 }
