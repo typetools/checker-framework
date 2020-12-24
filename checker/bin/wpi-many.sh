@@ -190,6 +190,7 @@ do
             cp -p "TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
         else
             echo "Could not find file $TYPECHECK_FILE"
+            ls -s "${REPO_FULLPATH}"
         fi
     fi
 
