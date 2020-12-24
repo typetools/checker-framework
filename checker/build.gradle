@@ -584,30 +584,26 @@ task wpiScriptsTests(group: "Verification") {
                     '-o', "${project.projectDir}/build/wpi-many-tests",
                     '--', '--checker', 'nullness,interning,lock,regex,signature'
         }
+        def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
         // collect the logs from running WPI
-        def typecheckFiles = fileTree("${project.projectDir}/build/wpi-many-tests-results/").matching {
-            include "**/typecheck.out"
+        def typecheckFiles = fileTree(typecheckFilesDir).matching {
+            include "**/*-typecheck.out"
         }
         if (typecheckFiles.size() == 0) {
-            throw new GradleException("Failure: WPI scripts did not produce any typecheck files.")
+            throw new GradleException("Failure: No *-typecheck.out files in ${project.projectDir}/build/wpi-many-tests-results/")
         }
 
         // check that WPI causes the expected builds to succeed
         typecheckFiles.visit { FileVisitDetails details ->
             def filename = "${project.projectDir}/build/wpi-many-tests-results/" + details.getName()
-            def content = details.getFile().readLines()
-            // TODO: why does the call to get() below throw an exception if the log files
-            // are empty if this check isn't present?
-            if (content.size() - 1 < 0) {
+            def file = details.getFile()
+            if (file.length() == 0) {
                 throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
-            } else {
-                // Start at i=1 to skip the "Running ..." line.
-                for (int i = 1; i++; i < content.size()) {
-                    def line = content.get(i)
-                    if (line.toLowerCase().contains("error")) {
-                        throw new GradleException("Failure: WPI scripts produced an error in " + filename + ". " +
-                                "Failing line is the following: " + line)
-                    }
+            }
+            file.eachLine { line ->
+                if ((!line.startsWith("Running ")) && line.toLowerCase().contains("error")) {
+                    throw new GradleException("Failure: WPI scripts produced an error in " + filename + ". " +
+                            "Failing line is the following: " + line)
                 }
             }
         }

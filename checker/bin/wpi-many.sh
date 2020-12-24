@@ -185,6 +185,7 @@ do
         rm -rf "${REPO_NAME_HASH}"
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
+        cp -p "${REPO_FULLPATH}/dljc-out/typecheck.out" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
     fi
 
     cd "${OUTDIR}" || exit 5
