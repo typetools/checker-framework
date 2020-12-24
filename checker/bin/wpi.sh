@@ -186,11 +186,16 @@ function configure_and_exec_dljc {
   fi
 
   if [ -f dljc-out/wpi.log ]; then
-      echo "dljc output is available in ${DIR}/dljc-out/; stdout is in $dljc_stdout"
+      sed -n '/^Running/h;//!H;$!d;x;//p' dljc-out/wpi.log > dljc-out/typecheck.out
       WPI_RESULTS_AVAILABLE="yes"
+      echo "dljc output is in ${DIR}/dljc-out/"
+      echo "typecheck output is in ${DIR}/dljc-out/typecheck.out"
+      echo "stdout is in $dljc_stdout"
   else
-      echo "dljc output is not available in ${DIR}/dljc-out/; stdout is in $dljc_stdout"
       WPI_RESULTS_AVAILABLE="no"
+      echo "dljc failed"
+      echo "dljc output is in ${DIR}/dljc-out/"
+      echo "stdout is in $dljc_stdout"
   fi
 }
 
