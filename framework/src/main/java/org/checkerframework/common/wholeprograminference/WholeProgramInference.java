@@ -188,26 +188,6 @@ public interface WholeProgramInference {
             CFAbstractStore<?, ?> store);
 
     /**
-     * Changes the type of {@code rhsATM} when being assigned to a field, for use by whole-program
-     * inference. The default implementation does nothing.
-     *
-     * @param lhsTree the tree for the field whose type will be changed
-     * @param element the element for the field whose type will be changed
-     * @param fieldName the name of the field whose type will be changed
-     * @param rhsATM the type of the expression being assigned to the field
-     */
-    void adjustForUpdateField(
-            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
-
-    /**
-     * Changes the type of {@code rhsATM} when being assigned to anything other than a field, for
-     * use by whole-program inference. The default implementation does nothing.
-     *
-     * @param rhsATM the type of the rhs of the pseudo-assignment
-     */
-    void adjustForUpdateNonField(AnnotatedTypeMirror rhsATM);
-
-    /**
      * Updates a method to add a declaration annotation.
      *
      * @param methodElt the method to annotate
