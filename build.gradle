@@ -901,6 +901,7 @@ task checkBasicStyle(group: 'Format') {
     description 'Check basic style guidelines.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
+                                  '.html-tools',
                                   '.idea',
                                   '.plume-scripts',
                                   '.run-google-java-format',
