@@ -413,7 +413,6 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
             workingDir "${rootDir}/docs/api"
             executable "${plumeScriptsHome}/preplace"
             args += ['<a href="https://docs.oracle.com/javase/9/docs/api/com/sun/tools/javac/.*?>(.*?)</a>', '\\1']
-
         }
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
