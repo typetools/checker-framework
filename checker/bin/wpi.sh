@@ -186,6 +186,7 @@ function configure_and_exec_dljc {
   fi
 
   if [ -f dljc-out/wpi.log ]; then
+      # Put, in file `typecheck.out`, everything from the last "Running ..." onwards.
       sed -n '/^Running/h;//!H;$!d;x;//p' dljc-out/wpi.log > dljc-out/typecheck.out
       WPI_RESULTS_AVAILABLE="yes"
       echo "dljc output is in ${DIR}/dljc-out/"
