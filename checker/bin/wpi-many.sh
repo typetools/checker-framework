@@ -192,7 +192,12 @@ do
             echo "Could not find file $TYPECHECK_FILE"
             ls -l "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}"/dljc-out/*.log
-            echo "End of cat command"
+            echo "Start of toplevel.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
+            echo "End of toplevel.log."
+            echo "Start of wpi.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/wpi.log
+            echo "End of wpi.log."
         fi
     fi
 
