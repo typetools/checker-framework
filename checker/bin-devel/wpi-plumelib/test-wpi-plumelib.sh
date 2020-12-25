@@ -26,8 +26,8 @@ TESTDIR="$CHECKERFRAMEWORK/checker/build/wpi-plumelib-tests"
 clean_compile_output() {
     in="$1"
     out="$2"
-    rm -rf "$out"
-    cp "$in" "$out"
+
+    cp -f "$in" "$out"
 
     # Remove "Running ..." line
     sed -i '/^Running /d' "$out"
@@ -59,10 +59,13 @@ test_wpi_plume_lib() {
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     ACTUAL_FILE="$TESTDIR/$project/dljc-out/typecheck.out"
-    echo "Comparing $EXPECTED_FILE $ACTUAL_FILE"
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
-    diff -u expected.txt actual.txt
+    if ! cmp --quiet expected.txt actual.txt ; then
+      echo "Comparing $EXPECTED_FILE $ACTUAL_FILE"
+      diff -u expected.txt actual.txt
+      exit 1
+    fi
 
     cd ..
 }
