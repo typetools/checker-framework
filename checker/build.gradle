@@ -605,7 +605,11 @@ task wpiScriptsTests(group: "Verification") {
                 throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
             }
             file.eachLine { line ->
-                if ((!line.startsWith("Running ")) && line.toLowerCase().contains("error")) {
+                if (line.startsWith("Running ")) {
+                  return;
+                }
+                if (line.toLowerCase().contains("error")
+                    || line.startsWith("Usage: javac")) {
                     throw new GradleException("Failure: WPI scripts produced an error in " + filename + ". " +
                             "Failing line is the following: " + line)
                 }

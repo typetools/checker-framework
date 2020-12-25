@@ -857,10 +857,9 @@ subprojects {
                     dependsOn('wpiScriptsTests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests'
-                          // TODO:
-                          // , 'wpiScriptsTests'
-                )
+                          // TODO
+                          // 'wholeProgramInferenceTests', 'wpiScriptsTests')
+                          'wholeProgramInferenceTests')
             }
 
             if (project.name.is('dataflow')) {
