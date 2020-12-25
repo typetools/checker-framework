@@ -4,6 +4,7 @@
 
 ## Don't do "set -e" because wpi.sh may exit with non-zero status.
 # set -e
+set +e
 
 # set -o verbose
 # set -o xtrace
