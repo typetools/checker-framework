@@ -853,11 +853,11 @@ subprojects {
             if (project.name.is('checker')) {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
-                    // TODO: run under all Java versions, when bug is fixed
+                    // TODO: run under all Java versions, when wpiManyTests doesn't ignore wpi failures.
                     dependsOn('wpiManyTests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          // TODO:
+                          // TODO: same TODO as just above
                           // 'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
                           'wholeProgramInferenceTests', 'wpiPlumeLibTests')
             }

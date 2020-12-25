@@ -6,7 +6,7 @@ set -e
 # set -o verbose
 # set -o xtrace
 export SHELLOPTS
-echo "SHELLOPTS=${SHELLOPTS}"
+# echo "SHELLOPTS=${SHELLOPTS}"
 
 # This does not use wpi-many.sh because:
 #  * different projects use a different list of type-checkers.
