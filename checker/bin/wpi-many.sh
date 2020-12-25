@@ -192,6 +192,7 @@ do
             echo "Could not find file $TYPECHECK_FILE"
             ls -l "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}/dljc-out/*.log"
+            echo "End of cat command"
         fi
     fi
 
