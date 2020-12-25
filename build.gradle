@@ -853,9 +853,14 @@ subprojects {
             if (project.name.is('checker')) {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
+                    // TODO: run under all Java versions, when bug is fixed
+                    dependsOn('wpiScriptsTests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiScriptsTests')
+                          'wholeProgramInferenceTests'
+                          // TODO:
+                          // , 'wpiScriptsTests'
+                )
             }
 
             if (project.name.is('dataflow')) {
