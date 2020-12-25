@@ -608,7 +608,8 @@ task wpiScriptsTests(group: "Verification") {
                     if (line.startsWith("Running ")) {
                         break
                     }
-                    if (line.toLowerCase().contains("error")) {
+                    if (line.toLowerCase().contains("error")
+                        || line.startsWith("Usage: javac")) {
                         throw new GradleException("Failure: WPI scripts produced at least one error. " +
                                 "See ${project.projectDir}/build/wpi-many-tests-results/" + details.getName() + ". " +
                                 "Failing line is the following: " + line)
