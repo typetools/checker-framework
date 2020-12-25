@@ -40,7 +40,7 @@ clean_compile_output() {
     sed -i '/^warning: \[path\] bad path element /d' "$out"
 
     # Remove directory names and line numbers
-    sed -i 's/.*\///' "$out"
+    sed -i 's/^[^ ]*\///' "$out"
     sed -i 's/:[0-9]+: /: /' "$out"
 }
 
