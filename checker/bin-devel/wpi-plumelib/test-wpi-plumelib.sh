@@ -2,7 +2,9 @@
 
 # Run wpi.sh on plume-lib projects and check
 
-set -e
+## Don't do "set -e" because wpi.sh may exit with non-zero status.
+# set -e
+
 # set -o verbose
 # set -o xtrace
 export SHELLOPTS
@@ -52,7 +54,7 @@ test_wpi_plume_lib() {
     rm -rf "$project"
     git clone -q --depth 1 "https://github.com/plume-lib/$project.git"
 
-    cd "$project"
+    cd "$project" || (echo "can't run: cd $project" && exit 1)
 
     "$CHECKERFRAMEWORK/checker/bin-devel/remove-annotations.sh"
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
@@ -72,7 +74,7 @@ test_wpi_plume_lib() {
 
 
 mkdir -p "$TESTDIR"
-cd "$TESTDIR"
+cd "$TESTDIR" || (echo "can't do: cd $TESTDIR" && exit 1)
 
 test_wpi_plume_lib bcel-util         "formatter,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib bibtex-clean      "formatter,index,interning,lock,nullness,regex,signature"

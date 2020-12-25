@@ -10,7 +10,7 @@ pr:
 
 
 jobs:
-- job: wpiplumelib_tests_jdk8
+- job: wpiplumelib_jdk8
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
