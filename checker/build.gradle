@@ -590,6 +590,10 @@ task wpiManyTests(group: "Verification") {
             include "**/*-typecheck.out"
         }
         if (typecheckFiles.size() == 0) {
+            exec {
+                workingDir "${project.projectDir}/build/wpi-many-tests-results/"
+                executable 'find'
+            }
             throw new GradleException("Failure: No *-typecheck.out files in ${project.projectDir}/build/wpi-many-tests-results/")
         }
 
