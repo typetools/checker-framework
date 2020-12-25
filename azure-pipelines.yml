@@ -10,15 +10,6 @@ pr:
 
 
 jobs:
-- job: wpiplumelib_jdk8
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk8:latest
-  steps:
-  - checkout: self
-    fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-wpiplumelib.sh
-    displayName: test-cftests-wpiplumelib.sh
 - job: junit_tests_jdk8
   dependsOn:
    - junit_tests_jdk11
