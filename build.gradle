@@ -854,7 +854,7 @@ subprojects {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                     // TODO: run under all Java versions, when bug is fixed
-                    dependsOn('wpiScriptsTests')
+                    dependsOn('wpiManyTests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
                           // TODO:
