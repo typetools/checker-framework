@@ -115,6 +115,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+import scenelib.annotations.el.AMethod;
 
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
@@ -484,7 +485,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + inferArg
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            wholeProgramInference = createWholeProgramInference();
+            wholeProgramInference = new WholeProgramInferenceScenes(this);
         } else {
             wholeProgramInference = null;
         }
@@ -4599,12 +4600,35 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates a WholeProgramInference for use by this type factory.
+     * Changes the type of {@code rhsATM} when being assigned to a field, for use by whole-program
+     * inference. The default implementation does nothing.
      *
-     * @return a WholeProgramInference for use by this type factory
+     * @param lhsTree the tree for the field whose type will be changed
+     * @param element the element for the field whose type will be changed
+     * @param fieldName the name of the field whose type will be changed
+     * @param rhsATM the type of the expression being assigned to the field, which is side-effected
+     *     by this method
      */
-    protected WholeProgramInference createWholeProgramInference() {
-        return new WholeProgramInferenceScenes(this);
+    public void wpiAdjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {}
+
+    /**
+     * Changes the type of {@code rhsATM} when being assigned to anything other than a field, for
+     * use by whole-program inference. The default implementation does nothing.
+     *
+     * @param rhsATM the type of the rhs of the pseudo-assignment, which is side-effected by this
+     *     method
+     */
+    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {}
+
+    /**
+     * Side-effects the method or constructor annotations to make any desired changes before writing
+     * to a file.
+     *
+     * @param methodAnnos the method or constructor annotations to modify
+     */
+    public void prepareMethodForWriting(AMethod methodAnnos) {
+        // This implementation does nothing.
     }
 
     /**
