@@ -2,8 +2,7 @@
 
 # Run wpi.sh on plume-lib projects and check
 
-## Don't do "set -e" because wpi.sh may exit with non-zero status.
-# set -e
+# wpi.sh may exit with non-zero status.
 set +e
 
 # set -o verbose
@@ -11,13 +10,13 @@ set +e
 export SHELLOPTS
 # echo "SHELLOPTS=${SHELLOPTS}"
 
-# This does not use wpi-many.sh because:
+# This differs from wpi-many.sh because:
 #  * different projects use a different list of type-checkers.
-#    (wpi.sh uses a fixed set of type-checkers for all projects)
+#    (wpi-many.sh uses a fixed set of type-checkers for all projects)
 #  * this uses the HEAD commit
-#    (wpi.sh uses an old commit)
+#    (wpi-many.sh uses a fixed commit)
 #  * this checks for expected errors
-#    (wpi.sh requires that there are no errors)
+#    (The Gradle wpiManyTests target requires that there are no errors)
 
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 CHECKERFRAMEWORK="$(cd "$(dirname "$0")"/../../.. && pwd)"
