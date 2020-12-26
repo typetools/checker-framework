@@ -18,7 +18,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -401,18 +400,14 @@ public class NullnessTransfer
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitReturn(
             ReturnNode n, TransferInput<NullnessValue, NullnessStore> in) {
-        // HACK: make sure we have a value for return statements, because we
-        // need to record (at this return statement) the values of isPolyNullNotNull and
-        // isPolyNullNull.
-        NullnessValue value = createDummyValue();
-        if (in.containsTwoStores()) {
-            NullnessStore thenStore = in.getThenStore();
-            NullnessStore elseStore = in.getElseStore();
-            return new ConditionalTransferResult<>(
-                    finishValue(value, thenStore, elseStore), thenStore, elseStore);
+        TransferResult<NullnessValue, NullnessStore> result = super.visitReturn(n, in);
+
+        if (result.getResultValue() == null) {
+            // Make sure there is a value for return statements, to record (at this return
+            // statement) the values of isPolyNullNotNull and isPolyNullNull.
+            return recreateTransferResult(createDummyValue(), result);
         } else {
-            NullnessStore info = in.getRegularStore();
-            return new RegularTransferResult<>(finishValue(value, info), info);
+            return result;
         }
     }
 
