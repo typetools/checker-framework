@@ -620,7 +620,8 @@ public abstract class CFAbstractTransfer<
      * conditional input information, merged.
      *
      * @param value the value; possibly null
-     * @return the input informatio
+     * @param in the transfer input
+     * @return the input information, as a TransferResult
      */
     protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
         if (in.containsTwoStores()) {
@@ -641,6 +642,7 @@ public abstract class CFAbstractTransfer<
      * conditional input information, merged.
      *
      * @param value the value; possibly null
+     * @param in the TransferResult to copy
      * @return the input informatio
      */
     protected TransferResult<V, S> recreateTransferResult(
