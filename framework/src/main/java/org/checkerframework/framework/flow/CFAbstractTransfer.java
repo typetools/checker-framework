@@ -160,7 +160,7 @@ public abstract class CFAbstractTransfer<
      * @param store the store
      * @return the possibly-modified value
      */
-    protected V finishValue(V value, S store) {
+    protected @Nullable V finishValue(@Nullable V value, S store) {
         return value;
     }
 
@@ -176,7 +176,7 @@ public abstract class CFAbstractTransfer<
      * @param elseStore the "else" store
      * @return the possibly-modified value
      */
-    protected V finishValue(V value, S thenStore, S elseStore) {
+    protected @Nullable V finishValue(@Nullable V value, S thenStore, S elseStore) {
         return value;
     }
 
