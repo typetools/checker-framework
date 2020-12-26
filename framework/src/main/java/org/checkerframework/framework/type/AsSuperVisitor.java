@@ -28,7 +28,9 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror, Void> {
 
+    /** Type utilities. */
     private final Types types;
+    /** The type factory. */
     private final AnnotatedTypeFactory atypeFactory;
     /**
      * Whether or not the type being visited is an uninferred type argument. If true, then the
@@ -523,6 +525,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, superType);
     }
 
+    /**
+     * A helper method for visiting a primitive and a non-primitive.
+     *
+     * @param type a primitive type
+     * @param superType some other type
+     * @param p ignore
+     * @return {@code type}, viewed as a {@code superType}
+     */
     private AnnotatedTypeMirror visitPrimitive_Other(
             AnnotatedPrimitiveType type, AnnotatedTypeMirror superType, Void p) {
         return visit(atypeFactory.getBoxedType(type), superType, p);
