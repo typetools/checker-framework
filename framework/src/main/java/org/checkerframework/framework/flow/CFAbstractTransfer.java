@@ -160,7 +160,7 @@ public abstract class CFAbstractTransfer<
      * @param store the store
      * @return the possibly-modified value
      */
-    protected V finishValue(@Nullable V value, S store) {
+    protected @Nullable V finishValue(@Nullable V value, S store) {
         return value;
     }
 
