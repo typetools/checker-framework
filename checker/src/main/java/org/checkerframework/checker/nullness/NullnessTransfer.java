@@ -137,7 +137,8 @@ public class NullnessTransfer
     }
 
     @Override
-    protected NullnessValue finishValue(NullnessValue value, NullnessStore store) {
+    protected @Nullable NullnessValue finishValue(
+            @Nullable NullnessValue value, NullnessStore store) {
         value = super.finishValue(value, store);
         if (value != null) {
             value.isPolyNullNonNull = store.isPolyNullNonNull();
@@ -147,8 +148,8 @@ public class NullnessTransfer
     }
 
     @Override
-    protected NullnessValue finishValue(
-            NullnessValue value, NullnessStore thenStore, NullnessStore elseStore) {
+    protected @Nullable NullnessValue finishValue(
+            @Nullable NullnessValue value, NullnessStore thenStore, NullnessStore elseStore) {
         value = super.finishValue(value, thenStore, elseStore);
         if (value != null) {
             value.isPolyNullNonNull =
