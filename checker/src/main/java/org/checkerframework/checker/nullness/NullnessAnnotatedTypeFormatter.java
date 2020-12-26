@@ -33,7 +33,7 @@ public class NullnessAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatte
             // annotations.
             // Note: The visitTypeVariable will still print lower bounds with Null kind as "Void"
             if (!currentPrintInvisibleSetting) {
-                return "NullType";
+                return "null (NullType)";
             }
 
             return super.visitNull(type, visiting);
