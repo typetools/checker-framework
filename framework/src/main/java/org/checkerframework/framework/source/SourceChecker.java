@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.time.Instant;
@@ -516,12 +518,46 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** List of upstream checker names. Includes the current checker. */
     protected List<@FullyQualifiedName String> upstreamCheckerNames;
 
+    /**
+     * IntelliJ wraps processing environment in dynamic proxy to check for modifications done by
+     * annotation processors. But lots of functionality both here and in AbstractTypeProcessor call
+     * methods from javac that require processing environment to be
+     * com.sun.tools.javac.processing.JavacProcessingEnvironment and fail on proxy - thus in case
+     * proxy is used, we have to unwrap it.
+     *
+     * @param env is processing environment supplied to checker
+     * @return unwrapped environment if it is dynamic proxy, created by IntelliJ; original value in
+     *     all other cases
+     */
+    private static ProcessingEnvironment unwrapProcessingEnvironment(ProcessingEnvironment env) {
+        if (!Proxy.isProxyClass(env.getClass())) {
+            // if we do not have proxy, we use what we got
+            return env;
+        }
+        // try to unwrap processing environment; there is no generic way, this only works if
+        // it was wrapped by IntelliJ
+        try {
+            final Class<?> apiWrappers =
+                    env.getClass()
+                            .getClassLoader()
+                            .loadClass("org.jetbrains.jps.javac.APIWrappers");
+            final Method unwrapMethod =
+                    apiWrappers.getDeclaredMethod("unwrap", Class.class, Object.class);
+            return (ProcessingEnvironment)
+                    unwrapMethod.invoke(null, ProcessingEnvironment.class, env);
+        } catch (Throwable ignored) {
+            // probably not wrapped by JetBrains... we will continue using original environment
+            return env;
+        }
+    }
+
     @Override
     public final synchronized void init(ProcessingEnvironment env) {
-        super.init(env);
+        ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
+        super.init(unwrappedEnv);
         // The processingEnvironment field will also be set by the superclass' init method.
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
-        setProcessingEnvironment(env);
+        setProcessingEnvironment(unwrappedEnv);
 
         // Keep in sync with check in checker-framework/build.gradle and text in installation
         // section of manual.
