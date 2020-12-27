@@ -615,7 +615,7 @@ task wholeProgramInferenceTests() {
 }
 
 // This is run as part of the nonJunitTests task.
-task wpiScriptsTests(group: "Verification") {
+task wpiManyTests(group: "Verification") {
     description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
 
     // This test must always be re-run when requested.

@@ -160,7 +160,7 @@ public abstract class CFAbstractTransfer<
      * @param store the store
      * @return the possibly-modified value
      */
-    protected V finishValue(V value, S store) {
+    protected @Nullable V finishValue(@Nullable V value, S store) {
         return value;
     }
 
@@ -176,7 +176,7 @@ public abstract class CFAbstractTransfer<
      * @param elseStore the "else" store
      * @return the possibly-modified value
      */
-    protected V finishValue(V value, S thenStore, S elseStore) {
+    protected @Nullable V finishValue(@Nullable V value, S thenStore, S elseStore) {
         return value;
     }
 
@@ -610,6 +610,43 @@ public abstract class CFAbstractTransfer<
             }
         }
 
+        return createTransferResult(value, in);
+    }
+
+    /**
+     * Creates a TransferResult.
+     *
+     * <p>This default implementation returns the input information unchanged, or in the case of
+     * conditional input information, merged.
+     *
+     * @param value the value; possibly null
+     * @param in the transfer input
+     * @return the input information, as a TransferResult
+     */
+    protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
+        if (in.containsTwoStores()) {
+            S thenStore = in.getThenStore();
+            S elseStore = in.getElseStore();
+            return new ConditionalTransferResult<>(
+                    finishValue(value, thenStore, elseStore), thenStore, elseStore);
+        } else {
+            S info = in.getRegularStore();
+            return new RegularTransferResult<>(finishValue(value, info), info);
+        }
+    }
+
+    /**
+     * Creates a TransferResult just like the given one, but with the given value.
+     *
+     * <p>This default implementation returns the input information unchanged, or in the case of
+     * conditional input information, merged.
+     *
+     * @param value the value; possibly null
+     * @param in the TransferResult to copy
+     * @return the input informatio
+     */
+    protected TransferResult<V, S> recreateTransferResult(
+            @Nullable V value, TransferResult<V, S> in) {
         if (in.containsTwoStores()) {
             S thenStore = in.getThenStore();
             S elseStore = in.getElseStore();
@@ -638,15 +675,7 @@ public abstract class CFAbstractTransfer<
             }
         }
 
-        if (in.containsTwoStores()) {
-            S thenStore = in.getThenStore();
-            S elseStore = in.getElseStore();
-            return new ConditionalTransferResult<>(
-                    finishValue(value, thenStore, elseStore), thenStore, elseStore);
-        } else {
-            S info = in.getRegularStore();
-            return new RegularTransferResult<>(finishValue(value, info), info);
-        }
+        return createTransferResult(value, in);
     }
 
     @Override
@@ -853,8 +882,7 @@ public abstract class CFAbstractTransfer<
         V rhsValue = in.getValueOfSubNode(rhs);
 
         if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
-            // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD,
-            // for some reason.
+            // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD.
             if (lhs instanceof FieldAccessNode
                     || (lhs instanceof LocalVariableNode
                             && ((LocalVariableNode) lhs).getElement().getKind()
