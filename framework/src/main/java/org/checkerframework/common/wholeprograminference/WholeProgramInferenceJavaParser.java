@@ -1427,6 +1427,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return receiverType;
         }
 
+        /**
+         * Returns an AnnotatedTypeMirror containing the preconditions for the given field.
+         * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
+         *
+         * @param field VariableElement for a field in the enclosing class for this method
+         * @param type base type for the return type, used for initializing the returned {@code
+         *     AnnotatedTypeMirror} the first time it's accessed
+         * @param atf the annotated type factory of a given type system, whose type hierarchy will
+         *     be used
+         * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
+         *     preconditions for the given field
+         */
         public AnnotatedTypeMirror getPreconditionsForField(
                 VariableElement field, AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
             if (fieldToPreconditions == null) {
@@ -1442,6 +1454,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return fieldToPreconditions.get(field);
         }
 
+        /**
+         * Returns an AnnotatedTypeMirror containing the postconditions for the given field.
+         * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
+         *
+         * @param field VariableElement for a field in the enclosing class for this method
+         * @param type base type for the return type, used for initializing the returned {@code
+         *     AnnotatedTypeMirror} the first time it's accessed
+         * @param atf the annotated type factory of a given type system, whose type hierarchy will
+         *     be used
+         * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
+         *     postconditions for the given field
+         */
         public AnnotatedTypeMirror getPostconditionsForField(
                 VariableElement field, AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
             if (fieldToPostconditions == null) {
