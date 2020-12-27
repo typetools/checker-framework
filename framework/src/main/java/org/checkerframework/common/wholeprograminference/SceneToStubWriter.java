@@ -28,6 +28,7 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
@@ -41,7 +42,6 @@ import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.field.AnnotationFieldType;
-import scenelib.annotations.io.IndexFileWriter;
 
 // In this file, "base name" means "type without its package part in binary name format".
 // For example, "Outer$Inner" is a base name.
@@ -94,7 +94,7 @@ public final class SceneToStubWriter {
      *
      * @param scene the scene to write out
      * @param filename the name of the file to write (must end with .astub)
-     * @param checker the type-checker whose annotations are being written
+     * @param checker the checker, for computing preconditions and postconditions
      */
     public static void write(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
         writeImpl(scene, filename, checker);
@@ -142,7 +142,7 @@ public final class SceneToStubWriter {
         StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
             AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-            sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
+            sj.add(f.getKey() + "=" + aft.format(f.getValue()));
         }
         return sj.toString();
     }
@@ -534,10 +534,15 @@ public final class SceneToStubWriter {
      * @param simplename the simple name of the enclosing class, for receiver parameters and
      *     constructor names
      * @param printWriter where to print the method signature
+     * @param atf the type factory, for computing preconditions and postconditions
      * @param indentLevel the indent string
      */
     private static void printMethodDeclaration(
-            AMethod aMethod, String simplename, PrintWriter printWriter, String indentLevel) {
+            AMethod aMethod,
+            String simplename,
+            PrintWriter printWriter,
+            String indentLevel,
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> atf) {
 
         if (aMethod.getTypeParameters() == null) {
             // aMethod.setFieldsFromMethodElement has not been called
@@ -547,6 +552,11 @@ public final class SceneToStubWriter {
         for (Annotation declAnno : aMethod.tlAnnotationsHere) {
             printWriter.print(indentLevel);
             printWriter.println(formatAnnotation(declAnno));
+        }
+
+        for (AnnotationMirror contractAnno : atf.getContractAnnotations(aMethod)) {
+            printWriter.print(indentLevel);
+            printWriter.println(contractAnno);
         }
 
         printWriter.print(indentLevel);
@@ -584,7 +594,7 @@ public final class SceneToStubWriter {
      *
      * @param scene the scene to write
      * @param filename the name of the file to write (must end in .astub)
-     * @param checker the type-checker whose annotations are being written
+     * @param checker the checker, for computing preconditions
      */
     private static void writeImpl(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
         // Sort by package name first so that output is deterministic and default package
@@ -631,7 +641,7 @@ public final class SceneToStubWriter {
                     printWriter.println();
                     anyClassPrintable = true;
                 }
-                printClass(clazz, scene.getAScene().getClasses().get(clazz), printWriter, checker);
+                printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
             }
         }
         if (printWriter != null) {
@@ -675,14 +685,14 @@ public final class SceneToStubWriter {
      *
      * @param classname the class name
      * @param aClass the representation of the class
+     * @param checker the checker, for computing preconditions
      * @param printWriter the writer on which to print
-     * @param checker the type-checker whose annotations are being written
      */
     private static void printClass(
             @BinaryName String classname,
             AClass aClass,
-            PrintWriter printWriter,
-            BaseTypeChecker checker) {
+            BaseTypeChecker checker,
+            PrintWriter printWriter) {
 
         String basename = basenamePart(classname);
         String innermostClassname =
@@ -720,7 +730,11 @@ public final class SceneToStubWriter {
             printWriter.println();
             for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
                 printMethodDeclaration(
-                        methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
+                        methodEntry.getValue(),
+                        innermostClassname,
+                        printWriter,
+                        indentLevel,
+                        checker.getTypeFactory());
             }
         }
         for (int i = 0; i < curlyCount; i++) {

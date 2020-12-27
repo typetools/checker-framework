@@ -44,15 +44,20 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.ajava.AjavaUtils;
 import org.checkerframework.framework.ajava.AnnotationConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
@@ -60,6 +65,8 @@ import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
 import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -69,6 +76,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -120,21 +128,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * annotations.
      *
      * @param atypeFactory the associated type factory
-     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
-     *     ignored
      */
-    public WholeProgramInferenceJavaParser(
-            AnnotatedTypeFactory atypeFactory, boolean ignoreNullAssignments) {
+    public WholeProgramInferenceJavaParser(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
         classToAnnos = new HashMap<>();
         modifiedFiles = new HashSet<>();
         sourceToAnnos = new HashMap<>();
-        this.ignoreNullAssignments = ignoreNullAssignments;
+        this.ignoreNullAssignments =
+                !atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     }
 
     @Override
     public void updateFromObjectCreation(
-            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt) {
+            ObjectCreationNode objectCreationNode,
+            ExecutableElement constructorElt,
+            CFAbstractStore<?, ?> store) {
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
@@ -147,11 +155,15 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(constructorElt));
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, file, constructorAnnos, arguments);
+        updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
     }
 
     @Override
     public void updateFromMethodInvocation(
-            MethodInvocationNode methodInvNode, Tree receiverTree, ExecutableElement methodElt) {
+            MethodInvocationNode methodInvNode,
+            Tree receiverTree,
+            ExecutableElement methodElt,
+            CFAbstractStore<?, ?> store) {
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
@@ -172,6 +184,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, file, methodAnnos, arguments);
+        updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
     }
 
     /**
@@ -211,6 +224,100 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     paramATM,
                     file);
         }
+    }
+
+    @Override
+    public void updateContracts(
+            Analysis.BeforeOrAfter preOrPost,
+            ExecutableElement methodElt,
+            CFAbstractStore<?, ?> store) {
+        // Don't infer types for code that isn't presented as source.
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+            return;
+        }
+
+        if (store == null) {
+            throw new BugInCF(
+                    "updateContracts(%s, %s, null) for %s",
+                    preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
+        }
+
+        String className = getEnclosingClassName(methodElt);
+        String file = addClassesForElement(methodElt);
+        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+
+        CallableDeclarationAnnos methodAnnos =
+                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        // This will occur when methodAnnos is a synthetic default constructor.
+        if (methodAnnos == null) {
+            return;
+        }
+
+        // TODO: Probably move some part of this into the AnnotatedTypeFactory.
+
+        // This code only handles fields of "this", for now.  In the future, extend it to other
+        // expressions.
+        TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
+        ThisReference thisReference = new ThisReference(containingClass.asType());
+        ClassName classNameReceiver = new ClassName(containingClass.asType());
+        for (VariableElement fieldElement :
+                ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
+            FieldAccess fa =
+                    new FieldAccess(
+                            (ElementUtils.isStatic(fieldElement)
+                                    ? classNameReceiver
+                                    : thisReference),
+                            fieldElement.asType(),
+                            fieldElement);
+            CFAbstractValue<?> v = store.getFieldValue(fa);
+            AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
+            AnnotatedTypeMirror inferredType;
+            if (v != null) {
+                // This field is in the store.
+                inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
+                atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+            } else {
+                // This field is not in the store. Add its declared type.
+                inferredType = atypeFactory.getAnnotatedType(fieldElement);
+            }
+            AnnotatedTypeMirror preOrPostConditionAnnos;
+            switch (preOrPost) {
+                case BEFORE:
+                    preOrPostConditionAnnos =
+                            methodAnnos.getPreconditionsForField(
+                                    fieldElement, fieldDeclType, atypeFactory);
+                    break;
+                case AFTER:
+                    preOrPostConditionAnnos =
+                            methodAnnos.getPostconditionsForField(
+                                    fieldElement, fieldDeclType, atypeFactory);
+                    break;
+                default:
+                    throw new BugInCF("Unexpected " + preOrPost);
+            }
+
+            updateAnnotationSet(
+                    preOrPostConditionAnnos,
+                    TypeUseLocation.FIELD,
+                    inferredType,
+                    fieldDeclType,
+                    file,
+                    false);
+        }
+    }
+
+    /**
+     * Converts a CFAbstractValue to an AnnotatedTypeMirror.
+     *
+     * @param v a value to convert to an AnnotatedTypeMirror
+     * @param fieldType a type that is copied, then updated to use {@code v}'s annotations
+     * @return a copy of {@code fieldType} with {@code v}'s annotations
+     */
+    private AnnotatedTypeMirror convertCFAbstractValueToAnnotatedTypeMirror(
+            CFAbstractValue<?> v, AnnotatedTypeMirror fieldType) {
+        AnnotatedTypeMirror result = fieldType.deepCopy();
+        result.replaceAnnotations(v.getAnnotations());
+        return result;
     }
 
     @Override
@@ -494,7 +601,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
      * @param file path to the annotation file containing the executable; used for marking the scene
-     *     as modified (needing to be written to disk)
+     *     as modified (needing to be written to disk) source code
      */
     protected void updateAnnotationSet(
             AnnotatedTypeMirror typeToUpdate,
@@ -502,6 +609,37 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
             String file) {
+        updateAnnotationSet(typeToUpdate, defLoc, rhsATM, lhsATM, file, true);
+    }
+
+    /**
+     * Updates the set of annotations in a location in a program.
+     *
+     * <ul>
+     *   <li>If there was no previous annotation for that location, then the updated set will be the
+     *       annotations in rhsATM.
+     *   <li>If there was a previous annotation, the updated set will be the LUB between the
+     *       previous annotation and rhsATM.
+     * </ul>
+     *
+     * <p>Subclasses can customize its behavior.
+     *
+     * @param typeToUpdate the type whose annotations are modified by this method
+     * @param defLoc the location where the annotation will be added
+     * @param rhsATM the RHS of the annotated type on the source code
+     * @param lhsATM the LHS of the annotated type on the source code
+     * @param file path to the annotation file containing the executable; used for marking the scene
+     *     as modified (needing to be written to disk)
+     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
+     *     source code
+     */
+    protected void updateAnnotationSet(
+            AnnotatedTypeMirror typeToUpdate,
+            TypeUseLocation defLoc,
+            AnnotatedTypeMirror rhsATM,
+            AnnotatedTypeMirror lhsATM,
+            String file,
+            boolean ignoreIfAnnotated) {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
@@ -520,7 +658,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
         }
 
-        updateAnnotationFromATM(rhsATM, lhsATM, typeToUpdate, defLoc);
+        updateAnnotationFromATM(rhsATM, lhsATM, typeToUpdate, defLoc, ignoreIfAnnotated);
         modifiedFiles.add(file);
     }
 
@@ -542,12 +680,15 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      *     source code
      * @param typeToUpdate the {@code AnnotatedTypeMirror} which will be updated
      * @param defLoc the location where the annotation will be added
+     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
+     *     source code
      */
     private void updateAnnotationFromATM(
             AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM,
             AnnotatedTypeMirror typeToUpdate,
-            TypeUseLocation defLoc) {
+            TypeUseLocation defLoc,
+            boolean ignoreIfAnnotated) {
         // Clears only the annotations that are supported by atypeFactory.
         // The others stay intact.
         Set<AnnotationMirror> annosToRemove = AnnotationUtils.createAnnotationSet();
@@ -564,7 +705,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         typeToUpdate.removeAnnotations(annosToRemove);
 
         // Only update the AnnotatedTypeMirror if there are no explicit annotations
-        if (curATM.getExplicitAnnotations().isEmpty()) {
+        if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 typeToUpdate.addAnnotation(am);
             }
@@ -593,7 +734,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
                     aatToUpdate.getComponentType(),
-                    defLoc);
+                    defLoc,
+                    ignoreIfAnnotated);
         }
     }
 
@@ -985,17 +1127,16 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     // a scene may be modifed and written at any time, including before or after
     // postProcessClassTree is called.
 
-    // TODO JWAATAJA: Implement
-    // /**
-    //  * Side-effects the AScene to make any desired changes before writing to a file.
-    //  *
-    //  * @param scene the AScene to modify
-    //  */
-    // public void prepareSceneForWriting(AScene scene) {
-    //     for (Map.Entry<String, ClassOrInterfaceAnnos> classEntry : scene.classes.entrySet()) {
-    //         prepareClassForWriting(classEntry.getValue());
-    //     }
-    // }
+    /**
+     * Side-effects the CompilationUnitAnnos to make any desired changes before writing to a file.
+     *
+     * @param compilationUnitAnnos the CompilationUnitAnnos to modify
+     */
+    public void prepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
+        for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
+            prepareClassForWriting(type);
+        }
+    }
 
     /**
      * Side-effects the class annotations to make any desired changes before writing to a file.
@@ -1005,18 +1146,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public void prepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
         for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
                 classAnnos.callableDeclarations.entrySet()) {
-            prepareMethodForWriting(methodEntry.getValue());
+            atypeFactory.prepareMethodForWriting(methodEntry.getValue());
         }
-    }
-
-    /**
-     * Side-effects the method or constructor annotations to make any desired changes before writing
-     * to a file.
-     *
-     * @param methodAnnos the method or constructor annotations to modify
-     */
-    public void prepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
-        // This implementation does nothing.
     }
 
     @Override
@@ -1032,6 +1163,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         for (String path : modifiedFiles) {
             CompilationUnitAnnos root = sourceToAnnos.get(path);
+            prepareCompilationUnitForWriting(root);
             root.transferAnnotations();
             String packageDir = AJAVA_FILES_PATH;
             if (root.declaration.getPackageDeclaration().isPresent()) {
@@ -1170,7 +1302,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * Stores the JavaParser node for a method or constructor and the annotations that have been
      * inferred about its parameters and return type.
      */
-    private static class CallableDeclarationAnnos {
+    public class CallableDeclarationAnnos {
         /** Wrapped method or constructor declaration. */
         public CallableDeclaration<?> declaration;
         /** Path to file containing the declaration. */
@@ -1194,6 +1326,19 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         public @Nullable Set<AnnotationMirror> declarationAnnotations;
 
         /**
+         * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
+         * inferred preconditions on that field.
+         */
+        public @Nullable Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions;
+        /**
+         * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
+         * inferred postconditions on that field.
+         */
+        public @Nullable Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions;
+        /** Inferred contracts for the callable declaration. */
+        public @Nullable List<AnnotationMirror> contracts;
+
+        /**
          * Creates a wrapper for the given method or constructor declaration.
          *
          * @param declaration method or constructor declaration to wrap
@@ -1204,6 +1349,9 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             this.receiverType = null;
             this.parameterTypes = null;
             this.declarationAnnotations = null;
+            this.fieldToPreconditions = null;
+            this.fieldToPostconditions = null;
+            this.contracts = null;
         }
 
         /**
@@ -1279,12 +1427,51 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return receiverType;
         }
 
+        public AnnotatedTypeMirror getPreconditionsForField(
+                VariableElement field, AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
+            if (fieldToPreconditions == null) {
+                fieldToPreconditions = new HashMap<>();
+            }
+
+            if (!fieldToPreconditions.containsKey(field)) {
+                AnnotatedTypeMirror preconditionsType =
+                        AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false);
+                fieldToPreconditions.put(field, preconditionsType);
+            }
+
+            return fieldToPreconditions.get(field);
+        }
+
+        public AnnotatedTypeMirror getPostconditionsForField(
+                VariableElement field, AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
+            if (fieldToPostconditions == null) {
+                fieldToPostconditions = new HashMap<>();
+            }
+
+            if (!fieldToPostconditions.containsKey(field)) {
+                AnnotatedTypeMirror postconditionsType =
+                        AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false);
+                fieldToPostconditions.put(field, postconditionsType);
+            }
+
+            return fieldToPostconditions.get(field);
+        }
+
         /**
          * Transfers all annotations inferred by whole program inference for the return type,
          * receiver type, and parameter types for the wrapped declaration to their corresponding
          * JavaParser locations.
          */
         public void transferAnnotations() {
+            if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
+                GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAtf =
+                        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
+                for (AnnotationMirror contractAnno : genericAtf.getContractAnnotations(this)) {
+                    declaration.addAnnotation(
+                            AnnotationConversion.annotationMirrorToAnnotationExpr(contractAnno));
+                }
+            }
+
             if (declarationAnnotations != null) {
                 for (AnnotationMirror annotation : declarationAnnotations) {
                     declaration.addAnnotation(
