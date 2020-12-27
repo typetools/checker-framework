@@ -763,6 +763,16 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
+     * Returns the "flatname" of the class enclosing {@code variableElement}
+     *
+     * @param variableElement the VariableElement
+     * @return the "flatname" of the class enclosing {@code variableElement}
+     */
+    private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
+        return getClassName(ElementUtils.enclosingClass(variableElement));
+    }
+
+    /**
      * Returns the "flatname" of the class enclosing {@code localVariableNode}.
      *
      * @param localVariableNode the {@link LocalVariableNode}
@@ -773,6 +783,31 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
                 .flatName()
                 .toString();
+    }
+
+    /**
+     * Returns the top-level class that contains {@code element}.
+     *
+     * @param element the element wose enclosing class to find
+     * @return an element for a class containing {@code element} that isn't contained in another
+     *     class
+     */
+    private TypeElement toplevelEnclosingClass(Element element) {
+        if (ElementUtils.enclosingClass(element) == null) {
+            return (TypeElement) element;
+        }
+
+        TypeElement result = ElementUtils.enclosingClass(element);
+        // TODO JWAATAJA: This loop calls enclosingClass twice.  Please make it just one
+        // invocation.  You could use a local variable.
+        while (ElementUtils.enclosingClass(result) != null
+                // TODO JWAATAJA: Why is the test against equality necessary?  The contract of
+                // ElementUtils.enclosingClass() does not permit it to return its argument.
+                && !ElementUtils.enclosingClass(result).equals(result)) {
+            result = ElementUtils.enclosingClass(result);
+        }
+
+        return result;
     }
 
     /**
@@ -809,12 +844,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     // postProcessClassTree is called.
 
     /**
-     * Side-effects the AScene to make any desired changes before writing to a file.
+     * Side-effects the compilation unit annotations to make any desired changes before writing to a
+     * file.
      *
-     * @param scene the AScene to modify
+     * @param compilationUnitAnnos the compilation unit annotations to modify
      */
-    public void prepareSceneForWriting(AScene scene) {
-        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+    public void prepareSceneForWriting(AScene compilationUnitAnnos) {
+        for (Map.Entry<String, AClass> classEntry : compilationUnitAnnos.classes.entrySet()) {
             prepareClassForWriting(classEntry.getValue());
         }
     }
@@ -853,4 +889,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         storage.writeScenes(outputFormat, checker);
     }
+
+    ///
+    /// Storing annotations
+    ///
+
+    // That is done in WholeProgramInferenceScenesStorage.java
+
 }

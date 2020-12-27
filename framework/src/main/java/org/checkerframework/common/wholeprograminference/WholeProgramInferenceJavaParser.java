@@ -44,6 +44,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -349,7 +350,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         CallableDeclarationAnnos methodAnnos =
                 classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
-        // This will occur when methodAnnos is a synthetic default constructor.
+        // This will occur when methodElt is a synthetic default constructor.
         if (methodAnnos == null) {
             return;
         }
@@ -478,6 +479,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(paramElt);
         AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
+        atypeFactory.wpiAdjustForUpdateNonField(argATM);
         int i = methodElt.getParameters().indexOf(paramElt);
         assert i != -1;
         AnnotatedTypeMirror paramType =
@@ -505,6 +507,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atypeFactory.getAnnotatedType(rhs.getTree());
+        atypeFactory.wpiAdjustForUpdateField(lhs.getTree(), element, fieldName, rhsATM);
 
         updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM);
     }
@@ -543,7 +546,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param fieldName the field's name
      * @return true if an assignment to the given field should be ignored by WPI
      */
-    private boolean ignoreFieldInWPI(Element element, String fieldName) {
+    protected boolean ignoreFieldInWPI(Element element, String fieldName) {
         // Do not attempt to infer types for fields that do not have valid
         // names. For example, compiler-generated temporary variables will
         // have invalid names. Recording facts about fields with
@@ -567,7 +570,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
-        // do not infer types for code that isn't presented as source
+        // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
             return true;
         }
@@ -603,6 +606,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
                 atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
+        atypeFactory.wpiAdjustForUpdateNonField(rhsATM);
         DependentTypesHelper dependentTypesHelper =
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
         if (dependentTypesHelper != null) {
@@ -693,7 +697,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
      * @param file path to the annotation file containing the executable; used for marking the scene
-     *     as modified (needing to be written to disk) source code
+     *     as modified (needing to be written to disk)
      */
     protected void updateAnnotationSet(
             AnnotatedTypeMirror typeToUpdate,
@@ -1214,6 +1218,20 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 
+    /**
+     * Obtain the type from an AnnotatedTypeMirror (which is part of a Scene).
+     *
+     * @param typeMirror the underlying type for the result
+     * @param type the AnnotatedTypeMirror from which to obtain annotations
+     * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
+     *     {@code type}
+     */
+    public AnnotatedTypeMirror atmFromAnnotatedTypeMirror(
+            TypeMirror typeMirror, AnnotatedTypeMirror type) {
+        // return storage.atmFromAnnotatedTypeMirror(typeMirror, type);
+        throw new BugInCF("Not used here");
+    }
+
     ///
     /// Writing to a file
     ///
@@ -1223,9 +1241,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     // postProcessClassTree is called.
 
     /**
-     * Side-effects the CompilationUnitAnnos to make any desired changes before writing to a file.
+     * Side-effects the compilation unit annotations to make any desired changes before writing to a
+     * file.
      *
-     * @param compilationUnitAnnos the CompilationUnitAnnos to modify
+     * @param compilationUnitAnnos the compilation unit annotations to modify
      */
     public void prepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
         for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
