@@ -519,8 +519,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             dependentTypesHelper.standardizeReturnType(
                     methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
-        ATypeElement returnTypeAnnos = getReturnType(methodAnnos, lhsATM, atypeFactory);
-        updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
+        updateAnnotationSet(method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
