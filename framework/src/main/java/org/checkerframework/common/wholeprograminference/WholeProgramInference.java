@@ -121,7 +121,7 @@ public interface WholeProgramInference {
      * @param classTree the tree of the class that contains the parameter
      * @param methodTree the tree of the method that contains the parameter
      */
-    void updateFromLocalAssignment(
+    void updateFromFormalParameterAssignment(
             LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree);
 
     /**

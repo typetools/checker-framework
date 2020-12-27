@@ -332,7 +332,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     @Override
-    public void updateFromLocalAssignment(
+    public void updateFromFormalParameterAssignment(
             LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree) {
         // Don't infer types for code that isn't presented as source.
         if (!isElementFromSourceCode(lhs)) {
@@ -519,7 +519,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             dependentTypesHelper.standardizeReturnType(
                     methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
-        updateAnnotationSet(method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
+        ATypeElement returnTypeAnnos = getReturnType(methodAnnos, lhsATM, atypeFactory);
+        updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -621,8 +622,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param defLoc the location where the annotation will be added
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
-     * @param file path to a .jaif file for a Scene; used for marking the scene as modified (needing
-     *     to be written to disk)
+     * @param file path to the annotation file containing the executable; used for marking the scene
+     *     as modified (needing to be written to disk)
      * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
      *     source code
      */
@@ -642,16 +643,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     ///
 
     /**
-     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
+     * Returns the binary name of the type declaration in {@code element}
      *
-     * @param localVariableNode the {@link LocalVariableNode}
-     * @return the "flatname" of the class enclosing {@code localVariableNode}
+     * @param element a type declaration
+     * @return the binary name of {@code element}
      */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
-                .flatName()
-                .toString();
+    @SuppressWarnings({
+        "signature", // https://tinyurl.com/cfissue/3094
+        "UnusedMethod"
+    })
+    private @BinaryName String getClassName(Element element) {
+        return ((ClassSymbol) element).flatName().toString();
     }
 
     /**
@@ -663,6 +665,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
+     *
+     * @param localVariableNode the {@link LocalVariableNode}
+     * @return the "flatname" of the class enclosing {@code localVariableNode}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
+                .flatName()
+                .toString();
     }
 
     /**

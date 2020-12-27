@@ -357,7 +357,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     }
 
     @Override
-    public void updateFromLocalAssignment(
+    public void updateFromFormalParameterAssignment(
             LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree) {
         // Don't infer types for code that isn't presented as source.
         if (!isElementFromSourceCode(lhs)) {

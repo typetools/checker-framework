@@ -868,7 +868,7 @@ public abstract class CFAbstractTransfer<
                     && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
                 analysis.atypeFactory
                         .getWholeProgramInference()
-                        .updateFromLocalAssignment(
+                        .updateFromFormalParameterAssignment(
                                 (LocalVariableNode) lhs,
                                 rhs,
                                 analysis.getContainingClass(n.getTree()),
