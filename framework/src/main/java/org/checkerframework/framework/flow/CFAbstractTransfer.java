@@ -894,13 +894,11 @@ public abstract class CFAbstractTransfer<
                                 lhs, rhs, analysis.getContainingClass(n.getTree()));
             } else if (lhs instanceof LocalVariableNode
                     && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
+                // lhs is a formal parameter of some method
+                VariableElement param = (VariableElement) ((LocalVariableNode) lhs).getElement();
                 analysis.atypeFactory
                         .getWholeProgramInference()
-                        .updateFromFormalParameterAssignment(
-                                (LocalVariableNode) lhs,
-                                rhs,
-                                analysis.getContainingClass(n.getTree()),
-                                analysis.getContainingMethod(n.getTree()));
+                        .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
             }
         }
 
