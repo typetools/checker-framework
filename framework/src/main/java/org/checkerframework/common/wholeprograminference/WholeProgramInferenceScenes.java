@@ -54,11 +54,12 @@ import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInference} that uses a storage
- * class ({@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage}) that
- * manipulates {@link scenelib.annotations.el.AScene}s to perform whole-program inference, and
- * writes them out to a .jaif file at the end.
+ * org.checkerframework.common.wholeprograminference.WholeProgramInference}.
+ *
+ * <p>Its file format is .jaif files.
+ *
+ * <p>It stores annotations using the storage class ({@link
+ * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage}).
  *
  * <p>Calling an update* method replaces the currently-stored type for an element in a {@link
  * scenelib.annotations.el.AScene}, if any, by the LUB of it and the update method's argument.
@@ -100,11 +101,11 @@ import scenelib.annotations.util.JVMNames;
 @SuppressWarnings("UnusedMethod") // TEMPORARY
 public class WholeProgramInferenceScenes implements WholeProgramInference {
 
-    /** The interface to the AScene library itself, which stores the inferred annotations. */
-    protected final WholeProgramInferenceScenesStorage storage;
-
-    /** The type factory associated with this WholeProgramInferenceScenes. */
+    /** The type factory associated with this. */
     protected final AnnotatedTypeFactory atypeFactory;
+
+    /** This stores the inferred annotations. */
+    protected final WholeProgramInferenceScenesStorage storage;
 
     /**
      * Constructs a new {@code WholeProgramInferenceScenes} that has not yet inferred any
@@ -335,12 +336,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
 
-        String className = getEnclosingClassName(methodElt);
-        String file = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, file, ((MethodSymbol) methodElt).enclClass());
-        AMethod amethod = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
-
-        amethod.setFieldsFromMethodElement(methodElt);
+        String file = getFileForElement(methodElt);
+        AMethod amethod = getMethodAnnos(methodElt, file);
 
         // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
@@ -377,6 +374,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /**
      * Obtain the AField for an expression in scope at method entry or exit.
+     *
+     * <p>This is a helper method for {@link #updateContracts}.
      *
      * @param amethod AFU representation of a method
      * @param preOrPost whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or {@code

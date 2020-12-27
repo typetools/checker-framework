@@ -88,13 +88,19 @@ import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceJavaParser is an implementation of {@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInference} that reads in the files
- * it processes using JavaParser and stores annotations directly with the JavaParser nodes they
- * apply to. As a result, it only outputs to ajava files. This class behaves identically to {@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes}. See that class
- * for documentation on behavior.
+ * org.checkerframework.common.wholeprograminference.WholeProgramInference}.
+ *
+ * <p>Its file format is ajava files.
+ *
+ * <p>It stores annotations directly with the JavaParser nodes they apply to.
+ *
+ * <p>See {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes} for
+ * more documentation on behavior.
  */
 public class WholeProgramInferenceJavaParser implements WholeProgramInference {
+
+    /** The type factory associated with this. */
+    protected final AnnotatedTypeFactory atypeFactory;
 
     /**
      * Directory where .ajava files will be written to and read from. This directory is relative to
@@ -119,9 +125,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /** Mapping from source file to the wrapper for the compilation unit parsed from that file. */
     private Map<String, CompilationUnitAnnos> sourceToAnnos;
 
-    /** For calling declarationFromElement. */
-    private AnnotatedTypeFactory atypeFactory;
-
     /** Indicates whether assignments where the rhs is null should be ignored. */
     private final boolean ignoreNullAssignments;
 
@@ -136,8 +139,9 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         classToAnnos = new HashMap<>();
         modifiedFiles = new HashSet<>();
         sourceToAnnos = new HashMap<>();
-        this.ignoreNullAssignments =
-                !atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
+        boolean isNullness =
+                atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
+        this.ignoreNullAssignments = !isNullness;
     }
 
     /**
@@ -322,6 +326,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
+            atypeFactory.wpiAdjustForUpdateNonField(argATM);
             AnnotatedTypeMirror paramType =
                     getParameterType(executableAnnos, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
@@ -344,12 +349,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
 
-        String className = getEnclosingClassName(methodElt);
-        String file = addClassesForElement(methodElt);
-        ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
-
-        CallableDeclarationAnnos methodAnnos =
-                classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        String file = getFileForElement(methodElt);
+        CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt, file);
         // This will occur when methodElt is a synthetic default constructor.
         if (methodAnnos == null) {
             return;
@@ -439,6 +440,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
+            atypeFactory.wpiAdjustForUpdateNonField(argATM);
             AnnotatedTypeMirror paramType =
                     getParameterType(methodAnnos, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
@@ -1165,7 +1167,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code localVariableNode}
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
      *
      * @param localVariableNode the {@link LocalVariableNode}
      * @return the "flatname" of the class enclosing {@code localVariableNode}
@@ -1229,7 +1231,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public AnnotatedTypeMirror atmFromAnnotatedTypeMirror(
             TypeMirror typeMirror, AnnotatedTypeMirror type) {
         // return storage.atmFromAnnotatedTypeMirror(typeMirror, type);
-        throw new BugInCF("Not used here");
+        throw new BugInCF("Not used in WholeProgramInferenceJavaParser");
     }
 
     ///
@@ -1260,8 +1262,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public void prepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
         for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
                 classAnnos.callableDeclarations.entrySet()) {
-            atypeFactory.prepareMethodForWriting(methodEntry.getValue());
+            prepareMethodForWriting(methodEntry.getValue());
         }
+    }
+
+    /**
+     * Side-effects the method or constructor annotations to make any desired changes before writing
+     * to a file.
+     *
+     * @param methodAnnos the method or constructor annotations to modify
+     */
+    public void prepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
+        atypeFactory.prepareMethodForWriting(methodAnnos);
     }
 
     @Override
