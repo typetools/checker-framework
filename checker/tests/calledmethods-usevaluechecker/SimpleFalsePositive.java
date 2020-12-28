@@ -5,7 +5,7 @@ import com.amazonaws.services.ec2.model.Filter;
 import java.util.*;
 
 // A simple (potential) false positive case with mutliple filters.
-class SimpleFalsePositive {
+public class SimpleFalsePositive {
     void test(AmazonEC2 ec2Client, String namePrefix) {
         DescribeImagesRequest request =
                 new DescribeImagesRequest()

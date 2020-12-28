@@ -5,7 +5,7 @@
 
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class Subtyping {
+public class Subtyping {
     void top(@TestAccumulation() Object o1) {
         @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")

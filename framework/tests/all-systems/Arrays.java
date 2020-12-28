@@ -1,4 +1,4 @@
-class Arrays {
+public class Arrays {
     public static final String[] RELATIONSHIP_LABELS = {
         "SJJ", "SJU", "SUJ", "SUU", "DJJ", "DJU", "DUJ", "DUU", "JM", "UM", "MJ", "MU"
     };

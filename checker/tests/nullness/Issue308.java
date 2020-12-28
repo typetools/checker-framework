@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 // @skip-test The clean-room implementation of javax.validation.constraints.NotNull is not in this
 // repository because Oracle claims a license over its specification and is lawsuit-happy.
 
-class Issue308 {
+public class Issue308 {
     @NonNull Object nonnull = new Object();
     @Nullable Object nullable;
 

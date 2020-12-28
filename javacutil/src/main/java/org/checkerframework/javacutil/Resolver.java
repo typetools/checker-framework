@@ -282,7 +282,7 @@ public class Resolver {
                             pck,
                             names.fromString(name),
                             Kinds.KindSelector.TYP);
-            if (ElementUtils.isClassElement(res)) {
+            if (ElementUtils.isTypeElement(res)) {
                 return (ClassSymbol) res;
             } else {
                 return null;

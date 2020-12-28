@@ -6,19 +6,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 
 /** An array access. */
-public class ArrayAccess extends Receiver {
+public class ArrayAccess extends JavaExpression {
 
-    protected final Receiver receiver;
-    protected final Receiver index;
+    protected final JavaExpression receiver;
+    protected final JavaExpression index;
 
-    public ArrayAccess(TypeMirror type, Receiver receiver, Receiver index) {
+    public ArrayAccess(TypeMirror type, JavaExpression receiver, JavaExpression index) {
         super(type);
         this.receiver = receiver;
         this.index = index;
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         if (getClass() == clazz) {
             return true;
         }
@@ -28,11 +28,11 @@ public class ArrayAccess extends Receiver {
         return index.containsOfClass(clazz);
     }
 
-    public Receiver getReceiver() {
+    public JavaExpression getReceiver() {
         return receiver;
     }
 
-    public Receiver getIndex() {
+    public JavaExpression getIndex() {
         return index;
     }
 
@@ -47,14 +47,14 @@ public class ArrayAccess extends Receiver {
     }
 
     @Override
-    public boolean containsSyntacticEqualReceiver(Receiver other) {
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return syntacticEquals(other)
                 || receiver.syntacticEquals(other)
                 || index.syntacticEquals(other);
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         if (!(other instanceof ArrayAccess)) {
             return false;
         }
@@ -66,7 +66,7 @@ public class ArrayAccess extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         if (receiver.containsModifiableAliasOf(store, other)) {
             return true;
         }

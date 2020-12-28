@@ -171,9 +171,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
                         AnnotationMirror initializedFieldsAnno;
                         {
                             AnnotationBuilder builder =
-                                    new AnnotationBuilder(
-                                            processingEnv,
-                                            InitializedFields.class.getCanonicalName());
+                                    new AnnotationBuilder(processingEnv, InitializedFields.class);
                             builder.setValue("value", fieldsToInitialize);
                             initializedFieldsAnno = builder.build();
                         }
@@ -181,8 +179,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
                         {
                             AnnotationBuilder builder =
                                     new AnnotationBuilder(
-                                            processingEnv,
-                                            EnsuresInitializedFields.class.getCanonicalName());
+                                            processingEnv, EnsuresInitializedFields.class);
                             builder.setValue("value", "this");
                             builder.setValue("fields", fieldsToInitialize);
                             ensuresAnno = builder.build();

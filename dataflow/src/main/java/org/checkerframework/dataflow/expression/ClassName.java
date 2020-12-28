@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.analysis.Store;
  * A ClassName represents the occurrence of a class as part of a static field access or method
  * invocation.
  */
-public class ClassName extends Receiver {
+public class ClassName extends JavaExpression {
     private final String typeString;
 
     public ClassName(TypeMirror type) {
@@ -37,12 +37,12 @@ public class ClassName extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         return this.equals(other);
     }
 
@@ -57,7 +57,7 @@ public class ClassName extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // not modifiable
     }
 }

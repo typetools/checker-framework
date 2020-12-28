@@ -11,7 +11,7 @@ interface ToOverride<T> {
     public abstract int transform(List<? super T> function);
 }
 
-class WildcardOverride implements ToOverride<Object> {
+public class WildcardOverride implements ToOverride<Object> {
     // invalid because the overriden method takes @Nullable args and this one doesn't
     @Override
     // :: error: (override.param.invalid)

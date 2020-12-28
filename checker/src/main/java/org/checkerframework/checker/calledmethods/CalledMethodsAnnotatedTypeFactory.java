@@ -83,13 +83,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                         "java.util.Collections", "singletonList", 1, getProcessingEnv());
         // Lombok generates @CalledMethods annotations using an old package name,
         // so we maintain it as an alias.
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.builder.qual.CalledMethods",
                 CalledMethods.class,
                 true);
         // Lombok also generates an @NotCalledMethods annotation, which we have no support for. We
         // therefore treat it as top.
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.builder.qual.NotCalledMethods", this.top);
         this.postInit();
     }

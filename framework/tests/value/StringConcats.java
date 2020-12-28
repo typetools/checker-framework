@@ -2,7 +2,7 @@ import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.StringVal;
 
-class Test {
+public class StringConcats {
     void stringConcat() {
         @StringVal("helloa11.01.020truenull2626") String everything = "hello" + 'a' + 1 + 1.0 + 1.0f + 20L + true + null + 0x1a + 0b11010;
 

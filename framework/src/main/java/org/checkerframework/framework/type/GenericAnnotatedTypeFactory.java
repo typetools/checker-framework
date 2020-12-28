@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type;
 
+import com.google.common.collect.Ordering;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -18,6 +19,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +41,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -57,9 +60,8 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -72,9 +74,11 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -92,8 +96,8 @@ import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotato
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -110,6 +114,8 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.UtilPlume;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -247,7 +253,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
-     * @see AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput, IdentityHashMap, Map)
+     * @see AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
+     *     IdentityHashMap, Map)
      */
     protected final Map<
                     TransferInput<Value, Store>,
@@ -800,46 +807,46 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param path location at which expression is evaluated
      * @param clazz class of the annotation
      * @return the annotation on expression or null if one does not exist
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
-            throws FlowExpressionParseException {
+            throws JavaExpressionParseException {
 
-        Receiver expressionObj = getReceiverFromJavaExpressionString(expression, path);
-        return getAnnotationFromReceiver(expressionObj, tree, clazz);
+        JavaExpression expressionObj = parseJavaExpressionString(expression, path);
+        return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
     }
     /**
-     * Returns the primary annotation on a receiver.
+     * Returns the primary annotation on an expression.
      *
-     * @param receiver the receiver for which the annotation is returned
+     * @param expr the expression for which the annotation is returned
      * @param tree current tree
      * @param clazz the Class of the annotation
      * @return the annotation on expression or null if one does not exist
      */
-    public AnnotationMirror getAnnotationFromReceiver(
-            Receiver receiver, Tree tree, Class<? extends Annotation> clazz) {
+    public AnnotationMirror getAnnotationFromJavaExpression(
+            JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
 
         AnnotationMirror annotationMirror = null;
-        if (CFAbstractStore.canInsertReceiver(receiver)) {
+        if (CFAbstractStore.canInsertJavaExpression(expr)) {
             Store store = getStoreBefore(tree);
-            Value value = store.getValue(receiver);
+            Value value = store.getValue(expr);
             if (value != null) {
                 annotationMirror = getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         // If the specific annotation wasn't in the store, look in the type factory.
         if (annotationMirror == null) {
-            if (receiver instanceof LocalVariable) {
-                Element ele = ((LocalVariable) receiver).getElement();
+            if (expr instanceof LocalVariable) {
+                Element ele = ((LocalVariable) expr).getElement();
                 // Because of
                 // https://github.com/eisop/checker-framework/issues/14
                 // and the workaround in
                 // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
                 // The annotationMirror may not contain all explicitly written annotations.
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
-            } else if (receiver instanceof FieldAccess) {
-                Element ele = ((FieldAccess) receiver).getField();
+            } else if (expr instanceof FieldAccess) {
+                Element ele = ((FieldAccess) expr).getField();
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             }
         }
@@ -847,40 +854,40 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Produces the receiver associated with expression on currentPath.
+     * Produces the JavaExpression associated with expression on currentPath.
      *
      * @param expression a Java expression
      * @param currentPath location at which expression is evaluated
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
-    public Receiver getReceiverFromJavaExpressionString(String expression, TreePath currentPath)
-            throws FlowExpressionParseException {
+    public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
+            throws JavaExpressionParseException {
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
-        Receiver r = FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
-        FlowExpressionParseUtil.FlowExpressionContext context =
-                new FlowExpressionParseUtil.FlowExpressionContext(
+        JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
+        JavaExpressionParseUtil.JavaExpressionContext context =
+                new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
-                        FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
+                        JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
                         this.getContext());
 
-        return FlowExpressionParseUtil.parse(expression, context, currentPath, true);
+        return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
     }
 
     /**
-     * Produces the receiver and offset associated with an expression. For instance, "n+1" has no
-     * associated Receiver, but this method produces a pair of a Receiver (for "n") and an offset
-     * ("1").
+     * Produces the JavaExpression and offset associated with an expression. For instance, "n+1" has
+     * no associated JavaExpression, but this method produces a pair of a JavaExpression (for "n")
+     * and an offset ("1").
      *
      * @param expression a Java expression, possibly with a constant offset
      * @param currentPath location at which expression is evaluated
-     * @return receiver and offset for the given expression
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @return the JavaExpression and offset for the given expression
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
-    public Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
-            String expression, TreePath currentPath) throws FlowExpressionParseException {
+    public Pair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
+            String expression, TreePath currentPath) throws JavaExpressionParseException {
         Pair<String, String> p = getExpressionAndOffset(expression);
-        Receiver r = getReceiverFromJavaExpressionString(p.first, currentPath);
+        JavaExpression r = parseJavaExpressionString(p.first, currentPath);
         return Pair.of(r, p.second);
     }
 
@@ -894,19 +901,19 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param expression a Java expression
      * @param tree the tree at the location to parse the expression
      * @param currentPath location at which expression is evaluated
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      * @return an AnnotationMirror representing the type in the store at the given location from
      *     this type factory's type system, or null if one is not available
      */
     public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
             String expression, Tree tree, TreePath currentPath)
-            throws FlowExpressionParseException {
-        Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
-        if (rec == null || !CFAbstractStore.canInsertReceiver(rec)) {
+            throws JavaExpressionParseException {
+        JavaExpression je = parseJavaExpressionString(expression, currentPath);
+        if (je == null || !CFAbstractStore.canInsertJavaExpression(je)) {
             return null;
         }
         Store store = getStoreBefore(tree);
-        Value value = store.getValue(rec);
+        Value value = store.getValue(je);
         return value != null ? value.getAnnotations().iterator().next() : null;
     }
 
@@ -2218,5 +2225,209 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(
                 TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
         return defaultValue;
+    }
+
+    /**
+     * Return the contract annotations (that is, pre- and post-conditions) for the given AMethod.
+     * Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return contract annotations for the method
+     */
+    public List<AnnotationMirror> getContractAnnotations(AMethod m) {
+        List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
+        List<AnnotationMirror> postconds = getPostconditionAnnotations(m, preconds);
+        List<AnnotationMirror> result = preconds;
+        result.addAll(postconds);
+        return result;
+    }
+
+    /**
+     * Return the precondition annotations for the given AMethod. Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return precondition annotations for the method
+     */
+    public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
+        List<AnnotationMirror> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
+            result.addAll(getPreconditionAnnotation(entry.getKey(), entry.getValue()));
+        }
+        Collections.sort(result, Ordering.usingToString());
+        return result;
+    }
+
+    /**
+     * Return the postcondition annotations for the given AMethod. Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return postcondition annotations for the method
+     */
+    public List<AnnotationMirror> getPostconditionAnnotations(
+            AMethod m, List<AnnotationMirror> preconds) {
+        List<AnnotationMirror> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
+            result.addAll(getPostconditionAnnotation(entry.getKey(), entry.getValue(), preconds));
+        }
+        Collections.sort(result, Ordering.usingToString());
+        return result;
+    }
+
+    /**
+     * Return a list of precondition annotations for the given field. Returns an empty list if none
+     * can be created, because the qualifier has elements/arguments, which
+     * {@code @RequiresQualifier} does not support.
+     *
+     * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param elt element for a field, which is declared in the same class as the method
+     * @param fieldAnnos the field's precondition annotations
+     * @return precondition annotations for the element (possibly an empty list)
+     */
+    public List<AnnotationMirror> getPreconditionAnnotation(
+            VariableElement elt, AField fieldAnnos) {
+        return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.BEFORE, null);
+    }
+
+    /**
+     * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns an empty list if
+     * none can be created, because the qualifier has elements/arguments, which
+     * {@code @EnsuresQualifier} does not support.
+     *
+     * <p>This implementation makes no assumptions about preconditions suppressing postconditions,
+     * but subclasses may do so.
+     *
+     * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param elt element for a field
+     * @param fieldAnnos the field's postcondition annotations
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return postcondition annotations for the element (possibly an empty list)
+     */
+    public List<AnnotationMirror> getPostconditionAnnotation(
+            VariableElement elt, AField fieldAnnos, List<AnnotationMirror> preconds) {
+        return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.AFTER, preconds);
+    }
+
+    /**
+     * Helper method for {@link #getPreconditionAnnotation} and {@link #getPostconditionAnnotation}.
+     *
+     * <p>Returns an {@code @EnsuresQualifier} or {@code @EnsuresQualifier} annotation for the given
+     * field. Returns an empty list if none can be created, because the qualifier has
+     * elements/arguments, which {@code @EnsuresQualifier} and {@code @RequiresQualifier} do not
+     * support.
+     *
+     * <p>This implementation makes no assumptions about preconditions suppressing postconditions,
+     * but subclasses may do so.
+     *
+     * @param elt element for a field
+     * @param fieldAnnos the field's precondition or postcondition annotations
+     * @param preOrPost whether to return preconditions or postconditions
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
+     * @return postcondition annotations for the element (possibly an empty list)
+     */
+    protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
+            VariableElement elt,
+            AField fieldAnnos,
+            Analysis.BeforeOrAfter preOrPost,
+            @Nullable List<AnnotationMirror> preconds) {
+        assert (preOrPost == BeforeOrAfter.BEFORE) == (preconds == null);
+
+        WholeProgramInferenceScenes wholeProgramInference =
+                (WholeProgramInferenceScenes) getWholeProgramInference();
+        if (wholeProgramInference == null) {
+            return Collections.emptyList();
+        }
+
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+
+        TypeMirror typeMirror = elt.asType();
+        AnnotatedTypeMirror inferredType =
+                wholeProgramInference.atmFromATypeElement(typeMirror, fieldAnnos.type);
+
+        // TODO: should this only check the top-level annotations?
+        if (declaredType.equals(inferredType)) {
+            return Collections.emptyList();
+        }
+
+        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+        for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
+            AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+            if (declaredAm == null && declaredType.getKind() != TypeKind.TYPEVAR) {
+                // There is no explicitly-written annotation for the given qualifier hierarchy.
+                // Determine the default.
+                addComputedTypeAnnotations(elt, declaredType);
+                declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+                if (declaredAm == null) {
+                    throw new BugInCF(
+                            "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s  [%s %s]%n  inferredType=%s  [%s %s]%n",
+                            elt,
+                            fieldAnnos,
+                            declaredType.toString(true),
+                            declaredType.getKind(),
+                            declaredType.getClass(),
+                            inferredType.toString(true),
+                            inferredType.getKind(),
+                            inferredType.getClass());
+                }
+            }
+
+            if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
+                continue;
+            }
+            // inferredAm must be a subtype of declaredAm (since they are not equal).
+            AnnotationMirror anno = requiresOrEnsuresQualifierAnno(elt, inferredAm, preOrPost);
+            if (anno != null) {
+                result.add(anno);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
+     * the given field. Returns null if none can be created, because the qualifier has
+     * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
+     * support.
+     *
+     * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param fieldElement a field
+     * @param qualifier the qualifier that must be present
+     * @param preOrPost whether to return a precondition or postcondition annotation
+     * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
+     *     the given field, or null
+     */
+    protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnno(
+            VariableElement fieldElement,
+            AnnotationMirror qualifier,
+            Analysis.BeforeOrAfter preOrPost) {
+        if (!qualifier.getElementValues().isEmpty()) {
+            // @RequiresQualifier does not yet support annotations with elements/arguments.
+            return null;
+        }
+
+        AnnotationBuilder builder =
+                new AnnotationBuilder(
+                        processingEnv,
+                        preOrPost == BeforeOrAfter.BEFORE
+                                ? RequiresQualifier.class
+                                : EnsuresQualifier.class);
+
+        builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
+        builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
+        return builder.build();
     }
 }

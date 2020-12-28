@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.SameLen;
 
-class ArrayLengthEquality {
+public class ArrayLengthEquality {
     void test(int[] a, int[] b) {
         if (a.length == b.length) {
             int @SameLen({"a", "b"}) [] c = a;

@@ -33,7 +33,9 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 
 /**
@@ -196,6 +198,33 @@ public class ElementUtils {
     }
 
     /**
+     * Returns the binary name of the given type.
+     *
+     * @param te a type
+     * @return the binary name of the type
+     */
+    @SuppressWarnings("signature:return.type.incompatible") // string manipulation
+    public static @BinaryName String getBinaryName(TypeElement te) {
+        Element enclosing = te.getEnclosingElement();
+        String simpleName = te.getSimpleName().toString();
+        if (enclosing == null) { // is this possible?
+            return simpleName;
+        }
+        if (ElementUtils.isClassElement(enclosing)) {
+            return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
+        } else if (enclosing.getKind() == ElementKind.PACKAGE) {
+            PackageElement pe = (PackageElement) enclosing;
+            if (pe.isUnnamed()) {
+                return simpleName;
+            } else {
+                return pe.getQualifiedName() + "." + simpleName;
+            }
+        } else {
+            throw new BugInCF("Unexpected enclosing %s for %s", enclosing, te);
+        }
+    }
+
+    /**
      * Returns the canonical representation of the method declaration, which contains simple names
      * of the types only.
      *
@@ -289,8 +318,11 @@ public class ElementUtils {
 
     /**
      * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
+     *
+     * @param elt some element
+     * @return true if the element is declared in ByteCode
      */
-    public static boolean isElementFromByteCode(Element elt) {
+    public static boolean isElementFromByteCode(@Nullable Element elt) {
         if (elt == null) {
             return false;
         }
@@ -299,33 +331,12 @@ public class ElementUtils {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
                 // The class file could be a .java file
-                return clss.classfile.getName().endsWith(".class");
+                return clss.classfile.getKind() == Kind.CLASS;
             } else {
-                return false;
+                return elt.asType().getKind().isPrimitive();
             }
         }
-        return isElementFromByteCodeHelper(elt.getEnclosingElement());
-    }
-
-    /**
-     * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
-     */
-    private static boolean isElementFromByteCodeHelper(Element elt) {
-        if (elt == null) {
-            return false;
-        }
-        if (elt instanceof Symbol.ClassSymbol) {
-            Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
-            if (null != clss.classfile) {
-                // The class file could be a .java file
-                return (clss.classfile.getName().endsWith(".class")
-                        || clss.classfile.getName().endsWith(".class)")
-                        || clss.classfile.getName().endsWith(".class)]"));
-            } else {
-                return false;
-            }
-        }
-        return isElementFromByteCodeHelper(elt.getEnclosingElement());
+        return isElementFromByteCode(elt.getEnclosingElement());
     }
 
     /** Returns the field of the class or {@code null} if not found. */
@@ -558,14 +569,14 @@ public class ElementUtils {
         return types;
     }
 
-    /** The set of kinds that represent classes. */
-    private static final Set<ElementKind> classElementKinds;
+    /** The set of kinds that represent types. */
+    private static final Set<ElementKind> typeElementKinds;
 
     static {
-        classElementKinds = EnumSet.noneOf(ElementKind.class);
+        typeElementKinds = EnumSet.noneOf(ElementKind.class);
         for (ElementKind kind : ElementKind.values()) {
             if (kind.isClass() || kind.isInterface()) {
-                classElementKinds.add(kind);
+                typeElementKinds.add(kind);
             }
         }
     }
@@ -574,19 +585,42 @@ public class ElementUtils {
      * Return the set of kinds that represent classes.
      *
      * @return the set of kinds that represent classes
+     * @deprecated use {@link #typeElementKinds}
      */
+    @Deprecated // use typeElementKinds
     public static Set<ElementKind> classElementKinds() {
-        return classElementKinds;
+        return typeElementKinds();
     }
 
     /**
-     * Is the given element kind a class, i.e. a class, enum, interface, or annotation type.
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
+    public static Set<ElementKind> typeElementKinds() {
+        return typeElementKinds;
+    }
+
+    /**
+     * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
+     *
+     * @param element the element to test
+     * @return true, iff the given kind is a class kind
+     * @deprecated use {@link #isTypeElement}
+     */
+    @Deprecated // use isTypeElement
+    public static boolean isClassElement(Element element) {
+        return isTypeElement(element);
+    }
+
+    /**
+     * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
      *
      * @param element the element to test
      * @return true, iff the given kind is a class kind
      */
-    public static boolean isClassElement(Element element) {
-        return classElementKinds().contains(element.getKind());
+    public static boolean isTypeElement(Element element) {
+        return typeElementKinds().contains(element.getKind());
     }
 
     /**
@@ -697,5 +731,17 @@ public class ElementUtils {
             ExecutableElement m, Types types) {
         JavacTypes t = (JavacTypes) types;
         return t.getOverriddenMethods(m);
+    }
+
+    /**
+     * Returns true if the two elements are in the same class. The two elements should be class
+     * members, such as methods or fields.
+     *
+     * @param e1 an element
+     * @param e2 an element
+     * @return true if the two elements are in the same class
+     */
+    public static boolean inSameClass(Element e1, Element e2) {
+        return e1.getEnclosingElement().equals(e2.getEnclosingElement());
     }
 }

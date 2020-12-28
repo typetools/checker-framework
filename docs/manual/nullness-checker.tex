@@ -2,8 +2,8 @@
 \chapterAndLabel{Nullness Checker}{nullness-checker}
 
 If the Nullness Checker issues no warnings for a given program, then
-running that program will never throw a null pointer exception.  This
-guarantee enables a programmer to prevent run-time errors.
+running that program will never throw a null pointer exception.  In
+other words, the Nullness Checker prevents all \<NullPointerException>s.
 See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
@@ -79,6 +79,9 @@ The checker performs additional checks if certain \code{-Alint}
 command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
+
+Section~\ref{checker-guarantees} notes some limitations to guarantees made
+by the Checker Framework.
 
 
 \subsectionAndLabel{Nullness Checker optional warnings}{nullness-lint}
@@ -2015,11 +2018,11 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-warning suppression string ``initialization.''~(note the trailing period)
-or ``fbc''.  You can write \<@SuppressWarnings("initialization.")> or
-\<@SuppressWarnings("fbc")> on a field, constructor, or
+warning suppression string ``initialization.''~(note the trailing period).
+You can write \<@SuppressWarnings("initialization.")>
+on a field, constructor, or
 class, or pass the command-line argument
-\<-AsuppressWarnings=initialization.>~or \<-AsuppressWarnings=fbc> when
+\<-AsuppressWarnings=initialization.> when
 running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
@@ -2084,7 +2087,7 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
-% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray fbc
+% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
 % LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''

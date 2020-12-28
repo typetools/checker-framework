@@ -299,8 +299,8 @@ public class AnnotationFileUtil {
     /**
      * Return annotation files found in the file system (does not look on classpath).
      *
-     * @param location a stub file, a jarfile, or a directory. Look for it as an absolute file and
-     *     relative to the current directory.
+     * @param location an annotation file (stub file), a jarfile, or a directory. Look for it as an
+     *     absolute file and relative to the current directory.
      * @return annotation files found in the file system (does not look on classpath)
      */
     public static List<AnnotationFileResource> allAnnotationFiles(String location) {
@@ -324,8 +324,8 @@ public class AnnotationFileUtil {
     /**
      * Returns true if the given file is an annotation file.
      *
-     * @param f a file
-     * @return true if the given file is an annotation file
+     * @param f the file to check
+     * @return true if {@code f} is an annotation file
      */
     private static boolean isAnnotationFile(File f) {
         return f.isFile() && isAnnotationFile(f.getName());
@@ -348,9 +348,9 @@ public class AnnotationFileUtil {
     /**
      * Side-effects {@code resources} by adding stub files (those ending with ".astub") to it.
      *
-     * @param location a stub file, a jarfile, or a directory. If a stub file, add it to the {@code
-     *     resources} list. If a jarfile, use all stub files contained in it. If a directory,
-     *     recurse on all files contained in it.
+     * @param location an annotation file (a stub file), a jarfile, or a directory. If a stub file,
+     *     add it to the {@code resources} list. If a jarfile, use all annotation files contained in
+     *     it. If a directory, recurse on all files contained in it.
      * @param resources the list to add the found files to
      */
     @SuppressWarnings("JdkObsolete") // JarFile.entries()

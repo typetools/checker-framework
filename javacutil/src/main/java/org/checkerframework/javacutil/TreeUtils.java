@@ -184,7 +184,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, of the specified kind.
+     * Gets the first (innermost) enclosing tree in path, of the specified kind.
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
@@ -195,7 +195,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, with any one of the specified kinds.
+     * Gets the first (innermost) enclosing tree in path, with any one of the specified kinds.
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
@@ -217,8 +217,8 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the first enclosing class tree, where class is defined by the classTreeKinds
-     * method.
+     * Gets path to the first (innermost) enclosing class tree, where class is defined by the
+     * classTreeKinds method.
      *
      * @param path the path defining the tree node
      * @return the path to the enclosing class tree, {@code null} otherwise
@@ -228,7 +228,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the first enclosing tree of the specified kind.
+     * Gets path to the first (innermost) enclosing tree of the specified kind.
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
@@ -239,7 +239,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the first enclosing tree with any one of the specified kinds.
+     * Gets path to the first (innermost) enclosing tree with any one of the specified kinds.
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
@@ -262,7 +262,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, of the specified class.
+     * Gets the first (innermost) enclosing tree in path, of the specified class.
      *
      * @param path the path defining the tree node
      * @param treeClass the class of the desired tree
@@ -344,6 +344,18 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if the tree is in a constructor or an initializer block.
+     *
+     * @param path the path to test
+     * @return true if the path is in a constructor or an initializer block
+     */
+    public static boolean inConstructor(TreePath path) {
+        MethodTree method = enclosingMethod(path);
+        // If method is null, this is an initializer block.
+        return method == null || isConstructor(method);
+    }
+
+    /**
      * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
      * Otherwise, return the same tree.
      *
@@ -361,7 +373,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, that is not a parenthesis.
+     * Gets the first (innermost) enclosing tree in path, that is not a parenthesis.
      *
      * @param path the path defining the tree node
      * @return a pair of a non-parenthesis tree that contains the argument, and its child that is
@@ -1012,6 +1024,35 @@ public final class TreeUtils {
         throw new BugInCF(
                 "TreeUtils.getMethod(%s, %s, %d): expected 1 match, found %d",
                 typeName, methodName, params, methods.size());
+    }
+
+    /**
+     * Returns the ExecutableElement for a method declaration. Returns null there is no matching
+     * method. Errs if there is more than one matching method. If more than one method takes the
+     * same number of formal parameters, then use {@link #getMethod(String, String,
+     * ProcessingEnvironment, String...)}.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElement for the specified method, or null
+     */
+    public static @Nullable ExecutableElement getMethodOrNull(
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
+        List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
+        if (methods.size() == 0) {
+            return null;
+        } else if (methods.size() == 1) {
+            return methods.get(0);
+        } else {
+            throw new BugInCF(
+                    "TreeUtils.getMethod(%s, %s, %d): expected 0 or 1 match, found %d",
+                    typeName, methodName, params, methods.size());
+        }
     }
 
     /**
@@ -1706,5 +1747,28 @@ public final class TreeUtils {
         LiteralTree result = maker.Literal(typeTag, value);
         ((JCLiteral) result).type = (Type) typeMirror;
         return result;
+    }
+
+    /**
+     * Returns true if the given tree evaluates to {@code null}.
+     *
+     * @param t a tree
+     * @return true if the given tree evaluates to {@code null}
+     */
+    public static boolean isNullExpression(Tree t) {
+        while (true) {
+            switch (t.getKind()) {
+                case PARENTHESIZED:
+                    t = ((ParenthesizedTree) t).getExpression();
+                    break;
+                case TYPE_CAST:
+                    t = ((TypeCastTree) t).getExpression();
+                    break;
+                case NULL_LITERAL:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 }

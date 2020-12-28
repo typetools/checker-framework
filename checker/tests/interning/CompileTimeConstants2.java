@@ -1,6 +1,6 @@
 import org.checkerframework.checker.interning.qual.Interned;
 
-class CompileTimeConstants2 {
+public class CompileTimeConstants2 {
     @Interned String s1 = "" + ("" + 1);
 
     @Interned String s2 = (("" + ("" + 1)));

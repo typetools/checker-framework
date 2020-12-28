@@ -3,7 +3,7 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue3150 {
+public class Issue3150 {
     void foo(@Nullable Object nble, @NonNull Object nn) {
         // :: error: (type.argument.type.incompatible)
         requireNonNull1(null);

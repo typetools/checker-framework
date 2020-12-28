@@ -6,7 +6,7 @@
 
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-class NonDefaultConstructor {
+public class NonDefaultConstructor {
     Object nonNull = 4;
     Object nullObject;
     @MonotonicNonNull Object lazyField;

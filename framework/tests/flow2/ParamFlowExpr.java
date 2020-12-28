@@ -2,7 +2,7 @@ import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
-class ParamFlowExpr {
+public class ParamFlowExpr {
 
     @RequiresQualifier(expression = "#1", qualifier = Odd.class)
     void t1(String p1) {

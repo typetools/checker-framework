@@ -15,12 +15,11 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
- * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
- * builder pattern. That is, it returns itself after every call so you can string together
- * configuration methods as follows:
+ * Used to create an instance of TestConfiguration. TestConfigurationBuilder is fluent: it returns
+ * itself after every call so you can string together configuration methods as follows:
  *
  * <p>{@code new TestConfigurationBuilder() .addOption("-Awarns") .addSourceFile("src1.java")
  * .addDiagnosticFile("src1.out") }
@@ -431,9 +430,9 @@ public class TestConfigurationBuilder {
 
     @Override
     public String toString() {
-        return UtilPlume.joinLines(
+        return StringsPlume.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + UtilPlume.join(" ", testSourceFiles),
+                "testSourceFiles=" + StringsPlume.join(" ", testSourceFiles),
                 "processors=" + String.join(", ", processors),
                 "options=" + String.join(", ", options.getOptionsAsList()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);

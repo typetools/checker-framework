@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-class IntroAnd {
+public class IntroAnd {
     void test() {
         @NonNegative int a = 1 & 0;
         @NonNegative int b = a & 5;

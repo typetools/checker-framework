@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
-class WildcardSuper {
+public class WildcardSuper {
 
     void testWithSuper(Cell<? super @NonNull String> cell) {
         // TODO: Address comments.  Since ? is explicitly lower bounded, I have made a judgment that

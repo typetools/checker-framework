@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class AnnotatedGenerics2 {
+public class AnnotatedGenerics2 {
     // Top-level class to ensure that both classes are processed.
 
     // :: error: (initialization.fields.uninitialized)

@@ -1,5 +1,0 @@
-The html-add-favicon script was copied from the plume-lib/html-tools library.
-
-It should be updated periodically, via:
-
-    wget https://raw.githubusercontent.com/plume-lib/html-tools/master/html-add-favicon -O html-add-favicon

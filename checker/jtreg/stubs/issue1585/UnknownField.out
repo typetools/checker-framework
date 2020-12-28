@@ -1,3 +1,2 @@
-warning: AnnotationFileParser: Field not found: NonNull
-warning: AnnotationFileParser: Annotation expression, NonNull, could not be processed for annotation: @DefaultQualifier(NonNull).
-2 warnings
+- compiler.warn.proc.messager: UnknownField.astub:(line 5,col 19): For annotation @DefaultQualifier(NonNull), could not add  value=NonNull  because variable NonNull not found
+1 warning

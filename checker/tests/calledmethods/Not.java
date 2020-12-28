@@ -1,6 +1,6 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
-class Not {
+public class Not {
 
     class Foo {
         void a() {}

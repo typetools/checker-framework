@@ -4,7 +4,7 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
 // @skip-test https://github.com/typetools/checker-framework/issues/3400
-class SubClassHasQP {
+public class SubClassHasQP {
     @HasQualifierParameter(Tainted.class)
     static class Buffer {
         void append(@PolyTainted Buffer this, @PolyTainted String s) {}

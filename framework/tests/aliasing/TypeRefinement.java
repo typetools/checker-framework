@@ -1,6 +1,6 @@
 import org.checkerframework.common.aliasing.qual.*;
 
-class TypeRefinement {
+public class TypeRefinement {
 
     /**
      * Type refinement is treated in the usual way, except that at (pseudo-)assignments the RHS may

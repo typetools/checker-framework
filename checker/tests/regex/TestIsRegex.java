@@ -3,7 +3,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.regex.qual.*;
 
-class TestIsRegex {
+public class TestIsRegex {
     void test1(String str1) throws Exception {
         if (!RegexUtil.isRegex(str1)) {
             throw new Exception();
