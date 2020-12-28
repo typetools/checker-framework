@@ -17,8 +17,6 @@ import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -822,15 +820,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Node n, TransferInput<CFValue, CFStore> in, UBQualifier qualifier) {
         AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(qualifier);
         CFValue value = analysis.createSingleAnnotationValue(newAnno, n.getType());
-        if (in.containsTwoStores()) {
-            CFStore thenStore = in.getThenStore();
-            CFStore elseStore = in.getElseStore();
-            return new ConditionalTransferResult<>(
-                    finishValue(value, thenStore, elseStore), thenStore, elseStore);
-        } else {
-            CFStore info = in.getRegularStore();
-            return new RegularTransferResult<>(finishValue(value, info), info);
-        }
+        return createTransferResult(value, in);
     }
 
     @Override
