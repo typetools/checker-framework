@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -116,13 +117,12 @@ public interface WholeProgramInference {
      *       the previous type and the type of the corresponding argument in the method call.
      * </ul>
      *
-     * @param lhs the node representing the local variable, such as a formal parameter
+     * @param lhs the node representing the formal parameter
      * @param rhs the node being assigned to the parameter in the method body
-     * @param classTree the tree of the class that contains the parameter
-     * @param methodTree the tree of the method that contains the parameter
+     * @param paramElt the formal parameter
      */
-    void updateFromLocalAssignment(
-            LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree);
+    void updateFromFormalParameterAssignment(
+            LocalVariableNode lhs, Node rhs, VariableElement paramElt);
 
     /**
      * Updates the type of {@code field} based on an assignment of {@code rhs} to {@code field}. If
@@ -186,26 +186,6 @@ public interface WholeProgramInference {
             Analysis.BeforeOrAfter preOrPost,
             ExecutableElement methodElement,
             CFAbstractStore<?, ?> store);
-
-    /**
-     * Changes the type of {@code rhsATM} when being assigned to a field, for use by whole-program
-     * inference. The default implementation does nothing.
-     *
-     * @param lhsTree the tree for the field whose type will be changed
-     * @param element the element for the field whose type will be changed
-     * @param fieldName the name of the field whose type will be changed
-     * @param rhsATM the type of the expression being assigned to the field
-     */
-    void adjustForUpdateField(
-            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
-
-    /**
-     * Changes the type of {@code rhsATM} when being assigned to anything other than a field, for
-     * use by whole-program inference. The default implementation does nothing.
-     *
-     * @param rhsATM the type of the rhs of the pseudo-assignment
-     */
-    void adjustForUpdateNonField(AnnotatedTypeMirror rhsATM);
 
     /**
      * Updates a method to add a declaration annotation.

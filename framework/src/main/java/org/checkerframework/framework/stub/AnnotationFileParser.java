@@ -98,8 +98,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
 // From an implementation perspective, this class represents a single annotation file (a stub file),
-// notably its annotated types and its declaration annotations.  From a client perspective, it has
-// static methods as described below in the Javadoc.
+// notably its annotated types and its declaration annotations.
+// From a client perspective, it has static methods as described below in the Javadoc.
 /**
  * This class has two static methods. Each method parses an annotation file and adds annotations to
  * the {@link AnnotationFileAnnotations} passed as an argument.
@@ -483,13 +483,14 @@ public class AnnotationFileParser {
      * @param processingEnv ProcessingEnvironment to use
      * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
-    public static void parse(
+    public static void parseStubFile(
             String filename,
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
             AnnotationFileAnnotations annotationFileAnnos) {
-        parse(filename, inputStream, atypeFactory, processingEnv, annotationFileAnnos, false);
+        parseStubFile(
+                filename, inputStream, atypeFactory, processingEnv, annotationFileAnnos, false);
     }
 
     /**
@@ -508,7 +509,7 @@ public class AnnotationFileParser {
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
             AnnotationFileAnnotations stubAnnos) {
-        parse(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
+        parseStubFile(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
     }
 
     /**
@@ -521,7 +522,7 @@ public class AnnotationFileParser {
      * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
      */
-    private static void parse(
+    private static void parseStubFile(
             String filename,
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
@@ -911,10 +912,12 @@ public class AnnotationFileParser {
      *
      * @param decl a method or constructor declaration, as read from an annotation file
      * @param elt the method or constructor's element
+     * @return type variables for the method
      */
-    private void processCallableDeclaration(CallableDeclaration<?> decl, ExecutableElement elt) {
+    private List<AnnotatedTypeVariable> processCallableDeclaration(
+            CallableDeclaration<?> decl, ExecutableElement elt) {
         if (!isAnnotatedForThisChecker(decl.getAnnotations())) {
-            return;
+            return null;
         }
         // Declaration annotations
         recordDeclAnnotation(elt, decl.getAnnotations(), decl);
@@ -993,6 +996,8 @@ public class AnnotationFileParser {
         // Store the type.
         putMerge(annotationFileAnnos.atypes, elt, methodType);
         typeParameters.removeAll(methodType.getTypeVariables());
+
+        return methodType.getTypeVariables();
     }
 
     /**
