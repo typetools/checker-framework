@@ -193,7 +193,7 @@ do
     # delete it right away.
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
         echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-        # rm -rf "${REPO_NAME_HASH}"
+        rm -rf "${REPO_NAME_HASH}"
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
     fi
