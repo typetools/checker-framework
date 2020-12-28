@@ -283,9 +283,20 @@ public class AnnotationFileElementTypes {
         }
         parseEnclosingClass(e);
         AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
-        System.out.printf(
-                "getAnnotatedTypeMirror(%s, enclosing=%s) => %s%n",
-                e, e.getEnclosingElement(), type);
+        boolean logging = e.toString().contains("describeImages");
+        if (logging) {
+            Element enclosing = e.getEnclosingElement();
+            System.out.printf(
+                    "AFET.getAnnotatedTypeMirror(%s, enclosing=%s) => %s%n", e, enclosing, type);
+            System.out.printf("  enclosing's enclosed:%n");
+            for (Element enclosed : enclosing.getEnclosedElements()) {
+                if (enclosed.toString().contains("describeImages")) {
+                    System.out.printf(
+                            "    %s [%s] [enclosing=%s]%n",
+                            enclosed, enclosed.getClass(), enclosed.getEnclosingElement());
+                }
+            }
+        }
         return type == null ? null : type.deepCopy();
     }
 
