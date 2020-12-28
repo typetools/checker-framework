@@ -380,7 +380,7 @@ import org.plumelib.util.UtilPlume;
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
 
-    // Whenever processing a source file, parse it with JavaParser and check that a the AST can be
+    // Whenever processing a source file, parse it with JavaParser and check that the AST can be
     // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
     "checkJavaParserVisitor",
 })

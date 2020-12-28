@@ -4787,7 +4787,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Side-effects the method or constructor annotations to make any desired changes before writing
-     * to a astub or jaif file.
+     * to an annotation file.
      *
      * @param methodAnnos the method or constructor annotations to modify
      */

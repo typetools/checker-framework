@@ -103,8 +103,8 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
-// ajava file), notably its annotated types and its declaration annotations.  From a client
-// perspective, it has static methods as described below in the Javadoc.
+// ajava file), notably its annotated types and its declaration annotations.
+// From a client perspective, it has static methods as described below in the Javadoc.
 /**
  * This class has two static methods. Each method parses an annotation file and adds annotations to
  * the {@link AnnotationFileAnnotations} passed as an argument.

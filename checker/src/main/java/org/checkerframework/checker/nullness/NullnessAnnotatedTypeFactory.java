@@ -800,7 +800,7 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public List<AnnotationMirror> getPostconditionAnnotation(
-            VariableElement elt, AnnotatedTypeMirror fieldType, List<AnnotationMirror> preconds) {
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
         // TODO: This does not handle the possibility that the user set a different default
         // annotation.
@@ -816,7 +816,8 @@ public class NullnessAnnotatedTypeFactory
             return Collections.emptyList();
         }
         if (AnnotationUtils.containsSameByName(
-                fieldType.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
+                fieldAnnos.getAnnotations(),
+                "org.checkerframework.checker.nullness.qual.NonNull")) {
             return ensuresNonNullAnno(elt);
         }
         return Collections.emptyList();

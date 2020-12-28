@@ -427,6 +427,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
+
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
             ATypeElement paramType = getParameterType(methodAnnos, i, paramATM, ve, atypeFactory);
