@@ -41,7 +41,7 @@ public class AnnotationConverter {
      * @param am the AnnotationMirror
      * @return the Annotation
      */
-    protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
+    public static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
         @SuppressWarnings("signature:argument.type.incompatible") // TODO: bug for inner classes
         AnnotationDef def =
                 new AnnotationDef(

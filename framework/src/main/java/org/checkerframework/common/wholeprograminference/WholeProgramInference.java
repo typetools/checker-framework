@@ -8,12 +8,15 @@ import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -49,9 +52,12 @@ public interface WholeProgramInference {
      *
      * @param objectCreationNode the Node that invokes the constructor
      * @param constructorElt the Element of the constructor
+     * @param store the store just before the call
      */
     void updateFromObjectCreation(
-            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt);
+            ObjectCreationNode objectCreationNode,
+            ExecutableElement constructorElt,
+            CFAbstractStore<?, ?> store);
 
     /**
      * Updates the parameter types of the method {@code methodElt} based on the arguments in the
@@ -70,9 +76,13 @@ public interface WholeProgramInference {
      * @param methodInvNode the node representing a method invocation
      * @param receiverTree the Tree of the class that contains the method being invoked
      * @param methodElt the element of the method being invoked
+     * @param store the store before the method call, used for inferring method preconditions
      */
     void updateFromMethodInvocation(
-            MethodInvocationNode methodInvNode, Tree receiverTree, ExecutableElement methodElt);
+            MethodInvocationNode methodInvNode,
+            Tree receiverTree,
+            ExecutableElement methodElt,
+            CFAbstractStore<?, ?> store);
 
     /**
      * Updates the parameter types (including the receiver) of the method {@code methodTree} based
@@ -107,13 +117,12 @@ public interface WholeProgramInference {
      *       the previous type and the type of the corresponding argument in the method call.
      * </ul>
      *
-     * @param lhs the node representing the local variable, such as a formal parameter
+     * @param lhs the node representing the formal parameter
      * @param rhs the node being assigned to the parameter in the method body
-     * @param classTree the tree of the class that contains the parameter
-     * @param methodTree the tree of the method that contains the parameter
+     * @param paramElt the formal parameter
      */
-    void updateFromLocalAssignment(
-            LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree);
+    void updateFromFormalParameterAssignment(
+            LocalVariableNode lhs, Node rhs, VariableElement paramElt);
 
     /**
      * Updates the type of {@code field} based on an assignment of {@code rhs} to {@code field}. If
@@ -166,6 +175,19 @@ public interface WholeProgramInference {
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods);
 
     /**
+     * Updates the preconditions or postconditions of the current method, from a store.
+     *
+     * @param methodElement the method or constructor whose preconditions or postconditions to
+     *     update
+     * @param preOrPost whether to update preconditions or postconditions
+     * @param store the store at the method's entry or normal exit, for reading types of expressions
+     */
+    void updateContracts(
+            Analysis.BeforeOrAfter preOrPost,
+            ExecutableElement methodElement,
+            CFAbstractStore<?, ?> store);
+
+    /**
      * Updates a method to add a declaration annotation.
      *
      * @param methodElt the method to annotate
@@ -195,6 +217,6 @@ public interface WholeProgramInference {
          * Output the results of whole-program inference as a Java annotation index file. The
          * Annotation File Utilities project contains code for reading and writing .jaif files.
          */
-        JAIF()
+        JAIF(),
     }
 }

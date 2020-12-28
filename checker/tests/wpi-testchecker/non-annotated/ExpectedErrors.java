@@ -18,7 +18,7 @@ public class ExpectedErrors {
 
     // The type of both privateDeclaredField and publicDeclaredField are
     // not refined to @WholeProgramInferenceBottom.
-    void assignFieldsToBottom() {
+    void assignFieldsToSibling1() {
         privateDeclaredField = getSibling1();
         publicDeclaredField = getSibling1();
     }
@@ -59,7 +59,7 @@ public class ExpectedErrors {
     private static int lubPrivateField;
     public static int lubPublicField;
 
-    void assignFieldsToSibling1() {
+    void assignLubFieldsToSibling1() {
         lubPrivateField = getSibling1();
         lubPublicField = getSibling1();
     }
@@ -204,6 +204,7 @@ public class ExpectedErrors {
         // The types of both fields are not refined to @WholeProgramInferenceBottom,
         // as whole-program inference never performs refinement in the presence
         // of the null literal.
+        @SuppressWarnings("value")
         void assignFieldsToBottom() {
             privateField = null;
             publicField = null;

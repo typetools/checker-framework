@@ -855,10 +855,8 @@ then you can enable Checker Framework checkers by following the
 instructions below.
 
 See the directory \code{docs/examples/MavenExample/} for examples of the use of
-Maven build files that run a checker with JDK 8.
-See the directory \code{docs/examples/MavenExampleJDK11/} for examples of the use of
-Maven build files that run a checker with JDK 11.
-These examples can be used to verify that
+Maven build files.
+This example can be used to verify that
 Maven is correctly downloading the Checker Framework from the
 \href{https://search.maven.org/search?q=org.checkerframework}{Maven
   Central Repository} and executing it.
@@ -893,7 +891,6 @@ checker as an annotation processor directly.
       <artifactId>checker-qual</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
-    <!-- If using JDK 8, add the following additional dependency. -->
     <dependency>
       <groupId>com.google.errorprone</groupId>
       <artifactId>javac</artifactId>
@@ -901,6 +898,9 @@ checker as an annotation processor directly.
     </dependency>
   </dependencies>
 \end{alltt}
+
+Java 11 and later do not need the \<com.google.errorprone.javac>
+dependency.  If you will never use Java 8, you can omit it.
 
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:

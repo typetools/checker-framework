@@ -78,6 +78,7 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -752,6 +753,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             checkContractsAtMethodDeclaration(
                     node, methodElement, formalParamNames, abstractMethod);
+
+            // Infer postconditions
+            if (atypeFactory.getWholeProgramInference() != null) {
+                assert ElementUtils.isElementFromSourceCode(methodElement);
+
+                // TODO: Infer conditional postconditions too.
+                CFAbstractStore<?, ?> store = atypeFactory.getRegularExitStore(node);
+                // The store is null if the method has no normal exit, for example if its body is a
+                // throw statement.
+                if (store != null) {
+                    atypeFactory
+                            .getWholeProgramInference()
+                            .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
+                }
+            }
 
             return super.visitMethod(node, p);
         } finally {
@@ -1456,38 +1472,53 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         ExecutableElement method = invokedMethod.getElement();
         CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
-        checkTypeArguments(
-                node,
-                paramBounds,
-                typeargs,
-                node.getTypeArguments(),
-                methodName,
-                invokedMethod.getTypeVariables());
+        try {
+            checkTypeArguments(
+                    node,
+                    paramBounds,
+                    typeargs,
+                    node.getTypeArguments(),
+                    methodName,
+                    invokedMethod.getTypeVariables());
+            List<AnnotatedTypeMirror> params =
+                    AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
+            checkArguments(params, node.getArguments(), methodName, method.getParameters());
+            checkVarargs(invokedMethod, node);
 
-        List<AnnotatedTypeMirror> params =
-                AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
-        checkArguments(params, node.getArguments(), methodName, method.getParameters());
-        checkVarargs(invokedMethod, node);
+            if (ElementUtils.isMethod(
+                    invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
+                typeCheckVectorCopyIntoArgument(node, params);
+            }
 
-        if (ElementUtils.isMethod(
-                invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
-            typeCheckVectorCopyIntoArgument(node, params);
-        }
+            ExecutableElement invokedMethodElement = invokedMethod.getElement();
+            if (!ElementUtils.isStatic(invokedMethodElement)
+                    && !TreeUtils.isSuperConstructorCall(node)) {
+                checkMethodInvocability(invokedMethod, node);
+            }
 
-        ExecutableElement invokedMethodElement = invokedMethod.getElement();
-        if (!ElementUtils.isStatic(invokedMethodElement)
-                && !TreeUtils.isSuperConstructorCall(node)) {
-            checkMethodInvocability(invokedMethod, node);
-        }
+            // check precondition annotations
+            checkPreconditions(
+                    node,
+                    atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
 
-        // check precondition annotations
-        checkPreconditions(
-                node, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
-
-        if (TreeUtils.isSuperConstructorCall(node)) {
-            checkSuperConstructorCall(node);
-        } else if (TreeUtils.isThisConstructorCall(node)) {
-            checkThisConstructorCall(node);
+            if (TreeUtils.isSuperConstructorCall(node)) {
+                checkSuperConstructorCall(node);
+            } else if (TreeUtils.isThisConstructorCall(node)) {
+                checkThisConstructorCall(node);
+            }
+        } catch (RuntimeException t) {
+            // Sometimes the type arguments are inferred incorrect which causes crashes. Once #979
+            // is fixed this should be removed and crashes should be reported normally.
+            if (node.getTypeArguments().size() == typeargs.size()) {
+                // They type arguments were explicitly written.
+                throw t;
+            }
+            if (!atypeFactory.ignoreUninferredTypeArguments) {
+                checker.reportError(
+                        node,
+                        "type.arguments.not.inferred",
+                        invokedMethod.getElement().getSimpleName());
+            } // else ignore the crash.
         }
 
         // Do not call super, as that would observe the arguments without

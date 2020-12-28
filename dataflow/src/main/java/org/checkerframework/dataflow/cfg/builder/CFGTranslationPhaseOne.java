@@ -297,20 +297,27 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /** The ArithmeticException type. */
     final TypeMirror arithmeticExceptionType;
-    /** The AssertionError type. */
-    final TypeMirror assertionErrorType;
 
     /** The ArrayIndexOutOfBoundsException type. */
     final TypeMirror arrayIndexOutOfBoundsExceptionType;
 
+    /** The AssertionError type. */
+    final TypeMirror assertionErrorType;
+
     /** The ClassCastException type . */
     final TypeMirror classCastExceptionType;
 
-    /** The (erased) Iterable type . */
+    /** The Iterable type (erased). */
     final TypeMirror iterableType;
+
+    /** The NegativeArraySizeException type. */
+    final TypeMirror negativeArraySizeExceptionType;
 
     /** The NullPointerException type . */
     final TypeMirror nullPointerExceptionType;
+
+    /** The OutOfMemoryError type. */
+    final TypeMirror outOfMemoryErrorType;
 
     /** The String type. */
     final TypeMirror stringType;
@@ -366,7 +373,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         assertionErrorType = getTypeMirror(AssertionError.class);
         classCastExceptionType = getTypeMirror(ClassCastException.class);
         iterableType = types.erasure(getTypeMirror(Iterable.class));
+        negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
         nullPointerExceptionType = getTypeMirror(NullPointerException.class);
+        outOfMemoryErrorType = getTypeMirror(OutOfMemoryError.class);
         stringType = getTypeMirror(String.class);
         throwableType = getTypeMirror(Throwable.class);
     }
@@ -2845,7 +2854,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         }
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
-        extendWithNode(node);
+
+        Set<TypeMirror> thrownSet = new HashSet<>();
+        // List of exceptions comes from JLS 15.10.1 "Run-Time Evaluation of Array Creation
+        // Expressions".
+        thrownSet.add(negativeArraySizeExceptionType);
+        thrownSet.add(outOfMemoryErrorType);
+
+        extendWithNodeWithExceptions(node, thrownSet);
         return node;
     }
 

@@ -585,7 +585,7 @@ public class ElementUtils {
      * Return the set of kinds that represent classes.
      *
      * @return the set of kinds that represent classes
-     * @deprecated use {@link typeElementKinds}
+     * @deprecated use {@link #typeElementKinds}
      */
     @Deprecated // use typeElementKinds
     public static Set<ElementKind> classElementKinds() {
@@ -731,5 +731,17 @@ public class ElementUtils {
             ExecutableElement m, Types types) {
         JavacTypes t = (JavacTypes) types;
         return t.getOverriddenMethods(m);
+    }
+
+    /**
+     * Returns true if the two elements are in the same class. The two elements should be class
+     * members, such as methods or fields.
+     *
+     * @param e1 an element
+     * @param e2 an element
+     * @return true if the two elements are in the same class
+     */
+    public static boolean inSameClass(Element e1, Element e2) {
+        return e1.getEnclosingElement().equals(e2.getEnclosingElement());
     }
 }
