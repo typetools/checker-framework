@@ -116,7 +116,6 @@ public class AnnotationFileElementTypes {
      */
     public void parseStubFiles() {
         parsing = true;
-        // TODO: Error if this is called more than once?
         SourceChecker checker = factory.getContext().getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         // 1. jdk.astub
@@ -124,7 +123,7 @@ public class AnnotationFileElementTypes {
         if (!checker.hasOption("ignorejdkastub")) {
             InputStream jdkStubIn = checker.getClass().getResourceAsStream("jdk.astub");
             if (jdkStubIn != null) {
-                AnnotationFileParser.parse(
+                AnnotationFileParser.parseStubFile(
                         checker.getClass().getResource("jdk.astub").toString(),
                         jdkStubIn,
                         factory,
@@ -134,7 +133,7 @@ public class AnnotationFileElementTypes {
             String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
             InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
             if (jdkVersionStubIn != null) {
-                AnnotationFileParser.parse(
+                AnnotationFileParser.parseStubFile(
                         checker.getClass().getResource(jdkVersionStub).toString(),
                         jdkVersionStubIn,
                         factory,
@@ -177,8 +176,21 @@ public class AnnotationFileElementTypes {
             Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
         }
 
-        // Parse stub files.
-        for (String path : allAnnotationFiles) {
+        parseAnnotationFiles(allAnnotationFiles);
+        parsing = false;
+    }
+
+    /**
+     * Parses the files in {@code annotationFiles} of the given file type. This includes files
+     * listed directly in {@code annotationFiles} and for each listed directory, also includes all
+     * files located in that directory (recursively).
+     *
+     * @param annotationFiles list of files and directories to parse
+     */
+    private void parseAnnotationFiles(List<String> annotationFiles) {
+        SourceChecker checker = factory.getContext().getChecker();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        for (String path : annotationFiles) {
             // Special case when running in jtreg.
             String base = System.getProperty("test.src");
             String fullPath = (base == null) ? path : base + "/" + path;
@@ -194,7 +206,7 @@ public class AnnotationFileElementTypes {
                                 "Could not read annotation resource: " + resource.getDescription());
                         continue;
                     }
-                    AnnotationFileParser.parse(
+                    AnnotationFileParser.parseStubFile(
                             resource.getDescription(),
                             annotationFileStream,
                             factory,
@@ -210,7 +222,7 @@ public class AnnotationFileElementTypes {
                 }
                 InputStream in = checker.getClass().getResourceAsStream(path);
                 if (in != null) {
-                    AnnotationFileParser.parse(
+                    AnnotationFileParser.parseStubFile(
                             path, in, factory, processingEnv, annotationFileAnnos);
                 } else {
                     // Didn't find the file.  Issue a warning.
@@ -257,7 +269,6 @@ public class AnnotationFileElementTypes {
                 }
             }
         }
-        parsing = false;
     }
 
     /**

@@ -801,7 +801,7 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public List<AnnotationMirror> getPostconditionAnnotation(
-            VariableElement elt, AField f, List<AnnotationMirror> preconds) {
+            VariableElement elt, AField fieldAnnos, List<AnnotationMirror> preconds) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
         // TODO: This does not handle the possibility that the user set a different default
         // annotation.
@@ -816,7 +816,7 @@ public class NullnessAnnotatedTypeFactory
             // @MonotonicNonNull.
             return Collections.emptyList();
         }
-        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
+        for (scenelib.annotations.Annotation a : fieldAnnos.type.tlAnnotationsHere) {
             if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
                 return ensuresNonNullAnno(elt);
             }
