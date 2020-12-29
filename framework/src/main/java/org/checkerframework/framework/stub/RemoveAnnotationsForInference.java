@@ -73,6 +73,7 @@ public class RemoveAnnotationsForInference {
         }
     }
 
+    /** Maps from simple names to fully-qualified names of annotations. */
     static Multimap<String, String> simpleToFullyQualified = ArrayListMultimap.create();
 
     static {
@@ -191,10 +192,16 @@ public class RemoveAnnotationsForInference {
     /** Visitor to process one compilation unit; see class documentation for details. */
     private static class MinimizerVisitor extends ModifierVisitor<Void> {
 
+        /** Records what @SuppressWarnings enclose the current parse position. */
         SuppressionStack suppressionStack = new SuppressionStack();
 
-        // Returns null if the argument should be removed from source code.
-        // Returns the argument if it should be retained in source code.
+        /**
+         * Returns null if the argument should be removed from source code. Returns the argument if
+         * it should be retained in source code.
+         *
+         * @param v an AST node
+         * @return the argument to retain it, or null to remove it
+         */
         Visitable processAnnotation(Visitable v) {
             if (v == null) {
                 return null;
@@ -231,6 +238,12 @@ public class RemoveAnnotationsForInference {
             return n;
         }
 
+        /**
+         * Returns true if warnings about the given annotation are suppressed.
+         *
+         * @param n an annotation
+         * @return true if warnings about the given annotation are suppressed
+         */
         boolean isSuppressed(AnnotationExpr n) {
             String name = n.getName().toString();
 
