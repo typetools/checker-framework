@@ -1,7 +1,6 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -98,8 +97,9 @@ public class RemoveAnnotationsForInference {
         CollectionStrategy strategy = new ParserCollectionStrategy();
         // Required to include directories that contain a module-info.java, which don't parse by
         // default.
-        strategy.getParserConfiguration()
-                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+        // TODO: reinstate?
+        // strategy.getParserConfiguration()
+        //         .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
         ProjectRoot projectRoot = strategy.collect(root);
 
         projectRoot
