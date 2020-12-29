@@ -21,7 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -519,6 +520,49 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected List<@FullyQualifiedName String> upstreamCheckerNames;
 
     /**
+     * Tries to unwrap ProcessingEnvironment from proxy in IntelliJ >=2020.3.
+     *
+     * @param envProxy is dynamic proxy wrapping processing environment
+     * @return unwrapped processing environment, null if not successful
+     */
+    private static @Nullable ProcessingEnvironment unwrapIntelliJ(Object envProxy) {
+        InvocationHandler handler = Proxy.getInvocationHandler(envProxy);
+        try {
+            Field field = handler.getClass().getDeclaredField("val$delegateTo");
+            field.setAccessible(true);
+            Object o = field.get(handler);
+            if (o instanceof ProcessingEnvironment) {
+                return (ProcessingEnvironment) o;
+            }
+            return null;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gradle incremental processing unwrapping inspired by project Lombok.
+     *
+     * @param delegateClass is class in which we try to find delegate field
+     * @param env is processing environment wrapper
+     * @return unwrapped processing environment, null if not successful
+     */
+    private static @Nullable ProcessingEnvironment unwrapGradle(
+            Class<?> delegateClass, Object env) {
+        try {
+            Field field = delegateClass.getDeclaredField("delegate");
+            field.setAccessible(true);
+            Object o = field.get(env);
+            if (o instanceof ProcessingEnvironment) {
+                return (ProcessingEnvironment) o;
+            }
+            return null;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    /**
      * IntelliJ wraps processing environment in dynamic proxy to check for modifications done by
      * annotation processors. But lots of functionality both here and in AbstractTypeProcessor call
      * methods from javac that require processing environment to be
@@ -530,25 +574,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     all other cases
      */
     private static ProcessingEnvironment unwrapProcessingEnvironment(ProcessingEnvironment env) {
-        if (!Proxy.isProxyClass(env.getClass())) {
-            // if we do not have proxy, we use what we got
+        if (env.getClass()
+                .getName()
+                .equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) {
             return env;
         }
-        // try to unwrap processing environment; there is no generic way, this only works if
-        // it was wrapped by IntelliJ
-        try {
-            final Class<?> apiWrappers =
-                    env.getClass()
-                            .getClassLoader()
-                            .loadClass("org.jetbrains.jps.javac.APIWrappers");
-            final Method unwrapMethod =
-                    apiWrappers.getDeclaredMethod("unwrap", Class.class, Object.class);
-            return (ProcessingEnvironment)
-                    unwrapMethod.invoke(null, ProcessingEnvironment.class, env);
-        } catch (Throwable ignored) {
-            // probably not wrapped by JetBrains... we will continue using original environment
-            return env;
+        // IntelliJ >2020.3 wraps processing environment in dynamic proxy...
+        if (Proxy.isProxyClass(env.getClass())) {
+            @Nullable ProcessingEnvironment unwrapped = unwrapIntelliJ(env);
+            if (unwrapped != null) {
+                return unwrapProcessingEnvironment(unwrapped);
+            }
         }
+        // Gradle incremental build also wraps processing environment...
+        for (@Nullable Class<?> envClass = env.getClass();
+                envClass != null;
+                envClass = envClass.getSuperclass()) {
+            @Nullable ProcessingEnvironment unwrapped = unwrapGradle(envClass, env);
+            if (unwrapped != null) {
+                return unwrapProcessingEnvironment(unwrapped);
+            }
+        }
+        throw new IllegalArgumentException(
+                "CheckerFramework only supports Javac processing environment");
     }
 
     @Override
