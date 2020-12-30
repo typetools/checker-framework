@@ -575,9 +575,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private static ProcessingEnvironment unwrapProcessingEnvironment(ProcessingEnvironment env) {
         // equality, not instanceof corresponds to test in Trees and JavacTask
-        // comparison instead of equals is required by some tests in CheckerFramework CI
-        if (env.getClass().getName()
-                == "com.sun.tools.javac.processing.JavacProcessingEnvironment") {
+        if (env.getClass()
+                .getName()
+                .equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) {
             return env;
         }
         // IntelliJ >2020.3 wraps processing environment in dynamic proxy...
