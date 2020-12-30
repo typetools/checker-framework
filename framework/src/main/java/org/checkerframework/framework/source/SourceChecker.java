@@ -563,14 +563,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * IntelliJ wraps processing environment in dynamic proxy to check for modifications done by
-     * annotation processors. But lots of functionality both here and in AbstractTypeProcessor call
-     * methods from javac that require processing environment to be
-     * com.sun.tools.javac.processing.JavacProcessingEnvironment and fail on proxy - thus in case
-     * proxy is used, we have to unwrap it.
+     * Gradle and IntelliJ wrap the processing environment. (IntelliJ does this to check for
+     * modifications done by annotation processors). But the Checker Framework calls methods from
+     * javac that require the processing environment to be {@code
+     * com.sun.tools.javac.processing.JavacProcessingEnvironment}. They fail if given a proxy. This
+     * method unwraps a proxy if one is used.
      *
      * @param env a processing environment supplied to checker
-     * @return unwrapped environment if it is a dynamic proxy created by IntelliJ; original value
+     * @return unwrapped environment if the argument is a proxy created by IntelliJ; original value
      *     (the argument) in all other cases
      */
     private static ProcessingEnvironment unwrapProcessingEnvironment(ProcessingEnvironment env) {
