@@ -596,8 +596,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 return unwrapProcessingEnvironment(unwrapped);
             }
         }
-        throw new IllegalArgumentException(
-                "CheckerFramework only supports Javac processing environment");
+        throw new BugInCF("Unexpected processing environment: %s %s", env, env.getClass());
     }
 
     @Override
