@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -337,6 +338,16 @@ public class ElementUtils {
             }
         }
         return isElementFromByteCode(elt.getEnclosingElement());
+    }
+
+    /**
+     * Returns the path to the source file containing {@code element}.
+     *
+     * @param element the type element to look at
+     * @return path to the source file containing {@code element}
+     */
+    public static String getSourceFilePath(TypeElement element) {
+        return ((ClassSymbol) element).sourcefile.toUri().getPath();
     }
 
     /** Returns the field of the class or {@code null} if not found. */

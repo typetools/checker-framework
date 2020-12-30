@@ -24,9 +24,11 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
@@ -1601,6 +1603,31 @@ public final class TreeUtils {
             result = "\"" + result.substring(0, length - 5) + "...\"";
         }
         return result;
+    }
+
+    /**
+     * Given a javac ExpressionTree representing a fully qualified name such as "java.lang.Object",
+     * creates a String containing the name.
+     *
+     * @param nameExpr an ExpressionTree representing a fully qualified name
+     * @return a String representation of the fully qualified name
+     */
+    public static String nameExpressionToString(ExpressionTree nameExpr) {
+        TreeVisitor<String, Void> visitor =
+                new SimpleTreeVisitor<String, Void>() {
+                    @Override
+                    public String visitIdentifier(IdentifierTree node, Void p) {
+                        return node.toString();
+                    }
+
+                    @Override
+                    public String visitMemberSelect(MemberSelectTree node, Void p) {
+                        return node.getExpression().accept(this, null)
+                                + "."
+                                + node.getIdentifier().toString();
+                    }
+                };
+        return nameExpr.accept(visitor, null);
     }
 
     /**

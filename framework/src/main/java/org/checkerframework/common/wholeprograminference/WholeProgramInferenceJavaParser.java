@@ -59,13 +59,11 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.ThisReference;
-import org.checkerframework.framework.ajava.AjavaUtils;
 import org.checkerframework.framework.ajava.AnnotationConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
-import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
+import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
-import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
@@ -109,10 +107,9 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public static final String AJAVA_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
-    // TODO JWAATAJA: What is a "source file added for inference"?
     /**
-     * Maps from binary class name to the wrapper containing the class. Contains all classes in
-     * source files added for inference.
+     * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
+     * source files containing an Element for which an annotation has been inferred.
      */
     private Map<@BinaryName String, ClassOrInterfaceAnnos> classToAnnos;
 
@@ -283,10 +280,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         String file = getFileForElement(methodElt);
         CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt, file);
 
-        // TODO JWAATAJA: Under what circumstances is `methodAnnos` null?
-        // TODO JWAATAJA: Why is "valueOf" treated specially?
-        // TODO JWAATAJA: This treats all methods named "valueOf" the same, regardless of their
-        // signature.
+        // This can be null for synthetic methods, such as generated zero-argument constructors or
+        // valueOf(String) methods for enum types.
         if (methodAnnos == null) {
             return;
         }
@@ -907,7 +902,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         TypeElement toplevelClass = toplevelEnclosingClass(element);
-        String path = AjavaUtils.getSourceFilePath(toplevelClass);
+        String path = ElementUtils.getSourceFilePath(toplevelClass);
         addSourceFile(path);
         CompilationUnitAnnos sourceAnnos = sourceToAnnos.get(path);
         TypeDeclaration<?> javaParserNode =
@@ -930,7 +925,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         try {
             CompilationUnit root = StaticJavaParser.parse(new File(path));
-            new StringLiteralConcatenateVisitor().visit(root, null);
+            JavaParserUtils.concatenateAddedStringLiterals(root);
             CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
             sourceToAnnos.put(path, sourceAnnos);
         } catch (FileNotFoundException e) {
@@ -1056,7 +1051,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         TypeElement toplevelClass = toplevelEnclosingClass(element);
-        String path = AjavaUtils.getSourceFilePath(toplevelClass);
+        String path = ElementUtils.getSourceFilePath(toplevelClass);
         if (classToAnnos.containsKey(getClassName(toplevelClass))) {
             return path;
         }
@@ -1195,13 +1190,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         TypeElement result = ElementUtils.enclosingClass(element);
-        // TODO JWAATAJA: This loop calls enclosingClass twice.  Please make it just one
-        // invocation.  You could use a local variable.
-        while (ElementUtils.enclosingClass(result) != null
-                // TODO JWAATAJA: Why is the test against equality necessary?  The contract of
-                // ElementUtils.enclosingClass() does not permit it to return its argument.
-                && !ElementUtils.enclosingClass(result).equals(result)) {
+        TypeElement enclosing = ElementUtils.enclosingClass(result);
+        // ElementUtils.enclosingClass returns its argument if it's already a class, so an Element
+        // being the same as its enclosing class is a sufficient stopping condition.
+        while (enclosing != null && !enclosing.equals(result)) {
             result = ElementUtils.enclosingClass(result);
+            enclosing = ElementUtils.enclosingClass(result);
         }
 
         return result;
@@ -1364,8 +1358,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * unit to their corresponding JavaParser locations.
          */
         public void transferAnnotations() {
-            ClearAnnotationsVisitor annotationClearer = new ClearAnnotationsVisitor();
-            declaration.accept(annotationClearer, null);
+            JavaParserUtils.clearAnnotations(declaration);
             for (ClassOrInterfaceAnnos typeAnnos : types) {
                 typeAnnos.transferAnnotations();
             }
@@ -1378,7 +1371,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * @return the type declaration with {@code name} in the wrapped compilation unit
          */
         public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
-            return AjavaUtils.getTypeDeclarationByName(declaration, name);
+            return JavaParserUtils.getTypeDeclarationByName(declaration, name);
         }
     }
 

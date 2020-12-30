@@ -85,8 +85,8 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJa
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
+import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
-import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
@@ -729,7 +729,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 com.github.javaparser.ast.CompilationUnit javaParserRoot =
                         StaticJavaParser.parse(reader);
                 reader.close();
-                new StringLiteralConcatenateVisitor().visit(javaParserRoot, null);
+                JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
                 new JointVisitorWithDefaultAction() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {
@@ -770,17 +770,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (root != null && checker.hasOption("ajava")) {
-            // TODO: This relies on the toString implementations of MemberSelectTree and
-            // IdentifierTree. This could be turned into its own method that does this correctly.
+            // Search for an ajava file with annotations for the current source file and the current
+            // checker. It will be in the directory specified by the "ajava" option in a
+            // subdirectory corresponding to this file's package. For example, a file in package
+            // a.b would be in a subdirectory a/b. The filename is
+            // ClassName-checker.qualified.name.ajava. If such a file exists, read its detailed
+            // annotation data, including annotations on private elements.
             String qualifiedName =
-                    root.getPackageName() != null ? root.getPackageName().toString() : "";
+                    root.getPackageName() != null
+                            ? TreeUtils.nameExpressionToString(root.getPackageName())
+                            : "";
+            // The method getName returns a path, extract the basename.
             String className = root.getSourceFile().getName();
             int lastSeparator = className.lastIndexOf(File.separator);
             if (lastSeparator != -1) {
                 className = className.substring(lastSeparator + 1);
             }
 
-            qualifiedName += className;
+            qualifiedName += "." + className;
+            // Strip .java extension.
             if (qualifiedName.endsWith(".java")) {
                 qualifiedName =
                         qualifiedName.substring(0, qualifiedName.length() - ".java".length());

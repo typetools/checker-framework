@@ -84,7 +84,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
-import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
+import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -531,7 +531,7 @@ public class AnnotationFileParser {
                 new AnnotationFileParser(filename, atypeFactory, processingEnv, false, false);
         try {
             afp.parseStubUnit(inputStream);
-            afp.concatenateStringLiterals();
+            JavaParserUtils.concatenateAddedStringLiterals(afp.stubUnit);
             afp.setRoot(root);
             afp.process(ajavaAnnos);
         } catch (ParseProblemException e) {
@@ -661,6 +661,7 @@ public class AnnotationFileParser {
         if (isParsingStubFile) {
             if (cu.getTypes() != null) {
                 for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
+                    // Not processing an ajava file, so ignore the return value.
                     processTypeDecl(typeDeclaration, null, null);
                 }
             }
@@ -695,13 +696,19 @@ public class AnnotationFileParser {
     /**
      * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
      *
+     * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
+     * processing an ajava file, where traversal is handled externaly by a visitor, these type
+     * variables must be removed after processing the type's members. Otherwise, this method removes
+     * them automatically
+     *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
      *     otherwise null
      * @param classTree the tree corresponding to typeDecl if processing an ajava file, null
      *     otherwise
-     * @return a list of types variables for {@code typeDecl}. These should be removed after
-     *     processing this type declaration.
+     * @return a list of types variables for {@code typeDecl}. Only non-null if processing an ajava
+     *     file, in which case the contents should be removed from {@link #typeParameters} after
+     *     processing the type declaration's members
      */
     private List<AnnotatedTypeVariable> processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
@@ -806,9 +813,11 @@ public class AnnotationFileParser {
                     break;
                 case CLASS:
                 case INTERFACE:
+                    // Not processing an ajava file, so ignore the return value.
                     processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
                     break;
                 case ENUM:
+                    // Not processing an ajava file, so ignore the return value.
                     processTypeDecl((EnumDeclaration) decl, innerName, null);
                     break;
                 default:
@@ -1111,14 +1120,6 @@ public class AnnotationFileParser {
                 putMerge(annotationFileAnnos.atypes, paramElt, paramType);
             }
         }
-    }
-
-    /**
-     * Changes {@code "a" + "b"} into {@code "ab"} for the JavaParser unit currently stored. See
-     * {@link StringLiteralConcatenateVisitor}.
-     */
-    private void concatenateStringLiterals() {
-        new StringLiteralConcatenateVisitor().visit(stubUnit, null);
     }
 
     /**
