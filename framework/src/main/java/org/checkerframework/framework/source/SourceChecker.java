@@ -541,7 +541,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Gradle incremental processing unwrapping inspired by project Lombok.
+     * Tries to unwrap processing environment in Gradle incremental processing. Inspired by project
+     * Lombok.
      *
      * @param delegateClass a class in which to find a delegate field
      * @param env a processing environment wrapper
@@ -563,18 +564,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Gradle and IntelliJ wrap the processing environment. (IntelliJ does this to check for
-     * modifications done by annotation processors). But the Checker Framework calls methods from
-     * javac that require the processing environment to be {@code
+     * Gradle and IntelliJ wrap the processing environment to gather information about modifications
+     * done by annotation processor during incremental compilation. But the Checker Framework calls
+     * methods from javac that require the processing environment to be {@code
      * com.sun.tools.javac.processing.JavacProcessingEnvironment}. They fail if given a proxy. This
      * method unwraps a proxy if one is used.
      *
      * @param env a processing environment supplied to checker
-     * @return unwrapped environment if the argument is a proxy created by IntelliJ; original value
-     *     (the argument) in all other cases
+     * @return unwrapped environment if the argument is a proxy created by IntelliJ or Gradle;
+     *     original value (the argument) if javac processing environment is supplied
+     * @throws BugInCF if method fails to retrieve {@code
+     *     com.sun.tools.javac.processing.JavacProcessingEnvironment}
      */
     private static ProcessingEnvironment unwrapProcessingEnvironment(ProcessingEnvironment env) {
-        // equality, not instanceof corresponds to test in Trees and JavacTask
+        // Equality corresponds to test performed in Trees and JavacTask
         if (env.getClass()
                 .getName()
                 .equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) {
