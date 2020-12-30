@@ -70,6 +70,9 @@ public class JavaParserUtils {
      * directly. For example, in the expression {@code 1 + "a" + "b"} we might imagine that {@code 1
      * + "a"} is evaluated and then {@code "b"} is added. Regardless, this is transformed into
      * {@code 1 + "ab"}.
+     *
+     * <p>This is the same transformation performed by javac automatically. Javac seems to ignore
+     * string literals surrounded in parentheses, so this method does as well.
      */
     public static void concatenateAddedStringLiterals(Node node) {
         node.accept(new StringLiteralConcatenateVisitor(), null);
