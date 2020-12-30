@@ -520,9 +520,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected List<@FullyQualifiedName String> upstreamCheckerNames;
 
     /**
-     * Tries to unwrap ProcessingEnvironment from proxy in IntelliJ >=2020.3.
+     * Tries to unwrap ProcessingEnvironment from proxy in IntelliJ 2020.3 or later.
      *
-     * @param envProxy is dynamic proxy wrapping processing environment
+     * @param envProxy a dynamic proxy wrapping processing environment
      * @return unwrapped processing environment, null if not successful
      */
     private static @Nullable ProcessingEnvironment unwrapIntelliJ(Object envProxy) {
@@ -543,8 +543,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Gradle incremental processing unwrapping inspired by project Lombok.
      *
-     * @param delegateClass is class in which we try to find delegate field
-     * @param env is processing environment wrapper
+     * @param delegateClass a class in which to find a delegate field
+     * @param env a processing environment wrapper
      * @return unwrapped processing environment, null if not successful
      */
     private static @Nullable ProcessingEnvironment unwrapGradle(
@@ -569,9 +569,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * com.sun.tools.javac.processing.JavacProcessingEnvironment and fail on proxy - thus in case
      * proxy is used, we have to unwrap it.
      *
-     * @param env is processing environment supplied to checker
-     * @return unwrapped environment if it is dynamic proxy, created by IntelliJ; original value in
-     *     all other cases
+     * @param env a processing environment supplied to checker
+     * @return unwrapped environment if it is a dynamic proxy created by IntelliJ; original value
+     *     (the argument) in all other cases
      */
     private static ProcessingEnvironment unwrapProcessingEnvironment(ProcessingEnvironment env) {
         // equality, not instanceof corresponds to test in Trees and JavacTask
