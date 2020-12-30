@@ -526,6 +526,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return unwrapped processing environment, null if not successful
      */
     private static @Nullable ProcessingEnvironment unwrapIntelliJ(ProcessingEnvironment env) {
+        if (!Proxy.isProxyClass(env.getClass())) {
+            return null;
+        }
         InvocationHandler handler = Proxy.getInvocationHandler(env);
         try {
             Field field = handler.getClass().getDeclaredField("val$delegateTo");
@@ -584,19 +587,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return env;
         }
         // IntelliJ >2020.3 wraps processing environment in dynamic proxy...
-        if (Proxy.isProxyClass(env.getClass())) {
-            ProcessingEnvironment unwrapped = unwrapIntelliJ(env);
-            if (unwrapped != null) {
-                return unwrapProcessingEnvironment(unwrapped);
-            }
+        ProcessingEnvironment unwrappedIntelliJ = unwrapIntelliJ(env);
+        if (unwrappedIntelliJ != null) {
+            return unwrapProcessingEnvironment(unwrappedIntelliJ);
         }
         // Gradle incremental build also wraps processing environment...
         for (Class<?> envClass = env.getClass();
                 envClass != null;
                 envClass = envClass.getSuperclass()) {
-            ProcessingEnvironment unwrapped = unwrapGradle(envClass, env);
-            if (unwrapped != null) {
-                return unwrapProcessingEnvironment(unwrapped);
+            ProcessingEnvironment unwrappedGradle = unwrapGradle(envClass, env);
+            if (unwrappedGradle != null) {
+                return unwrapProcessingEnvironment(unwrappedGradle);
             }
         }
         throw new BugInCF("Unexpected processing environment: %s %s", env, env.getClass());
