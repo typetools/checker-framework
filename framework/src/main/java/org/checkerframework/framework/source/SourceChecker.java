@@ -585,16 +585,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         // IntelliJ >2020.3 wraps processing environment in dynamic proxy...
         if (Proxy.isProxyClass(env.getClass())) {
-            @Nullable ProcessingEnvironment unwrapped = unwrapIntelliJ(env);
+            ProcessingEnvironment unwrapped = unwrapIntelliJ(env);
             if (unwrapped != null) {
                 return unwrapProcessingEnvironment(unwrapped);
             }
         }
         // Gradle incremental build also wraps processing environment...
-        for (@Nullable Class<?> envClass = env.getClass();
+        for (Class<?> envClass = env.getClass();
                 envClass != null;
                 envClass = envClass.getSuperclass()) {
-            @Nullable ProcessingEnvironment unwrapped = unwrapGradle(envClass, env);
+            ProcessingEnvironment unwrapped = unwrapGradle(envClass, env);
             if (unwrapped != null) {
                 return unwrapProcessingEnvironment(unwrapped);
             }
