@@ -100,10 +100,25 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
+     * from its first argument.
+     */
+    @Override
+    public void prepareMethodForWriting(
+            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+        if (hasFormatMethodAnno(methodAnnos)) {
+            AnnotatedTypeMirror atm = methodAnnos.parameterTypes.get(0);
+            atm.removeAnnotation(org.checkerframework.checker.formatter.qual.Format.class);
+        }
+    }
+
+    /**
      * Returns true if the method has a {@code @FormatMethod} annotation.
      *
-     * @param method a method
-     * @return true if the method has a {@code @FormatMethod} annotation.
+     * @param methodAnnos method annotations
+     * @return true if the method has a {@code @FormatMethod} annotation
      */
     private boolean hasFormatMethodAnno(AMethod method) {
         for (Annotation anno : method.tlAnnotationsHere) {
@@ -117,15 +132,14 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns true if the method has a {@code @FormatMethod} annotation.
      *
-     * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
-     * from its first argument.
+     * @param methodAnnos method annotations
+     * @return true if the method has a {@code @FormatMethod} annotation
      */
-    @Override
-    public void prepareMethodForWriting(
+    private boolean hasFormatMethodAnno(
             WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
-        if (methodAnnos.declarationAnnotations != null
+        return methodAnnos.declarationAnnotations != null
                 && (AnnotationUtils.containsSameByClass(
                                 methodAnnos.declarationAnnotations,
                                 org.checkerframework.checker.formatter.qual.FormatMethod.class)
@@ -134,10 +148,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 "com.google.errorprone.annotations.FormatMethod"))
                 && methodAnnos.parameterTypes != null
                 && !methodAnnos.parameterTypes.isEmpty()
-                && methodAnnos.parameterTypes.get(0) != null) {
-            AnnotatedTypeMirror atm = methodAnnos.parameterTypes.get(0);
-            atm.removeAnnotation(org.checkerframework.checker.formatter.qual.Format.class);
-        }
+                && methodAnnos.parameterTypes.get(0) != null;
     }
 
     /** The tree annotator for the Format String Checker. */
