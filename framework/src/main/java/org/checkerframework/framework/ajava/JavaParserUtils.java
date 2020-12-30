@@ -73,6 +73,8 @@ public class JavaParserUtils {
      *
      * <p>This is the same transformation performed by javac automatically. Javac seems to ignore
      * string literals surrounded in parentheses, so this method does as well.
+     *
+     * @param node a JavaParser Node
      */
     public static void concatenateAddedStringLiterals(Node node) {
         node.accept(new StringLiteralConcatenateVisitor(), null);

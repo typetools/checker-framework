@@ -350,7 +350,13 @@ public class ElementUtils {
         return ((ClassSymbol) element).sourcefile.toUri().getPath();
     }
 
-    /** Returns the field of the class or {@code null} if not found. */
+    /**
+     * Returns the field of the class or {@code null} if not found.
+     *
+     * @param type TypeElement to search
+     * @param name name of a field
+     * @return The VariableElement for the field if it was found, null otherwise
+     */
     public static @Nullable VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().contentEquals(name)) {
