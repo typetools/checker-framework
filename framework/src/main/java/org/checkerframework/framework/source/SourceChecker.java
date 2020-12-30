@@ -570,7 +570,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * com.sun.tools.javac.processing.JavacProcessingEnvironment}. They fail if given a proxy. This
      * method unwraps a proxy if one is used.
      *
-     * @param env a processing environment supplied to checker
+     * @param env a processing environment
      * @return unwrapped environment if the argument is a proxy created by IntelliJ or Gradle;
      *     original value (the argument) if javac processing environment is supplied
      * @throws BugInCF if method fails to retrieve {@code
