@@ -522,11 +522,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Tries to unwrap ProcessingEnvironment from proxy in IntelliJ 2020.3 or later.
      *
-     * @param envProxy a dynamic proxy wrapping processing environment
+     * @param env a dynamic proxy wrapping processing environment
      * @return unwrapped processing environment, null if not successful
      */
-    private static @Nullable ProcessingEnvironment unwrapIntelliJ(Object envProxy) {
-        InvocationHandler handler = Proxy.getInvocationHandler(envProxy);
+    private static @Nullable ProcessingEnvironment unwrapIntelliJ(ProcessingEnvironment env) {
+        InvocationHandler handler = Proxy.getInvocationHandler(env);
         try {
             Field field = handler.getClass().getDeclaredField("val$delegateTo");
             field.setAccessible(true);
@@ -548,7 +548,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return unwrapped processing environment, null if not successful
      */
     private static @Nullable ProcessingEnvironment unwrapGradle(
-            Class<?> delegateClass, Object env) {
+            Class<?> delegateClass, ProcessingEnvironment env) {
         try {
             Field field = delegateClass.getDeclaredField("delegate");
             field.setAccessible(true);
