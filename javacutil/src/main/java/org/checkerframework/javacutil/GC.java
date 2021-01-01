@@ -18,9 +18,17 @@ public class GC {
 
     /**
      * Returns the percentage of time spent garbage collecting, in the past minute. Might return a
-     * value greater than 1 if multiple threads are spending all their time collecting.
+     * value greater than 1 if multiple threads are spending all their time collecting. * Returns 0
+     * if {@code gcPercentage} was not first called more than 1 minute ago.
      *
-     * <p>Returns 0 if {@code gcPercentage} was not first called more than 1 minute.
+     * <p>A typical use is to put the following in an outer loop that takes a significant amount of
+     * time (more than a second) to execute:
+     *
+     * <pre>{@code
+     * if (GC.gcPercentage() > .25) {
+     *   throw new Error("The JVM has too little memory; re-run with larger max heap.");
+     * }
+     * }</pre>
      *
      * @return the percentage of time spent garbage collecting, in the past minute
      */
@@ -31,10 +39,17 @@ public class GC {
     /**
      * Returns the percentage of time spent garbage collecting, in the past {@code seconds} seconds.
      * Might return a value greater than 1 if multiple threads are spending all their time
-     * collecting.
+     * collecting. Returns 0 if {@code gcPercentage} was not first called more than {@code seconds}
+     * seconds ago.
      *
-     * <p>Returns 0 if {@code gcPercentage} was not first called more than {@code seconds} seconds
-     * ago.
+     * <p>A typical use is to put the following in an outer loop that takes a significant amount of
+     * time (more than a second) to execute:
+     *
+     * <pre>{@code
+     * if (GC.gcPercentage(10) > .25) {
+     *   throw new Error("The JVM has too little memory; re-run with larger max heap.");
+     * }
+     * }</pre>
      *
      * @param seconds the size of the time window, in seconds
      * @return the percentage of time spent garbage collecting, in the past {@code seconds} seconds
