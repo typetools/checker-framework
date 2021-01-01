@@ -12,7 +12,7 @@ public class GC {
 
     /**
      * A list of pairs of (timestamp, accumulated collection time). The timestamp is an epoch
-     * second, and the collection time is in milliseconds.
+     * second, and the collection time is in milliseconds. New items are added to the front.
      */
     private static List<Pair<Long, Long>> gcHistory = new ArrayList<>();
 
