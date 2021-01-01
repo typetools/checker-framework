@@ -904,10 +904,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
             return;
         }
-        if (!warnedAboutGarbageCollection && GC.gcPercentage(1) > .25) {
+        if (!warnedAboutGarbageCollection && GC.gcPercentage() > .25) {
             // Kind.ERROR is quite severe, but a user might overlook a NOTE or WARNING.
             messager.printMessage(
-                    Kind.ERROR, "The JVM has too little memory; re-run providing more.");
+                    Kind.ERROR, "The JVM has too little memory; re-run with larger max heap.");
             warnedAboutGarbageCollection = true;
         }
 
