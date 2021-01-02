@@ -2285,11 +2285,12 @@ public abstract class GenericAnnotatedTypeFactory<
      * {@code @B} which is a sub-qualifier of {@code @A}.
      *
      * @param elt element for a field, which is declared in the same class as the method
-     * @param f AFU representation of a field's precondition annotations
+     * @param fieldAnnos the field's precondition annotations
      * @return precondition annotations for the element (possibly an empty list)
      */
-    public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
-        return getPreOrPostconditionAnnotation(elt, f, BeforeOrAfter.BEFORE, null);
+    public List<AnnotationMirror> getPreconditionAnnotation(
+            VariableElement elt, AField fieldAnnos) {
+        return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.BEFORE, null);
     }
 
     /**
@@ -2305,14 +2306,14 @@ public abstract class GenericAnnotatedTypeFactory<
      * {@code @B} which is a sub-qualifier of {@code @A}.
      *
      * @param elt element for a field
-     * @param f AFU representation of a field's postcondition annotations
+     * @param fieldAnnos the field's postcondition annotations
      * @param preconds the precondition annotations for the method; used to suppress redundant
      *     postconditions
      * @return postcondition annotations for the element (possibly an empty list)
      */
     public List<AnnotationMirror> getPostconditionAnnotation(
-            VariableElement elt, AField f, List<AnnotationMirror> preconds) {
-        return getPreOrPostconditionAnnotation(elt, f, BeforeOrAfter.AFTER, preconds);
+            VariableElement elt, AField fieldAnnos, List<AnnotationMirror> preconds) {
+        return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.AFTER, preconds);
     }
 
     /**
@@ -2327,7 +2328,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * but subclasses may do so.
      *
      * @param elt element for a field
-     * @param f AFU representation of a field's postcondition annotations
+     * @param fieldAnnos the field's precondition or postcondition annotations
      * @param preOrPost whether to return preconditions or postconditions
      * @param preconds the precondition annotations for the method; used to suppress redundant
      *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
@@ -2335,7 +2336,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
             VariableElement elt,
-            AField f,
+            AField fieldAnnos,
             Analysis.BeforeOrAfter preOrPost,
             @Nullable List<AnnotationMirror> preconds) {
         assert (preOrPost == BeforeOrAfter.BEFORE) == (preconds == null);
@@ -2350,7 +2351,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         TypeMirror typeMirror = elt.asType();
         AnnotatedTypeMirror inferredType =
-                wholeProgramInference.atmFromATypeElement(typeMirror, f.type);
+                wholeProgramInference.atmFromATypeElement(typeMirror, fieldAnnos.type);
 
         // TODO: should this only check the top-level annotations?
         if (declaredType.equals(inferredType)) {
@@ -2369,7 +2370,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     throw new BugInCF(
                             "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s  [%s %s]%n  inferredType=%s  [%s %s]%n",
                             elt,
-                            f,
+                            fieldAnnos,
                             declaredType.toString(true),
                             declaredType.getKind(),
                             declaredType.getClass(),
