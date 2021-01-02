@@ -55,20 +55,7 @@ public class JavaStubifier {
      * @param dir directory to process
      */
     private static void process(String dir) {
-        File f = new File(dir);
-        if (!f.isDirectory()) {
-            System.err.printf("Not a directory: %s (%s).%n", dir, f);
-            System.exit(1);
-        }
-        if (!f.exists()) {
-            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
-            System.exit(1);
-        }
-        String dirName = f.getAbsolutePath();
-        if (dirName.endsWith("/.")) {
-            dirName = dirName.substring(0, dirName.length() - 2);
-        }
-        Path root = Paths.get(dirName);
+        Path root = dirnameToPath(dir);
         MinimizerCallback mc = new MinimizerCallback();
         CollectionStrategy strategy = new ParserCollectionStrategy();
         // Required to include directories that contain a module-info.java, which don't parse by
@@ -87,6 +74,29 @@ public class JavaStubifier {
                                 System.err.println("IOException: " + e);
                             }
                         });
+    }
+
+    /**
+     * Converts a directory name to a path.
+     *
+     * @param dir a directory name
+     * @return a path for the directory name
+     */
+    public static Path dirnameToPath(String dir) {
+        File f = new File(dir);
+        if (!f.isDirectory()) {
+            System.err.printf("Not a directory: %s (%s).%n", dir, f);
+            System.exit(1);
+        }
+        if (!f.exists()) {
+            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
+            System.exit(1);
+        }
+        String absoluteDir = f.getAbsolutePath();
+        if (absoluteDir.endsWith("/.")) {
+            absoluteDir = absoluteDir.substring(0, absoluteDir.length() - 2);
+        }
+        return Paths.get(absoluteDir);
     }
 
     /** Callback to process each Java file; see class documentation for details. */
