@@ -1,6 +1,6 @@
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
-class Basic {
+public class Basic {
 
     void required(@CompilerMessageKey String in) {}
 

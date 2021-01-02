@@ -1,9 +1,9 @@
 package pkg2;
 
+import org.checkerframework.framework.testchecker.util.EnsuresOdd;
+import org.checkerframework.framework.testchecker.util.Odd;
+import org.checkerframework.framework.testchecker.util.RequiresOdd;
 import pkg1.Class1;
-import testlib.util.EnsuresOdd;
-import testlib.util.Odd;
-import testlib.util.RequiresOdd;
 
 public class Class2 {
     @RequiresOdd("Class1.field")

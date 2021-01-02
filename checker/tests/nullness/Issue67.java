@@ -4,7 +4,7 @@
 import java.util.HashMap;
 import java.util.Map;
 
-class Issue67 {
+public class Issue67 {
     private static final String KEY = "key";
     private static final String KEY2 = "key2";
 

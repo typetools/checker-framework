@@ -1,24 +1,15 @@
 This directory, "checker/bin", contains scripts to run the Checker Framework.
+Before using them, you must run `./gradlew assemble` in the parent directory.
 
-javac - Is a shell script that runs the Checker Framework in *nix systems
-including Mac OS X.  Its invocation is equivalent to
-"java -jar checker.jar <compiler arguments>".
-This script is a drop-in replacement for the script javac provided by the
-OpenJDK.
+javac - Is a shell script that runs the Checker Framework in Unix systems
+including Mac OS X.  This script is a drop-in replacement for the script
+javac provided by the OpenJDK.
 
 javac.bat - Is the equivalent of the javac script for Windows systems.
 
-
-The directory "checker/dist/" houses all jars built for the binary distribution.
-To build these jars, run "./gradlew assemble" from the "checker-framework" directory.
-Afterward, the directory will contain all jars needed to run the
-Checker Framework.
-
-checker-qual.jar - Contains the annotations used by the checkers built into the
-Checker Framework
-
-checker.jar - Contains all the Checker Framework classes including the framework
-itself, all built-in checkers, and the annotations found in checker-qual.jar.
-
-javac.jar - Contains the Type Annotations Compiler
-(see https://checkerframework.org/README-jsr308.html)
+The other scripts are used for whole-program inference:
+infer-and-annotate.sh
+query-github.sh
+wpi.sh
+wpi-many.sh
+wpi-summary.sh

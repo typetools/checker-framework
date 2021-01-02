@@ -2,19 +2,21 @@ package org.checkerframework.framework.type.typeannotator;
 
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /**
  * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier to add should be
@@ -74,6 +76,28 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         if (pause) {
             return null;
         }
+        if (declaredType.wasRaw()) {
+            // Copy annotations from the declaration to the wildcards.
+            AnnotatedDeclaredType declaration =
+                    (AnnotatedDeclaredType)
+                            typeFactory.fromElement(declaredType.getUnderlyingType().asElement());
+            List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+            for (int i = 0; i < typeArgs.size(); i++) {
+                if (typeArgs.get(i).getKind() != TypeKind.WILDCARD
+                        || !((AnnotatedWildcardType) typeArgs.get(i)).isUninferredTypeArgument()) {
+                    // Sometimes the framework infers a more precise type argument, so just use it.
+                    continue;
+                }
+                AnnotatedTypeVariable typeParam =
+                        (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
+                wct.getExtendsBound()
+                        .replaceAnnotations(typeParam.getUpperBound().getAnnotations());
+                wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().getAnnotations());
+                wct.replaceAnnotations(typeParam.getAnnotations());
+            }
+        }
+
         parents.addFirst(declaredType);
         super.visitDeclared(declaredType, aVoid);
         parents.removeFirst();
@@ -162,7 +186,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
                 final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
                 if (typeParamAnno == null) {
                     throw new BugInCF(
-                            SystemUtil.joinLines(
+                            StringsPlume.joinLines(
                                     "Missing annotation on type parameter",
                                     "top=" + top,
                                     "wildcardBound=" + wildcardBound,
@@ -177,9 +201,14 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
      * Search parent's type arguments for wildcard. Using the index of wildcard, find the
      * corresponding type parameter element and return it. Returns null if the wildcard is the
      * result of substitution and therefore not in the list of type arguments.
+     *
+     * @param wildcard the wildcard type whose corresponding type argument to determine
+     * @param parent the type that may have a type argument corresponding to {@code wildcard}
+     * @return the type argument in {@code parent} that corresponds to {@code wildcard}
      */
     private Element getTypeParamFromEnclosingClass(
-            final AnnotatedWildcardType wildcard, final AnnotatedDeclaredType parent) {
+            final @FindDistinct AnnotatedWildcardType wildcard,
+            final AnnotatedDeclaredType parent) {
         Integer wildcardIndex = null;
         int currentIndex = 0;
         for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {

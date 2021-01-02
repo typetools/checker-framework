@@ -3,7 +3,7 @@
 
 import java.util.concurrent.ExecutorService;
 
-class T {
+public class Issue1586 {
     void f(ExecutorService es) {
         es.execute(
                 () -> {

@@ -39,8 +39,13 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
             AnnotationMirror poly = pqentry.getKey();
             if (type.hasAnnotation(poly)) {
                 type.removeAnnotation(poly);
-                AnnotationMirror quals = pqentry.getValue();
-                type.replaceAnnotation(quals);
+                AnnotationMirror qual;
+                if (polyInstantiationForQualifierParameter.containsKey(poly)) {
+                    qual = polyInstantiationForQualifierParameter.get(poly);
+                } else {
+                    qual = pqentry.getValue();
+                }
+                type.replaceAnnotation(qual);
             }
         }
     }
@@ -54,6 +59,6 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
         } else if (a2 == null) {
             return a1;
         }
-        return qualHierarchy.leastUpperBoundTypeVariable(a1, a2);
+        return qualHierarchy.leastUpperBound(a1, a2);
     }
 }

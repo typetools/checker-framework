@@ -1,6 +1,6 @@
 // Tests termination of a loop increasing the length of a string
 
-class StringLenWidening {
+public class StringLenWidening {
 
     // Minimized example from java.util.logging.Logger.entering
     public void entering(Object params[]) {

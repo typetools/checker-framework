@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.StringsPlume;
 
 /**
  * FIsAReducer takes an FIsA constraint that is not irreducible (@see AFConstraint.isIrreducible)
@@ -76,12 +76,12 @@ public class FIsAReducer implements AFReducer {
                 AnnotatedTypeMirror argument,
                 AnnotatedTypeMirror parameter,
                 Set<AFConstraint> afConstraints) {
-            return SystemUtil.joinLines(
+            return StringsPlume.joinLines(
                     "Unexpected FIsA Combination:",
                     "argument=" + argument,
                     "parameter=" + parameter,
                     "constraints=[",
-                    SystemUtil.join(", ", afConstraints),
+                    StringsPlume.join(", ", afConstraints),
                     "]");
         }
         // ------------------------------------------------------------------------

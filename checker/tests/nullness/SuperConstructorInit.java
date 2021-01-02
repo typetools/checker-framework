@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class SuperConstructorInit {
+public class SuperConstructorInit {
 
     String a;
 

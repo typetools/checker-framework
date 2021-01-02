@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.StringsPlume;
 
 /**
  * A node for new array creation.
@@ -72,27 +73,13 @@ public class ArrayCreationNode extends Node {
         StringBuilder sb = new StringBuilder();
         sb.append("new " + type);
         if (!dimensions.isEmpty()) {
-            boolean needComma = false;
             sb.append(" (");
-            for (Node dim : dimensions) {
-                if (needComma) {
-                    sb.append(", ");
-                }
-                sb.append(dim);
-                needComma = true;
-            }
+            sb.append(StringsPlume.join(", ", dimensions));
             sb.append(")");
         }
         if (!initializers.isEmpty()) {
-            boolean needComma = false;
             sb.append(" = {");
-            for (Node init : initializers) {
-                if (needComma) {
-                    sb.append(", ");
-                }
-                sb.append(init);
-                needComma = true;
-            }
+            sb.append(StringsPlume.join(", ", initializers));
             sb.append("}");
         }
         return sb.toString();

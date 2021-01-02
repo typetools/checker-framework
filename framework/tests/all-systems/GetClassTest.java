@@ -1,6 +1,6 @@
 import java.util.Date;
 
-class GetClassTest {
+public class GetClassTest {
 
     // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver
 
@@ -11,8 +11,10 @@ class GetClassTest {
         // Type arguments don't match
         @SuppressWarnings("fenum:assignment.type.incompatible")
         Class<? extends Object> b = i.getClass();
-        // Type arguments don't match
-        @SuppressWarnings("fenum:assignment.type.incompatible")
+        @SuppressWarnings({
+            "fenum:assignment.type.incompatible", // Type arguments don't match
+            "signedness:assignment.type.incompatible" // Type arguments don't match
+        })
         Class<? extends Integer> c = i.getClass();
 
         Class<?> d = i.getClass();

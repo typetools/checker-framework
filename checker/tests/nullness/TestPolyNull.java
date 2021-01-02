@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class TestPolyNull {
+public class TestPolyNull {
     @PolyNull String identity(@PolyNull String str) {
         return str;
     }
@@ -38,9 +38,6 @@ class TestPolyNull {
     }
 
     public static @PolyNull String identity2(@PolyNull String a) {
-        // TODO: it would be nice, if this code type-checks (just like identity and identity3),
-        // but currently a technical limitation in the flow analysis prevents this
-        // :: error: (return.type.incompatible)
         return (a == null) ? null : a;
     }
 

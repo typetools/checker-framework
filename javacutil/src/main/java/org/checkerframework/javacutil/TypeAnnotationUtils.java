@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -10,8 +11,8 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Pair;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -21,10 +22,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * A collection of helper methods related to type annotation handling.
@@ -43,31 +46,154 @@ public class TypeAnnotationUtils {
      *
      * @param list the input list of TypeCompounds
      * @param tc the TypeCompound to find
+     * @param types type utilities
      * @return true, iff a TypeCompound equal to tc is contained in list
      */
     public static boolean isTypeCompoundContained(
             List<TypeCompound> list, TypeCompound tc, Types types) {
         for (Attribute.TypeCompound rawat : list) {
-            if (contentEquals(rawat.type.tsym.name, tc.type.tsym.name)
-                    // TODO: in previous line, it would be nicer to use reference equality:
-                    //   rawat.type == tc.type &&
-                    // or at least "isSameType":
-                    //   types.isSameType(rawat.type, tc.type) &&
-                    // but each fails in some cases.
-                    && rawat.values.equals(tc.values)
-                    && isSameTAPositionExceptTreePos(rawat.position, tc.position)) {
+            if (typeCompoundEquals(rawat, tc, types)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean contentEquals(Name n1, Name n2) {
-        // Views of underlying bytes, not copies as with Name#contentEquals
-        ByteBuffer b1 = ByteBuffer.wrap(n1.getByteArray(), n1.getByteOffset(), n1.getByteLength());
-        ByteBuffer b2 = ByteBuffer.wrap(n2.getByteArray(), n2.getByteOffset(), n2.getByteLength());
+    /**
+     * Compares two TypeCompound objects (e.g., annotations).
+     *
+     * @param tc1 the first TypeCompound to compare
+     * @param tc2 the second TypeCompound to compare
+     * @param types type utilities
+     * @return true if the TypeCompounds represent the same compound element value
+     */
+    private static boolean typeCompoundEquals(TypeCompound tc1, TypeCompound tc2, Types types) {
+        // For the first conjunct, both of these forms fail in some cases:
+        //   tc1.type == tc2.type
+        //   types.isSameType(tc1.type, tc2.type)
+        return contentEquals(tc1.type.tsym.name, tc2.type.tsym.name)
+                && typeCompoundValuesEquals(tc1.values, tc2.values, types)
+                && isSameTAPositionExceptTreePos(tc1.position, tc2.position);
+    }
 
-        return b1.equals(b2);
+    /**
+     * Returns true if the two names represent the same string.
+     *
+     * @param n1 the first Name to compare
+     * @param n2 the second Name to compare
+     * @return true if the two names represent the same string
+     */
+    @SuppressWarnings(
+            "interning:unnecessary.equals" // Name is interned within a single instance of javac,
+    // but call equals anyway out of paranoia.
+    )
+    private static boolean contentEquals(Name n1, Name n2) {
+        if (n1.getClass() == n2.getClass()) {
+            return n1.equals(n2);
+        } else {
+            // Slightly less efficient because it makes a copy.
+            return n1.contentEquals(n2);
+        }
+    }
+
+    /**
+     * Compares the {@code values} fields of two TypeCompound objects (e.g., annotations). Is more
+     * lenient than {@code List.equals}, which uses {@code Object.equals} on list elements.
+     *
+     * @param values1 the first {@code values} field
+     * @param values2 the second {@code values} field
+     * @param types type utilities
+     * @return true if the two {@code values} fields represent the same name-to-value mapping, in
+     *     the same order
+     */
+    @SuppressWarnings("InvalidParam") // Error Prone tries to be clever, but it is not
+    private static boolean typeCompoundValuesEquals(
+            List<Pair<MethodSymbol, Attribute>> values1,
+            List<Pair<MethodSymbol, Attribute>> values2,
+            Types types) {
+        if (values1.size() != values2.size()) {
+            return false;
+        }
+
+        for (Iterator<Pair<MethodSymbol, Attribute>> iter1 = values1.iterator(),
+                        iter2 = values2.iterator();
+                iter1.hasNext(); ) {
+            Pair<MethodSymbol, Attribute> pair1 = iter1.next();
+            Pair<MethodSymbol, Attribute> pair2 = iter2.next();
+            if (!(pair1.fst.equals(pair2.fst) && attributeEquals(pair1.snd, pair2.snd, types))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Compares two attributes. Is more lenient for constants than {@code Attribute.equals}, which
+     * is reference equality.
+     *
+     * @param a1 the first attribute to compare
+     * @param a2 the second attribute to compare
+     * @param types type utilities
+     * @return true if the two attributes are the same
+     */
+    private static boolean attributeEquals(Attribute a1, Attribute a2, Types types) {
+        if (a1 instanceof Attribute.Array && a2 instanceof Attribute.Array) {
+            List<Attribute> list1 = ((Attribute.Array) a1).getValue();
+            List<Attribute> list2 = ((Attribute.Array) a2).getValue();
+            if (list1.size() != list2.size()) {
+                return false;
+            }
+            // This requires the array elements to be in the same order.  Is that the right thing?
+            for (int i = 0; i < list1.size(); i++) {
+                if (!attributeEquals(list1.get(i), list2.get(i), types)) {
+                    return false;
+                }
+            }
+            return true;
+        } else if (a1 instanceof Attribute.Class && a2 instanceof Attribute.Class) {
+            Type t1 = ((Attribute.Class) a1).getValue();
+            Type t2 = ((Attribute.Class) a2).getValue();
+            return types.isSameType(t1, t2);
+        } else if (a1 instanceof Attribute.Constant && a2 instanceof Attribute.Constant) {
+            Object v1 = ((Attribute.Constant) a1).getValue();
+            Object v2 = ((Attribute.Constant) a2).getValue();
+            return v1.equals(v2);
+        } else if (a1 instanceof Attribute.Compound && a2 instanceof Attribute.Compound) {
+            // The annotation value is another annotation.  `a1` and `a2` implement
+            // AnnotationMirror.
+            DeclaredType t1 = ((Attribute.Compound) a1).getAnnotationType();
+            DeclaredType t2 = ((Attribute.Compound) a2).getAnnotationType();
+            if (!types.isSameType(t1, t2)) {
+                return false;
+            }
+            Map<Symbol.MethodSymbol, Attribute> map1 = ((Attribute.Compound) a1).getElementValues();
+            Map<Symbol.MethodSymbol, Attribute> map2 = ((Attribute.Compound) a2).getElementValues();
+            // Is this test, which uses equals() for the keys, too strict?
+            if (!map1.keySet().equals(map2.keySet())) {
+                return false;
+            }
+            for (Symbol.MethodSymbol key : map1.keySet()) {
+                Attribute attr1 = map1.get(key);
+                @SuppressWarnings(
+                        "nullness:assignment.type.incompatible") // same keys in map1 & map2
+                @NonNull Attribute attr2 = map2.get(key);
+                if (!attributeEquals(attr1, attr2, types)) {
+                    return false;
+                }
+            }
+            return true;
+        } else if (a1 instanceof Attribute.Enum && a2 instanceof Attribute.Enum) {
+            Symbol.VarSymbol s1 = ((Attribute.Enum) a1).getValue();
+            Symbol.VarSymbol s2 = ((Attribute.Enum) a2).getValue();
+            // VarSymbol.equals() is reference equality.
+            return s1.equals(s2) || s1.toString().equals(s2.toString());
+        } else if (a1 instanceof Attribute.Error && a2 instanceof Attribute.Error) {
+            String s1 = ((Attribute.Error) a1).getValue();
+            String s2 = ((Attribute.Error) a2).getValue();
+            return s1.equals(s2);
+        } else {
+            return a1.equals(a2);
+        }
     }
 
     /**
@@ -88,6 +214,7 @@ public class TypeAnnotationUtils {
      * @param p2 the second position
      * @return true, iff the two positions are equal except for the source tree position
      */
+    @SuppressWarnings("interning:not.interned") // reference equality for onLambda field
     public static boolean isSameTAPositionExceptTreePos(
             TypeAnnotationPosition p1, TypeAnnotationPosition p2) {
         return p1.type == p2.type

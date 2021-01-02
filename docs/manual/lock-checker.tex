@@ -160,7 +160,7 @@ of a problem that would occur if this rule were relaxed.
 %and
 %\refqualclass{checker/interning/qual}{PolyGuardedBy}
 %indicates qualifier polymorphism.  For a description of qualifier
-%polymorphism, see Section~\ref{qualifier-polymorphism}.
+%polymorphism, see Section~\ref{method-qualifier-polymorphism}.
 
 \begin{description}
 
@@ -169,7 +169,7 @@ of a problem that would occur if this rule were relaxed.
   lock expressions for \<x>'s value are held.
 
   As with other qualifier-polymorphism annotations
-  (Section~\ref{qualifier-polymorphism}), the \emph{index} argument
+  (Section~\ref{method-qualifier-polymorphism}), the \emph{index} argument
   indicates when two values are guarded by the same (unknown) set of locks.
 
   \code{@GuardSatisfied} is only allowed in method signatures:  on
@@ -276,7 +276,7 @@ the following additional rules.
 \item[\code{@GuardSatisfied}]
 
   The overall rules for polymorphic qualifiers are given in
-  Section~\ref{qualifier-polymorphism}.
+  Section~\ref{method-qualifier-polymorphism}.
 
   Here are additional constraints for (pseudo-)assignments:
 
@@ -919,8 +919,8 @@ $\Rightarrow$
 
 \subsectionAndLabel{Relationship to annotations in \emph{Java Concurrency in Practice}}{lock-jcip-annotations}
 
-The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
-\href{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
+The book \href{https://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
+\href{https://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
 \code{@GuardedBy} serves two related but distinct purposes:
 
 \begin{itemize}

@@ -30,6 +30,7 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
      * @param from the annotated type mirror from which to take new annotations
      * @param to the annotated type mirror to which the annotations will be added
      */
+    @SuppressWarnings("interning:not.interned") // assertion
     public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (from == to) {
             throw new BugInCF("From == to");
@@ -46,6 +47,7 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
      * @param to the annotated type mirror to which the annotations will be added
      * @param top the top type of the hierarchy whose annotations will be added
      */
+    @SuppressWarnings("interning:not.interned") // assertion
     public static void replace(
             final AnnotatedTypeMirror from,
             final AnnotatedTypeMirror to,
@@ -74,6 +76,7 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
         this.top = top;
     }
 
+    @SuppressWarnings("interning:not.interned") // assertion
     @Override
     protected Void compare(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
         assert from != to;

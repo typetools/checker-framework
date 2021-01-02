@@ -1,6 +1,6 @@
 package simplecrash;
 
-class LetItCrash implements CrashyInterface {
+public class LetItCrash implements CrashyInterface {
     private Long longer = 0L;
 
     @Override

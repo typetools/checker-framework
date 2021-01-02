@@ -117,8 +117,9 @@ These qualifiers are part of the Interning type system:
   It is used internally by the type system and is not written by programmers.
 
 \item[\refqualclass{checker/interning/qual}{PolyInterned}]
-  indicates qualifier polymorphism (see
-  Section~\ref{qualifier-polymorphism}).
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
 
 \end{description}
 
@@ -128,16 +129,36 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{UsesObjectEquals}]
   is a class annotation (not a type annotation) that indicates that this class's
-  \<equals> method is the same as that of \<Object>.  In other words,
-  neither this class nor any of its superclasses overrides the \<equals>
-  method.  Since \<Object.equals> uses reference equality, this means that
-  for such a class, \<==> and \<equals> are equivalent, and so the
-  Interning Checker does not issue errors or warnings for either one.
+  \<equals> method is the same as that of \<Object>.  Since
+  \<Object.equals> uses reference equality, this means that for such a
+  class, \<==> and \<equals> are equivalent, and so the Interning Checker
+  does not issue errors or warnings for either one.
+
+  Two ways to satisfy this annotation are:  (1) neither this class nor any
+  of its superclasses overrides the \<equals> method, or (2) this class
+  defines \<equals> with body \<return this == o;>.
 
 \item[\refqualclass{checker/interning/qual}{InternMethod}]
   is a method declaration annotation that indicates that this method
   returns an interned object and may be invoked
   on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
+
+\item[\refqualclass{checker/interning/qual}{EqualsMethod}]
+  is a method declaration annotation that indicates that this method
+  has a specification like \<equals()>.  The Interning Checker permits use
+  of \<this == arg> within the body.
+
+\item[\refqualclass{checker/interning/qual}{CompareToMethod}]
+  is a method declaration annotation that indicates that this method
+  has a specification like \<compareTo()>.  The Interning Checker permits use
+  of \<if (arg1 == arg2) \ttlcb\ return 0; \ttrcb> within the body.
+
+\item[\refqualclass{checker/interning/qual}{FindDistinct}]
+  is a formal parameter declaration annotation that indicates that this
+  method uses \<==> to perform comparisons against the annotated formal
+  parameter.  A common reason is that the method searches for the formal
+  parameter in some data structure, using \<==>.  Any value
+  may be passed to the method.
 \end{description}
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
@@ -186,8 +207,8 @@ For example:
 \begin{Verbatim}
 @Interned class InternedClass {
   @UnknownInterned InternedClass() {
-  // error, "this" is @UnknownInterned.
-  @Interned InternedClass that = this;
+    // error, "this" is @UnknownInterned.
+    @Interned InternedClass that = this;
   }
 
   @SuppressWarnings("intern") // Only creation of an InternedClass object.
@@ -219,7 +240,7 @@ public InternedClass intern() {
   @Interned InternedClass that = this; // error
 
   if (!pool.contains(this)) {
-    @SuppressWarning("interning:assignment.type.incompatible")
+    @SuppressWarnings("interning:assignment.type.incompatible")
     @Interned InternedClass internedThis = this;
     pool.add(internedThis);
   }
@@ -353,8 +374,9 @@ For a complete description of all checks performed by
   \refclass{checker/interning}{InterningVisitor}.
 
 \label{checking-class}
-You can also restrict which types the checker should examine and type-check,
-using the \code{-Acheckclass} option.  For example, to find only the
+To restrict which types the checker should type-check, pass a canonical
+name (fully-qualified name) using the \code{-Acheckclass} option.
+For example, to find only the
 interning errors related to uses of \code{String}, you can pass
 \code{-Acheckclass=java.lang.String}.  The Interning Checker always checks all
 subclasses and superclasses of the given class.

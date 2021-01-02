@@ -3,14 +3,15 @@
 
 // @skip-test until the bug is fixed
 
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 enum SampleEnum {
     @Untainted FIRST,
     @Tainted SECOND;
 }
 
-class Issue2156 {
+public class Issue2156 {
     void test() {
         requireUntainted(SampleEnum.FIRST);
         // :: error: assignment.type.incompatible

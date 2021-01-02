@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-class Issue373 extends AbstractMap<String, String> {
+public class Issue373 extends AbstractMap<String, String> {
     @Override
     public Set<Map.Entry<String, String>> entrySet() {
         return Collections.emptySet();

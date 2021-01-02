@@ -1,6 +1,6 @@
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-class SimpleTainting {
+public class SimpleTainting {
 
     void execute(@Untainted String s) {}
 

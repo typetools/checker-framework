@@ -4,7 +4,7 @@ import java.security.PrivilegedAction;
 import java.util.List;
 import org.checkerframework.checker.regex.qual.*;
 
-class RawTypeTest {
+public class RawTypeTest {
 
     public void m1(Class<?> c) {
         Class<? extends I2> x = c.asSubclass(I2.class);

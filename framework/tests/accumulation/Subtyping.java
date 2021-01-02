@@ -3,9 +3,9 @@
 // in this file, so the comments for error messages are in weird
 // places.
 
-import testaccumulation.qual.*;
+import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class Subtyping {
+public class Subtyping {
     void top(@TestAccumulation() Object o1) {
         @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")
@@ -23,8 +23,7 @@ class Subtyping {
 
     void foo(@TestAccumulation("foo") Object o1) {
         @TestAccumulation() Object o2 = o1;
-        @TestAccumulation("foo")
-        Object o3 = o1;
+        @TestAccumulation("foo") Object o3 = o1;
         @TestAccumulation("bar")
         // :: error: assignment.type.incompatible
         Object o4 = o1;
@@ -40,8 +39,7 @@ class Subtyping {
         @TestAccumulation("foo")
         // :: error: assignment.type.incompatible
         Object o3 = o1;
-        @TestAccumulation("bar")
-        Object o4 = o1;
+        @TestAccumulation("bar") Object o4 = o1;
         @TestAccumulation({"foo", "bar"})
         // :: error: assignment.type.incompatible
         Object o5 = o1;
@@ -51,36 +49,27 @@ class Subtyping {
 
     void foobar(@TestAccumulation({"foo", "bar"}) Object o1) {
         @TestAccumulation() Object o2 = o1;
-        @TestAccumulation("foo")
-        Object o3 = o1;
-        @TestAccumulation("bar")
-        Object o4 = o1;
-        @TestAccumulation({"foo", "bar"})
-        Object o5 = o1;
+        @TestAccumulation("foo") Object o3 = o1;
+        @TestAccumulation("bar") Object o4 = o1;
+        @TestAccumulation({"foo", "bar"}) Object o5 = o1;
         // :: error: assignment.type.incompatible
         @TestAccumulationBottom Object o6 = o1;
     }
 
     void barfoo(@TestAccumulation({"bar", "foo"}) Object o1) {
         @TestAccumulation() Object o2 = o1;
-        @TestAccumulation("foo")
-        Object o3 = o1;
-        @TestAccumulation("bar")
-        Object o4 = o1;
-        @TestAccumulation({"foo", "bar"})
-        Object o5 = o1;
+        @TestAccumulation("foo") Object o3 = o1;
+        @TestAccumulation("bar") Object o4 = o1;
+        @TestAccumulation({"foo", "bar"}) Object o5 = o1;
         // :: error: assignment.type.incompatible
         @TestAccumulationBottom Object o6 = o1;
     }
 
     void bot(@TestAccumulationBottom Object o1) {
         @TestAccumulation() Object o2 = o1;
-        @TestAccumulation("foo")
-        Object o3 = o1;
-        @TestAccumulation("bar")
-        Object o4 = o1;
-        @TestAccumulation({"foo", "bar"})
-        Object o5 = o1;
+        @TestAccumulation("foo") Object o3 = o1;
+        @TestAccumulation("bar") Object o4 = o1;
+        @TestAccumulation({"foo", "bar"}) Object o5 = o1;
         @TestAccumulationBottom Object o6 = o1;
     }
 }

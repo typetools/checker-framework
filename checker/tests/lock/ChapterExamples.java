@@ -19,7 +19,7 @@ import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class ChapterExamples {
+public class ChapterExamples {
     // This code crashed when there was a bug before issue 524 was fixed.
     // An attempt to take the LUB between 'val' in the store with type 'long'
     // and 'val' in another store with type 'none' resulted in a crash.
@@ -442,7 +442,6 @@ class ChapterExamples {
         @GuardedBy("lock") Integer b = 1;
         int d;
         synchronized (lock) {
-            // :: error: (assignment.type.incompatible)
             d = b;
 
             // Expected, since b cannot be @GuardedBy("lock") since it is a boxed primitive.
@@ -464,7 +463,6 @@ class ChapterExamples {
             c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
         }
 
-        // :: error: (assignment.type.incompatible)
         a = b;
         b = c; // OK
     }

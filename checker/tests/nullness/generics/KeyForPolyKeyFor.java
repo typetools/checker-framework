@@ -6,7 +6,7 @@ import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 
 // test related to issue 429: https://github.com/typetools/checker-framework/issues/429
-class KeyForPolyKeyFor {
+public class KeyForPolyKeyFor {
     // TODO: Figure out why diamond operator does not work:
     // Map<@KeyFor("dict") String, String> dict = new HashMap<>();
     Map<@KeyFor("dict") String, String> dict = new HashMap<@KeyFor("dict") String, String>();

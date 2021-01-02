@@ -1,10 +1,10 @@
 // A simple test that the fluent API logic in the Accumulation Checker works.
 
 import org.checkerframework.common.returnsreceiver.qual.*;
-import testaccumulation.qual.*;
+import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
 /* Simple inference of a fluent builder. */
-class SimpleFluent {
+public class SimpleFluent {
     SimpleFluent build(@TestAccumulation({"a", "b"}) SimpleFluent this) {
         return this;
     }
@@ -105,5 +105,11 @@ class SimpleFluent {
         s.a().build().c().a().b().build();
         // :: error: method.invocation.invalid
         s.build();
+    }
+
+    static void m9() {
+        new SimpleFluent().a().b().build();
+        // :: error: method.invocation.invalid
+        new SimpleFluent().a().build();
     }
 }

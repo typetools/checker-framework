@@ -21,10 +21,13 @@ import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.framework.qual.AnnotatedFor;
+
+// TODO: add fromTo methods for all useful unit combinations.
 
 /** Utility methods to generate annotated types and to convert between them. */
 @SuppressWarnings({"units", "checkstyle:constantname"})
-// TODO: add fromTo methods for all useful unit combinations.
+@AnnotatedFor("nullness")
 public class UnitsTools {
     // Acceleration
     public static final @mPERs2 int mPERs2 = 1;

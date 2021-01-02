@@ -3,6 +3,8 @@ package org.checkerframework.framework.test;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 
 /** A configuration for running CheckerFrameworkTests or running the TypecheckExecutor. */
 public interface TestConfiguration {
@@ -41,7 +43,7 @@ public interface TestConfiguration {
      *
      * @return a list of annotation processors (Checkers) passed to the Javac compiler
      */
-    List<String> getProcessors();
+    List<@BinaryName String> getProcessors();
 
     /**
      * Some Javac command line arguments require arguments themselves (e.g. {@code -classpath} takes
@@ -60,11 +62,11 @@ public interface TestConfiguration {
      * @return a Map representing all command-line options to Javac other than source files and
      *     processors
      */
-    Map<String, String> getOptions();
+    Map<String, @Nullable String> getOptions();
 
     /**
      * Returns the map returned by {@link #getOptions}, flattened into a list. The entries will be
-     * added as followed: List(key1, value1, key2, value2, ..., keyN, valueN) If a value is NULL
+     * added as followed: List(key1, value1, key2, value2, ..., keyN, valueN). If a value is NULL,
      * then it will not appear in the list.
      *
      * @return the map returned {@link #getOptions}, but flattened into a list

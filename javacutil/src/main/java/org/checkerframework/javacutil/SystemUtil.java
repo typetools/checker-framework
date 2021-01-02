@@ -9,12 +9,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /** This file contains basic utility functions. */
 public class SystemUtil {
@@ -49,12 +50,14 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param objs the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code StringsPlume.join}
      */
-    public static <T> String join(CharSequence delimiter, T @Nullable [] objs) {
+    @Deprecated // use StringsPlume.join
+    public static <T> String join(CharSequence delimiter, T[] objs) {
         if (objs == null) {
             return "null";
         }
-        return UtilPlume.join(delimiter, objs);
+        return StringsPlume.join(delimiter, objs);
     }
 
     /**
@@ -64,14 +67,14 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code StringsPlume.join}
      */
-    // The parameter of UtilPlume#join should be changed to Iterable<?>.
-    @SuppressWarnings("nullness:argument.type.incompatible")
-    public static String join(CharSequence delimiter, @Nullable Iterable<?> values) {
+    @Deprecated // use StringsPlume.join
+    public static String join(CharSequence delimiter, Iterable<?> values) {
         if (values == null) {
             return "null";
         }
-        return UtilPlume.join(delimiter, values);
+        return StringsPlume.join(delimiter, values);
     }
 
     /**
@@ -81,10 +84,12 @@ public class SystemUtil {
      * @param <T> the type of array elements
      * @param a array of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code StringsPlume.joinLines}
      */
+    @Deprecated // use StringsPlume.joinLines
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> String joinLines(T @Nullable ... a) {
+    public static <T> String joinLines(T... a) {
         return join(LINE_SEPARATOR, a);
     }
 
@@ -94,8 +99,10 @@ public class SystemUtil {
      *
      * @param v list of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code StringsPlume.joinLines}
      */
-    public static String joinLines(@Nullable Iterable<? extends Object> v) {
+    @Deprecated // use StringsPlume.joinLines
+    public static String joinLines(Iterable<? extends Object> v) {
         return join(LINE_SEPARATOR, v);
     }
 
@@ -224,5 +231,55 @@ public class SystemUtil {
                             toolsJarFilename, javaHome, System.getProperty("java.home")));
         }
         return javaHome + File.separator + "lib" + File.separator + "tools.jar";
+    }
+
+    /**
+     * Concatenates two arrays. Can be invoked varargs-style.
+     *
+     * @param <T> the type of the array elements
+     * @param array1 the first array
+     * @param array2 the second array
+     * @return a new array containing the contents of the given arrays, in order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatenate(T[] array1, T... array2) {
+        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
+        T[] result = Arrays.copyOf(array1, array1.length + array2.length);
+        System.arraycopy(array2, 0, result, array1.length, array2.length);
+        return result;
+    }
+
+    /**
+     * Concatenates an element, an array, and an element.
+     *
+     * @param <T> the type of the array elements
+     * @param firstElt the first element
+     * @param array the array
+     * @param lastElt the last elemeent
+     * @return a new array containing first element, the array, and the last element, in that order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
+        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
+        T[] result = Arrays.copyOf(array, array.length + 2);
+        result[0] = firstElt;
+        System.arraycopy(array, 0, result, 1, array.length);
+        result[result.length - 1] = lastElt;
+        return result;
+    }
+
+    /**
+     * Like Thread.sleep, but does not throw any exceptions, so it is easier for clients to use.
+     * Causes the currently executing thread to sleep (temporarily cease execution) for the
+     * specified number of milliseconds.
+     *
+     * @param millis the length of time to sleep in milliseconds
+     */
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

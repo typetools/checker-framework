@@ -20,10 +20,12 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
- * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values
- * are copied to the arguments (elements) of annotation P with the same names. Different element
- * names may be used in E and P, if a {@link QualifierArgument} in E gives the name of the
- * corresponding element in P.
+ * annotation.
+ *
+ * <p>If the annotation E has elements annotated by {@link QualifierArgument}, their values are
+ * copied to the arguments (elements) of annotation P with the same names. Different element names
+ * may be used in E and P, if a {@link QualifierArgument} in E gives the name of the corresponding
+ * element in P.
  *
  * <p>For example, the following code declares a postcondition annotation for the {@link
  * org.checkerframework.common.value.qual.MinLen} qualifier:
@@ -31,10 +33,10 @@ import java.lang.annotation.Target;
  * <pre><code>
  * {@literal @}PostconditionAnnotation(qualifier = MinLen.class)
  * {@literal @}Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
- * public {@literal @}interface EnsuresMinLen {
- *   String[] value();
- *   {@literal @}QualifierArgument("value")
- *   int targetValue() default 0;
+ *  public {@literal @}interface EnsuresMinLen {
+ *    String[] value();
+ *    {@literal @}QualifierArgument("value")
+ *    int targetValue() default 0;
  * </code></pre>
  *
  * The {@code value} element holds the expressions to which the qualifier applies and {@code
@@ -46,9 +48,9 @@ import java.lang.annotation.Target;
  *
  * <pre><code>
  * {@literal @}EnsuresMinLen(value = "field", targetValue = 2")
- * public void setField(String argument) {
- *   field = "(" + argument + ")";
- * }
+ *  public void setField(String argument) {
+ *    field = "(" + argument + ")";
+ *  }
  * </code></pre>
  *
  * @see EnsuresQualifier

@@ -1,4 +1,4 @@
-class RawAndPrimitive<T> {
+public class RawAndPrimitive<T> {
     public T foo(T startValue) {
         return startValue;
     }

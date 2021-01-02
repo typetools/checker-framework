@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class NewNullable {
+public class NewNullable {
     Object o = new Object();
     Object nn = new @NonNull Object();
     // :: warning: (new.class.type.invalid)

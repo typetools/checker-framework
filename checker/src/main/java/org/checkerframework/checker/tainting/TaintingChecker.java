@@ -1,7 +1,7 @@
 package org.checkerframework.checker.tainting;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.source.SuppressWarningsKeys;
+import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
  * A type-checker plug-in for the Tainting type system qualifier that finds (and verifies the
@@ -11,5 +11,5 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
  *
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
-@SuppressWarningsKeys({"untainted", "tainting"})
+@SuppressWarningsPrefix({"untainted", "tainting"})
 public class TaintingChecker extends BaseTypeChecker {}

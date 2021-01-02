@@ -15,9 +15,9 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -26,11 +26,12 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -110,7 +111,10 @@ public class InitializationVisitor<
 
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         // field write of the form x.f = y
         if (TreeUtils.isFieldAccess(varTree)) {
             // cast is safe: a field access can only be an IdentifierTree or
@@ -127,11 +131,11 @@ public class InitializationVisitor<
             if (!AnnotationUtils.containsSameByName(
                     fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
                 if (!ElementUtils.isStatic(el)
-                        && !(atypeFactory.isCommitted(yType)
-                                || atypeFactory.isFree(xType)
+                        && !(atypeFactory.isInitialized(yType)
+                                || atypeFactory.isUnderInitialization(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
                     @CompilerMessageKey String err;
-                    if (atypeFactory.isCommitted(xType)) {
+                    if (atypeFactory.isInitialized(xType)) {
                         err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
                     } else {
                         err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
@@ -141,7 +145,7 @@ public class InitializationVisitor<
                 }
             }
         }
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
     }
 
     @Override
@@ -153,8 +157,8 @@ public class InitializationVisitor<
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (atypeFactory.isUnclassified(a)) {
-                        continue; // unclassified is allowed
+                    if (atypeFactory.isUnknownInitialization(a)) {
+                        continue; // unknown initialization is allowed
                     }
                     if (atypeFactory.areSameByClass(a, c)) {
                         checker.reportError(node, COMMITMENT_INVALID_FIELD_TYPE, node);
@@ -168,7 +172,7 @@ public class InitializationVisitor<
 
     @Override
     protected boolean checkContract(
-            Receiver expr,
+            JavaExpression expr,
             AnnotationMirror necessaryAnnotation,
             AnnotationMirror inferredAnnotation,
             CFAbstractStore<?, ?> store) {
@@ -178,6 +182,9 @@ public class InitializationVisitor<
         if (!atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)
                 || !(expr instanceof FieldAccess)) {
             return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
+        }
+        if (expr.containsUnknown()) {
+            return false;
         }
 
         FieldAccess fa = (FieldAccess) expr;
@@ -192,32 +199,32 @@ public class InitializationVisitor<
                 }
             }
         } else {
-            Set<AnnotationMirror> recvAnnoSet;
             @SuppressWarnings("unchecked")
             Value value = (Value) store.getValue(fa.getReceiver());
 
+            Set<AnnotationMirror> receiverAnnoSet;
             if (value != null) {
-                recvAnnoSet = value.getAnnotations();
+                receiverAnnoSet = value.getAnnotations();
             } else if (fa.getReceiver() instanceof LocalVariable) {
                 Element elem = ((LocalVariable) fa.getReceiver()).getElement();
-                AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
-                recvAnnoSet = recvType.getAnnotations();
+                AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(elem);
+                receiverAnnoSet = receiverType.getAnnotations();
             } else {
                 // Is there anything better we could do?
                 return false;
             }
 
-            boolean isRecvCommitted = false;
-            for (AnnotationMirror anno : recvAnnoSet) {
-                if (atypeFactory.isCommitted(anno)) {
-                    isRecvCommitted = true;
+            boolean isReceiverInitialized = false;
+            for (AnnotationMirror anno : receiverAnnoSet) {
+                if (atypeFactory.isInitialized(anno)) {
+                    isReceiverInitialized = true;
                 }
             }
 
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
             // The receiver is fully initialized and the field type
             // has the invariant type.
-            if (isRecvCommitted
+            if (isReceiverInitialized
                     && AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
                 return true;
             }
@@ -378,9 +385,11 @@ public class InitializationVisitor<
                         ? COMMITMENT_STATIC_FIELDS_UNINITIALIZED
                         : COMMITMENT_FIELDS_UNINITIALIZED);
 
-        List<VariableTree> violatingFields =
-                atypeFactory.getUninitializedInvariantFields(
+        Pair<List<VariableTree>, List<VariableTree>> uninitializedFields =
+                atypeFactory.getUninitializedFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);
+        List<VariableTree> violatingFields = uninitializedFields.first;
+        List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
         if (staticFields) {
             // TODO: Why is nothing done for static fields?
@@ -390,29 +399,41 @@ public class InitializationVisitor<
             // remove fields that have already been initialized by an
             // initializer block
             violatingFields.removeAll(initializedFields);
+            nonviolatingFields.removeAll(initializedFields);
         }
 
         // Remove fields with a relevant @SuppressWarnings annotation.
-        Iterator<VariableTree> itor = violatingFields.iterator();
-        while (itor.hasNext()) {
-            VariableTree f = itor.next();
-            Element e = TreeUtils.elementFromTree(f);
-            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED_KEY)) {
-                itor.remove();
-            }
-        }
+        violatingFields.removeIf(
+                f ->
+                        checker.shouldSuppressWarnings(
+                                TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
+        nonviolatingFields.removeIf(
+                f ->
+                        checker.shouldSuppressWarnings(
+                                TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
 
         if (!violatingFields.isEmpty()) {
-            StringBuilder fieldsString = new StringBuilder();
-            boolean first = true;
+            StringJoiner fieldsString = new StringJoiner(", ");
             for (VariableTree f : violatingFields) {
-                if (!first) {
-                    fieldsString.append(", ");
-                }
-                first = false;
-                fieldsString.append(f.getName());
+                fieldsString.add(f.getName());
             }
             checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
+        }
+
+        // Support -Ainfer command-line argument.
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        if (wpi != null) {
+            // For each uninitialized field, treat it as if the default value is assigned to it.
+            List<VariableTree> uninitFields = new ArrayList<>(violatingFields);
+            uninitFields.addAll(nonviolatingFields);
+            for (VariableTree fieldTree : uninitFields) {
+                Element elt = TreeUtils.elementFromTree(fieldTree);
+                wpi.updateFieldFromType(
+                        fieldTree,
+                        elt,
+                        fieldTree.getName().toString(),
+                        atypeFactory.getDefaultValueAnnotatedType(elt.asType()));
+            }
         }
     }
 }

@@ -197,11 +197,10 @@ category \refenum{checker/formatter/qual}{ConversionCategory}{INT}{}\@.  The fol
     % throw exceptions in \code{toString} and \code{formatTo}.
 \end{description}
 
-\noindent Further, all conversion categories accept \code{null}.
-% MAKES SENSE, BUT IS CONFUSING AND NOT REALLY RELEVEVANT
-% Unless otherwise noted, do not allow objects whose \code{toString} method throws an exception.
-% Objects that implement the \code{Formattable} interface and throw an
-% exception in \code{formatTo} are also not allowed.
+\noindent All conversion categories accept \code{null}.
+Furthermore, \<null> is always a legal argument array, because it is treated
+as supplying \<null> to each format specifer.  For example,
+\<String.format("\%d \%f \%s", (Object[]) null)> evaluates to \<"null null null">.
 
 The same format argument may serve as a replacement for multiple format specifiers.
 Until now, we have assumed that the format specifiers simply consume format arguments left to right.
@@ -234,8 +233,8 @@ intersections of previously-mentioned conversion categories:
 \begin{description}
 \item{\refenum{checker/formatter/qual}{ConversionCategory}{NULL}{}} is used if no object of any type can be
     passed as parameter. In this case, the only legal value is \code{null}.
-    The format string \code{"\%1\$f \%1\$c"}, for example requires that the first
-    format argument be \code{null}.  Passing a value such as \code{4} or
+    For example, the format string \code{"\%1\$f \%1\$c"} requires that the first
+    format argument be \code{null}.  Passing either \code{4} or
     \code{4.2} would lead to an exception.
 \item{\refenum{checker/formatter/qual}{ConversionCategory}{CHAR\_AND\_INT}{}} is used if a format argument is restricted by a \refenum{checker/formatter/qual}{ConversionCategory}{CHAR}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} conversion category (\code{CHAR} $\cap$ \code{INT}).
 \item{\refenum{checker/formatter/qual}{ConversionCategory}{INT\_AND\_TIME}{}} is used if a format argument is restricted by an \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{TIME}{} conversion category (\code{INT} $\cap$ \code{TIME}).

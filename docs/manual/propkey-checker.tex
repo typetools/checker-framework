@@ -132,17 +132,19 @@ does not fail at run time.
 
 The Internationalization Checker supports two annotations:
 
-\begin{enumerate}
-\item \refqualclass{checker/i18n/qual}{Localized}: indicates that the qualified
+\begin{description}
+\item[\refqualclass{checker/i18n/qual}{Localized}]
+indicates that the qualified
 \code{CharSequence} is a message that has been localized and/or formatted with
 respect to the used locale.
 
-\item \refqualclass{checker/i18n/qual}{LocalizableKey}: indicates that the
+\item[\refqualclass{checker/i18n/qual}{LocalizableKey}]
+indicates that the
 qualified \code{CharSequence} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, that
 gets checked by the general Property Key Checker.
-\end{enumerate}
+\end{description}
 
 You may need to add the \code{@Localized} annotation to more methods in the
 JDK or other libraries, or in your own code.
@@ -178,7 +180,7 @@ or property files using the
 The Checker Framework uses compiler message keys to output error messages.
 These keys are substituted by localized strings for user-visible error messages.
 Using keys instead of the localized strings in the source code enables easier
-testing, as the expected error keys can stay unchanged while the localized
+testing, as the expected message keys can stay unchanged while the localized
 strings can still be modified.
 We use the Compiler Message Key Checker to ensure that all internal
 keys are correctly localized.

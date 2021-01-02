@@ -46,19 +46,20 @@ command-line option to javac.
 % TODO: add both qualifiers explicitly, and then describe their relationship.
 
 The Tainting type system uses the following annotations:
-\begin{itemize}
-\item
-  \refqualclass{checker/tainting/qual}{Untainted} indicates
+\begin{description}
+\item[\refqualclass{checker/tainting/qual}{Untainted}]
+  indicates
   a type that includes only untainted (trusted) values.
-\item
-  \refqualclass{checker/tainting/qual}{Tainted} indicates
+\item[\refqualclass{checker/tainting/qual}{Tainted}]
+  indicates
   a type that may include tainted (untrusted) or untainted (trusted) values.
   \code{@Tainted} is a supertype of \code{@Untainted}.
   It is the default qualifier.
-\item
-  \refqualclass{checker/tainting/qual}{PolyTainted} is a qualifier that is
-  polymorphic over tainting (see Section~\ref{qualifier-polymorphism}).
-\end{itemize}
+\item[\refqualclass{checker/tainting/qual}{PolyTainted}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
+\end{description}
 
 
 \sectionAndLabel{Tips on writing \code{@Untainted} annotations}{writing-untainted}
@@ -201,7 +202,8 @@ This invocation is permitted because, in the expression, all
 corresponding formal parameter.
 
 Beware this problem both in code you write, and also in annotated libraries
-(such as stub files).
+(such as stub files).  The correct way to annotate this class is to
+add a class qualifier parameter; see Section~\ref{class-qualifier-polymorphism}.
 
 (Side note:  if \code{append} were purely functional (had no side effects
 and returned a new \<StringBuffer>) the method call would be acceptable,
@@ -209,10 +211,6 @@ because the return type is instantiated to \<@Tainted StringBuffer> for the
 expression \<usb.append(ts)>.  However, the \code{append} method works via
 side-effect, and only returns a reference to the buffer as a convenience
 for writing ``fluent'' client code.)
-
-%% Uncomment this text when the Detemrinism Checker is merged into master.
-% The Determinism Checker enables sound polymorphic annotation of methods
-% like \<StringBuffer.append> via its \code{@PolyDet(``use'')} annotation.
 
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.

@@ -2,9 +2,10 @@ package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.NewArrayTree;
 import java.lang.annotation.Annotation;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.MaybeAliased;
 import org.checkerframework.common.aliasing.qual.MaybeLeaked;
@@ -17,13 +18,11 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.NoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Annotated type factory for the Aliasing Checker. */
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -84,32 +83,22 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new AliasingQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new AliasingQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    protected class AliasingQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    /** AliasingQualifierHierarchy. */
+    protected class AliasingQualifierHierarchy extends NoElementQualifierHierarchy {
 
-        protected AliasingQualifierHierarchy(MultiGraphFactory f) {
-            super(f);
-        }
-
-        @Override
-        protected Set<AnnotationMirror> findBottoms(
-                Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
-            Set<AnnotationMirror> newbottoms = AnnotationUtils.createAnnotationSet();
-            newbottoms.add(UNIQUE);
-            newbottoms.add(MAYBE_LEAKED);
-            return newbottoms;
-        }
-
-        @Override
-        protected Set<AnnotationMirror> findTops(
-                Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
-            Set<AnnotationMirror> newtops = AnnotationUtils.createAnnotationSet();
-            newtops.add(MAYBE_ALIASED);
-            newtops.add(NON_LEAKED);
-            return newtops;
+        /**
+         * Create AliasingQualifierHierarchy.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        protected AliasingQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         /**

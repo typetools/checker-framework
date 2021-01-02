@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
-class Issue408 {
+public class Issue408 {
     static class Bar {
         Bar() {
             doIssue408();

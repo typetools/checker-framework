@@ -57,14 +57,17 @@ def promote_release(path_to_releases, release_version):
 
 def copy_htaccess():
     "Copy the .htaccess file from the dev site to the live site."
-    execute("rsync --times %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
+    LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
+    execute("rsync --times %s %s" % (os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess"), LIVE_HTACCESS))
     ensure_group_access(LIVE_HTACCESS)
 
 def copy_releases_to_live_site(checker_version, afu_version):
     """Copy the new releases of the AFU and the Checker
     Framework from the dev site to the live site."""
+    CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "releases")
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version)
     promote_release(CHECKER_LIVE_RELEASES_DIR, checker_version)
+    AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases")
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
     promote_release(AFU_LIVE_RELEASES_DIR, afu_version)
 
@@ -94,7 +97,10 @@ def run_link_checker(site, output, additional_param=""):
     link checker script."""
     delete_if_exists(output)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
-    cmd = ["sh", check_links_script, additional_param, site]
+    if additional_param == "":
+        cmd = ["sh", check_links_script, site]
+    else:
+        cmd = ["sh", check_links_script, additional_param, site]
     env = {"CHECKLINK": CHECKLINK}
 
     out_file = open(output, 'w+')
@@ -109,7 +115,7 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        raise Exception('Non-zero return code(%s) while executing %s' % (process.returncode, cmd))
+        raise Exception('Non-zero return code (%s; see output in %s) while executing %s' % (process.returncode, output, cmd))
 
     return output
 
@@ -143,8 +149,8 @@ def check_all_links(afu_website, checker_website, suffix, test_mode, checker_ver
         if not test_mode:
             release_option = " release"
         raise Exception("The link checker reported errors.  Please fix them by committing changes to the mainline\n" +
-                        "repository and pushing them to GitHub/Bitbucket, running \"python release_build.py all\" again\n" +
-                        "(in order to update the development site), and running \"python release_push" + release_option + "\" again.")
+                        "repository and pushing them to GitHub/Bitbucket, running \"python3 release_build.py all\" again\n" +
+                        "(in order to update the development site), and running \"python3 release_push" + release_option + "\" again.")
 
 def push_interm_to_release_repos():
     """Push the release to the GitHub/Bitbucket repositories for
@@ -167,7 +173,7 @@ def validate_args(argv):
 def print_usage():
     """Print instructions on how to use this script, and in particular how to
     set test or release mode."""
-    print ("Usage: python release_build.py [release] [--auto]\n" +
+    print ("Usage: python3 release_build.py [release] [--auto]\n" +
            "If the \"release\" argument is " +
            "NOT specified then the script will execute all steps that checking and prompting " +
            "steps but will NOT actually perform a release.  This is for testing the script.")
@@ -329,17 +335,10 @@ def main(argv):
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
-    print
-    print "*****"
-    print "***** WARNING"
-    print "*****"
-    print "***** Temporarily skip this if /bin/java is Java 11 and CF doesn't support Java 11."
-    print "*****"
-    print "***** WARNING"
-    print "*****"
     if not test_mode:
         if auto or prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
+            SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
                 execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
@@ -441,11 +440,11 @@ def main(argv):
                          "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n")
 
         print_step("Push Step 13. Prep for next Checker Framework release.") # MANUAL
-        continue_or_exit("Increment the last number of the Checker Framework version and add -SNAPSHOT")
+        continue_or_exit("Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n")
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    prompt_to_continue()
+    print "Done with release_push.py"
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

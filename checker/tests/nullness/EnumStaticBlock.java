@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-class EnumStaticBlock {
+public class EnumStaticBlock {
     public enum Section {
         ME,
         OTHER;

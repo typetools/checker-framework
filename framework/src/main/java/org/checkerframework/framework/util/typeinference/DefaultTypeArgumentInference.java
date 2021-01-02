@@ -52,10 +52,10 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
@@ -492,10 +492,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
-                    SystemUtil.joinLines(
+                    StringsPlume.joinLines(
                             "Mismatch between formal parameter count and argument count.",
-                            "paramTypes=" + SystemUtil.join(",", paramTypes),
-                            "argTypes=" + SystemUtil.join(",", argTypes)));
+                            "paramTypes=" + StringsPlume.join(",", paramTypes),
+                            "argTypes=" + StringsPlume.join(",", argTypes)));
         }
 
         final int numberOfParams = paramTypes.size();
@@ -754,6 +754,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
+                } else {
+                    typeFactory.addDefaultAnnotations(inferredType);
                 }
             }
         }
@@ -810,10 +812,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        StringsPlume.joinLines(
                                 "All afConstraints should be irreducible before conversion.",
-                                "afConstraints=[ " + SystemUtil.join(", ", afConstraints) + " ]",
-                                "targets=[ " + SystemUtil.join(", ", targets) + "]"));
+                                "afConstraints=[ " + StringsPlume.join(", ", afConstraints) + " ]",
+                                "targets=[ " + StringsPlume.join(", ", targets) + "]"));
             }
 
             outgoing.add(afConstraint.toTUConstraint());

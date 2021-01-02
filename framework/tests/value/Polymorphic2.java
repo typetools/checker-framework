@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class Polymorphic2 {
+public class Polymorphic2 {
     public static boolean flag = false;
 
     @PolyValue int mergeValue(@PolyValue int a, @PolyValue int b) {

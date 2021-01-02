@@ -4,7 +4,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 
 // @skip-test until we bring list support back
 
-class ListGet {
+public class ListGet {
 
     List<Integer> listField;
     int[] arr = {0};

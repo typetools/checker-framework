@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.MinLen;
 
-class ArrayCopy {
+public class ArrayCopy {
 
     void copy(int @MinLen(1) [] nums) {
         int[] nums_copy = new int[nums.length];

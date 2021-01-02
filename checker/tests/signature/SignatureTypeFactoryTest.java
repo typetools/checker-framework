@@ -14,11 +14,11 @@ public class SignatureTypeFactoryTest {
     //     FqBinaryName.class,
     //
     //     BinaryName.class,
-    //     FieldDescriptorForPrimitiveOrArrayInUnnamedPackage.class,
+    //     FieldDescriptorWithoutPackage.class,
     //
-    //     IdentifierOrArray.class,
+    //     ArrayWithoutPackage.class,
     //     DotSeparatedIdentifiers.class,
-    //     BinaryNameInUnnamedPackage.class,
+    //     BinaryNameWithoutPackage.class,
     //
     //     Identifier.class,
     //
@@ -48,42 +48,53 @@ public class SignatureTypeFactoryTest {
         String s15 = "";
         String s16 = "[]";
         String s17 = "[][]";
+        String s18 = "null";
+        String s19 = "abstract";
+        String s20 = "float";
+        String s21 = "float ";
+        String s22 = " Foo";
 
         // All the examples from the manual
-        String t1 = "I";
-        String t2 = "LMyClass;";
-        String t3 = "Ljava/lang/Integer;";
-        String t4 = "Lpackage/Outer$Inner;";
-        String t5 = "MyClass";
-        String t6 = "MyClass[]";
-        String t7 = "[LMyClass;";
-        String t8 = "[Ljava.lang.Integer;";
-        String t9 = "[Ljava/lang/Integer;";
-        String t10 = "[Lpackage.Outer$Inner;";
-        String t11 = "[Lpackage/Outer$Inner;";
-        String t12 = "[[I";
         String t13 = "int";
         String t14 = "int[][]";
+        String t1 = "I";
+        String t12 = "[[I";
+
+        String t5 = "MyClass";
+        String t2 = "LMyClass;";
+        String t6 = "MyClass[]";
+        String t7 = "[LMyClass;";
+
+        String t29 = "";
+        String t33 = "[]";
+
         String t15 = "java.lang.Integer";
         String t16 = "java.lang.Integer[]";
-        String t17 = "package.Outer.Inner";
-        String t18 = "package.Outer.Inner[]";
-        String t19 = "package.Outer$Inner";
-        String t20 = "Lpackage.Outer$Inner;";
-        String t21 = "package.Outer$Inner[]";
         String t22 = "java/lang/Integer";
         String t23 = "java/lang/Integer[]";
-        String t24 = "package/Outer$Inner";
-        String t25 = "package/Outer$Inner[]";
-        String t26 = "package.Outer$22";
-        String t27 = "Lpackage/Outer$22;";
-        String t28 = "package/Outer$22";
-        String t29 = "";
-        String t30 = "package.Outer$22[]";
-        String t31 = "[Lpackage.Outer$22;";
-        String t32 = "package/Outer$22[]";
-        String t33 = "[]";
+        String t3 = "Ljava/lang/Integer;";
+        String t8 = "[Ljava.lang.Integer;";
+        String t9 = "[Ljava/lang/Integer;";
+
+        String t24 = "pakkage/Outer$Inner";
+        String t25 = "pakkage/Outer$Inner[]";
+
+        String t28 = "pakkage/Outer$22";
+        String t27 = "Lpakkage/Outer$22;";
+        String t26 = "pakkage.Outer$22";
+        String t32 = "pakkage/Outer$22[]";
+        String t30 = "pakkage.Outer$22[]";
+        String t31 = "[Lpakkage.Outer$22;";
+
         String t34 = "org.plumelib.reflection.TestReflectionPlume$Inner.InnerInner";
+        String t17 = "pakkage.Outer.Inner";
+        String t18 = "pakkage.Outer.Inner[]";
+        String t19 = "pakkage.Outer$Inner";
+        String t21 = "pakkage.Outer$Inner[]";
+        String t20 = "Lpakkage.Outer$Inner;";
+        String t10 = "[Lpakkage.Outer$Inner;";
+        String t4 = "Lpakkage/Outer$Inner;";
+        String t11 = "[Lpakkage/Outer$Inner;";
 
         String us; // @SignatureUnknown
         @FullyQualifiedName String fqn;
@@ -119,7 +130,6 @@ public class SignatureTypeFactoryTest {
         fbn = s2;
 
         us = s3;
-        // :: error: (assignment.type.incompatible)
         fqn = s3;
         cgn = s3;
         // :: error: (assignment.type.incompatible)
@@ -232,7 +242,6 @@ public class SignatureTypeFactoryTest {
         fbn = s11;
 
         us = s12;
-        // :: error: (assignment.type.incompatible)
         fqn = s12;
         // :: error: (assignment.type.incompatible)
         cgn = s12;
@@ -320,17 +329,107 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         fbn = s17;
 
-        us = s15;
+        us = s18;
         // :: error: (assignment.type.incompatible)
-        fqn = s15;
+        fqn = s18;
         // :: error: (assignment.type.incompatible)
-        cgn = s15;
+        cgn = s18;
         // :: error: (assignment.type.incompatible)
-        fd = s15;
+        fd = s18;
         // :: error: (assignment.type.incompatible)
-        bn = s15;
+        iform = s18;
         // :: error: (assignment.type.incompatible)
-        fbn = s15;
+        sn = s18;
+        // :: error: (assignment.type.incompatible)
+        bn = s18;
+        // :: error: (assignment.type.incompatible)
+        fbn = s18;
+
+        us = s19;
+        // :: error: (assignment.type.incompatible)
+        fqn = s19;
+        // :: error: (assignment.type.incompatible)
+        cgn = s19;
+        // :: error: (assignment.type.incompatible)
+        fd = s19;
+        // :: error: (assignment.type.incompatible)
+        iform = s19;
+        // :: error: (assignment.type.incompatible)
+        sn = s19;
+        // :: error: (assignment.type.incompatible)
+        bn = s19;
+        // :: error: (assignment.type.incompatible)
+        fbn = s19;
+
+        us = s20;
+        fqn = s20;
+        cgn = s20;
+        // :: error: (assignment.type.incompatible)
+        fd = s20;
+        // :: error: (assignment.type.incompatible)
+        iform = s20;
+        sn = s20;
+        // :: error: (assignment.type.incompatible)
+        bn = s20;
+        fbn = s20;
+
+        us = s21;
+        // :: error: (assignment.type.incompatible)
+        fqn = s21;
+        // :: error: (assignment.type.incompatible)
+        cgn = s21;
+        // :: error: (assignment.type.incompatible)
+        fd = s21;
+        // :: error: (assignment.type.incompatible)
+        iform = s21;
+        // :: error: (assignment.type.incompatible)
+        sn = s21;
+        // :: error: (assignment.type.incompatible)
+        bn = s21;
+        // :: error: (assignment.type.incompatible)
+        fbn = s21;
+
+        us = s22;
+        // :: error: (assignment.type.incompatible)
+        fqn = s22;
+        // :: error: (assignment.type.incompatible)
+        cgn = s22;
+        // :: error: (assignment.type.incompatible)
+        fd = s22;
+        // :: error: (assignment.type.incompatible)
+        iform = s22;
+        // :: error: (assignment.type.incompatible)
+        sn = s22;
+        // :: error: (assignment.type.incompatible)
+        bn = s22;
+        // :: error: (assignment.type.incompatible)
+        fbn = s22;
+
+        // Examples from the manual start here
+
+        us = t13;
+        fqn = t13;
+        cgn = t13;
+        // :: error: (assignment.type.incompatible)
+        fd = t13;
+        // :: error: (assignment.type.incompatible)
+        iform = t13;
+        sn = t13;
+        // :: error: (assignment.type.incompatible)
+        bn = t13;
+        fbn = t13;
+
+        us = t14;
+        fqn = t14;
+        // :: error: (assignment.type.incompatible)
+        cgn = t14;
+        // :: error: (assignment.type.incompatible)
+        fd = t14;
+        // :: error: (assignment.type.incompatible)
+        iform = t14;
+        sn = t14;
+        // :: error: (assignment.type.incompatible)
+        bn = t14; // t14 is int[][]
 
         us = t1;
         fqn = t1;
@@ -340,6 +439,30 @@ public class SignatureTypeFactoryTest {
         sn = t1;
         bn = t1;
         fbn = t1;
+
+        us = t12;
+        // :: error: (assignment.type.incompatible)
+        fqn = t12;
+        cgn = t12;
+        fd = t12;
+        // :: error: (assignment.type.incompatible)
+        iform = t12;
+        // :: error: (assignment.type.incompatible)
+        sn = t12;
+        // :: error: (assignment.type.incompatible)
+        bn = t12;
+        // :: error: (assignment.type.incompatible)
+        fbn = t12;
+
+        us = t5;
+        fqn = t5;
+        cgn = t5;
+        // :: error: (assignment.type.incompatible)
+        fd = t5;
+        iform = t5;
+        sn = t5;
+        bn = t5;
+        fbn = t5;
 
         us = t2;
         // :: error: (assignment.type.incompatible)
@@ -355,46 +478,6 @@ public class SignatureTypeFactoryTest {
         bn = t2;
         // :: error: (assignment.type.incompatible)
         fbn = t2;
-
-        us = t3;
-        // :: error: (assignment.type.incompatible)
-        fqn = t3;
-        // :: error: (assignment.type.incompatible)
-        cgn = t3;
-        fd = t3;
-        // :: error: (assignment.type.incompatible)
-        iform = t3;
-        // :: error: (assignment.type.incompatible)
-        sn = t3;
-        // :: error: (assignment.type.incompatible)
-        bn = t3;
-        // :: error: (assignment.type.incompatible)
-        fbn = t3;
-
-        us = t4;
-        // :: error: (assignment.type.incompatible)
-        fqn = t4;
-        // :: error: (assignment.type.incompatible)
-        cgn = t4;
-        fd = t4;
-        // :: error: (assignment.type.incompatible)
-        iform = t4;
-        // :: error: (assignment.type.incompatible)
-        sn = t4;
-        // :: error: (assignment.type.incompatible)
-        bn = t4;
-        // :: error: (assignment.type.incompatible)
-        fbn = t4;
-
-        us = t5;
-        fqn = t5;
-        cgn = t5;
-        // :: error: (assignment.type.incompatible)
-        fd = t5;
-        iform = t5;
-        sn = t5;
-        bn = t5;
-        fbn = t5;
 
         us = t6;
         fqn = t6;
@@ -423,101 +506,35 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         fbn = t7;
 
-        us = t8;
+        us = t29;
         // :: error: (assignment.type.incompatible)
-        fqn = t8;
-        cgn = t8;
+        fqn = t29;
         // :: error: (assignment.type.incompatible)
-        fd = t8;
+        cgn = t29;
         // :: error: (assignment.type.incompatible)
-        iform = t8;
+        fd = t29;
         // :: error: (assignment.type.incompatible)
-        sn = t8;
+        iform = t29;
+        sn = t29;
         // :: error: (assignment.type.incompatible)
-        bn = t8;
+        bn = t29;
         // :: error: (assignment.type.incompatible)
-        fbn = t8;
+        fbn = t29;
 
-        us = t9;
+        us = t33;
         // :: error: (assignment.type.incompatible)
-        fqn = t9;
+        fqn = t33;
         // :: error: (assignment.type.incompatible)
-        cgn = t9;
-        fd = t9;
+        cgn = t33;
         // :: error: (assignment.type.incompatible)
-        iform = t9;
+        fd = t33;
         // :: error: (assignment.type.incompatible)
-        sn = t9;
+        iform = t33;
+        sn = t33;
         // :: error: (assignment.type.incompatible)
-        bn = t9;
+        bn = t33;
         // :: error: (assignment.type.incompatible)
-        fbn = t9;
-
-        us = t10;
-        // :: error: (assignment.type.incompatible)
-        fqn = t10;
-        cgn = t10;
-        // :: error: (assignment.type.incompatible)
-        fd = t10;
-        // :: error: (assignment.type.incompatible)
-        iform = t10;
-        // :: error: (assignment.type.incompatible)
-        sn = t10;
-        // :: error: (assignment.type.incompatible)
-        bn = t10;
-        // :: error: (assignment.type.incompatible)
-        fbn = t10;
-
-        us = t11;
-        // :: error: (assignment.type.incompatible)
-        fqn = t11;
-        // :: error: (assignment.type.incompatible)
-        cgn = t11;
-        fd = t11;
-        // :: error: (assignment.type.incompatible)
-        iform = t11;
-        // :: error: (assignment.type.incompatible)
-        sn = t11;
-        // :: error: (assignment.type.incompatible)
-        bn = t11;
-        // :: error: (assignment.type.incompatible)
-        fbn = t11;
-
-        us = t12;
-        // :: error: (assignment.type.incompatible)
-        fqn = t12;
-        cgn = t12;
-        fd = t12;
-        // :: error: (assignment.type.incompatible)
-        iform = t12;
-        // :: error: (assignment.type.incompatible)
-        sn = t12;
-        // :: error: (assignment.type.incompatible)
-        bn = t12;
-        // :: error: (assignment.type.incompatible)
-        fbn = t12;
-
-        us = t13;
-        fqn = t13;
-        cgn = t13;
-        // :: error: (assignment.type.incompatible)
-        fd = t13;
-        iform = t13;
-        sn = t13;
-        bn = t13;
-        fbn = t13;
-
-        us = t14;
-        fqn = t14;
-        // :: error: (assignment.type.incompatible)
-        cgn = t14;
-        // :: error: (assignment.type.incompatible)
-        fd = t14;
-        // :: error: (assignment.type.incompatible)
-        iform = t14;
-        sn = t14;
-        // :: error: (assignment.type.incompatible)
-        bn = t14; // t14 is int[][]
+        fbn = t33;
 
         us = t15;
         fqn = t15;
@@ -543,74 +560,6 @@ public class SignatureTypeFactoryTest {
         sn = t16;
         // :: error: (assignment.type.incompatible)
         bn = t16; // t16 is java.lang.Integer[]
-
-        us = t17;
-        fqn = t17;
-        cgn = t17;
-        // :: error: (assignment.type.incompatible)
-        fd = t17;
-        // :: error: (assignment.type.incompatible)
-        iform = t17;
-        // :: error: (assignment.type.incompatible)
-        sn = t17;
-        bn = t17;
-        fbn = t17;
-
-        us = t18;
-        fqn = t18;
-        // :: error: (assignment.type.incompatible)
-        cgn = t18;
-        // :: error: (assignment.type.incompatible)
-        fd = t18;
-        // :: error: (assignment.type.incompatible)
-        iform = t18;
-        // :: error: (assignment.type.incompatible)
-        sn = t18;
-        // :: error: (assignment.type.incompatible)
-        bn = t18; // t18 is package.Outer.Inner[]
-
-        us = t19;
-        // :: error: (assignment.type.incompatible)
-        fqn = t19;
-        cgn = t19;
-        // :: error: (assignment.type.incompatible)
-        fd = t19;
-        // :: error: (assignment.type.incompatible)
-        iform = t19;
-        // :: error: (assignment.type.incompatible)
-        sn = t19;
-        bn = t19;
-        fbn = t19;
-
-        us = t20;
-        // :: error: (assignment.type.incompatible)
-        fqn = t20;
-        // :: error: (assignment.type.incompatible)
-        cgn = t20;
-        // :: error: (assignment.type.incompatible)
-        fd = t20;
-        // :: error: (assignment.type.incompatible)
-        iform = t20;
-        // :: error: (assignment.type.incompatible)
-        sn = t20;
-        // :: error: (assignment.type.incompatible)
-        bn = t20;
-        // :: error: (assignment.type.incompatible)
-        fbn = t20;
-
-        us = t21;
-        // :: error: (assignment.type.incompatible)
-        fqn = t21;
-        // :: error: (assignment.type.incompatible)
-        cgn = t21;
-        // :: error: (assignment.type.incompatible)
-        fd = t21;
-        // :: error: (assignment.type.incompatible)
-        iform = t21;
-        // :: error: (assignment.type.incompatible)
-        sn = t21;
-        // :: error: (assignment.type.incompatible)
-        bn = t21; // t21 is package.Outer$Inner[]
 
         us = t22;
         // :: error: (assignment.type.incompatible)
@@ -643,6 +592,51 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         fbn = t23;
 
+        us = t3;
+        // :: error: (assignment.type.incompatible)
+        fqn = t3;
+        // :: error: (assignment.type.incompatible)
+        cgn = t3;
+        fd = t3;
+        // :: error: (assignment.type.incompatible)
+        iform = t3;
+        // :: error: (assignment.type.incompatible)
+        sn = t3;
+        // :: error: (assignment.type.incompatible)
+        bn = t3;
+        // :: error: (assignment.type.incompatible)
+        fbn = t3;
+
+        us = t8;
+        // :: error: (assignment.type.incompatible)
+        fqn = t8;
+        cgn = t8;
+        // :: error: (assignment.type.incompatible)
+        fd = t8;
+        // :: error: (assignment.type.incompatible)
+        iform = t8;
+        // :: error: (assignment.type.incompatible)
+        sn = t8;
+        // :: error: (assignment.type.incompatible)
+        bn = t8;
+        // :: error: (assignment.type.incompatible)
+        fbn = t8;
+
+        us = t9;
+        // :: error: (assignment.type.incompatible)
+        fqn = t9;
+        // :: error: (assignment.type.incompatible)
+        cgn = t9;
+        fd = t9;
+        // :: error: (assignment.type.incompatible)
+        iform = t9;
+        // :: error: (assignment.type.incompatible)
+        sn = t9;
+        // :: error: (assignment.type.incompatible)
+        bn = t9;
+        // :: error: (assignment.type.incompatible)
+        fbn = t9;
+
         us = t24;
         // :: error: (assignment.type.incompatible)
         fqn = t24;
@@ -666,41 +660,13 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         fd = t25;
         // :: error: (assignment.type.incompatible)
-        iform = t25; // rhs is package/Outer$Inner[]
+        iform = t25; // rhs is pakkage/Outer$Inner[]
         // :: error: (assignment.type.incompatible)
         sn = t25;
         // :: error: (assignment.type.incompatible)
         bn = t25;
         // :: error: (assignment.type.incompatible)
         fbn = t25;
-
-        us = t26;
-        // :: error: (assignment.type.incompatible)
-        fqn = t26;
-        cgn = t26;
-        // :: error: (assignment.type.incompatible)
-        fd = t26;
-        // :: error: (assignment.type.incompatible)
-        iform = t26;
-        // :: error: (assignment.type.incompatible)
-        sn = t26;
-        bn = t26;
-        fbn = t26;
-
-        us = t27;
-        // :: error: (assignment.type.incompatible)
-        fqn = t27;
-        // :: error: (assignment.type.incompatible)
-        cgn = t27;
-        fd = t27;
-        // :: error: (assignment.type.incompatible)
-        iform = t27;
-        // :: error: (assignment.type.incompatible)
-        sn = t27;
-        // :: error: (assignment.type.incompatible)
-        bn = t27;
-        // :: error: (assignment.type.incompatible)
-        fbn = t27;
 
         us = t28;
         // :: error: (assignment.type.incompatible)
@@ -717,23 +683,50 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         fbn = t28;
 
-        us = t29;
+        us = t27;
         // :: error: (assignment.type.incompatible)
-        fqn = t29;
+        fqn = t27;
         // :: error: (assignment.type.incompatible)
-        cgn = t29;
+        cgn = t27;
+        fd = t27;
         // :: error: (assignment.type.incompatible)
-        fd = t29;
+        iform = t27;
         // :: error: (assignment.type.incompatible)
-        iform = t29;
-        sn = t29;
+        sn = t27;
         // :: error: (assignment.type.incompatible)
-        bn = t29;
+        bn = t27;
         // :: error: (assignment.type.incompatible)
-        fbn = t29;
+        fbn = t27;
+
+        us = t26;
+        fqn = t26;
+        cgn = t26;
+        // :: error: (assignment.type.incompatible)
+        fd = t26;
+        // :: error: (assignment.type.incompatible)
+        iform = t26;
+        // :: error: (assignment.type.incompatible)
+        sn = t26;
+        bn = t26;
+        fbn = t26;
+
+        us = t32;
+        // :: error: (assignment.type.incompatible)
+        fqn = t32;
+        // :: error: (assignment.type.incompatible)
+        cgn = t32;
+        // :: error: (assignment.type.incompatible)
+        fd = t32;
+        // :: error: (assignment.type.incompatible)
+        iform = t32; // t32 is array
+        // :: error: (assignment.type.incompatible)
+        sn = t32;
+        // :: error: (assignment.type.incompatible)
+        bn = t32;
+        // :: error: (assignment.type.incompatible)
+        fbn = t32;
 
         us = t30;
-        // :: error: (assignment.type.incompatible)
         fqn = t30;
         // :: error: (assignment.type.incompatible)
         cgn = t30;
@@ -761,39 +754,7 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         fbn = t31;
 
-        us = t32;
-        // :: error: (assignment.type.incompatible)
-        fqn = t32;
-        // :: error: (assignment.type.incompatible)
-        cgn = t32;
-        // :: error: (assignment.type.incompatible)
-        fd = t32;
-        // :: error: (assignment.type.incompatible)
-        iform = t32; // t32 is array
-        // :: error: (assignment.type.incompatible)
-        sn = t32;
-        // :: error: (assignment.type.incompatible)
-        bn = t32;
-        // :: error: (assignment.type.incompatible)
-        fbn = t32;
-
-        us = t33;
-        // :: error: (assignment.type.incompatible)
-        fqn = t33;
-        // :: error: (assignment.type.incompatible)
-        cgn = t33;
-        // :: error: (assignment.type.incompatible)
-        fd = t33;
-        // :: error: (assignment.type.incompatible)
-        iform = t33;
-        sn = t33;
-        // :: error: (assignment.type.incompatible)
-        bn = t33;
-        // :: error: (assignment.type.incompatible)
-        fbn = t33;
-
         us = t34;
-        // :: error: (assignment.type.incompatible)
         fqn = t34;
         cgn = t34;
         // :: error: (assignment.type.incompatible)
@@ -802,9 +763,118 @@ public class SignatureTypeFactoryTest {
         iform = t34;
         // :: error: (assignment.type.incompatible)
         sn = t34;
-        // :: error: (assignment.type.incompatible)
         bn = t34;
-        // :: error: (assignment.type.incompatible)
         fbn = t34;
+
+        us = t17;
+        fqn = t17;
+        cgn = t17;
+        // :: error: (assignment.type.incompatible)
+        fd = t17;
+        // :: error: (assignment.type.incompatible)
+        iform = t17;
+        // :: error: (assignment.type.incompatible)
+        sn = t17;
+        bn = t17;
+        fbn = t17;
+
+        us = t18;
+        fqn = t18;
+        // :: error: (assignment.type.incompatible)
+        cgn = t18;
+        // :: error: (assignment.type.incompatible)
+        fd = t18;
+        // :: error: (assignment.type.incompatible)
+        iform = t18;
+        // :: error: (assignment.type.incompatible)
+        sn = t18;
+        // :: error: (assignment.type.incompatible)
+        bn = t18; // t18 is pakkage.Outer.Inner[]
+
+        us = t19;
+        fqn = t19;
+        cgn = t19;
+        // :: error: (assignment.type.incompatible)
+        fd = t19;
+        // :: error: (assignment.type.incompatible)
+        iform = t19;
+        // :: error: (assignment.type.incompatible)
+        sn = t19;
+        bn = t19;
+        fbn = t19;
+
+        us = t21;
+        fqn = t21;
+        // :: error: (assignment.type.incompatible)
+        cgn = t21;
+        // :: error: (assignment.type.incompatible)
+        fd = t21;
+        // :: error: (assignment.type.incompatible)
+        iform = t21;
+        // :: error: (assignment.type.incompatible)
+        sn = t21;
+        // :: error: (assignment.type.incompatible)
+        bn = t21; // t21 is pakkage.Outer$Inner[]
+
+        us = t20;
+        // :: error: (assignment.type.incompatible)
+        fqn = t20;
+        // :: error: (assignment.type.incompatible)
+        cgn = t20;
+        // :: error: (assignment.type.incompatible)
+        fd = t20;
+        // :: error: (assignment.type.incompatible)
+        iform = t20;
+        // :: error: (assignment.type.incompatible)
+        sn = t20;
+        // :: error: (assignment.type.incompatible)
+        bn = t20;
+        // :: error: (assignment.type.incompatible)
+        fbn = t20;
+
+        us = t10;
+        // :: error: (assignment.type.incompatible)
+        fqn = t10;
+        cgn = t10;
+        // :: error: (assignment.type.incompatible)
+        fd = t10;
+        // :: error: (assignment.type.incompatible)
+        iform = t10;
+        // :: error: (assignment.type.incompatible)
+        sn = t10;
+        // :: error: (assignment.type.incompatible)
+        bn = t10;
+        // :: error: (assignment.type.incompatible)
+        fbn = t10;
+
+        us = t4;
+        // :: error: (assignment.type.incompatible)
+        fqn = t4;
+        // :: error: (assignment.type.incompatible)
+        cgn = t4;
+        fd = t4;
+        // :: error: (assignment.type.incompatible)
+        iform = t4;
+        // :: error: (assignment.type.incompatible)
+        sn = t4;
+        // :: error: (assignment.type.incompatible)
+        bn = t4;
+        // :: error: (assignment.type.incompatible)
+        fbn = t4;
+
+        us = t11;
+        // :: error: (assignment.type.incompatible)
+        fqn = t11;
+        // :: error: (assignment.type.incompatible)
+        cgn = t11;
+        fd = t11;
+        // :: error: (assignment.type.incompatible)
+        iform = t11;
+        // :: error: (assignment.type.incompatible)
+        sn = t11;
+        // :: error: (assignment.type.incompatible)
+        bn = t11;
+        // :: error: (assignment.type.incompatible)
+        fbn = t11;
     }
 }

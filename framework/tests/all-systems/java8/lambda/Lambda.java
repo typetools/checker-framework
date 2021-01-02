@@ -21,7 +21,7 @@ interface Noop {
     void noop();
 }
 
-class Lambda {
+public class Lambda {
 
     public static void consumeStr(String str) {}
 

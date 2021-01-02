@@ -623,18 +623,14 @@ def wget_file(source_url, destination_dir):
     print "DEST DIR: " + destination_dir
     execute("wget %s" % source_url, True, False, destination_dir)
 
-def download_binary(source_url, destination, max_size):
+def download_binary(source_url, destination):
     """Download a file from the given URL and save its contents to the
-    destination filename. Raise an exception if the source file is larger than
-    max_size."""
+    destination filename."""
     http_response = urllib2.urlopen(url=source_url)
     content_length = http_response.headers['content-length']
 
     if content_length is None:
         raise Exception("No content-length when downloading: " + source_url)
-
-    if int(content_length) > max_size:
-        raise Exception("Content-length (" + content_length + ") greater than max_size (" + max_size + ") ")
 
     dest_file = open(destination, 'wb')
     dest_file.write(http_response.read())
@@ -824,19 +820,19 @@ def get_announcement_email(version):
     """Return the template for the e-mail announcing a new release of the
     Checker Framework."""
     return """
-    To:  checker-framework-discuss@googlegroups.com
-    Subject: Release %s of the Checker Framework
+To:  checker-framework-discuss@googlegroups.com
+Subject: Release %s of the Checker Framework
 
-    We have released a new version of the Checker Framework.
-    The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
+We have released a new version of the Checker Framework.
+The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
 
-    You can find documentation and download links at:
-    http://CheckerFramework.org/
+You can find documentation and download links at:
+http://CheckerFramework.org/
 
-    Changes for Checker Framework version %s:
+Changes for Checker Framework version %s:
 
-    <<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
-    """ % (version, version)
+<<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
+""" % (version, version)
 
 #=========================================================================================
 # Testing

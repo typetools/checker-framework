@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.EnsuresLTLengthOf;
 import org.checkerframework.checker.index.qual.EnsuresLTLengthOfIf;
 
-class RepeatLTLengthOf {
+public class RepeatLTLengthOf {
 
     protected String value1;
     protected String value2;

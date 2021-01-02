@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeKind;
+import org.checkerframework.framework.qual.UpperBoundFor;
 
 /**
  * The value is to be interpreted as signed. That is, if the most significant bit in the bitwise
@@ -26,18 +27,17 @@ import org.checkerframework.framework.qual.TypeKind;
             TypeKind.LONG,
             TypeKind.SHORT,
             TypeKind.FLOAT,
-            TypeKind.DOUBLE,
-            TypeKind.CHAR
-        }
-
-        // This is commented out until implicitly signed boxed types are implemented
-        // correctly.
-
-        /*,
+            TypeKind.DOUBLE
+        },
         types = {
             java.lang.Byte.class,
-            java.lang.Short.class,
             java.lang.Integer.class,
-            java.lang.Long.class
-        }*/ )
+            java.lang.Long.class,
+            java.lang.Short.class,
+            java.lang.Float.class,
+            java.lang.Double.class
+        })
+@UpperBoundFor(
+        typeKinds = {TypeKind.FLOAT, TypeKind.DOUBLE},
+        types = {java.lang.Float.class, java.lang.Double.class})
 public @interface Signed {}

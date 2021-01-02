@@ -23,7 +23,7 @@ notest = False
 
 def print_usage():
     """Print usage information."""
-    print "Usage:    python release_build.py [projects] [options]"
+    print "Usage:    python3 release_build.py [projects] [options]"
     print_projects(1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"
@@ -33,7 +33,8 @@ def clone_or_update_repos(auto):
     """Clone the relevant repos from scratch or update them if they exist and
     if directed to do so by the user."""
     message = """Before building the release, we clone or update the release repositories.
-However, if you have had to run the script multiple times and no files have changed, you may skip this step.
+However, if you have had to run the script multiple times today and no files
+have changed since the last attempt, you may skip this step.
 WARNING: IF THIS IS YOUR FIRST RUN OF THE RELEASE ON RELEASE DAY, DO NOT SKIP THIS STEP.
 The following repositories will be cloned or updated from their origins:
 """
@@ -149,7 +150,7 @@ def update_project_dev_website(project_name, release_version):
 
 def get_current_date():
     "Return today's date in a string format similar to: 02 May 2016"
-    return CURRENT_DATE.strftime("%d %b %Y")
+    return datetime.date.today().strftime("%d %b %Y")
 
 def build_annotation_tools_release(version, afu_interm_dir):
     """Build the Annotation File Utilities project's artifacts and place them
@@ -192,9 +193,8 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
 
     # Check that updating versions didn't overlook anything.
     print "Here are occurrences of the old version number, " + old_cf_version
-    old_cf_version_regex = old_cf_version.replace('.', '\.')
-    find_cmd = 'find . -type d \( -path \*/build -o -path \*/.git \) -prune  -o \! -type d \( -name \*\~ -o -name \*.bin \) -prune -o  -type f -exec grep -i -n -e \'\b%s\b\' {} +' % old_cf_version_regex
-    execute(find_cmd, False, True, CHECKER_FRAMEWORK_RELEASE)
+    grep_cmd = 'grep -r --exclude-dir=build --exclude-dir=.git -F %s' % old_cf_version
+    execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
 
     if not manual_only:
@@ -354,6 +354,7 @@ def main(argv):
               "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n")
         prompt_to_continue()
 
+    AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
     old_afu_version = get_afu_version_from_html(AFU_MANUAL)
     (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version, auto)
 
@@ -407,6 +408,7 @@ def main(argv):
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .") # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
+    CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
     execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
 
     # Each project has a set of files that are updated for release. Usually these updates include new

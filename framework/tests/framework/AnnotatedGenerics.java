@@ -1,6 +1,6 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
-class AnnotatedGenerics {
+public class AnnotatedGenerics {
 
     public static void testNullableTypeVariable() {
         class Test<T> {
@@ -100,19 +100,19 @@ class AnnotatedGenerics {
     // not seem to support the diamond operator in conjunction with anonymous classes.
     //
     //    public void testAnonymousConstructorsWithTypeParameterInferrence() {
-    //    	@Odd MyClass<@Odd String> innerClass1 = new @Odd MyClass<>() {};
-    //    	@Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<>() {};
+    //          @Odd MyClass<@Odd String> innerClass1 = new @Odd MyClass<>() {};
+    //          @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<>() {};
     //
-    //    	// Should error because the RHS isn't annotated as '@Odd'
-    //    	@Odd MyClass<@Odd String> innerClass2 = new MyClass<>() {};
-    //    	@Odd NormalClass<@Odd String> normal2 = new NormalClass<>() {};
+    //          // Should error because the RHS isn't annotated as '@Odd'
+    //          @Odd MyClass<@Odd String> innerClass2 = new MyClass<>() {};
+    //          @Odd NormalClass<@Odd String> normal2 = new NormalClass<>() {};
     //
-    //    	@Odd MyClass<String> innerClass3 = new @Odd MyClass<>() {};
-    //    	@Odd NormalClass<String> normal3 = new @Odd NormalClass<>() {};
+    //          @Odd MyClass<String> innerClass3 = new @Odd MyClass<>() {};
+    //          @Odd NormalClass<String> normal3 = new @Odd NormalClass<>() {};
     //
-    //    	// Should error because the RHS isn't annotated as '@Odd'
-    //    	@Odd MyClass<String> innerClass4 = new MyClass<>() {};
-    //    	@Odd NormalClass<String> normal4 = new NormalClass<>() {};
+    //          // Should error because the RHS isn't annotated as '@Odd'
+    //          @Odd MyClass<String> innerClass4 = new MyClass<>() {};
+    //          @Odd NormalClass<String> normal4 = new NormalClass<>() {};
     //    }
 
     static class NormalClass<T> {

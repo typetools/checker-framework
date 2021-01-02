@@ -2,7 +2,7 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 // :: error: (initialization.static.fields.uninitialized)
-class StaticInitializer {
+public class StaticInitializer {
 
     public static String a;
     public static String b;

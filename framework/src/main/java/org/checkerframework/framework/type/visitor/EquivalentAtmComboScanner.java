@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.AtmCombo;
  */
 public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
         extends AbstractAtmComboVisitor<RETURN_TYPE, PARAM> {
+
     /**
      * A history of type pairs that have already been visited and the return type of their visit.
      */
@@ -142,7 +143,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
         }
         visited.add(type1, type2, null);
 
-        return scan(type1.directSuperTypes(), type2.directSuperTypes(), param);
+        return scan(type1.getBounds(), type2.getBounds(), param);
     }
 
     @Override
@@ -202,6 +203,9 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
         return r;
     }
 
+    /**
+     * A history of type pairs that have already been visited and the return type of their visit.
+     */
     protected class Visited {
 
         private final Map<AnnotatedTypeMirror, Map<AnnotatedTypeMirror, RETURN_TYPE>> visits =

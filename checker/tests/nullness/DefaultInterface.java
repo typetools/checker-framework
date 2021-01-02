@@ -7,7 +7,7 @@ interface Foo {
 }
 
 @DefaultQualifier(org.checkerframework.checker.nullness.qual.NonNull.class)
-class DefaultInterface {
+public class DefaultInterface {
 
     public void test() {
 

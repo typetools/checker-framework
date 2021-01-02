@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -58,8 +59,10 @@ public class Range {
     /** A range containing all possible 8-bit values. */
     public static final Range BYTE_EVERYTHING = create(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
-    /** The empty range singleton. */
-    public static final Range NOTHING = new Range(Long.MAX_VALUE, Long.MIN_VALUE);
+    /** The empty range. This is the only Range object that contains nothing */
+    @SuppressWarnings(
+            "interning:assignment.type.incompatible") // no other constructor call makes this
+    public static final @InternedDistinct Range NOTHING = new Range(Long.MAX_VALUE, Long.MIN_VALUE);
 
     /** An alias to the range containing all possible 64-bit values. */
     public static final Range EVERYTHING = LONG_EVERYTHING;
@@ -282,7 +285,7 @@ public class Range {
         return this == NOTHING;
     }
 
-    /** The number of values representable in 32 bits: 2^32 or 1&lt;&lt;32. */
+    /** The number of values representable in 32 bits: 2^32 or {@code 1<<32}. */
     private static final long INT_WIDTH = INT_EVERYTHING.width();
 
     /**

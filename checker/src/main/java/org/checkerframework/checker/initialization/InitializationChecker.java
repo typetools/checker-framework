@@ -4,9 +4,8 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
+import java.util.SortedSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
@@ -22,11 +21,12 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     protected InitializationChecker() {}
 
     @Override
-    public Collection<String> getSuppressWarningsKeys() {
-        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
-        // The key "initialization" is not useful here: it suppresses *all* warnings, not just those
-        // related to initialization.  Instead, if the user writes
-        // @SuppressWarnings("initialization"), let that match keys containing that string.
+    public SortedSet<String> getSuppressWarningsPrefixes() {
+        SortedSet<String> result = super.getSuppressWarningsPrefixes();
+        // "fbc" is for backward compatibility only.  Note that the SuppressesWarnings strings
+        // "initialization" and "fbc" suppress *all* warnings, not just those related to
+        // initialization.  See manual section
+        // https://checkerframework.org/manual/#initialization-checking-suppressing-warnings .
         result.add("fbc");
         return result;
     }

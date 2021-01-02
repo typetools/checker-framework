@@ -13,7 +13,8 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A TypeVisitor that takes two AnnotatedTypeMirrors as parameters, and visits them simultaneously.
- * Both AnnotatedTypeMirrors must have the same structure.
+ * Both AnnotatedTypeMirrors must have the same structure, or a subclass must arrange not to
+ * continue recursing past the point at which their structure diverges.
  *
  * @see AnnotatedTypeScanner
  */
@@ -66,7 +67,7 @@ public abstract class AnnotatedTypeComparer<R>
         throw new BugInCF(
                 "AnnotatedTypeComparer.scanAndReduce: "
                         + p
-                        + "is not Iterable<? extends AnnotatedTypeMirror>");
+                        + " is not Iterable<? extends AnnotatedTypeMirror>");
     }
 
     @Override
@@ -163,7 +164,7 @@ public abstract class AnnotatedTypeComparer<R>
             return visitedNodes.get(type);
         }
         visitedNodes.put(type, null);
-        R r = scan(type.directSuperTypes(), ((AnnotatedIntersectionType) p).directSuperTypes());
+        R r = scan(type.getBounds(), ((AnnotatedIntersectionType) p).getBounds());
         return r;
     }
 

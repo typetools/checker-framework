@@ -97,6 +97,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
      * Returns the store that flows along the outgoing exceptional edge labeled with {@code
      * exception} (or {@code null} if no special handling is required for exceptional edges).
      *
+     * @param exception an exception type
      * @return the store that flows along the outgoing exceptional edge labeled with {@code
      *     exception} (or {@code null} if no special handling is required for exceptional edges)
      */
