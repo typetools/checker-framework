@@ -1,6 +1,7 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -29,6 +30,7 @@ import com.github.javaparser.utils.SourceRoot;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.ClassPath;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +39,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -57,6 +61,9 @@ import org.checkerframework.javacutil.BugInCF;
  * </ul>
  */
 public class RemoveAnnotationsForInference {
+
+    public static boolean debug = true;
+
     /**
      * Processes each provided command-line argument; see class documentation for details.
      *
@@ -93,14 +100,32 @@ public class RemoveAnnotationsForInference {
      * @param dir directory to process
      */
     private void process(String dir) {
-        Path root = Paths.get(dir);
+
+        if (debug) {
+            System.out.printf("process(%s)%n", dir);
+        }
+
+        File f = new File(dir);
+        if (!f.isDirectory()) {
+            System.err.printf("Not a directory: %s (%s).%n", dir, f);
+            System.exit(1);
+        }
+        if (!f.exists()) {
+            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
+            System.exit(1);
+        }
+        String dirName = f.getAbsolutePath();
+        if (dirName.endsWith("/.")) {
+            dirName = dirName.substring(0, dirName.length() - 2);
+        }
+        Path root = Paths.get(dirName);
+        System.out.printf("root = %s%n", root);
         MinimizerCallback mc = new MinimizerCallback();
         CollectionStrategy strategy = new ParserCollectionStrategy();
         // Required to include directories that contain a module-info.java, which don't parse by
         // default.
-        // TODO: reinstate?
-        // strategy.getParserConfiguration()
-        //         .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+        strategy.getParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
         ProjectRoot projectRoot = strategy.collect(root);
 
         projectRoot
@@ -129,7 +154,9 @@ public class RemoveAnnotationsForInference {
         public Result process(
                 Path localPath, Path absolutePath, ParseResult<CompilationUnit> result) {
             Result res = Result.SAVE;
-            // System.out.printf("Minimizing %s%n", absolutePath);
+            if (debug) {
+                System.out.printf("Removing annotations from %s%n", absolutePath);
+            }
             Optional<CompilationUnit> opt = result.getResult();
             if (opt.isPresent()) {
                 CompilationUnit cu = opt.get();
@@ -203,7 +230,13 @@ public class RemoveAnnotationsForInference {
          * @return the argument to retain it, or null to remove it
          */
         Visitable processAnnotation(Visitable v) {
+            if (debug) {
+                System.out.printf("processAnnotation(%s)%n", v);
+            }
             if (v == null) {
+                if (debug) {
+                    System.out.printf("processAnnotation(null) => null%n");
+                }
                 return null;
             }
             if (!(v instanceof AnnotationExpr)) {
@@ -213,8 +246,45 @@ public class RemoveAnnotationsForInference {
 
             String name = n.getNameAsString();
 
-            if (name.equals("SuppressWarnings") || name.equals("java.lang. SuppressWarnings")) {
+            if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
                 suppressionStack.addAll(suppressWarningsStrings(n));
+                if (debug) {
+                    System.out.printf(
+                            "processAnnotation(%s) => self (is Suppresswarningsstrings)%n", v);
+                    System.out.println(suppressionStack.toStringDebug());
+                }
+
+                return n;
+            }
+
+            // Don't remove most annotations defined in the JDK
+            if (name.equals("Serial")
+                    || name.equals("java.io.Serial")
+                    || name.equals("Deprecated")
+                    || name.equals("java.lang.Deprecated")
+                    || name.equals("FunctionalInterface")
+                    || name.equals("java.lang.FunctionalInterface")
+                    || name.equals("Override")
+                    || name.equals("java.lang.Override")
+                    || name.equals("SafeVarargs")
+                    || name.equals("java.lang.SafeVarargs")
+                    || name.equals("Documented")
+                    || name.equals("java.lang.annotation.Documented")
+                    || name.equals("Inherited")
+                    || name.equals("java.lang.annotation.Inherited")
+                    || name.equals("Native")
+                    || name.equals("java.lang.annotation.Native")
+                    || name.equals("Repeatable")
+                    || name.equals("java.lang.annotation.Repeatable")
+                    || name.equals("Retention")
+                    || name.equals("java.lang.annotation.Retention")
+                    || name.equals("Target")
+                    || name.equals("java.lang.annotation.Target")) {
+                suppressionStack.addAll(suppressWarningsStrings(n));
+                if (debug) {
+                    System.out.printf("processAnnotation(%s) => self (is in JDK)%n", v);
+                }
+
                 return n;
             }
 
@@ -227,25 +297,43 @@ public class RemoveAnnotationsForInference {
                     || name.equals("javax.inject.Singleton")
                     || name.equals("Option")
                     || name.equals("org.plumelib.options.Option")) {
+                // Potential problem:  Other annotations might have appeared before this annotation
+                // and might have already been processed and incorrectly removed.
                 suppressionStack.add("allcheckers");
+                if (debug) {
+                    System.out.printf("processAnnotation(%s) => self (reflection)%n", v);
+                }
                 return n;
             }
 
-            if (suppressionStack.isSuppressed(name)) {
-                return null;
+            if (isSuppressed(name)) {
+                if (debug) {
+                    System.out.printf("processAnnotation(%s) => null (isSuppressed)%n", v);
+                }
+                return n;
             }
 
-            return n;
+            // The default behavior is to remove the annotation.
+            if (debug) {
+                System.out.printf("processAnnotation(%s) => null (fallthrough)%n", v);
+            }
+            return null;
         }
 
         /**
          * Returns true if warnings about the given annotation are suppressed.
          *
-         * @param n an annotation
+         * @param name an annotation name
          * @return true if warnings about the given annotation are suppressed
          */
-        boolean isSuppressed(AnnotationExpr n) {
-            String name = n.getName().toString();
+        boolean isSuppressed(String name) {
+            if (debug) {
+                System.out.printf(
+                        "isSuppressed(%s), fq=%s%n", name, simpleToFullyQualified.get(name));
+                if (name.equals("InternedDistinct")) {
+                    System.out.println(suppressionStack.toStringDebug());
+                }
+            }
 
             // If it's a simple name for which we know a fully-qualified name, recursively try all
             // fully-qualified names that it could expand to.
@@ -281,6 +369,8 @@ public class RemoveAnnotationsForInference {
             return processAnnotation(result);
         }
 
+        // TODO: What about variable declarations?
+
         // The subclasses of NodeWithAnnotations are the following.  Their implementations contain
         // suppressionStack.pushFrame() and suppressionStack.popFrame() calls.
         //
@@ -313,7 +403,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final AnnotationDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -321,7 +411,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final AnnotationMemberDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -329,7 +419,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final ArrayCreationLevel n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -337,7 +427,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final ArrayType n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -345,7 +435,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final ClassOrInterfaceDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -353,7 +443,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final ClassOrInterfaceType n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -361,7 +451,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final ConstructorDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -369,7 +459,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final EnumConstantDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -377,7 +467,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final EnumDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -385,7 +475,11 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final FieldDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            StringJoiner sj = new StringJoiner(", ");
+            for (VariableDeclarator var : n.getVariables()) {
+                sj.add(var.getNameAsString());
+            }
+            suppressionStack.pushFrame(sj.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -393,7 +487,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final InitializerDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame("InitializerDeclaration");
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -401,7 +495,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final MethodDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -409,7 +503,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final ModuleDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -417,7 +511,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final PackageDeclaration n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -425,7 +519,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final Parameter n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -433,7 +527,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final PrimitiveType n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -441,7 +535,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final ReceiverParameter n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -449,7 +543,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final TypeParameter n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.getNameAsString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -457,7 +551,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final UnionType n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -465,7 +559,11 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final VariableDeclarationExpr n, final Void arg) {
-            suppressionStack.pushFrame();
+            StringJoiner sj = new StringJoiner(", ");
+            for (VariableDeclarator var : n.getVariables()) {
+                sj.add(var.getNameAsString());
+            }
+            suppressionStack.pushFrame(sj.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -473,7 +571,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final VoidType n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -481,7 +579,7 @@ public class RemoveAnnotationsForInference {
 
         @Override
         public Visitable visit(final WildcardType n, final Void arg) {
-            suppressionStack.pushFrame();
+            suppressionStack.pushFrame(n.toString());
             Visitable result = super.visit(n, arg);
             suppressionStack.popFrame();
             return result;
@@ -489,15 +587,19 @@ public class RemoveAnnotationsForInference {
     }
 
     /**
-     * Maintain a stack of suppressions. Each frame is a list of strings. Each String is an argument
-     * to "@SuppressWarnings".
+     * Maintain a stack of suppressions. Each frame is a string (for debugging) and a list of
+     * strings. Each String in the list is an argument to "@SuppressWarnings".
      */
-    private static class SuppressionStack extends ArrayDeque<List<String>> {
+    private static class SuppressionStack extends ArrayDeque<Pair<String, List<String>>> {
         static final long serialVersionUID = 20201227;
 
-        /** Adds a frame to this. */
-        void pushFrame() {
-            addFirst(new ArrayList<>());
+        /**
+         * Adds a frame to this.
+         *
+         * @param s information about the frame (for debugging).
+         */
+        void pushFrame(String s) {
+            addFirst(Pair.of(s, new ArrayList<>()));
         }
 
         /** Removes a frame from this. */
@@ -515,7 +617,7 @@ public class RemoveAnnotationsForInference {
             if (colonPos != -1) {
                 s = s.substring(colonPos + 1);
             }
-            getFirst().add(s);
+            getFirst().second.add(s);
         }
 
         /**
@@ -537,10 +639,17 @@ public class RemoveAnnotationsForInference {
          * @return true if the string appears exactly in this data structure
          */
         boolean contains(String s) {
-            for (List<String> l : this) {
-                if (l.contains(s)) {
+            for (Pair<String, List<String>> p : this) {
+                if (p.second.contains(s)) {
+                    if (debug) {
+                        System.out.printf("contains(%s) => true%n", s);
+                        System.out.println(this.toStringDebug());
+                    }
                     return true;
                 }
+            }
+            if (debug) {
+                System.out.printf("contains(%s) => false%n", s);
             }
             return false;
         }
@@ -554,6 +663,10 @@ public class RemoveAnnotationsForInference {
          * @return true if warnings abuot the annotation are suppressed
          */
         boolean isSuppressed(String annoName) {
+            if (debug) {
+                System.out.printf("SuppressionStack.isSuppressed(%s)%n", annoName);
+            }
+
             // "allcheckers" suppresses all warnings.
             if (contains("allcheckers")) {
                 return true;
@@ -562,10 +675,30 @@ public class RemoveAnnotationsForInference {
             // Try every element of its fully-qualified name.
             for (String fqPart : annoName.split("\\.")) {
                 if (contains(fqPart)) {
+                    if (debug) {
+                        System.out.printf("SuppressionStack.isSuppressed(%s) => true%n", annoName);
+                    }
+
                     return true;
                 }
             }
+            if (debug) {
+                System.out.printf("SuppressionStack.isSuppressed(%s) => false%n", annoName);
+            }
             return false;
+        }
+
+        /**
+         * Returns a verbose, multiline description of this.
+         *
+         * @return a verbose, multiline description of this
+         */
+        String toStringDebug() {
+            StringJoiner sj = new StringJoiner(System.lineSeparator());
+            for (Pair<String, List<String>> p : this) {
+                sj.add(p.first + ": " + p.second.toString());
+            }
+            return sj.toString();
         }
     }
 }

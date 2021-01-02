@@ -54,14 +54,26 @@ public class JavaStubifier {
      * @param dir directory to process
      */
     private static void process(String dir) {
-        Path root = Paths.get(dir);
+        File f = new File(dir);
+        if (!f.isDirectory()) {
+            System.err.printf("Not a directory: %s (%s).%n", dir, f);
+            System.exit(1);
+        }
+        if (!f.exists()) {
+            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
+            System.exit(1);
+        }
+        String dirName = f.getAbsolutePath();
+        if (dirName.endsWith("/.")) {
+            dirName = dirName.substring(0, dirName.length() - 2);
+        }
+        Path root = Paths.get(dirName);
         MinimizerCallback mc = new MinimizerCallback();
         CollectionStrategy strategy = new ParserCollectionStrategy();
         // Required to include directories that contain a module-info.java, which don't parse by
         // default.
-        // TODO: reinstate?
-        // strategy.getParserConfiguration()
-        //         .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+        strategy.getParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
         ProjectRoot projectRoot = strategy.collect(root);
 
         projectRoot
