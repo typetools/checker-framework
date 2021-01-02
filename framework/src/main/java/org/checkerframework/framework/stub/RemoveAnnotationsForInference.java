@@ -202,7 +202,7 @@ public class RemoveAnnotationsForInference {
 
             if (isSuppressed(n)) {
                 if (debug) {
-                    System.out.printf("processAnnotation(%s) => null (isSuppressed)%n", v);
+                    System.out.printf("processAnnotation(%s) => self (isSuppressed)%n", v);
                 }
                 return n;
             }
@@ -270,7 +270,10 @@ public class RemoveAnnotationsForInference {
                 || name.equals("javax.inject.Singleton")
                 || name.equals("Option")
                 || name.equals("org.plumelib.options.Option")) {
-            return Collections.singletonList("allcheckers");
+            // Not Collections.singletonList because it will be modified.
+            List<String> result = new ArrayList<>(1);
+            result.add("allcheckers");
+            return result;
         }
 
         return null;
@@ -285,7 +288,10 @@ public class RemoveAnnotationsForInference {
      */
     private static List<String> annotationElementStrings(Expression e) {
         if (e instanceof StringLiteralExpr) {
-            return Collections.singletonList(((StringLiteralExpr) e).asString());
+            // Not `Collections.singletonList` because the result is modified.
+            List<String> result = new ArrayList<>(1);
+            result.add(((StringLiteralExpr) e).asString());
+            return result;
         } else if (e instanceof ArrayInitializerExpr) {
             NodeList<Expression> values = ((ArrayInitializerExpr) e).getValues();
             List<String> result = new ArrayList<>(values.size());
@@ -401,6 +407,15 @@ public class RemoveAnnotationsForInference {
         for (String suppressee : suppressees) {
             for (String fqPart : suppressee.split("\\.")) {
                 if (suppressWarningsStrings.contains(fqPart)) {
+                    if (debug) {
+                        System.out.printf(
+                                "suppresses(%s, %s) => true because suppresse=%s fqPart=%s suppressWarningsStrings=%s%n",
+                                suppressor,
+                                suppressees,
+                                suppressee,
+                                fqPart,
+                                suppressWarningsStrings);
+                    }
                     return true;
                 }
             }
