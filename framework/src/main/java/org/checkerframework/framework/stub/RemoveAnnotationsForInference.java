@@ -12,15 +12,7 @@ import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.modules.ModuleDeclaration;
-import com.github.javaparser.ast.type.ArrayType;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.PrimitiveType;
-import com.github.javaparser.ast.type.TypeParameter;
-import com.github.javaparser.ast.type.UnionType;
-import com.github.javaparser.ast.type.VoidType;
-import com.github.javaparser.ast.type.WildcardType;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.utils.CollectionStrategy;
@@ -34,14 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.StringJoiner;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -52,7 +43,7 @@ import org.checkerframework.javacutil.Pair;
  *
  * <p>Does not remove trusted annotations: those that the checker trusts rather than verifies.
  *
- * <p>Does not remove annotations at locations where inference does not work:
+ * <p>Does not remove annotations at locations where inference does no work:
  *
  * <ul>
  *   <li>within the scope of a relevant @SuppressWarnings
@@ -65,7 +56,8 @@ public class RemoveAnnotationsForInference {
     public static boolean debug = true;
 
     /**
-     * Processes each provided command-line argument; see class documentation for details.
+     * Processes each provided command-line argument; see {@link RemoveAnnotationsForInference class
+     * documentation} for details.
      *
      * @param args command-line arguments: directories to process
      */
@@ -74,9 +66,8 @@ public class RemoveAnnotationsForInference {
             System.err.println("Usage: provide one or more directory names to process");
             System.exit(1);
         }
-        RemoveAnnotationsForInference rafi = new RemoveAnnotationsForInference();
         for (String arg : args) {
-            rafi.process(arg);
+            process(arg);
         }
     }
 
@@ -99,26 +90,14 @@ public class RemoveAnnotationsForInference {
      *
      * @param dir directory to process
      */
-    private void process(String dir) {
+    private static void process(String dir) {
 
         if (debug) {
             System.out.printf("process(%s)%n", dir);
         }
 
-        File f = new File(dir);
-        if (!f.isDirectory()) {
-            System.err.printf("Not a directory: %s (%s).%n", dir, f);
-            System.exit(1);
-        }
-        if (!f.exists()) {
-            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
-            System.exit(1);
-        }
-        String dirName = f.getAbsolutePath();
-        if (dirName.endsWith("/.")) {
-            dirName = dirName.substring(0, dirName.length() - 2);
-        }
-        Path root = Paths.get(dirName);
+        Path root = dirnameToPath(dir);
+
         System.out.printf("root = %s%n", root);
         MinimizerCallback mc = new MinimizerCallback();
         CollectionStrategy strategy = new ParserCollectionStrategy();
@@ -138,6 +117,29 @@ public class RemoveAnnotationsForInference {
                                 System.err.println("IOException: " + e);
                             }
                         });
+    }
+
+    /**
+     * Converts a directory name to a path.
+     *
+     * @param dir a directory name
+     * @return a path for the directory name
+     */
+    private static Path dirnameToPath(String dir) {
+        File f = new File(dir);
+        if (!f.isDirectory()) {
+            System.err.printf("Not a directory: %s (%s).%n", dir, f);
+            System.exit(1);
+        }
+        if (!f.exists()) {
+            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
+            System.exit(1);
+        }
+        String absoluteDir = f.getAbsolutePath();
+        if (absoluteDir.endsWith("/.")) {
+            absoluteDir = absoluteDir.substring(0, absoluteDir.length() - 2);
+        }
+        return Paths.get(absoluteDir);
     }
 
     /** Callback to process each Java file; see class documentation for details. */
@@ -166,27 +168,112 @@ public class RemoveAnnotationsForInference {
         }
     }
 
+    /** Visitor to process one compilation unit; see class documentation for details. */
+    private static class MinimizerVisitor extends ModifierVisitor<Void> {
+
+        /**
+         * Returns null if the argument should be removed from source code. Returns the argument if
+         * it should be retained in source code.
+         *
+         * @param v an AST node
+         * @return the argument to retain it, or null to remove it
+         */
+        Visitable processAnnotation(Visitable v) {
+            if (debug) {
+                System.out.printf("processAnnotation(%s)%n", v);
+            }
+            if (v == null) {
+                if (debug) {
+                    System.out.printf("processAnnotation(null) => null%n");
+                }
+                return null;
+            }
+            if (!(v instanceof AnnotationExpr)) {
+                throw new BugInCF("What type? %s %s", v.getClass(), v);
+            }
+            AnnotationExpr n = (AnnotationExpr) v;
+
+            String name = n.getNameAsString();
+
+            // Retain  annotations defined in the JDK.
+            if (isJdkAnnotation(name)) {
+                return n;
+            }
+
+            if (isSuppressed(n)) {
+                if (debug) {
+                    System.out.printf("processAnnotation(%s) => null (isSuppressed)%n", v);
+                }
+                return n;
+            }
+
+            // The default behavior is to remove the annotation.
+            if (debug) {
+                System.out.printf("processAnnotation(%s) => null (fallthrough)%n", v);
+            }
+            return null;
+        }
+
+        // There are three JavaParser AST nodes that represent annotations
+
+        @Override
+        public Visitable visit(final MarkerAnnotationExpr n, final Void arg) {
+            Visitable result = super.visit(n, arg);
+            return processAnnotation(result);
+        }
+
+        @Override
+        public Visitable visit(final NormalAnnotationExpr n, final Void arg) {
+            Visitable result = super.visit(n, arg);
+            return processAnnotation(result);
+        }
+
+        @Override
+        public Visitable visit(final SingleMemberAnnotationExpr n, final Void arg) {
+            Visitable result = super.visit(n, arg);
+            return processAnnotation(result);
+        }
+    }
+
     /**
-     * Given a @SuppressWarnings annotation, returns its strings.
+     * Given a @SuppressWarnings annotation, returns its strings. Given an annotation that
+     * suppresses warnings, returns strings for what it suppresses. Otherwise, returns null.
      *
-     * @param n a @SuppressWarnings annotation
-     * @return the strings that are the element of the given annotation
+     * @param n an annotation
+     * @return the (effective) arguments to {@code @SuppressWarnings}, or null
      */
     private static List<String> suppressWarningsStrings(AnnotationExpr n) {
-        if (n instanceof MarkerAnnotationExpr) {
-            return Collections.emptyList();
+        String name = n.getNameAsString();
+
+        if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
+            if (n instanceof MarkerAnnotationExpr) {
+                return Collections.emptyList();
+            }
+            if (n instanceof NormalAnnotationExpr) {
+                NodeList<MemberValuePair> pairs = ((NormalAnnotationExpr) n).getPairs();
+                assert pairs.size() == 1;
+                MemberValuePair pair = pairs.get(0);
+                assert pair.getName().asString().equals("value");
+                return annotationElementStrings(pair.getValue());
+            } else if (n instanceof SingleMemberAnnotationExpr) {
+                return annotationElementStrings(((SingleMemberAnnotationExpr) n).getMemberValue());
+            } else {
+                throw new BugInCF("Unexpected AnnotationExpr of type %s: %s", n.getClass(), n);
+            }
         }
-        if (n instanceof NormalAnnotationExpr) {
-            NodeList<MemberValuePair> pairs = ((NormalAnnotationExpr) n).getPairs();
-            assert pairs.size() == 1;
-            MemberValuePair pair = pairs.get(0);
-            assert pair.getName().asString().equals("value");
-            return annotationElementStrings(pair.getValue());
-        } else if (n instanceof SingleMemberAnnotationExpr) {
-            return annotationElementStrings(((SingleMemberAnnotationExpr) n).getMemberValue());
-        } else {
-            throw new BugInCF("Unexpected AnnotationExpr of type %s: %s", n.getClass(), n);
+
+        if (name.equals("IgnoreInWholeProgramInference")
+                || name.equals("org.checkerframework.framework.qual.IgnoreInWholeProgramInference")
+                || name.equals("Inject")
+                || name.equals("javax.inject.Inject")
+                || name.equals("Singleton")
+                || name.equals("javax.inject.Singleton")
+                || name.equals("Option")
+                || name.equals("org.plumelib.options.Option")) {
+            return Collections.singletonList("allcheckers");
         }
+
+        return null;
     }
 
     /**
@@ -216,489 +303,122 @@ public class RemoveAnnotationsForInference {
         }
     }
 
-    /** Visitor to process one compilation unit; see class documentation for details. */
-    private static class MinimizerVisitor extends ModifierVisitor<Void> {
-
-        /** Records what @SuppressWarnings enclose the current parse position. */
-        SuppressionStack suppressionStack = new SuppressionStack();
-
-        /**
-         * Returns null if the argument should be removed from source code. Returns the argument if
-         * it should be retained in source code.
-         *
-         * @param v an AST node
-         * @return the argument to retain it, or null to remove it
-         */
-        Visitable processAnnotation(Visitable v) {
-            if (debug) {
-                System.out.printf("processAnnotation(%s)%n", v);
-            }
-            if (v == null) {
-                if (debug) {
-                    System.out.printf("processAnnotation(null) => null%n");
-                }
-                return null;
-            }
-            if (!(v instanceof AnnotationExpr)) {
-                throw new BugInCF("What type? %s %s", v.getClass(), v);
-            }
-            AnnotationExpr n = (AnnotationExpr) v;
-
-            String name = n.getNameAsString();
-
-            if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
-                suppressionStack.addAll(suppressWarningsStrings(n));
-                if (debug) {
-                    System.out.printf(
-                            "processAnnotation(%s) => self (is Suppresswarningsstrings)%n", v);
-                    System.out.println(suppressionStack.toStringDebug());
-                }
-
-                return n;
-            }
-
-            // Don't remove most annotations defined in the JDK
-            if (name.equals("Serial")
-                    || name.equals("java.io.Serial")
-                    || name.equals("Deprecated")
-                    || name.equals("java.lang.Deprecated")
-                    || name.equals("FunctionalInterface")
-                    || name.equals("java.lang.FunctionalInterface")
-                    || name.equals("Override")
-                    || name.equals("java.lang.Override")
-                    || name.equals("SafeVarargs")
-                    || name.equals("java.lang.SafeVarargs")
-                    || name.equals("Documented")
-                    || name.equals("java.lang.annotation.Documented")
-                    || name.equals("Inherited")
-                    || name.equals("java.lang.annotation.Inherited")
-                    || name.equals("Native")
-                    || name.equals("java.lang.annotation.Native")
-                    || name.equals("Repeatable")
-                    || name.equals("java.lang.annotation.Repeatable")
-                    || name.equals("Retention")
-                    || name.equals("java.lang.annotation.Retention")
-                    || name.equals("Target")
-                    || name.equals("java.lang.annotation.Target")) {
-                suppressionStack.addAll(suppressWarningsStrings(n));
-                if (debug) {
-                    System.out.printf("processAnnotation(%s) => self (is in JDK)%n", v);
-                }
-
-                return n;
-            }
-
-            if (name.equals("IgnoreInWholeProgramInference")
-                    || name.equals(
-                            "org.checkerframework.framework.qual.IgnoreInWholeProgramInference")
-                    || name.equals("Inject")
-                    || name.equals("javax.inject.Inject")
-                    || name.equals("Singleton")
-                    || name.equals("javax.inject.Singleton")
-                    || name.equals("Option")
-                    || name.equals("org.plumelib.options.Option")) {
-                // Potential problem:  Other annotations might have appeared before this annotation
-                // and might have already been processed and incorrectly removed.
-                suppressionStack.add("allcheckers");
-                if (debug) {
-                    System.out.printf("processAnnotation(%s) => self (reflection)%n", v);
-                }
-                return n;
-            }
-
-            if (isSuppressed(name)) {
-                if (debug) {
-                    System.out.printf("processAnnotation(%s) => null (isSuppressed)%n", v);
-                }
-                return n;
-            }
-
-            // The default behavior is to remove the annotation.
-            if (debug) {
-                System.out.printf("processAnnotation(%s) => null (fallthrough)%n", v);
-            }
-            return null;
-        }
-
-        /**
-         * Returns true if warnings about the given annotation are suppressed.
-         *
-         * @param name an annotation name
-         * @return true if warnings about the given annotation are suppressed
-         */
-        boolean isSuppressed(String name) {
-            if (debug) {
-                System.out.printf(
-                        "isSuppressed(%s), fq=%s%n", name, simpleToFullyQualified.get(name));
-                if (name.equals("InternedDistinct")) {
-                    System.out.println(suppressionStack.toStringDebug());
-                }
-            }
-
-            // If it's a simple name for which we know a fully-qualified name, recursively try all
-            // fully-qualified names that it could expand to.
-            if (simpleToFullyQualified.containsKey(name)) {
-                for (String fq : simpleToFullyQualified.get(name)) {
-                    if (suppressionStack.isSuppressed(fq)) {
-                        return true;
-                    }
-                }
-                return false;
-            } else {
-                return suppressionStack.isSuppressed(name);
-            }
-        }
-
-        // There are three JavaParser AST nodes that represent annotations
-
-        @Override
-        public Visitable visit(final MarkerAnnotationExpr n, final Void arg) {
-            Visitable result = super.visit(n, arg);
-            return processAnnotation(result);
-        }
-
-        @Override
-        public Visitable visit(final NormalAnnotationExpr n, final Void arg) {
-            Visitable result = super.visit(n, arg);
-            return processAnnotation(result);
-        }
-
-        @Override
-        public Visitable visit(final SingleMemberAnnotationExpr n, final Void arg) {
-            Visitable result = super.visit(n, arg);
-            return processAnnotation(result);
-        }
-
-        // TODO: What about variable declarations?
-
-        // The subclasses of NodeWithAnnotations are the following.  Their implementations contain
-        // suppressionStack.pushFrame() and suppressionStack.popFrame() calls.
-        //
-        // AnnotationDeclaration
-        // AnnotationMemberDeclaration
-        // ArrayCreationLevel -- no nesting
-        // ArrayType -- no nesting
-        // BodyDeclaration -- not a leaf
-        // CallableDeclaration -- not a leaf
-        // ClassOrInterfaceDeclaration
-        // ClassOrInterfaceType
-        // ConstructorDeclaration
-        // EnumConstantDeclaration
-        // EnumDeclaration
-        // FieldDeclaration
-        // InitializerDeclaration
-        // IntersectionType
-        // MethodDeclaration
-        // ModuleDeclaration
-        // PackageDeclaration
-        // Parameter
-        // PrimitiveType
-        // ReceiverParameter
-        // TypeDeclaration -- not a leaf
-        // TypeParameter
-        // UnionType
-        // VariableDeclarationExpr
-        // VoidType
-        // WildcardType
-
-        @Override
-        public Visitable visit(final AnnotationDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final AnnotationMemberDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final ArrayCreationLevel n, final Void arg) {
-            suppressionStack.pushFrame(n.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final ArrayType n, final Void arg) {
-            suppressionStack.pushFrame(n.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final ClassOrInterfaceDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final ClassOrInterfaceType n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final ConstructorDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final EnumConstantDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final EnumDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final FieldDeclaration n, final Void arg) {
-            StringJoiner sj = new StringJoiner(", ");
-            for (VariableDeclarator var : n.getVariables()) {
-                sj.add(var.getNameAsString());
-            }
-            suppressionStack.pushFrame(sj.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final InitializerDeclaration n, final Void arg) {
-            suppressionStack.pushFrame("InitializerDeclaration");
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final MethodDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final ModuleDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final PackageDeclaration n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final Parameter n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final PrimitiveType n, final Void arg) {
-            suppressionStack.pushFrame(n.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final ReceiverParameter n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final TypeParameter n, final Void arg) {
-            suppressionStack.pushFrame(n.getNameAsString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final UnionType n, final Void arg) {
-            suppressionStack.pushFrame(n.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final VariableDeclarationExpr n, final Void arg) {
-            StringJoiner sj = new StringJoiner(", ");
-            for (VariableDeclarator var : n.getVariables()) {
-                sj.add(var.getNameAsString());
-            }
-            suppressionStack.pushFrame(sj.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final VoidType n, final Void arg) {
-            suppressionStack.pushFrame(n.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
-
-        @Override
-        public Visitable visit(final WildcardType n, final Void arg) {
-            suppressionStack.pushFrame(n.toString());
-            Visitable result = super.visit(n, arg);
-            suppressionStack.popFrame();
-            return result;
-        }
+    /**
+     * Returns true if the given annotation is defined in the JDK.
+     *
+     * @param name the annotation's name (simple or fully-qualified)
+     * @return true if the given annotation is defined in the JDK
+     */
+    static boolean isJdkAnnotation(String name) {
+        return name.equals("Serial")
+                || name.equals("java.io.Serial")
+                || name.equals("Deprecated")
+                || name.equals("java.lang.Deprecated")
+                || name.equals("FunctionalInterface")
+                || name.equals("java.lang.FunctionalInterface")
+                || name.equals("Override")
+                || name.equals("java.lang.Override")
+                || name.equals("SafeVarargs")
+                || name.equals("java.lang.SafeVarargs")
+                || name.equals("Documented")
+                || name.equals("java.lang.annotation.Documented")
+                || name.equals("Inherited")
+                || name.equals("java.lang.annotation.Inherited")
+                || name.equals("Native")
+                || name.equals("java.lang.annotation.Native")
+                || name.equals("Repeatable")
+                || name.equals("java.lang.annotation.Repeatable")
+                || name.equals("Retention")
+                || name.equals("java.lang.annotation.Retention")
+                || name.equals("SuppressWarnings")
+                || name.equals("java.lang.SuppressWarnings")
+                || name.equals("Target")
+                || name.equals("java.lang.annotation.Target");
     }
 
     /**
-     * Maintain a stack of suppressions. Each frame is a string (for debugging) and a list of
-     * strings. Each String in the list is an argument to "@SuppressWarnings".
+     * Returns true if warnings about the given annotation are suppressed.
+     *
+     * <p>Its heuristic is to look for a {@code @SuppressWarnings} annotation on a containing
+     * program element, whose string is one of the elements of the annotation's fully-qualified
+     * name.
+     *
+     * @param arg an annotation
+     * @return true if warnings about the given annotation are suppressed
      */
-    private static class SuppressionStack extends ArrayDeque<Pair<String, List<String>>> {
-        static final long serialVersionUID = 20201227;
+    private static boolean isSuppressed(AnnotationExpr arg) {
+        String name = arg.getNameAsString();
 
-        /**
-         * Adds a frame to this.
-         *
-         * @param s information about the frame (for debugging).
-         */
-        void pushFrame(String s) {
-            addFirst(Pair.of(s, new ArrayList<>()));
+        if (debug) {
+            System.out.printf("isSuppressed(%s), fq=%s%n", name, simpleToFullyQualified.get(name));
         }
 
-        /** Removes a frame from this. */
-        void popFrame() {
-            removeFirst();
+        // If it's a simple name for which we know a fully-qualified name, recursively try all
+        // fully-qualified names that it could expand to.
+        Collection<String> names;
+        if (simpleToFullyQualified.containsKey(name)) {
+            names = simpleToFullyQualified.get(name);
+        } else {
+            names = Collections.singletonList(name);
         }
 
-        /**
-         * Adds the given suppression string to this. Ignores any part after a colon.
-         *
-         * @param s an argument to {@code @SuppressWarnings}
-         */
-        void add(String s) {
-            int colonPos = s.indexOf(":");
-            if (colonPos != -1) {
-                s = s.substring(colonPos + 1);
-            }
-            getFirst().second.add(s);
-        }
-
-        /**
-         * Adds all the given suppression strings to this.
-         *
-         * @param strings arguments to {@code @SuppressWarnings}
-         * @see #add
-         */
-        void addAll(Iterable<String> strings) {
-            for (String s : strings) {
-                add(s);
-            }
-        }
-
-        /**
-         * Returns true if the string appears exactly in this data structure.
-         *
-         * @param s a string
-         * @return true if the string appears exactly in this data structure
-         */
-        boolean contains(String s) {
-            for (Pair<String, List<String>> p : this) {
-                if (p.second.contains(s)) {
-                    if (debug) {
-                        System.out.printf("contains(%s) => true%n", s);
-                        System.out.println(this.toStringDebug());
+        Iterator<Node> itor = new Node.ParentsVisitor(arg);
+        while (itor.hasNext()) {
+            Node n = itor.next();
+            if (n instanceof NodeWithAnnotations) {
+                NodeList<AnnotationExpr> annos = ((NodeWithAnnotations<?>) n).getAnnotations();
+                for (AnnotationExpr ae : annos) {
+                    if (suppresses(ae, names)) {
+                        return true;
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if {@code suppressor} suppresses warnings regarding {@code suppressees}.
+     *
+     * @param suppressor an annotation that might be {@code @SuppressWarnings} or like it
+     * @param suppressees an annotation for which warnings might be suppressed. This is actually a
+     *     list: if the annotation was written unqualified, it contains all the fully-qualified
+     *     names that the unqualified annotation might stand for.
+     * @return true if {@code suppressor} suppresses warnings regarding {@code suppressees}
+     */
+    static boolean suppresses(AnnotationExpr suppressor, Collection<String> suppressees) {
+        List<String> suppressWarningsStrings = suppressWarningsStrings(suppressor);
+        if (suppressWarningsStrings == null) {
+            return false;
+        }
+        suppressWarningsStrings.replaceAll(RemoveAnnotationsForInference::checkerName);
+        // "allcheckers" suppresses all warnings.
+        if (suppressWarningsStrings.contains("allcheckers")) {
+            return true;
+        }
+
+        // Try every element of suppressee's fully-qualified name.
+        for (String suppressee : suppressees) {
+            for (String fqPart : suppressee.split("\\.")) {
+                if (suppressWarningsStrings.contains(fqPart)) {
                     return true;
                 }
             }
-            if (debug) {
-                System.out.printf("contains(%s) => false%n", s);
-            }
-            return false;
         }
 
-        /**
-         * Returns true if warnings about the given annotation name are suppressed. Its heuristic is
-         * to look for {@code @SuppressWarnings} annotation whose string is one of the elements of
-         * the annotation's fully-qualified name.
-         *
-         * @param annoName a simple or fully-qualified annotation name
-         * @return true if warnings abuot the annotation are suppressed
-         */
-        boolean isSuppressed(String annoName) {
-            if (debug) {
-                System.out.printf("SuppressionStack.isSuppressed(%s)%n", annoName);
-            }
+        return false;
+    }
 
-            // "allcheckers" suppresses all warnings.
-            if (contains("allcheckers")) {
-                return true;
-            }
-
-            // Try every element of its fully-qualified name.
-            for (String fqPart : annoName.split("\\.")) {
-                if (contains(fqPart)) {
-                    if (debug) {
-                        System.out.printf("SuppressionStack.isSuppressed(%s) => true%n", annoName);
-                    }
-
-                    return true;
-                }
-            }
-            if (debug) {
-                System.out.printf("SuppressionStack.isSuppressed(%s) => false%n", annoName);
-            }
-            return false;
-        }
-
-        /**
-         * Returns a verbose, multiline description of this.
-         *
-         * @return a verbose, multiline description of this
-         */
-        String toStringDebug() {
-            StringJoiner sj = new StringJoiner(System.lineSeparator());
-            for (Pair<String, List<String>> p : this) {
-                sj.add(p.first + ": " + p.second.toString());
-            }
-            return sj.toString();
+    /**
+     * Returns the "checker name" part of a SuppressWarnings string: the part before the colon, or
+     * the whole thing if it contains no colon.
+     */
+    private static String checkerName(String s) {
+        int colonPos = s.indexOf(":");
+        if (colonPos == -1) {
+            return s;
+        } else {
+            return s.substring(colonPos + 1);
         }
     }
 }

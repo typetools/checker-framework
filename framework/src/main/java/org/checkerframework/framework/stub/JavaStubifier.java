@@ -1,6 +1,7 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MemberValuePair;
