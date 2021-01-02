@@ -37,8 +37,6 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * <p>Removes annotations from all files in the given directories. Modifies the files in place.
  *
- * <p>Only removes Checker Framework annotations.
- *
  * <p>Does not remove trusted annotations: those that the checker trusts rather than verifies.
  *
  * <p>Does not remove annotations at locations where inference does no work:
@@ -51,7 +49,7 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class RemoveAnnotationsForInference {
 
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     /**
      * Processes each provided command-line argument; see {@link RemoveAnnotationsForInference class
