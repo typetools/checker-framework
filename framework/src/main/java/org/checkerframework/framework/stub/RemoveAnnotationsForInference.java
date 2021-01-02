@@ -22,10 +22,8 @@ import com.github.javaparser.utils.SourceRoot;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.ClassPath;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -172,8 +170,13 @@ public class RemoveAnnotationsForInference {
 
             String name = n.getNameAsString();
 
-            // Retain  annotations defined in the JDK.
+            // Retain annotations defined in the JDK.
             if (isJdkAnnotation(name)) {
+                return n;
+            }
+
+            // Retain trusted annotations.
+            if (isTrustedAnnotation(name)) {
                 return n;
             }
 
@@ -317,6 +320,31 @@ public class RemoveAnnotationsForInference {
                 || name.equals("java.lang.SuppressWarnings")
                 || name.equals("Target")
                 || name.equals("java.lang.annotation.Target");
+    }
+
+    /**
+     * Returns true if the given annotation is trusted, not checked/verified.
+     *
+     * @param name the annotation's name (simple or fully-qualified)
+     * @return true if the given annotation is trusted, not verified
+     */
+    static boolean isTrustedAnnotation(String name) {
+
+        // This list was determined by grepping for "trusted" in `qual` directories.
+        return name.equals("Untainted")
+                || name.equals(" org.checkerframework.checker.tainting.qual.Untainted")
+                || name.equals("InternedDistinct")
+                || name.equals(" org.checkerframework.checker.interning.qual.InternedDistinct")
+                || name.equals("ReturnsReceiver")
+                || name.equals(" org.checkerframework.checker.builder.qual.ReturnsReceiver")
+                || name.equals("TerminatesExecution")
+                || name.equals("org.checkerframework.dataflow.qual.TerminatesExecution")
+                || name.equals("Covariant")
+                || name.equals(" org.checkerframework.framework.qual.Covariant")
+                || name.equals("NonLeaked")
+                || name.equals(" org.checkerframework.common.aliasing.qual.NonLeaked")
+                || name.equals("LeakedToResult")
+                || name.equals(" org.checkerframework.common.aliasing.qual.LeakedToResult");
     }
 
     /**
