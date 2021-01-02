@@ -49,8 +49,6 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class RemoveAnnotationsForInference {
 
-    public static boolean debug = false;
-
     /**
      * Processes each provided command-line argument; see {@link RemoveAnnotationsForInference class
      * documentation} for details.
@@ -82,19 +80,15 @@ public class RemoveAnnotationsForInference {
     }
 
     /**
-     * Process each file in the given directory; see class documentation for details.
+     * Process each file in the given directory; see the {@link RemoveAnnotationsForInference class
+     * documentation} for details.
      *
      * @param dir directory to process
      */
     private static void process(String dir) {
 
-        if (debug) {
-            System.out.printf("process(%s)%n", dir);
-        }
-
         Path root = JavaStubifier.dirnameToPath(dir);
 
-        System.out.printf("root = %s%n", root);
         MinimizerCallback mc = new MinimizerCallback();
         CollectionStrategy strategy = new ParserCollectionStrategy();
         // Required to include directories that contain a module-info.java, which don't parse by
@@ -110,12 +104,15 @@ public class RemoveAnnotationsForInference {
                             try {
                                 sourceRoot.parse("", mc);
                             } catch (IOException e) {
-                                System.err.println("IOException: " + e);
+                                throw new BugInCF(e);
                             }
                         });
     }
 
-    /** Callback to process each Java file; see class documentation for details. */
+    /**
+     * Callback to process each Java file; see the {@link RemoveAnnotationsForInference class
+     * documentation} for details.
+     */
     private static class MinimizerCallback implements SourceRoot.Callback {
         /** The visitor instance. */
         private final MinimizerVisitor mv;
@@ -128,20 +125,19 @@ public class RemoveAnnotationsForInference {
         @Override
         public Result process(
                 Path localPath, Path absolutePath, ParseResult<CompilationUnit> result) {
-            Result res = Result.SAVE;
-            if (debug) {
-                System.out.printf("Removing annotations from %s%n", absolutePath);
-            }
             Optional<CompilationUnit> opt = result.getResult();
             if (opt.isPresent()) {
                 CompilationUnit cu = opt.get();
                 mv.visit(cu, null);
             }
-            return res;
+            return Result.SAVE;
         }
     }
 
-    /** Visitor to process one compilation unit; see class documentation for details. */
+    /**
+     * Visitor to process one compilation unit; see the {@link RemoveAnnotationsForInference class
+     * documentation} for details.
+     */
     private static class MinimizerVisitor extends ModifierVisitor<Void> {
 
         /**
@@ -152,43 +148,30 @@ public class RemoveAnnotationsForInference {
          * @return the argument to retain it, or null to remove it
          */
         Visitable processAnnotation(Visitable v) {
-            if (debug) {
-                System.out.printf("processAnnotation(%s)%n", v);
-            }
             if (v == null) {
-                if (debug) {
-                    System.out.printf("processAnnotation(null) => null%n");
-                }
                 return null;
             }
             if (!(v instanceof AnnotationExpr)) {
                 throw new BugInCF("What type? %s %s", v.getClass(), v);
             }
-            AnnotationExpr n = (AnnotationExpr) v;
 
+            AnnotationExpr n = (AnnotationExpr) v;
             String name = n.getNameAsString();
 
             // Retain annotations defined in the JDK.
             if (isJdkAnnotation(name)) {
                 return n;
             }
-
             // Retain trusted annotations.
             if (isTrustedAnnotation(name)) {
                 return n;
             }
-
+            // Retain annotations for which warnings are suppressed.
             if (isSuppressed(n)) {
-                if (debug) {
-                    System.out.printf("processAnnotation(%s) => self (isSuppressed)%n", v);
-                }
                 return n;
             }
 
             // The default behavior is to remove the annotation.
-            if (debug) {
-                System.out.printf("processAnnotation(%s) => null (fallthrough)%n", v);
-            }
             return null;
         }
 
@@ -210,80 +193,6 @@ public class RemoveAnnotationsForInference {
         public Visitable visit(final SingleMemberAnnotationExpr n, final Void arg) {
             Visitable result = super.visit(n, arg);
             return processAnnotation(result);
-        }
-    }
-
-    /**
-     * Given a @SuppressWarnings annotation, returns its strings. Given an annotation that
-     * suppresses warnings, returns strings for what it suppresses. Otherwise, returns null.
-     *
-     * @param n an annotation
-     * @return the (effective) arguments to {@code @SuppressWarnings}, or null
-     */
-    private static List<String> suppressWarningsStrings(AnnotationExpr n) {
-        String name = n.getNameAsString();
-
-        if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
-            if (n instanceof MarkerAnnotationExpr) {
-                return Collections.emptyList();
-            }
-            if (n instanceof NormalAnnotationExpr) {
-                NodeList<MemberValuePair> pairs = ((NormalAnnotationExpr) n).getPairs();
-                assert pairs.size() == 1;
-                MemberValuePair pair = pairs.get(0);
-                assert pair.getName().asString().equals("value");
-                return annotationElementStrings(pair.getValue());
-            } else if (n instanceof SingleMemberAnnotationExpr) {
-                return annotationElementStrings(((SingleMemberAnnotationExpr) n).getMemberValue());
-            } else {
-                throw new BugInCF("Unexpected AnnotationExpr of type %s: %s", n.getClass(), n);
-            }
-        }
-
-        if (name.equals("IgnoreInWholeProgramInference")
-                || name.equals("org.checkerframework.framework.qual.IgnoreInWholeProgramInference")
-                || name.equals("Inject")
-                || name.equals("javax.inject.Inject")
-                || name.equals("Singleton")
-                || name.equals("javax.inject.Singleton")
-                || name.equals("Option")
-                || name.equals("org.plumelib.options.Option")) {
-            // Not Collections.singletonList because it will be modified.
-            List<String> result = new ArrayList<>(1);
-            result.add("allcheckers");
-            return result;
-        }
-
-        return null;
-    }
-
-    /**
-     * Given an expression written as an annotation argument for an element of type String[], return
-     * a list of strings.
-     *
-     * @param e an annotation argument
-     * @return the strings expressed by {@code e}
-     */
-    private static List<String> annotationElementStrings(Expression e) {
-        if (e instanceof StringLiteralExpr) {
-            // Not `Collections.singletonList` because the result is modified.
-            List<String> result = new ArrayList<>(1);
-            result.add(((StringLiteralExpr) e).asString());
-            return result;
-        } else if (e instanceof ArrayInitializerExpr) {
-            NodeList<Expression> values = ((ArrayInitializerExpr) e).getValues();
-            List<String> result = new ArrayList<>(values.size());
-            for (Expression v : values) {
-                if (v instanceof StringLiteralExpr) {
-                    result.add(((StringLiteralExpr) v).asString());
-                } else {
-                    throw new BugInCF(
-                            "Unexpected annotation element of type %s: %s", v.getClass(), v);
-                }
-            }
-            return result;
-        } else {
-            throw new BugInCF("Unexpected %s: %s", e.getClass(), e);
         }
     }
 
@@ -330,19 +239,19 @@ public class RemoveAnnotationsForInference {
 
         // This list was determined by grepping for "trusted" in `qual` directories.
         return name.equals("Untainted")
-                || name.equals(" org.checkerframework.checker.tainting.qual.Untainted")
+                || name.equals("org.checkerframework.checker.tainting.qual.Untainted")
                 || name.equals("InternedDistinct")
-                || name.equals(" org.checkerframework.checker.interning.qual.InternedDistinct")
+                || name.equals("org.checkerframework.checker.interning.qual.InternedDistinct")
                 || name.equals("ReturnsReceiver")
-                || name.equals(" org.checkerframework.checker.builder.qual.ReturnsReceiver")
+                || name.equals("org.checkerframework.checker.builder.qual.ReturnsReceiver")
                 || name.equals("TerminatesExecution")
                 || name.equals("org.checkerframework.dataflow.qual.TerminatesExecution")
                 || name.equals("Covariant")
-                || name.equals(" org.checkerframework.framework.qual.Covariant")
+                || name.equals("org.checkerframework.framework.qual.Covariant")
                 || name.equals("NonLeaked")
-                || name.equals(" org.checkerframework.common.aliasing.qual.NonLeaked")
+                || name.equals("org.checkerframework.common.aliasing.qual.NonLeaked")
                 || name.equals("LeakedToResult")
-                || name.equals(" org.checkerframework.common.aliasing.qual.LeakedToResult");
+                || name.equals("org.checkerframework.common.aliasing.qual.LeakedToResult");
     }
 
     /**
@@ -358,10 +267,6 @@ public class RemoveAnnotationsForInference {
     private static boolean isSuppressed(AnnotationExpr arg) {
         String name = arg.getNameAsString();
 
-        if (debug) {
-            System.out.printf("isSuppressed(%s), fq=%s%n", name, simpleToFullyQualified.get(name));
-        }
-
         // If it's a simple name for which we know a fully-qualified name, recursively try all
         // fully-qualified names that it could expand to.
         Collection<String> names;
@@ -375,8 +280,7 @@ public class RemoveAnnotationsForInference {
         while (itor.hasNext()) {
             Node n = itor.next();
             if (n instanceof NodeWithAnnotations) {
-                NodeList<AnnotationExpr> annos = ((NodeWithAnnotations<?>) n).getAnnotations();
-                for (AnnotationExpr ae : annos) {
+                for (AnnotationExpr ae : ((NodeWithAnnotations<?>) n).getAnnotations()) {
                     if (suppresses(ae, names)) {
                         return true;
                     }
@@ -410,15 +314,6 @@ public class RemoveAnnotationsForInference {
         for (String suppressee : suppressees) {
             for (String fqPart : suppressee.split("\\.")) {
                 if (suppressWarningsStrings.contains(fqPart)) {
-                    if (debug) {
-                        System.out.printf(
-                                "suppresses(%s, %s) => true because suppresse=%s fqPart=%s suppressWarningsStrings=%s%n",
-                                suppressor,
-                                suppressees,
-                                suppressee,
-                                fqPart,
-                                suppressWarningsStrings);
-                    }
                     return true;
                 }
             }
@@ -428,8 +323,82 @@ public class RemoveAnnotationsForInference {
     }
 
     /**
+     * Given a @SuppressWarnings annotation, returns its strings. Given an annotation that
+     * suppresses warnings, returns strings for what it suppresses. Otherwise, returns null.
+     *
+     * @param n an annotation
+     * @return the (effective) arguments to {@code @SuppressWarnings}, or null
+     */
+    private static List<String> suppressWarningsStrings(AnnotationExpr n) {
+        String name = n.getNameAsString();
+
+        if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
+            if (n instanceof MarkerAnnotationExpr) {
+                return Collections.emptyList();
+            }
+            if (n instanceof NormalAnnotationExpr) {
+                NodeList<MemberValuePair> pairs = ((NormalAnnotationExpr) n).getPairs();
+                assert pairs.size() == 1;
+                MemberValuePair pair = pairs.get(0);
+                assert pair.getName().asString().equals("value");
+                return annotationElementStrings(pair.getValue());
+            } else if (n instanceof SingleMemberAnnotationExpr) {
+                return annotationElementStrings(((SingleMemberAnnotationExpr) n).getMemberValue());
+            } else {
+                throw new BugInCF("Unexpected AnnotationExpr of type %s: %s", n.getClass(), n);
+            }
+        }
+
+        if (name.equals("IgnoreInWholeProgramInference")
+                || name.equals("org.checkerframework.framework.qual.IgnoreInWholeProgramInference")
+                || name.equals("Inject")
+                || name.equals("javax.inject.Inject")
+                || name.equals("Singleton")
+                || name.equals("javax.inject.Singleton")
+                || name.equals("Option")
+                || name.equals("org.plumelib.options.Option")) {
+            List<String> result = new ArrayList<>(1);
+            result.add("allcheckers");
+            return result;
+        }
+
+        return null;
+    }
+
+    /**
+     * Given an annotation argument for an element of type String[], return a list of strings.
+     *
+     * @param e an annotation argument
+     * @return the strings expressed by {@code e}
+     */
+    private static List<String> annotationElementStrings(Expression e) {
+        if (e instanceof StringLiteralExpr) {
+            List<String> result = new ArrayList<>(1);
+            result.add(((StringLiteralExpr) e).asString());
+            return result;
+        } else if (e instanceof ArrayInitializerExpr) {
+            NodeList<Expression> values = ((ArrayInitializerExpr) e).getValues();
+            List<String> result = new ArrayList<>(values.size());
+            for (Expression v : values) {
+                if (v instanceof StringLiteralExpr) {
+                    result.add(((StringLiteralExpr) v).asString());
+                } else {
+                    throw new BugInCF(
+                            "Unexpected annotation element of type %s: %s", v.getClass(), v);
+                }
+            }
+            return result;
+        } else {
+            throw new BugInCF("Unexpected %s: %s", e.getClass(), e);
+        }
+    }
+
+    /**
      * Returns the "checker name" part of a SuppressWarnings string: the part before the colon, or
      * the whole thing if it contains no colon.
+     *
+     * @param s a SuppressWarnings string: the argument to {@code @SuppressWarnings}
+     * @return the part of s before the colon, or the whole thing if it contains no colon
      */
     private static String checkerName(String s) {
         int colonPos = s.indexOf(":");
