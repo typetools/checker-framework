@@ -153,8 +153,9 @@ public class RemoveAnnotationsForInference {
 
         PositionUtils.sortByBeginPosition(removals);
         Collections.reverse(removals);
-        // Todo: should remove any element of removals that is contained within another.
 
+        // This code (correctly) assumes that no element of removals that is contained within
+        // another.
         for (AnnotationExpr removal : removals) {
             Position begin = removal.getBegin().get();
             Position end = removal.getEnd().get();
@@ -181,7 +182,6 @@ public class RemoveAnnotationsForInference {
                 for (int lineno = endLine - 1; lineno > beginLine; lineno--) {
                     lines.remove(lineno);
                 }
-
                 String newFirstLine = lines.get(beginLine).substring(0, beginColumn);
                 replaceLine(lines, beginLine, newFirstLine);
             }
@@ -203,7 +203,7 @@ public class RemoveAnnotationsForInference {
      *
      * @param lines the list in which to do replacement or removal
      * @param lineno the index of the line to be removed or replaced
-     * @param newLine the new line
+     * @param newLine the new line for index {@code lineno}
      */
     static void replaceLine(List<String> lines, int lineno, String newLine) {
         if (isBlank(newLine)) {
@@ -218,6 +218,8 @@ public class RemoveAnnotationsForInference {
     /**
      * Returns true if the string contains only white space codepoints, otherwise false.
      *
+     * <p>In Java 11, use {@code String.isBlank()} instead.
+     *
      * @param s a string
      * @return true if the string contains only white space codepoints, otherwise false
      */
@@ -230,8 +232,8 @@ public class RemoveAnnotationsForInference {
     // `@Nullable protected Object x;` which yields a type.anno.before.modifier error.
 
     /**
-     * Visitor to process one compilation unit, collecting the annotations that should be removed.
-     * See the {@link RemoveAnnotationsForInference class documentation} for more details.
+     * Visits one compilation unit, collecting the annotations that should be removed. See the
+     * {@link RemoveAnnotationsForInference class documentation} for more details.
      */
     private static class RemoveAnnotationsVisitor
             extends GenericListVisitorAdapter<AnnotationExpr, Void> {
@@ -326,7 +328,6 @@ public class RemoveAnnotationsForInference {
      * @return true if the given annotation is trusted, not verified
      */
     static boolean isTrustedAnnotation(String name) {
-
         // This list was determined by grepping for "trusted" in `qual` directories.
         return name.equals("Untainted")
                 || name.equals("org.checkerframework.checker.tainting.qual.Untainted")
@@ -371,8 +372,8 @@ public class RemoveAnnotationsForInference {
     private static boolean isSuppressed(AnnotationExpr arg) {
         String name = arg.getNameAsString();
 
-        // If it's a simple name for which we know a fully-qualified name, recursively try all
-        // fully-qualified names that it could expand to.
+        // If it's a simple name for which we know a fully-qualified name,
+        // try all fully-qualified names that it could expand to.
         Collection<String> names;
         if (simpleToFullyQualified.containsKey(name)) {
             names = simpleToFullyQualified.get(name);
@@ -439,8 +440,7 @@ public class RemoveAnnotationsForInference {
         if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
             if (n instanceof MarkerAnnotationExpr) {
                 return Collections.emptyList();
-            }
-            if (n instanceof NormalAnnotationExpr) {
+            } else if (n instanceof NormalAnnotationExpr) {
                 NodeList<MemberValuePair> pairs = ((NormalAnnotationExpr) n).getPairs();
                 assert pairs.size() == 1;
                 MemberValuePair pair = pairs.get(0);
