@@ -131,7 +131,7 @@ public class JavaExpressionParseUtil {
 
         JavaExpression result;
         try {
-            result = expr.accept(new ExpressionToReceiverVisitor(localScope, env), context);
+            result = expr.accept(new ExpressionToJavaExpressionVisitor(localScope, env), context);
         } catch (ParseRuntimeException e) {
             // The visitors can't throw exceptions because they need to override the methods in the
             // superclass.
@@ -152,8 +152,12 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Replaces every occurrence of "#(number)" with "PARAMETER_REPLACEMENT(number)" where number is
-     * an index of a parameter.
+     * Replaces every occurrence of "#NUMBER" with "_param_NUMBER" where NUMBER is an index of a
+     * parameter.
+     *
+     * @param expression a Java expression
+     * @return the Java expression, with formal parameter references like "#2" replaced by an
+     *     identifier
      */
     private static String replaceParameterSyntax(String expression) {
         String updatedExpression = expression;
@@ -169,14 +173,14 @@ public class JavaExpressionParseUtil {
     /**
      * A visitor class that converts a JavaParser {@link Expression} to a {@link JavaExpression}.
      */
-    private static class ExpressionToReceiverVisitor
+    private static class ExpressionToJavaExpressionVisitor
             extends GenericVisitorWithDefaults<JavaExpression, JavaExpressionContext> {
 
         private final TreePath path;
         private final ProcessingEnvironment env;
         private final Types types;
 
-        ExpressionToReceiverVisitor(TreePath path, ProcessingEnvironment env) {
+        ExpressionToJavaExpressionVisitor(TreePath path, ProcessingEnvironment env) {
             this.path = path;
             this.env = env;
             this.types = env.getTypeUtils();
@@ -277,9 +281,9 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns the receiver of an array access.
+         * Returns the JavaExpression for an array access.
          *
-         * @return the receiver of an array access
+         * @return the JavaExpression for an array access
          */
         @Override
         public JavaExpression visit(ArrayAccessExpr expr, JavaExpressionContext context) {
@@ -307,7 +311,7 @@ public class JavaExpressionParseUtil {
             if (!context.parsingMember && s.startsWith(PARMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // using the special #NN syntax.
-                return getParameterReceiver(s, context);
+                return getParameterJavaExpression(s, context);
             } else if (!context.parsingMember && context.useLocalScope) {
                 // Attempt to match a local variable within the scope of the
                 // given path before attempting to match a field.
@@ -315,7 +319,7 @@ public class JavaExpressionParseUtil {
                 if (varElem != null) {
                     if (varElem.getKind() == ElementKind.FIELD) {
                         boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                        return getReceiverField(s, context, isOriginalReceiver, varElem);
+                        return getFieldJavaExpression(s, context, isOriginalReceiver, varElem);
                     } else {
                         return new LocalVariable(varElem);
                     }
@@ -343,7 +347,8 @@ public class JavaExpressionParseUtil {
 
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
                 FieldAccess fieldAccess =
-                        (FieldAccess) getReceiverField(s, context, originalReceiver, fieldElem);
+                        (FieldAccess)
+                                getFieldJavaExpression(s, context, originalReceiver, fieldElem);
                 TypeElement scopeClassElement =
                         TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
                 if (!originalReceiver
@@ -625,12 +630,12 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns the receiver of the passed String name.
+         * Returns a JavaExpression for the given name.
          *
          * @param s a String representing an identifier (name expression, no dots in it)
-         * @return the receiver of the passed String name
+         * @return a JavaExpression for the given name
          */
-        private static JavaExpression getReceiverField(
+        private static JavaExpression getFieldJavaExpression(
                 String s,
                 JavaExpressionContext context,
                 boolean originalReceiver,
@@ -661,12 +666,12 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns the receiver of the parameter passed.
+         * Returns a JavaExpression for the given parameter.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
-         * @return the receiver of the parameter passed
+         * @return the JavaExpression for the given parameter
          */
-        private static JavaExpression getParameterReceiver(
+        private static JavaExpression getParameterJavaExpression(
                 String s, JavaExpressionContext context) {
             if (context.arguments == null) {
                 throw new ParseRuntimeException(constructParserException(s, "no parameter found"));
@@ -677,7 +682,7 @@ public class JavaExpressionParseUtil {
                 throw new ParseRuntimeException(
                         constructParserException(
                                 s,
-                                "one should use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+                                "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
             if (idx > context.arguments.size()) {
                 throw new ParseRuntimeException(
