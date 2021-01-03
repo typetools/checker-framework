@@ -558,7 +558,7 @@ task wholeProgramInferenceNullnessJaifTests(dependsOn: 'shadowJar', group: 'Veri
 
 // Empty task that just runs both the jaif and stub WPI tests.
 // It is run as part of the nonJunitTests task.
-task wholeProgramInferenceTests() {
+task wholeProgramInferenceTests(group: 'Verification') {
     description "Run tests for all whole program inference modes."
     dependsOn('wholeProgramInferenceTestCheckerJaifTests')
     dependsOn('wholeProgramInferenceTestCheckerStubTests')
