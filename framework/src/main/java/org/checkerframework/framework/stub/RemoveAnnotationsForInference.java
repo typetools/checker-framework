@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.Position;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -13,16 +14,19 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
-import com.github.javaparser.ast.visitor.ModifierVisitor;
-import com.github.javaparser.ast.visitor.Visitable;
+import com.github.javaparser.ast.visitor.GenericListVisitorAdapter;
 import com.github.javaparser.utils.CollectionStrategy;
 import com.github.javaparser.utils.ParserCollectionStrategy;
+import com.github.javaparser.utils.PositionUtils;
 import com.github.javaparser.utils.ProjectRoot;
 import com.github.javaparser.utils.SourceRoot;
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.ClassPath;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,7 +93,7 @@ public class RemoveAnnotationsForInference {
 
         Path root = JavaStubifier.dirnameToPath(dir);
 
-        MinimizerCallback mc = new MinimizerCallback();
+        RemoveAnnotationsCallback rac = new RemoveAnnotationsCallback();
         CollectionStrategy strategy = new ParserCollectionStrategy();
         // Required to include directories that contain a module-info.java, which don't parse by
         // default.
@@ -97,30 +101,22 @@ public class RemoveAnnotationsForInference {
                 .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
         ProjectRoot projectRoot = strategy.collect(root);
 
-        projectRoot
-                .getSourceRoots()
-                .forEach(
-                        sourceRoot -> {
-                            try {
-                                sourceRoot.parse("", mc);
-                            } catch (IOException e) {
-                                throw new BugInCF(e);
-                            }
-                        });
+        for (SourceRoot sourceRoot : projectRoot.getSourceRoots()) {
+            try {
+                sourceRoot.parse("", rac);
+            } catch (IOException e) {
+                throw new BugInCF(e);
+            }
+        }
     }
 
     /**
      * Callback to process each Java file; see the {@link RemoveAnnotationsForInference class
      * documentation} for details.
      */
-    private static class MinimizerCallback implements SourceRoot.Callback {
+    private static class RemoveAnnotationsCallback implements SourceRoot.Callback {
         /** The visitor instance. */
-        private final MinimizerVisitor mv;
-
-        /** Create a MinimizerCallback instance. */
-        public MinimizerCallback() {
-            this.mv = new MinimizerVisitor();
-        }
+        private final RemoveAnnotationsVisitor rav = new RemoveAnnotationsVisitor();
 
         @Override
         public Result process(
@@ -128,71 +124,165 @@ public class RemoveAnnotationsForInference {
             Optional<CompilationUnit> opt = result.getResult();
             if (opt.isPresent()) {
                 CompilationUnit cu = opt.get();
-                mv.visit(cu, null);
+                List<AnnotationExpr> removals = rav.visit(cu, null);
+                removeAnnotations(absolutePath, removals);
             }
-            return Result.SAVE;
+            return Result.DONT_SAVE;
         }
     }
 
     /**
-     * Visitor to process one compilation unit; see the {@link RemoveAnnotationsForInference class
-     * documentation} for details.
+     * Rewrites the file in place, removing the given annotations from it.
+     *
+     * @param absolutePath the path to the file
+     * @param removals the annotations to remove
      */
-    private static class MinimizerVisitor extends ModifierVisitor<Void> {
+    static void removeAnnotations(Path absolutePath, List<AnnotationExpr> removals) {
+        if (removals.isEmpty()) {
+            return;
+        }
+
+        List<String> lines;
+        try {
+            lines = Files.readAllLines(absolutePath);
+        } catch (IOException e) {
+            System.out.printf("Problem reading %s: %s%n", absolutePath, e.getMessage());
+            System.exit(1);
+            throw new Error("unreachable");
+        }
+
+        PositionUtils.sortByBeginPosition(removals);
+        Collections.reverse(removals);
+        // Todo: should remove any element of removals that is contained within another.
+
+        for (AnnotationExpr removal : removals) {
+            Position begin = removal.getBegin().get();
+            Position end = removal.getEnd().get();
+            int beginLine = begin.line - 1;
+            int beginColumn = begin.column - 1;
+            int endLine = end.line - 1;
+            int endColumn = end.column; // a JavaParser range is inclusive of the character at "end"
+            if (beginLine == endLine) {
+                String line = lines.get(beginLine);
+                String prefix = line.substring(0, beginColumn);
+                String suffix = line.substring(endColumn);
+
+                // Remove whitespace to beautify formatting.
+                suffix = CharMatcher.whitespace().trimLeadingFrom(suffix);
+                if (suffix.startsWith("[")) {
+                    prefix = CharMatcher.whitespace().trimTrailingFrom(prefix);
+                }
+
+                String newLine = prefix + suffix;
+                replaceLine(lines, beginLine, newLine);
+            } else {
+                String newLastLine = lines.get(endLine).substring(0, endColumn);
+                replaceLine(lines, endLine, newLastLine);
+                for (int lineno = endLine - 1; lineno > beginLine; lineno--) {
+                    lines.remove(lineno);
+                }
+
+                String newFirstLine = lines.get(beginLine).substring(0, beginColumn);
+                replaceLine(lines, beginLine, newFirstLine);
+            }
+        }
+
+        try {
+            PrintWriter pw = new PrintWriter(absolutePath.toString());
+            for (String line : lines) {
+                pw.println(line);
+            }
+            pw.close();
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+    }
+
+    /**
+     * If newLine is blank, removes the given line. Otherwise replaces the given line.
+     *
+     * @param lines the list in which to do replacement or removal
+     * @param lineno the index of the line to be removed or replaced
+     * @param newLine the new line
+     */
+    static void replaceLine(List<String> lines, int lineno, String newLine) {
+        if (isBlank(newLine)) {
+            lines.remove(lineno);
+        } else {
+            lines.set(lineno, newLine);
+        }
+    }
+
+    // TODO: Put the following utility methods in StringsPlume.
+
+    /**
+     * Returns true if the string contains only white space codepoints, otherwise false.
+     *
+     * @param s a string
+     * @return true if the string contains only white space codepoints, otherwise false
+     */
+    static boolean isBlank(String s) {
+        return s.chars().allMatch(Character::isWhitespace);
+    }
+
+    // An earlier implementation used ModifierVisitor.  However, JavaParser's unparser can change
+    // the structure of the program. For example, it changes `protected @Nullable Object x;` to
+    // `@Nullable protected Object x;` which yields a type.anno.before.modifier error.
+
+    /**
+     * Visitor to process one compilation unit, collecting the annotations that should be removed.
+     * See the {@link RemoveAnnotationsForInference class documentation} for more details.
+     */
+    private static class RemoveAnnotationsVisitor
+            extends GenericListVisitorAdapter<AnnotationExpr, Void> {
 
         /**
-         * Returns null if the argument should be removed from source code. Returns the argument if
-         * it should be retained in source code.
+         * Returns the argument if it should be removed from source code.
          *
-         * @param v an AST node
-         * @return the argument to retain it, or null to remove it
+         * @param n an annotation
+         * @param superResult the result of processing the subcomponents of n
+         * @return the argument to remove it, or superResult to retain it
          */
-        Visitable processAnnotation(Visitable v) {
-            if (v == null) {
-                return null;
-            }
-            if (!(v instanceof AnnotationExpr)) {
-                throw new BugInCF("What type? %s %s", v.getClass(), v);
+        List<AnnotationExpr> processAnnotation(AnnotationExpr n, List<AnnotationExpr> superResult) {
+            if (n == null) {
+                return superResult;
             }
 
-            AnnotationExpr n = (AnnotationExpr) v;
             String name = n.getNameAsString();
 
             // Retain annotations defined in the JDK.
             if (isJdkAnnotation(name)) {
-                return n;
+                return superResult;
             }
             // Retain trusted annotations.
             if (isTrustedAnnotation(name)) {
-                return n;
+                return superResult;
             }
             // Retain annotations for which warnings are suppressed.
             if (isSuppressed(n)) {
-                return n;
+                return superResult;
             }
 
             // The default behavior is to remove the annotation.
-            return null;
+            // Don't include superResult, which is contained within `n`.
+            return Collections.singletonList(n);
         }
 
         // There are three JavaParser AST nodes that represent annotations
 
         @Override
-        public Visitable visit(final MarkerAnnotationExpr n, final Void arg) {
-            Visitable result = super.visit(n, arg);
-            return processAnnotation(result);
+        public List<AnnotationExpr> visit(final MarkerAnnotationExpr n, final Void arg) {
+            return processAnnotation(n, super.visit(n, arg));
         }
 
         @Override
-        public Visitable visit(final NormalAnnotationExpr n, final Void arg) {
-            Visitable result = super.visit(n, arg);
-            return processAnnotation(result);
+        public List<AnnotationExpr> visit(final NormalAnnotationExpr n, final Void arg) {
+            return processAnnotation(n, super.visit(n, arg));
         }
 
         @Override
-        public Visitable visit(final SingleMemberAnnotationExpr n, final Void arg) {
-            Visitable result = super.visit(n, arg);
-            return processAnnotation(result);
+        public List<AnnotationExpr> visit(final SingleMemberAnnotationExpr n, final Void arg) {
+            return processAnnotation(n, super.visit(n, arg));
         }
     }
 
@@ -253,6 +343,20 @@ public class RemoveAnnotationsForInference {
                 || name.equals("LeakedToResult")
                 || name.equals("org.checkerframework.common.aliasing.qual.LeakedToResult");
     }
+
+    // This approach searches upward to find all the active warning suppressions.
+    // An alternative, more efficient approach would be to track the current set of warning
+    // suppressions, using a stack.
+    // There are two problems with the alternative approach (and besides, this approach is fast
+    // enough as it is).
+    //  1. JavaParser sometimes visits members before the annotation, so there was not a chance to
+    //     observe the annotation and place it on the suppression stack.  This should be fixed for
+    //     ModifierVisitor (but not for other visitors such as GenericListVisitorAdapter) in
+    //     JavaParser release 3.19.0.
+    //  2. A user might write an annotation before @SuppressWarnings, as in:
+    //       @Interned @SuppressWarnings("interning")
+    //     The {@code @Interned} annotation is visited before the {@code @SuppressWarnings}
+    //     annotation is.  This could be addressed by searching just the parent's annotations.
 
     /**
      * Returns true if warnings about the given annotation are suppressed.
