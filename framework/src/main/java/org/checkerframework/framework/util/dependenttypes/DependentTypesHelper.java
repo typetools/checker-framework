@@ -760,17 +760,7 @@ public class DependentTypesHelper {
                     newAnnos.add(annotationMirror);
                 }
             }
-            for (AnnotationMirror anno : newAnnos) {
-                // More than one annotation of the same class might have been written into
-                // the element and therefore might appear more than once in the type.
-                // See PR #674
-                // https://github.com/typetools/checker-framework/pull/674
-                // Work around this bug by remove all annotations of the same class.
-                if (type.removeAnnotation(anno)) {
-                    type.removeAnnotation(anno);
-                }
-            }
-            type.addAnnotations(newAnnos);
+            type.replaceAnnotations(newAnnos);
             return super.scan(type, aVoid);
         }
     }
