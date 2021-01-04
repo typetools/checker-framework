@@ -88,7 +88,6 @@ public class AnnotationBuilder {
      * @param env the processing environment
      * @param name the canonical name of the annotation to build
      */
-    //
     public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -118,6 +117,15 @@ public class AnnotationBuilder {
         this.elementValues = new LinkedHashMap<>();
         // AnnotationValues are immutable so putAll should suffice
         this.elementValues.putAll(annotation.getElementValues());
+    }
+
+    /**
+     * Returns the type element of the annotation that is being built.
+     *
+     * @return the type element of the annotation that is being built
+     */
+    public TypeElement getAnnotationElt() {
+        return annotationElt;
     }
 
     /**
