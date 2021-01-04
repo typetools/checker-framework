@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
+import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -898,6 +899,30 @@ public final class TypesUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
         return javacTypes.asSuper((Type) type, ((Type) superType).tsym);
+    }
+
+    /**
+     * Returns the superclass of the given class. Returns null if there is not one.
+     *
+     * @param type a type
+     * @return the superclass of the given class, or null
+     */
+    public static TypeMirror getSuperclass(TypeMirror type, Types types) {
+
+        // super literal
+        List<? extends TypeMirror> superTypes = types.directSupertypes(type);
+        // find class supertype
+        for (TypeMirror t : superTypes) {
+            // ignore interface types
+            if (!(t instanceof ClassType)) {
+                continue;
+            }
+            ClassType tt = (ClassType) t;
+            if (!tt.isInterface()) {
+                return t;
+            }
+        }
+        return null;
     }
 
     /**
