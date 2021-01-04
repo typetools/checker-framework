@@ -378,7 +378,7 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(classignmentContext, path, type);
     }
 
-    /** A set containing {@link Tree.Kind.METHOD} and {@link Tree.Kind.LAMBDA_EXPRESSION}. */
+    /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
     private static Set<Tree.Kind> METHOD_OR_LAMBDA =
             new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
 
