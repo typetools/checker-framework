@@ -630,7 +630,7 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns a JavaExpression for the given name.
+         * Returns a JavaExpression for the given field name.
          *
          * @param s a String representing an identifier (name expression, no dots in it)
          * @return a JavaExpression for the given name
@@ -893,8 +893,8 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns a {@link JavaExpressionContext} for the method {@code methodInvocation}
-         * (represented as a {@link Node} as seen at the method use (i.e., at a method call site).
+         * Returns a {@link JavaExpressionContext} for the method called by {@code
+         * methodInvocation}, as seen at the method use (i.e., at the call site).
          *
          * @return a {@link JavaExpressionContext} for the method {@code methodInvocation}
          */
@@ -914,8 +914,8 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns a {@link JavaExpressionContext} for the method called by {@code methodInvocation}
-         * as seen at the method use (i.e., at a method call site).
+         * Returns a {@link JavaExpressionContext} for the method called by {@code
+         * methodInvocation}, as seen at the method use (i.e., at the call site).
          *
          * @param methodInvocation a method invocation
          * @param checkerContext the javac components to use
@@ -928,13 +928,13 @@ public class JavaExpressionParseUtil {
                             methodInvocation, checkerContext.getAnnotationProvider());
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
-            List<JavaExpression> argExprs = new ArrayList<>(args.size());
+            List<JavaExpression> argumentsJe = new ArrayList<>(args.size());
             for (ExpressionTree argTree : args) {
-                argExprs.add(
+                argumentsJe.add(
                         JavaExpression.fromTree(checkerContext.getAnnotationProvider(), argTree));
             }
 
-            return new JavaExpressionContext(receiver, argExprs, checkerContext);
+            return new JavaExpressionContext(receiver, argumentsJe, checkerContext);
         }
 
         /**
@@ -1006,25 +1006,13 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Format this object verbosely, with each line indented by 4 spaces but without a trailing
-         * newline.
+         * Format this object verbosely, on multiple lines but without a trailing newline.
          *
          * @return a verbose string representation of this
          */
         public String toStringDebug() {
-            return toStringDebug(4);
-        }
-
-        /**
-         * Format this object verbosely, with each line indented by the given number of spaces but
-         * without a trailing newline.
-         *
-         * @param indent the number of spaces to indent the string representation of this
-         * @return a verbose string representation of this
-         */
-        public String toStringDebug(int indent) {
-            String indentString = String.join("", Collections.nCopies(indent, " "));
-            StringJoiner sj = new StringJoiner(indentString, indentString, "");
+            StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
+            sj.add("JavaExpressionContext:");
             sj.add(String.format("receiver=%s%n", receiver.toStringDebug()));
             sj.add(String.format("arguments=%s%n", arguments));
             sj.add(String.format("outerReceiver=%s%n", outerReceiver.toStringDebug()));
@@ -1038,10 +1026,11 @@ public class JavaExpressionParseUtil {
 
     /**
      * Returns the type of the innermost enclosing class. Returns Type.noType if no enclosing class
-     * is found. This is in contrast to {@link DeclaredType#getEnclosingType()} which returns the
-     * type of the inner most instance. If the inner most enclosing class is static this method will
-     * return the type of that class where as {@link DeclaredType#getEnclosingType()} will return
-     * the type of the inner most enclosing class that is not static.
+     * is found.
+     *
+     * <p>If the innermost enclosing class is static, this method returns the type of that class. By
+     * contrast, {@link DeclaredType#getEnclosingType()} returns the type of the innermost enclosing
+     * class that is not static.
      *
      * @param type a DeclaredType
      * @return the type of the innermost enclosing class or Type.noType
@@ -1079,8 +1068,13 @@ public class JavaExpressionParseUtil {
             return new LocalVariable(elt);
         }
         JavaExpression je = JavaExpression.getImplicitReceiver(elt);
-        JavaExpressionContext context = new JavaExpressionContext(je, null, provider.getContext());
-        return parse(tree.getName().toString(), context, provider.getPath(tree), false);
+        JavaExpressionContext context =
+                new JavaExpressionContext(je, /*arguments=*/ null, provider.getContext());
+        return parse(
+                tree.getName().toString(),
+                context,
+                provider.getPath(tree),
+                /*useLocalScope=*/ false);
     }
 
     ///////////////////////////////////////////////////////////////////////////

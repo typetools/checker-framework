@@ -269,8 +269,10 @@ public class DependentTypesHelper {
      * Returns true if method is a varargs method and its varargs arguments are not passed in an
      * array.
      *
+     * @param method the method or constructor
      * @param methodType type of the method or constructor; used for determining the type of the
      *     varargs formal parameter
+     * @param args the arguments at the call site
      * @return true if method is a varargs method and its varargs arguments are not passed in an
      *     array
      */
@@ -376,6 +378,7 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(classignmentContext, path, type);
     }
 
+    /** A set containing {@link Tree.Kind.METHOD} and {@link Tree.Kind.LAMBDA_EXPRESSION}. */
     private static Set<Tree.Kind> METHOD_OR_LAMBDA =
             new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
 
