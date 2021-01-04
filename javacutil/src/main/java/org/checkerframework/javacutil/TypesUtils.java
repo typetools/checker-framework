@@ -908,7 +908,7 @@ public final class TypesUtils {
      * @param types type utilities
      * @return the superclass of the given class, or null
      */
-    public static TypeMirror getSuperclass(TypeMirror type, Types types) {
+    public static @Nullable TypeMirror getSuperclass(TypeMirror type, Types types) {
         List<? extends TypeMirror> superTypes = types.directSupertypes(type);
         for (TypeMirror t : superTypes) {
             // ignore interface types
