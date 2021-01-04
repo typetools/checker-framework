@@ -196,6 +196,20 @@ do
         rm -rf "${REPO_NAME_HASH}"
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
+        TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
+        if [ -f "$TYPECHECK_FILE" ]; then
+            cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+        else
+            echo "Could not find file $TYPECHECK_FILE"
+            ls -l "${REPO_FULLPATH}/dljc-out"
+            cat "${REPO_FULLPATH}"/dljc-out/*.log
+            echo "Start of toplevel.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
+            echo "End of toplevel.log."
+            echo "Start of wpi.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/wpi.log
+            echo "End of wpi.log."
+        fi
     fi
 
     cd "${OUTDIR}" || exit 5
