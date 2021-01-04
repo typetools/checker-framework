@@ -180,9 +180,14 @@ public class JavaExpressionParseUtil {
     private static class ExpressionToJavaExpressionVisitor
             extends GenericVisitorWithDefaults<JavaExpression, JavaExpressionContext> {
 
-        // This is called "localScope" elsewhere (when this class is instantiated)
+        /**
+         * The path to the expression. This is called "localScope" elsewhere (when this class is
+         * instantiated).
+         */
         private final TreePath path;
+        /** The processing environment. */
         private final ProcessingEnvironment env;
+        /** The type utilities. */
         private final Types types;
 
         ExpressionToJavaExpressionVisitor(TreePath path, ProcessingEnvironment env) {
