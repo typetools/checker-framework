@@ -20,7 +20,7 @@ export ANDROID_HOME=${HOME}/compliance-experiments/fse20/android_home
 
 # This directory must contain a copy of the Checker Framework that has
 # been built from source.
-export CHECKERFRAMEWORK=${PARENTDIR}/checker-framework
+export CHECKERFRAMEWORK=${HOME}/jsr308/checker-framework
 
 ## Change these to match your experimental setup.
 
