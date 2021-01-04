@@ -11,7 +11,7 @@ To add a new project (named `$PROJECT` below) to `testin.txt`, follow these step
 1. Create a new GitHub repository under your own user name with the name "wpi-many-tests-$PROJECT".
 Do not initialize it with any content.
 2. Clone that repo and the project you intend to add locally.
-3. Copy of the contents of the project you are adding to your new repo and commit the result.
+3. Copy the contents of the project you are adding to your new repo and commit the result.
 4. Run `checker/bin/remove-annotations.sh` on your new repository. (Note that `remove-annotations.sh`
 needs GNU `readlink`, so it will not work by default on a Mac without installing GNU coreutils.)
 5. Edit the build file of the new project and disable the Checker Framework. This is usually done
