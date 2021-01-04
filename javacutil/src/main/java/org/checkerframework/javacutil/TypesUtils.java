@@ -905,6 +905,7 @@ public final class TypesUtils {
      * Returns the superclass of the given class. Returns null if there is not one.
      *
      * @param type a type
+     * @param types type utilities
      * @return the superclass of the given class, or null
      */
     public static TypeMirror getSuperclass(TypeMirror type, Types types) {
