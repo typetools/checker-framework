@@ -101,7 +101,7 @@ import org.checkerframework.javacutil.Pair;
  * This class has two static methods. Each method parses an annotation file and adds annotations to
  * the {@link AnnotationFileAnnotations} passed as an argument.
  *
- * <p>The main entry point is {@link AnnotationFileParser#parse(String, InputStream,
+ * <p>The main entry point is {@link AnnotationFileParser#parseStubFile(String, InputStream,
  * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
  * last argument. It operates in two steps. First, it calls the Annotation File Parser to parse an
  * annotation file. Then, it walks the AST to create/collect types and declaration annotations.
