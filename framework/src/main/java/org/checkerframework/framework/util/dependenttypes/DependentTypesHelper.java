@@ -775,6 +775,12 @@ public class DependentTypesHelper {
         reportErrors(errorTree, errors);
     }
 
+    /**
+     * Report the given errors as "expression.unparsable.type.invalid".
+     *
+     * @param errorTree where to report the errors
+     * @param errors the errors to report
+     */
     protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
         SourceChecker checker = factory.getContext().getChecker();
         for (DependentTypesError dte : errors) {
@@ -785,6 +791,9 @@ public class DependentTypesHelper {
     /**
      * Returns all the Java expression elements of the annotation that are an error string as
      * specified by DependentTypesError#isExpressionError.
+     *
+     * @param am an annotation
+     * @return the elements of {@code am} that are errors
      */
     private List<DependentTypesError> errorElements(AnnotationMirror am) {
         List<DependentTypesError> errors = new ArrayList<>();
@@ -967,9 +976,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Whether or not {@code atm} has any dependent type annotations. If an annotated type does not
+     * Return true if {@code atm} has any dependent type annotations. If an annotated type does not
      * have a dependent type annotation, then no standardization or viewpoint adaption is performed.
      * (This check avoids calling time intensive methods unless required.)
+     *
+     * @param atm a type
+     * @return true if {@code atm} has any dependent type annotations
      */
     private boolean hasDependentType(AnnotatedTypeMirror atm) {
         if (atm == null) {
