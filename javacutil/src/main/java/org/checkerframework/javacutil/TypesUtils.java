@@ -909,10 +909,7 @@ public final class TypesUtils {
      * @return the superclass of the given class, or null
      */
     public static TypeMirror getSuperclass(TypeMirror type, Types types) {
-
-        // super literal
         List<? extends TypeMirror> superTypes = types.directSupertypes(type);
-        // find class supertype
         for (TypeMirror t : superTypes) {
             // ignore interface types
             if (!(t instanceof ClassType)) {
