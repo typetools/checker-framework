@@ -2018,11 +2018,11 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-warning suppression string ``initialization.''~(note the trailing period).
-You can write \<@SuppressWarnings("initialization.")>
+warning suppression string ``initialization''.
+You can write \<@SuppressWarnings("initialization")>
 on a field, constructor, or
 class, or pass the command-line argument
-\<-AsuppressWarnings=initialization.> when
+\<-AsuppressWarnings=initialization> when
 running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
@@ -2034,9 +2034,7 @@ but does not suppress warnings issued by the Checker Framework itself, such
 as about assignments or method overriding.
 
 It is not possible to completely disable initialization checking while
-retaining nullness checking.  The ``initialization'' warning suppression
-string (without a period) has the same effect as ``nullness'':  both
-of them disable all nullness and initialization checking.  That is because
+retaining nullness checking.  That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers
 that are aggregated together.

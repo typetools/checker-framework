@@ -136,6 +136,9 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO)
 )
 
+AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
+AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
+
 CHECKER_LIVE_SITE = FILE_PATH_TO_LIVE_SITE
 CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, "releases")
 

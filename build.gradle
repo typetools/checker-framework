@@ -103,7 +103,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.9.0'
+    version '3.9.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -855,9 +855,13 @@ subprojects {
             if (project.name.is('checker')) {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
+                    // TODO: Remove this line, when wpiManyTests doesn't ignore wpi failures.
+                    dependsOn('wpiManyTests', 'wpiPlumeLibTests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests')
+                          // TODO: Reinstate this line, when wpiManyTests doesn't ignore wpi failures.
+                          // 'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                          'wholeProgramInferenceTests')
             }
 
             if (project.name.is('dataflow')) {
