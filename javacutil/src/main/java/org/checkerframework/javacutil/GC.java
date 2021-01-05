@@ -18,8 +18,8 @@ public class GC {
 
     /**
      * Returns the percentage of time spent garbage collecting, in the past minute. Might return a
-     * value greater than 1 if multiple threads are spending all their time collecting. * Returns 0
-     * if {@code gcPercentage} was not first called more than 1 minute ago.
+     * value greater than 1 if multiple threads are spending all their time collecting. Returns 0 if
+     * {@code gcPercentage} was not first called more than 1 minute ago.
      *
      * <p>A typical use is to put the following in an outer loop that takes a significant amount of
      * time (more than a second) to execute:
