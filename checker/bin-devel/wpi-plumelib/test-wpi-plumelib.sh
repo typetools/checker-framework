@@ -21,7 +21,7 @@ clean_compile_output() {
     in="$1"
     out="$2"
 
-    cp -f "$in" "$out"
+    cp -f "$in" "$out" || exit 1
 
     # Remove "Running ..." line
     sed -i '/^Running /d' "$out"
