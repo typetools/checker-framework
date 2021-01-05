@@ -781,10 +781,10 @@ public class JavaExpressionParseUtil {
          *
          * @param methodDeclaration used to translate parameter numbers in a Java expression to
          *     formal parameters of the method
-         * @param currentPath to find the enclosing class, which is used to look up fields and as
-         *     type of "this" in Java expressions
+         * @param currentPath the path to the method. It is used to find the enclosing class, which
+         *     is used to look up fields and as the type of "this" in Java expressions.
          * @param checkerContext used to build JavaExpression
-         * @return context created for {@code methodDeclaration}
+         * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
                 MethodTree methodDeclaration, TreePath currentPath, BaseContext checkerContext) {
@@ -800,7 +800,7 @@ public class JavaExpressionParseUtil {
          *     formal parameters of the method
          * @param enclosingType used to look up fields and as type of "this" in Java expressions
          * @param checkerContext used to build JavaExpression
-         * @return context created for {@code methodDeclaration}
+         * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
                 MethodTree methodDeclaration,
