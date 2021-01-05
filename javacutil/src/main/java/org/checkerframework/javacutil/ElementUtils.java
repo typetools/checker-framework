@@ -341,7 +341,8 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the path to the source file containing {@code element}.
+     * Returns the path to the source file containing {@code element}, which must be from source
+     * code.
      *
      * @param element the type element to look at
      * @return path to the source file containing {@code element}
