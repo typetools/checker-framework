@@ -30,7 +30,7 @@ dependencies {
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:1.0.2'
+    implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'org.plumelib:plume-util:1.3.0'
 
     // Called Methods Checker AutoValue + Lombok support
@@ -606,7 +606,7 @@ task wholeProgramInferenceNullnessJaifTests(dependsOn: 'shadowJar', group: 'Veri
 
 // Empty task that just runs both the jaif and stub WPI tests.
 // It is run as part of the nonJunitTests task.
-task wholeProgramInferenceTests() {
+task wholeProgramInferenceTests(group: 'Verification') {
     description "Run tests for all whole program inference modes."
     dependsOn('wholeProgramInferenceTestCheckerJaifTests')
     dependsOn('wholeProgramInferenceTestCheckerStubTests')
@@ -633,37 +633,51 @@ task wpiManyTests(group: "Verification") {
                     '-o', "${project.projectDir}/build/wpi-many-tests",
                     '--', '--checker', 'nullness,interning,lock,regex,signature'
         }
+        def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
         // collect the logs from running WPI
-        def logFiles = fileTree("${project.projectDir}/build/wpi-many-tests-results/").matching {
-            include "**/*.log"
+        def typecheckFiles = fileTree(typecheckFilesDir).matching {
+            include "**/*-typecheck.out"
         }
-        if (logFiles.size() == 0) {
-            throw new GradleException("Failure: WPI scripts did not produce any log files.")
+        if (typecheckFiles.size() == 0) {
+            exec {
+                workingDir "${project.projectDir}/build/wpi-many-tests-results/"
+                executable 'find'
+            }
+            throw new GradleException("Failure: No *-typecheck.out files in ${project.projectDir}/build/wpi-many-tests-results/")
         }
 
         // check that WPI causes the expected builds to succeed
-        logFiles.visit { FileVisitDetails details ->
-            def content = details.getFile().readLines()
-            // TODO: why does the call to get() below throw an exception if the log files
-            // are empty if this check isn't present?
-            if (content.size() - 1 < 0) {
-                throw new GradleException("Failure: WPI produced empty log files.")
-            } else {
-                // iterate backwards and look for errors in the last WPI loop,
-                // and set success to false if any are found
-                for (int i = content.size() - 1; i--; i >= 0) {
-                    def line = content.get(i)
-                    // DLJC prints this string before each command that it runs.
-                    if (line.startsWith("Running ")) {
-                        break
-                    }
-                    if (line.toLowerCase().contains("error")) {
-                        throw new GradleException("Failure: WPI scripts produced at least one error. " +
-                                "See ${project.projectDir}/build/wpi-many-tests-results/" + details.getName() + ". " +
-                                "Failing line is the following: " + line)
-                    }
+        typecheckFiles.visit { FileVisitDetails details ->
+            def filename = "${project.projectDir}/build/wpi-many-tests-results/" + details.getName()
+            def file = details.getFile()
+            if (file.length() == 0) {
+                throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
+            }
+            file.eachLine { line ->
+                if (line.startsWith("Running ")) {
+                  return;
+                }
+                if (line.toLowerCase().contains("error")
+                    || line.startsWith("Usage: javac")) {
+                    throw new GradleException("Failure: WPI scripts produced an error in " + filename + ". " +
+                            "Failing line is the following: " + line)
                 }
             }
+        }
+    }
+}
+
+// This is run as part of the nonJunitTests task.
+task wpiPlumeLibTests(group: "Verification") {
+    description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+
+    // This test must always be re-run when requested.
+    outputs.upToDateWhen { false }
+
+    doLast {
+        exec {
+            commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
+            ignoreExitValue = false
         }
     }
 }

@@ -602,7 +602,7 @@ public class ElementUtils {
      * Return the set of kinds that represent classes.
      *
      * @return the set of kinds that represent classes
-     * @deprecated use {@link #typeElementKinds}
+     * @deprecated use {@link #typeElementKinds()}
      */
     @Deprecated // use typeElementKinds
     public static Set<ElementKind> classElementKinds() {
