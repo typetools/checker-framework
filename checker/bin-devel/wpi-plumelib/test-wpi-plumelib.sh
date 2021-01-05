@@ -10,14 +10,6 @@ set +e
 export SHELLOPTS
 # echo "SHELLOPTS=${SHELLOPTS}"
 
-# This differs from wpi-many.sh because:
-#  * different projects use a different list of type-checkers.
-#    (wpi-many.sh uses a fixed set of type-checkers for all projects)
-#  * this uses the HEAD commit
-#    (wpi-many.sh uses a fixed commit)
-#  * this checks for expected errors
-#    (The Gradle wpiManyTests target requires that there are no errors)
-
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 CHECKERFRAMEWORK="$(cd "$(dirname "$0")"/../../.. && pwd)"
 
