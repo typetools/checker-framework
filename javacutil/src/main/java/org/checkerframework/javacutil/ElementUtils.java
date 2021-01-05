@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -339,7 +340,24 @@ public class ElementUtils {
         return isElementFromByteCode(elt.getEnclosingElement());
     }
 
-    /** Returns the field of the class or {@code null} if not found. */
+    /**
+     * Returns the path to the source file containing {@code element}, which must be from source
+     * code.
+     *
+     * @param element the type element to look at
+     * @return path to the source file containing {@code element}
+     */
+    public static String getSourceFilePath(TypeElement element) {
+        return ((ClassSymbol) element).sourcefile.toUri().getPath();
+    }
+
+    /**
+     * Returns the field of the class or {@code null} if not found.
+     *
+     * @param type TypeElement to search
+     * @param name name of a field
+     * @return The VariableElement for the field if it was found, null otherwise
+     */
     public static @Nullable VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().contentEquals(name)) {
@@ -585,7 +603,7 @@ public class ElementUtils {
      * Return the set of kinds that represent classes.
      *
      * @return the set of kinds that represent classes
-     * @deprecated use {@link #typeElementKinds}
+     * @deprecated use {@link #typeElementKinds()}
      */
     @Deprecated // use typeElementKinds
     public static Set<ElementKind> classElementKinds() {
