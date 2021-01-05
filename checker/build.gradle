@@ -626,7 +626,6 @@ task wpiPlumeLibTests(group: "Verification") {
     outputs.upToDateWhen { false }
 
     doLast {
-        // Run wpi-many.sh
         exec {
             commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
             ignoreExitValue = false
