@@ -74,6 +74,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.GC;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -875,6 +876,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
+    /** Output the warning about memory at most once. */
+    private boolean warnedAboutGarbageCollection = false;
+
     /**
      * The number of errors at the last exit of the type processor. At entry to the type processor
      * we check whether the current error count is higher and then don't process the file, as it
@@ -890,7 +894,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
-        // Cannot use BugInCF here because it is outside of the try/catch for BugInCf
+        // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
             messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
             return;
@@ -899,6 +903,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             messager.printMessage(
                     Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
             return;
+        }
+        if (!warnedAboutGarbageCollection && GC.gcPercentage(10) > .25) {
+            // Kind.ERROR is quite severe, but a user might overlook a NOTE or WARNING.
+            messager.printMessage(
+                    Kind.ERROR, "The JVM has too little memory; re-run with larger max heap.");
+            warnedAboutGarbageCollection = true;
         }
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
