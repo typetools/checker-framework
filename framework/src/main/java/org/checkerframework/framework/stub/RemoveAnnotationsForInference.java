@@ -69,13 +69,19 @@ public class RemoveAnnotationsForInference {
         }
     }
 
-    /** Maps from simple names to fully-qualified names of annotations. */
+    /**
+     * Maps from simple names to fully-qualified names of annotations. (Actually, it includes every
+     * class on the classpath.)
+     */
     static Multimap<String, String> simpleToFullyQualified = ArrayListMultimap.create();
 
     static {
         try {
             ClassPath cp = ClassPath.from(RemoveAnnotationsForInference.class.getClassLoader());
             for (ClassPath.ClassInfo ci : cp.getTopLevelClasses()) {
+                // There is no way to determine whether `ci` represents an annotation, without
+                // loading it.
+                // I could filter using a heuristic: only include classes in a package named "qual".
                 simpleToFullyQualified.put(ci.getSimpleName(), ci.getName());
             }
         } catch (IOException e) {
@@ -131,6 +137,10 @@ public class RemoveAnnotationsForInference {
         }
     }
 
+    // An earlier implementation used ModifierVisitor.  However, JavaParser's unparser can change
+    // the structure of the program. For example, it changes `protected @Nullable Object x;` to
+    // `@Nullable protected Object x;` which yields a type.anno.before.modifier error.
+
     /**
      * Rewrites the file in place, removing the given annotations from it.
      *
@@ -154,8 +164,7 @@ public class RemoveAnnotationsForInference {
         PositionUtils.sortByBeginPosition(removals);
         Collections.reverse(removals);
 
-        // This code (correctly) assumes that no element of removals that is contained within
-        // another.
+        // This code (correctly) assumes that no element of `removals` is contained within another.
         for (AnnotationExpr removal : removals) {
             Position begin = removal.getBegin().get();
             Position end = removal.getEnd().get();
@@ -199,7 +208,7 @@ public class RemoveAnnotationsForInference {
     }
 
     /**
-     * If newLine is blank, removes the given line. Otherwise replaces the given line.
+     * If {@code newLine} is blank, removes the given line. Otherwise replaces the given line.
      *
      * @param lines the list in which to do replacement or removal
      * @param lineno the index of the line to be removed or replaced
@@ -227,13 +236,12 @@ public class RemoveAnnotationsForInference {
         return s.chars().allMatch(Character::isWhitespace);
     }
 
-    // An earlier implementation used ModifierVisitor.  However, JavaParser's unparser can change
-    // the structure of the program. For example, it changes `protected @Nullable Object x;` to
-    // `@Nullable protected Object x;` which yields a type.anno.before.modifier error.
-
     /**
      * Visits one compilation unit, collecting the annotations that should be removed. See the
      * {@link RemoveAnnotationsForInference class documentation} for more details.
+     *
+     * <p>The annotations will be removed from the source code by the {@link #removeAnnotations}
+     * method.
      */
     private static class RemoveAnnotationsVisitor
             extends GenericListVisitorAdapter<AnnotationExpr, Void> {

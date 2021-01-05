@@ -77,19 +77,22 @@ public class JavaStubifier {
     }
 
     /**
-     * Converts a directory name to a path.
+     * Converts a directory name to a path. It issues a warning and terminates the program if the
+     * argument does not exist or is not a directory.
+     *
+     * <p>Unlike {@code Paths.get}, it handles "." which means the current directory in Unix.
      *
      * @param dir a directory name
      * @return a path for the directory name
      */
     public static Path dirnameToPath(String dir) {
         File f = new File(dir);
-        if (!f.isDirectory()) {
-            System.err.printf("Not a directory: %s (%s).%n", dir, f);
-            System.exit(1);
-        }
         if (!f.exists()) {
             System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
+            System.exit(1);
+        }
+        if (!f.isDirectory()) {
+            System.err.printf("Not a directory: %s (%s).%n", dir, f);
             System.exit(1);
         }
         String absoluteDir = f.getAbsolutePath();
