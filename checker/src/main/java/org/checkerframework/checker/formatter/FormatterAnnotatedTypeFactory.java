@@ -101,11 +101,11 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns true if the method has a {@code @FormatMethod} annotation.
      *
-     * @param method a method
-     * @return true if the method has a {@code @FormatMethod} annotation.
+     * @param methodAnnos method annotations
+     * @return true if the method has a {@code @FormatMethod} annotation
      */
-    private boolean hasFormatMethodAnno(AMethod method) {
-        for (Annotation anno : method.tlAnnotationsHere) {
+    private boolean hasFormatMethodAnno(AMethod methodAnnos) {
+        for (Annotation anno : methodAnnos.tlAnnotationsHere) {
             String annoName = anno.def.name;
             if (annoName.equals("org.checkerframework.checker.formatter.qual.FormatMethod")
                     || anno.def.name.equals("com.google.errorprone.annotations.FormatMethod")) {
