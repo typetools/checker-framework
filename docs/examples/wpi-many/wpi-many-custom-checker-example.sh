@@ -94,6 +94,6 @@ bash wpi-many.sh -o "${workingdir}/${checkername}-${repolistbase}" \
      -t ${timeout} \
      -- \
      --checker "${checker}" \
-     ${quals_arg:+"--quals ${qual_classpath}"} \
-     ${lib_arg:+"--lib ${checker_classpath}"} \
-     ${stubs_arg:+"--stubs ${custom_stubs}"}
+     ${quals_arg:+--quals "${qual_classpath}"} \
+     ${lib_arg:+--lib "${checker_classpath}"} \
+     ${stubs_arg:+--stubs "${custom_stubs}"}
