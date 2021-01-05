@@ -69,22 +69,20 @@ export JAVA_HOME=${JAVA11_HOME}
 repolistbase=$(basename "$repolist")
 
 # DLJC will fail if these arguments are passed to it with empty values.
-if [ "x${qual_classpath}" = "x" ]; then
-  quals_arg=''
+if [ ! "x${qual_classpath}" = "x" ]; then
+  quals_arg='yes'
 else
-  quals_arg="--quals ${qual_classpath}"
+  quals_arg=
 fi
 
-if [ "x${checker_classpath}" = "x" ]; then
-  lib_arg=''
+if [ ! "x${checker_classpath}" = "x" ]; then
+  lib_arg='yes'
 else
-  lib_arg="--lib ${checker_classpath}"
+  lib_arg=
 fi
 
-if [ "x${custom_stubs}" = "x" ]; then
-  stubs_arg=''
-else
-  stubs_arg="--stubs ${custom_stubs}"
+if [ ! "x${custom_stubs}" = "x" ]; then
+  stubs_arg='yes'
 fi
 
 ## Code starts here.
@@ -96,6 +94,6 @@ bash wpi-many.sh -o "${workingdir}/${checkername}-${repolistbase}" \
      -t ${timeout} \
      -- \
      --checker "${checker}" \
-     "${quals_arg}" \
-     "${lib_arg}" \
-     "${stubs_arg}"
+     ${quals_arg:+"--quals ${qual_classpath}"} \
+     ${lib_arg:+"--lib ${checker_classpath}"} \
+     ${stubs_arg:+"--stubs ${custom_stubs}"}
