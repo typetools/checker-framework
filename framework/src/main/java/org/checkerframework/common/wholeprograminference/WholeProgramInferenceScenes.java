@@ -890,6 +890,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         storage.writeScenes(outputFormat, checker);
     }
 
+    @Override
+    public void preprocessClassTree(ClassTree classTree) {
+        // This implementation does nothing.
+    }
+
     ///
     /// Storing annotations
     ///

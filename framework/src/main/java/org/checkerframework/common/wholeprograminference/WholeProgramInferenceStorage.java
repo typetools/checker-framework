@@ -1,10 +1,13 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -14,7 +17,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 public interface WholeProgramInferenceStorage<T> {
     /**
-     * Returns the file corresponding to the given element.
+     * Returns the file corresponding to the given element. This may side-effect the storage to load
+     * the file if it hasn't been read yet.
      *
      * @param elt an element
      * @return the path to the file where inference results for the element will be written
@@ -22,18 +26,32 @@ public interface WholeProgramInferenceStorage<T> {
     public String getFileForElement(Element elt);
 
     /**
+     * Given an Element in a compilation unit that has already been read into storage, returns
+     * whether there exists a stored method matching {@code elt}.
+     *
+     * <p>Depending on how methods are stored, this can be false if {@code elt} represents a method
+     * that was synthetically added by javac, such as zero-argument constructors or valueOf(String)
+     * methods for enum types.
+     *
+     * @param methodElt an method or constructor Element
+     * @return true if the storage has a method corresponding to {@code elt}, false otherwise.
+     */
+    public boolean hasMethodAnnos(ExecutableElement methodElt);
+
+    /**
      * Get the annotations for a formal parameter type.
      *
      * @param methodElt the method or constructor Element
+     * @param file the annotation file containing the method or constructor
      * @param i the parameter index (0-based)
      * @param paramATM the parameter type
      * @param ve the parameter variable
      * @param atypeFactory the type factory
      * @return the annotations for a formal parameter type
      */
-    @SuppressWarnings("UnusedVariable")
     public T getParameterType(
             ExecutableElement methodElt,
+            String file,
             int i,
             AnnotatedTypeMirror paramATM,
             VariableElement ve,
@@ -43,12 +61,14 @@ public interface WholeProgramInferenceStorage<T> {
      * Get the annotations for the receiver type.
      *
      * @param methodElt the method or constructor Element
+     * @param file the annotation file containing the method or constructor
      * @param paramATM the receiver type
      * @param atypeFactory the type factory
      * @return the annotations for the receiver type
      */
     public T getReceiverType(
             ExecutableElement methodElt,
+            String file,
             AnnotatedTypeMirror paramATM,
             AnnotatedTypeFactory atypeFactory);
 
@@ -56,12 +76,14 @@ public interface WholeProgramInferenceStorage<T> {
      * Get the annotations for the return type.
      *
      * @param methodElt the method or constructor Element
+     * @param file the annotation file containing the method or constructor
      * @param atm the return type
      * @param atypeFactory the type factory
      * @return the annotations for the return type
      */
     public T getReturnType(
             ExecutableElement methodElt,
+            String file,
             AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atypeFactory);
 
@@ -69,6 +91,8 @@ public interface WholeProgramInferenceStorage<T> {
      * Get the annotations for a field type.
      *
      * @param className fully-qualified name of a class
+     * @param file the path to the file that represents the class containing the field
+     * @param classSymbol optionally, the ClassSymbol representing the class
      * @param fieldName the simple field name
      * @param lhsATM the field type
      * @param atypeFactory the annotated type factory
@@ -76,6 +100,8 @@ public interface WholeProgramInferenceStorage<T> {
      */
     public T getFieldType(
             @BinaryName String className,
+            String file,
+            @Nullable ClassSymbol classSymbol,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atypeFactory);
@@ -84,12 +110,14 @@ public interface WholeProgramInferenceStorage<T> {
      * Obtain the annotations representing the contracts for a field at method entry or exit.
      *
      * @param methodElt the method Element
+     * @param file the annotation file containing the method or constructor
      * @param preOrPost whether to get the preconditions or postconditions
      * @param fieldElement the field
      * @return a set of annotations representing the expression
      */
     public T getMethodContractForField(
             ExecutableElement methodElt,
+            String file,
             Analysis.BeforeOrAfter preOrPost,
             VariableElement fieldElement);
 
@@ -98,12 +126,15 @@ public interface WholeProgramInferenceStorage<T> {
      *
      * @param methodElt the method to annotate
      * @param anno the declaration annotation to add to the method
-     * @param file path to file containing {@code methodElement}
+     * @param tmp temporary parameter to distinguish between {@link
+     *     WholeProgramInferenceJavaParser#addMethodDeclarationAnnotation(ExecutableElement,
+     *     AnnotationMirror)}
      * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
      *     otherwise
      */
+    // TODO: Remove tmp
     public boolean addMethodDeclarationAnnotation(
-            ExecutableElement methodElt, AnnotationMirror anno, String file);
+            ExecutableElement methodElt, AnnotationMirror anno, Void tmp);
 
     /**
      * Obtain the type from a storage location.
@@ -162,4 +193,12 @@ public interface WholeProgramInferenceStorage<T> {
      * @param path path to the file with annotations that have been modified
      */
     public void setFileModified(String path);
+
+    /**
+     * Performs any preperation required for inference on Elements of a class. Should be called on
+     * each toplevel class declaration in a compilation unit before processing it.
+     *
+     * @param classTree the class to preprocess
+     */
+    void preprocessClassTree(ClassTree classTree);
 }

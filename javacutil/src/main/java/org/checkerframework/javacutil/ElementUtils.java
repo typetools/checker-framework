@@ -51,7 +51,8 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element.
+     * Returns the innermost type element enclosing the given element, including possibly the
+     * element itself.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
@@ -63,6 +64,21 @@ public class ElementUtils {
             result = encl;
         }
         return (TypeElement) result;
+    }
+
+    /**
+     * Returns the innermost type element enclosing the given element different from the element.
+     *
+     * @param elem the enclosed element of a class
+     * @return the innermost type element, or null if no type element encloses {@code elem}
+     */
+    public static @Nullable TypeElement strictEnclosingClass(final Element elem) {
+        Element enclosingElement = elem.getEnclosingElement();
+        if (enclosingElement == null) {
+            return null;
+        }
+
+        return enclosingClass(enclosingElement);
     }
 
     /**

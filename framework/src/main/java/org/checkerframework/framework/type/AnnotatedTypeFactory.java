@@ -81,6 +81,7 @@ import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -513,7 +514,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             if (checker.getOption("infer").equals("ajava")) {
-                wholeProgramInference = new WholeProgramInferenceJavaParser(this);
+                wholeProgramInference =
+                        new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
+                                this, new WholeProgramInferenceJavaParser(this));
             } else {
                 wholeProgramInference = new WholeProgramInferenceScenes(this);
             }
@@ -709,16 +712,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root, boolean shouldCheckVisitor) {
-        if (root != null && wholeProgramInference instanceof WholeProgramInferenceJavaParser) {
+        if (root != null && wholeProgramInference != null) {
             for (Tree typeDecl : root.getTypeDecls()) {
                 if (typeDecl.getKind() != Kind.CLASS) {
                     continue;
                 }
 
                 ClassTree classTree = (ClassTree) typeDecl;
-                WholeProgramInferenceJavaParser wpiJavaParser =
-                        (WholeProgramInferenceJavaParser) wholeProgramInference;
-                wpiJavaParser.addClassTree(classTree);
+                wholeProgramInference.preprocessClassTree(classTree);
             }
         }
 
