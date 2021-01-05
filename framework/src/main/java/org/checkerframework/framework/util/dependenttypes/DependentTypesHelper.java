@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -778,7 +777,7 @@ public class DependentTypesHelper {
     /**
      * Checks all Java expressions in the given annotated type to see if the expression string is an
      * error string as specified by {@link DependentTypesError#isExpressionError}. If the annotated
-     * type has any errors, a flowexpr.parse.error is issued at the errorTree.
+     * type has any errors, an expression.unparsable.type.invalid error is issued at the errorTree.
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -803,25 +802,27 @@ public class DependentTypesHelper {
         reportErrors(errorTree, errors);
     }
 
+    /**
+     * Report the given errors as "expression.unparsable.type.invalid".
+     *
+     * @param errorTree where to report the errors
+     * @param errors the errors to report
+     */
     protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
-        if (errors.isEmpty()) {
-            return;
-        }
-        StringJoiner errorsFormatted = new StringJoiner(System.lineSeparator());
-        for (DependentTypesError dte : errors) {
-            errorsFormatted.add(dte.format());
-        }
         SourceChecker checker = factory.getContext().getChecker();
-        checker.reportError(
-                errorTree, "expression.unparsable.type.invalid", errorsFormatted.toString());
+        for (DependentTypesError dte : errors) {
+            checker.reportError(errorTree, "expression.unparsable.type.invalid", dte.format());
+        }
     }
 
     /**
-     * Checks every Java expression element of the annotation to see if the expression is an error
-     * string as specified by DependentTypesError#isExpressionError. If any expression is an error,
-     * then a non-empty list of {@link DependentTypesError} is returned.
+     * Returns all the Java expression elements of the annotation that are an error string as
+     * specified by DependentTypesError#isExpressionError.
+     *
+     * @param am an annotation
+     * @return the elements of {@code am} that are errors
      */
-    private List<DependentTypesError> checkForError(AnnotationMirror am) {
+    private List<DependentTypesError> errorElements(AnnotationMirror am) {
         List<DependentTypesError> errors = new ArrayList<>();
 
         for (String element : getListOfExpressionElements(am)) {
@@ -839,13 +840,13 @@ public class DependentTypesHelper {
     /**
      * Checks every Java expression element of the annotation to see if the expression is an error
      * string as specified by DependentTypesError#isExpressionError. If any expression is an error,
-     * then an error is reported at {@code errorTree}.
+     * then a flowexpr.parse.error error is reported at {@code errorTree}.
      *
      * @param annotation annotation to check
      * @param errorTree location at which to issue errors
      */
     public void checkAnnotation(AnnotationMirror annotation, Tree errorTree) {
-        List<DependentTypesError> errors = checkForError(annotation);
+        List<DependentTypesError> errors = errorElements(annotation);
         if (errors.isEmpty()) {
             return;
         }
@@ -937,7 +938,7 @@ public class DependentTypesHelper {
                         List<DependentTypesError> errors = new ArrayList<>();
                         for (AnnotationMirror am : type.getAnnotations()) {
                             if (isExpressionAnno(am)) {
-                                errors.addAll(checkForError(am));
+                                errors.addAll(errorElements(am));
                             }
                         }
                         return errors;
@@ -952,8 +953,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Copies annotations that might have been viewpoint adapted from the visited type to the
-     * parameter.
+     * Copies annotations that might have been viewpoint adapted from the visited type (the first
+     * formal parameter) to the second formal parameter.
      */
     private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
         @Override
@@ -1002,9 +1003,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Whether or not atm has any dependent type annotations. If an annotated type does not have a
-     * dependent type annotation, then no standardization or viewpoint adaption is performed. (This
-     * check avoids calling time intensive methods unless absolutely required.)
+     * Return true if {@code atm} has any dependent type annotations. If an annotated type does not
+     * have a dependent type annotation, then no standardization or viewpoint adaption is performed.
+     * (This check avoids calling time intensive methods unless required.)
+     *
+     * @param atm a type
+     * @return true if {@code atm} has any dependent type annotations
      */
     private boolean hasDependentType(AnnotatedTypeMirror atm) {
         if (atm == null) {
@@ -1022,12 +1026,10 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns the list of elements of the annotation that are Java expressions, or the empty list
-     * if there aren't any.
+     * Returns the elements of the annotation that are Java expressions.
      *
      * @param am AnnotationMirror
-     * @return the list of elements of the annotation that are Java expressions, or the empty list
-     *     if there aren't any
+     * @return the elements of the annotation that are Java expressions
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
