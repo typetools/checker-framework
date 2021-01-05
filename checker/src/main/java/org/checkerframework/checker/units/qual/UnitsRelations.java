@@ -16,13 +16,14 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UnitsRelations {
     /**
-     * Returns the UnitsRelations subclass to use.
+     * Returns the subclass of {@link org.checkerframework.checker.units.UnitsRelations} to use.
      *
-     * @return the UnitsRelations subclass to use
+     * @return the subclass of {@link org.checkerframework.checker.units.UnitsRelations} to use
      */
     // The more precise type is Class<? extends org.checkerframework.checker.units.UnitsRelations>,
     // but org.checkerframework.checker.units.UnitsRelations is not in checker-qual.jar, nor can
-    // it be since it uses AnnotatedTypeMirrors.  So use a less precise type and check that it
-    // is a subclass in UnitsAnnotatedTypeFactory.
+    // it be since it uses AnnotatedTypeMirrors.  So this declaration uses a less precise type, and
+    // UnitsAnnotatedTypeFactory checks that the argument implements
+    // org.checkerframework.checker.units.UnitsRelations.
     Class<?> value();
 }
