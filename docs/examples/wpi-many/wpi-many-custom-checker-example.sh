@@ -98,4 +98,4 @@ bash wpi-many.sh -o "${workingdir}/${checkername}-${repolistbase}" \
      --checker "${checker}" \
      "${quals_arg}" \
      "${lib_arg}" \
-     "${stub_arg}"
+     "${stubs_arg}"
