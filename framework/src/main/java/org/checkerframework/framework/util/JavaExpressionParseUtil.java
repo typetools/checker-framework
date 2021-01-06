@@ -159,6 +159,8 @@ public class JavaExpressionParseUtil {
      * Replaces every occurrence of "#NUMBER" with "_param_NUMBER" where NUMBER is the 1-based index
      * of a formal parameter.
      *
+     * <p>Note that this does replacement even within strings.
+     *
      * @param expression a Java expression in which to replace
      * @return the Java expression, with formal parameter references like "#2" replaced by an
      *     identifier like "_param_2"

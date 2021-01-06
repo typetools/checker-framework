@@ -1,20 +1,13 @@
-#
-# After 8 string tests, string is a @BinaryName.
-#
-src/main/java/org/plumelib/bcelutil/BcelUtil.java:757: error: [argument.type.incompatible] incompatible argument for parameter className of ObjectType.
-      return new ObjectType(binaryName);
-                            ^
-  found   : @SignatureUnknown String
-  required: @BinaryName String
+warning: No processor claimed any of these annotations: org.checkerframework.checker.nullness.qual.EnsuresNonNull,org.checkerframework.checker.nullness.qual.RequiresNonNull
 
 #
 # This is in method fqBinaryNameToType, but there are no calls to it, so WPI didn't infer a type for its formal parameter.
-# (Possible fix: add tests, if WPI takes account of tests.)
 #
-src/main/java/org/plumelib/bcelutil/BcelUtil.java:771: error: [argument.type.incompatible] incompatible argument for parameter typename of parseFqBinaryName.
+src/main/java/org/plumelib/bcelutil/BcelUtil.java:777: error: [argument.type.incompatible] incompatible argument for parameter typename of parseFqBinaryName.
         Signatures.ClassnameAndDimensions.parseFqBinaryName(classname);
                                                             ^
   found   : @SignatureUnknown String
   required: @FqBinaryName String
 
-2 errors
+1 error
+1 warning

@@ -114,7 +114,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.SystemPlume;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 
@@ -2132,7 +2132,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private static void log(String format, Object... args) {
         if (debug) {
-            UtilPlume.sleep(1); // logging can interleave with typechecker output
+            SystemPlume.sleep(1); // logging can interleave with typechecker output
             System.out.printf(format, args);
         }
     }
