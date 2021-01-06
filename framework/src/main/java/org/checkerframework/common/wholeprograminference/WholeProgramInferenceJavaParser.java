@@ -243,7 +243,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param atypeFactory the annotated type factory
      * @return the annotations for a field type
      */
-    public AnnotatedTypeMirror getFieldType(
+    private AnnotatedTypeMirror getFieldType(
             Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
@@ -254,6 +254,62 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         @BinaryName String className = enclosingClass.flatname.toString();
         ClassOrInterfaceAnnos classAnnos = getClassAnnos(className, file, enclosingClass);
         return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
+    }
+
+    /**
+     * Returns the pre- or postcondition annotations for a field.
+     *
+     * @param preOrPost whether to get the precondition or postcondition
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the pre- or postcondition annotations for a field
+     */
+    private AnnotatedTypeMirror getPreOrPostconditionsForField(
+            Analysis.BeforeOrAfter preOrPost,
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        switch (preOrPost) {
+            case BEFORE:
+                return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
+            case AFTER:
+                return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
+            default:
+                throw new BugInCF("Unexpected " + preOrPost);
+        }
+    }
+
+    /**
+     * Returns the precondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the precondition annotations for a field
+     */
+    private AnnotatedTypeMirror getPreconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
+        return methodAnnos.getPreconditionsForField(fieldElement, atypeFactory);
+    }
+
+    /**
+     * Returns the postcondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the postcondition annotations for a field
+     */
+    private AnnotatedTypeMirror getPostconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
+        return methodAnnos.getPostconditionsForField(fieldElement, atypeFactory);
     }
 
     @Override
@@ -377,21 +433,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 // This field is not in the store. Add its declared type.
                 inferredType = atypeFactory.getAnnotatedType(fieldElement);
             }
-            AnnotatedTypeMirror preOrPostConditionAnnos;
-            switch (preOrPost) {
-                case BEFORE:
-                    preOrPostConditionAnnos =
-                            methodAnnos.getPreconditionsForField(
-                                    fieldElement, fieldDeclType, atypeFactory);
-                    break;
-                case AFTER:
-                    preOrPostConditionAnnos =
-                            methodAnnos.getPostconditionsForField(
-                                    fieldElement, fieldDeclType, atypeFactory);
-                    break;
-                default:
-                    throw new BugInCF("Unexpected " + preOrPost);
-            }
+
+            AnnotatedTypeMirror preOrPostConditionAnnos =
+                    getPreOrPostconditionsForField(
+                            preOrPost, methodElt, fieldElement, atypeFactory);
 
             String file = getFileForElement(methodElt);
             updateAnnotationSet(
@@ -1555,22 +1600,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
          *
          * @param field VariableElement for a field in the enclosing class for this method
-         * @param type base type for the return type, used for initializing the returned {@code
-         *     AnnotatedTypeMirror} the first time it's accessed
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
          *     be used
          * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
          *     preconditions for the given field
          */
         public AnnotatedTypeMirror getPreconditionsForField(
-                VariableElement field, AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
+                VariableElement field, AnnotatedTypeFactory atf) {
             if (fieldToPreconditions == null) {
                 fieldToPreconditions = new HashMap<>();
             }
 
             if (!fieldToPreconditions.containsKey(field)) {
+                TypeMirror underlyingType = atf.getAnnotatedType(field).getUnderlyingType();
                 AnnotatedTypeMirror preconditionsType =
-                        AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false);
+                        AnnotatedTypeMirror.createType(underlyingType, atf, false);
                 fieldToPreconditions.put(field, preconditionsType);
             }
 
@@ -1582,22 +1626,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
          *
          * @param field VariableElement for a field in the enclosing class for this method
-         * @param type base type for the return type, used for initializing the returned {@code
-         *     AnnotatedTypeMirror} the first time it's accessed
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
          *     be used
          * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
          *     postconditions for the given field
          */
         public AnnotatedTypeMirror getPostconditionsForField(
-                VariableElement field, AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
+                VariableElement field, AnnotatedTypeFactory atf) {
             if (fieldToPostconditions == null) {
                 fieldToPostconditions = new HashMap<>();
             }
 
             if (!fieldToPostconditions.containsKey(field)) {
+                TypeMirror underlyingType = atf.getAnnotatedType(field).getUnderlyingType();
                 AnnotatedTypeMirror postconditionsType =
-                        AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false);
+                        AnnotatedTypeMirror.createType(underlyingType, atf, false);
                 fieldToPostconditions.put(field, postconditionsType);
             }
 
