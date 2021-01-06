@@ -868,20 +868,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         return storage.atmFromATypeElement(typeMirror, type);
     }
 
-    /**
-     * Obtain the type from an AnnotatedTypeMirror.
-     *
-     * @param typeMirror the underlying type for the result
-     * @param type the AnnotatedTypeMirror from which to obtain annotations
-     * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
-     *     {@code type}
-     */
-    public AnnotatedTypeMirror atmFromAnnotatedTypeMirror(
-            TypeMirror typeMirror, AnnotatedTypeMirror type) {
-        // return storage.atmFromAnnotatedTypeMirror(typeMirror, type);
-        throw new BugInCF("Not used in WholeProgramInferenceJavaParser");
-    }
-
     ///
     /// Writing to a file
     ///
