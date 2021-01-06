@@ -166,14 +166,14 @@ def validate_args(argv):
         print_usage()
         raise Exception("Invalid arguments. " + ",".join(argv))
     for i in range(1, len(argv)):
-        if argv[i] != "release" and argv[i] != "--auto":
+        if argv[i] != "release":
             print_usage()
             raise Exception("Invalid arguments. " + ",".join(argv))
 
 def print_usage():
     """Print instructions on how to use this script, and in particular how to
     set test or release mode."""
-    print ("Usage: python3 release_build.py [release] [--auto]\n" +
+    print ("Usage: python3 release_build.py [release]\n" +
            "If the \"release\" argument is " +
            "NOT specified then the script will execute all steps that checking and prompting " +
            "steps but will NOT actually perform a release.  This is for testing the script.")
@@ -187,14 +187,11 @@ def main(argv):
     perform manual steps such as sending the
     release announcement e-mail."""
     # MANUAL Indicates a manual step
-    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most
-    # of these steps become fully automated when --auto is used.
     # AUTO Indicates the step is fully automated.
 
     set_umask()
 
     validate_args(argv)
-    auto = read_command_line_option(argv, "--auto")
     test_mode = not read_command_line_option(argv, "release")
 
     m2_settings = expanduser("~") + "/.m2/settings.xml"
@@ -256,21 +253,21 @@ def main(argv):
 
     print_step("Push Step 2: Check links on development site") # SEMIAUTO
 
-    if auto or prompt_yes_no("Run link checker on DEV site?", True):
+    if prompt_yes_no("Run link checker on DEV site?", True):
         check_all_links(dev_afu_website, dev_checker_website, "dev", test_mode, new_checker_version)
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
 
     print_step("Push Step 3: Run development sanity tests") # SEMIAUTO
-    if auto or prompt_yes_no("Perform this step?", True):
+    if prompt_yes_no("Perform this step?", True):
 
         print_step("3a: Run javac sanity test on development release.")
-        if auto or prompt_yes_no("Run javac sanity test on development release?", True):
+        if prompt_yes_no("Run javac sanity test on development release?", True):
             javac_sanity_check(dev_checker_website, new_checker_version)
 
         print_step("3b: Run Maven sanity test on development release.")
-        if auto or prompt_yes_no("Run Maven sanity test on development repo?", True):
+        if prompt_yes_no("Run Maven sanity test on development repo?", True):
             maven_sanity_check("maven-dev", "", new_checker_version)
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
@@ -290,7 +287,7 @@ def main(argv):
     print_step("Push Step 4: Stage Maven artifacts in Central") # SEMIAUTO
 
     print_step("4a: Stage the artifacts at Maven central.")
-    if (auto and not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
+    if (not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
         stage_maven_artifacts_in_maven_central(new_checker_version)
 
         print_step("4b: Close staged artifacts at Maven central.")
@@ -310,7 +307,7 @@ def main(argv):
 
 
         print_step("4c: Run Maven sanity test on Maven central artifacts.")
-        if auto or prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
+        if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
             repo_url = raw_input("Please enter the repo URL of the closed artifacts:\n")
 
             maven_sanity_check("maven-staging", repo_url, new_checker_version)
@@ -322,7 +319,7 @@ def main(argv):
 
     print_step("Push Step 5. Copy dev current release website to live website") # SEMIAUTO
     if not test_mode:
-        if auto or prompt_yes_no("Copy release to the live website?"):
+        if prompt_yes_no("Copy release to the live website?"):
             print "Copying to live site"
             copy_releases_to_live_site(new_checker_version, new_afu_version)
             copy_htaccess()
@@ -336,7 +333,7 @@ def main(argv):
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
     if not test_mode:
-        if auto or prompt_yes_no("Run javac sanity test on live release?", True):
+        if prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
             SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
@@ -359,7 +356,7 @@ def main(argv):
 
     print_step("Push Step 7. Check live site links") # SEMIAUTO
     if not test_mode:
-        if auto or prompt_yes_no("Run link checker on LIVE site?", True):
+        if prompt_yes_no("Run link checker on LIVE site?", True):
             check_all_links(live_afu_website, live_checker_website, "live", test_mode)
     else:
         print  "Test mode: Skipping checking of live site links."

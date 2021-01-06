@@ -25,11 +25,10 @@ def print_usage():
     """Print usage information."""
     print "Usage:    python3 release_build.py [projects] [options]"
     print_projects(1, 4)
-    print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"
     print "\n  --notest  disables tests to speed up scripts; for debugging only"
 
-def clone_or_update_repos(auto):
+def clone_or_update_repos():
     """Clone the relevant repos from scratch or update them if they exist and
     if directed to do so by the user."""
     message = """Before building the release, we clone or update the release repositories.
@@ -53,12 +52,11 @@ The following repositories will be cloned or updated from their origins:
 
     clone_from_scratch = True
 
-    if not auto:
-        if not prompt_yes_no(message, True):
-            clone_from_scratch = False
-            if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
-                print "WARNING: Continuing without refreshing repositories.\n"
-                return
+    if not prompt_yes_no(message, True):
+        clone_from_scratch = False
+        if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
+            print "WARNING: Continuing without refreshing repositories.\n"
+            return
 
     for live_to_interm in LIVE_TO_INTERM_REPOS:
         clone_from_scratch_or_update(live_to_interm[0], live_to_interm[1], clone_from_scratch, True)
@@ -84,16 +82,13 @@ def get_afu_date(building_afu):
         # afu_site = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
         # return extract_from_site(afu_site, "<!-- afu-date -->", "<!-- /afu-date -->")
 
-def get_new_version(project_name, curr_version, auto):
+def get_new_version(project_name, curr_version):
     "Queries the user for the new version number; returns old and new version numbers."
 
     print "Current " + project_name + " version: " + curr_version
     suggested_version = increment_version(curr_version)
 
-    if auto:
-        new_version = suggested_version
-    else:
-        new_version = prompt_w_default("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
+    new_version = prompt_w_default("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
 
     print "New version: " + new_version
 
@@ -270,7 +265,6 @@ def main(argv):
     and placing them in the development web site. It can also be used to review
     the documentation and changelogs for the three projects."""
     # MANUAL Indicates a manual step
-    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully automated when --auto is used.
     # AUTO Indicates the step is fully automated.
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
@@ -279,10 +273,6 @@ def main(argv):
 
     projects_to_release = read_projects(argv, print_usage)
 
-    # Check for a --auto
-    # If --auto then no prompt and just build a full release
-    # Otherwise provide all prompts
-    auto = read_command_line_option(argv, "--auto")
     global debug
     global ant_debug
     debug = read_command_line_option(argv, "--debug")
@@ -302,7 +292,7 @@ def main(argv):
 
     print "\nPATH:\n" + os.environ['PATH'] + "\n"
 
-    print_step("Build Step 1: Clone the build and intermediate repositories.") # SEMIAUTO
+    print_step("Build Step 1: Clone the build and intermediate repositories.") # MANUAL
 
     # Recall that there are 3 relevant sets of repositories for the release:
     # * build repository - repository where the project is built for release
@@ -317,13 +307,13 @@ def main(argv):
     # i.e. indistinguishable from a freshly cloned repository.
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE
-    print_step("\n1a: Clone/update repositories.") # SEMIAUTO
-    clone_or_update_repos(auto)
+    print_step("\n1a: Clone/update repositories.") # MANUAL
+    clone_or_update_repos()
 
     # This step ensures the previous step worked. It checks to see if we have any modified files, untracked files,
     # or outgoing changesets. If so, it fails.
 
-    print_step("1b: Verify repositories.") # SEMIAUTO
+    print_step("1b: Verify repositories.") # MANUAL
     check_repos(INTERM_REPOS, True, True)
     check_repos(BUILD_REPOS, True, False)
 
@@ -340,9 +330,7 @@ def main(argv):
     # version. You can also manually specify a version higher than the current version. Lower or equivalent
     # versions are not possible and will be rejected when you try to push the release.
 
-    # NOTE: If you pass --auto on the command line then the next logical version will be chosen automatically
-
-    print_step("Build Step 3: Determine release versions.") # SEMIAUTO
+    print_step("Build Step 3: Determine release versions.") # MANUAL
 
     old_cf_version = current_distribution_by_website(HTTP_PATH_TO_LIVE_SITE)
     cf_version = CF_VERSION
@@ -356,7 +344,7 @@ def main(argv):
 
     AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
     old_afu_version = get_afu_version_from_html(AFU_MANUAL)
-    (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version, auto)
+    (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version)
 
     if old_afu_version == afu_version:
         print("The AFU version has not changed. It is recommended to include a small bug fix or doc update in every " +
@@ -371,9 +359,9 @@ def main(argv):
         prompt_to_continue()
 
     ## I don't think this should be necessary in general.  It's just to put files in place so link checking will work, and it takes a loooong time to run.
-    # print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # SEMIAUTO
+    # print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # MANUAL
 
-    # if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
+    # if prompt_yes_no("Proceed with copy of live site to dev site?", True):
     #     # ************************************************************************************************
     #     # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
     #     # and its work cannot be undone.  If, for example, this command were modified to accidentally make
