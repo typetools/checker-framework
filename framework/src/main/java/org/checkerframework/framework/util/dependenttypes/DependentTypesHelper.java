@@ -538,11 +538,25 @@ public class DependentTypesHelper {
         }
     }
 
+    /**
+     * Standardize a type, setting useLocalScope to true.
+     *
+     * @param context the context
+     * @param localScope the local scope
+     * @param type the type to standardize; is side-effected by this method
+     */
     private void standardizeUseLocals(
             JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
         standardizeAtm(context, localScope, type, /*useLocalScope=*/ true);
     }
 
+    /**
+     * Standardize a type, setting useLocalScope to false.
+     *
+     * @param context the context
+     * @param localScope the local scope
+     * @param type the type to standardize; is side-effected by this method
+     */
     private void standardizeDoNotUseLocals(
             JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
         standardizeDoNotUseLocals(context, localScope, type, /*removeErroneousExpressions=*/ false);
