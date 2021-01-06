@@ -61,6 +61,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     /** The type factory associated with this. */
     protected final AnnotatedTypeFactory atypeFactory;
 
+    /** The storage for the inferred annotations. */
     private WholeProgramInferenceStorage<T> storage;
 
     /** Indicates whether assignments where the rhs is null should be ignored. */
@@ -71,6 +72,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      * annotations.
      *
      * @param atypeFactory the associated type factory
+     * @param storage the storage used for inferred annotations and for writing output files
      */
     public WholeProgramInferenceImplementation(
             AnnotatedTypeFactory atypeFactory, WholeProgramInferenceStorage<T> storage) {
@@ -81,6 +83,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         this.ignoreNullAssignments = !isNullness;
     }
 
+    /**
+     * Returns the storage for inferred annotations.
+     *
+     * @return the storage for the inferred annotations
+     */
     public WholeProgramInferenceStorage<T> getStorage() {
         return storage;
     }

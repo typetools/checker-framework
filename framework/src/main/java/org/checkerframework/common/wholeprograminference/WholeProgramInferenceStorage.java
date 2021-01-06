@@ -12,6 +12,16 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
+/**
+ * Stores annotations from whole program inference. For a given location such as a field or method,
+ * an object can be obtained containing the inferred annotations for that object. The storage also
+ * has the ability to write out the stored annotations to storage files. The specific format will
+ * depend on the implementation
+ *
+ * @param <T> the type used by the storage to store annotations. The methods {@link
+ *     #atmFromAnnotationLocation} and {@link #updateStorageLocationFromAtm} can be used to
+ *     manipulate a storage location.
+ */
 public interface WholeProgramInferenceStorage<T> {
     /**
      * Returns the file corresponding to the given element. This may side-effect the storage to load
