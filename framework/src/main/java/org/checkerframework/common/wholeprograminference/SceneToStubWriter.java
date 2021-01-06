@@ -607,7 +607,10 @@ public final class SceneToStubWriter {
                     @Override
                     public int compare(@BinaryName String o1, @BinaryName String o2) {
                         return ComparisonChain.start()
-                                .compare(packagePart(o1), packagePart(o2))
+                                .compare(
+                                        packagePart(o1),
+                                        packagePart(o2),
+                                        Comparator.nullsFirst(Comparator.naturalOrder()))
                                 .compare(basenamePart(o1), basenamePart(o2))
                                 .result();
                     }

@@ -74,11 +74,11 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.GC;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
 
 /**
@@ -904,10 +904,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
             return;
         }
-        if (!warnedAboutGarbageCollection && GC.gcPercentage(10) > .25) {
-            // Kind.ERROR is quite severe, but a user might overlook a NOTE or WARNING.
+        if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
             messager.printMessage(
-                    Kind.ERROR, "The JVM has too little memory; re-run with larger max heap.");
+                    Kind.WARNING,
+                    "Memory constraints are impeding performance; please increase max heap size.");
             warnedAboutGarbageCollection = true;
         }
 
