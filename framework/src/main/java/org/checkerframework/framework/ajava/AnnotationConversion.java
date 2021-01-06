@@ -46,7 +46,7 @@ public class AnnotationConversion {
     /**
      * Converts an AnnotationMirror into a JavaParser {@code AnnotationExpr}.
      *
-     * @param annotation annotation to convert
+     * @param annotation the annotation to convert
      * @return a JavaParser {@code AnnotationExpr} representing the same annotation with the same
      *     element values. The converted annotation will contain the annotation's fully qualified
      *     name.
@@ -68,7 +68,7 @@ public class AnnotationConversion {
     }
 
     /**
-     * Converts a mapping of annotation elements to their values to a list of key-value pairs
+     * Converts a mapping of (annotation element &rarr; value) into a list of key-value pairs
      * containing the JavaParser representations of the same values.
      *
      * @param values mapping of element values from an {@code AnnotationMirror}

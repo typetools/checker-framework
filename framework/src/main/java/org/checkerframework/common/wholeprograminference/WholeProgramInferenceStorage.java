@@ -1,14 +1,11 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -42,7 +39,6 @@ public interface WholeProgramInferenceStorage<T> {
      * Get the annotations for a formal parameter type.
      *
      * @param methodElt the method or constructor Element
-     * @param file the annotation file containing the method or constructor
      * @param i the parameter index (0-based)
      * @param paramATM the parameter type
      * @param ve the parameter variable
@@ -51,7 +47,6 @@ public interface WholeProgramInferenceStorage<T> {
      */
     public T getParameterType(
             ExecutableElement methodElt,
-            String file,
             int i,
             AnnotatedTypeMirror paramATM,
             VariableElement ve,
@@ -61,14 +56,12 @@ public interface WholeProgramInferenceStorage<T> {
      * Get the annotations for the receiver type.
      *
      * @param methodElt the method or constructor Element
-     * @param file the annotation file containing the method or constructor
      * @param paramATM the receiver type
      * @param atypeFactory the type factory
      * @return the annotations for the receiver type
      */
     public T getReceiverType(
             ExecutableElement methodElt,
-            String file,
             AnnotatedTypeMirror paramATM,
             AnnotatedTypeFactory atypeFactory);
 
@@ -76,50 +69,44 @@ public interface WholeProgramInferenceStorage<T> {
      * Get the annotations for the return type.
      *
      * @param methodElt the method or constructor Element
-     * @param file the annotation file containing the method or constructor
      * @param atm the return type
      * @param atypeFactory the type factory
      * @return the annotations for the return type
      */
     public T getReturnType(
             ExecutableElement methodElt,
-            String file,
             AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atypeFactory);
 
     /**
      * Get the annotations for a field type.
      *
-     * @param className fully-qualified name of a class
-     * @param file the path to the file that represents the class containing the field
-     * @param classSymbol optionally, the ClassSymbol representing the class
+     * @param element the element for the field
      * @param fieldName the simple field name
      * @param lhsATM the field type
      * @param atypeFactory the annotated type factory
      * @return the annotations for a field type
      */
     public T getFieldType(
-            @BinaryName String className,
-            String file,
-            @Nullable ClassSymbol classSymbol,
+            Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atypeFactory);
 
     /**
-     * Obtain the annotations representing the contracts for a field at method entry or exit.
+     * Returns the pre- or postcondition annotations for a field.
      *
-     * @param methodElt the method Element
-     * @param file the annotation file containing the method or constructor
-     * @param preOrPost whether to get the preconditions or postconditions
+     * @param preOrPost whether to get the precondition or postcondition
+     * @param methodElement the method
      * @param fieldElement the field
-     * @return a set of annotations representing the expression
+     * @param atypeFactory the type factory
+     * @return the pre- or postcondition annotations for a field
      */
-    public T getMethodContractForField(
-            ExecutableElement methodElt,
-            String file,
+    public T getPreOrPostconditionsForField(
             Analysis.BeforeOrAfter preOrPost,
-            VariableElement fieldElement);
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory);
 
     /**
      * Updates a method to add a declaration annotation.

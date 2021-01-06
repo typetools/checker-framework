@@ -16,7 +16,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -96,9 +95,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return;
         }
 
-        String file = storage.getFileForElement(constructorElt);
         List<Node> arguments = objectCreationNode.getArguments();
-        updateInferredExecutableParameterTypes(constructorElt, file, arguments);
+        updateInferredExecutableParameterTypes(constructorElt, arguments);
         updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
     }
 
@@ -113,13 +111,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return;
         }
 
-        String file = storage.getFileForElement(methodElt);
         if (!storage.hasMethodAnnos(methodElt)) {
             return;
         }
 
         List<Node> arguments = methodInvNode.getArguments();
-        updateInferredExecutableParameterTypes(methodElt, file, arguments);
+        updateInferredExecutableParameterTypes(methodElt, arguments);
         updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
     }
 
@@ -127,12 +124,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      * Updates inferred parameter types based on a call to a method or constructor.
      *
      * @param methodElt the element of the method or constructor being invoked
-     * @param file the annotation file containing the executable; used for marking the class as
-     *     modified (needing to be written to disk)
      * @param arguments the arguments of the invocation
      */
     private void updateInferredExecutableParameterTypes(
-            ExecutableElement methodElt, String file, List<Node> arguments) {
+            ExecutableElement methodElt, List<Node> arguments) {
+
+        String file = storage.getFileForElement(methodElt);
 
         for (int i = 0; i < arguments.size(); i++) {
             Node arg = arguments.get(i);
@@ -150,7 +147,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            T paramType = storage.getParameterType(methodElt, file, i, paramATM, ve, atypeFactory);
+            T paramType = storage.getParameterType(methodElt, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
     }
@@ -171,7 +168,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
 
-        String file = storage.getFileForElement(methodElt);
         if (!storage.hasMethodAnnos(methodElt)) {
             return;
         }
@@ -204,7 +200,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 inferredType = atypeFactory.getAnnotatedType(fieldElement);
             }
             T preOrPostConditionAnnos =
-                    storage.getMethodContractForField(methodElt, file, preOrPost, fieldElement);
+                    storage.getPreOrPostconditionsForField(
+                            preOrPost, methodElt, fieldElement, atypeFactory);
+            String file = storage.getFileForElement(methodElt);
             updateAnnotationSet(
                     preOrPostConditionAnnos,
                     TypeUseLocation.FIELD,
@@ -246,7 +244,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            T paramType = storage.getParameterType(methodElt, file, i, paramATM, ve, atypeFactory);
+            T paramType = storage.getParameterType(methodElt, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
 
@@ -255,7 +253,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM =
                     atypeFactory.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                T receiver = storage.getReceiverType(methodElt, file, paramATM, atypeFactory);
+                T receiver = storage.getReceiverType(methodElt, paramATM, atypeFactory);
                 updateAnnotationSet(receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file);
             }
         }
@@ -280,14 +278,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
 
         ExecutableElement methodElt = (ExecutableElement) paramElt.getEnclosingElement();
-        String file = storage.getFileForElement(methodElt);
+
         AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(paramElt);
         AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
         atypeFactory.wpiAdjustForUpdateNonField(argATM);
         int i = methodElt.getParameters().indexOf(paramElt);
         assert i != -1;
-        T paramType =
-                storage.getParameterType(methodElt, file, i, paramATM, paramElt, atypeFactory);
+        T paramType = storage.getParameterType(methodElt, i, paramATM, paramElt, atypeFactory);
+        String file = storage.getFileForElement(methodElt);
         updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
 
@@ -333,12 +331,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
         String file = storage.getFileForElement(element);
 
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @BinaryName String className = enclosingClass.flatname.toString();
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
-        T fieldType =
-                storage.getFieldType(
-                        className, file, enclosingClass, fieldName, lhsATM, atypeFactory);
+        T fieldType = storage.getFieldType(element, fieldName, lhsATM, atypeFactory);
+
         updateAnnotationSet(fieldType, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
     }
 
@@ -404,7 +399,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         String file = storage.getFileForElement(methodElt);
 
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodTree).getReturnType();
-
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
                 atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
@@ -415,7 +409,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             dependentTypesHelper.standardizeReturnType(
                     methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
-        T returnTypeAnnos = storage.getReturnType(methodElt, file, lhsATM, atypeFactory);
+        T returnTypeAnnos = storage.getReturnType(methodElt, lhsATM, atypeFactory);
         updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
@@ -449,10 +443,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
             T storedOverriddenMethodReturnType =
                     storage.getReturnType(
-                            overriddenMethodElement,
-                            superClassFile,
-                            overriddenMethodReturnType,
-                            atypeFactory);
+                            overriddenMethodElement, overriddenMethodReturnType, atypeFactory);
 
             updateAnnotationSet(
                     storedOverriddenMethodReturnType,

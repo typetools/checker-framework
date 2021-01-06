@@ -145,7 +145,7 @@ public class WholeProgramInferenceScenesStorage
     /**
      * Get the annotations for a class.
      *
-     * @param className the name of the class to get, in binary form
+     * @param className the name of the class, in binary form
      * @param file the path to the file that represents the class
      * @param classSymbol optionally, the ClassSymbol representing the class
      * @return the annotations for the class
@@ -159,11 +159,11 @@ public class WholeProgramInferenceScenesStorage
      * Get the annotations for a method or constructor.
      *
      * @param methodElt the method or constructor
-     * @param file the annotation file containing the method or constructor
      * @return the annotations for a method or constructor
      */
-    private AMethod getMethodAnnos(ExecutableElement methodElt, String file) {
+    private AMethod getMethodAnnos(ExecutableElement methodElt) {
         String className = getEnclosingClassName(methodElt);
+        String file = getFileForElement(methodElt);
         AClass classAnnos = getClassAnnos(className, file, ((MethodSymbol) methodElt).enclClass());
         AMethod methodAnnos =
                 classAnnos.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
@@ -181,12 +181,11 @@ public class WholeProgramInferenceScenesStorage
     @Override
     public ATypeElement getParameterType(
             ExecutableElement methodElt,
-            String file,
             int i,
             AnnotatedTypeMirror paramATM,
             VariableElement ve,
             AnnotatedTypeFactory atypeFactory) {
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        AMethod methodAnnos = getMethodAnnos(methodElt);
         AField param =
                 methodAnnos.vivifyAndAddTypeMirrorToParameter(
                         i, paramATM.getUnderlyingType(), ve.getSimpleName());
@@ -196,71 +195,87 @@ public class WholeProgramInferenceScenesStorage
     @Override
     public ATypeElement getReceiverType(
             ExecutableElement methodElt,
-            String file,
             AnnotatedTypeMirror paramATM,
             AnnotatedTypeFactory atypeFactory) {
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        AMethod methodAnnos = getMethodAnnos(methodElt);
         return methodAnnos.receiver.type;
     }
 
     @Override
     public ATypeElement getReturnType(
             ExecutableElement methodElt,
-            String file,
             AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atypeFactory) {
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        AMethod methodAnnos = getMethodAnnos(methodElt);
         return methodAnnos.returnType;
     }
 
     @Override
     public ATypeElement getFieldType(
-            String className,
-            String file,
-            @Nullable ClassSymbol classSymbol,
+            Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atypeFactory) {
-        AClass classAnnos = getClassAnnos(className, file, classSymbol);
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
+        String file = getFileForElement(element);
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = enclosingClass.flatname.toString();
+        AClass classAnnos = getClassAnnos(className, file, enclosingClass);
         AField field = classAnnos.fields.getVivify(fieldName);
         field.setTypeMirror(lhsATM.getUnderlyingType());
         return field.type;
     }
 
     @Override
-    public ATypeElement getMethodContractForField(
-            ExecutableElement methodElt,
-            String file,
+    public ATypeElement getPreOrPostconditionsForField(
             Analysis.BeforeOrAfter preOrPost,
-            VariableElement fieldElement) {
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
-        AField afield = vivifyAndAddTypeMirrorToContract(methodAnnos, preOrPost, fieldElement);
-        return afield.type;
-    }
-
-    /**
-     * Obtain the AField for an expression in scope at method entry or exit.
-     *
-     * <p>This is a helper method for {@link #getMethodContractForField}.
-     *
-     * @param amethod AFU representation of a method
-     * @param preOrPost whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or {@code
-     *     vivifyAndAddTypeMirrorToPostcondition}
-     * @param fieldElement the field
-     * @return an AField representing the expression
-     */
-    private AField vivifyAndAddTypeMirrorToContract(
-            AMethod amethod, Analysis.BeforeOrAfter preOrPost, VariableElement fieldElement) {
-        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
-
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
         switch (preOrPost) {
             case BEFORE:
-                return amethod.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror);
+                return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
             case AFTER:
-                return amethod.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror);
+                return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
             default:
                 throw new BugInCF("Unexpected " + preOrPost);
         }
+    }
+
+    /**
+     * Returns the precondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the precondition annotations for a field
+     */
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getPreconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElement);
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+        return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror).type;
+    }
+
+    /**
+     * Returns the postcondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the postcondition annotations for a field
+     */
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getPostconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElement);
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+        return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror).type;
     }
 
     @Override
@@ -272,8 +287,7 @@ public class WholeProgramInferenceScenesStorage
             return false;
         }
 
-        String file = getFileForElement(methodElt);
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        AMethod methodAnnos = getMethodAnnos(methodElt);
 
         scenelib.annotations.Annotation sceneAnno =
                 AnnotationConverter.annotationMirrorToAnnotation(anno);

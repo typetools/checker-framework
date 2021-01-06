@@ -37,23 +37,18 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Visitor that stores each visited tree that should match with some JavaParser node if the same
- * Java file was parsed with both. The primary purpose is to test the {@link
- * JointJavacJavaParserVisitor} class when the -AcheckJavaParserVisitor flag is used. That class
- * traverses a javac tree and JavaParser AST simultaneously, so the trees this class stores can be
- * used to test if the entirety of the javac tree was visited.
+ * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
+ * some JavaParser node Some trees shouldn't be matched with a JavaParser node because there isn't a
+ * corresponding JavaParser node. These trees are excluded.
  *
- * <p>Adds these trees to a set during traversal. Many trees shouldn't be matched with a JavaParser
- * node because there isn't a corresponding JavaParser node. These trees are excluded.
+ * <p>The primary purpose is to test the {@link JointJavacJavaParserVisitor} class when the
+ * -AcheckJavaParserVisitor flag is used. That class traverses a javac tree and JavaParser AST
+ * simultaneously, so the trees this class stores can be used to test if the entirety of the javac
+ * tree was visited.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     /** The set of trees that should be matched to a JavaParser node when visiting both. */
-    private Set<Tree> trees;
-
-    /** Constructs a visitor with no stored trees. */
-    public ExpectedTreesVisitor() {
-        trees = new HashSet<>();
-    }
+    private Set<Tree> trees = new HashSet<>();
 
     /**
      * Returns the visited trees that should match to some JavaParser node.
@@ -76,25 +71,16 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
     @Override
     public Void visitCompilationUnit(CompilationUnitTree tree, Void p) {
-        try {
-            java.io.InputStream in = tree.getSourceFile().openInputStream();
-            com.github.javaparser.ast.CompilationUnit compilationUnit = StaticJavaParser.parse(in);
-            HasVarTypeVisitor varVisitor = new HasVarTypeVisitor();
-            varVisitor.visit(compilationUnit, null);
-            // When using the "var" keyword, javac replaces it with the correct type, meaning the
-            // inserted type has no corresponding javac tree. There is no way of knowing if the
-            // inserted tree is synthetic or not. The only sound solution would be to not add types
-            // on the left hand side of an assignment. This would severely decrease the usefulness
-            // of the -AcheckJavaParserVisitor check. Instead, we simply don't run the check at all
-            // on files that contain "var".
-            if (!varVisitor.hasVarType) {
-                return super.visitCompilationUnit(tree, p);
-            }
-        } catch (IOException e) {
-            throw new BugInCF("Unable to read source file for compilation unit", e);
+        // When using the "var" keyword, javac replaces it with the correct type, meaning the
+        // inserted type has no corresponding javac tree. There is no way of knowing if the
+        // inserted tree is synthetic or not. The only sound solution would be to not add types
+        // on the left hand side of an assignment. This would severely decrease the usefulness
+        // of the -AcheckJavaParserVisitor check. Instead, we simply don't run the check at all
+        // on files that contain "var".
+        if (HasVarTypeVisitor.hasVarType(tree)) {
+            return null;
         }
-
-        return null;
+        return super.visitCompilationUnit(tree, p);
     }
 
     @Override
@@ -115,7 +101,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             // Enum constants expand to a VariableTree like
             // public static final MY_ENUM_CONSTANT = new MyEnum(args ...)
             // The constructor invocation in the initializer has no corresponding JavaParser node,
-            // this removes those invocations. It doesn't remove any trees that should be matched to
+            // this removes those invocations. This doesn't remove any trees that should be matched
+            // to
             // a JavaParser node because it's illegal to explicitly construct an instance of an
             // enum.
             for (Tree member : tree.getMembers()) {
@@ -157,10 +144,9 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             return null;
         }
 
-        // Whereas synthetic constructors should be skipped entirely, regular super() and this()
-        // should
-        // still be added. However, in JavaParser there's no matching expression statement
-        // surrounding these, so remove the expression statement itself.
+        // Whereas synthetic constructors should be skipped, regular super() and this() should still
+        // be added. JavaParser has no expression statement surrounding these, so remove the
+        // expression statement itself.
         Void result = super.visitExpressionStatement(tree, p);
         if (tree.getExpression().getKind() == Kind.METHOD_INVOCATION) {
             MethodInvocationTree invocation = (MethodInvocationTree) tree.getExpression();
@@ -196,8 +182,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitSwitch(SwitchTree tree, Void p) {
         super.visitSwitch(tree, p);
-        // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not, so
-        // don't check the condition tree.
+        // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not.
         trees.remove(tree.getExpression());
         return null;
     }
@@ -205,8 +190,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitSynchronized(SynchronizedTree tree, Void p) {
         super.visitSynchronized(tree, p);
-        // javac surrounds synchronized expressions in a ParenthesizedTree but JavaParser does not,
-        // so don't check the condition tree.
+        // javac surrounds synchronized expressions in a ParenthesizedTree but JavaParser does not.
         trees.remove(tree.getExpression());
         return null;
     }
@@ -224,7 +208,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitImport(ImportTree tree, Void p) {
         // Javac stores an import like a.* as a member select, but JavaParser just stores "a", so
-        // don't add the whole member select in that case.
+        // don't add the member select in that case.
         if (tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {
             MemberSelectTree memberSelect = (MemberSelectTree) tree.getQualifiedIdentifier();
             if (memberSelect.getIdentifier().contentEquals("*")) {
@@ -239,7 +223,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitMethod(MethodTree tree, Void p) {
         // Synthetic default constructors don't have matching JavaParser nodes. Conservatively skip
-        // no argument constructor calls, even if they may not be synthetic.
+        // nullary (no-argument) constructor calls, even if they may not be synthetic.
         if (JointJavacJavaParserVisitor.isNoArgumentConstructor(tree)) {
             return null;
         }
@@ -349,8 +333,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitWhileLoop(WhileLoopTree tree, Void p) {
         super.visitWhileLoop(tree, p);
-        // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not, so
-        // don't check the condition tree.
+        // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not.
         trees.remove(tree.getCondition());
         return null;
     }
@@ -358,8 +341,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
         super.visitDoWhileLoop(tree, p);
-        // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not, so
-        // don't check the condition tree.
+        // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not.
         trees.remove(tree.getCondition());
         return null;
     }
@@ -416,6 +398,25 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             hasVarType = true;
 
             super.visit(node, p);
+        }
+
+        /**
+         * Returns true if the given compilation unit contains the "var" keyword.
+         *
+         * @param javacCompilationUnit a compilation unit
+         * @return true if the given compilation unit contains the "var" keyword
+         */
+        static boolean hasVarType(CompilationUnitTree javacCompilationUnit) {
+            com.github.javaparser.ast.CompilationUnit javaParserCompilationUnit;
+            try {
+                java.io.InputStream in = javacCompilationUnit.getSourceFile().openInputStream();
+                javaParserCompilationUnit = StaticJavaParser.parse(in);
+            } catch (IOException e) {
+                throw new BugInCF("Unable to read source file for compilation unit", e);
+            }
+            HasVarTypeVisitor varVisitor = new HasVarTypeVisitor();
+            varVisitor.visit(javaParserCompilationUnit, null);
+            return varVisitor.hasVarType;
         }
     }
 }

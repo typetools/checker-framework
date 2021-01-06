@@ -81,8 +81,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.plumelib.util.UniqueIdMap;
 
-/** A utility class made for helping to analyze a given {@code Tree}. */
-// TODO: This class needs significant restructuring
+/** A utility class made for helping to analyze a given javac {@code Tree}. */
 public final class TreeUtils {
 
     // Class cannot be instantiated.

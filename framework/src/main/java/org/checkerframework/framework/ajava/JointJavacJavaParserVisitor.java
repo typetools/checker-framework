@@ -158,7 +158,7 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * <p>To perform an action on a particular tree type, override one of the methods starting with
  * "process". For each javac tree type JavacType, and for each possible JavaParser node type
- * JavaParserNode it may be matched to this class contains a method {@code
+ * JavaParserNode that it may be matched to, this class contains a method {@code
  * processJavacType(JavacTypeTree javacTree, JavaParserNode javaParserNode)}. These are named after
  * the visit methods in {@code com.sun.source.tree.TreeVisitor}, but for each javac tree type there
  * may be multiple process methods for each possible node type it could be matched to.
@@ -297,7 +297,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     /**
      * Given a matching sequence of statements for a block, visits each javac statement with its
-     * corresponding JavaParser statememt, excluding synthetic javac trees like no-argument
+     * corresponding JavaParser statement, excluding synthetic javac trees like no-argument
      * constructors.
      *
      * @param javacStatements sequence of javac trees for statements
@@ -368,7 +368,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     }
 
     /**
-     * Returns whether statement represents a method call {@code super()}.
+     * Returns whether a statement represents a method call {@code super()}.
      *
      * @param statement the statement to check
      * @return true if statement is a method invocation named "super" with no arguments, false
@@ -398,7 +398,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     }
 
     /**
-     * Returns whether statement represents a method call {@code super()}.
+     * Returns whether a statement represents a method call {@code super()}.
      *
      * @param statement the statement to check
      * @return true if statement is an explicit super constructor invocation with no arguments,
@@ -411,7 +411,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         ExplicitConstructorInvocationStmt invocation =
                 statement.asExplicitConstructorInvocationStmt();
-        return !invocation.isThis() && invocation.getArguments().isEmpty();
+        boolean isSuper = !invocation.isThis();
+        return isSuper && invocation.getArguments().isEmpty();
     }
 
     @Override
@@ -1219,9 +1220,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         ObjectCreationExpr node = (ObjectCreationExpr) javaParserNode;
         processNewClass(javacTree, node);
-        // When using Java 11, an expression like this.new MyInnerClass() would store "this" as the
-        // enclosing expression. In Java 8, this would be stored as new MyInnerClass(this). So, we
-        // only traverse the enclosing expression if present in both.
+        // When using Java 11 javac, an expression like this.new MyInnerClass() would store "this"
+        // as the enclosing expression. In Java 8 javac, this would be stored as new
+        // MyInnerClass(this).  So, we only traverse the enclosing expression if present in both.
         if (javacTree.getEnclosingExpression() != null && node.getScope().isPresent()) {
             javacTree.getEnclosingExpression().accept(this, node.getScope().get());
         }
@@ -1534,7 +1535,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             if (node.isVarArgs()) {
                 ArrayTypeTree arrayType;
                 // A varargs parameter's type will either be an ArrayTypeTree or an
-                // AnnotatedType depending on if it has an annotation.
+                // AnnotatedType depending on whether it has an annotation.
                 if (javacTree.getType().getKind() == Kind.ARRAY_TYPE) {
                     arrayType = (ArrayTypeTree) javacTree.getType();
                 } else {
@@ -2356,8 +2357,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      */
     private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode) {
         throw new BugInCF(
-                "Javac and JavaParser trees desynced while processing tree %s, unexpected node type: %s",
-                javacTree, javaParserNode.getClass());
+                "desynced trees: %s [%s], %s [%s]",
+                javacTree, javacTree.getClass(), javaParserNode, javaParserNode.getClass());
     }
 
     /**
@@ -2376,7 +2377,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     private void throwUnexpectedNodeType(
             Tree javacTree, Node javaParserNode, Class<?> expectedType) {
         throw new BugInCF(
-                "Javac and JavaParser trees desynced while processing tree %s, expected: %s, actual: %s",
-                javacTree, expectedType, javaParserNode.getClass());
+                "While processing tree %s [%s], expected: %s, actual: %s %s",
+                javacTree,
+                javacTree.getClass(),
+                expectedType,
+                javaParserNode.getClass(),
+                javaParserNode);
     }
 }
