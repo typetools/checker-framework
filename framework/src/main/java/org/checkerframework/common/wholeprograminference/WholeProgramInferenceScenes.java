@@ -244,7 +244,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param atypeFactory the annotated type factory
      * @return the annotations for a field type
      */
-    public ATypeElement getFieldType(
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getFieldType(
             Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
@@ -257,6 +258,66 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AField field = classAnnos.fields.getVivify(fieldName);
         field.setTypeMirror(lhsATM.getUnderlyingType());
         return field.type;
+    }
+
+    /**
+     * Returns the pre- or postcondition annotations for a field.
+     *
+     * @param preOrPost whether to get the precondition or postcondition
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the pre- or postcondition annotations for a field
+     */
+    private ATypeElement getPreOrPostconditionsForField(
+            Analysis.BeforeOrAfter preOrPost,
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        switch (preOrPost) {
+            case BEFORE:
+                return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
+            case AFTER:
+                return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
+            default:
+                throw new BugInCF("Unexpected " + preOrPost);
+        }
+    }
+
+    /**
+     * Returns the precondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the precondition annotations for a field
+     */
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getPreconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElement);
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+        return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror).type;
+    }
+
+    /**
+     * Returns the postcondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the postcondition annotations for a field
+     */
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getPostconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElement);
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+        return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror).type;
     }
 
     @Override
@@ -338,8 +399,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
 
-        AMethod methodAnnos = getMethodAnnos(methodElt);
-
         // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
         // This code only handles fields of "this", for now.  In the future, extend it to other
@@ -367,35 +426,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 // This field is not in the store. Add its declared type.
                 inferredType = atypeFactory.getAnnotatedType(fieldElement);
             }
-            AField afield = vivifyAndAddTypeMirrorToContract(methodAnnos, preOrPost, fieldElement);
+
+            ATypeElement preOrPostConditionAnnos =
+                    getPreOrPostconditionsForField(
+                            preOrPost, methodElt, fieldElement, atypeFactory);
+
             String file = getFileForElement(methodElt);
             updateAnnotationSet(
-                    afield.type, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
-        }
-    }
-
-    /**
-     * Obtain the AField for an expression in scope at method entry or exit.
-     *
-     * <p>This is a helper method for {@link #updateContracts}.
-     *
-     * @param methodAnnos AFU representation of a method
-     * @param preOrPost whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or {@code
-     *     vivifyAndAddTypeMirrorToPostcondition}
-     * @param fieldElement the field
-     * @return an AField representing the expression
-     */
-    private AField vivifyAndAddTypeMirrorToContract(
-            AMethod methodAnnos, Analysis.BeforeOrAfter preOrPost, VariableElement fieldElement) {
-        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
-
-        switch (preOrPost) {
-            case BEFORE:
-                return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror);
-            case AFTER:
-                return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror);
-            default:
-                throw new BugInCF("Unexpected " + preOrPost);
+                    preOrPostConditionAnnos,
+                    TypeUseLocation.FIELD,
+                    inferredType,
+                    fieldDeclType,
+                    file,
+                    false);
         }
     }
 
