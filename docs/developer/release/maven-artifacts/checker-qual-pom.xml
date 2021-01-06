@@ -10,12 +10,11 @@
     <name>Checker Qual</name>
     <url>https://checkerframework.org</url>
     <description>
-        Checker Qual is the set of annotations (qualifiers) and supporting classes
-        used by the Checker Framework to type check Java source code.
+        checker-qual contains annotations (type qualifiers)
+        used by the Checker Framework to type-check Java source code.
+        It also contains utility classes for programmers to use at run time.
 
-        Please
-        see artifact:
-        org.checkerframework:checker
+        Please see artifact: org.checkerframework:checker
     </description>
 
     <licenses>
@@ -33,7 +32,7 @@
 
     <developers>
 
-        <!-- These are the lead developers, not all the contributors. -->
+        <!-- These are the lead developers/maintainers, not all the developers or contributors. -->
 
         <developer>
             <id>mernst</id>
