@@ -82,6 +82,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         this.ignoreNullAssignments = !isNullness;
     }
 
+    public WholeProgramInferenceStorage<T> getStorage() {
+        return storage;
+    }
+
     @Override
     public void updateFromObjectCreation(
             ObjectCreationNode objectCreationNode,
@@ -446,7 +450,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             T storedOverriddenMethodReturnType =
                     storage.getReturnType(
                             overriddenMethodElement,
-                            file,
+                            superClassFile,
                             overriddenMethodReturnType,
                             atypeFactory);
 

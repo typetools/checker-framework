@@ -115,10 +115,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     public WholeProgramInferenceScenes(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
-        boolean isNullness =
-                atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
-        boolean ignoreNullAssignments = !isNullness;
-        this.storage = new WholeProgramInferenceScenesStorage(atypeFactory, ignoreNullAssignments);
+        this.storage = new WholeProgramInferenceScenesStorage(atypeFactory);
     }
 
     /**
@@ -832,7 +829,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *     {@code type}
      */
     public AnnotatedTypeMirror atmFromATypeElement(TypeMirror typeMirror, ATypeElement type) {
-        return storage.atmFromATypeElement(typeMirror, type);
+        return storage.atmFromAnnotationLocation(typeMirror, type);
     }
 
     ///

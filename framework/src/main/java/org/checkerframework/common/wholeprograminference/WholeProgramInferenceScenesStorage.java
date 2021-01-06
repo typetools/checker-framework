@@ -1,6 +1,9 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -19,6 +24,8 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
+import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -30,14 +37,20 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.io.IndexFileParser;
+import scenelib.annotations.util.JVMNames;
 
 /**
  * This class stores annotations for fields, method return types, and method parameters.
@@ -53,7 +66,8 @@ import scenelib.annotations.io.IndexFileParser;
  * initial .jaif files means that the precision achieved by the whole-program inference analysis
  * will be better. {@link #writeScenes} rewrites the initial .jaif files, and may create new ones.
  */
-public class WholeProgramInferenceScenesStorage {
+public class WholeProgramInferenceScenesStorage
+        implements WholeProgramInferenceStorage<ATypeElement> {
 
     /** The type factory associated with this WholeProgramInferenceScenesStorage. */
     protected final AnnotatedTypeFactory atypeFactory;
@@ -97,13 +111,174 @@ public class WholeProgramInferenceScenesStorage {
     /**
      * Default constructor.
      *
-     * @param ignoreNullAssignments if true, assignments where the rhs is null are ignored
      * @param atypeFactory the type factory associated with this WholeProgramInferenceScenesStorage
      */
-    public WholeProgramInferenceScenesStorage(
-            AnnotatedTypeFactory atypeFactory, boolean ignoreNullAssignments) {
+    public WholeProgramInferenceScenesStorage(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
-        this.ignoreNullAssignments = ignoreNullAssignments;
+        boolean isNullness =
+                atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
+        this.ignoreNullAssignments = !isNullness;
+    }
+
+    @Override
+    public String getFileForElement(Element elt) {
+        String className;
+        switch (elt.getKind()) {
+            case CONSTRUCTOR:
+            case METHOD:
+                className = getEnclosingClassName((ExecutableElement) elt);
+                break;
+            case LOCAL_VARIABLE:
+                className = getEnclosingClassName((LocalVariableNode) elt);
+                break;
+            case FIELD:
+                ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
+                className = enclosingClass.flatname.toString();
+                break;
+            default:
+                throw new BugInCF("What element? %s %s", elt.getKind(), elt);
+        }
+        String file = getJaifPath(className);
+        return file;
+    }
+
+    /**
+     * Get the annotations for a class.
+     *
+     * @param className the name of the class to get, in binary form
+     * @param file the path to the file that represents the class
+     * @param classSymbol optionally, the ClassSymbol representing the class
+     * @return the annotations for the class
+     */
+    private AClass getClassAnnos(
+            @BinaryName String className, String file, @Nullable ClassSymbol classSymbol) {
+        return getAClass(className, file, classSymbol);
+    }
+
+    /**
+     * Get the annotations for a method or constructor.
+     *
+     * @param methodElt the method or constructor
+     * @param file the annotation file containing the method or constructor
+     * @return the annotations for a method or constructor
+     */
+    private AMethod getMethodAnnos(ExecutableElement methodElt, String file) {
+        String className = getEnclosingClassName(methodElt);
+        AClass classAnnos = getClassAnnos(className, file, ((MethodSymbol) methodElt).enclClass());
+        AMethod methodAnnos =
+                classAnnos.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        methodAnnos.setFieldsFromMethodElement(methodElt);
+        return methodAnnos;
+    }
+
+    @Override
+    public boolean hasMethodAnnos(ExecutableElement methodElt) {
+        // The scenes implementation can always add annotations to a method because the the required
+        // files are read in as necessary.
+        return true;
+    }
+
+    @Override
+    public ATypeElement getParameterType(
+            ExecutableElement methodElt,
+            String file,
+            int i,
+            AnnotatedTypeMirror paramATM,
+            VariableElement ve,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        AField param =
+                methodAnnos.vivifyAndAddTypeMirrorToParameter(
+                        i, paramATM.getUnderlyingType(), ve.getSimpleName());
+        return param.type;
+    }
+
+    @Override
+    public ATypeElement getReceiverType(
+            ExecutableElement methodElt,
+            String file,
+            AnnotatedTypeMirror paramATM,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        return methodAnnos.receiver.type;
+    }
+
+    @Override
+    public ATypeElement getReturnType(
+            ExecutableElement methodElt,
+            String file,
+            AnnotatedTypeMirror atm,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        return methodAnnos.returnType;
+    }
+
+    @Override
+    public ATypeElement getFieldType(
+            String className,
+            String file,
+            @Nullable ClassSymbol classSymbol,
+            String fieldName,
+            AnnotatedTypeMirror lhsATM,
+            AnnotatedTypeFactory atypeFactory) {
+        AClass classAnnos = getClassAnnos(className, file, classSymbol);
+        AField field = classAnnos.fields.getVivify(fieldName);
+        field.setTypeMirror(lhsATM.getUnderlyingType());
+        return field.type;
+    }
+
+    @Override
+    public ATypeElement getMethodContractForField(
+            ExecutableElement methodElt,
+            String file,
+            Analysis.BeforeOrAfter preOrPost,
+            VariableElement fieldElement) {
+        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        AField afield = vivifyAndAddTypeMirrorToContract(methodAnnos, preOrPost, fieldElement);
+        return afield.type;
+    }
+
+    /**
+     * Obtain the AField for an expression in scope at method entry or exit.
+     *
+     * <p>This is a helper method for {@link #getMethodContractForField}.
+     *
+     * @param amethod AFU representation of a method
+     * @param preOrPost whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or {@code
+     *     vivifyAndAddTypeMirrorToPostcondition}
+     * @param fieldElement the field
+     * @return an AField representing the expression
+     */
+    private AField vivifyAndAddTypeMirrorToContract(
+            AMethod amethod, Analysis.BeforeOrAfter preOrPost, VariableElement fieldElement) {
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+
+        switch (preOrPost) {
+            case BEFORE:
+                return amethod.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror);
+            case AFTER:
+                return amethod.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror);
+            default:
+                throw new BugInCF("Unexpected " + preOrPost);
+        }
+    }
+
+    @Override
+    public boolean addMethodDeclarationAnnotation(
+            ExecutableElement methodElt, AnnotationMirror anno, Void tmp) {
+
+        // Do not infer types for library code, only for type-checked source code.
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+            return false;
+        }
+
+        String file = getFileForElement(methodElt);
+        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+
+        scenelib.annotations.Annotation sceneAnno =
+                AnnotationConverter.annotationMirrorToAnnotation(anno);
+        boolean isNewAnnotation = methodAnnos.tlAnnotationsHere.add(sceneAnno);
+        return isNewAnnotation;
     }
 
     /**
@@ -230,7 +405,8 @@ public class WholeProgramInferenceScenesStorage {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
-        AnnotatedTypeMirror atmFromScene = atmFromATypeElement(rhsATM.getUnderlyingType(), type);
+        AnnotatedTypeMirror atmFromScene =
+                atmFromAnnotationLocation(rhsATM.getUnderlyingType(), type);
         updateAtmWithLub(rhsATM, atmFromScene);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
@@ -409,18 +585,12 @@ public class WholeProgramInferenceScenesStorage {
         return output;
     }
 
-    /**
-     * Obtain the type from an ATypeElement (which is part of a Scene).
-     *
-     * @param typeMirror the underlying type for the result
-     * @param type the ATypeElement from which to obtain annotations
-     * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
-     *     {@code type}
-     */
-    public AnnotatedTypeMirror atmFromATypeElement(TypeMirror typeMirror, ATypeElement type) {
+    @Override
+    public AnnotatedTypeMirror atmFromAnnotationLocation(
+            TypeMirror typeMirror, ATypeElement storageLocation) {
         AnnotatedTypeMirror result =
                 AnnotatedTypeMirror.createType(typeMirror, atypeFactory, false);
-        updateAtmFromATypeElement(result, type);
+        updateAtmFromATypeElement(result, storageLocation);
         return result;
     }
 
@@ -451,6 +621,82 @@ public class WholeProgramInferenceScenesStorage {
                 updateAtmFromATypeElement(atv.getUpperBound(), innerType);
             }
         }
+    }
+
+    @Override
+    public void updateStorageLocationFromAtm(
+            AnnotatedTypeMirror newATM,
+            AnnotatedTypeMirror curATM,
+            ATypeElement typeToUpdate,
+            TypeUseLocation defLoc,
+            boolean ignoreIfAnnotated) {
+        updateTypeElementFromATM(typeToUpdate, 1, defLoc, newATM, curATM, ignoreIfAnnotated);
+    }
+
+    ///
+    /// Writing to a file
+    ///
+
+    // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
+    // a scene may be modifed and written at any time, including before or after
+    // postProcessClassTree is called.
+
+    /**
+     * Side-effects the compilation unit annotations to make any desired changes before writing to a
+     * file.
+     *
+     * @param compilationUnitAnnos the compilation unit annotations to modify
+     */
+    public void prepareSceneForWriting(AScene compilationUnitAnnos) {
+        for (Map.Entry<String, AClass> classEntry : compilationUnitAnnos.classes.entrySet()) {
+            prepareClassForWriting(classEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the class annotations to make any desired changes before writing to a file.
+     *
+     * @param classAnnos the class annotations to modify
+     */
+    public void prepareClassForWriting(AClass classAnnos) {
+        for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
+            prepareMethodForWriting(methodEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the method or constructor annotations to make any desired changes before writing
+     * to a file.
+     *
+     * @param methodAnnos the method or constructor annotations to modify
+     */
+    public void prepareMethodForWriting(AMethod methodAnnos) {
+        atypeFactory.prepareMethodForWriting(methodAnnos);
+    }
+
+    @Override
+    public void writeResultsToFile(
+            WholeProgramInference.OutputFormat outputFormat, BaseTypeChecker checker) {
+        if (outputFormat == OutputFormat.AJAVA) {
+            throw new BugInCF("WholeProgramInferenceScenes used with format " + outputFormat);
+        }
+
+        for (String file : modifiedScenes) {
+            ASceneWrapper scene = scenes.get(file);
+            prepareSceneForWriting(scene.getAScene());
+        }
+
+        writeScenes(outputFormat, checker);
+    }
+
+    @Override
+    public void setFileModified(String path) {
+        modifiedScenes.add(path);
+    }
+
+    @Override
+    public void preprocessClassTree(ClassTree classTree) {
+        // This implementation does nothing.
     }
 
     /**
@@ -574,5 +820,44 @@ public class WholeProgramInferenceScenesStorage {
     public static class AnnotationsInContexts
             extends HashMap<Pair<String, TypeUseLocation>, Set<String>> {
         private static final long serialVersionUID = 20200321L;
+    }
+
+    // TODO: Move these or call them from somewhere else.
+    /**
+     * Returns the binary name of the type declaration in {@code element}
+     *
+     * @param element a type declaration
+     * @return the binary name of {@code element}
+     */
+    @SuppressWarnings({
+        "signature", // https://tinyurl.com/cfissue/3094
+        "UnusedMethod"
+    })
+    private @BinaryName String getClassName(Element element) {
+        return ((ClassSymbol) element).flatName().toString();
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code executableElement}.
+     *
+     * @param executableElement the ExecutableElement
+     * @return the "flatname" of the class enclosing {@code executableElement}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
+     *
+     * @param localVariableNode the {@link LocalVariableNode}
+     * @return the "flatname" of the class enclosing {@code localVariableNode}
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
+                .flatName()
+                .toString();
     }
 }

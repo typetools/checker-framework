@@ -41,8 +41,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -2257,11 +2258,13 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
-            WholeProgramInferenceScenes wholeProgramInference =
-                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            WholeProgramInferenceImplementation<?> wholeProgramInference =
+                    (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+            WholeProgramInferenceScenesStorage storage =
+                    (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
             TypeMirror typeMirror = entry.getKey().asType();
             AnnotatedTypeMirror inferredType =
-                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+                    storage.atmFromAnnotationLocation(typeMirror, entry.getValue().type);
             result.addAll(getPreconditionAnnotation(entry.getKey(), inferredType));
         }
         Collections.sort(result, Ordering.usingToString());
@@ -2281,11 +2284,13 @@ public abstract class GenericAnnotatedTypeFactory<
             AMethod m, List<AnnotationMirror> preconds) {
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
-            WholeProgramInferenceScenes wholeProgramInference =
-                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            WholeProgramInferenceImplementation<?> wholeProgramInference =
+                    (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+            WholeProgramInferenceScenesStorage storage =
+                    (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
             TypeMirror typeMirror = entry.getKey().asType();
             AnnotatedTypeMirror inferredType =
-                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+                    storage.atmFromAnnotationLocation(typeMirror, entry.getValue().type);
             result.addAll(getPostconditionAnnotation(entry.getKey(), inferredType, preconds));
         }
         Collections.sort(result, Ordering.usingToString());
