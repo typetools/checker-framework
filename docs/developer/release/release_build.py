@@ -167,7 +167,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
 def build_and_locally_deploy_maven(version):
     execute("./gradlew deployArtifactsToLocalRepo", working_dir=CHECKER_FRAMEWORK)
 
-def build_checker_framework_release(version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
+def build_checker_framework_release(version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir):
     """Build the release files for the Checker Framework project, including the
     manual and the zip file, and run tests on the build."""
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
@@ -192,58 +192,55 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
 
-    if not manual_only:
-        # build the checker framework binaries and documents, run checker framework tests
-        if notest:
-            ant_cmd = "./gradlew releaseBuild"
-        else:
-            ant_cmd = "./gradlew releaseAndTest"
-        execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
+    # build the checker framework binaries and documents, run checker framework tests
+    if notest:
+        ant_cmd = "./gradlew releaseBuild"
+    else:
+        ant_cmd = "./gradlew releaseAndTest"
+    execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
-    if not manual_only:
+    # make the dataflow manual
+    dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
+    execute("make", True, False, dataflow_manual_dir)
 
-        # make the dataflow manual
-        dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
-        execute("make", True, False, dataflow_manual_dir)
+    # make the checker framework tutorial
+    checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
+    execute("make", True, False, checker_tutorial_dir)
 
-        # make the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
-        execute("make", True, False, checker_tutorial_dir)
+    cfZipName = "checker-framework-%s.zip" % version
 
-        cfZipName = "checker-framework-%s.zip" % version
+    # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
+    ant_cmd = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
+    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-        # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-        ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
-        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
-        execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
+    ant_cmd = "ant %s -f release.xml %s zip-maven-examples " % (ant_debug, ant_props)
+    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-        ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
-        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd = "ant %s -f release.xml %s zip-maven-examples " % (ant_debug, ant_props)
-        execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    # copy the remaining checker-framework website files to checker_framework_interm_dir
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s" % (
+        checker_dir, checker_framework_interm_dir, "checker-framework-manual",
+        "checker-framework-dataflow-manual", "checker-framework-webpage.html"
+    )
 
-        # copy the remaining checker-framework website files to checker_framework_interm_dir
-        ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s" % (
-            checker_dir, checker_framework_interm_dir, "checker-framework-manual",
-            "checker-framework-dataflow-manual", "checker-framework-webpage.html"
-        )
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
+    ant_cmd = "ant %s -f release.xml %s checker-framework-website-docs " % (ant_debug, ant_props)
+    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd = "ant %s -f release.xml %s checker-framework-website-docs " % (ant_debug, ant_props)
-        execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    # clean no longer necessary files left over from building the checker framework tutorial
+    checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
+    execute("make clean", True, False, checker_tutorial_dir)
 
-        # clean no longer necessary files left over from building the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
-        execute("make clean", True, False, checker_tutorial_dir)
+    build_and_locally_deploy_maven(version)
 
-        build_and_locally_deploy_maven(version)
-
-        update_project_dev_website("checker-framework", version)
+    update_project_dev_website("checker-framework", version)
 
     return
 
