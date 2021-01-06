@@ -760,30 +760,26 @@ public class DependentTypesHelper {
 
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-            List<AnnotationMirror> newAnnos = new ArrayList<>();
-            for (AnnotationMirror anno : type.getAnnotations()) {
-                AnnotationMirror annotationMirror =
+            for (AnnotationMirror anno :
+                    AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
+                AnnotationMirror newAnno =
                         standardizeAnnotationIfDependentType(
                                 context,
                                 localScope,
                                 anno,
                                 useLocalScope,
                                 removeErroneousExpressions);
-                if (annotationMirror != null) {
-                    newAnnos.add(annotationMirror);
-                }
-            }
-            for (AnnotationMirror anno : newAnnos) {
-                // More than one annotation of the same class might have been written into
-                // the element and therefore might appear more than once in the type.
-                // See PR #674
-                // https://github.com/typetools/checker-framework/pull/674
-                // Work around this bug by remove all annotations of the same class.
-                if (type.removeAnnotation(anno)) {
+                if (newAnno != null) {
+                    // Standardized annotations are written into bytecode along with explicitly
+                    // written nonstandard annotations. (This is a bug.)
+                    // Remove the old annotation and add the new annotations. The new annotation for
+                    // both the nonstandard annotation and the standard annotation are equal with
+                    // respect to Object#equals, so only one new annotation will be added to the
+                    // type.
                     type.removeAnnotation(anno);
+                    type.addAnnotation(newAnno);
                 }
             }
-            type.addAnnotations(newAnnos);
             return super.scan(type, aVoid);
         }
     }
