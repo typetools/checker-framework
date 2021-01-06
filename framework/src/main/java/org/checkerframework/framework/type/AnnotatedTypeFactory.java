@@ -706,7 +706,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     with its corresponding JavaParser AST should be run. The check only occurs if
      *     -AcheckJavaParserVisitor is passed on the command line.
      */
-    // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root, boolean shouldCheckVisitor) {
         if (root != null && wholeProgramInference instanceof WholeProgramInferenceJavaParser) {
