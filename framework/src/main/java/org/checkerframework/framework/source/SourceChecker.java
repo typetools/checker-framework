@@ -905,9 +905,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return;
         }
         if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
-            // Kind.ERROR is quite severe, but a user might overlook a NOTE or WARNING.
             messager.printMessage(
-                    Kind.ERROR, "The JVM has too little memory; re-run with larger max heap.");
+                    Kind.WARNING,
+                    "Memory constraints are impeding performance; please increase max heap size.");
             warnedAboutGarbageCollection = true;
         }
 
