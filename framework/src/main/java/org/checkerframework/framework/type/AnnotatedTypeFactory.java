@@ -1737,7 +1737,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TypeMirror typeOfImplicitReceiver = elementOfImplicitReceiver.asType();
         AnnotatedDeclaredType thisType = getSelfType(tree);
-
+        if (thisType == null) {
+            return null;
+        }
         // An implicit receiver is the first enclosing type that is a subtype of the type where
         // element is declared.
         while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
@@ -1764,6 +1766,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Tree enclosingTree = getEnclosingClassOrMethod(tree);
         if (enclosingTree == null) {
+            // tree is inside an annotation, where "this" is not allowed. So, no self type exists.
             return null;
         } else if (enclosingTree.getKind() == Kind.METHOD) {
             MethodTree enclosingMethod = (MethodTree) enclosingTree;
@@ -1778,20 +1781,34 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return null;
     }
 
+    /** A set of class, method, and annotation tree kinds. */
+    private final Set<Tree.Kind> classMethodAnnotationKinds =
+            EnumSet.copyOf(TreeUtils.classTreeKinds());
+
+    {
+        classMethodAnnotationKinds.add(Kind.METHOD);
+        classMethodAnnotationKinds.add(Kind.TYPE_ANNOTATION);
+        classMethodAnnotationKinds.add(Kind.ANNOTATION);
+    }
     /**
      * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
-     * is used to find the enclosing tree;
+     * is used to find the enclosing tree.
+     *
+     * <p>If the tree is inside an annotation, then {@code null} is returned.
      *
      * @param tree tree to whose innermost enclosing method or class is returned
-     * @return the inner most enclosing method or class tree of {@code tree}
+     * @return the innermost enclosing method or class tree of {@code tree} or {@code null} if
+     *     {@code tree} is inside an annotation
      */
-    protected Tree getEnclosingClassOrMethod(Tree tree) {
+    protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
-        Set<Tree.Kind> classAndMethodKinds = EnumSet.copyOf(TreeUtils.classTreeKinds());
-        classAndMethodKinds.add(Kind.METHOD);
-        Tree enclosing = TreeUtils.enclosingOfKind(path, classAndMethodKinds);
+        Tree enclosing = TreeUtils.enclosingOfKind(path, classMethodAnnotationKinds);
         if (enclosing != null) {
+            if (enclosing.getKind() == Kind.ANNOTATION
+                    || enclosing.getKind() == Kind.TYPE_ANNOTATION) {
+                return null;
+            }
             return enclosing;
         }
         Element e = getEnclosingElementForArtificialTree(tree);
