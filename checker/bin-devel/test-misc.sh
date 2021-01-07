@@ -20,6 +20,10 @@ status=0
 
 # Code style and formatting
 ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
+if grep -n -r --exclude-dir=build --exclude-dir=jtreg --exclude-dir=tests "^import static "; then
+  echo "Don't use static import"
+  exit 1
+fi
 
 # HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
