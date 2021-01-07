@@ -10,8 +10,9 @@
     <name>Checker Qual Android</name>
     <url>https://checkerframework.org</url>
     <description>
-        Checker Qual Android is the set of annotations (qualifiers) and supporting classes
-        used by the Checker Framework to type check Java source code.
+        checker-qual-android contains annotations (type qualifiers)
+        used by the Checker Framework to type-check Java source code.
+        It also contains utility classes for programmers to use at run time.
 
         The checker-qual-android artifact is identical to the checker-qual
         artifact, except that in checker-qual-android annotations have classfile
@@ -19,9 +20,7 @@
         runtime annotations in the main dex, but strips out class-retention
         annotations.
 
-        Please
-        see artifact:
-        org.checkerframework:checker
+        Please see artifact: org.checkerframework:checker
     </description>
 
     <licenses>
@@ -39,7 +38,7 @@
 
     <developers>
 
-        <!-- These are the lead developers, not all the contributors. -->
+        <!-- These are the lead developers/maintainers, not all the developers or contributors. -->
 
         <developer>
             <id>mernst</id>
