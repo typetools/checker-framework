@@ -1782,6 +1782,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return null;
     }
 
+    /** A set of class, method, and annotation tree kinds. */
+    private final Set<Tree.Kind> classMethodAnnotationKinds =
+            EnumSet.copyOf(TreeUtils.classTreeKinds());
+
+    {
+        classMethodAnnotationKinds.add(Kind.METHOD);
+        classMethodAnnotationKinds.add(Kind.TYPE_ANNOTATION);
+        classMethodAnnotationKinds.add(Kind.ANNOTATION);
+    }
     /**
      * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
@@ -1790,16 +1799,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>If the tree is inside an annotation, then {@code null} is returned.
      *
      * @param tree tree to whose innermost enclosing method or class is returned
-     * @return the inner most enclosing method or class tree of {@code tree} or {@code null} if
+     * @return the innermost enclosing method or class tree of {@code tree} or {@code null} if
      *     {@code tree} is inside an annotation
      */
     protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
-        Set<Tree.Kind> classAndMethodKinds = EnumSet.copyOf(TreeUtils.classTreeKinds());
-        classAndMethodKinds.add(Kind.METHOD);
-        classAndMethodKinds.add(Kind.TYPE_ANNOTATION);
-        classAndMethodKinds.add(Kind.ANNOTATION);
-        Tree enclosing = TreeUtils.enclosingOfKind(path, classAndMethodKinds);
+        Tree enclosing = TreeUtils.enclosingOfKind(path, classMethodAnnotationKinds);
         if (enclosing != null) {
             if (enclosing.getKind() == Kind.ANNOTATION
                     || enclosing.getKind() == Kind.TYPE_ANNOTATION) {
