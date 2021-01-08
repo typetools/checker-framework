@@ -33,7 +33,7 @@
 
     <developers>
 
-        <!-- These are the lead developers, not all the contributors. -->
+        <!-- These are the lead developers/maintainers, not all the developers or contributors. -->
 
         <developer>
             <id>mernst</id>

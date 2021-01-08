@@ -71,7 +71,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import scenelib.annotations.el.AField;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -766,7 +765,8 @@ public class NullnessAnnotatedTypeFactory
     //  * check for @MonotonicNonNull
     //  * output @RequiresNonNull rather than @RequiresQualifier.
     @Override
-    public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
+    public List<AnnotationMirror> getPreconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldType) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
         // TODO: This does not handle the possibility that the user set a different default
         // annotation.
@@ -776,10 +776,9 @@ public class NullnessAnnotatedTypeFactory
             return Collections.emptyList();
         }
 
-        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
-            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
-                return requiresNonNullAnno(elt);
-            }
+        if (AnnotationUtils.containsSameByName(
+                fieldType.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return requiresNonNullAnno(elt);
         }
         return Collections.emptyList();
     }
@@ -801,7 +800,7 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public List<AnnotationMirror> getPostconditionAnnotation(
-            VariableElement elt, AField fieldAnnos, List<AnnotationMirror> preconds) {
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
         // TODO: This does not handle the possibility that the user set a different default
         // annotation.
@@ -816,10 +815,10 @@ public class NullnessAnnotatedTypeFactory
             // @MonotonicNonNull.
             return Collections.emptyList();
         }
-        for (scenelib.annotations.Annotation a : fieldAnnos.type.tlAnnotationsHere) {
-            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
-                return ensuresNonNullAnno(elt);
-            }
+        if (AnnotationUtils.containsSameByName(
+                fieldAnnos.getAnnotations(),
+                "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return ensuresNonNullAnno(elt);
         }
         return Collections.emptyList();
     }

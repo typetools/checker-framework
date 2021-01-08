@@ -190,19 +190,14 @@ TreeAnnotator
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
       <code>git pull && python release_build.py all</code><br/><br/>
-      [TODO: Add <code>--auto</code> here, or not?]<br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
       There has been some work done in order to select only specific projects (AFU and Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
-      See also <a href="#future_continuous_integration">Release in Continuous Integration</a> for more information
-      on the option &quot;--auto&quot;, which you can omit in order to
-      be asked more questions during the build.
   </li>
   <li>
       <strong>Run release_push</strong> to move release artifacts from the development website to the live site and to Maven Central <br/>
       <code>python3 release_push.py release</code><br/><br/>
-      For minimal prompting, use the <code>--auto</code> option.<br/><br/>
       <div class="alert alert-danger">
         <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend
         to do an actual release.  If you just want to test the script, leave out &quot;release&quot;
@@ -615,11 +610,10 @@ git config --global user.email you@example.com</pre>
     </ul>
     <h3 id="future_continuous_integration">Release in Continuous Integration</h3> <!-- omit from toc -->
     If we could run the release_build script nightly, we could head off broken links and other
-    release related errors.  There is an &quot;--auto&quot; option for this specific reason but a number of
-    errors start happening when we run the script from Buffalo.
+    release related errors.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
-      <li>Create a Buffalo task to run the release_build script using the &quot;--auto&quot; option.</li>
+      <li>Create a Buffalo task to run the release_build script without prompting.</li>
       <li>Observe the output of this task and identify possible errors.</li>
       <li>Fix up all observed errors until the release_build script runs without error.</li>
       <li>We probably want to move the link checking of the development site to the release_build script and

@@ -242,10 +242,7 @@ def increment_version(version_num, single_digits=False):
     return version_array_to_string(version_array)
 
 def test_increment_version():
-    """Run test cases to ensure that increment_version works correctly.
-    This is critical since running release_build.py with the --auto switch
-    will automatically increment the release versions without prompting the
-    user to verify the new versions."""
+    """Run test cases to ensure that increment_version works correctly."""
     assert increment_version('1.0.3') == '1.0.4'
     assert increment_version('1.0.9') == '1.0.10'
     assert increment_version('1.1.9') == '1.1.10'
@@ -694,16 +691,6 @@ def delete_path_if_exists(path):
     directories under it."""
     if os.path.exists(path):
         delete_path(path)
-
-def prompt_or_auto_delete(path, auto):
-    """If auto is false, delete the given file/directory if it exists.
-    Otherwise, ask the user if they wish the file/directory to be deleted, and
-    if they answer yes, delete it."""
-    if not auto:
-        prompt_to_delete(path)
-    else:
-        print
-        delete_path_if_exists(path)
 
 def prompt_to_delete(path):
     """Ask the user if the specified file/directory should be deleted, and if

@@ -33,7 +33,8 @@
     <name>Checker Framework Testing Library</name>
     <url>https://checkerframework.org</url>
     <description>
-        Framework-Test is a collection of utility classes for testing checkers that use the Checker Framework.
+        framework-test contains utility classes for testing type-checkers
+        that are built on the Checker Framework.
     </description>
 
     <licenses>
@@ -51,7 +52,7 @@
 
     <developers>
 
-        <!-- These are the lead developers, not all the contributors. -->
+        <!-- These are the lead developers/maintainers, not all the developers or contributors. -->
 
         <developer>
             <id>mernst</id>

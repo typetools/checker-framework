@@ -78,6 +78,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
 
 /**
@@ -875,6 +876,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
+    /** Output the warning about memory at most once. */
+    private boolean warnedAboutGarbageCollection = false;
+
     /**
      * The number of errors at the last exit of the type processor. At entry to the type processor
      * we check whether the current error count is higher and then don't process the file, as it
@@ -890,7 +894,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
-        // Cannot use BugInCF here because it is outside of the try/catch for BugInCf
+        // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
             messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
             return;
@@ -899,6 +903,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             messager.printMessage(
                     Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
             return;
+        }
+        if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
+            messager.printMessage(
+                    Kind.WARNING,
+                    "Memory constraints are impeding performance; please increase max heap size.");
+            warnedAboutGarbageCollection = true;
         }
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
@@ -2163,7 +2173,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * See {@link #shouldSuppress(String[], String)}
+     * Helper method for {@link #shouldSuppress(String[], String)}.
      *
      * @param prefixes the SuppressWarnings prefixes used by this checker
      * @param suppressWarningsStrings the SuppressWarnings strings that are in effect. May be null,
