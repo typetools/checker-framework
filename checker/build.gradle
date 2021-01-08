@@ -265,23 +265,6 @@ test {
     exclude '**/org/checkerframework/checker/test/junit/NullnessJspecifySamplesTest.class'
 }
 
-
-task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
-    description 'Deploys checker.jar to the local Maven repository'
-    doLast {
-        mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${pomFiles}/checker-pom.xml")
-    }
-}
-
-task deployArtifactsToSonatype {
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
-    }
-}
-
 task delombok {
     description 'Delomboks the source code tree in tests/calledmethods-lombok'
 

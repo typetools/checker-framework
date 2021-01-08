@@ -165,7 +165,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
     update_project_dev_website("annotation-file-utilities", version)
 
 def build_and_locally_deploy_maven(version):
-    execute("./gradlew deployArtifactsToLocalRepo", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
 
 def build_checker_framework_release(version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir):
     """Build the release files for the Checker Framework project, including the
