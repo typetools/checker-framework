@@ -42,7 +42,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.18.0.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -103,7 +103,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.9.0'
+    version '3.9.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -855,7 +855,7 @@ subprojects {
                     dependsOn('jtregJdk11Tests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests')
+                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
 
             if (project.name.is('dataflow')) {
@@ -898,7 +898,7 @@ subprojects {
 assemble.dependsOn(':checker:copyJarsToDist')
 
 task checkBasicStyle(group: 'Format') {
-    description 'Check basic style guidelines.  Not related to Checkstyle tool.'
+    description 'Check basic style guidelines, mostly whitespace.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.html-tools',

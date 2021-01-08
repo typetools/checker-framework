@@ -113,7 +113,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.SystemPlume;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 
@@ -2128,7 +2128,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private static void log(String format, Object... args) {
         if (debug) {
-            UtilPlume.sleep(1); // logging can interleave with typechecker output
+            SystemPlume.sleep(1); // logging can interleave with typechecker output
             System.out.printf(format, args);
         }
     }
@@ -2251,7 +2251,12 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
-            result.addAll(getPreconditionAnnotation(entry.getKey(), entry.getValue()));
+            WholeProgramInferenceScenes wholeProgramInference =
+                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            TypeMirror typeMirror = entry.getKey().asType();
+            AnnotatedTypeMirror inferredType =
+                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+            result.addAll(getPreconditionAnnotation(entry.getKey(), inferredType));
         }
         Collections.sort(result, Ordering.usingToString());
         return result;
@@ -2269,7 +2274,12 @@ public abstract class GenericAnnotatedTypeFactory<
             AMethod m, List<AnnotationMirror> preconds) {
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
-            result.addAll(getPostconditionAnnotation(entry.getKey(), entry.getValue(), preconds));
+            WholeProgramInferenceScenes wholeProgramInference =
+                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            TypeMirror typeMirror = entry.getKey().asType();
+            AnnotatedTypeMirror inferredType =
+                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+            result.addAll(getPostconditionAnnotation(entry.getKey(), inferredType, preconds));
         }
         Collections.sort(result, Ordering.usingToString());
         return result;
@@ -2289,7 +2299,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the element (possibly an empty list)
      */
     public List<AnnotationMirror> getPreconditionAnnotation(
-            VariableElement elt, AField fieldAnnos) {
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos) {
         return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.BEFORE, null);
     }
 
@@ -2312,7 +2322,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return postcondition annotations for the element (possibly an empty list)
      */
     public List<AnnotationMirror> getPostconditionAnnotation(
-            VariableElement elt, AField fieldAnnos, List<AnnotationMirror> preconds) {
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
         return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.AFTER, preconds);
     }
 
@@ -2336,22 +2346,17 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
             VariableElement elt,
-            AField fieldAnnos,
+            AnnotatedTypeMirror fieldAnnos,
             Analysis.BeforeOrAfter preOrPost,
             @Nullable List<AnnotationMirror> preconds) {
         assert (preOrPost == BeforeOrAfter.BEFORE) == (preconds == null);
 
-        WholeProgramInferenceScenes wholeProgramInference =
-                (WholeProgramInferenceScenes) getWholeProgramInference();
-        if (wholeProgramInference == null) {
+        if (getWholeProgramInference() == null) {
             return Collections.emptyList();
         }
 
         AnnotatedTypeMirror declaredType = fromElement(elt);
-
-        TypeMirror typeMirror = elt.asType();
-        AnnotatedTypeMirror inferredType =
-                wholeProgramInference.atmFromATypeElement(typeMirror, fieldAnnos.type);
+        AnnotatedTypeMirror inferredType = fieldAnnos;
 
         // TODO: should this only check the top-level annotations?
         if (declaredType.equals(inferredType)) {

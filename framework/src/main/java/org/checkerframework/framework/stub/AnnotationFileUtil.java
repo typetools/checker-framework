@@ -346,7 +346,7 @@ public class AnnotationFileUtil {
     }
 
     /**
-     * Side-effects {@code resources} by adding stub files (those ending with ".astub") to it.
+     * Side-effects {@code resources} by adding annotation files (stub files) to it.
      *
      * @param location an annotation file (a stub file), a jarfile, or a directory. If a stub file,
      *     add it to the {@code resources} list. If a jarfile, use all annotation files contained in

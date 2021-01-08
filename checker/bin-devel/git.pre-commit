@@ -7,8 +7,7 @@
 # Fail if any command fails
 set -e
 
-# "ant -e check-style" would check every file; on commit we only need to
-# check files that changed.
+# On commit we only need to check files that changed.
 # Need to keep checked files in sync with getJavaFilesToFormat in build.gradle.
 # Otherwise `./gradlew reformat` might not reformat a file that this
 # hook complains about.
