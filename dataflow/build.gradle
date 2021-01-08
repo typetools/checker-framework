@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
+    implementation 'org.plumelib:plume-util:1.4.1'
 }
 
 shadowJar {
@@ -46,7 +47,7 @@ task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
         javaexec {
             workingDir = 'tests/live-variable'
             if (!JavaVersion.current().java9Compatible) {
-                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             }
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
@@ -69,7 +70,7 @@ task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
         javaexec {
             workingDir = 'tests/issue3447'
             if (!JavaVersion.current().java9Compatible) {
-                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             }
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output

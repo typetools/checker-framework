@@ -15,8 +15,8 @@ all: compile-for-test named-quals-test qual-folder-test clean
 
 demo:
 	$(JAVAC) $(JAVAOPTS) $(FILES)
-	@echo "***** This command is expected to produce errors on line 15 & 66:"
-	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -AunitsDirs=$(PROJECTDIR) Demo.java
+	@echo "***** This command is expected to produce errors on line 14 & 67:"
+	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -AunitsDirs=$(PROJECTDIR) UnitsExtensionDemo.java
 
 # compile qualifiers
 compile-for-test:
@@ -24,13 +24,13 @@ compile-for-test:
 
 # test case for using externally defined units by explicitly naming them using the -Aunits option
 named-quals-test:
-	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -Aunits=qual.Hz,qual.kHz,qual.Frequency Demo.java > Out.txt 2>&1 || true
+	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -Aunits=qual.Hz,qual.kHz,qual.Frequency UnitsExtensionDemo.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 
 # test case for using externally defined units by loading them from a directory using the -AunitsDirs option
 qual-folder-test:
-	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -AunitsDirs=$(PROJECTDIR) Demo.java > Out.txt 2>&1 || true
+	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -AunitsDirs=$(PROJECTDIR) UnitsExtensionDemo.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 

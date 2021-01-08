@@ -8,7 +8,7 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An abstraction that can be either a range or a list of values that could come from an {@link
@@ -72,12 +72,15 @@ class RangeOrListOfValues {
     /**
      * Produces the most precise annotation that captures the information stored in this
      * RangeOrListofValues. The result is either a {@link ArrayLen} or a {@link ArrayLenRange}.
+     *
+     * @param atypeFactory the type factory
+     * @return an annotation correspending to this RangeOrListofValues
      */
-    public AnnotationMirror createAnnotation(ValueAnnotatedTypeFactory atypefactory) {
+    public AnnotationMirror createAnnotation(ValueAnnotatedTypeFactory atypeFactory) {
         if (isRange) {
-            return atypefactory.createArrayLenRangeAnnotation(range);
+            return atypeFactory.createArrayLenRangeAnnotation(range);
         } else {
-            return atypefactory.createArrayLenAnnotation(values);
+            return atypeFactory.createArrayLenAnnotation(values);
         }
     }
 
@@ -120,7 +123,7 @@ class RangeOrListOfValues {
                 return "[]";
             }
             String res = "[";
-            res += SystemUtil.join(", ", values);
+            res += StringsPlume.join(", ", values);
             res += "]";
             return res;
         }

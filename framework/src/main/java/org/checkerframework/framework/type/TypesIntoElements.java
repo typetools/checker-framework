@@ -115,9 +115,9 @@ public class TypesIntoElements {
         }
         {
             // receiver
-            JCTree recv = ((JCTree.JCMethodDecl) meth).getReceiverParameter();
-            if (recv != null) {
-                tapos = TypeAnnotationUtils.methodReceiverTAPosition(recv.pos);
+            JCTree receiverTree = ((JCTree.JCMethodDecl) meth).getReceiverParameter();
+            if (receiverTree != null) {
+                tapos = TypeAnnotationUtils.methodReceiverTAPosition(receiverTree.pos);
                 tcs =
                         tcs.appendList(
                                 generateTypeCompounds(
@@ -240,9 +240,7 @@ public class TypesIntoElements {
             AnnotatedTypeMirror tpbound = typeVar.getUpperBound();
             java.util.List<? extends AnnotatedTypeMirror> bounds;
             if (tpbound.getKind() == TypeKind.INTERSECTION) {
-                bounds =
-                        ((AnnotatedTypeMirror.AnnotatedIntersectionType) tpbound)
-                                .directSuperTypes();
+                bounds = ((AnnotatedIntersectionType) tpbound).getBounds();
             } else {
                 bounds = List.of(tpbound);
             }
@@ -433,12 +431,12 @@ public class TypesIntoElements {
             res = directAnnotations(type, tapos);
 
             int arg = 0;
-            for (AnnotatedTypeMirror ta : type.directSuperTypes()) {
+            for (AnnotatedTypeMirror bound : type.getBounds()) {
                 TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
                 newpos.location =
                         tapos.location.append(
                                 new TypePathEntry(TypePathEntryKind.TYPE_ARGUMENT, arg));
-                res = scanAndReduce(ta, newpos, res);
+                res = scanAndReduce(bound, newpos, res);
                 ++arg;
             }
             visitedNodes.put(type, res);

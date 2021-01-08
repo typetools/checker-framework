@@ -1,0 +1,5 @@
+import org.checkerframework.checker.nullness.qual.*;
+
+class TimeUnitRange {
+   public TimeUnitRange of(@Nullable String endUnit);
+}

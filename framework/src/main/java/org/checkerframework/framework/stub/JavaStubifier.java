@@ -1,6 +1,7 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MemberValuePair;
@@ -8,6 +9,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
+import com.github.javaparser.utils.CollectionStrategy;
 import com.github.javaparser.utils.ParserCollectionStrategy;
 import com.github.javaparser.utils.ProjectRoot;
 import com.github.javaparser.utils.SourceRoot;
@@ -53,9 +55,14 @@ public class JavaStubifier {
      * @param dir directory to process
      */
     private static void process(String dir) {
-        Path root = Paths.get(dir);
+        Path root = dirnameToPath(dir);
         MinimizerCallback mc = new MinimizerCallback();
-        ProjectRoot projectRoot = new ParserCollectionStrategy().collect(root);
+        CollectionStrategy strategy = new ParserCollectionStrategy();
+        // Required to include directories that contain a module-info.java, which don't parse by
+        // default.
+        strategy.getParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+        ProjectRoot projectRoot = strategy.collect(root);
 
         projectRoot
                 .getSourceRoots()
@@ -67,6 +74,32 @@ public class JavaStubifier {
                                 System.err.println("IOException: " + e);
                             }
                         });
+    }
+
+    /**
+     * Converts a directory name to a path. It issues a warning and terminates the program if the
+     * argument does not exist or is not a directory.
+     *
+     * <p>Unlike {@code Paths.get}, it handles "." which means the current directory in Unix.
+     *
+     * @param dir a directory name
+     * @return a path for the directory name
+     */
+    public static Path dirnameToPath(String dir) {
+        File f = new File(dir);
+        if (!f.exists()) {
+            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
+            System.exit(1);
+        }
+        if (!f.isDirectory()) {
+            System.err.printf("Not a directory: %s (%s).%n", dir, f);
+            System.exit(1);
+        }
+        String absoluteDir = f.getAbsolutePath();
+        if (absoluteDir.endsWith("/.")) {
+            absoluteDir = absoluteDir.substring(0, absoluteDir.length() - 2);
+        }
+        return Paths.get(absoluteDir);
     }
 
     /** Callback to process each Java file; see class documentation for details. */

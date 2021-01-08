@@ -235,8 +235,10 @@ it would have been \emph{illegal} to write
 
 \subsubsectionAndLabel{Suppress warnings in the smallest possible scope}{suppresswarnings-best-practices-smallest-scope}
 
-Prefer \<@SuppressWarnings> on a local variable to one on a method, and
+Prefer \<@SuppressWarnings> on a local variable declaration to one on a method, and
 prefer one on a method to one on a class.
+\<@SuppressWarnings> on a local variable declaration applies only to the
+declaration (including its initializer if any), not to all uses of the variable.
 
 You may be able to suppress a warning about a use of an expression by
 writing \<@AssumeAssertion> for the expression, before the use.  See
@@ -785,7 +787,7 @@ When possible, you should use type annotations rather than declaration
 annotations.
 
 Users who are using old Java 5--7 declaration annotations (for instance,
-from the no-longer-supported FindBugs tool) can use annotations in
+from the FindBugs tool, which is no longer maintained) can use annotations in
 package \<org.checkerframework.checker.nullness.compatqual> to avoid name
 conflicts.  These are available in package
 \href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
@@ -811,4 +813,4 @@ annotations, those compatibility annotations are no longer necessary.
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode checkerframework askipuses
 %%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
 %%  LocalWords:  assumeassertion askipdefs alint compat substring
-% LocalWords:  AcheckPurityAnnotations
+% LocalWords:  AcheckPurityAnnotations allcheckers

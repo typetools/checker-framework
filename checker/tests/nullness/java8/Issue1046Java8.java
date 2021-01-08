@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
-class Issue1046Java8 {
+public class Issue1046Java8 {
     interface EnumMarker {}
 
     enum MyEnum implements EnumMarker {

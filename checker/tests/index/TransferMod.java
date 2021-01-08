@@ -2,7 +2,7 @@ import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 
-class TransferMod {
+public class TransferMod {
 
     void test() {
         int aa = -100;

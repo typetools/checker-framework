@@ -2,7 +2,7 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 
-class BasicSubsequence2 {
+public class BasicSubsequence2 {
     @HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
     int[] array;
 

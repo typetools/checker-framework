@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.ExecUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.StringsPlume;
 
 /**
  * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
@@ -306,9 +306,9 @@ public class TypeVisualizer {
 
             @Override
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
-                final List<AnnotatedDeclaredType> superTypes = type.directSuperTypes();
-                for (int i = 0; i < superTypes.size(); i++) {
-                    lines.add(connect(type, superTypes.get(i)) + " " + makeLabel("&"));
+                final List<AnnotatedTypeMirror> bounds = type.getBounds();
+                for (int i = 0; i < bounds.size(); i++) {
+                    lines.add(connect(type, bounds.get(i)) + " " + makeLabel("&"));
                 }
                 return null;
             }
@@ -467,7 +467,7 @@ public class TypeVisualizer {
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
                 if (checkOrAdd(type)) {
                     addLabeledNode(type, getAnnoStr(type) + " Intersection", "shape=octagon");
-                    visitAll(type.directSuperTypes());
+                    visitAll(type.getBounds());
                 }
 
                 return null;
@@ -603,13 +603,13 @@ public class TypeVisualizer {
                 builder.append(methodElem.getReturnType().toString());
                 builder.append(" <");
 
-                builder.append(SystemUtil.join(", ", methodElem.getTypeParameters()));
+                builder.append(StringsPlume.join(", ", methodElem.getTypeParameters()));
                 builder.append("> ");
 
                 builder.append(methodElem.getSimpleName().toString());
 
                 builder.append("(");
-                builder.append(SystemUtil.join(",", methodElem.getParameters()));
+                builder.append(StringsPlume.join(",", methodElem.getParameters()));
                 builder.append(")");
                 return builder.toString();
             }

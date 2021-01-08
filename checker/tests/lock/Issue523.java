@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.lock.qual.*;
 
-class Issue523 {
+public class Issue523 {
     static class MyClass {
         Object field;
     }

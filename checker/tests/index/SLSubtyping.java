@@ -2,7 +2,7 @@ import org.checkerframework.checker.index.qual.SameLen;
 
 // This test checks whether the SameLen type system works as expected.
 
-class SLSubtyping {
+public class SLSubtyping {
     int[] f = {1};
 
     void subtype(int @SameLen("#2") [] a, int[] b) {

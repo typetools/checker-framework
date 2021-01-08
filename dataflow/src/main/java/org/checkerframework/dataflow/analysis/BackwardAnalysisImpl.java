@@ -51,8 +51,8 @@ public class BackwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow backward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      */
     public BackwardAnalysisImpl() {
         super(Direction.BACKWARD);
@@ -103,7 +103,7 @@ public class BackwardAnalysisImpl<
                     currentInput = inputAfter.copy();
                     Node firstNode = null;
                     boolean addToWorklistAgain = false;
-                    List<Node> nodeList = rb.getContents();
+                    List<Node> nodeList = rb.getNodes();
                     ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                     while (reverseIter.hasPrevious()) {
                         Node node = reverseIter.previous();
@@ -273,7 +273,7 @@ public class BackwardAnalysisImpl<
                 && node != null) {
             @Nullable Block succBlock = ((ExceptionBlock) pred).getSuccessor();
             @Nullable Block block = node.getBlock();
-            if (succBlock != null && block != null && succBlock.getId() == block.getId()) {
+            if (succBlock != null && block != null && succBlock.getUid() == block.getUid()) {
                 // If the block of passing node is an exceptional successor of Block pred, propagate
                 // store to the exceptionStores. Currently it doesn't track the label of an
                 // exceptional edge from exception block to its exceptional successors in backward
@@ -316,8 +316,8 @@ public class BackwardAnalysisImpl<
     @Override
     public S runAnalysisFor(
             @FindDistinct Node node,
-            boolean before,
-            TransferInput<V, S> transferInput,
+            Analysis.BeforeOrAfter preOrPost,
+            TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         Block block = node.getBlock();
@@ -335,13 +335,13 @@ public class BackwardAnalysisImpl<
                         RegularBlock rBlock = (RegularBlock) block;
                         // Apply transfer function to contents until we found the node we are
                         // looking for.
-                        TransferInput<V, S> store = transferInput;
-                        List<Node> nodeList = rBlock.getContents();
+                        TransferInput<V, S> store = blockTransferInput;
+                        List<Node> nodeList = rBlock.getNodes();
                         ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                         while (reverseIter.hasPrevious()) {
                             Node n = reverseIter.previous();
                             setCurrentNode(n);
-                            if (n == node && !before) {
+                            if (n == node && preOrPost == Analysis.BeforeOrAfter.AFTER) {
                                 return store.getRegularStore();
                             }
                             // Copy the store to avoid changing other blocks' transfer inputs in
@@ -353,9 +353,7 @@ public class BackwardAnalysisImpl<
                             }
                             store = new TransferInput<>(n, this, transferResult);
                         }
-                        // This point should never be reached. If the block of 'node' is
-                        // 'block', then 'node' must be part of the contents of 'block'.
-                        throw new BugInCF("This point should never be reached.");
+                        throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
                     }
                 case EXCEPTION_BLOCK:
                     {
@@ -367,14 +365,14 @@ public class BackwardAnalysisImpl<
                                             + "\teb.getNode(): "
                                             + eb.getNode());
                         }
-                        if (!before) {
-                            return transferInput.getRegularStore();
+                        if (preOrPost == Analysis.BeforeOrAfter.AFTER) {
+                            return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput.copy());
+                                callTransferFunction(node, blockTransferInput.copy());
                         // Merge transfer result with the exception store of this exceptional block
                         S exceptionStore = exceptionStores.get(eb);
                         return exceptionStore == null

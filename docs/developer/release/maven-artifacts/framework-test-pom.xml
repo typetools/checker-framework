@@ -21,12 +21,20 @@
             <version>4.13</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.plumelib</groupId>
+            <artifactId>plume-util</artifactId>
+            <!-- Keep version number in sync with ../../../../framework-test/build.gradle . -->
+            <version>1.1.7</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <name>Checker Framework Testing Library</name>
     <url>https://checkerframework.org</url>
     <description>
-        Framework-Test is a collection of utility classes for testing checkers that use the Checker Framework.
+        framework-test contains utility classes for testing type-checkers
+        that are built on the Checker Framework.
     </description>
 
     <licenses>
@@ -44,7 +52,7 @@
 
     <developers>
 
-        <!-- These are the lead developers, not all the contributors. -->
+        <!-- These are the lead developers/maintainers, not all the developers or contributors. -->
 
         <developer>
             <id>mernst</id>

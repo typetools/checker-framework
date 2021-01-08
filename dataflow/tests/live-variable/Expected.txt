@@ -7,12 +7,14 @@
 
 2:
 Process order: 1
+AnalysisResult#1
 Before:   live variables = none
 ~~~~~~~~~
 <entry>
 
 3:
 Process order: 2
+AnalysisResult#3
 Before:   live variables = none
 ~~~~~~~~~
 a   [ VariableDeclaration ]
@@ -28,16 +30,19 @@ a   [ LocalVariable ]
 0   [ IntegerLiteral ]
 (a > 0)   [ GreaterThan ]
 ~~~~~~~~~
+TransferInput#18
 After:   live variables = a, b, c
 
 4:
 Process order: 3
+AnalysisResult#5
 Before:   live variables = a, b, c
 ~~~~~~~~~
 ConditionalBlock: then: 8, else: 10
 
 8:
 Process order: 4
+AnalysisResult#7
 Before:   live variables = a, c
 ~~~~~~~~~
 d   [ VariableDeclaration ]
@@ -46,10 +51,12 @@ c   [ LocalVariable ]
 (a + c)   [ NumericalAddition ]
 d = (a + c)   [ Assignment ]
 ~~~~~~~~~
+TransferInput#2
 After:   live variables = none
 
 10:
 Process order: 5
+AnalysisResult#9
 Before:   live variables = a, b
 ~~~~~~~~~
 e   [ VariableDeclaration ]
@@ -58,10 +65,12 @@ b   [ LocalVariable ]
 (a + b)   [ NumericalAddition ]
 e = (a + b)   [ Assignment ]
 ~~~~~~~~~
+TransferInput#1
 After:   live variables = none
 
 0:
 Process order: 6
+AnalysisResult#11
 Before:   live variables = none
 ~~~~~~~~~
 <exit>

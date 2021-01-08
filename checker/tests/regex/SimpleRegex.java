@@ -89,56 +89,6 @@ public class SimpleRegex {
         @Regex String s7 = 'r' + "ege("; // error
     }
 
-    // TODO: Uncomment this once isValidUse works better. See RegexChecker.isValidUse for details.
-    //    class TestAllowedTypes {
-    //        @Regex CharSequence cs;
-    //        @Regex String s11;
-    //        @Regex StringBuilder sb;
-    //        @Regex Segment s21;
-    //        @Regex char c;
-    //        @Regex Pattern p;
-    //        @Regex Matcher m;
-    //
-    //        // :: error: (type.invalid)
-    //        @Regex Object o;   // error
-    //        // :: error: (type.invalid)
-    //        @Regex List<String> l;   // error
-    //        // :: error: (type.invalid)
-    //        ArrayList<@Regex Double> al;   // error
-    //        // :: error: (type.invalid)
-    //        @Regex int i;   // error
-    //        // :: error: (type.invalid)
-    //        @Regex boolean b;   // error
-    //    }
-
-    //    TODO: This is not supported until the checker supports getting explicit
-    //    annotations from local variables (instead of just fields.)
-    //    void testAllowedTypes() {
-    //        @Regex CharSequence cs;
-    //        @Regex String s11;
-    //        @Regex StringBuilder sb;
-    //        @Regex Segment s21;
-    //        @Regex char c;
-    //
-    //        // :: error: (type.invalid)
-    //        @Regex Object o;   // error
-    //        // :: error: (type.invalid)
-    //        @Regex List<String> l;   // error
-    //        // :: error: (type.invalid)
-    //        ArrayList<@Regex Double> al;   // error
-    //        // :: error: (type.invalid)
-    //        @Regex int i;   // error
-    //        // :: error: (type.invalid)
-    //        @Regex boolean b;   // error
-    //
-    //        @Regex String regex = "a";
-    //        // :: error: (argument.type.incompatible)
-    //        regex += "(";
-    //
-    //        String nonRegex = "a";
-    //        nonRegex += "(";
-    //    }
-
     void testPatternLiteral() {
         Pattern.compile("non(", Pattern.LITERAL);
         Pattern.compile(foo("regex"), Pattern.LITERAL);

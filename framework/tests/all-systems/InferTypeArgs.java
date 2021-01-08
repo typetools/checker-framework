@@ -1,4 +1,4 @@
-// The test cases GenericNull, FieldAccess, and InferTypeArgs often fail together.
+// The test cases GenericNull, FieldAccessTest, and InferTypeArgs often fail together.
 // See the comments at GenericNull for some tips about what might be wrong.
 
 /**

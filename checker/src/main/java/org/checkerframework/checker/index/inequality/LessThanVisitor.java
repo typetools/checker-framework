@@ -12,7 +12,7 @@ import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
 
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
 
@@ -39,7 +39,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 anm =
                         atypeFactory.getAnnotationMirrorFromJavaExpressionString(
                                 subSeq.from, varTree, getCurrentPath());
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                 anm = null;
             }
 
@@ -72,7 +72,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         // is "a".
         List<String> expressions =
                 LessThanAnnotatedTypeFactory.getLessThanExpressions(
-                        varType.getEffectiveAnnotationInHierarchy(atypeFactory.UNKNOWN));
+                        varType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN));
         if (expressions != null) {
             boolean isLessThan = true;
             for (String expression : expressions) {
@@ -109,7 +109,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
 
         AnnotationMirror exprLTAnno =
-                exprType.getEffectiveAnnotationInHierarchy(atypeFactory.UNKNOWN);
+                exprType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN);
 
         if (exprLTAnno != null) {
             List<String> initialAnnotations =

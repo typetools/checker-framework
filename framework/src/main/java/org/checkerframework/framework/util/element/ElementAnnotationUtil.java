@@ -32,8 +32,8 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -61,10 +61,10 @@ public class ElementAnnotationUtil {
             throw new BugInCF(
                     "Number of types and elements don't match. "
                             + "types ( "
-                            + SystemUtil.join(", ", types)
+                            + StringsPlume.join(", ", types)
                             + " ) "
                             + "element ( "
-                            + SystemUtil.join(", ", elements)
+                            + StringsPlume.join(", ", elements)
                             + " ) ");
         }
 
@@ -601,8 +601,8 @@ public class ElementAnnotationUtil {
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
                 && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
-            AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
-            return getTypeAtLocation(supertype, tail(location));
+            AnnotatedTypeMirror bound = type.getBounds().get(location.get(0).arg);
+            return getTypeAtLocation(bound, tail(location));
         } else {
             throw new UnexpectedAnnotationLocationException(
                     "ElementAnnotationUtil.getLocatonTypeAIT: invalid location %s for type: %s ",

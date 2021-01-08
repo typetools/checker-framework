@@ -3,7 +3,7 @@
 
 import org.checkerframework.common.value.qual.MinLen;
 
-class StartsEndsWith {
+public class StartsEndsWith {
 
     // This particular test is here rather than in the framework tests because it depends on purity
     // annotations for these particular JDK methods.

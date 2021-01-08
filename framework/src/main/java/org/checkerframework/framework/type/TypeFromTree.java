@@ -35,7 +35,16 @@ class TypeFromTree {
             final AnnotatedTypeFactory typeFactory, final ExpressionTree tree) {
         abortIfTreeIsNull(typeFactory, tree);
 
-        final AnnotatedTypeMirror type = expressionVisitor.visit(tree, typeFactory);
+        final AnnotatedTypeMirror type;
+        try {
+            type = expressionVisitor.visit(tree, typeFactory);
+        } catch (Throwable t) {
+            throw new BugInCF(
+                    String.format(
+                            "Error in AnnotatedTypeMirror.fromExpression(%s, %s): %s",
+                            typeFactory.getClass().getSimpleName(), tree, t.getMessage()),
+                    t);
+        }
         ifExecutableCheckElement(typeFactory, tree, type);
 
         return type;

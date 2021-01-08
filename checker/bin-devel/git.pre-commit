@@ -7,8 +7,7 @@
 # Fail if any command fails
 set -e
 
-# "ant -e check-style" would check every file; on commit we only need to
-# check files that changed.
+# On commit we only need to check files that changed.
 # Need to keep checked files in sync with getJavaFilesToFormat in build.gradle.
 # Otherwise `./gradlew reformat` might not reformat a file that this
 # hook complains about.
@@ -20,7 +19,7 @@ if [ -n "$CHANGED_JAVA_FILES" ]; then
     # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
 
     # shellcheck disable=SC2086
-    python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Problem in pre-commit.  Try running: ./gradlew reformat" && /bin/false)
+    python3 checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Problem in pre-commit.  Try running: ./gradlew reformat" && /bin/false)
 
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
     if [ "$BRANCH" = "master" ]; then

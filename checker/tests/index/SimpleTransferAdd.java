@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 
-class SimpleTransferAdd {
+public class SimpleTransferAdd {
     void test() {
         int bs = -1;
         // :: error: (assignment.type.incompatible)

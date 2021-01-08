@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-class Super {
+public class Super {
     Object f;
     Object g;
     Object h;

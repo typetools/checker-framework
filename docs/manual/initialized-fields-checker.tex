@@ -1,0 +1,190 @@
+\htmlhr
+\chapterAndLabel{Initialized Fields Checker}{initialized-fields-checker}
+
+The Initialized Fields Checker warns if a constructor does not initialize a
+field.
+
+
+\sectionAndLabel{Running the Initialized Fields Checker}{initialized-fields-checker-running}
+
+An example invocation is
+
+\begin{Verbatim}
+javac -processor org.checkerframework.common.initializedfields.InitializedFieldsChecker MyFile.java
+\end{Verbatim}
+
+If you run it together with other checkers, then it issues warnings only if
+the default value assigned by Java (0, false, or null) is not consistent
+with the field's annotation, for the other checkers.
+% It's actually the checkers and their subcheckers if any.  Saying that
+% would be confusing to most users, who don't know what a "subchecker" is.
+% The term "subchecker" appears only in the "creating a checker" section of
+% the manual.
+An example invocation is
+
+\begin{Verbatim}
+javac -processor ValueChecker,InitializedFieldsChecker MyFile.java
+\end{Verbatim}
+
+
+\sectionAndLabel{Motivation:  uninitialized fields}{initialized-fields-motivation}
+
+Without the Initialized Fields Checker, every type system is
+unsound with respect to fields that are never set.  (Exception:  The
+Nullness Checker (\chapterpageref{nullness-checker}) is sound. Also, a type
+system is sound if every annotation is consistent with 0, false, and null.)
+Consider the following code:
+
+\begin{Verbatim}
+import org.checkerframework.checker.index.qual.Positive;
+
+class MyClass {
+  @Positive int x;
+  MyClass() {
+    // empty body
+  }
+
+  @Positive int getX() {
+    return x;
+  }
+}
+\end{Verbatim}
+
+\noindent
+Method \<getX> is incorrect because it returns 0, which is not positive.
+However, the code type-checks because there is never an assignment to \<x>
+whose right-hand side is not positive.
+If you run the Index Checker together with the Initialized Fields Checker,
+then the code correctly does not type-check.
+
+
+\subsubsectionAndLabel{Remaining unsoundness}{initialized-fields-remaining-unsoundness}
+
+Even with the Initialized Fields Checker, every type system (except the
+Nullness Checker, \chapterpageref{nullness-checker}) is unsound with
+respect to partially-initialized fields.  Consider the following code:
+
+\begin{Verbatim}
+import org.checkerframework.checker.index.qual.Positive;
+
+class MyClass {
+  @Positive int x;
+  MyClass() {
+    foo(this);
+    x = 1;
+  }
+
+  @Positive int foo() {
+    // ... use x, expecting it to be positive ...
+  }
+}
+\end{Verbatim}
+
+\noindent
+Within method \<foo>, \<x> can have the value 0 even though the type of
+\<x> is \<@Positive int>.
+
+
+\sectionAndLabel{Example}{initialized-fields-example}
+
+As an example, consider the following code:
+
+\begin{Verbatim}
+import org.checkerframework.checker.index.qual.Positive;
+
+class MyClass {
+
+  @Positive int x;
+  @Positive int y;
+  int z;
+
+  // Warning: field y is not initialized
+  MyClass() {
+    x = 1;
+  }
+}
+\end{Verbatim}
+
+When run by itself, the Initialized Fields Checker warns that fields \<y>
+and field \<z> are not set.
+
+When run together with the Index Checker, the Initialized Fields Checker
+warns that field \<y> is not set.  It does not warn about field \<z>,
+because its default value (0) is consistent with its annotations.
+
+
+\sectionAndLabel{Annotations}{initialized-fields-annotations}
+
+The Initialized Fields type system uses the following type annotations:
+\begin{description}
+\item[\refqualclass{common/initializedfields/qual}{InitializedFields}]
+  indicates which fields have definitely been initialized so far.
+\item[\refqualclass{common/initializedfields/qual}{InitializedFieldsBottom}]
+  is the type of \<null>.  Programmers rarely write this type.
+\item[\refqualclass{common/initializedfields/qual}{PolyInitializedFields}]
+  is a qualifier that is polymorphic over field initialization.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
+\end{description}
+
+\begin{figure}
+\includeimage{initializedfields}{4.5cm}
+\caption{The type qualifier hierarchy of the Initialized Fields Checker.
+\<@InitializedFieldsBottom> is rarely written by a programmer.}
+\label{fig-initialized-fields-hierarchy}
+\end{figure}
+
+Figure~\ref{fig-initialized-fields-hierarchy} shows the the subtyping
+relationships among the type qualifiers.
+
+There is also a method declaration annotation:
+
+\begin{description}
+\item[\refqualclass{common/initializedfields/qual}{EnsuresInitializedFields}]
+  indicates which fields the method sets.  Use this for helper methods that
+  are called from a constructor.
+\end{description}
+
+
+\sectionAndLabel{Comparison to the Initialization Checker}{initialized-fields-vs-initialization}
+
+The Initialized Fields Checker is a lightweight version of the  Initialization Checker
+(Section~\ref{initialization-checker}).  Here is a comparison between them.
+
+\noindent
+\begin{small}
+\begin{tabular}{| l | l | l |}
+ \hline
+ & Initialization Checker & Initialized Fields Checker
+ \\ \hline
+ superclasses
+ & tracks initialization of supertype fields
+ & checks one class at a time
+ \\
+ partial initialization
+ & changes the types of fields that are not initialized
+ & unsound treatment of partially-initialized objects (*)
+ \\
+ type systems
+ & works only with the Nullness Checker (**)
+ & works for any type system
+ \\
+ disabling
+ & always runs with the Nullness Checker
+ & can be enabled/disabled per run
+ \\
+ \hline
+\end{tabular}
+
+\noindent
+* See Section~\ref{initialized-fields-remaining-unsoundness} for an example.
+\newline
+** The Initialization Checker could be made to work with any type system, but
+doing so would require changing the implementation of both the type system and
+the Initialization Checker.
+\end{small}
+
+
+% LocalWords:  InitializedFields getX
+% LocalWords:  InitializedFieldsBottom PolyInitializedFields
+% LocalWords:  EnsuresInitializedFields

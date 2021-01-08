@@ -3,7 +3,7 @@ package org.checkerframework.framework.type;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Compares two annotated type mirrors for structural equality using only the primary annotations
@@ -29,7 +29,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         throw new UnsupportedOperationException(
-                SystemUtil.joinLines(
+                StringsPlume.joinLines(
                         "Comparing two different subclasses of AnnotatedTypeMirror.",
                         "type1=" + type1,
                         "type2=" + type2));

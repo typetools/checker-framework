@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue266a {
+public class Issue266a {
     private final Object mBar;
 
     public Issue266a() {

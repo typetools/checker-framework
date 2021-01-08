@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class ArrayIntro {
+public class ArrayIntro {
     void test() {
         int @MinLen(5) [] arr = new int[5];
         int a = 9;

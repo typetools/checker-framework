@@ -58,8 +58,8 @@ public class FormatUtil {
     }
 
     /**
-     * Returns if the format string is satisfiable, and if the format's parameters match the passed
-     * {@link ConversionCategory}s. Otherwise an {@link Error} is thrown.
+     * Returns the first argument if the format string is satisfiable, and if the format's
+     * parameters match the passed {@link ConversionCategory}s. Otherwise throws an exception.
      *
      * @param format a format string
      * @param cc an array of conversion categories
@@ -68,7 +68,6 @@ public class FormatUtil {
      *     categories
      */
     // TODO introduce more such functions, see RegexUtil for examples
-    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     @ReturnsFormat
     public static String asFormat(String format, ConversionCategory... cc)
             throws IllegalFormatException {
@@ -92,12 +91,12 @@ public class FormatUtil {
      * @param format a format string
      * @throws IllegalFormatException if the format string is invalid
      */
-    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         @SuppressWarnings({
             "unused", // called for side effect, to see if it throws an exception
             "nullness:argument.type.incompatible" // it's not documented, but String.format permits
-            // a null array,  which it treats as matching any format string
+            // a null array, which it treats as matching any format string (null is supplied to each
+            // format specifier).
         })
         String unused = String.format(format, (Object[]) null);
     }
@@ -227,7 +226,7 @@ public class FormatUtil {
      *     href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax">format
      *     specifier</a>
      * @return the conversion character that is in the given format specifier
-     * @deprecated This method is public only for testing. Use {@link
+     * @deprecated This method is public only for testing. Use private method {@code
      *     #conversionCharFromFormat(Matcher)}.
      */
     @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).

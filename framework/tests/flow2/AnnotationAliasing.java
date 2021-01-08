@@ -1,9 +1,9 @@
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.test.*;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 /** Various tests for annotation aliasing. */
-class AnnotationAliasing {
+public class AnnotationAliasing {
 
     String f1, f2, f3;
 
@@ -22,14 +22,14 @@ class AnnotationAliasing {
 
     @Pure
     String t1() {
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call.method)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
         nonpure();
         return "";
     }
 
     @org.jmlspecs.annotation.Pure
     String t2() {
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call.method)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
         nonpure();
         return "";
     }

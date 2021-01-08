@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.index.qual.*;
 
-class ArrayCreationChecks {
+public class ArrayCreationChecks {
 
     void test1(@Positive int x, @Positive int y) {
         int[] newArray = new int[x + y];

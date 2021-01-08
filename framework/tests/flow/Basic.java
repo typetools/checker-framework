@@ -1,6 +1,6 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
-class Basic {
+public class Basic {
 
     @Odd String field;
 

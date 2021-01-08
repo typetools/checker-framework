@@ -12,26 +12,34 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/build.sh
 
 
-# Code style, formatting, and plugable type-checking
-./gradlew checkBasicStyle checkFormat typecheck --console=plain --warning-mode=all --no-daemon
+# Checker Framework demos
+"/tmp/$USER/plume-scripts/git-clone-related" typetools checker-framework.demos
+./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
+
+status=0
+
+# Code style and formatting
+./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
+if grep -n -r --exclude-dir=build --exclude-dir=jtreg --exclude-dir=tests "^import static "; then
+  echo "Don't use static import"
+  exit 1
+fi
 
 # HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
 # Javadoc documentation
-# Uncomment this line temporarily for refactorings that touch a lot of code that
-# you don't understand.  Then, recomment it as soon as the pull request is merged.
-# SKIPJAVADOC=1
-if [ -z "$SKIPJAVADOC" ]; then
-status=0
 ./gradlew javadoc --console=plain --warning-mode=all --no-daemon || status=1
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon || status=1
-(./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
-/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt || status=1
-(./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
-/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt || status=1
+# For refactorings that touch a lot of code that you don't understand, create
+# top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
+if [ ! -f SKIP-REQUIRE-JAVADOC ]; then
+  (./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
+  /tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt || status=1
+  (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
+  /tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt || status=1
+fi
 if [ $status -ne 0 ]; then exit $status; fi
-fi # end of "if [ -z $SKIPJAVADOC ]"
 
 
 # User documentation

@@ -1,4 +1,5 @@
-// Upstream version:  in the OpenJDK repository, file
+// Upstream version (this is a clean-room reimplementation of its interface):
+// in the OpenJDK repository, file
 // jaxws/src/share/jaxws_classes/com/sun/istack/internal/Nullable.java
 
 package com.sun.istack.internal;

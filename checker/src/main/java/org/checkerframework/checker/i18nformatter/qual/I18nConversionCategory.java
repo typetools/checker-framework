@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
@@ -24,13 +25,13 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 public enum I18nConversionCategory {
 
     /**
-     * Use if a parameter is not used by the formatter.
+     * Use if a parameter is not used by the formatter. For example, in
      *
      * <pre>
      * MessageFormat.format(&quot;{1}&quot;, a, b);
      * </pre>
      *
-     * Only the second argument ("b") is used. The first argument ("a") is ignored
+     * only the second argument ("b") is used. The first argument ("a") is ignored.
      */
     UNUSED(null /* everything */, null),
 
@@ -168,6 +169,27 @@ public enum I18nConversionCategory {
         return NUMBER;
     }
 
+    /**
+     * Returns true if {@code argType} can be an argument used by this format specifier.
+     *
+     * @param argType an argument type
+     * @return true if {@code argType} can be an argument used by this format specifier
+     */
+    public boolean isAssignableFrom(Class<?> argType) {
+        if (types == null) {
+            return true;
+        }
+        if (argType == void.class) {
+            return true;
+        }
+        for (Class<?> c : types) {
+            if (c.isAssignableFrom(argType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Returns a pretty printed {@link I18nConversionCategory}. */
     @Override
     public String toString() {
@@ -175,16 +197,11 @@ public enum I18nConversionCategory {
         if (this.types == null) {
             sb.append(" conversion category (all types)");
         } else {
-            sb.append(" conversion category (one of: ");
-            boolean first = true;
+            StringJoiner sj = new StringJoiner(", ", " conversion category (one of: ", ")");
             for (Class<?> cls : this.types) {
-                if (!first) {
-                    sb.append(", ");
-                }
-                sb.append(cls.getCanonicalName());
-                first = false;
+                sj.add(cls.getCanonicalName());
             }
-            sb.append(")");
+            sb.append(sj);
         }
         return sb.toString();
     }

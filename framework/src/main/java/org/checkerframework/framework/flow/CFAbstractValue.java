@@ -2,7 +2,6 @@ package org.checkerframework.framework.flow;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -19,10 +18,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An implementation of an abstract value used by the Checker Framework
@@ -80,7 +78,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 : "Encountered invalid type: "
                         + underlyingType
                         + " annotations: "
-                        + SystemUtil.join(", ", annotations);
+                        + StringsPlume.join(", ", annotations);
     }
 
     public static boolean validateSet(
@@ -135,7 +133,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * <p>To get the single annotation in a particular hierarchy, use {@link
      * QualifierHierarchy#findAnnotationInHierarchy}.
      *
-     * @return returns a set of annotations
+     * @return a set of annotations
      */
     @Pure
     public Set<AnnotationMirror> getAnnotations() {
@@ -186,14 +184,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      */
     @SideEffectFree
     public String toStringSimple() {
-
-        DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
-        StringJoiner annotationsString = new StringJoiner(", ");
-        for (AnnotationMirror am : annotations) {
-            annotationsString.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
-        }
-
-        return "CFAV{" + annotationsString + ", " + TypesUtils.simpleTypeName(underlyingType) + '}';
+        return "CFAV{"
+                + AnnotationUtils.toStringSimple(annotations)
+                + ", "
+                + TypesUtils.simpleTypeName(underlyingType)
+                + '}';
     }
 
     /**

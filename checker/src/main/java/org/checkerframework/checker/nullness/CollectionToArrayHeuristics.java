@@ -63,12 +63,15 @@ public class CollectionToArrayHeuristics {
 
         this.collectionToArrayE =
                 TreeUtils.getMethod(
-                        java.util.Collection.class.getName(), "toArray", processingEnv, "T[]");
+                        java.util.Collection.class.getCanonicalName(),
+                        "toArray",
+                        processingEnv,
+                        "T[]");
         this.size =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, processingEnv);
+                TreeUtils.getMethod(
+                        java.util.Collection.class.getCanonicalName(), "size", 0, processingEnv);
         this.collectionType =
-                factory.fromElement(
-                        processingEnv.getElementUtils().getTypeElement("java.util.Collection"));
+                factory.fromElement(ElementUtils.getTypeElement(processingEnv, Collection.class));
 
         this.trustArrayLenZero =
                 checker.getLintOption(
@@ -101,9 +104,9 @@ public class CollectionToArrayHeuristics {
 
             if (receiverIsNonNull && !argIsHandled) {
                 if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
-                    checker.reportWarning(tree, "toArray.nullable.elements.not.newarray");
+                    checker.reportWarning(tree, "toarray.nullable.elements.not.newarray");
                 } else {
-                    checker.reportWarning(tree, "toArray.nullable.elements.mismatched.size");
+                    checker.reportWarning(tree, "toarray.nullable.elements.mismatched.size");
                 }
             }
         }

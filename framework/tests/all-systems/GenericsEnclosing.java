@@ -6,7 +6,7 @@ import java.util.TreeMap;
  *
  * <p>Also see regex/GenericsEnclosing for a test case for the Regex Checker.
  */
-class GenericsEnclosing extends TreeMap<String, String> {
+public class GenericsEnclosing extends TreeMap<String, String> {
     class Inner {
         void foo() {
             put("string", "string".toString());

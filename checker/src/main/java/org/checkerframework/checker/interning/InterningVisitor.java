@@ -37,6 +37,7 @@ import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
@@ -204,11 +205,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (isInvocationOfEquals(node)) {
-            AnnotatedTypeMirror recv = atypeFactory.getReceiverType(node);
+            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(node);
             AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(node.getArguments().get(0));
 
             if (this.checker.getLintOption("dotequals", true)
-                    && recv.hasEffectiveAnnotation(INTERNED)
+                    && receiverType.hasEffectiveAnnotation(INTERNED)
                     && comp.hasEffectiveAnnotation(INTERNED)) {
                 checker.reportWarning(node, "unnecessary.equals");
             }
@@ -324,9 +325,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         Name leftName = ((IdentifierTree) lhsTree).getName();
                         Name rightName = ((IdentifierTree) rhsTree).getName();
                         Name paramName = equalsMethod.getParameters().get(0).getName();
-                        if ((leftName.contentEquals("this") && rightName.equals(paramName))
-                                || (leftName.equals(paramName)
-                                        && rightName.contentEquals("this"))) {
+                        if ((leftName.contentEquals("this") && rightName == paramName)
+                                || (leftName == paramName && rightName.contentEquals("this"))) {
                             return true;
                         }
                     }
@@ -972,9 +972,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         return false;
     }
 
-    /** @see #typeToCheck */
+    /**
+     * Returns the type to check.
+     *
+     * @return the type to check
+     */
     DeclaredType typeToCheck() {
-        String className = checker.getOption("checkclass");
+        @SuppressWarnings("signature:assignment.type.incompatible") // user input
+        @CanonicalName String className = checker.getOption("checkclass");
         if (className == null) {
             return null;
         }

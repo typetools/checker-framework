@@ -1,6 +1,6 @@
 package simplecrash;
 
-class SomeRandomClass {
+public class SomeRandomClass {
     void randomStuff(LetItCrash letItCrash) {
         letItCrash.makeItLongerAndCrash();
     }

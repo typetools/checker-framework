@@ -1,14 +1,14 @@
-StubParserEnumTest.java:33:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.SECONDS
-StubParserEnumTest.java:34:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.MILLISECONDS
-StubParserEnumTest.java:37:47: compiler.err.proc.messager: [methodcall] Method call of StubParserEnumTest.MyTimeUnit.toMicros(long)
-StubParserEnumTest.java:37:30: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.SECONDS
-StubParserEnumTest.java:41:31: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
-StubParserEnumTest.java:42:23: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
-StubParserEnumTest.java:45:45: compiler.err.proc.messager: [methodcall] Method call of java.util.concurrent.TimeUnit.toMicros(long)
-StubParserEnumTest.java:45:28: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
-StubParserEnumTest.java:46:20: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
-StubParserEnumTest.java:47:29: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
-StubParserEnumTest.java:48:51: compiler.err.proc.messager: [methodcall] Method call of java.util.concurrent.TimeUnit.toMicros(long)
-StubParserEnumTest.java:48:29: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
-StubParserEnumTest.java:49:21: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+AnnotationFileParserEnumTest.java:33:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.SECONDS
+AnnotationFileParserEnumTest.java:34:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.MILLISECONDS
+AnnotationFileParserEnumTest.java:37:47: compiler.err.proc.messager: [methodcall] Method call of AnnotationFileParserEnumTest.MyTimeUnit.toMicros(long)
+AnnotationFileParserEnumTest.java:37:30: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.SECONDS
+AnnotationFileParserEnumTest.java:41:31: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
+AnnotationFileParserEnumTest.java:42:23: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+AnnotationFileParserEnumTest.java:45:45: compiler.err.proc.messager: [methodcall] Method call of java.util.concurrent.TimeUnit.toMicros(long)
+AnnotationFileParserEnumTest.java:45:28: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
+AnnotationFileParserEnumTest.java:46:20: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
+AnnotationFileParserEnumTest.java:47:29: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+AnnotationFileParserEnumTest.java:48:51: compiler.err.proc.messager: [methodcall] Method call of java.util.concurrent.TimeUnit.toMicros(long)
+AnnotationFileParserEnumTest.java:48:29: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+AnnotationFileParserEnumTest.java:49:21: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
 13 errors

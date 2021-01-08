@@ -12,12 +12,13 @@ import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
 import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Generate the control flow graph of a given method in a given class. See {@link
- * CFGVisualizeLauncher} for example usage.
+ * org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher} for example usage.
  */
 @SupportedAnnotationTypes("*")
 public class CFGProcessor extends BasicTypeProcessor {
@@ -47,7 +48,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      *     the CFG for
      * @param methodName the name of the method to generate the CFG for
      */
-    protected CFGProcessor(String className, String methodName) {
+    public CFGProcessor(String className, String methodName) {
         this.className = className;
         this.methodName = methodName;
     }

@@ -166,6 +166,16 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedDeclaredType castedLub = castLub(type1, lub);
 
         lubPrimaryAnnotations(type1, type2, lub);
+
+        if (lub.getKind() == TypeKind.DECLARED) {
+            AnnotatedDeclaredType enclosingLub = ((AnnotatedDeclaredType) lub).getEnclosingType();
+            AnnotatedDeclaredType enclosing1 = type1.getEnclosingType();
+            AnnotatedDeclaredType enclosing2 = type2.getEnclosingType();
+            if (enclosingLub != null && enclosing1 != null && enclosing2 != null) {
+                visitDeclared_Declared(enclosing1, enclosing2, enclosingLub);
+            }
+        }
+
         List<AnnotatedTypeMirror> lubTypArgs = new ArrayList<>();
         for (int i = 0; i < type1.getTypeArguments().size(); i++) {
             AnnotatedTypeMirror type1TypeArg = type1.getTypeArguments().get(i);
@@ -337,9 +347,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedIntersectionType castedLub = castLub(type1, lub);
         lubPrimaryAnnotations(type1, type2, lub);
 
-        for (int i = 0; i < lub.directSuperTypes().size(); i++) {
-            AnnotatedDeclaredType lubST = castedLub.directSuperTypes().get(i);
-            visit(type1.directSuperTypes().get(i), type2.directSuperTypes().get(i), lubST);
+        for (int i = 0; i < castedLub.getBounds().size(); i++) {
+            AnnotatedTypeMirror lubST = castedLub.getBounds().get(i);
+            visit(type1.getBounds().get(i), type2.getBounds().get(i), lubST);
         }
 
         return null;

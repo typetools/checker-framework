@@ -14,7 +14,7 @@ class BankAccount {
     }
 }
 
-class LockExample {
+public class LockExample {
     final @GuardedBy("<self>") BankAccount myAccount;
 
     LockExample(@GuardedBy("<self>") BankAccount in) {

@@ -14,6 +14,12 @@ Typically, some operation in code is legal
 only when the set is large enough --- that is, the estimate has accumulated
 sufficiently many facts.
 
+The Called Methods Checker (\chapterpageref{called-methods-checker})
+is an accumulation analysis.
+The
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/TestAccumulationChecker.java}{Test Accumulation Checker}
+is a simplified version of the Called Methods Checker that you can also use as a model.
+
 Accumulation analysis is a special case of typestate analysis in which
 (1) the order in which operations are performed does not affect what is subsequently legal,
 and (2) the accumulation does not add restrictions; that is, as
@@ -22,41 +28,36 @@ Unlike a traditional typestate analysis, an accumulation analysis does
 not require an alias analysis for soundness. It can therefore be implemented
 as a flow-sensitive type system.
 
-The Checker Framework contains a generic accumulation analysis that you can
-extend to create your own accumulation checker.
-
-Before reading the rest of this chapter, you should
-read how to create a checker (Chapter~\ref{creating-a-checker}).
-The rest of this chapter assumes you have done so.
+The rest of this chapter assumes you have read how to create a checker
+(\chapterpageref{creating-a-checker}).
 
 
 \paragraphAndLabel{Defining type qualifiers}{accumulation-qualifiers}
+Define 2 or 3 type qualifiers.
 
-The Object Construction Checker (Section~\ref{object-construction-checker})
-is a concrete example of a practical accumulation checker that you may want
-to reference. The
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/TestAccumulationChecker.java}{Test Accumulation Checker}
-is a simplified version of the same that you can also use as a model.
-
-First, design your analysis.  Decide what
-your checker will accumulate and how to represent it. The Checker Framework's
+\begin{itemize}
+\item
+The ``accumulator'' type qualifier has a single argument: a \<String[]> named
+\<value> that defaults to the an empty array.  Note that the Checker Framework's
 support for accumulation analysis requires you to accumulate a string representation
 of whatever you are accumulating. For example, when accumulating which methods have
-been called on an object, you might choose to accumulate method names.
+been called, you might choose to accumulate method names.
 
-Define a type qualifier that has a single argument: a \<String[]> named \<value>.
-The default value for this argument should be an empty array. The
+The accumulator
 qualifier should have no supertypes (\<@SubtypeOf({})>) and should
 be the default qualifier in the hierarchy (\<@DefaultQualifierInHierarchy>).
-An example of such a qualifier can be found in the Checker Framework's tests:
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulation.java}{TestAccumulation.java}.
 
-Also define a bottom type, analogous to
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
+An example of such a qualifier can be found in the Checker Framework's tests:
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/qual/TestAccumulation.java}{TestAccumulation.java}.
+
+\item
+Define a bottom type, analogous to
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
 It should take no arguments, and should be a subtype of the accumulator type you defined earlier.
 
-You may also define a predicate annotation, analogous to
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationPredicate.java}{TestAccumulationPredicate.java}.
+\item
+Optionally, define a predicate annotation, analogous to
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/qual/TestAccumulationPredicate.java}{TestAccumulationPredicate.java}.
 It must have a single argument named \<value> of type \<String>.
 The predicate syntax supports
 \begin{itemize}
@@ -69,6 +70,7 @@ on some paths, but not others.
 \item \<(...)> parentheses for precedence
 \end{itemize}
 
+\end{itemize}
 
 \paragraphAndLabel{Setting up the checker}{accumulation-setup}
 
@@ -85,11 +87,28 @@ you defined a predicate annotation).
 \paragraphAndLabel{Adding accumulation logic}{accumulation-accumulating}
 
 Define a class that extends \refclass{common/accumulation}{AccumulationTransfer}.
-To update the estimate of what has been accumulated, override
+To update the estimate of what has been accumulated, override some method in
 \refclass{framework/flow}{CFAbstractTransfer} to call
 \refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.Node-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}.
 
-For example, when accumulating the names of methods called, you would override
-\refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferInput-},
+For example, to accumulate the names of methods called, a checker would override
+\refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferInput-} to:
 call \<super> to get a \<TransferResult>, compute the method name from the \<MethodInvocationNode>,
 and then call \<accumulate>.
+
+
+\paragraphAndLabel{Enforcing program properties}{accumulation-enforcing}
+
+At this point, your checker ensures that all annotations are consistent
+with one another and the souce code, and it flow-sensitively refines the
+annotations.
+Te enforce properties in the code being type-checked, write type rules
+(Section~\ref{creating-extending-visitor}) that are specific to your type
+system.
+
+
+% LocalWords:  SubtypeOf TestAccumulation TestAccumulationBottom
+% LocalWords:  TestAccumulationPredicate AccumulationChecker
+% LocalWords:  AccumulationAnnotatedTypeFactory BaseTypeChecker
+% LocalWords:  AccumulationTransfer CFAbstractTransfer TransferResult
+% LocalWords:  visitMethodInvocation MethodInvocationNode
