@@ -72,6 +72,7 @@ task deployArtifactsToSonatype {
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final checkerQualPom(publication) {
+    sharedPublicationConfiguration(publication)
     publication.from components.java
     // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
     publication.pom {
@@ -89,11 +90,7 @@ final checkerQualPom(publication) {
 }
 publishing {
     publications {
-        remote(MavenPublication) {
-            checkerQualPom it
-        }
-
-        local(MavenPublication) {
+        checkerQual(MavenPublication) {
             checkerQualPom it
         }
     }

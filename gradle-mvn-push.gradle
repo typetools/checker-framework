@@ -2,56 +2,11 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 final isSnapshot = version.contains('SNAPSHOT')
-
-final sharedPublicationConfiguration(publication) {
-    publication.pom {
-        url = 'https://checkerframework.org'
-        developers {
-            // These are the lead developers, not all the contributors.
-            developer {
-                id = 'mernst'
-                name = 'Michael Ernst'
-                email = 'mernst@cs.washington.edu'
-                url = 'https://homes.cs.washington.edu/~mernst/'
-                organization = 'University of Washington'
-                organizationUrl = 'https://www.cs.washington.edu/'
-            }
-            developer {
-                id = 'wmdietl'
-                name = 'Werner M. Dietl'
-                email = 'wdietl@uwaterloo.ca'
-                organization = 'University of Waterloo'
-                organizationUrl = 'http://uwaterloo.ca/'
-            }
-            developer {
-                id = 'smillst'
-                name = 'Suzanne Millstein'
-                email = 'smillst@cs.washington.edu'
-                organization = 'University of Washington'
-                organizationUrl = 'https://www.cs.washington.edu/'
-            }
-        }
-
-        scm {
-            url = 'https://github.com/typetools/checker-framework.git'
-            connection = 'scm:git:git://github.com/typetools/checker-framework.git'
-            developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
-        }
-    }
+// https://github.com/johnrengelman/shadow/issues/586#issuecomment-708375599
+components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+    skip()
 }
-
 publishing {
-    publications {
-
-        remote(MavenPublication) {
-            sharedPublicationConfiguration it
-        }
-
-        local(MavenPublication) {
-            sharedPublicationConfiguration it
-        }
-    }
-
     repositories {
         maven {
             url = (isSnapshot
@@ -72,6 +27,15 @@ publishing {
 }
 
 signing {
+    //  String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
+    //  String passphrase = new File(passwordFile).readLines().get(0);
+    //  -Psigning.keyId=ADF4D638
+    // -Psigning.password=${passphrase}
+    // -Psigning.secretKeyRingFile=/homes/gws/smillst/.gnupg/secring.gpg
+
+    // signing.gnupg.keyName
+    // signing.gnupg.passphrase
+
     // Use external gpg cmd.  This makes it easy to use gpg-agent,
     // to avoid being prompted for a password once per artifact.
     useGpgCmd()
@@ -79,32 +43,11 @@ signing {
     // If anything about signing is misconfigured, fail loudly rather than quietly continuing with
     // unsigned artifacts.
     required = true
-
-    // Only sign publications sent to remote repositories; local install installations are unsigned.
-    // The `sign` invocation below causes eager creation of three tasks per subproject:
-    // `signRemotePublication` is created immediately and `generateMetadataFileForRemotePublication`
-    // and `generatePomFileForRemotePublication` are created during configuration.  Creating these
-    // lazily instead will require a fix to <https://github.com/gradle/gradle/issues/8796>.
-    sign publishing.publications.remote
 }
 
 // Only sign releases; snapshots are unsigned.
 tasks.withType(Sign).configureEach {
     onlyIf {
-        !isSnapshot
-    }
-}
-
-// Remote publication set goes to remote repositories, so we don't publicly publish test fixtures.
-tasks.withType(PublishToMavenRepository).configureEach {
-    onlyIf {
-        publication == publishing.publications.remote
-    }
-}
-
-// Local publication set goes to local installations, so we can reuse test fixtures locally.
-tasks.withType(PublishToMavenLocal).configureEach {
-    onlyIf {
-        publication == publishing.publications.local
+        !isSnapshot && gradle.taskGraph.hasTask("publish")
     }
 }

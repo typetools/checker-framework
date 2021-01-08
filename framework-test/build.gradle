@@ -39,6 +39,7 @@ task deployArtifactsToSonatype {
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final frameworkTest(publication) {
+    sharedPublicationConfiguration(publication)
     publication.from components.java
     // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
     publication.pom {
@@ -56,11 +57,7 @@ final frameworkTest(publication) {
 
 publishing {
     publications {
-        remote(MavenPublication) {
-            frameworkTest it
-        }
-
-        local(MavenPublication) {
+        frameworkTest(MavenPublication) {
             frameworkTest it
         }
     }

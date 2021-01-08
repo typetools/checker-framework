@@ -639,8 +639,8 @@ task wpiPlumeLibTests(group: "Verification") {
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final checkerPom(publication) {
+    sharedPublicationConfiguration(publication)
     // Don't use publication.from components.java which would publish the skinny jar as checker.jar.
-    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
     publication.pom {
         name = 'Checker Framework'
         description = 'The Checker Framework enhances Java\'s type system to' +
@@ -661,14 +661,7 @@ final checkerPom(publication) {
 
 publishing {
     publications {
-        remote(MavenPublication) {
-            checkerPom it
-            artifact shadowJar
-            artifact allSourcesJar
-            artifact allJavadocJar
-        }
-
-        local(MavenPublication) {
+        checker(MavenPublication) {
             checkerPom it
             artifact shadowJar
             artifact allSourcesJar

@@ -6,6 +6,7 @@ dependencies {
 
 shadowJar {
     archiveFileName = "dataflow-shaded.jar"
+//    archiveClassifier = ''
     relocate 'org.checkerframework.dataflow', 'org.checkerframework.shaded.dataflow'
     relocate 'org.checkerframework.javacutil', 'org.checkerframework.shaded.javacutil'
 }
@@ -83,6 +84,7 @@ task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final dataflowPom(publication) {
+    sharedPublicationConfiguration(publication)
     publication.from components.java
     // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
     publication.pom {
@@ -98,14 +100,38 @@ final dataflowPom(publication) {
     }
 }
 
+final dataflowShadedPom(publication) {
+    sharedPublicationConfiguration(publication)
+
+    publication.artifactId = 'dataflow-shaded'
+    publication.pom {
+        name = 'Dataflow (shaded)'
+        description = ' dataflow-shaded is a dataflow framework based on the javac compiler. ' +
+                'It differs from the dataflow artifact in two ways.' +
+                'First, The packages in this artifact have been renamed to org.checkerframework.shaded.*.' +
+                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.\n' +
+                'Please see artifact: org.checkerframework:dataflow'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
 publishing {
     publications {
-        remote(MavenPublication) {
+        dataflow(MavenPublication) {
             dataflowPom it
         }
 
-        local(MavenPublication) {
-            dataflowPom it
+        dataflowShaded(MavenPublication) {
+            dataflowShadedPom it
+            artifact shadowJar
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }

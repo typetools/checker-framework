@@ -660,13 +660,14 @@ subprojects {
         }
     }
 
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
     // Things in this block reference definitions in the subproject that do not exist,
     // until the project is evaluated.
     afterEvaluate {
-        java {
-            withJavadocJar()
-            withSourcesJar()
-        }
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
@@ -1126,4 +1127,41 @@ void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {
     mvnSignAndDeployMultipleToSonatype(project.tasks.getByName('jar').archiveFile.get().toString(),
             project.tasks.getByName('sourcesJar').archiveFile.get().toString(),
             project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom)
+}
+
+final sharedPublicationConfiguration(publication) {
+    publication.pom {
+        url = 'https://checkerframework.org'
+        developers {
+            // These are the lead developers, not all the contributors.
+            developer {
+                id = 'mernst'
+                name = 'Michael Ernst'
+                email = 'mernst@cs.washington.edu'
+                url = 'https://homes.cs.washington.edu/~mernst/'
+                organization = 'University of Washington'
+                organizationUrl = 'https://www.cs.washington.edu/'
+            }
+            developer {
+                id = 'wmdietl'
+                name = 'Werner M. Dietl'
+                email = 'wdietl@uwaterloo.ca'
+                organization = 'University of Waterloo'
+                organizationUrl = 'http://uwaterloo.ca/'
+            }
+            developer {
+                id = 'smillst'
+                name = 'Suzanne Millstein'
+                email = 'smillst@cs.washington.edu'
+                organization = 'University of Washington'
+                organizationUrl = 'https://www.cs.washington.edu/'
+            }
+        }
+
+        scm {
+            url = 'https://github.com/typetools/checker-framework.git'
+            connection = 'scm:git:git://github.com/typetools/checker-framework.git'
+            developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
+        }
+    }
 }

@@ -25,3 +25,30 @@ task deployArtifactsToSonatype {
         mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/javacutil-pom.xml")
     }
 }
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+final javacUtilPom(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+
+    publication.pom {
+        name = 'Javacutil'
+        description = 'javacutil contains utility classes for the javac compiler.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        javacUtil(MavenPublication) {
+            javacUtilPom it
+        }
+    }
+}
