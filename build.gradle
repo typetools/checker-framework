@@ -853,13 +853,9 @@ subprojects {
             if (project.name.is('checker')) {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
-                    // TODO: Remove this line, when wpiManyTests doesn't ignore wpi failures.
-                    dependsOn('wpiManyTests', 'wpiPlumeLibTests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          // TODO: Reinstate this line, when wpiManyTests doesn't ignore wpi failures.
-                          // 'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
-                          'wholeProgramInferenceTests')
+                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
 
             if (project.name.is('dataflow')) {
