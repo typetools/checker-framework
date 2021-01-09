@@ -312,7 +312,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
      * Returns true if the enclosing method is a constructor whose return type is annotated as
      * {@code @Unique}.
      *
-     * @returns true if the enclosing method is a constructor whose return type is annotated as
+     * @return true if the enclosing method is a constructor whose return type is annotated as
      *     {@code @Unique}
      */
     private boolean isInUniqueConstructor() {
