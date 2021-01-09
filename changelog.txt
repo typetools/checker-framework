@@ -4,7 +4,7 @@ Version 3.10.0, February 1, 2020
 
 **Implementation details:**
 
-Refactored methods on `TreePath`s from 'TreeUtils` to new class `TreePathUtil`.
+Moved methods on `TreePath`s from class 'TreeUtils` to new class `TreePathUtil`.
  * `TreeUtils.enclosingClass` => `TreePathUtil.enclosingClass`
  * `TreeUtils.enclosingMethod` => `TreePathUtil.enclosingMethod`
  * `TreeUtils.enclosingMethodOrLambda` => `TreePathUtil.enclosingMethodOrLambda`
