@@ -52,6 +52,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -306,7 +307,7 @@ public class DependentTypesHelper {
         }
 
         TreePath path = factory.getPath(tree);
-        Tree enclosingClass = TreeUtils.enclosingClass(path);
+        Tree enclosingClass = TreePathUtil.enclosingClass(path);
         if (enclosingClass == null) {
             return;
         }
@@ -399,7 +400,7 @@ public class DependentTypesHelper {
         }
         switch (variableElt.getKind()) {
             case PARAMETER:
-                Tree enclTree = TreeUtils.enclosingOfKind(path, METHOD_OR_LAMBDA);
+                Tree enclTree = TreePathUtil.enclosingOfKind(path, METHOD_OR_LAMBDA);
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodTree = (MethodTree) enclTree;
@@ -487,7 +488,7 @@ public class DependentTypesHelper {
         if (path == null) {
             return;
         }
-        Tree enclosingClass = TreeUtils.enclosingClass(path);
+        Tree enclosingClass = TreePathUtil.enclosingClass(path);
         if (enclosingClass == null) {
             return;
         }

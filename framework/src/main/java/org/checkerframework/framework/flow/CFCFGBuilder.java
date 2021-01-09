@@ -24,6 +24,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -115,12 +116,12 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         public void handleArtificialTree(Tree tree) {
             // Record the method or class that encloses the newly created tree.
-            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
                 factory.setEnclosingElementForArtificialTree(tree, methodElement);
             } else {
-                ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+                ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
                 if (enclosingClass != null) {
                     Element classElement = TreeUtils.elementFromDeclaration(enclosingClass);
                     factory.setEnclosingElementForArtificialTree(tree, classElement);

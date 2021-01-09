@@ -76,6 +76,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
@@ -368,7 +369,7 @@ public class JavaExpressionParseUtil {
             }
 
             // Err if a formal parameter name is used, instead of the "#2" syntax.
-            MethodTree enclMethod = TreeUtils.enclosingMethod(path);
+            MethodTree enclMethod = TreePathUtil.enclosingMethod(path);
             if (enclMethod != null) {
                 List<? extends VariableTree> params = enclMethod.getParameters();
                 for (int i = 0; i < params.size(); i++) {
@@ -800,7 +801,7 @@ public class JavaExpressionParseUtil {
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
                 MethodTree methodDeclaration, TreePath currentPath, BaseContext checkerContext) {
-            Tree classTree = TreeUtils.enclosingClass(currentPath);
+            Tree classTree = TreePathUtil.enclosingClass(currentPath);
             return buildContextForMethodDeclaration(methodDeclaration, classTree, checkerContext);
         }
 
@@ -852,7 +853,7 @@ public class JavaExpressionParseUtil {
          */
         public static JavaExpressionContext buildContextForLambda(
                 LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
-            TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(path));
+            TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
             Node receiver = new ImplicitThisNode(enclosingType);
             JavaExpression receiverJe =
                     JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
