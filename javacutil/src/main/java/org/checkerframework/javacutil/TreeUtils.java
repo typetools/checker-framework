@@ -79,7 +79,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.plumelib.util.UniqueIdMap;
 
 /**
- * A utility class made for helping to analyze a given javac {@code Tree}.
+ * Utility methods for analyzing a javac {@code Tree}.
  *
  * @see TreePathUtil
  */
