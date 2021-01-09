@@ -849,7 +849,7 @@ public class AnnotatedTypes {
 
     /**
      * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter
-     * type expect at the indexth position (unwrapping var args if necessary).
+     * type expected at the indexth position (unwrapping var args if necessary).
      *
      * @param methodType AnnotatedExecutableType of method or constructor containing parameter to
      *     return
