@@ -16,7 +16,7 @@ import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * A utility class made for helping to analyze a given javac {@code TreePath}.
+ * Utility methods for obtaining or analyzing a javac {@code TreePath}.
  *
  * @see TreeUtils
  */
@@ -27,49 +27,9 @@ public final class TreePathUtil {
         throw new Error("Class TreeUtils cannot be instantiated.");
     }
 
-    /**
-     * Gets the first (innermost) enclosing tree in path, of the specified kind.
-     *
-     * @param path the path defining the tree node
-     * @param kind the kind of the desired tree
-     * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
-     */
-    public static @Nullable Tree enclosingOfKind(final TreePath path, final Tree.Kind kind) {
-        return enclosingOfKind(path, EnumSet.of(kind));
-    }
-
-    /**
-     * Gets the first (innermost) enclosing tree in path, with any one of the specified kinds.
-     *
-     * @param path the path defining the tree node
-     * @param kinds the set of kinds of the desired tree
-     * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
-     */
-    public static @Nullable Tree enclosingOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
-        TreePath p = path;
-
-        while (p != null) {
-            Tree leaf = p.getLeaf();
-            assert leaf != null; /*nninvariant*/
-            if (kinds.contains(leaf.getKind())) {
-                return leaf;
-            }
-            p = p.getParentPath();
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets path to the first (innermost) enclosing class tree, where class is defined by the
-     * classTreeKinds method.
-     *
-     * @param path the path defining the tree node
-     * @return the path to the enclosing class tree, {@code null} otherwise
-     */
-    public static @Nullable TreePath pathTillClass(final TreePath path) {
-        return pathTillOfKind(path, TreeUtils.classTreeKinds());
-    }
+    ///
+    /// Retrieving a path
+    ///
 
     /**
      * Gets path to the first (innermost) enclosing tree of the specified kind.
@@ -103,6 +63,54 @@ public final class TreePathUtil {
         }
 
         return null;
+    }
+
+    /**
+     * Gets path to the first (innermost) enclosing class tree, where class is defined by the {@link
+     * TreeUtils#classTreeKinds} method.
+     *
+     * @param path the path defining the tree node
+     * @return the path to the enclosing class tree, {@code null} otherwise
+     */
+    public static @Nullable TreePath pathTillClass(final TreePath path) {
+        return pathTillOfKind(path, TreeUtils.classTreeKinds());
+    }
+
+    /**
+     * Gets path to the first (innermost) enclosing method tree.
+     *
+     * @param path the path defining the tree node
+     * @return the path to the enclosing class tree, {@code null} otherwise
+     */
+    public static @Nullable TreePath pathTillMethod(final TreePath path) {
+        return pathTillOfKind(path, Tree.Kind.METHOD);
+    }
+
+    ///
+    /// Retrieving a tree
+    ///
+
+    /**
+     * Gets the first (innermost) enclosing tree in path, of the specified kind.
+     *
+     * @param path the path defining the tree node
+     * @param kind the kind of the desired tree
+     * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
+     */
+    public static @Nullable Tree enclosingOfKind(final TreePath path, final Tree.Kind kind) {
+        return enclosingOfKind(path, EnumSet.of(kind));
+    }
+
+    /**
+     * Gets the first (innermost) enclosing tree in path, with any one of the specified kinds.
+     *
+     * @param path the path defining the tree node
+     * @param kinds the set of kinds of the desired tree
+     * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
+     */
+    public static @Nullable Tree enclosingOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
+        TreePath p = pathTillOfKind(path, kinds);
+        return (p == null) ? null : p.getLeaf();
     }
 
     /**
@@ -196,18 +204,6 @@ public final class TreePathUtil {
     }
 
     /**
-     * Returns true if the tree is in a constructor or an initializer block.
-     *
-     * @param path the path to test
-     * @return true if the path is in a constructor or an initializer block
-     */
-    public static boolean inConstructor(TreePath path) {
-        MethodTree method = enclosingMethod(path);
-        // If method is null, this is an initializer block.
-        return method == null || TreeUtils.isConstructor(method);
-    }
-
-    /**
      * Gets the first (innermost) enclosing tree in path, that is not a parenthesis.
      *
      * @param path the path defining the tree node
@@ -294,8 +290,24 @@ public final class TreePathUtil {
         }
     }
 
+    ///
+    /// Predicates
+    ///
+
     /**
-     * Returns whether or not the leaf of the tree path is in a static scope.
+     * Returns true if the tree is in a constructor or an initializer block.
+     *
+     * @param path the path to test
+     * @return true if the path is in a constructor or an initializer block
+     */
+    public static boolean inConstructor(TreePath path) {
+        MethodTree method = enclosingMethod(path);
+        // If method is null, this is an initializer block.
+        return method == null || TreeUtils.isConstructor(method);
+    }
+
+    /**
+     * Returns true if the leaf of the tree path is in a static scope.
      *
      * @param path TreePath whose leaf may or may not be in static scope
      * @return true if the leaf of the tree path is in a static scope
