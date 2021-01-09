@@ -37,6 +37,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -264,7 +265,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (TreeUtils.getReceiverTree(tree) != null) {
                     clType = (Type) TreeUtils.typeOf(TreeUtils.getReceiverTree(tree));
                 } else { // receiver is null, so it is implicitly "this"
-                    ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
+                    ClassTree classTree = TreePathUtil.enclosingClass(getPath(tree));
                     clType = (Type) TreeUtils.typeOf(classTree);
                 }
                 String className = getClassNameFromType(clType);

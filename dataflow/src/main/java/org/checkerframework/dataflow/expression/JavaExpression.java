@@ -41,6 +41,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 // The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
@@ -467,7 +468,7 @@ public abstract class JavaExpression {
      */
     public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {
-        MethodTree methodTree = TreeUtils.enclosingMethod(path);
+        MethodTree methodTree = TreePathUtil.enclosingMethod(path);
         if (methodTree == null) {
             return null;
         }
@@ -540,7 +541,7 @@ public abstract class JavaExpression {
      *     enclosingType
      */
     public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
-        if (TreeUtils.isTreeInStaticScope(path)) {
+        if (TreePathUtil.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
             return new ThisReference(enclosingType);
