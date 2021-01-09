@@ -308,6 +308,13 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         return false;
     }
 
+    /**
+     * Returns true if the enclosing method is a constructor whose return type is annotated as
+     * {@code @Unique}.
+     *
+     * @returns true if the enclosing method is a constructor whose return type is annotated as
+     *     {@code @Unique}
+     */
     private boolean isInUniqueConstructor() {
         MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
         if (enclosingMethod == null) {

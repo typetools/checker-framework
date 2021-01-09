@@ -108,6 +108,7 @@ public final class TreePathUtil {
     /**
      * Gets the first (innermost) enclosing tree in path, of the specified class.
      *
+     * @param <T> the type of {@code treeClass}
      * @param path the path defining the tree node
      * @param treeClass the class of the desired tree
      * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
@@ -175,12 +176,18 @@ public final class TreePathUtil {
         return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
     }
 
+    /**
+     * Returns the top-level block that encloses the given path, or null if none does.
+     *
+     * @param path a path
+     * @return the top-level block that encloses the given path, or null if none does
+     */
     public static @Nullable BlockTree enclosingTopLevelBlock(TreePath path) {
-        TreePath parpath = path.getParentPath();
-        while (parpath != null
-                && !TreeUtils.classTreeKinds().contains(parpath.getLeaf().getKind())) {
-            path = parpath;
-            parpath = parpath.getParentPath();
+        TreePath parentPath = path.getParentPath();
+        while (parentPath != null
+                && !TreeUtils.classTreeKinds().contains(parentPath.getLeaf().getKind())) {
+            path = parentPath;
+            parentPath = parentPath.getParentPath();
         }
         if (path.getLeaf().getKind() == Tree.Kind.BLOCK) {
             return (BlockTree) path.getLeaf();
@@ -245,6 +252,7 @@ public final class TreePathUtil {
      *
      * <p>Otherwise, null is returned.
      *
+     * @param treePath a path
      * @return the assignment context as described, {@code null} otherwise
      */
     public static @Nullable Tree getAssignmentContext(final TreePath treePath) {

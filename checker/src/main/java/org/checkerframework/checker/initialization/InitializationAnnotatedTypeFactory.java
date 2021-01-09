@@ -475,6 +475,10 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Side-effects argument {@code selfType} to make it @Initialized or @UnderInitialization,
      * depending on whether all fields have been set.
+     *
+     * @param tree a tree
+     * @param selfType the type to side-effect
+     * @param path a path
      */
     protected void setSelfTypeInInitializationCode(
             Tree tree, AnnotatedDeclaredType selfType, TreePath path) {

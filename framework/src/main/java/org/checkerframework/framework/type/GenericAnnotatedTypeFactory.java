@@ -859,6 +859,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param expression a Java expression
      * @param currentPath location at which expression is evaluated
+     * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
