@@ -55,6 +55,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
@@ -81,6 +82,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -193,6 +195,8 @@ public class JavaExpressionParseUtil {
         private final TreePath annotatedConstruct;
         /** The processing environment. */
         private final ProcessingEnvironment env;
+        /** The resolver. Computed from the environment, but lazily initialized. */
+        private @MonotonicNonNull Resolver resolver = null;
         /** The type utilities. */
         private final Types types;
 
@@ -206,6 +210,13 @@ public class JavaExpressionParseUtil {
             this.annotatedConstruct = annotatedConstruct;
             this.env = env;
             this.types = env.getTypeUtils();
+        }
+
+        /** Sets the {@code resolver} field if necessary. */
+        private void setResolverField() {
+            if (resolver == null) {
+                resolver = new Resolver(env);
+            }
         }
 
         /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
@@ -258,11 +269,14 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
-            if (context.receiver != null && !context.receiver.containsUnknown()) {
+            if (context.receiver == null) {
+                return null;
+            }
+            if (!context.receiver.containsUnknown()) {
                 // "this" is the receiver of the context
                 return context.receiver;
             }
-            return new ThisReference(context.receiver == null ? null : context.receiver.getType());
+            return new ThisReference(context.receiver.getType());
         }
 
         @Override
@@ -285,18 +299,20 @@ public class JavaExpressionParseUtil {
         @Override
         public JavaExpression visit(ArrayAccessExpr expr, JavaExpressionContext context) {
             JavaExpression array = expr.getName().accept(this, context);
-            JavaExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
-            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
-
             TypeMirror arrayType = array.getType();
             if (arrayType.getKind() != TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
                         constructParserException(
                                 expr.toString(),
-                                String.format("array not an array: %s : %s", array, arrayType)));
+                                String.format(
+                                        "expected an array, found %s of type %s [%s]",
+                                        array, arrayType, arrayType.getKind())));
             }
-
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
+
+            JavaExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
+            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
+
             return new ArrayAccess(componentType, array, index);
         }
 
@@ -304,7 +320,7 @@ public class JavaExpressionParseUtil {
         @Override
         public JavaExpression visit(NameExpr expr, JavaExpressionContext context) {
             String s = expr.getNameAsString();
-            Resolver resolver = new Resolver(env);
+            setResolverField();
 
             // Formal parameter, using "#2" syntax.
             if (!context.parsingMember && s.startsWith(PARAMETER_REPLACEMENT)) {
@@ -322,7 +338,7 @@ public class JavaExpressionParseUtil {
                 if (varElem != null) {
                     if (varElem.getKind() == ElementKind.FIELD) {
                         boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                        return getFieldJavaExpression(s, context, isOriginalReceiver, varElem);
+                        return getFieldJavaExpression(varElem, context, isOriginalReceiver);
                     } else {
                         return new LocalVariable(varElem);
                     }
@@ -350,8 +366,7 @@ public class JavaExpressionParseUtil {
             }
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
                 FieldAccess fieldAccess =
-                        (FieldAccess)
-                                getFieldJavaExpression(s, context, originalReceiver, fieldElem);
+                        (FieldAccess) getFieldJavaExpression(fieldElem, context, originalReceiver);
                 TypeElement scopeClassElement =
                         TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
                 if (!originalReceiver
@@ -394,7 +409,7 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(MethodCallExpr expr, JavaExpressionContext context) {
-            Resolver resolver = new Resolver(env);
+            setResolverField();
 
             /// TODO: ***** Should only the method name use the changed scope?  I don't see why
             /// arguments should use a different parsing context, and this might be buggy if
@@ -420,44 +435,15 @@ public class JavaExpressionParseUtil {
                 }
             }
 
-            // get types for arguments
-            List<TypeMirror> argumentTypes = new ArrayList<>();
-            for (JavaExpression p : arguments) {
-                argumentTypes.add(p.getType());
-            }
             ExecutableElement methodElement;
             try {
-                Element element = null;
-
-                // try to find the correct method
-                TypeMirror receiverType = context.receiver.getType();
-
-                if (receiverType.getKind() == TypeKind.ARRAY) {
-                    element =
-                            resolver.findMethod(
-                                    methodName, receiverType, annotatedConstruct, argumentTypes);
-                }
-
-                // Search for method in each enclosing class.
-                while (receiverType.getKind() == TypeKind.DECLARED) {
-                    element =
-                            resolver.findMethod(
-                                    methodName, receiverType, annotatedConstruct, argumentTypes);
-                    if (element.getKind() == ElementKind.METHOD) {
-                        break;
-                    }
-                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-                }
-
-                if (element == null) {
-                    throw constructParserException(expr.toString(), "element==null");
-                }
-                if (element.getKind() != ElementKind.METHOD) {
-                    throw constructParserException(
-                            expr.toString(), "element.getKind()==" + element.getKind());
-                }
-
-                methodElement = (ExecutableElement) element;
+                methodElement =
+                        getMethodElement(
+                                methodName,
+                                context.receiver.getType(),
+                                annotatedConstruct,
+                                arguments,
+                                resolver);
 
                 // Box any arguments that require it.
                 for (int i = 0; i < arguments.size(); i++) {
@@ -519,11 +505,61 @@ public class JavaExpressionParseUtil {
             }
         }
 
+        /**
+         * Returns the ExecutableElement for a method, or throws an exception.
+         *
+         * @param methodName the method name
+         * @param receiverType the receiver type
+         * @param path the path
+         * @param arguments the arguments
+         * @param resolver the resolver
+         * @return the ExecutableElement for a method, or throws an exception
+         * @throws JavaExpressionParseException if the string cannot be parsed as a method name
+         */
+        private ExecutableElement getMethodElement(
+                String methodName,
+                TypeMirror receiverType,
+                TreePath path,
+                List<JavaExpression> arguments,
+                Resolver resolver)
+                throws JavaExpressionParseException {
+
+            List<TypeMirror> argumentTypes =
+                    CollectionsPlume.mapList(JavaExpression::getType, arguments);
+
+            Element element = null;
+
+            if (receiverType.getKind() == TypeKind.ARRAY) {
+                element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+            }
+
+            // Search for method in each enclosing class.
+            if (element == null) {
+                while (receiverType.getKind() == TypeKind.DECLARED) {
+                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                    if (element.getKind() == ElementKind.METHOD) {
+                        break;
+                    }
+                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                }
+            }
+
+            if (element == null) {
+                throw constructParserException(methodName, "no such method");
+            }
+            if (element.getKind() != ElementKind.METHOD) {
+                throw constructParserException(
+                        methodName, "not a method, but a " + element.getKind());
+            }
+
+            return (ExecutableElement) element;
+        }
+
         // expr is a field access, a fully qualified class name, or a class name qualified with
         // another class name (e.g. {@code OuterClass.InnerClass})
         @Override
         public JavaExpression visit(FieldAccessExpr expr, JavaExpressionContext context) {
-            Resolver resolver = new Resolver(env);
+            setResolverField();
 
             Symbol.PackageSymbol packageSymbol =
                     resolver.findPackage(expr.getScope().toString(), annotatedConstruct);
@@ -637,17 +673,15 @@ public class JavaExpressionParseUtil {
         /**
          * Returns a JavaExpression for the given field name.
          *
-         * @param s a String representing an identifier (name expression, no dots in it)
+         * @param fieldElem the field
          * @param context the context
          * @param originalReceiver whether the receiver is the original one
-         * @param fieldElem the field
          * @return a JavaExpression for the given name
          */
         private static JavaExpression getFieldJavaExpression(
-                String s,
+                VariableElement fieldElem,
                 JavaExpressionContext context,
-                boolean originalReceiver,
-                VariableElement fieldElem) {
+                boolean originalReceiver) {
             TypeMirror receiverType = context.receiver.getType();
 
             TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -668,13 +702,15 @@ public class JavaExpressionParseUtil {
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructParserException(
-                                s, "a non-static field cannot have a class name as a receiver."));
+                                fieldElem.getSimpleName().toString(),
+                                "a non-static field cannot have a class name as a receiver."));
             }
             return new FieldAccess(locationOfField, fieldType, fieldElem);
         }
 
         /**
-         * Returns a JavaExpression for the given parameter.
+         * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
+         * context.arguments}.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
          * @param context the context
@@ -690,7 +726,7 @@ public class JavaExpressionParseUtil {
             if (idx == 0) {
                 throw new ParseRuntimeException(
                         constructParserException(
-                                s,
+                                "#0",
                                 "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
             if (idx > context.arguments.size()) {
