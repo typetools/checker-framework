@@ -413,10 +413,10 @@ public class JavaExpressionParseUtil {
 
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
-            if (!arguments.isEmpty()) {
-                JavaExpressionContext newContext = context.copyAndUseOuterReceiver();
+            if (!expr.getArguments().isEmpty()) {
+                JavaExpressionContext argContext = context.copyAndUseOuterReceiver();
                 for (Expression argument : expr.getArguments()) {
-                    arguments.add(argument.accept(this, newContext));
+                    arguments.add(argument.accept(this, argContext));
                 }
             }
 
