@@ -1122,6 +1122,8 @@ public class JavaExpressionParseUtil {
      *
      * @param expr the string that could not be parsed
      * @param explanation an explanation of the parse failure
+     * @return a {@link JavaExpressionParseException} for the expression {@code expr} with
+     *     explanation {@code explanation}.
      */
     private static JavaExpressionParseException constructFlowexprParseError(
             String expr, String explanation) {
