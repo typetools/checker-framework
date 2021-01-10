@@ -308,9 +308,6 @@ public class DependentTypesHelper {
 
         TreePath path = factory.getPath(tree);
         Tree enclosingClass = TreePathUtil.enclosingClass(path);
-        if (enclosingClass == null) {
-            return;
-        }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
         JavaExpression r = JavaExpression.getPseudoReceiver(path, enclosingType);
         JavaExpressionContext context =
@@ -489,9 +486,6 @@ public class DependentTypesHelper {
             return;
         }
         Tree enclosingClass = TreePathUtil.enclosingClass(path);
-        if (enclosingClass == null) {
-            return;
-        }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
 
         JavaExpression receiver = JavaExpression.getPseudoReceiver(path, enclosingType);
