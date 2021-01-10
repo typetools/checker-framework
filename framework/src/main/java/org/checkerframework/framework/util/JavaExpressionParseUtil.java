@@ -920,6 +920,8 @@ public class JavaExpressionParseUtil {
          * Returns a {@link JavaExpressionContext} for the class {@code classTree} as seen at the
          * class declaration.
          *
+         * @param classTree a class
+         * @param checkerContext used to build JavaExpression
          * @return a {@link JavaExpressionContext} for the class {@code classTree} as seen at the
          *     class declaration
          */
