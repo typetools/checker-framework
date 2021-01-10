@@ -650,7 +650,7 @@ public class JavaExpressionParseUtil {
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructParserException(
-                                feldElem.getSimpleName(),
+                                fieldElem.getSimpleName(),
                                 "a non-static field cannot have a class name as a receiver."));
             }
             return new FieldAccess(locationOfField, fieldType, fieldElem);
