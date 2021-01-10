@@ -1011,13 +1011,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
         if (dependentTypesHelper != null) {
             AnnotationMirror anno =
-                    dependentTypesHelper.standardizeAnnotation(
+                    dependentTypesHelper.standardizeAnnotationIfDependentType(
                             flowExprContext, path, annoFromContract, false, false);
-            dependentTypesHelper.checkAnnotation(anno, path.getLeaf());
-            return anno;
-        } else {
-            return annoFromContract;
+            if (anno != null) {
+                dependentTypesHelper.checkAnnotation(anno, path.getLeaf());
+                return anno;
+            }
         }
+        return annoFromContract;
     }
 
     /**
