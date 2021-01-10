@@ -7,19 +7,22 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** Default relations between SI units. */
 public class UnitsRelationsDefault implements UnitsRelations {
     /** SI units. */
-    protected AnnotationMirror m, km, mm, m2, km2, mm2, s, h, mPERs, kmPERh, mPERs2;
+    protected AnnotationMirror m, km, mm, m2, km2, mm2, m3, km3, mm3, s, h, mPERs, kmPERh, mPERs2;
     /** The Element Utilities from the Units Checker's processing environment. */
     protected Elements elements;
 
@@ -38,6 +41,10 @@ public class UnitsRelationsDefault implements UnitsRelations {
         m2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, m2.class);
         km2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, km2.class);
         mm2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mm2.class);
+
+        m3 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, m3.class);
+        km3 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, km3.class);
+        mm3 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mm3.class);
 
         s = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, s.class);
         h = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, h.class);
@@ -83,6 +90,12 @@ public class UnitsRelationsDefault implements UnitsRelations {
             } else {
                 return null;
             }
+        } else if (havePairOfUnitsIgnoringOrder(lht, m, rht, m2)) {
+            return m3;
+        } else if (havePairOfUnitsIgnoringOrder(lht, km, rht, km2)) {
+            return km3;
+        } else if (havePairOfUnitsIgnoringOrder(lht, mm, rht, mm2)) {
+            return mm3;
         } else if (havePairOfUnitsIgnoringOrder(lht, s, rht, mPERs)) {
             // s * mPERs or mPERs * s => m
             return m;
@@ -117,6 +130,24 @@ public class UnitsRelationsDefault implements UnitsRelations {
             return km;
         } else if (havePairOfUnits(lht, mm2, rht, mm)) {
             // mm2 / mm => mm
+            return mm;
+        } else if (havePairOfUnits(lht, m3, rht, m)) {
+            // m3 / m => m2
+            return m2;
+        } else if (havePairOfUnits(lht, km3, rht, km)) {
+            // km3 / km => km2
+            return km2;
+        } else if (havePairOfUnits(lht, mm3, rht, mm)) {
+            // mm3 / mm => mm2
+            return mm2;
+        } else if (havePairOfUnits(lht, m3, rht, m2)) {
+            // m3 / m2 => m
+            return m;
+        } else if (havePairOfUnits(lht, km3, rht, km2)) {
+            // km3 / km2 => km
+            return km;
+        } else if (havePairOfUnits(lht, mm3, rht, mm2)) {
+            // mm3 / mm2 => mm
             return mm;
         } else if (havePairOfUnits(lht, m, rht, mPERs)) {
             // m / mPERs => s
