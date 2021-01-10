@@ -80,6 +80,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted Java expression.
@@ -408,40 +409,11 @@ public class JavaExpressionParseUtil {
                 arguments.add(argument.accept(this, context.copyAndUseOuterReceiver()));
             }
 
-            // get types for arguments
-            List<TypeMirror> argumentTypes = new ArrayList<>();
-            for (JavaExpression p : arguments) {
-                argumentTypes.add(p.getType());
-            }
             ExecutableElement methodElement;
             try {
-                Element element = null;
-
-                // try to find the correct method
-                TypeMirror receiverType = context.receiver.getType();
-
-                if (receiverType.getKind() == TypeKind.ARRAY) {
-                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
-                }
-
-                // Search for method in each enclosing class.
-                while (receiverType.getKind() == TypeKind.DECLARED) {
-                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
-                    if (element.getKind() == ElementKind.METHOD) {
-                        break;
-                    }
-                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-                }
-
-                if (element == null) {
-                    throw constructParserException(expr.toString(), "element==null");
-                }
-                if (element.getKind() != ElementKind.METHOD) {
-                    throw constructParserException(
-                            expr.toString(), "element.getKind()==" + element.getKind());
-                }
-
-                methodElement = (ExecutableElement) element;
+                methodElement =
+                        getMethodElement(
+                                methodName, context.receiver.getType(), path, arguments, resolver);
 
                 // Add valueOf around any arguments that require boxing.
                 for (int i = 0; i < arguments.size(); i++) {
@@ -501,6 +473,55 @@ public class JavaExpressionParseUtil {
                                 methodElement, context.receiver.getType(), env);
                 return new MethodCall(methodType, methodElement, context.receiver, arguments);
             }
+        }
+
+        /**
+         * Returns the ExecutableElement for a method, or throws an exception.
+         *
+         * @param methodName the method name
+         * @param receiverType the receiver type
+         * @param path the path
+         * @param arguments the arguments
+         * @param resolver the resolver
+         * @return the ExecutableElement for a method, or throws an exception
+         */
+        private ExecutableElement getMethodElement(
+                String methodName,
+                TypeMirror receiverType,
+                TreePath path,
+                List<JavaExpression> arguments,
+                Resolver resolver)
+                throws JavaExpressionParseException {
+
+            List<TypeMirror> argumentTypes =
+                    CollectionsPlume.mapList(JavaExpression::getType, arguments);
+
+            Element element = null;
+
+            if (receiverType.getKind() == TypeKind.ARRAY) {
+                element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+            }
+
+            // Search for method in each enclosing class.
+            if (element == null) {
+                while (receiverType.getKind() == TypeKind.DECLARED) {
+                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                    if (element.getKind() == ElementKind.METHOD) {
+                        break;
+                    }
+                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                }
+            }
+
+            if (element == null) {
+                throw constructParserException(methodName, "no such method");
+            }
+            if (element.getKind() != ElementKind.METHOD) {
+                throw constructParserException(
+                        methodName, "not a method, but a " + element.getKind());
+            }
+
+            return (ExecutableElement) element;
         }
 
         /**
