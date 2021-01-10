@@ -36,7 +36,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /** A utility class to find symbols corresponding to string references (identifiers). */
 // This class reflectively accesses jdk.compiler/com.sun.tools.javac.comp.
 // This is why --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED is required when
-// running the Checker Framework.  If you re-write this class, remove that --add-opens.
+// running the Checker Framework.  If this class is re-written, then that --add-opens should be
+// removed.
 public class Resolver {
     private final Resolve resolve;
     private final Names names;

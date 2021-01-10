@@ -945,6 +945,8 @@ public class JavaExpressionParseUtil {
          * Returns a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
          * {@link Node} as seen at the constructor use (i.e., at "new" expression).
          *
+         * @param n an object creation node
+         * @param checkerContext the checker context
          * @return a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
          *     {@link Node} as seen at the constructor use (i.e., at "new" expression)
          */
