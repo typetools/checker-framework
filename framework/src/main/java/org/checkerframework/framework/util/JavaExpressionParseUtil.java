@@ -484,7 +484,7 @@ public class JavaExpressionParseUtil {
          * @param arguments the arguments
          * @param resolver the resolver
          * @return the ExecutableElement for a method, or throws an exception
-         * @throw JavaExpressionParseException if the string cannot be parsed as a method name
+         * @throws JavaExpressionParseException if the string cannot be parsed as a method name
          */
         private ExecutableElement getMethodElement(
                 String methodName,
