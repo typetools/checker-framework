@@ -10,14 +10,17 @@ import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.min;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
@@ -48,6 +51,11 @@ public class UnitsTools {
     public static final @mm2 int mm2 = 1;
     public static final @m2 int m2 = 1;
     public static final @km2 int km2 = 1;
+
+    // Volume
+    public static final @mm3 int mm3 = 1;
+    public static final @m3 int m3 = 1;
+    public static final @km3 int km3 = 1;
 
     // Current
     public static final @A int A = 1;
