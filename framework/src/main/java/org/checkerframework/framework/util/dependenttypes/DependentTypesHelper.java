@@ -99,6 +99,15 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Returns true if any qualifier in the type system is a dependent type annotation.
+     *
+     * @return true if any qualifier in the type system is a dependent type annotation
+     */
+    public boolean hasDependentAnnotations() {
+        return !annoToElements.isEmpty();
+    }
+
+    /**
      * Returns a list of the names of elements in the annotation class that should be interpreted as
      * Java expressions, namely those annotated with {@code @}{@link JavaExpression}.
      *
@@ -122,15 +131,9 @@ public class DependentTypesHelper {
         return elements;
     }
 
-    /**
-     * Creates a TreeAnnotator that standardizes dependent type annotations.
-     *
-     * @param factory annotated type factory
-     * @return a new TreeAnnotator that standardizes dependent type annotations
-     */
-    public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
-        return new DependentTypesTreeAnnotator(factory, this);
-    }
+    ///
+    /// Viewpoint adaptation
+    ///
 
     /**
      * Viewpoint-adapts the dependent type annotations on the bounds to the use of the type.
@@ -188,24 +191,23 @@ public class DependentTypesHelper {
             AnnotatedExecutableType methodType,
             List<? extends ExpressionTree> argTrees) {
 
-        Element element = TreeUtils.elementFromUse(tree);
+        Element methodElt = TreeUtils.elementFromUse(tree);
+        // The annotations on `viewpointAdaptedType` will be copied to `methodType`.
         AnnotatedExecutableType viewpointAdaptedType =
-                (AnnotatedExecutableType) factory.getAnnotatedType(element);
+                (AnnotatedExecutableType) factory.getAnnotatedType(methodElt);
         if (!hasDependentType(viewpointAdaptedType)) {
             return;
         }
 
         JavaExpression receiver = JavaExpression.getReceiver(tree, factory);
-
-        List<JavaExpression> argsJe =
-                executableArgTreesToJavaExpressions(tree, methodType, argTrees);
+        List<JavaExpression> argsJe = argumentTreesToJavaExpressions(tree, methodType, argTrees);
 
         TreePath currentPath = factory.getPath(tree);
 
         JavaExpressionContext context =
                 new JavaExpressionContext(receiver, argsJe, factory.getContext());
 
-        // typeForUse cannot be viewpoint adapted directly because it is the type post type variable
+        // methodType cannot be viewpoint adapted directly because it is the type post type variable
         // substitution.  Dependent type annotations on type arguments cannot be
         // viewpoint adapted along with the dependent type annotations that are on the method
         // declaration. For example:
@@ -225,21 +227,22 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Converts arguments from Trees to JavaExpressions, accounting for varargs.
+     * Converts method or constructor arguments from Trees to JavaExpressions, accounting for
+     * varargs.
      *
      * @param tree invocation of the method or constructor
      * @param methodType type of the method or constructor
      * @param argTrees the arguments to the method or constructor; subexpressions of {@code tree}
      * @return the arguments, as JavaExpressions
      */
-    private List<JavaExpression> executableArgTreesToJavaExpressions(
+    private List<JavaExpression> argumentTreesToJavaExpressions(
             ExpressionTree tree,
             AnnotatedExecutableType methodType,
             List<? extends ExpressionTree> argTrees) {
 
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
             ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree) tree);
-            if (isVarArgsMethodInvocation(method, methodType, argTrees)) {
+            if (isVarArgsInvocation(method, methodType, argTrees)) {
                 List<JavaExpression> result = new ArrayList<>();
 
                 for (int i = 0; i < method.getParameters().size() - 1; i++) {
@@ -266,8 +269,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns true if method is a varargs method and its varargs arguments are not passed in an
-     * array.
+     * Returns true if method is a varargs method or constructor and its varargs arguments are not
+     * passed in an array.
      *
      * @param method the method or constructor
      * @param methodType type of the method or constructor; used for determining the type of the
@@ -276,7 +279,7 @@ public class DependentTypesHelper {
      * @return true if method is a varargs method and its varargs arguments are not passed in an
      *     array
      */
-    private boolean isVarArgsMethodInvocation(
+    private boolean isVarArgsInvocation(
             ExecutableElement method,
             AnnotatedExecutableType methodType,
             List<? extends ExpressionTree> args) {
@@ -293,6 +296,19 @@ public class DependentTypesHelper {
                             != AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArg);
         }
         return false;
+    }
+
+    ///
+    /// Standardization
+    ///
+
+    /**
+     * Creates a TreeAnnotator that standardizes dependent type annotations.
+     *
+     * @return a new TreeAnnotator that standardizes dependent type annotations
+     */
+    public TreeAnnotator createDependentTypesTreeAnnotator() {
+        return new DependentTypesTreeAnnotator(factory, this);
     }
 
     /**
@@ -328,7 +344,7 @@ public class DependentTypesHelper {
      * @param atm the method return type
      */
     public final void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
-        standardizeReturnType(m, atm, false);
+        standardizeReturnType(m, atm, /*removeErroneousExpressions=*/ false);
     }
 
     /**
@@ -348,7 +364,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        Element methodElt = TreeUtils.elementFromDeclaration(m);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(m);
         TypeMirror enclosingType = ElementUtils.enclosingClass(methodElt).asType();
 
         JavaExpressionContext context =
@@ -361,7 +377,7 @@ public class DependentTypesHelper {
      * Standardize the Java expressions in annotations in a class declaration.
      *
      * @param node the class declaration
-     * @param type the type of the class declaration
+     * @param type the type of the class declaration; is side-effected by this method
      * @param classElt the element of the class declaration
      */
     public void standardizeClass(ClassTree node, AnnotatedTypeMirror type, Element classElt) {
@@ -414,9 +430,7 @@ public class DependentTypesHelper {
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForLambda(
                                     lambdaTree, path, factory.getContext());
-                    // TODO: test this.
-                    // TODO: use path.getParentPath to prevent a StackOverflowError, see Issue
-                    // #1027.
+                    // Uses paths.getParentPath to prevent a StackOverflowError, see Issue #1027.
                     standardizeUseLocals(parameterContext, path.getParentPath(), type);
                 }
                 break;
@@ -452,11 +466,7 @@ public class DependentTypesHelper {
 
             default:
                 throw new BugInCF(
-                        this.getClass()
-                                + ": unexpected element kind "
-                                + variableElt.getKind()
-                                + ": "
-                                + variableElt);
+                        "unexpected element kind " + variableElt.getKind() + " for " + variableElt);
         }
     }
 
@@ -551,6 +561,7 @@ public class DependentTypesHelper {
         standardizeAtm(context, localScope, type, /*useLocalScope=*/ true);
     }
 
+    // TODO: Eliminate all uses of this.
     /**
      * Standardize a type, setting useLocalScope to false.
      *
@@ -563,6 +574,7 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(context, localScope, type, /*removeErroneousExpressions=*/ false);
     }
 
+    // TODO: Eliminate all uses of this.
     /**
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
@@ -596,11 +608,11 @@ public class DependentTypesHelper {
             boolean useLocalScope,
             boolean removeErroneousExpressions) {
         // localScope is null in dataflow when creating synthetic trees for enhanced for loops.
-        if (localScope != null) {
-            new StandardizeTypeAnnotator(
-                            context, localScope, useLocalScope, removeErroneousExpressions)
-                    .visit(type);
+        if (localScope == null) {
+            return;
         }
+        new StandardizeTypeAnnotator(context, localScope, useLocalScope, removeErroneousExpressions)
+                .visit(type);
     }
 
     protected String standardizeString(
@@ -621,15 +633,6 @@ public class DependentTypesHelper {
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
-    }
-
-    /**
-     * Returns true if any qualifier in the type system is a dependent type annotation.
-     *
-     * @return true if any qualifier in the type system is a dependent type annotation
-     */
-    public boolean hasDependentAnnotations() {
-        return !annoToElements.isEmpty();
     }
 
     /**
