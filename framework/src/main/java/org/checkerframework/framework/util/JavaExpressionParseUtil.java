@@ -254,11 +254,14 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
-            if (context.receiver != null && !context.receiver.containsUnknown()) {
+            if (context.receiver == null) {
+                return null;
+            }
+            if (!context.receiver.containsUnknown()) {
                 // "this" is the receiver of the context
                 return context.receiver;
             }
-            return new ThisReference(context.receiver == null ? null : context.receiver.getType());
+            return new ThisReference(context.receiver.getType());
         }
 
         @Override
