@@ -323,7 +323,7 @@ public class JavaExpressionParseUtil {
                 if (varElem != null) {
                     if (varElem.getKind() == ElementKind.FIELD) {
                         boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                        return getFieldJavaExpression(s, context, isOriginalReceiver, varElem);
+                        return getFieldJavaExpression(varElem, context, isOriginalReceiver);
                     } else {
                         return new LocalVariable(varElem);
                     }
@@ -351,8 +351,7 @@ public class JavaExpressionParseUtil {
             }
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
                 FieldAccess fieldAccess =
-                        (FieldAccess)
-                                getFieldJavaExpression(s, context, originalReceiver, fieldElem);
+                        (FieldAccess) getFieldJavaExpression(fieldElem, context, originalReceiver);
                 TypeElement scopeClassElement =
                         TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
                 if (!originalReceiver
@@ -627,17 +626,15 @@ public class JavaExpressionParseUtil {
         /**
          * Returns a JavaExpression for the given field name.
          *
-         * @param s a String representing an identifier (name expression, no dots in it)
+         * @param fieldElem the field
          * @param context the context
          * @param originalReceiver whether the receiver is the original one
-         * @param fieldElem the field
          * @return a JavaExpression for the given name
          */
         private static JavaExpression getFieldJavaExpression(
-                String s,
+                VariableElement fieldElem,
                 JavaExpressionContext context,
-                boolean originalReceiver,
-                VariableElement fieldElem) {
+                boolean originalReceiver) {
             TypeMirror receiverType = context.receiver.getType();
 
             TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -658,13 +655,15 @@ public class JavaExpressionParseUtil {
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructParserException(
-                                s, "a non-static field cannot have a class name as a receiver."));
+                                fieldElem.getSimpleName().toString(),
+                                "a non-static field cannot have a class name as a receiver."));
             }
             return new FieldAccess(locationOfField, fieldType, fieldElem);
         }
 
         /**
-         * Returns a JavaExpression for the given parameter.
+         * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
+         * context.arguments}.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
          * @param context the context
@@ -680,7 +679,7 @@ public class JavaExpressionParseUtil {
             if (idx == 0) {
                 throw new ParseRuntimeException(
                         constructParserException(
-                                s,
+                                "#0",
                                 "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
             if (idx > context.arguments.size()) {
