@@ -255,11 +255,14 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
-            if (context.receiver != null && !context.receiver.containsUnknown()) {
+            if (context.receiver == null) {
+                return null;
+            }
+            if (!context.receiver.containsUnknown()) {
                 // "this" is the receiver of the context
                 return context.receiver;
             }
-            return new ThisReference(context.receiver == null ? null : context.receiver.getType());
+            return new ThisReference(context.receiver.getType());
         }
 
         @Override
@@ -282,18 +285,20 @@ public class JavaExpressionParseUtil {
         @Override
         public JavaExpression visit(ArrayAccessExpr expr, JavaExpressionContext context) {
             JavaExpression array = expr.getName().accept(this, context);
-            JavaExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
-            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
-
             TypeMirror arrayType = array.getType();
             if (arrayType.getKind() != TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
                         constructParserException(
                                 expr.toString(),
-                                String.format("array not an array: %s : %s", array, arrayType)));
+                                String.format(
+                                        "expected an array, found %s of type %s [%s]",
+                                        array, arrayType, arrayType.getKind())));
             }
-
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
+
+            JavaExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
+            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
+
             return new ArrayAccess(componentType, array, index);
         }
 
