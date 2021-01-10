@@ -129,7 +129,7 @@ public class JavaExpressionParseUtil {
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
         } catch (ParseProblemException e) {
-            throw constructParserException(expression, "is an invalid expression");
+            throw constructFlowexprParseError(expression, "is an invalid expression");
         }
 
         JavaExpression result;
@@ -147,7 +147,7 @@ public class JavaExpressionParseUtil {
                 // At a call site, "#1" may be transformed to "Something.class", so don't throw an
                 // exception in that case.
                 && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
-            throw constructParserException(
+            throw constructFlowexprParseError(
                     expression,
                     String.format(
                             "a class name cannot terminate a Java expression string, where result=%s [%s]",
@@ -213,7 +213,7 @@ public class JavaExpressionParseUtil {
             if (context.parsingMember) {
                 message += " in a context with parsingMember=true";
             }
-            throw new ParseRuntimeException(constructParserException(n.toString(), message));
+            throw new ParseRuntimeException(constructFlowexprParseError(n.toString(), message));
         }
 
         @Override
@@ -268,7 +268,7 @@ public class JavaExpressionParseUtil {
             TypeMirror superclass = TypesUtils.getSuperclass(context.receiver.getType(), types);
             if (superclass == null) {
                 throw new ParseRuntimeException(
-                        constructParserException("super", "super class not found"));
+                        constructFlowexprParseError("super", "super class not found"));
             }
             return new ThisReference(superclass);
         }
@@ -288,7 +288,7 @@ public class JavaExpressionParseUtil {
             TypeMirror arrayType = array.getType();
             if (arrayType.getKind() != TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
-                        constructParserException(
+                        constructFlowexprParseError(
                                 expr.toString(),
                                 String.format("array not an array: %s : %s", array, arrayType)));
             }
@@ -354,7 +354,7 @@ public class JavaExpressionParseUtil {
                         && !ElementUtils.isStatic(fieldElem)
                         && ElementUtils.isStatic(scopeClassElement)) {
                     throw new ParseRuntimeException(
-                            constructParserException(
+                            constructFlowexprParseError(
                                     s,
                                     "a non-static field can't be referenced from a static inner class or enum"));
                 }
@@ -375,7 +375,7 @@ public class JavaExpressionParseUtil {
                 for (int i = 0; i < params.size(); i++) {
                     if (params.get(i).getName().contentEquals(s)) {
                         throw new ParseRuntimeException(
-                                constructParserException(
+                                constructFlowexprParseError(
                                         s,
                                         String.format(
                                                 DependentTypesError.FORMAL_PARAM_NAME_STRING,
@@ -385,7 +385,7 @@ public class JavaExpressionParseUtil {
                 }
             }
 
-            throw new ParseRuntimeException(constructParserException(s, "identifier not found"));
+            throw new ParseRuntimeException(constructFlowexprParseError(s, "identifier not found"));
         }
 
         @Override
@@ -434,10 +434,10 @@ public class JavaExpressionParseUtil {
                 }
 
                 if (element == null) {
-                    throw constructParserException(expr.toString(), "element==null");
+                    throw constructFlowexprParseError(expr.toString(), "element==null");
                 }
                 if (element.getKind() != ElementKind.METHOD) {
-                    throw constructParserException(
+                    throw constructFlowexprParseError(
                             expr.toString(), "element.getKind()==" + element.getKind());
                 }
 
@@ -470,7 +470,7 @@ public class JavaExpressionParseUtil {
                     throw new Error("no detail message in " + t.getClass(), t);
                 }
                 throw new ParseRuntimeException(
-                        constructParserException(expr.toString(), t.getMessage()));
+                        constructFlowexprParseError(expr.toString(), t.getMessage()));
             }
 
             // TODO: reinstate this test, but issue a warning that the user
@@ -492,7 +492,7 @@ public class JavaExpressionParseUtil {
             } else {
                 if (context.receiver instanceof ClassName) {
                     throw new ParseRuntimeException(
-                            constructParserException(
+                            constructFlowexprParseError(
                                     expr.toString(),
                                     "a non-static method call cannot have a class name as a receiver"));
                 }
@@ -520,7 +520,7 @@ public class JavaExpressionParseUtil {
                     return new ClassName(classSymbol.asType());
                 }
                 throw new ParseRuntimeException(
-                        constructParserException(
+                        constructFlowexprParseError(
                                 expr.toString(),
                                 "could not find class "
                                         + expr.getNameAsString()
@@ -542,7 +542,7 @@ public class JavaExpressionParseUtil {
             TypeMirror result = convertTypeToTypeMirror(expr.getType(), context);
             if (result == null) {
                 throw new ParseRuntimeException(
-                        constructParserException(
+                        constructFlowexprParseError(
                                 expr.toString(), "is an unparsable class literal"));
             }
             return new ClassName(result);
@@ -568,7 +568,7 @@ public class JavaExpressionParseUtil {
             TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
             if (arrayType == null) {
                 throw new ParseRuntimeException(
-                        constructParserException(
+                        constructFlowexprParseError(
                                 expr.getElementType().asString(), "type not parsable"));
             }
             for (int i = 0; i < dimensions.size(); i++) {
@@ -652,7 +652,7 @@ public class JavaExpressionParseUtil {
             }
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
-                        constructParserException(
+                        constructFlowexprParseError(
                                 s, "a non-static field cannot have a class name as a receiver."));
             }
             return new FieldAccess(locationOfField, fieldType, fieldElem);
@@ -668,13 +668,14 @@ public class JavaExpressionParseUtil {
         private static JavaExpression getParameterJavaExpression(
                 String s, JavaExpressionContext context) {
             if (context.arguments == null) {
-                throw new ParseRuntimeException(constructParserException(s, "no parameter found"));
+                throw new ParseRuntimeException(
+                        constructFlowexprParseError(s, "no parameter found"));
             }
             int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
 
             if (idx == 0) {
                 throw new ParseRuntimeException(
-                        constructParserException(
+                        constructFlowexprParseError(
                                 s,
                                 "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
@@ -1119,7 +1120,7 @@ public class JavaExpressionParseUtil {
      * Returns a {@link JavaExpressionParseException} for the expression {@code expr} with
      * explanation {@code explanation}.
      */
-    private static JavaExpressionParseException constructParserException(
+    private static JavaExpressionParseException constructFlowexprParseError(
             String expr, String explanation) {
         if (expr == null) {
             throw new Error("Must have an expression.");
