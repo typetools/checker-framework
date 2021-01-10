@@ -322,7 +322,7 @@ public class JavaExpressionParseUtil {
             // Formal parameter, using "#2" syntax.
             if (!context.parsingMember && s.startsWith(PARMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
-                // using the special #NN syntax.
+                // (at the method scope) using the special #NN syntax.
                 return getParameterJavaExpression(s, context);
             }
 
@@ -762,6 +762,7 @@ public class JavaExpressionParseUtil {
         public final BaseContext checkerContext;
         /**
          * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
+         * If so, certain constructs like "#2" and local variables cannot occur.
          */
         public final boolean parsingMember;
         /** Whether the TreePath should be used to find identifiers. Defaults to true. */
