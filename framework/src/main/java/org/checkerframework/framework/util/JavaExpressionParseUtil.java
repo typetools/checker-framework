@@ -307,8 +307,7 @@ public class JavaExpressionParseUtil {
             }
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
 
-            JavaExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
-            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
+            JavaExpression index = expr.getIndex().accept(this, context);
 
             return new ArrayAccess(componentType, array, index);
         }
@@ -420,7 +419,7 @@ public class JavaExpressionParseUtil {
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
             for (Expression argument : expr.getArguments()) {
-                arguments.add(argument.accept(this, context.copyAndUseOuterReceiver()));
+                arguments.add(argument.accept(this, context));
             }
 
             ExecutableElement methodElement;
@@ -539,10 +538,8 @@ public class JavaExpressionParseUtil {
             return (ExecutableElement) element;
         }
 
-        /**
-         * @param expr a field access, a fully qualified class name, or class name qualified with
-         *     another class name (e.g. {@code OuterClass.InnerClass})
-         */
+        // expr is a field access, a fully qualified class name, or a class name qualified with
+        // another class name (e.g. {@code OuterClass.InnerClass})
         @Override
         public JavaExpression visit(FieldAccessExpr expr, JavaExpressionContext context) {
             setResolverField();
@@ -758,7 +755,6 @@ public class JavaExpressionParseUtil {
          */
         public final List<JavaExpression> arguments;
 
-        public final JavaExpression outerReceiver;
         public final BaseContext checkerContext;
         /**
          * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
@@ -782,20 +778,11 @@ public class JavaExpressionParseUtil {
                 JavaExpression receiver,
                 List<JavaExpression> arguments,
                 BaseContext checkerContext) {
-            this(receiver, receiver, arguments, checkerContext);
+            this(receiver, arguments, checkerContext, false, true);
         }
 
         private JavaExpressionContext(
                 JavaExpression receiver,
-                JavaExpression outerReceiver,
-                List<JavaExpression> arguments,
-                BaseContext checkerContext) {
-            this(receiver, outerReceiver, arguments, checkerContext, false, true);
-        }
-
-        private JavaExpressionContext(
-                JavaExpression receiver,
-                JavaExpression outerReceiver,
                 List<JavaExpression> arguments,
                 BaseContext checkerContext,
                 boolean parsingMember,
@@ -803,7 +790,6 @@ public class JavaExpressionParseUtil {
             assert checkerContext != null;
             this.receiver = receiver;
             this.arguments = arguments;
-            this.outerReceiver = outerReceiver;
             this.checkerContext = checkerContext;
             this.parsingMember = parsingMember;
             this.useLocalScope = useLocalScope;
@@ -1001,26 +987,7 @@ public class JavaExpressionParseUtil {
          */
         public JavaExpressionContext copyChangeToParsingMemberOfReceiver(JavaExpression receiver) {
             return new JavaExpressionContext(
-                    receiver,
-                    outerReceiver,
-                    arguments,
-                    checkerContext,
-                    /*parsingMember=*/ true,
-                    useLocalScope);
-        }
-
-        /**
-         * Returns a copy of the context that differs in that it uses the outer receiver as main
-         * receiver (and also retains it as the outer receiver), and parsingMember is set to false.
-         */
-        public JavaExpressionContext copyAndUseOuterReceiver() {
-            return new JavaExpressionContext(
-                    outerReceiver, // NOTE different than in this object
-                    outerReceiver,
-                    arguments,
-                    checkerContext,
-                    /*parsingMember=*/ false,
-                    useLocalScope);
+                    receiver, arguments, checkerContext, /*parsingMember=*/ true, useLocalScope);
         }
 
         /**
@@ -1029,12 +996,7 @@ public class JavaExpressionParseUtil {
          */
         public JavaExpressionContext copyAndSetUseLocalScope(boolean useLocalScope) {
             return new JavaExpressionContext(
-                    receiver,
-                    outerReceiver,
-                    arguments,
-                    checkerContext,
-                    parsingMember,
-                    useLocalScope);
+                    receiver, arguments, checkerContext, parsingMember, useLocalScope);
         }
 
         /**
@@ -1045,13 +1007,12 @@ public class JavaExpressionParseUtil {
         public String toStringDebug() {
             StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
             sj.add("JavaExpressionContext:");
-            sj.add(String.format("receiver=%s%n", receiver.toStringDebug()));
-            sj.add(String.format("arguments=%s%n", arguments));
-            sj.add(String.format("outerReceiver=%s%n", outerReceiver.toStringDebug()));
-            sj.add(String.format("checkerContext=%s%n", "..."));
-            // sj.add(String.format("checkerContext=%s%n", checkerContext));
-            sj.add(String.format("parsingMember=%s%n", parsingMember));
-            sj.add(String.format("useLocalScope=%s", useLocalScope));
+            sj.add("receiver=" + receiver.toStringDebug());
+            sj.add("arguments=" + arguments);
+            sj.add("checkerContext=" + "...");
+            // sj.add("checkerContext="+ checkerContext);
+            sj.add("parsingMember=" + parsingMember);
+            sj.add("useLocalScope=" + useLocalScope);
             return sj.toString();
         }
     }
