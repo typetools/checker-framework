@@ -781,7 +781,7 @@ public class JavaExpressionParseUtil {
          * If so, certain constructs like "#2" and local variables cannot occur.
          */
         public final boolean parsingMember;
-        /** Whether the TreePath should be used to find identifiers. Defaults to true. */
+        /** Whether the TreePath should be used to find identifiers. */
         public final boolean useLocalScope;
 
         /**
@@ -801,6 +801,19 @@ public class JavaExpressionParseUtil {
             this(receiver, arguments, checkerContext, false, true);
         }
 
+        /**
+         * Creates a context for parsing a Java expression.
+         *
+         * @param receiver used to replace "this" in a Java expression and used to resolve
+         *     identifiers in any Java expression with an implicit "this"
+         * @param arguments used to replace parameter references, e.g. #1, in Java expressions, null
+         *     if no arguments
+         * @param checkerContext used to create {@link
+         *     org.checkerframework.dataflow.expression.JavaExpression}s
+         * @param whether or not the FlowExpressionParser is parsing the "member" part of a member
+         *     select
+         * @param useLocalScope whether the TreePath should be used to find identifiers
+         */
         private JavaExpressionContext(
                 JavaExpression receiver,
                 List<JavaExpression> arguments,
@@ -1000,13 +1013,20 @@ public class JavaExpressionParseUtil {
         /**
          * Returns a copy of the context that differs in that it has a different receiver and
          * parsingMember is set to true. The outer receiver remains unchanged.
+         *
+         * @param receiver the receiver for the newly-returned context
+         * @return a copy of the context, with the given receiver
          */
         public JavaExpressionContext copyChangeToParsingMemberOfReceiver(JavaExpression receiver) {
             return new JavaExpressionContext(
                     receiver, arguments, checkerContext, /*parsingMember=*/ true, useLocalScope);
         }
 
-        /** Returns a copy of the context that differs in that parsingMember is set to false. */
+        /**
+         * Returns a copy of the context that differs in that parsingMember is set to false.
+         *
+         * @return a copy of the context, with parsingMember set to false
+         */
         public JavaExpressionContext copyNotParsingMember() {
             if (parsingMember == false) {
                 return this;
@@ -1018,6 +1038,9 @@ public class JavaExpressionParseUtil {
         /**
          * Returns a copy of the context that differs in that useLocalScope is set to the given
          * value.
+         *
+         * @param useLocalScope whether the TreePath should be used to find identifiers
+         * @return a copy of the context, with useLocalScope set to the given value
          */
         public JavaExpressionContext copyAndSetUseLocalScope(boolean useLocalScope) {
             return new JavaExpressionContext(
