@@ -86,10 +86,12 @@ final dataflowShadedPom(publication) {
     publication.artifactId = 'dataflow-shaded'
     publication.pom {
         name = 'Dataflow (shaded)'
-        description = ' dataflow-shaded is a dataflow framework based on the javac compiler. ' +
-                'It differs from the dataflow artifact in two ways.' +
-                'First, The packages in this artifact have been renamed to org.checkerframework.shaded.*.' +
+        description = 'dataflow-shaded is a dataflow framework based on the javac compiler.\n' +
+                '\n' +
+                'It differs from the dataflow artifact in two ways.\n' +
+                'First, The packages in this artifact have been renamed to org.checkerframework.shaded.*.\n' +
                 'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.\n' +
+                '\n' +
                 'Please see artifact: org.checkerframework:dataflow'
         licenses {
             license {

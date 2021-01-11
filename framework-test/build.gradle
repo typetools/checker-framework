@@ -29,7 +29,8 @@ final frameworkTest(publication) {
     // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
     publication.pom {
         name = 'Checker Framework Testing Library'
-        description = 'Framework-Test is a collection of utility classes for testing checkers that use the Checker Framework.'
+        description = 'framework-test contains utility classes for testing type-checkers\n' +
+                'that are built on the Checker Framework.'
         licenses {
             license {
                 name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'

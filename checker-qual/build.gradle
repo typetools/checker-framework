@@ -62,8 +62,11 @@ final checkerQualPom(publication) {
     // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
     publication.pom {
         name = 'Checker Qual'
-        description = 'Checker Qual is the set of annotations (qualifiers) and supporting classes used by' +
-                ' the Checker Framework to type check Java source code. Please see artifact: org.checkerframework:checker'
+        description = 'checker-qual contains annotations (type qualifiers)\n' +
+                'used by the Checker Framework to type-check Java source code.\n' +
+                'It also contains utility classes for programmers to use at run time.\n' +
+                '\n' +
+                'Please see artifact: org.checkerframework:checker'
         licenses {
             license {
                 name = 'The MIT License'

@@ -46,18 +46,17 @@ final checkerQualAndroidPom(publication) {
     publication.from components.java
     publication.pom {
         name = 'Checker Qual Android'
-        description = 'Checker Qual Android is the set of annotations (qualifiers) and supporting classes\n' +
-                'used by the Checker Framework to type check Java source code.\n' +
-                '\n' +
-                'The checker-qual-android artifact is identical to the checker-qual\n' +
-                'artifact, except that in checker-qual-android annotations have classfile\n' +
-                'retention.  The default Android Gradle plugin retains types annotated with\n' +
-                'runtime annotations in the main dex, but strips out class-retention\n' +
-                'annotations.\n' +
-                '\n' +
-                'Please\n' +
-                'see artifact:\n' +
-                'org.checkerframework:checker'
+        description = 'checker-qual-android contains annotations (type qualifiers)\n' +
+                        'used by the Checker Framework to type-check Java source code.\n' +
+                        'It also contains utility classes for programmers to use at run time.\n' +
+                        '\n' +
+                        'The checker-qual-android artifact is identical to the checker-qual\n' +
+                        'artifact, except that in checker-qual-android annotations have classfile\n' +
+                        'retention.  The default Android Gradle plugin retains types annotated with\n' +
+                        'runtime annotations in the main dex, but strips out class-retention\n' +
+                        'annotations.\n' +
+                        '\n' +
+                        'Please see artifact: org.checkerframework:checker'
         licenses {
             license {
                 name = 'The MIT License'
