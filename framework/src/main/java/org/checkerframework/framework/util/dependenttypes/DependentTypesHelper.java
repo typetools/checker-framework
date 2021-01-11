@@ -647,34 +647,17 @@ public class DependentTypesHelper {
 
     /**
      * Standardizes Java expressions in an annotation. If the annotation is not a dependent type
-     * annotation, returns the same annotation unchanged.
+     * annotation, returns null.
      *
      * @param context information about any receiver and arguments
      * @param localScope path to local scope to use
      * @param anno the annotation to be standardized
-     * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
-     * @return the standardized annotation
-     */
-    public AnnotationMirror standardizeAnnotation(
-            JavaExpressionContext context,
-            TreePath localScope,
-            AnnotationMirror anno,
-            boolean useLocalScope,
-            boolean removeErroneousExpressions) {
-        if (!isExpressionAnno(anno)) {
-            return anno;
-        }
-        return standardizeDependentTypeAnnotation(
-                context, localScope, anno, useLocalScope, removeErroneousExpressions);
-    }
-
-    /**
-     * Standardizes an annotation. If it is not a dependent type annotation, returns null.
-     *
+     * @param useLocalScope whether the local scope should be used to resolve identifiers
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
+     * @return the standardized annotation, or null if no standardization is needed
      */
-    private AnnotationMirror standardizeAnnotationIfDependentType(
+    public AnnotationMirror standardizeAnnotationIfDependentType(
             JavaExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
@@ -690,6 +673,7 @@ public class DependentTypesHelper {
     /**
      * Standardizes a dependent type annotation. Returns a new annotation.
      *
+     * @param anno a dependent type annotation
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
      */
