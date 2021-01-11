@@ -273,11 +273,14 @@ TreeAnnotator
     </tr>
     <tr>
       <td>4.</td>
-      <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
-        Create a <code>~/.m2/settings.xml</code> file with the contents specified in
-        <code>/projects/swlab1/checker-framework/hosting-info/release-settings.txt</code>
+      <td><strong>Add your account information to gradle/build.properties in your home directory.</strong><br/>
+        Create a <code>~/.gradle/build.properties</code> file with the following:
+        <pre>
+signing.gnupg.keyName=checker-framework-dev@googlegroups.com
+SONATYPE_NEXUS_USERNAME=your_user_name
+SONATYPE_NEXUS_PASSWORD=your_password</pre>
         using the information you just created for your Sonatype Account on Buffalo or other
-        network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.m2/settings.xml</code>
+        network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.gradle/build.properties</code>
       </td>
     </tr>
     <tr>
@@ -287,8 +290,7 @@ TreeAnnotator
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
         the issue trackers.
-        You should be listed as a member of typetools on <a href="https://bitbucket.org/typetools/profile/members">Bitbucket</a> and a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
-        You should be listed as a member of typetests on <a href="https://bitbucket.org/typetests/profile/members">Bitbucket</a> and a committer on <a href="https://github.com/orgs/typetests/teams/committers">GitHub</a>.
+        You should be listed as a member of typetools on a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
       </td>
     </tr>
     <tr>
@@ -351,7 +353,7 @@ git config --global user.email you@example.com</pre>
         <td>Contains repositories for:
           annotation-tools, checker-framework, plume-bib, plume-scripts, stubparser<br/>
           The repositories in build are clones of repositories in interm.  The repositories
-          in interm are clones of the GitHub/Bitbucket repositories.  This is so that
+          in interm are clones of the GitHub repositories.  This is so that
           we can test and push the release to the interm repositories then check the
           release before we have made any irreversible changes.  Then, when the release
           is validated, all we do is run &quot;git push&quot; or &quot;hg push&quot; on all of the repos in interm.
@@ -420,7 +422,7 @@ git config --global user.email you@example.com</pre>
     <table class="table table-bordered">
       <tr>
         <td>release_build.py</td>
-        <td>Reverts the build/interm repositories to the state of their master repositories in GitHub/Bitbucket.
+        <td>Reverts the build/interm repositories to the state of their master repositories in GitHub.
           It then builds the projects and all their artifacts and then stages a development
           version of all websites to
           <a href="https://checkerframework.org/dev/">https://checkerframework.org/dev/</a>
@@ -542,47 +544,13 @@ git config --global user.email you@example.com</pre>
   <h2 id="backing_out">Backing Out an Uncommitted Release</h2>
   <p>At the time of this writing, there are 2 steps that cannot be reverted.</p>
   <ol>
-    <li>The push from the interm repositories to the GitHub/Bitbucket (release) repositories</li>
-    <li>The release of the staged Maven artifacts</li>
+    <li>The push from the interm repositories to the GitHub (release) repositories</li>
+    <li>The release of the Maven artifacts</li>
   </ol>
   <p> If you have executed either of these steps and then realized there is a breaking error, you should do another
     release.  The release script will allow you to do a point release like &quot;1.8.0.1&quot; when a version
-    &quot;1.8.0&quot; already exists.<br/>
-    <br/>
-    If you have NOT committed an irreversible step then you can
-    follow the steps below to point the live release to a previous release.  You can then redo the original
-    release.  Make sure to say &quot;yes&quot; when the release script asks you to delete the old directories.
+    &quot;1.8.0&quot; already exists.
   </p>
-  <h3 id="backing_out_steps">Manual Steps to Back Out a Release</h3>
-  <ul>
-    <li><strong>Drop the artifacts from Central</strong><br/>
-      You may have staged and then closed the artifacts in the Sonatype Central repository.  Drop (do NOT release)
-      these artifacts.  See
-      <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29">
-        the Sonatype OSS Repository Usage Guidelines.
-      </a>
-    </li>
-    <!-- <li><strong>Drop the Maven Artifacts from our Maven repo *** currently unneeded ***</strong>
-      <p class="alert alert-warning"><strong>Note:</strong> The procedure below is NOT recommended
-        by the Maven developers guide.  However, if done carefully and quickly no harm will likely
-        come.  If people end up with out-of-date artifacts, recommend to them that they use the -U option
-        in Maven 3.  Never follow these instructions if the plugin release has been publicized or
-        existed for a while.
-      </p>
-
-      At the moment, we have decided to drop the user of our local Maven repository in favor of using
-      the Central repository exclusively.  This may not be the case in the future.  If we do have a
-      local repository, you need to go into the repositories directory (usually an m2-repo directory) and
-      manually delete the versions of the Maven artifacts.  For instance, for the artifacts checker and compiler
-      using version 0.9.8, I would delete the directories:
-      <ul>
-        <li>.../m2-repo/org/checkerframework/checker/0.9.8</li>
-        <li>.../m2-repo/org/checkerframework/compiler/0.9.8</li>
-      </ul>
-      Furthermore, I would grep the files in the parents of these directories and ensure the version number
-      does not appear in any metadata.  If so, fix up the metadata.
-    </li> -->
-  </ul>
 
   <p class="alert alert-danger"><strong>Note:</strong> You may find yourself copying release directories for some
     reason or other.  It is important to remember that the symlinks may be absolute.  You should check any

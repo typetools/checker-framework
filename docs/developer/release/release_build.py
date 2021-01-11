@@ -294,13 +294,13 @@ def main(argv):
     # Recall that there are 3 relevant sets of repositories for the release:
     # * build repository - repository where the project is built for release
     # * intermediate repository - repository to which release related changes are pushed after the project is built
-    # * release repository - GitHub/Bitbucket repositories, the central repository.
+    # * release repository - GitHub repositories, the central repository.
 
     # Every time we run release_build, changes are committed to the intermediate repository from build but NOT to
     # the release repositories. If we are running the build script multiple times without actually committing the
     # release then these changes need to be cleaned before we run the release_build script again.
     # The "Clone/update repositories" step updates the repositories with respect to the live repositories on
-    # GitHub/Bitbucket, but it is the "Verify repositories" step that ensures that they are clean,
+    # GitHub, but it is the "Verify repositories" step that ensures that they are clean,
     # i.e. indistinguishable from a freshly cloned repository.
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE

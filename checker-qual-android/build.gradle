@@ -41,6 +41,7 @@ clean {
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
+/** Adds information to the publication for uploading to Maven repositories. */
 final checkerQualAndroidPom(publication) {
     sharedPublicationConfiguration(publication)
     publication.from components.java

@@ -21,10 +21,10 @@ jar.archiveBaseName = 'framework-test'
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
+/** Adds information to the publication for uploading to Maven repositories. */
 final frameworkTest(publication) {
     sharedPublicationConfiguration(publication)
     publication.from components.java
-    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
     publication.pom {
         name = 'Checker Framework Testing Library'
         description = 'framework-test contains utility classes for testing type-checkers\n' +

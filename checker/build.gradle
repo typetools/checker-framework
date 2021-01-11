@@ -621,6 +621,7 @@ task wpiPlumeLibTests(group: "Verification") {
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
+/** Adds information to the publication for uploading to Maven repositories. */
 final checkerPom(publication) {
     sharedPublicationConfiguration(publication)
     // Don't use publication.from components.java which would publish the skinny jar as checker.jar.

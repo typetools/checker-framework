@@ -63,6 +63,7 @@ task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
+/** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
 final dataflowPom(publication) {
     sharedPublicationConfiguration(publication)
     publication.from components.java
@@ -80,6 +81,7 @@ final dataflowPom(publication) {
     }
 }
 
+/** Adds information to the publication for uploading the dataflow-shaded artifacts to Maven repositories. */
 final dataflowShadedPom(publication) {
     sharedPublicationConfiguration(publication)
 

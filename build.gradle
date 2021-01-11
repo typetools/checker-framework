@@ -1027,6 +1027,10 @@ task releaseAndTest {
 // Don't create an empty checker-framework-VERSION.jar
 jar.onlyIf {false}
 
+/**
+ * Adds the shared pom information to the given publication.
+ * @param publication MavenPublication
+ */
 final sharedPublicationConfiguration(publication) {
     publication.pom {
         url = 'https://checkerframework.org'
