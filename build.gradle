@@ -1045,13 +1045,6 @@ final sharedPublicationConfiguration(publication) {
                 organizationUrl = 'https://www.cs.washington.edu/'
             }
             developer {
-                id = 'wmdietl'
-                name = 'Werner M. Dietl'
-                email = 'wdietl@uwaterloo.ca'
-                organization = 'University of Waterloo'
-                organizationUrl = 'http://uwaterloo.ca/'
-            }
-            developer {
                 id = 'smillst'
                 name = 'Suzanne Millstein'
                 email = 'smillst@cs.washington.edu'
