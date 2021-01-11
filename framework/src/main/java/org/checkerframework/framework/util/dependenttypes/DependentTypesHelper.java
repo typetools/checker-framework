@@ -341,9 +341,6 @@ public class DependentTypesHelper {
      */
     public void standardizeReturnType(
             MethodTree m, AnnotatedTypeMirror atm, boolean removeErroneousExpressions) {
-        if (atm.getKind() == TypeKind.NONE) {
-            return;
-        }
         if (!hasDependentType(atm)) {
             return;
         }
