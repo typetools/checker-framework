@@ -73,7 +73,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     }
 
     @Override
-    public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
+    public TreeAnnotator createDependentTypesTreeAnnotator() {
         return new DependentTypesTreeAnnotator(factory, this) {
             @Override
             public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
