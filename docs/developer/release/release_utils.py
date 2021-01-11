@@ -229,16 +229,13 @@ def compare_version_numbers(version1, version2):
     value if version1 > version2."""
     return cmp(version_number_to_array(version1), version_number_to_array(version2))
 
-def increment_version(version_num, single_digits=False):
+def increment_version(version_num):
     """
     Returns the next incremental version after the argument.
-    If single_digits is true, do not permit any part to grow greater than 9.
     """
     # Drop the fourth and subsequent parts if present
     version_array = version_number_to_array(version_num)[:3]
     version_array[-1] = version_array[-1] + 1
-    if single_digits and version_array[-1] > 9:
-        return increment_version(version_array_to_string(version_array[0:-1]), single_digits) + ".0"
     return version_array_to_string(version_array)
 
 def test_increment_version():
@@ -259,15 +256,6 @@ def test_increment_version():
     assert increment_version('1.9.9.1') == '1.9.10'
     assert increment_version('3.6.22.1') == '3.6.23'
     assert increment_version('3.22.6.1') == '3.22.7'
-    assert increment_version('1.0.3', True) == '1.0.4'
-    assert increment_version('1.0.9', True) == '1.1.0'
-    assert increment_version('1.1.9', True) == '1.2.0'
-    assert increment_version('1.3.0', True) == '1.3.1'
-    assert increment_version('1.3.1', True) == '1.3.2'
-    assert increment_version('1.9.9', True) == '2.0.0'
-    assert increment_version('3.6.22', True) == '3.7.0'
-    assert increment_version('3.22.6', True) == '3.22.7'
-
 
 def current_distribution_by_website(site):
     """
