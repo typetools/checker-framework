@@ -336,7 +336,7 @@ def main(argv):
         print "Test Mode: Skipping publishing Maven artifacts."
     else:
         if prompt_yes_no("Publish the Maven artifacts?  This is irreversible.", True):
-            gnupgPassphrase = open("D:\\myfiles\welcome.txt", "r").read("/projects/swlab1/checker-framework/hosting-info/release-private.password")
+            gnupgPassphrase = read_first_line("/projects/swlab1/checker-framework/hosting-info/release-private.password")
             execute('./gradlew publish --no-parallel -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
             print "Maven artifacts released."
 
