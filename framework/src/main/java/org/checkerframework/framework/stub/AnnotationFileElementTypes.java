@@ -341,7 +341,7 @@ public class AnnotationFileElementTypes {
      *
      * @param e an element whose outermost enclosing class to return
      * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if
-     *     no such class exists for {@code e}
+     *     no class encloses {@code e}
      */
     private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(e);
