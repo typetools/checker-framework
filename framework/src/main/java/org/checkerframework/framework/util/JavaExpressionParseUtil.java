@@ -119,7 +119,7 @@ public class JavaExpressionParseUtil {
      *
      * @param expression a Java expression to parse
      * @param context information about any receiver and arguments
-     * @param annotatedConstruct a program element annotated with an annotation that contains {@code
+     * @param localScope a program element annotated with an annotation that contains {@code
      *     expression}
      * @param useLocalScope whether {@code annotatedConstruct} should be used to resolve identifiers
      * @return the JavaExpression for the given string
