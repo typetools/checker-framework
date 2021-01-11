@@ -331,7 +331,7 @@ def main(argv):
     # available to the Java community through the Central repository.
     # For more information on deploying to the Central Repository see:
     # https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
-    print_step("Push Step 8. Release staged artifacts in Central repository.") # MANUAL
+    print_step("Push Step 8. Release staged artifacts in Central repository.") # AUTO
     if test_mode:
         print "Test Mode: Skipping publishing Maven artifacts."
     else:
