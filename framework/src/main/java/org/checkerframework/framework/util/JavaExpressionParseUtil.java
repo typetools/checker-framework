@@ -1036,11 +1036,11 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns a copy of the context that differs in that useLocalScope is set to the given
-         * value.
+         * Returns a copy of the context that differs in that {@code useLocalScope} is set to the
+         * given value.
          *
-         * @param useLocalScope whether the TreePath should be used to find identifiers
-         * @return a copy of the context, with useLocalScope set to the given value
+         * @param useLocalScope whether the local scope should be used to resolve identifiers
+         * @return a copy of the context, with {@code useLocalScope} is set to the given value
          */
         public JavaExpressionContext copyAndSetUseLocalScope(boolean useLocalScope) {
             return new JavaExpressionContext(
