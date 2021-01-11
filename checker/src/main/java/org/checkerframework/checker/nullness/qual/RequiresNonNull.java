@@ -46,7 +46,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *     other.field1 = null;
  *     method1(other);                   // error, does not satisfy other.field1 method precondition
  *   }
-   }
+ * }
  * </pre>
  *
  * Do not use this annotation for formal parameters (instead, give them a {@code @NonNull} type,
