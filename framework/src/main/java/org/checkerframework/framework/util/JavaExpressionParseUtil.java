@@ -310,7 +310,8 @@ public class JavaExpressionParseUtil {
             }
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
 
-            JavaExpression index = expr.getIndex().accept(this, context);
+            JavaExpressionContext contextForIndex = context.copyNotParsingMember();
+            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
 
             return new ArrayAccess(componentType, array, index);
         }
@@ -326,6 +327,11 @@ public class JavaExpressionParseUtil {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // (at the method scope) using the special #NN syntax.
                 return getParameterJavaExpression(s, context);
+            }
+
+            if (s.startsWith(PARAMETER_REPLACEMENT)) {
+                System.out.printf(
+                        "Suspicious name %s%ncontext = %s%n", expr, context.toStringDebug());
             }
 
             // Local variable, parameter, or field.
@@ -427,8 +433,11 @@ public class JavaExpressionParseUtil {
 
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
-            for (Expression argument : expr.getArguments()) {
-                arguments.add(argument.accept(this, context));
+            if (!expr.getArguments().isEmpty()) {
+                JavaExpressionContext argContext = context.copyNotParsingMember();
+                for (Expression argument : expr.getArguments()) {
+                    arguments.add(argument.accept(this, argContext));
+                }
             }
 
             ExecutableElement methodElement;
@@ -770,6 +779,7 @@ public class JavaExpressionParseUtil {
          */
         public final List<JavaExpression> arguments;
 
+        /** The checker context. */
         public final BaseContext checkerContext;
         /**
          * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
@@ -999,6 +1009,15 @@ public class JavaExpressionParseUtil {
         public JavaExpressionContext copyChangeToParsingMemberOfReceiver(JavaExpression receiver) {
             return new JavaExpressionContext(
                     receiver, arguments, checkerContext, /*parsingMember=*/ true, useLocalScope);
+        }
+
+        /** Returns a copy of the context that differs in that parsingMember is set to false. */
+        public JavaExpressionContext copyNotParsingMember() {
+            if (parsingMember == false) {
+                return this;
+            }
+            return new JavaExpressionContext(
+                    receiver, arguments, checkerContext, /*parsingMember=*/ false, useLocalScope);
         }
 
         /**
