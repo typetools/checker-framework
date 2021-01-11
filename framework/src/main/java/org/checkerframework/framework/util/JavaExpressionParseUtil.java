@@ -329,11 +329,6 @@ public class JavaExpressionParseUtil {
                 return getParameterJavaExpression(s, context);
             }
 
-            if (s.startsWith(PARAMETER_REPLACEMENT)) {
-                System.out.printf(
-                        "Suspicious name %s%ncontext = %s%n", expr, context.toStringDebug());
-            }
-
             // Local variable, parameter, or field.
             if (!context.parsingMember && context.useLocalScope) {
                 // Attempt to match a local variable within the scope of the
