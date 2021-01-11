@@ -1010,12 +1010,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             TreePath path) {
         DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
         if (dependentTypesHelper != null) {
-            AnnotationMirror anno =
+            AnnotationMirror standardized =
                     dependentTypesHelper.standardizeAnnotationIfDependentType(
                             flowExprContext, path, annoFromContract, false, false);
-            if (anno != null) {
-                dependentTypesHelper.checkAnnotation(anno, path.getLeaf());
-                return anno;
+            if (standardized != null) {
+                dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
+                return standardized;
             }
         }
         return annoFromContract;
@@ -1656,7 +1656,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that all the given {@code preconditions} hold true immediately prior to the method
      * invocation or variable access at {@code tree}.
      *
-     * @param tree the Tree immediately prior to which the preconditions must hold true
+     * @param tree the method invocation; immediately prior to it, the preconditions must hold true
      * @param preconditions the preconditions to be checked
      */
     protected void checkPreconditions(MethodInvocationTree tree, Set<Precondition> preconditions) {
