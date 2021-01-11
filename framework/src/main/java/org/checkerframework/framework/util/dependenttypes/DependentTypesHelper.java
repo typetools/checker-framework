@@ -140,7 +140,8 @@ public class DependentTypesHelper {
      *
      * @param classDecl class or interface declaration whose type variables should be viewpoint
      *     adapted
-     * @param bounds annotated types of the bounds of the type variables
+     * @param bounds annotated types of the bounds of the type variables; side-effected by this
+     *     method
      * @param pathToUse tree path to the use of the class or interface
      */
     public void viewpointAdaptTypeVariableBounds(
@@ -337,8 +338,8 @@ public class DependentTypesHelper {
     /**
      * Standardizes a method return in a Java expression.
      *
-     * @param m the method to be standardized
-     * @param atm the method return type
+     * @param m a method
+     * @param atm the method return type; is side-effected by this method
      */
     public final void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
         standardizeReturnType(m, atm, /*removeErroneousExpressions=*/ false);
@@ -348,7 +349,7 @@ public class DependentTypesHelper {
      * Standardizes a method return in a Java expression.
      *
      * @param m the method to be standardized
-     * @param atm the method return type
+     * @param atm the method return type; is side-effected by this method
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
      */
@@ -706,10 +707,16 @@ public class DependentTypesHelper {
         return builder.build();
     }
 
+    /** A visitor that standardizes Java expression strings in dependent type annotations. */
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
+        /** The context. */
         private final JavaExpressionContext context;
+        /** The local scope. */
         private final TreePath localScope;
-        /** Whether or not the expression might contain a variable declared in local scope. */
+        /**
+         * Whether or not the expression might contain a variable declared in local scope. Really,
+         * whether to use {@code localScope} to resolve identifiers.
+         */
         private final boolean useLocalScope;
         /**
          * If true, remove erroneous expressions. If false, replace them by an explanation of why

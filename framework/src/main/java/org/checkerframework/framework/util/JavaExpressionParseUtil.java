@@ -119,8 +119,11 @@ public class JavaExpressionParseUtil {
      *
      * @param expression a Java expression to parse
      * @param context information about any receiver and arguments
-     * @param localScope path to local scope to use
-     * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
+     * @param localScope a program element annotated with an annotation that contains {@code
+     *     expression}
+     * @param useLocalScope whether {@code annotatedConstruct} should be used to resolve identifiers
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
      */
     public static JavaExpression parse(
             String expression,
@@ -671,7 +674,7 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns a JavaExpression for the given field name.
+         * Returns a JavaExpression for the given field.
          *
          * @param fieldElem the field
          * @param context the context
@@ -720,7 +723,7 @@ public class JavaExpressionParseUtil {
                 String s, JavaExpressionContext context) {
             if (context.arguments == null) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(s, "no parameter found"));
+                        constructFlowexprParseError(s, "no parameters found"));
             }
             int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
 
@@ -742,8 +745,8 @@ public class JavaExpressionParseUtil {
     /**
      * Returns a list of 1-based indices of all formal parameters that occur in {@code s}. Each
      * formal parameter occurs in s as a string like "#1" or "#4". This routine does not do proper
-     * parsing; for instance, if "#2" appears within a string in s, then 2 would be in the result
-     * list.
+     * parsing; for instance, if "#2" appears within a string in s, then 2 is in the result list.
+     * The result may contain duplicates.
      *
      * @param s a Java expression
      * @return a list of 1-based indices of all formal parameters that occur in {@code s}
@@ -770,7 +773,7 @@ public class JavaExpressionParseUtil {
         public final JavaExpression receiver;
         /**
          * In a context for a method declaration or lambda, the formals. In a context for a method
-         * invocation, the actuals. In other contexts, an empty list.
+         * invocation, the actuals. In other contexts, null.
          */
         public final List<JavaExpression> arguments;
 
@@ -986,12 +989,12 @@ public class JavaExpressionParseUtil {
 
         /**
          * Returns a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
-         * {@link Node} as seen at the constructor use (i.e., at "new" expression).
+         * {@link Node} as seen at the constructor use (i.e., at a "new" expression).
          *
          * @param n an object creation node
          * @param checkerContext the checker context
          * @return a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
-         *     {@link Node} as seen at the constructor use (i.e., at "new" expression)
+         *     {@link Node} as seen at the constructor use (i.e., at a "new" expression)
          */
         public static JavaExpressionContext buildContextForNewClassUse(
                 ObjectCreationNode n, BaseContext checkerContext) {
