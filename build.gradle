@@ -54,9 +54,6 @@ ext {
     // The local git repository, typically in the .git directory, but not for worktrees.
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
-
-    // Location of pom files that are only used to add meta-data to the artifacts published to Maven.
-    pomFiles = "${rootDir}/docs/developer/release/maven-artifacts"
 }
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
 // and with text in #installation
@@ -899,8 +896,7 @@ task checkBasicStyle(group: 'Format') {
                                   'plume-bib',
                                   'bootstrap',
                                   'build',
-                                  'jdk',
-                                  'maven-artifacts']
+                                  'jdk']
 
     String[] ignoreFilePatterns = [
             '*.aux',
