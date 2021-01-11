@@ -858,7 +858,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Produces the JavaExpression associated with expression on currentPath.
      *
      * @param expression a Java expression
-     * @param currentPath location at which expression is evaluated
+     * @param currentPath the path to an annotation containing {@code expression}
      * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
