@@ -810,8 +810,8 @@ public class JavaExpressionParseUtil {
          *     if no arguments
          * @param checkerContext used to create {@link
          *     org.checkerframework.dataflow.expression.JavaExpression}s
-         * @param whether or not the FlowExpressionParser is parsing the "member" part of a member
-         *     select
+         * @param parsingMember whether or not the FlowExpressionParser is parsing the "member" part
+         *     of a member select
          * @param useLocalScope whether the TreePath should be used to find identifiers
          */
         private JavaExpressionContext(
