@@ -149,8 +149,8 @@ public class DependentTypesHelper {
         JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
         JavaExpressionContext context = new JavaExpressionContext(r, null, factory.getContext());
         for (AnnotatedTypeParameterBounds bound : bounds) {
-            standardizeDoNotUseLocals(context, pathToUse, bound.getUpperBound());
-            standardizeDoNotUseLocals(context, pathToUse, bound.getLowerBound());
+            standardizeDoNotUseLocalScope(context, pathToUse, bound.getUpperBound());
+            standardizeDoNotUseLocalScope(context, pathToUse, bound.getLowerBound());
         }
     }
 
@@ -223,7 +223,7 @@ public class DependentTypesHelper {
         // Then copy annotations from the viewpoint adapted type to methodType, if that annotation
         // is not on a type that was substituted for a type variable.
 
-        standardizeDoNotUseLocals(context, currentPath, viewpointAdaptedType);
+        standardizeDoNotUseLocalScope(context, currentPath, viewpointAdaptedType);
         new ViewpointAdaptedCopier().visit(viewpointAdaptedType, methodType);
     }
 
@@ -332,7 +332,7 @@ public class DependentTypesHelper {
                         r,
                         JavaExpression.getParametersOfEnclosingMethod(factory, path),
                         factory.getContext());
-        standardizeUseLocals(context, path, type);
+        standardizeUseLocalScope(context, path, type);
     }
 
     /**
@@ -365,7 +365,7 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         m, enclosingType, factory.getContext());
-        standardizeDoNotUseLocals(context, factory.getPath(m), atm, removeErroneousExpressions);
+        standardizeDoNotUseLocalScope(context, factory.getPath(m), atm, removeErroneousExpressions);
     }
 
     /**
@@ -386,7 +386,7 @@ public class DependentTypesHelper {
         JavaExpression receiverJe = JavaExpression.getImplicitReceiver(classElt);
         JavaExpressionContext classignmentContext =
                 new JavaExpressionContext(receiverJe, null, factory.getContext());
-        standardizeDoNotUseLocals(classignmentContext, path, type);
+        standardizeDoNotUseLocalScope(classignmentContext, path, type);
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
@@ -419,14 +419,14 @@ public class DependentTypesHelper {
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForMethodDeclaration(
                                     methodTree, enclosingType, factory.getContext());
-                    standardizeDoNotUseLocals(parameterContext, path, type);
+                    standardizeDoNotUseLocalScope(parameterContext, path, type);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForLambda(
                                     lambdaTree, path, factory.getContext());
                     // Uses paths.getParentPath to prevent a StackOverflowError, see Issue #1027.
-                    standardizeUseLocals(parameterContext, path.getParentPath(), type);
+                    standardizeUseLocalScope(parameterContext, path.getParentPath(), type);
                 }
                 break;
 
@@ -439,7 +439,7 @@ public class DependentTypesHelper {
                         JavaExpression.getParametersOfEnclosingMethod(factory, path);
                 JavaExpressionContext localContext =
                         new JavaExpressionContext(receiver, params, factory.getContext());
-                standardizeUseLocals(localContext, path, type);
+                standardizeUseLocalScope(localContext, path, type);
                 break;
 
             case FIELD:
@@ -456,7 +456,7 @@ public class DependentTypesHelper {
                 }
                 JavaExpressionContext fieldContext =
                         new JavaExpressionContext(receiverJe, null, factory.getContext());
-                standardizeDoNotUseLocals(fieldContext, path, type);
+                standardizeDoNotUseLocalScope(fieldContext, path, type);
                 break;
 
             default:
@@ -487,7 +487,7 @@ public class DependentTypesHelper {
         JavaExpression receiver = JavaExpression.fromTree(factory, node.getExpression());
         JavaExpressionContext context =
                 new JavaExpressionContext(receiver, null, factory.getContext());
-        standardizeDoNotUseLocals(context, factory.getPath(node), type);
+        standardizeDoNotUseLocalScope(context, factory.getPath(node), type);
     }
 
     public void standardizeExpression(ExpressionTree tree, AnnotatedTypeMirror annotatedType) {
@@ -508,7 +508,7 @@ public class DependentTypesHelper {
                         receiver,
                         JavaExpression.getParametersOfEnclosingMethod(factory, path),
                         factory.getContext());
-        standardizeUseLocals(localContext, path, annotatedType);
+        standardizeUseLocalScope(localContext, path, annotatedType);
     }
 
     public void standardizeVariable(AnnotatedTypeMirror type, Element elt) {
@@ -553,7 +553,7 @@ public class DependentTypesHelper {
      * @param localScope the local scope
      * @param type the type to standardize; is side-effected by this method
      */
-    private void standardizeUseLocals(
+    private void standardizeUseLocalScope(
             JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
         standardizeAtm(context, localScope, type, /*useLocalScope=*/ true);
     }
@@ -566,9 +566,10 @@ public class DependentTypesHelper {
      * @param localScope the local scope
      * @param type the type to standardize; is side-effected by this method
      */
-    private void standardizeDoNotUseLocals(
+    private void standardizeDoNotUseLocalScope(
             JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
-        standardizeDoNotUseLocals(context, localScope, type, /*removeErroneousExpressions=*/ false);
+        standardizeDoNotUseLocalScope(
+                context, localScope, type, /*removeErroneousExpressions=*/ false);
     }
 
     // TODO: Eliminate all uses of this.
@@ -581,7 +582,7 @@ public class DependentTypesHelper {
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
      */
-    private void standardizeDoNotUseLocals(
+    private void standardizeDoNotUseLocalScope(
             JavaExpressionContext context,
             TreePath localScope,
             AnnotatedTypeMirror type,
@@ -916,7 +917,7 @@ public class DependentTypesHelper {
                         node, enclosingType, factory.getContext());
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
-            standardizeDoNotUseLocals(context, factory.getPath(node), atm);
+            standardizeDoNotUseLocalScope(context, factory.getPath(node), atm);
             checkType(atm, node.getTypeParameters().get(i));
         }
     }
