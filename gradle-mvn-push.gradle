@@ -29,9 +29,6 @@ publishing {
 signing {
     //  String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
     //  String passphrase = new File(passwordFile).readLines().get(0);
-    //  -Psigning.keyId=ADF4D638
-    // -Psigning.password=${passphrase}
-    // -Psigning.secretKeyRingFile=/homes/gws/smillst/.gnupg/secring.gpg
 
     // signing.gnupg.keyName
     // signing.gnupg.passphrase
