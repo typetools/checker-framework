@@ -633,10 +633,16 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardizes an annotation. If it is not a dependent type annotation, returns null.
+     * Standardizes Java expressions in an annotation. If the annotation is not a dependent type
+     * annotation, returns null.
      *
+     * @param context information about any receiver and arguments
+     * @param localScope path to local scope to use
+     * @param anno the annotation to be standardized
+     * @param useLocalScope whether the local scope should be used to resolve identifiers
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
+     * @return the standardized annotation, or null if no standardization is needed
      */
     public AnnotationMirror standardizeAnnotationIfDependentType(
             JavaExpressionContext context,
