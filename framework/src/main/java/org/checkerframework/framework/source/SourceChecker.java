@@ -75,6 +75,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
@@ -2003,12 +2004,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // trees.getPath might be slow, but this is only used in error reporting
         @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
 
-        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
+        @Nullable VariableTree var = TreePathUtil.enclosingVariable(path);
         if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
             return true;
         }
 
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
+        @Nullable MethodTree method = TreePathUtil.enclosingMethod(path);
         if (method != null) {
             @Nullable Element elt = TreeUtils.elementFromTree(method);
 
@@ -2024,7 +2025,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
+        @Nullable ClassTree cls = TreePathUtil.enclosingClass(path);
         if (cls != null) {
             @Nullable Element elt = TreeUtils.elementFromTree(cls);
 

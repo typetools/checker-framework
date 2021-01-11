@@ -28,6 +28,7 @@ import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -100,7 +101,7 @@ public class InitializationTransfer<
         // Case 1: After a call to the constructor of the same class, all
         // invariant fields are guaranteed to be initialized.
         if (isConstructor && receiver instanceof ThisNode && methodString.equals("this")) {
-            ClassTree clazz = TreeUtils.enclosingClass(analysis.getTypeFactory().getPath(tree));
+            ClassTree clazz = TreePathUtil.enclosingClass(analysis.getTypeFactory().getPath(tree));
             TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
             markInvariantFieldsAsInitialized(result, clazzElem);
         }
@@ -108,7 +109,7 @@ public class InitializationTransfer<
         // Case 4: After a call to the constructor of the super class, all
         // invariant fields of any super class are guaranteed to be initialized.
         if (isConstructor && receiver instanceof ThisNode && methodString.equals("super")) {
-            ClassTree clazz = TreeUtils.enclosingClass(analysis.getTypeFactory().getPath(tree));
+            ClassTree clazz = TreePathUtil.enclosingClass(analysis.getTypeFactory().getPath(tree));
             TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
             TypeMirror superClass = clazzElem.getSuperclass();
 

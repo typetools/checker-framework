@@ -108,6 +108,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -437,7 +438,7 @@ public abstract class GenericAnnotatedTypeFactory<
         treeAnnotators.add(new PropagationTreeAnnotator(this));
         treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
         if (dependentTypesHelper != null) {
-            treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator(this));
+            treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator());
         }
         return new ListTreeAnnotator(treeAnnotators);
     }
@@ -857,12 +858,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * Produces the JavaExpression associated with expression on currentPath.
      *
      * @param expression a Java expression
-     * @param currentPath location at which expression is evaluated
+     * @param currentPath the path to an annotation containing {@code expression}
+     * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
             throws JavaExpressionParseException {
-        TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingClass = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
 
         JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
         JavaExpressionParseUtil.JavaExpressionContext context =
@@ -1299,7 +1301,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     MethodTree mt =
                             (MethodTree)
-                                    TreeUtils.enclosingOfKind(
+                                    TreePathUtil.enclosingOfKind(
                                             getPath(lambdaPair.first), Kind.METHOD);
                     analyze(
                             queue,

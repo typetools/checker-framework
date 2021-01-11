@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * &nbsp; @Nullable Object field1;
  * &nbsp; @Nullable Object field2;
  *
- * &nbsp; @RequiresNonNull({"field1", "other.field1"})
+ * &nbsp; @RequiresNonNull({"field1", "#1.field1"})
  *   void method1(@NonNull MyClass other) {
  *     field1.toString();           // OK, this.field1 is known to be non-null
  *     field2.toString();           // error, might throw NullPointerException
@@ -36,16 +36,17 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  *     field1 = new Object();
  *     other.field1 = new Object();
- *     method1();                   // OK, satisfies method precondition
+ *     method1(other);                   // OK, satisfies method precondition
  *
  *     field1 = null;
  *     other.field1 = new Object();
- *     method1();                   // error, does not satisfy this.field1 method precondition
+ *     method1(other);                   // error, does not satisfy this.field1 method precondition
  *
  *     field1 = new Object();
  *     other.field1 = null;
- *     method1();                   // error, does not satisfy other.field1 method precondition
+ *     method1(other);                   // error, does not satisfy other.field1 method precondition
  *   }
+ * }
  * </pre>
  *
  * Do not use this annotation for formal parameters (instead, give them a {@code @NonNull} type,

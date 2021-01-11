@@ -37,6 +37,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -253,7 +254,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             System.err.println("methodElt found");
         }
 
-        Tree callerTree = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
+        Tree callerTree = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
         if (callerTree == null) {
             // Static initializer; let's assume this is safe to have the UI effect
             if (debugSpew) {
@@ -512,7 +513,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 ReturnTree returnTree = (ReturnTree) tree;
                 if (returnTree.getExpression().getKind() == Tree.Kind.NEW_CLASS
                         || returnTree.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-                    Tree enclosing = TreeUtils.enclosingMethodOrLambda(path);
+                    Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
                     AnnotatedTypeMirror ret = null;
                     if (enclosing.getKind() == Tree.Kind.METHOD) {
                         MethodTree enclosingMethod = (MethodTree) enclosing;
