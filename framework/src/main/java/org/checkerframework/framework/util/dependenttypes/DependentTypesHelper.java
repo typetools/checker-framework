@@ -470,7 +470,12 @@ public class DependentTypesHelper {
         }
     }
 
-    /** Standardize the Java expressions in annotations in a field access. */
+    /**
+     * Standardize the Java expressions in annotations in a field access.
+     *
+     * @param node a field accoss
+     * @param type its type; is side-effected by this method
+     */
     public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
         if (!hasDependentType(type)) {
             return;
@@ -576,6 +581,11 @@ public class DependentTypesHelper {
 
     // TODO: Eliminate all uses of this.
     /**
+     * Standardize a type, setting useLocalScope to false.
+     *
+     * @param context the context
+     * @param localScope the local scope
+     * @param type the type to standardize; is side-effected by this method
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
      */
@@ -615,6 +625,15 @@ public class DependentTypesHelper {
                 .visit(type);
     }
 
+    /**
+     * Standardizes a Java expression.
+     *
+     * @param expression a Java expression
+     * @param context the context
+     * @param localScope the local scope
+     * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
+     * @return the standardized version of the Java expression
+     */
     protected String standardizeString(
             String expression,
             JavaExpressionContext context,
