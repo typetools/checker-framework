@@ -18,20 +18,10 @@ publishing {
                 password = project.properties.get('SONATYPE_NEXUS_PASSWORD')
             }
         }
-
-        maven {
-            name = 'fakeRemote'
-            url = "file://$rootProject.buildDir/maven-fake-remote-repository"
-        }
     }
 }
 
 signing {
-    //  String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
-    //  String passphrase = new File(passwordFile).readLines().get(0);
-
-    // signing.gnupg.keyName
-    // signing.gnupg.passphrase
 
     // Use external gpg cmd.  This makes it easy to use gpg-agent,
     // to avoid being prompted for a password once per artifact.

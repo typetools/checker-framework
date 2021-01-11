@@ -78,6 +78,16 @@ def ensure_group_access_to_releases():
     ensure_group_access(AFU_LIVE_RELEASES_DIR)
     ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
 
+def stage_maven_artifacts_in_maven_central(new_checker_version):
+    """Stages the Checker Framework artifacts on Maven Central. After the
+    artifacts are staged, the user can then close them, which makes them
+    available for testing purposes but does not yet release them on Maven
+    Central. This is a reversible step, since artifacts that have not been
+    released can be dropped, which for our purposes is equivalent to never
+    having staged them."""
+    gnupgPassphrase = read_first_line("/projects/swlab1/checker-framework/hosting-info/release-private.password")
+    execute('./gradlew publish --no-parallel -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
+
 def is_file_empty(filename):
     "Returns true if the given file has size 0."
     return os.path.getsize(filename) == 0
@@ -261,12 +271,54 @@ def main(argv):
         if prompt_yes_no("Run Maven sanity test on development repo?", True):
             maven_sanity_check("maven-dev", "", new_checker_version)
 
+    # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
+    # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
+    # Central Repository.
+
+    # Once staging is complete, there are manual steps to log into Sonatypes Central and "close" the
+    # staging repository. Closing allows us to test the artifacts.
+
+    # This step deploys the artifacts to the Central repository and prompts the user to close the
+    # artifacts. Later, you will be prompted to release the staged artifacts after we push the
+    # release to our GitHub repositories.
+
+    # For more information on deploying to the Central Repository see:
+    # https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
+
+    print_step("Push Step 4: Stage Maven artifacts in Central") # SEMIAUTO
+
+    print_step("4a: Stage the artifacts at Maven central.")
+    if (not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
+        stage_maven_artifacts_in_maven_central(new_checker_version)
+
+        print_step("4b: Close staged artifacts at Maven central.")
+        continue_or_exit(
+            "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
+            " * Browse to https://oss.sonatype.org/#stagingRepositories\n" +
+            " * Log in using your Sonatype credentials\n" +
+            " * In the search box at upper right, type \"checker\"\n" +
+            " * In the top pane, click on orgcheckerframework-XXXX\n" +
+            " * Click \"close\" at the top\n" +
+            " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
+            " * Click the Refresh button near the top of the page until the bottom pane has:\n" +
+            "   \"Activity   Last operation completed successfully\".\n" +
+            " * Copy the URL of the closed artifacts (in the bottom pane) for use in the next step\n"
+            "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
+        )
+
+
+        print_step("4c: Run Maven sanity test on Maven central artifacts.")
+        if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
+            repo_url = raw_input("Please enter the repo URL of the closed artifacts:\n")
+
+            maven_sanity_check("maven-staging", repo_url, new_checker_version)
+
     # This step copies the development release directories to the live release directories.
     # It then adds the appropriate permissions to the release. Symlinks need to be updated to point
     # to the live website rather than the development website. A straight copy of the directory
     # will NOT update the symlinks.
 
-    print_step("Push Step 4. Copy dev current release website to live website") # SEMIAUTO
+    print_step("Push Step 5. Copy dev current release website to live website") # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Copy release to the live website?"):
             print "Copying to live site"
@@ -280,7 +332,7 @@ def main(argv):
     # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
-    print_step("Push Step 5: Run javac sanity tests on the live release.") # SEMIAUTO
+    print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
@@ -300,10 +352,10 @@ def main(argv):
     # The set of broken links that is displayed by this check will differ from those in push
     # step 2 because the Checker Framework manual and website uses a mix of absolute and
     # relative links. Therefore, some links from the development site actually point to the
-    # live site (the previous release). After step 4, these links point to the current
+    # live site (the previous release). After step 5, these links point to the current
     # release and may be broken.
 
-    print_step("Push Step 6. Check live site links") # SEMIAUTO
+    print_step("Push Step 7. Check live site links") # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Run link checker on LIVE site?", True):
             check_all_links(live_afu_website, live_checker_website, "live", test_mode)
@@ -314,7 +366,7 @@ def main(argv):
     # repositories. This is the first irreversible change. After this point, you can no longer
     # backout changes and should do another release in case of critical errors.
 
-    print_step("Push Step 7. Push changes to repositories") # SEMIAUTO
+    print_step("Push Step 8. Push changes to repositories") # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
         if prompt_yes_no("Push the release to GitHub repositories?  This is irreversible.", True):
@@ -323,22 +375,27 @@ def main(argv):
     else:
         print  "Test mode: Skipping push to GitHub!"
 
+    # This is a manual step that releases the staged Maven artifacts to the actual Central repository.
+    # This is also an irreversible step. Once you have released these artifacts they will be forever
+    # available to the Java community through the Central repository. Follow the prompts. The Maven
+    # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
-    # This step stages releases the Checker Framework's Maven artifacts in the Sonatypes
-    # Central Repository.
-    # This is an irreversible step. Once you have released these artifacts they will be forever
-    # available to the Java community through the Central repository.
-    # For more information on deploying to the Central Repository see:
-    # https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
-    print_step("Push Step 8. Release staged artifacts in Central repository.") # AUTO
+    print_step("Push Step 9. Release staged artifacts in Central repository.") # MANUAL
     if test_mode:
-        print "Test Mode: Skipping publishing Maven artifacts."
+        msg = ("Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "   +
+               "To drop, log into https://oss.sonatype.org using your " +
+               "Sonatype credentials and follow the 'DROP' instructions at: " + SONATYPE_DROPPING_DIRECTIONS_URL)
     else:
-        if prompt_yes_no("Publish the Maven artifacts?  This is irreversible.", True):
-            gnupgPassphrase = read_first_line("/projects/swlab1/checker-framework/hosting-info/release-private.password")
-            execute('./gradlew publish --no-parallel -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
-            print "Maven artifacts released."
+        msg = ("Please 'release' the artifacts.\n" +
+               "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
+               "locate the orgcheckerframework repository and click on it.\n" +
+               "If you have a permissions problem, try logging out and back in.\n" +
+               "Finally, click on the Release button at the top of the page. In the dialog box that pops up, " +
+               "leave the \"Automatically drop\" box checked. For the description, write " +
+               "Checker Framework release " + new_checker_version + "\n\n")
+
+    print  msg
+    prompt_to_continue()
 
     if test_mode:
         print "Test complete"
@@ -346,7 +403,7 @@ def main(argv):
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
-        print_step("Push Step 9. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
+        print_step("Push Step 10. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
                "* Download the following files to your local machine." +
@@ -372,15 +429,15 @@ def main(argv):
 
         print  msg
 
-        print_step("Push Step 10. Announce the release.") # MANUAL
+        print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
                          get_announcement_email(new_checker_version))
 
-        print_step("Push Step 11. Update the Checker Framework Gradle plugin.") # MANUAL
+        print_step("Push Step 12. Update the Checker Framework Gradle plugin.") # MANUAL
         continue_or_exit("Please update the Checker Framework Gradle plugin:\n"+
                          "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n")
 
-        print_step("Push Step 12. Prep for next Checker Framework release.") # MANUAL
+        print_step("Push Step 13. Prep for next Checker Framework release.") # MANUAL
         continue_or_exit("Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n")
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
