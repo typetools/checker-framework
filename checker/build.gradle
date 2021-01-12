@@ -607,6 +607,7 @@ task wpiManyTests(group: "Verification") {
 // This is run as part of the nonJunitTests task.
 task wpiPlumeLibTests(group: "Verification") {
     description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+    dependsOn(copyJarsToDist)
 
     // This test must always be re-run when requested.
     outputs.upToDateWhen { false }
