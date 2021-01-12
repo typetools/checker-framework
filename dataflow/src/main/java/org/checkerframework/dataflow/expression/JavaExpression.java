@@ -368,8 +368,8 @@ public abstract class JavaExpression {
                     } else {
                         methodReceiver = getReceiver(mn, provider);
                     }
-                    TypeMirror type = TreeUtils.typeOf(mn);
-                    result = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                    TypeMirror resultType = TreeUtils.typeOf(mn);
+                    result = new MethodCall(resultType, invokedMethod, methodReceiver, parameters);
                 } else {
                     result = null;
                 }
