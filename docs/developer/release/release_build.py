@@ -23,10 +23,10 @@ notest = False
 
 def print_usage():
     """Print usage information."""
-    print "Usage:    python3 release_build.py [projects] [options]"
+    print("Usage:    python3 release_build.py [projects] [options]")
     print_projects(1, 4)
-    print "\n  --debug  turns on debugging mode which produces verbose output"
-    print "\n  --notest  disables tests to speed up scripts; for debugging only"
+    print("\n  --debug  turns on debugging mode which produces verbose output")
+    print("\n  --notest  disables tests to speed up scripts; for debugging only")
 
 def clone_or_update_repos():
     """Clone the relevant repos from scratch or update them if they exist and
@@ -55,7 +55,7 @@ The following repositories will be cloned or updated from their origins:
     if not prompt_yes_no(message, True):
         clone_from_scratch = False
         if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
-            print "WARNING: Continuing without refreshing repositories.\n"
+            print("WARNING: Continuing without refreshing repositories.\n")
             return
 
     for live_to_interm in LIVE_TO_INTERM_REPOS:
@@ -85,16 +85,16 @@ def get_afu_date(building_afu):
 def get_new_version(project_name, curr_version):
     "Queries the user for the new version number; returns old and new version numbers."
 
-    print "Current " + project_name + " version: " + curr_version
+    print("Current " + project_name + " version: " + curr_version)
     suggested_version = increment_version(curr_version)
 
     new_version = prompt_w_default("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
 
-    print "New version: " + new_version
+    print("New version: " + new_version)
 
     if curr_version == new_version:
         curr_version = prompt_w_default("Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
-        print "Current version: " + curr_version
+        print("Current version: " + curr_version)
 
     return (curr_version, new_version)
 
@@ -140,7 +140,7 @@ def update_project_dev_website(project_name, release_version):
         project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
     dev_website_relative_dir = os.path.join(project_dev_site, "releases", release_version)
 
-    print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
+    print("Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site)
     copy_tree(dev_website_relative_dir, project_dev_site)
 
 def get_current_date():
@@ -187,7 +187,7 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # Check that updating versions didn't overlook anything.
-    print "Here are occurrences of the old version number, " + old_cf_version
+    print("Here are occurrences of the old version number, " + old_cf_version)
     grep_cmd = 'grep -r --exclude-dir=build --exclude-dir=.git -F %s' % old_cf_version
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
@@ -285,9 +285,9 @@ def main(argv):
 
     # For each project, build what is necessary but don't push
 
-    print "Building a new release of Annotation Tools and the Checker Framework!"
+    print("Building a new release of Annotation Tools and the Checker Framework!")
 
-    print "\nPATH:\n" + os.environ['PATH'] + "\n"
+    print("\nPATH:\n" + os.environ['PATH'] + "\n")
 
     print_step("Build Step 1: Clone the build and intermediate repositories.") # MANUAL
 
@@ -331,12 +331,12 @@ def main(argv):
 
     old_cf_version = current_distribution_by_website(HTTP_PATH_TO_LIVE_SITE)
     cf_version = CF_VERSION
-    print "Version: " + cf_version + "\n"
+    print("Version: " + cf_version + "\n")
 
     if old_cf_version == cf_version:
-        print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
+        print(("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
               "even if no changes were made to these in a month. This would break so much " +
-              "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n")
+              "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n"))
         prompt_to_continue()
 
     AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
@@ -344,7 +344,7 @@ def main(argv):
     (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version)
 
     if old_afu_version == afu_version:
-        print("The AFU version has not changed. It is recommended to include a small bug fix or doc update in every " +
+        print(("The AFU version has not changed. It is recommended to include a small bug fix or doc update in every " +
               "AFU release so the version number can be updated, but when that is not possible, before and after running " +
               "release_build, you must:\n" +
               "-Ensure that you are subscribed to the AFU push notifications mailing list.\n" +
@@ -352,7 +352,7 @@ def main(argv):
               "-Grep all the AFU pages on the dev web site for the release date with patterns such as \"29.*Aug\" " +
               "and \"Aug.*29\" and fix them to match the previous release date.\n" +
               "Keep in mind that in this case, the release scripts will fail in certain places and you must manually " +
-              "follow a few remaining release steps.\n")
+              "follow a few remaining release steps.\n"))
         prompt_to_continue()
 
     ## I don't think this should be necessary in general.  It's just to put files in place so link checking will work, and it takes a loooong time to run.
@@ -379,7 +379,7 @@ def main(argv):
     # might want to get a cup of coffee and do something else until it is done.
 
     print_step("Build Step 5: Build projects and websites.") # AUTO
-    print projects_to_release
+    print(projects_to_release)
 
     if projects_to_release[AFU_OPT]:
         print_step("5a: Build Annotation File Utilities.")
