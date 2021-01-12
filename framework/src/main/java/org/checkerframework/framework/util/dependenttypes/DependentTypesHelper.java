@@ -362,11 +362,11 @@ public class DependentTypesHelper {
      * come from the method declaration or from the type of the expression in a {@code return}
      * statement.
      *
-     * @param methodDecl a method declaration
+     * @param methodDeclTree a method declaration
      * @param atm the method return type; is side-effected by this method
      */
-    public final void standardizeReturnType(MethodTree methodDecl, AnnotatedTypeMirror atm) {
-        standardizeReturnType(methodDecl, atm, /*removeErroneousExpressions=*/ false);
+    public final void standardizeReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+        standardizeReturnType(methodDeclTree, atm, /*removeErroneousExpressions=*/ false);
     }
 
     /**
@@ -374,24 +374,26 @@ public class DependentTypesHelper {
      * come from the method declaration or from the type of the expression in a {@code return}
      * statement.
      *
-     * @param methodDecl a method declaration
+     * @param methodDeclTree a method declaration
      * @param atm the method return type; is side-effected by this method
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
      */
     public void standardizeReturnType(
-            MethodTree methodDecl, AnnotatedTypeMirror atm, boolean removeErroneousExpressions) {
+            MethodTree methodDeclTree,
+            AnnotatedTypeMirror atm,
+            boolean removeErroneousExpressions) {
         if (!hasDependentType(atm)) {
             return;
         }
 
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDecl);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
         TypeMirror enclosingType = ElementUtils.enclosingClass(methodElt).asType();
 
-        TreePath pathToMethodDecl = factory.getPath(methodDecl);
+        TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodDecl, enclosingType, factory.getContext());
+                        methodDeclTree, enclosingType, factory.getContext());
         standardizeDoNotUseLocalScope(context, pathToMethodDecl, atm, removeErroneousExpressions);
     }
 
@@ -420,11 +422,11 @@ public class DependentTypesHelper {
                 Tree enclTree = TreePathUtil.enclosingOfKind(path, METHOD_OR_LAMBDA);
 
                 if (enclTree.getKind() == Kind.METHOD) {
-                    MethodTree methodDecl = (MethodTree) enclTree;
+                    MethodTree methodDeclTree = (MethodTree) enclTree;
                     TypeMirror enclosingType = ElementUtils.enclosingClass(variableElt).asType();
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForMethodDeclaration(
-                                    methodDecl, enclosingType, factory.getContext());
+                                    methodDeclTree, enclosingType, factory.getContext());
                     standardizeDoNotUseLocalScope(parameterContext, path, type);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
@@ -903,19 +905,21 @@ public class DependentTypesHelper {
      * expression string is an error string as specified by DependentTypesError#isExpressionError.
      * If the annotated type has any errors, a flowexpr.parse.error is issued.
      *
-     * @param methodDecl method to check
+     * @param methodDeclTree method to check
      * @param type annotated type of the method
      */
-    public void checkMethod(MethodTree methodDecl, AnnotatedExecutableType type) {
+    public void checkMethod(MethodTree methodDeclTree, AnnotatedExecutableType type) {
         // Parameters and receivers are checked by visitVariable
         // So only type parameters and return type need to be checked here.
-        checkTypeVariables(methodDecl, type);
+        checkTypeVariables(methodDeclTree, type);
 
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
-            AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodDecl);
+            AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodDeclTree);
             Tree treeForError =
-                    TreeUtils.isConstructor(methodDecl) ? methodDecl : methodDecl.getReturnType();
+                    TreeUtils.isConstructor(methodDeclTree)
+                            ? methodDeclTree
+                            : methodDeclTree.getReturnType();
             checkType(returnType, treeForError);
         }
     }
