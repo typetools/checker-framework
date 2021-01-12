@@ -770,6 +770,7 @@ public class JavaExpressionParseUtil {
      * {@code @A(E)}, the context is the program element that is annotated by {@code @A(E)}.
      */
     public static class JavaExpressionContext {
+        /** The value of {@code this} in this context. */
         public final JavaExpression receiver;
         /**
          * In a context for a method declaration or lambda, the formals. In a context for a method

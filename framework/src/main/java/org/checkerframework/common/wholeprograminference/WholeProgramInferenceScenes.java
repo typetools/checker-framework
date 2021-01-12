@@ -606,19 +606,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the return type of the method methodTree in the Scene of the class with symbol
+     * Updates the return type of the method methodDecl in the Scene of the class with symbol
      * classSymbol. Also updates the return types of methods that this method overrides, if they are
      * available as source.
      *
-     * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
+     * <p>If the Scene does not contain an annotated return type for the method methodDecl, then the
      * type of the value passed to the return expression will be added to the return type of that
      * method in the Scene. If the Scene previously contained an annotated return type for the
-     * method methodTree, its new type will be the LUB between the previous type and the type of the
+     * method methodDecl, its new type will be the LUB between the previous type and the type of the
      * value passed to the return expression.
      *
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
-     * @param methodTree the tree of the method whose return type may be updated
+     * @param methodDecl the declaration of the method whose return type may be updated
      * @param overriddenMethods the methods that the given method return overrides, each indexed by
      *     the annotated type of the class that defines it
      */
@@ -626,12 +626,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
-            MethodTree methodTree,
+            MethodTree methodDecl,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
         // Don't infer types for code that isn't presented as source.
-        if (methodTree == null
+        if (methodDecl == null
                 || !ElementUtils.isElementFromSourceCode(
-                        TreeUtils.elementFromDeclaration(methodTree))) {
+                        TreeUtils.elementFromDeclaration(methodDecl))) {
             return;
         }
 
@@ -641,10 +641,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDecl);
         String file = getFileForElement(methodElt);
 
-        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodTree).getReturnType();
+        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodDecl).getReturnType();
 
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
@@ -654,7 +654,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
         if (dependentTypesHelper != null) {
             dependentTypesHelper.standardizeReturnType(
-                    methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
+                    methodDecl, rhsATM, /*removeErroneousExpressions=*/ true);
         }
         ATypeElement returnTypeAnnos = getReturnType(methodElt, lhsATM, atypeFactory);
         updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
