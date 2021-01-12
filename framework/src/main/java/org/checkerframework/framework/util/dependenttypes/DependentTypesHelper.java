@@ -64,7 +64,8 @@ import org.plumelib.util.StringsPlume;
  *   <li>Standardizes/canonicalizes the expressions in the annotations such that two expression
  *       strings that are equivalent are made to be equal. For example, an instance field f may
  *       appear in an expression string as "f" or "this.f"; this class standardizes both strings to
- *       "this.f".
+ *       "this.f". It also standardizes formal parameter references such as "#2" to the formal
+ *       parameter name.
  *   <li>Viewpoint-adapts annotations on field or method declarations at field accesses or method
  *       invocations.
  *   <li>Changes invalid expression strings to an error string that includes the reason why the
@@ -313,10 +314,10 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardizes new class declarations in Java expressions.
+     * Standardizes the Java expressions in annotations on a constructor invocation.
      *
-     * @param tree the new class declaration
-     * @param type the type representing the class
+     * @param tree the constructor invocation
+     * @param type the type of the expression; is side-effected by this method
      */
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
         if (!hasDependentType(type)) {
@@ -333,39 +334,6 @@ public class DependentTypesHelper {
                         JavaExpression.getParametersOfEnclosingMethod(factory, path),
                         factory.getContext());
         standardizeUseLocalScope(context, path, type);
-    }
-
-    /**
-     * Standardizes a method return in a Java expression.
-     *
-     * @param m a method
-     * @param atm the method return type; is side-effected by this method
-     */
-    public final void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
-        standardizeReturnType(m, atm, /*removeErroneousExpressions=*/ false);
-    }
-
-    /**
-     * Standardizes a method return in a Java expression.
-     *
-     * @param m the method to be standardized
-     * @param atm the method return type; is side-effected by this method
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
-     */
-    public void standardizeReturnType(
-            MethodTree m, AnnotatedTypeMirror atm, boolean removeErroneousExpressions) {
-        if (!hasDependentType(atm)) {
-            return;
-        }
-
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(m);
-        TypeMirror enclosingType = ElementUtils.enclosingClass(methodElt).asType();
-
-        JavaExpressionContext context =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        m, enclosingType, factory.getContext());
-        standardizeDoNotUseLocalScope(context, factory.getPath(m), atm, removeErroneousExpressions);
     }
 
     /**
@@ -387,6 +355,46 @@ public class DependentTypesHelper {
         JavaExpressionContext classignmentContext =
                 new JavaExpressionContext(receiverJe, null, factory.getContext());
         standardizeDoNotUseLocalScope(classignmentContext, path, type);
+    }
+
+    /**
+     * Standardizes the Java expressions in annotations for a method return type. {@code atm} might
+     * come from the method declaration or from the type of the expression in a {@code return}
+     * statement.
+     *
+     * @param methodDeclTree a method declaration
+     * @param atm the method return type; is side-effected by this method
+     */
+    public final void standardizeReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+        standardizeReturnType(methodDeclTree, atm, /*removeErroneousExpressions=*/ false);
+    }
+
+    /**
+     * Standardizes the Java expressions in annotations for a method return type. {@code atm} might
+     * come from the method declaration or from the type of the expression in a {@code return}
+     * statement.
+     *
+     * @param methodDeclTree a method declaration
+     * @param atm the method return type; is side-effected by this method
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
+    public void standardizeReturnType(
+            MethodTree methodDeclTree,
+            AnnotatedTypeMirror atm,
+            boolean removeErroneousExpressions) {
+        if (!hasDependentType(atm)) {
+            return;
+        }
+
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
+        TypeMirror enclosingType = ElementUtils.enclosingClass(methodElt).asType();
+
+        TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
+        JavaExpressionContext context =
+                JavaExpressionContext.buildContextForMethodDeclaration(
+                        methodDeclTree, enclosingType, factory.getContext());
+        standardizeDoNotUseLocalScope(context, pathToMethodDecl, atm, removeErroneousExpressions);
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
@@ -414,11 +422,11 @@ public class DependentTypesHelper {
                 Tree enclTree = TreePathUtil.enclosingOfKind(path, METHOD_OR_LAMBDA);
 
                 if (enclTree.getKind() == Kind.METHOD) {
-                    MethodTree methodTree = (MethodTree) enclTree;
+                    MethodTree methodDeclTree = (MethodTree) enclTree;
                     TypeMirror enclosingType = ElementUtils.enclosingClass(variableElt).asType();
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForMethodDeclaration(
-                                    methodTree, enclosingType, factory.getContext());
+                                    methodDeclTree, enclosingType, factory.getContext());
                     standardizeDoNotUseLocalScope(parameterContext, path, type);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
@@ -468,7 +476,7 @@ public class DependentTypesHelper {
     /**
      * Standardize the Java expressions in annotations in a field access.
      *
-     * @param node a field accoss
+     * @param node a field access
      * @param type its type; is side-effected by this method
      */
     public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
@@ -490,6 +498,12 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocalScope(context, factory.getPath(node), type);
     }
 
+    /**
+     * Standardize the Java expressions in annotations in the type of an expression.
+     *
+     * @param tree an expression
+     * @param annotatedType its type; is side-effected by this method
+     */
     public void standardizeExpression(ExpressionTree tree, AnnotatedTypeMirror annotatedType) {
         if (!hasDependentType(annotatedType)) {
             return;
@@ -891,19 +905,21 @@ public class DependentTypesHelper {
      * expression string is an error string as specified by DependentTypesError#isExpressionError.
      * If the annotated type has any errors, a flowexpr.parse.error is issued.
      *
-     * @param methodTree method to check
+     * @param methodDeclTree method to check
      * @param type annotated type of the method
      */
-    public void checkMethod(MethodTree methodTree, AnnotatedExecutableType type) {
+    public void checkMethod(MethodTree methodDeclTree, AnnotatedExecutableType type) {
         // Parameters and receivers are checked by visitVariable
         // So only type parameters and return type need to be checked here.
-        checkTypeVariables(methodTree, type);
+        checkTypeVariables(methodDeclTree, type);
 
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
-            AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodTree);
+            AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodDeclTree);
             Tree treeForError =
-                    TreeUtils.isConstructor(methodTree) ? methodTree : methodTree.getReturnType();
+                    TreeUtils.isConstructor(methodDeclTree)
+                            ? methodDeclTree
+                            : methodDeclTree.getReturnType();
             checkType(returnType, treeForError);
         }
     }
