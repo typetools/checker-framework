@@ -76,6 +76,8 @@ public abstract class AbstractAnalysis<
      *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
+    // currentNode == null when isRunning is true.
+    // See https://github.com/typetools/checker-framework/issues/4115
     protected @InternedDistinct @Nullable Node currentNode;
 
     /**
@@ -184,10 +186,10 @@ public abstract class AbstractAnalysis<
     @Override
     public @Nullable V getValue(Node n) {
         if (isRunning) {
-            assert currentNode != null
-                    : "@AssumeAssertion(nullness): currentNode is nonull if isRunning.";
             // we don't have a org.checkerframework.dataflow fact about the current node yet
-            if (currentNode == n || (currentTree != null && currentTree == n.getTree())) {
+            if (currentNode == null
+                    || currentNode == n
+                    || (currentTree != null && currentTree == n.getTree())) {
                 return null;
             }
             // check that 'n' is a subnode of 'node'. Check immediate operands
