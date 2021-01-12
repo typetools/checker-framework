@@ -19,6 +19,7 @@ Copied methods on `TreePath`s from class 'TreeUtils` to new class `TreePathUtil`
  * `TreeUtils.pathTillOfKind` => `TreePathUtil.pathTillOfKind`
 
 **Closed issues:**
+#789, #3202, #4071, #4083, #4114, #4115.
 
 ---------------------------------------------------------------------------
 
