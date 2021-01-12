@@ -103,6 +103,7 @@ task allSourcesJar(type: Jar) {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-source.jar"
+    archiveClassifier = "sources"
     from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 }
@@ -112,6 +113,7 @@ task allJavadocJar(type: Jar) {
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-javadoc.jar"
+    archiveClassifier = "javadoc"
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
@@ -120,6 +122,7 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker.jar"
+    archiveClassifier = ''
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
@@ -260,23 +263,6 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 // ./gradlew NullnessJspecifySamplesTest
 test {
     exclude '**/org/checkerframework/checker/test/junit/NullnessJspecifySamplesTest.class'
-}
-
-
-task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
-    description 'Deploys checker.jar to the local Maven repository'
-    doLast {
-        mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${pomFiles}/checker-pom.xml")
-    }
-}
-
-task deployArtifactsToSonatype {
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
-    }
 }
 
 task delombok {
@@ -629,6 +615,41 @@ task wpiPlumeLibTests(group: "Verification") {
         exec {
             commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
             ignoreExitValue = false
+        }
+    }
+}
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading to Maven repositories. */
+final checkerPom(publication) {
+    sharedPublicationConfiguration(publication)
+    // Don't use publication.from components.java which would publish the skinny jar as checker.jar.
+    publication.pom {
+        name = 'Checker Framework'
+        description = 'The Checker Framework enhances Java\'s type system to\n' +
+                'make it more powerful and useful. This lets software developers\n' +
+                'detect and prevent errors in their Java programs.\n' +
+                'The Checker Framework includes compiler plug-ins ("checkers")\n' +
+                'that find bugs or verify their absence. It also permits you to\n' +
+                'write your own compiler plug-ins.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        checker(MavenPublication) {
+            checkerPom it
+            artifact shadowJar
+            artifact allSourcesJar
+            artifact allJavadocJar
         }
     }
 }
