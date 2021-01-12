@@ -3,7 +3,7 @@ Version 3.9.1, January 12, 2020
 **Implementation details:**
 
 Copied methods on `TreePath`s from class 'TreeUtils` to new class `TreePathUtil`.
-(The methods in TreePath will be deleted in the next minor release.)
+(The methods in TreePath will be deleted in the next release.)
  * `TreeUtils.enclosingClass` => `TreePathUtil.enclosingClass`
  * `TreeUtils.enclosingMethod` => `TreePathUtil.enclosingMethod`
  * `TreeUtils.enclosingMethodOrLambda` => `TreePathUtil.enclosingMethodOrLambda`
