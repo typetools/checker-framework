@@ -554,7 +554,7 @@ task wholeProgramInferenceTests(group: 'Verification') {
 // This is run as part of the nonJunitTests task.
 task wpiManyTests(group: "Verification") {
     description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
-
+    dependsOn(copyJarsToDist)
     // This test must always be re-run when requested.
     outputs.upToDateWhen { false }
 
