@@ -60,7 +60,8 @@ public class AnnotationConversion {
         }
 
         NodeList<MemberValuePair> convertedValues = convertAnnotationValues(values);
-        if (convertedValues.size() == 1) {
+        if (convertedValues.size() == 1
+                && convertedValues.get(0).getName().asString().equals("value")) {
             return new SingleMemberAnnotationExpr(name, convertedValues.get(0).getValue());
         }
 
@@ -213,7 +214,7 @@ public class AnnotationConversion {
                             .parseClassOrInterfaceType(
                                     TypesUtils.getQualifiedName(type).toString());
             if (!parseResult.isSuccessful()) {
-                System.out.println("Invalid class or interface name: " + value);
+                throw new BugInCF("Invalid class or interface name: " + value);
             }
 
             return new ClassExpr(parseResult.getResult().get());
