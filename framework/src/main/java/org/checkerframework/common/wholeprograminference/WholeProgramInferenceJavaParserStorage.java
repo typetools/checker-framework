@@ -144,6 +144,8 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private CallableDeclarationAnnos getMethodAnnos(ExecutableElement methodElt) {
         String className = getEnclosingClassName(methodElt);
+        // Read in classes for the element.
+        getFileForElement(methodElt);
         ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
         CallableDeclarationAnnos methodAnnos =
                 classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
@@ -187,6 +189,8 @@ public class WholeProgramInferenceJavaParserStorage
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atypeFactory) {
         ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
+        // Read in classes for the element.
+        getFileForElement(element);
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = enclosingClass.flatname.toString();
         ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
