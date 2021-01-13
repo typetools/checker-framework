@@ -566,6 +566,7 @@ public class AnnotatedTypes {
      * @param atypeFactory the type factory
      * @param member the element with type {@code memberType}; used to obtain the enclosing type
      * @param memberType the type to side-effect
+     * @return memberType, with type arguments substituted for type variables
      */
     private static AnnotatedTypeMirror substituteUninferredTypeArgs(
             AnnotatedTypeFactory atypeFactory, Element member, AnnotatedTypeMirror memberType) {
