@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -57,6 +58,10 @@ public class ElementUtils {
      * @return the innermost type element, or null if no type element encloses {@code elem}
      */
     public static @Nullable TypeElement enclosingClass(final Element elem) {
+        if (elem instanceof VarSymbol) {
+            return ((VarSymbol) element).enclClass();
+        }
+
         Element result = elem;
         while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
