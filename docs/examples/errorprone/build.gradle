@@ -31,4 +31,8 @@ compileJava {
     // convert the expected error to a warning to test that both Error Prone
     // and the Nullness Checker run.
     options.errorprone.warn('CollectionIncompatibleType')
+    options.errorprone.errorproneArgs = [
+        // The HidingField test is buggy: https://github.com/google/error-prone/issues/2092
+        '-Xep:HidingField:OFF',
+    ]
 }
