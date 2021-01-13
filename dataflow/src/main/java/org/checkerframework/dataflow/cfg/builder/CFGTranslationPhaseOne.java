@@ -168,6 +168,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -1398,11 +1399,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * @return nearest owner element of current tree
      */
     private Element findOwner() {
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
         if (enclosingMethod != null) {
             return TreeUtils.elementFromDeclaration(enclosingMethod);
         } else {
-            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
             return TreeUtils.elementFromDeclaration(enclosingClass);
         }
     }
@@ -2113,7 +2114,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             variableNode.setInSource(false);
             extendWithNode(variableNode);
 
-            ExpressionTree variableUse = treeBuilder.buildVariableUse(variable);
+            IdentifierTree variableUse = treeBuilder.buildVariableUse(variable);
             handleArtificialTree(variableUse);
 
             LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
@@ -2927,7 +2928,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         if (ret != null) {
             Node node = scan(ret, p);
             Tree enclosing =
-                    TreeUtils.enclosingOfKind(
+                    TreePathUtil.enclosingOfKind(
                             getCurrentPath(),
                             new HashSet<>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
             if (enclosing.getKind() == Kind.LAMBDA_EXPRESSION) {
@@ -3551,7 +3552,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.CLASS;
         Node node = null;
 
-        ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
         TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
         Node receiver = new ImplicitThisNode(classElem.asType());
 

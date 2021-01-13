@@ -81,7 +81,11 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.plumelib.util.UniqueIdMap;
 
-/** A utility class made for helping to analyze a given javac {@code Tree}. */
+/**
+ * Utility methods for analyzing a javac {@code Tree}.
+ *
+ * @see TreePathUtil
+ */
 public final class TreeUtils {
 
     // Class cannot be instantiated.
@@ -265,6 +269,7 @@ public final class TreeUtils {
     /**
      * Gets the first (innermost) enclosing tree in path, of the specified class.
      *
+     * @param <T> the type of {@code treeClass}
      * @param path the path defining the tree node
      * @param treeClass the class of the desired tree
      * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
@@ -332,6 +337,12 @@ public final class TreeUtils {
         return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
     }
 
+    /**
+     * Returns the top-level block that encloses the given path, or null if none does.
+     *
+     * @param path a path
+     * @return the top-level block that encloses the given path, or null if none does
+     */
     public static @Nullable BlockTree enclosingTopLevelBlock(TreePath path) {
         TreePath parpath = path.getParentPath();
         while (parpath != null && !classTreeKinds.contains(parpath.getLeaf().getKind())) {
@@ -418,6 +429,7 @@ public final class TreeUtils {
      *
      * <p>Otherwise, null is returned.
      *
+     * @param treePath a path
      * @return the assignment context as described, {@code null} otherwise
      */
     public static @Nullable Tree getAssignmentContext(final TreePath treePath) {
@@ -1397,10 +1409,10 @@ public final class TreeUtils {
     }
 
     /**
-     * Determines whether or not the node referred to by the given {@link TreePath} is an anonymous
+     * Determines whether or not the node referred to by the given {@link Tree} is an anonymous
      * constructor (the constructor for an anonymous class.
      *
-     * @param method the {@link TreePath} for a node that may be an anonymous constructor
+     * @param method the {@link Tree} for a node that may be an anonymous constructor
      * @return true if the given path points to an anonymous constructor, false if it does not
      */
     public static boolean isAnonymousConstructor(final MethodTree method) {

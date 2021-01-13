@@ -69,6 +69,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -745,8 +746,8 @@ public class NullnessAnnotatedTypeFactory
             return;
         }
         TreePath lhsPath = getPath(lhsTree);
-        if (TreeUtils.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
-                && TreeUtils.inConstructor(lhsPath)) {
+        if (TreePathUtil.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
+                && TreePathUtil.inConstructor(lhsPath)) {
             rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
         }
     }
