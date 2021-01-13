@@ -107,6 +107,7 @@ final dataflowShadedPom(publication) {
     }
 }
 
+
 publishing {
     publications {
         dataflow(MavenPublication) {
@@ -120,4 +121,8 @@ publishing {
             artifact javadocJar
         }
     }
+}
+signing {
+    sign publishing.publications.dataflow
+    sign publishing.publications.dataflowShaded
 }
