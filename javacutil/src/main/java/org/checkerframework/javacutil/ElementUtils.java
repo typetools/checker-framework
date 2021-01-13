@@ -3,7 +3,6 @@ package org.checkerframework.javacutil;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -52,17 +51,22 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element.
+     * Returns the innermost type element enclosing the given element. Returns the element itself if
+     * it is a class.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
      */
     public static @Nullable TypeElement enclosingClass(final Element elem) {
-        if (elem instanceof VarSymbol) {
-            return ((VarSymbol) element).enclClass();
+        if (isClassElement(elem)) {
+            return elem;
         }
 
-        Element result = elem;
+        if (elem instanceof Symbol) {
+            return ((Symbol) element).enclClass();
+        }
+
+        Element result = elem.getEnclosingElement();
         while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
             result = encl;
