@@ -77,6 +77,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param finalLocalValues {@link #finalLocalValues}
      * @param analysisCaches {@link #analysisCaches}
      */
+    @SuppressWarnings(
+            "IdentityHashMapUsage") // Error Prone warns about something other than what its
+    // documentation describes.
     protected AnalysisResult(
             Map<Node, V> nodeValues,
             IdentityHashMap<Block, TransferInput<V, S>> stores,

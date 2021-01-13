@@ -35,6 +35,9 @@ public class AnnotatedTypeCopierWithReplacement {
         private final IdentityHashMap<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror>
                 originalMappings;
 
+        @SuppressWarnings(
+                "IdentityHashMapUsage") // Error Prone warns about something other than what its
+        // documentation describes.
         public Visitor(
                 final Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> mappings) {
             originalMappings = new IdentityHashMap<>(mappings);
