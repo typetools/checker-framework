@@ -319,8 +319,9 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
         for (VariableTree parameter : tree.getParameters()) {
-            // Parameter types might not be specified for lambdas. When not specified, JavaParser
-            // uses UnknownType. Conservatively, don't add parameter types for lambda expressions.
+            // Programmers may omit parameter types for lambda expressions. When not specified,
+            // javac infers them but JavaParser uses UnknownType. Conservatively, don't add
+            // parameter types for lambda expressions.
             visit(parameter.getModifiers(), p);
             visit(parameter.getNameExpression(), p);
             assert parameter.getInitializer() == null;
@@ -396,8 +397,6 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         @Override
         public void visit(VarType node, Void p) {
             hasVarType = true;
-
-            super.visit(node, p);
         }
 
         /**
@@ -406,7 +405,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
          * @param javacCompilationUnit a compilation unit
          * @return true if the given compilation unit contains the "var" keyword
          */
-        static boolean hasVarType(CompilationUnitTree javacCompilationUnit) {
+        public static boolean hasVarType(CompilationUnitTree javacCompilationUnit) {
             com.github.javaparser.ast.CompilationUnit javaParserCompilationUnit;
             try {
                 java.io.InputStream in = javacCompilationUnit.getSourceFile().openInputStream();

@@ -169,9 +169,8 @@ import org.checkerframework.javacutil.BugInCF;
 public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     @Override
     public Void visitAnnotation(AnnotationTree javacTree, Node javaParserNode) {
-        // javac stores annotation arguments as assignments, so @MyAnno("myArg") might be stored the
-        // same as @MyAnno(value="myArg") which has a single element argument list with an
-        // assignment.
+        // javac stores annotation arguments as assignments, so @MyAnno("myArg") is stored the same
+        // as @MyAnno(value="myArg") which has a single element argument list with an assignment.
         if (javaParserNode instanceof MarkerAnnotationExpr) {
             processAnnotation(javacTree, (MarkerAnnotationExpr) javaParserNode);
         } else if (javaParserNode instanceof SingleMemberAnnotationExpr) {
@@ -181,6 +180,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             ExpressionTree value = javacTree.getArguments().get(0);
             assert value instanceof AssignmentTree;
             AssignmentTree assignment = (AssignmentTree) value;
+            assert assignment.getVariable().getKind() == Kind.IDENTIFIER;
+            assert ((IdentifierTree) assignment.getVariable()).getName().contentEquals("value");
             assignment.getExpression().accept(this, node.getMemberValue());
         } else if (javaParserNode instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr node = (NormalAnnotationExpr) javaParserNode;
@@ -466,9 +467,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         if (javaParserNode instanceof ClassOrInterfaceDeclaration) {
             ClassOrInterfaceDeclaration node = (ClassOrInterfaceDeclaration) javaParserNode;
             processClass(javacTree, node);
-            if (javacTree.getTypeParameters().size() == node.getTypeParameters().size()) {
-                visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
-            }
+            visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
 
             if (javacTree.getKind() == Kind.CLASS) {
                 if (javacTree.getExtendsClause() == null) {
@@ -608,17 +607,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public void visitAnonymouClassBody(
             ClassTree javacBody, List<BodyDeclaration<?>> javaParserMembers) {
         List<Tree> members = new ArrayList<>(javacBody.getMembers());
-        while (!members.isEmpty()) {
+        if (!members.isEmpty()) {
             Tree member = members.get(0);
             if (member.getKind() == Kind.METHOD) {
                 MethodTree methodTree = (MethodTree) member;
                 if (methodTree.getName().contentEquals("<init>")) {
                     members.remove(0);
-                    continue;
                 }
             }
-
-            break;
         }
 
         visitClassMembers(members, javaParserMembers);
@@ -775,8 +771,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processExpressionStatemen(javacTree, node);
             javacTree.getExpression().accept(this, node.getExpression());
         } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
-            // In this case the expression will be a MethodTree, which would be better to match with
-            // the statement than the expression statement itself.
+            // In this case the javac expression will be a MethodTree. Since JavaParser doesn't
+            // surround explicit constructor invocations in an expression statement, we match
+            // javaParserNode to the javac expression rather than the javac expression statement.
             javacTree.getExpression().accept(this, javaParserNode);
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
@@ -821,6 +818,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         assert javacTree.getUpdate().size() == node.getUpdate().size();
         Iterator<Expression> javaParserIter = node.getUpdate().iterator();
         for (ExpressionStatementTree update : javacTree.getUpdate()) {
+            // Match the inner javac expression with the JavaParser expression.
             update.getExpression().accept(this, javaParserIter.next());
         }
 
@@ -1069,7 +1067,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         // annotations and other modifiers, so the order doesn't match. It might be that for
         // JavaParser, the annotations and other modifiers are also accessed separately.
         javacTree.getReturnType().accept(this, javaParserNode.getType());
-        // Unlike other constructs, the list is non-null even if no type parameters are present.
+        // Unlike other constructs, the javac list is non-null even if no type parameters are
+        // present.
         visitLists(javacTree.getTypeParameters(), javaParserNode.getTypeParameters());
         if (javacTree.getReceiverParameter() != null
                 && javaParserNode.getReceiverParameter().isPresent()) {
@@ -1134,8 +1133,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         if (javaParserNode instanceof MethodCallExpr) {
             MethodCallExpr node = (MethodCallExpr) javaParserNode;
             processMethodInvocation(javacTree, node);
-            // In javac, the type arguments will be empty even if no type arguments are specified,
-            // but in JavaParser the type arguments will have the none Optional value.
+            // In javac, the type arguments will be empty if no type arguments are specified, but in
+            // JavaParser the type arguments will have the none Optional value.
             assert javacTree.getTypeArguments().isEmpty() != node.getTypeArguments().isPresent();
             if (!javacTree.getTypeArguments().isEmpty()) {
                 visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
