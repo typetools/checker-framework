@@ -413,13 +413,13 @@ public class DependentTypesHelper {
             return;
         }
 
-        TreePath path = factory.getPath(node);
-        if (path == null) {
+        TreePath pathToVariableDecl = factory.getPath(node);
+        if (pathToVariableDecl == null) {
             return;
         }
         switch (variableElt.getKind()) {
             case PARAMETER:
-                Tree enclTree = TreePathUtil.enclosingOfKind(path, METHOD_OR_LAMBDA);
+                Tree enclTree = TreePathUtil.enclosingOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
@@ -427,14 +427,15 @@ public class DependentTypesHelper {
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForMethodDeclaration(
                                     methodDeclTree, enclosingType, factory.getContext());
-                    standardizeDoNotUseLocalScope(parameterContext, path, type);
+                    standardizeDoNotUseLocalScope(parameterContext, pathToVariableDecl, type);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForLambda(
-                                    lambdaTree, path, factory.getContext());
+                                    lambdaTree, pathToVariableDecl, factory.getContext());
                     // Uses paths.getParentPath to prevent a StackOverflowError, see Issue #1027.
-                    standardizeUseLocalScope(parameterContext, path.getParentPath(), type);
+                    standardizeUseLocalScope(
+                            parameterContext, pathToVariableDecl.getParentPath(), type);
                 }
                 break;
 
@@ -442,12 +443,13 @@ public class DependentTypesHelper {
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
                 TypeMirror enclosingType = ElementUtils.enclosingClass(variableElt).asType();
-                JavaExpression receiver = JavaExpression.getPseudoReceiver(path, enclosingType);
+                JavaExpression receiver =
+                        JavaExpression.getPseudoReceiver(pathToVariableDecl, enclosingType);
                 List<JavaExpression> params =
-                        JavaExpression.getParametersOfEnclosingMethod(factory, path);
+                        JavaExpression.getParametersOfEnclosingMethod(factory, pathToVariableDecl);
                 JavaExpressionContext localContext =
                         new JavaExpressionContext(receiver, params, factory.getContext());
-                standardizeUseLocalScope(localContext, path, type);
+                standardizeUseLocalScope(localContext, pathToVariableDecl, type);
                 break;
 
             case FIELD:
@@ -464,7 +466,7 @@ public class DependentTypesHelper {
                 }
                 JavaExpressionContext fieldContext =
                         new JavaExpressionContext(receiverJe, null, factory.getContext());
-                standardizeDoNotUseLocalScope(fieldContext, path, type);
+                standardizeDoNotUseLocalScope(fieldContext, pathToVariableDecl, type);
                 break;
 
             default:
