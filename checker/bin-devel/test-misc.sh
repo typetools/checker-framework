@@ -20,6 +20,10 @@ status=0
 
 # Code style and formatting
 ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
+if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
+  echo "Don't use static import or wildcard import"
+  exit 1
+fi
 
 # HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon

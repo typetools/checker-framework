@@ -106,7 +106,8 @@ public abstract class Contract {
     }
 
     /**
-     * Creates a new Contract.
+     * Creates a new Contract. This should be called only by the constructors for {@link
+     * Precondition}, {@link Postcondition}, and {@link ConditionalPostcondition}.
      *
      * @param kind precondition, postcondition, or conditional postcondition
      * @param expression the Java expression that should have a type qualifier
@@ -114,7 +115,7 @@ public abstract class Contract {
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
      */
-    protected Contract(
+    private Contract(
             Kind kind,
             String expression,
             AnnotationMirror annotation,

@@ -421,12 +421,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     public void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
-            MethodTree methodTree,
+            MethodTree methodDeclTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
         // Don't infer types for code that isn't presented as source.
-        if (methodTree == null
+        if (methodDeclTree == null
                 || !ElementUtils.isElementFromSourceCode(
-                        TreeUtils.elementFromDeclaration(methodTree))) {
+                        TreeUtils.elementFromDeclaration(methodDeclTree))) {
             return;
         }
 
@@ -436,10 +436,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return;
         }
 
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
         String file = storage.getFileForElement(methodElt);
 
-        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodTree).getReturnType();
+        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodDeclTree).getReturnType();
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
                 atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
@@ -448,7 +448,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
         if (dependentTypesHelper != null) {
             dependentTypesHelper.standardizeReturnType(
-                    methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
+                    methodDeclTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
         T returnTypeAnnos = storage.getReturnType(methodElt, lhsATM, atypeFactory);
         updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);

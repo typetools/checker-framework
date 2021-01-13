@@ -4,11 +4,7 @@ package org.checkerframework.framework.type;
 // Try to avoid using non-@jdk.Exported classes.
 
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.*;
-import com.github.javaparser.ast.stmt.*;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -122,6 +118,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -1881,7 +1878,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TypeMirror typeOfImplicitReceiver = elementOfImplicitReceiver.asType();
         AnnotatedDeclaredType thisType = getSelfType(tree);
-
+        if (thisType == null) {
+            return null;
+        }
         // An implicit receiver is the first enclosing type that is a subtype of the type where
         // element is declared.
         while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
@@ -1908,6 +1907,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Tree enclosingTree = getEnclosingClassOrMethod(tree);
         if (enclosingTree == null) {
+            // tree is inside an annotation, where "this" is not allowed. So, no self type exists.
             return null;
         } else if (enclosingTree.getKind() == Kind.METHOD) {
             MethodTree enclosingMethod = (MethodTree) enclosingTree;
@@ -1922,20 +1922,34 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return null;
     }
 
+    /** A set of class, method, and annotation tree kinds. */
+    private final Set<Tree.Kind> classMethodAnnotationKinds =
+            EnumSet.copyOf(TreeUtils.classTreeKinds());
+
+    {
+        classMethodAnnotationKinds.add(Kind.METHOD);
+        classMethodAnnotationKinds.add(Kind.TYPE_ANNOTATION);
+        classMethodAnnotationKinds.add(Kind.ANNOTATION);
+    }
     /**
      * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
-     * is used to find the enclosing tree;
+     * is used to find the enclosing tree.
+     *
+     * <p>If the tree is inside an annotation, then {@code null} is returned.
      *
      * @param tree tree to whose innermost enclosing method or class is returned
-     * @return the inner most enclosing method or class tree of {@code tree}
+     * @return the innermost enclosing method or class tree of {@code tree} or {@code null} if
+     *     {@code tree} is inside an annotation
      */
-    protected Tree getEnclosingClassOrMethod(Tree tree) {
+    protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
-        Set<Tree.Kind> classAndMethodKinds = EnumSet.copyOf(TreeUtils.classTreeKinds());
-        classAndMethodKinds.add(Kind.METHOD);
-        Tree enclosing = TreeUtils.enclosingOfKind(path, classAndMethodKinds);
+        Tree enclosing = TreePathUtil.enclosingOfKind(path, classMethodAnnotationKinds);
         if (enclosing != null) {
+            if (enclosing.getKind() == Kind.ANNOTATION
+                    || enclosing.getKind() == Kind.TYPE_ANNOTATION) {
+                return null;
+            }
             return enclosing;
         }
         Element e = getEnclosingElementForArtificialTree(tree);
@@ -3284,7 +3298,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (visitorState.getClassTree() != null) {
             return visitorState.getClassTree();
         }
-        return TreeUtils.enclosingClass(getPath(tree));
+        return TreePathUtil.enclosingClass(getPath(tree));
     }
 
     protected final AnnotatedDeclaredType getCurrentClassType(Tree tree) {
@@ -3305,8 +3319,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             TreePath path = getPath(tree);
             if (path != null) {
                 @SuppressWarnings("interning:assignment.type.incompatible") // used for == test
-                @InternedDistinct MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
-                ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+                @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
+                ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
 
                 boolean found = false;
 
@@ -3339,7 +3353,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     && TreeUtils.isConstructor(visitorState.getMethodTree());
         }
 
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getPath(tree));
         return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
     }
 
@@ -4422,7 +4436,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             case RETURN:
                 Tree enclosing =
-                        TreeUtils.enclosingOfKind(
+                        TreePathUtil.enclosingOfKind(
                                 getPath(parentTree),
                                 new HashSet<>(
                                         Arrays.asList(

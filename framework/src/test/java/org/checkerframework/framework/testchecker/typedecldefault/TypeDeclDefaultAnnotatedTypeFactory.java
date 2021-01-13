@@ -6,7 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.testchecker.typedecldefault.quals.*;
+import org.checkerframework.framework.testchecker.typedecldefault.quals.PolyTypeDeclDefault;
+import org.checkerframework.framework.testchecker.typedecldefault.quals.TypeDeclDefaultBottom;
+import org.checkerframework.framework.testchecker.typedecldefault.quals.TypeDeclDefaultMiddle;
+import org.checkerframework.framework.testchecker.typedecldefault.quals.TypeDeclDefaultTop;
 
 public class TypeDeclDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public TypeDeclDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {
