@@ -123,15 +123,11 @@ public interface WholeProgramInferenceStorage<T> {
      *
      * @param methodElt the method to annotate
      * @param anno the declaration annotation to add to the method
-     * @param tmp temporary parameter to distinguish between {@link
-     *     WholeProgramInferenceJavaParser#addMethodDeclarationAnnotation(ExecutableElement,
-     *     AnnotationMirror)}
      * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
      *     otherwise
      */
-    // TODO: Remove tmp
     public boolean addMethodDeclarationAnnotation(
-            ExecutableElement methodElt, AnnotationMirror anno, Void tmp);
+            ExecutableElement methodElt, AnnotationMirror anno);
 
     /**
      * Obtain the type from a storage location.

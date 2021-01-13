@@ -82,7 +82,7 @@ import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
@@ -517,7 +517,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (checker.getOption("infer").equals("ajava")) {
                 wholeProgramInference =
                         new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
-                                this, new WholeProgramInferenceJavaParser(this));
+                                this, new WholeProgramInferenceJavaParserStorage(this));
             } else {
                 wholeProgramInference =
                         new WholeProgramInferenceImplementation<ATypeElement>(
@@ -4814,7 +4814,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param methodAnnos the method or constructor annotations to modify
      */
     public void prepareMethodForWriting(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         // This implementation does nothing.
     }
 

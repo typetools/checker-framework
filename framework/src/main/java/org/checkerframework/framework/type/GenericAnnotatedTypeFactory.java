@@ -42,7 +42,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
@@ -2305,7 +2305,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return contract annotations for the method
      */
     public List<AnnotationMirror> getContractAnnotations(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         List<AnnotationMirror> preconds = getPreconditionAnnotations(methodAnnos);
         List<AnnotationMirror> postconds = getPostconditionAnnotations(methodAnnos, preconds);
         List<AnnotationMirror> result = preconds;
@@ -2321,7 +2321,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the method
      */
     public List<AnnotationMirror> getPreconditionAnnotations(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         List<AnnotationMirror> result = new ArrayList<>();
         if (methodAnnos.fieldToPreconditions == null) {
             return result;
@@ -2345,7 +2345,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return postcondition annotations for the method
      */
     public List<AnnotationMirror> getPostconditionAnnotations(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos,
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
             List<AnnotationMirror> preconds) {
         List<AnnotationMirror> result = new ArrayList<>();
         if (methodAnnos.fieldToPostconditions == null) {

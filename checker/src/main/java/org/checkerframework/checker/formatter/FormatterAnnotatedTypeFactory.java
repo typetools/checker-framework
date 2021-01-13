@@ -14,7 +14,7 @@ import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
@@ -107,7 +107,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public void prepareMethodForWriting(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         if (hasFormatMethodAnno(methodAnnos)) {
             AnnotatedTypeMirror atm = methodAnnos.parameterTypes.get(0);
             atm.removeAnnotation(org.checkerframework.checker.formatter.qual.Format.class);
@@ -138,7 +138,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return true if the method has a {@code @FormatMethod} annotation
      */
     private boolean hasFormatMethodAnno(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         return methodAnnos.declarationAnnotations != null
                 && (AnnotationUtils.containsSameByClass(
                                 methodAnnos.declarationAnnotations,

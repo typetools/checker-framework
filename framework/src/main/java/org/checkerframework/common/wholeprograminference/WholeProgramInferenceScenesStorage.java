@@ -280,7 +280,7 @@ public class WholeProgramInferenceScenesStorage
 
     @Override
     public boolean addMethodDeclarationAnnotation(
-            ExecutableElement methodElt, AnnotationMirror anno, Void tmp) {
+            ExecutableElement methodElt, AnnotationMirror anno) {
 
         // Do not infer types for library code, only for type-checked source code.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {

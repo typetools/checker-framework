@@ -470,7 +470,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
 
         String file = storage.getFileForElement(methodElt);
-        boolean isNewAnnotation = storage.addMethodDeclarationAnnotation(methodElt, anno, null);
+        boolean isNewAnnotation = storage.addMethodDeclarationAnnotation(methodElt, anno);
         if (isNewAnnotation) {
             storage.setFileModified(file);
         }
