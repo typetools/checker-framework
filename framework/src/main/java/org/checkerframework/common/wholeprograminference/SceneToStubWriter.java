@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.google.common.collect.ComparisonChain;
-import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,6 +30,7 @@ import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.objectweb.asm.TypePath;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -40,7 +40,7 @@ import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.field.AnnotationFieldType;
 
 // In this file, "base name" means "type without its package part in binary name format".
@@ -231,9 +231,9 @@ public final class SceneToStubWriter {
             return null;
         }
 
-        for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
-            InnerTypeLocation loc = ite.getKey();
-            if (loc.location.contains(TypePathEntry.ARRAY)) {
+        for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
+            List<TypePathEntry> location = ite.getKey();
+            if (location.contains(new TypePathEntry(TypePath.ARRAY_ELEMENT, 0))) {
                 return ite.getValue();
             }
         }
