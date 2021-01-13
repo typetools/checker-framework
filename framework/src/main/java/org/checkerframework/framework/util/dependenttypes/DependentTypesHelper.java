@@ -422,7 +422,7 @@ public class DependentTypesHelper {
             AnnotatedTypeMirror atm,
             boolean removeErroneousExpressions) {
 
-        TypeMirror enclosingType = ElementUtils.enclosingClass(elt).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingType(elt).asType();
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, enclosingType, factory.getContext());
