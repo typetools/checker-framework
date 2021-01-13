@@ -2114,7 +2114,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             variableNode.setInSource(false);
             extendWithNode(variableNode);
 
-            ExpressionTree variableUse = treeBuilder.buildVariableUse(variable);
+            IdentifierTree variableUse = treeBuilder.buildVariableUse(variable);
             handleArtificialTree(variableUse);
 
             LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
