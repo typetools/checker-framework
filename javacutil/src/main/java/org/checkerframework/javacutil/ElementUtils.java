@@ -66,7 +66,7 @@ public class ElementUtils {
             return ((Symbol) elem).enclClass();
         }
 
-        Element result = elem.getEnclosingElement();
+        Element result = elem;
         while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
             result = encl;
