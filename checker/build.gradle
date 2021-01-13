@@ -638,7 +638,6 @@ final checkerPom(publication) {
         }
     }
 }
-
 publishing {
     publications {
         checker(MavenPublication) {
@@ -648,4 +647,7 @@ publishing {
             artifact allJavadocJar
         }
     }
+}
+signing {
+    sign publishing.publications.checker
 }

@@ -74,3 +74,6 @@ publishing {
         }
     }
 }
+signing {
+    sign publishing.publications.checkerQualAndroid
+}
