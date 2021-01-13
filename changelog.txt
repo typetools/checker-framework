@@ -1,4 +1,4 @@
-Version 3.9.1, January 12, 2020
+Version 3.9.1, January 13, 2020
 
 **Implementation details:**
 
