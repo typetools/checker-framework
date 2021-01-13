@@ -387,10 +387,42 @@ public class DependentTypesHelper {
             return;
         }
 
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
-        TypeMirror enclosingType = ElementUtils.enclosingType(methodElt).asType();
-
         TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
+        if (pathToMethodDecl == null) {
+            return;
+        }
+
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
+
+        standardizeForMethodSignature(
+                methodDeclTree, pathToMethodDecl, methodElt, atm, removeErroneousExpressions);
+    }
+
+    /**
+     * Standardizes the Java expressions in annotations for a method signature location, including:
+     *
+     * <ul>
+     *   <li>type annotations on a return type, formal parameter type, or exception type, and
+     *   <li>declaration annotations on a method (such as a pre- or post-condition contract
+     *       annotation) or formal parameter.
+     * </ul>
+     *
+     * @param methodDeclTree a method declaration
+     * @param pathToMethodDecl the path to the method declaration
+     * @param elt the element for the method or a formal parameter; used for obtaining the enclosing
+     *     class
+     * @param atm a type that has a dependent type annotation; is side-effected by this method
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
+    public void standardizeForMethodSignature(
+            MethodTree methodDeclTree,
+            TreePath pathToMethodDecl,
+            Element elt,
+            AnnotatedTypeMirror atm,
+            boolean removeErroneousExpressions) {
+
+        TypeMirror enclosingType = ElementUtils.enclosingClass(elt).asType();
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, enclosingType, factory.getContext());
@@ -419,15 +451,21 @@ public class DependentTypesHelper {
         }
         switch (variableElt.getKind()) {
             case PARAMETER:
-                Tree enclTree = TreePathUtil.enclosingOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);
+                TreePath pathTillEnclTree =
+                        TreePathUtil.pathTillOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);
+                if (pathTillEnclTree == null) {
+                    throw new BugInCF("no enclosing method or lambda found");
+                }
+                Tree enclTree = pathTillEnclTree.getLeaf();
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
-                    TypeMirror enclosingType = ElementUtils.enclosingType(variableElt).asType();
-                    JavaExpressionContext parameterContext =
-                            JavaExpressionContext.buildContextForMethodDeclaration(
-                                    methodDeclTree, enclosingType, factory.getContext());
-                    standardizeDoNotUseLocalScope(parameterContext, pathToVariableDecl, type);
+                    standardizeForMethodSignature(
+                            methodDeclTree,
+                            pathTillEnclTree,
+                            variableElt,
+                            type,
+                            /*removeErroneousExpressions=*/ false);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
