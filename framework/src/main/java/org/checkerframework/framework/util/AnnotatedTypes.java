@@ -560,7 +560,13 @@ public class AnnotatedTypes {
         }
     }
 
-    /** Substitutes uninferred type arguments for type variables in {@code memberType}. */
+    /**
+     * Substitutes uninferred type arguments for type variables in {@code memberType}.
+     *
+     * @param atypeFactory the type factory
+     * @param member the element with type {@code memberType}; used to obtain the enclosing type
+     * @param memberType the type to side-effect
+     */
     private static AnnotatedTypeMirror substituteUninferredTypeArgs(
             AnnotatedTypeFactory atypeFactory, Element member, AnnotatedTypeMirror memberType) {
         TypeElement enclosingClassOfMember = ElementUtils.enclosingType(member);
