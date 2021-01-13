@@ -152,7 +152,11 @@ public class WholeProgramInferenceScenesStorage
      */
     private AClass getClassAnnos(
             @BinaryName String className, String file, @Nullable ClassSymbol classSymbol) {
-        return getAClass(className, file, classSymbol);
+        // Possibly reads .jaif file to obtain a Scene.
+        ASceneWrapper scene = getScene(file);
+        AClass aClass = scene.getAScene().classes.getVivify(className);
+        scene.updateSymbolInformation(aClass, classSymbol);
+        return aClass;
     }
 
     /**
@@ -173,8 +177,7 @@ public class WholeProgramInferenceScenesStorage
 
     @Override
     public boolean hasMethodAnnos(ExecutableElement methodElt) {
-        // The scenes implementation can always add annotations to a method because the the required
-        // files are read in as necessary.
+        // The scenes implementation can always add annotations to a method.
         return true;
     }
 
@@ -333,7 +336,7 @@ public class WholeProgramInferenceScenesStorage
      * @param jaifPath the .jaif file
      * @return the Scene read from the file, or an empty Scene if the file does not exist
      */
-    protected ASceneWrapper getScene(String jaifPath) {
+    private ASceneWrapper getScene(String jaifPath) {
         AScene scene;
         if (!scenes.containsKey(jaifPath)) {
             File jaifFile = new File(jaifPath);
@@ -612,26 +615,27 @@ public class WholeProgramInferenceScenesStorage
      * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} to contain the
      * {@link scenelib.annotations.Annotation}s of an {@link scenelib.annotations.el.ATypeElement}.
      *
-     * @param atm the AnnotatedTypeMirror to be modified
-     * @param type the {@link scenelib.annotations.el.ATypeElement} used
+     * @param result the AnnotatedTypeMirror to be modified
+     * @param storageLocation the {@link scenelib.annotations.el.ATypeElement} used
      */
-    private void updateAtmFromATypeElement(AnnotatedTypeMirror atm, ATypeElement type) {
-        Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere);
+    private void updateAtmFromATypeElement(
+            AnnotatedTypeMirror result, ATypeElement storageLocation) {
+        Set<Annotation> annos = getSupportedAnnosInSet(storageLocation.tlAnnotationsHere);
         for (Annotation anno : annos) {
             AnnotationMirror am =
                     AnnotationConverter.annotationToAnnotationMirror(
                             anno, atypeFactory.getProcessingEnv());
-            atm.addAnnotation(am);
+            result.addAnnotation(am);
         }
-        if (atm.getKind() == TypeKind.ARRAY) {
-            AnnotatedArrayType aat = (AnnotatedArrayType) atm;
-            for (ATypeElement innerType : type.innerTypes.values()) {
+        if (result.getKind() == TypeKind.ARRAY) {
+            AnnotatedArrayType aat = (AnnotatedArrayType) result;
+            for (ATypeElement innerType : storageLocation.innerTypes.values()) {
                 updateAtmFromATypeElement(aat.getComponentType(), innerType);
             }
         }
-        if (atm.getKind() == TypeKind.TYPEVAR) {
-            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
-            for (ATypeElement innerType : type.innerTypes.values()) {
+        if (result.getKind() == TypeKind.TYPEVAR) {
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) result;
+            for (ATypeElement innerType : storageLocation.innerTypes.values()) {
                 updateAtmFromATypeElement(atv.getUpperBound(), innerType);
             }
         }
