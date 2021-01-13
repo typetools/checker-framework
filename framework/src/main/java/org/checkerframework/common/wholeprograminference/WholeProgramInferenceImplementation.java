@@ -62,11 +62,11 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <ol>
  *   <li>The inferred type of an element that should be written into a file is a subtype of the
- *       upper bounds of this element's currently-written type on the source code.
+ *       upper bounds of this element's currently-written type in the source code.
  *   <li>The annotation annotates a {@code null} literal, except when doing inference for the
  *       NullnessChecker. (The rationale for this is that {@code null} is a frequently-used default
- *       value, and it would be undesirable to compute any inferred type if {@code null} were the
- *       only value passed as an argument.)
+ *       value, and it would be undesirable infer the bottom type if {@code null} were the only
+ *       value passed as an argument.)
  * </ol>
  *
  * When outputting a file, if:

@@ -188,7 +188,7 @@ public interface WholeProgramInferenceStorage<T> {
 
     /**
      * Performs any preparation required for inference on Elements of a class. Should be called on
-     * each toplevel class declaration in a compilation unit before processing it.
+     * each top-level class declaration in a compilation unit before processing it.
      *
      * @param classTree the class to preprocess
      */
