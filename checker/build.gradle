@@ -122,6 +122,7 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker.jar"
+    // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }

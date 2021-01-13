@@ -6,6 +6,8 @@ dependencies {
 
 shadowJar {
     archiveFileName = "dataflow-shaded.jar"
+    // Without this line, the Maven artifact will have the classifier "all".
+    archiveClassifier = ''
     relocate 'org.checkerframework.dataflow', 'org.checkerframework.shaded.dataflow'
     relocate 'org.checkerframework.javacutil', 'org.checkerframework.shaded.javacutil'
 }

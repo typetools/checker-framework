@@ -1,4 +1,4 @@
-Version 3.10.0, February 4, 2021
+Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
 
@@ -6,7 +6,7 @@ Version 3.10.0, February 4, 2021
 
 Removed methods on `TreePath`s from class 'TreeUtils` that are duplicated in TreePathUtil`.
 
-Version 3.9.1, January 13, 2020
+Version 3.9.1, January 13, 2021
 
 **Implementation details:**
 
