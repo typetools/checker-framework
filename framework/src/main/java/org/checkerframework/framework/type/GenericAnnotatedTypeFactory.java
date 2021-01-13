@@ -104,7 +104,6 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -2459,12 +2458,11 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
         SourceChecker parentChecker = this.checker.getParentChecker();
-        if (parentChecker != null) {
-            AnnotationProvider parentAtf = parentChecker.getAnnotationProvider();
-            if (parentAtf instanceof GenericAnnotatedTypeFactory) {
-                return ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) parentAtf)
-                        .addSharedCFGForTree(tree, cfg);
-            }
+        if (parentChecker instanceof BaseTypeChecker) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf =
+                    ((BaseTypeChecker) parentChecker).getTypeFactory();
+            return parentAtf.addSharedCFGForTree(tree, cfg);
+        } else if (parentChecker != null) {
             return false;
         }
         if (this.subcheckerSharedCFG == null) {
@@ -2487,14 +2485,12 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public @Nullable ControlFlowGraph getSharedCFGForTree(Tree tree) {
         SourceChecker parentChecker = this.checker.getParentChecker();
-        if (parentChecker != null) {
-            AnnotationProvider parentAtf = parentChecker.getAnnotationProvider();
-            if (parentAtf instanceof GenericAnnotatedTypeFactory) {
-                return ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) parentAtf)
-                        .getSharedCFGForTree(tree);
-            } else {
-                return null;
-            }
+        if (parentChecker instanceof BaseTypeChecker) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf =
+                    ((BaseTypeChecker) parentChecker).getTypeFactory();
+            return parentAtf.getSharedCFGForTree(tree);
+        } else if (parentChecker != null) {
+            return null;
         }
         return this.subcheckerSharedCFG == null
                 ? null
