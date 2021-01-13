@@ -388,7 +388,7 @@ public class DependentTypesHelper {
         }
 
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
-        TypeMirror enclosingType = ElementUtils.enclosingClass(methodElt).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingType(methodElt).asType();
 
         TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
         JavaExpressionContext context =
@@ -423,7 +423,7 @@ public class DependentTypesHelper {
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
-                    TypeMirror enclosingType = ElementUtils.enclosingClass(variableElt).asType();
+                    TypeMirror enclosingType = ElementUtils.enclosingType(variableElt).asType();
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForMethodDeclaration(
                                     methodDeclTree, enclosingType, factory.getContext());
@@ -442,7 +442,7 @@ public class DependentTypesHelper {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
-                TypeMirror enclosingType = ElementUtils.enclosingClass(variableElt).asType();
+                TypeMirror enclosingType = ElementUtils.enclosingType(variableElt).asType();
                 JavaExpression receiver =
                         JavaExpression.getPseudoReceiver(pathToVariableDecl, enclosingType);
                 List<JavaExpression> params =
@@ -928,7 +928,7 @@ public class DependentTypesHelper {
 
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
         Element ele = TreeUtils.elementFromDeclaration(node);
-        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingType(ele).asType();
 
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(

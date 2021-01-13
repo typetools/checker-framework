@@ -171,7 +171,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
         ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
         if (!"com.amazonaws.services.ec2.model.DescribeImagesRequest"
-                .equals(ElementUtils.enclosingClass(invokedMethod).getQualifiedName().toString())) {
+                .equals(ElementUtils.enclosingType(invokedMethod).getQualifiedName().toString())) {
             return methodName;
         }
 

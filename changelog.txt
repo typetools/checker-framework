@@ -1,4 +1,16 @@
-Version 3.9.1, January 12, 2020
+Version 3.10.0, February 1, 2021
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingType`.
+
+**Closed issues:**
+
+---------------------------------------------------------------------------
+
+Version 3.9.1, January 12, 2021
 
 **Implementation details:**
 

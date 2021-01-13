@@ -1484,7 +1484,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         TypeElement typeElement = TypesUtils.getTypeElement(declaringType);
-        if (ElementUtils.enclosingClass(field).equals(typeElement)) {
+        if (ElementUtils.enclosingType(field).equals(typeElement)) {
             // If the field is declared in the accessedVia class, then the field in the invariant
             // cannot be this field, even if the field has the same name.
             return;
@@ -1720,12 +1720,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
 
-        TypeElement elementOfImplicitReceiver = ElementUtils.enclosingClass(element);
+        TypeElement elementOfImplicitReceiver = ElementUtils.enclosingType(element);
         if (tree.getKind() == Kind.NEW_CLASS) {
             if (elementOfImplicitReceiver.getEnclosingElement() != null) {
                 elementOfImplicitReceiver =
-                        ElementUtils.enclosingClass(
-                                elementOfImplicitReceiver.getEnclosingElement());
+                        ElementUtils.enclosingType(elementOfImplicitReceiver.getEnclosingElement());
             } else {
                 elementOfImplicitReceiver = null;
             }

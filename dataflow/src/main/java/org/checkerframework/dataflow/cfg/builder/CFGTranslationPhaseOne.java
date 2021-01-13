@@ -1518,7 +1518,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             return scan(mtree.getExpression(), null);
         } else {
             Element ele = TreeUtils.elementFromUse(tree);
-            TypeElement declaringClass = ElementUtils.enclosingClass(ele);
+            TypeElement declaringClass = ElementUtils.enclosingType(ele);
             TypeMirror type = ElementUtils.getType(declaringClass);
             if (ElementUtils.isStatic(ele)) {
                 Node node = new ClassNameNode(type, declaringClass);

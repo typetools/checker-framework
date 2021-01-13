@@ -404,7 +404,7 @@ public abstract class JavaExpression {
                         JavaExpression fieldAccessExpression;
                         @SuppressWarnings(
                                 "nullness:dereference.of.nullable") // a field has enclosing class
-                        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+                        TypeMirror enclosingType = ElementUtils.enclosingType(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
                             fieldAccessExpression = new ClassName(enclosingType);
                         } else {
@@ -517,7 +517,7 @@ public abstract class JavaExpression {
      *     not
      */
     public static JavaExpression getImplicitReceiver(Element ele) {
-        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        TypeElement enclosingClass = ElementUtils.enclosingType(ele);
         if (enclosingClass == null) {
             throw new BugInCF("getImplicitReceiver's arg has no enclosing class: " + ele);
         }
