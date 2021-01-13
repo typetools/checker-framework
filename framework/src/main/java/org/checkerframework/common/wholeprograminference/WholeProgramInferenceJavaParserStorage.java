@@ -66,15 +66,9 @@ import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.util.JVMNames;
 
 /**
- * WholeProgramInferenceJavaParser is an implementation of {@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInference}.
- *
- * <p>Its file format is ajava files.
- *
- * <p>It stores annotations directly with the JavaParser nodes they apply to.
- *
- * <p>See {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes} for
- * more documentation on behavior.
+ * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
+ * directly with the JavaParser node corresponding to the annotation's location. It outputs ajava
+ * files.
  */
 public class WholeProgramInferenceJavaParserStorage
         implements WholeProgramInferenceStorage<AnnotatedTypeMirror> {

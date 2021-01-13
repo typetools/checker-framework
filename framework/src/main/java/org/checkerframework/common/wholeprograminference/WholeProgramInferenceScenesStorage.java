@@ -53,7 +53,7 @@ import scenelib.annotations.io.IndexFileParser;
 import scenelib.annotations.util.JVMNames;
 
 /**
- * This class stores annotations for fields, method return types, and method parameters.
+ * This class stores annotations using scenelib objects.
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
  * scenelib.annotations.el.AScene}, which {@code writeScenes()} can write into a file. For example,
