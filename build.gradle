@@ -662,6 +662,10 @@ subprojects {
         withSourcesJar()
     }
 
+    sourcesJar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
     // Things in this block reference definitions in the subproject that do not exist,
     // until the project is evaluated.
     afterEvaluate {
