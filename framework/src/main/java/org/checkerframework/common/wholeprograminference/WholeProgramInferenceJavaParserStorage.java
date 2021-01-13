@@ -744,8 +744,8 @@ public class WholeProgramInferenceJavaParserStorage
      * annotatedType} is null.
      *
      * @param annotatedType type to transfer annotations from
-     * @param target type to transfer annotation to, must represent the same type as {@code
-     *     annotatedType}
+     * @param target the JavaParser type to transfer annotation to, must represent the same type as
+     *     {@code annotatedType}
      */
     private static void transferAnnotations(
             @Nullable AnnotatedTypeMirror annotatedType, Type target) {

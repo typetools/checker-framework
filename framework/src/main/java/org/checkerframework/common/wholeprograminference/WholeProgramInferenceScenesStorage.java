@@ -64,7 +64,7 @@ import scenelib.annotations.util.JVMNames;
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
  * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
  * initial .jaif files means that the precision achieved by the whole-program inference analysis
- * will be better. {@link #writeScenes} rewrites the initial .jaif files, and may create new ones.
+ * will be better. {@link #writeScenes} rewrites the initial .jaif files and may create new ones.
  */
 public class WholeProgramInferenceScenesStorage
         implements WholeProgramInferenceStorage<ATypeElement> {
