@@ -14,9 +14,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * Stores annotations from whole program inference. For a given location such as a field or method,
- * an object can be obtained containing the inferred annotations for that object. The storage also
- * has the ability to write out the stored annotations to storage files. The specific format will
- * depend on the implementation
+ * an object can be obtained containing the inferred annotations for that object.
+ *
+ * <p>Also writes stored annotations to storage files. The specific format depends on the
+ * implementation.
  *
  * @param <T> the type used by the storage to store annotations. The methods {@link
  *     #atmFromAnnotationLocation} and {@link #updateStorageLocationFromAtm} can be used to
@@ -36,12 +37,12 @@ public interface WholeProgramInferenceStorage<T> {
      * Given an Element in a compilation unit that has already been read into storage, returns
      * whether there exists a stored method matching {@code elt}.
      *
-     * <p>Depending on how methods are stored, this can be false if {@code elt} represents a method
-     * that was synthetically added by javac, such as zero-argument constructors or valueOf(String)
-     * methods for enum types.
+     * <p>An implementation is permitted to return false if {@code elt} represents a method that was
+     * synthetically added by javac, such as zero-argument constructors or valueOf(String) methods
+     * for enum types.
      *
-     * @param methodElt an method or constructor Element
-     * @return true if the storage has a method corresponding to {@code elt}, false otherwise.
+     * @param methodElt a method or constructor Element
+     * @return true if the storage has a method corresponding to {@code elt}, false otherwise
      */
     public boolean hasMethodAnnos(ExecutableElement methodElt);
 
@@ -140,11 +141,9 @@ public interface WholeProgramInferenceStorage<T> {
     public AnnotatedTypeMirror atmFromAnnotationLocation(TypeMirror typeMirror, T storageLocation);
 
     /**
-     * Updates an the storage location to have the annotations of an {@code AnnotatedTypeMirror}
-     * passed as argument. Annotations in the original set that should be ignored are not added to
-     * the resulting set. This method also checks if the AnnotatedTypeMirror has explicit
-     * annotations in source code, and if that is the case no annotations are added for that
-     * location.
+     * Updates a storage location to have the annotations of the given {@code AnnotatedTypeMirror}.
+     * Annotations in the original set that should be ignored are not added to the resulting set.
+     * Adds no annotations for a location if that location has explicit annotations in source code.
      *
      * <p>This method removes from the storage location all annotations supported by the
      * AnnotatedTypeFactory before inserting new ones. It is assumed that every time this method is
