@@ -46,16 +46,50 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * WholeProgramInferenceImplementation is an implementation of {@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInference}.
+ * This is the primary implementation of {@link
+ * org.checkerframework.common.wholeprograminference.WholeProgramInference}. It uses an instance of
+ * {@link WholeProgramInferenceStorage} to store annotations and to create output files.
  *
- * <p>Its file format is ajava files.
+ * <p>It stores annotations using the storage class ({@link
+ * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage}).
  *
- * <p>It stores annotations directly with the JavaParser nodes they apply to.
+ * <p>This class does not perform inference for an element if the element has explicit annotations:
+ * calling an update* method on an explicitly annotated field, method return, or method parameter
+ * has no effect.
  *
- * <p>See {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes} for
- * more documentation on behavior.
+ * <p>In addition, whole program inference ignores inferred types in a few scenarios. When
+ * discovering a use, if:
+ *
+ * <ol>
+ *   <li>The inferred type of an element that should be written into a file is a subtype of the
+ *       upper bounds of this element's currently-written type on the source code.
+ *   <li>The annotation annotates a {@code null} literal, except when doing inference for the
+ *       NullnessChecker. (The rationale for this is that {@code null} is a frequently-used default
+ *       value, and it would be undesirable to compute any inferred type if {@code null} were the
+ *       only value passed as an argument.)
+ * </ol>
+ *
+ * When outputting a file, if:
+ *
+ * <ol>
+ *   <li>The @Target annotation does not permit the annotation to be written at this location.
+ *   <li>The inferred annotation has the @InvisibleQualifier meta-annotation.
+ *   <li>The inferred annotation would be the same annotation applied via defaulting &mdash; that
+ *       is, if omitting it has the same effect as writing it.
+ * </ol>
+ *
+ * @param <T> the type used by the storage to store annotations. See {@link
+ *     WholeProgramInferenceStorage}
  */
+//  TODO: We could add an option to update the type of explicitly annotated
+//  elements, but this currently is not recommended since the
+//  insert-annotations-to-source tool, which adds annotations from .jaif files
+//  into source code, adds annotations on top of existing
+//  annotations. See https://github.com/typetools/annotation-tools/issues/105 .
+//  TODO: Ensure that annotations are inserted deterministically into
+//  files. This is important for debugging and comparison; otherwise running
+//  the whole-program inference on the same set of files can yield different
+//  results (order of annotations).
 public class WholeProgramInferenceImplementation<T> implements WholeProgramInference {
 
     /** The type factory associated with this. */
