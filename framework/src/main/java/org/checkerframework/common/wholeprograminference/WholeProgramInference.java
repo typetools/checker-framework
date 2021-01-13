@@ -206,7 +206,7 @@ public interface WholeProgramInference {
     void writeResultsToFile(OutputFormat format, BaseTypeChecker checker);
 
     /**
-     * Performs any preperation required for inference on Elements of a class. Should be called on
+     * Performs any preparation required for inference on Elements of a class. Should be called on
      * each toplevel class declaration in a compilation unit before processing it.
      *
      * @param classTree the class to preprocess
