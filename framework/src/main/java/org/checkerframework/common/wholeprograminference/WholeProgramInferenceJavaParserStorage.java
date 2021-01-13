@@ -537,7 +537,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return the binary name of {@code element}
      */
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getClassName(Element element) {
+    private static @BinaryName String getClassName(Element element) {
         return ((ClassSymbol) element).flatName().toString();
     }
 
@@ -547,18 +547,17 @@ public class WholeProgramInferenceJavaParserStorage
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
      */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
-        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    private static @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return getClassName(((MethodSymbol) executableElement).enclClass());
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code variableElement}
+     * Returns the "flatname" of the class enclosing {@code variableElement}.
      *
      * @param variableElement the VariableElement
      * @return the "flatname" of the class enclosing {@code variableElement}
      */
-    private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
+    private static @BinaryName String getEnclosingClassName(VariableElement variableElement) {
         return getClassName(ElementUtils.enclosingClass(variableElement));
     }
 
@@ -569,23 +568,21 @@ public class WholeProgramInferenceJavaParserStorage
      * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
     @SuppressWarnings({
-        "signature", // https://tinyurl.com/cfissue/3094
         "UnusedMethod" // remove this method
     })
-    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
-                .flatName()
-                .toString();
+    private static @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return getClassName(
+                (ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()));
     }
 
     /**
      * Returns the top-level class that contains {@code element}.
      *
-     * @param element the element wose enclosing class to find
+     * @param element the element whose enclosing class to find
      * @return an element for a class containing {@code element} that isn't contained in another
      *     class
      */
-    private TypeElement toplevelEnclosingClass(Element element) {
+    private static TypeElement toplevelEnclosingClass(Element element) {
         TypeElement result = ElementUtils.enclosingClass(element);
         if (result == null) {
             return (TypeElement) element;

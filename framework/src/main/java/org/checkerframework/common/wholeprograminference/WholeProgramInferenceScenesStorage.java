@@ -840,6 +840,10 @@ public class WholeProgramInferenceScenesStorage
         private static final long serialVersionUID = 20200321L;
     }
 
+    ///
+    /// Classes and class names
+    ///
+
     // TODO: Move these or call them from somewhere else.
     /**
      * Returns the binary name of the type declaration in {@code element}
@@ -847,11 +851,8 @@ public class WholeProgramInferenceScenesStorage
      * @param element a type declaration
      * @return the binary name of {@code element}
      */
-    @SuppressWarnings({
-        "signature", // https://tinyurl.com/cfissue/3094
-        "UnusedMethod"
-    })
-    private @BinaryName String getClassName(Element element) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private static @BinaryName String getClassName(Element element) {
         return ((ClassSymbol) element).flatName().toString();
     }
 
@@ -861,9 +862,8 @@ public class WholeProgramInferenceScenesStorage
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
      */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
-        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    private static @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return getClassName(((MethodSymbol) executableElement).enclClass());
     }
 
     /**
@@ -872,10 +872,8 @@ public class WholeProgramInferenceScenesStorage
      * @param localVariableNode the {@link LocalVariableNode}
      * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
-                .flatName()
-                .toString();
+    private static @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return getClassName(
+                (ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()));
     }
 }

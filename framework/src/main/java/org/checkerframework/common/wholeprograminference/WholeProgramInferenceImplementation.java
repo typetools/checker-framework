@@ -4,7 +4,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     /** The storage for the inferred annotations. */
     private WholeProgramInferenceStorage<T> storage;
 
-    /** Indicates whether assignments where the rhs is null should be ignored. */
+    /** Whether to ignore assignments where the rhs is null. */
     private final boolean ignoreNullAssignments;
 
     /**
@@ -304,7 +303,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     public void updateFromFormalParameterAssignment(
             LocalVariableNode lhs, Node rhs, VariableElement paramElt) {
         // Don't infer types for code that isn't presented as source.
-        if (!isElementFromSourceCode(lhs)) {
+        if (!ElementUtils.isElementFromSourceCode(lhs.getElement())) {
             return;
         }
 
@@ -363,10 +362,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return;
         }
 
-        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
-
         // Don't infer types for code that isn't presented as source.
-        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
+        if (!ElementUtils.isElementFromSourceCode(element)) {
             return;
         }
 
@@ -396,8 +393,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return true;
         }
 
-        // If the inferred field has a declaration annotation with the
-        // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
+        // Don't infer types if the inferred field has a declaration annotation with the
+        // @IgnoreInWholeProgramInference meta-annotation.
         if (atypeFactory.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
                 || atypeFactory
                                 .getDeclAnnotationWithMetaAnnotation(
@@ -407,10 +404,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return true;
         }
 
-        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
-
         // Don't infer types for code that isn't presented as source.
-        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
+        if (!ElementUtils.isElementFromSourceCode(element)) {
             return true;
         }
 
@@ -424,11 +419,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             MethodTree methodDeclTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
         // Don't infer types for code that isn't presented as source.
-        if (methodDeclTree == null
-                || !ElementUtils.isElementFromSourceCode(
-                        TreeUtils.elementFromDeclaration(methodDeclTree))) {
+        if (methodDeclTree == null) {
             return;
         }
+        assert ElementUtils.isElementFromSourceCode(
+                TreeUtils.elementFromDeclaration(methodDeclTree));
 
         // Whole-program inference ignores some locations.  See Issue 682:
         // https://github.com/typetools/checker-framework/issues/682
@@ -520,7 +515,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *       previous annotation and rhsATM.
      * </ul>
      *
-     * <p>Subclasses can customize its behavior.
+     * <p>Subclasses can customize this behavior.
      *
      * @param typeToUpdate the type whose annotations are modified by this method
      * @param defLoc the location where the annotation will be added
@@ -548,7 +543,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *       previous annotation and rhsATM.
      * </ul>
      *
-     * <p>Subclasses can customize its behavior.
+     * <p>Subclasses can customize this behavior.
      *
      * @param typeToUpdate the type whose annotations are modified by this method
      * @param defLoc the location where the annotation will be added
@@ -576,7 +571,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
             // If the inferred type is a subtype of the upper bounds of the
-            // current type on the source code, halt.
+            // current type in the source code, do nothing.
             if (upperAnnos.size() == rhsATM.getAnnotations().size()
                     && atypeFactory
                             .getQualifierHierarchy()
@@ -608,16 +603,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                         ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
                         ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
                 break;
-                //        case WILDCARD:
-                // Because inferring type arguments is not supported, wildcards won't be encoutered
-                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
-                // sourceCodeATM).getExtendsBound(),
-                //                              ((AnnotatedWildcardType)
-                // ajavaATM).getExtendsBound());
-                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
-                // sourceCodeATM).getSuperBound(),
-                //                              ((AnnotatedWildcardType) ajavaATM).getSuperBound());
-                //            break;
+            case WILDCARD:
+                // Because inferring type arguments is not supported, wildcards won't be
+                // encountered.
+                // updateATMWithLUB(
+                //         atf,
+                //         ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
+                //         ((AnnotatedWildcardType) ajavaATM).getExtendsBound());
+                // updateATMWithLUB(
+                //         atf,
+                //         ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
+                //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
+                // break;
+                throw new BugInCF("This can't happen");
             case ARRAY:
                 updateATMWithLUB(
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
@@ -625,7 +623,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 break;
                 // case DECLARED:
                 // inferring annotations on type arguments is not supported, so no need to recur on
-                // generic types. If this was every implemented, this method would need VisitHistory
+                // generic types. If this was ever implemented, this method would need a
+                // VisitHistory
                 // object to prevent infinite recursion on types such as T extends List<T>.
             default:
                 // ATM only has primary annotations
@@ -644,19 +643,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             annosToReplace.add(amSource);
         }
         sourceCodeATM.replaceAnnotations(annosToReplace);
-    }
-
-    /**
-     * Checks whether a given local variable came from a source file or not.
-     *
-     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
-     * a classfile for the given element, whether or not there is also a source file.
-     *
-     * @param localVariableNode the local variable declaration to check
-     * @return true if a source file containing the variable is being compiled
-     */
-    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
-        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 
     @Override
