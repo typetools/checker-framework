@@ -841,7 +841,8 @@ subprojects {
                     dependsOn('jtregJdk11Tests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                          'wholeProgramInferenceTests', 'wpiManyTests')
+                // TODO: Add back 'wpiPlumeLibTests' once they work on buffalo.
             }
 
             if (project.name.is('dataflow')) {
