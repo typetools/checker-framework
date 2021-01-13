@@ -604,6 +604,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                         ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
                 break;
             case WILDCARD:
+                break;
+                // throw new BugInCF("This can't happen");
+                // TODO: this comment is wrong:  This case does get entered.
                 // Because inferring type arguments is not supported, wildcards won't be
                 // encountered.
                 // updateATMWithLUB(
@@ -615,7 +618,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 //         ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
                 //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
                 // break;
-                throw new BugInCF("This can't happen");
             case ARRAY:
                 updateATMWithLUB(
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
