@@ -41,19 +41,13 @@ dependencies {
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
     testannotationsImplementation project(':checker-qual')
-}
-
-// The AWS SDK is used for testing the Called Methods Checker.
-dependencyManagement {
-    imports {
-        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.923"
-    }
 }
 
 jar {
@@ -644,7 +638,6 @@ final checkerPom(publication) {
         }
     }
 }
-
 publishing {
     publications {
         checker(MavenPublication) {
@@ -654,4 +647,7 @@ publishing {
             artifact allJavadocJar
         }
     }
+}
+signing {
+    sign publishing.publications.checker
 }

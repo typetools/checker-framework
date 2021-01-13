@@ -86,7 +86,8 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     released can be dropped, which for our purposes is equivalent to never
     having staged them."""
     gnupgPassphrase = read_first_line("/projects/swlab1/checker-framework/hosting-info/release-private.password")
-    execute('./gradlew publish --no-parallel -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
+    # When bufalo uses gpg2 version 2.2+, then remove signing.gnupg.useLegacyGpg=true
+    execute('./gradlew publish --no-parallel -Psigning.gnupg.useLegacyGpg=true -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
 
 def is_file_empty(filename):
     "Returns true if the given file has size 0."
