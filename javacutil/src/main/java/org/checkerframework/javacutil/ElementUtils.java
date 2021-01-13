@@ -52,18 +52,18 @@ public class ElementUtils {
 
     /**
      * Returns the innermost type element enclosing the given element. Returns the element itself if
-     * it is a class.
+     * it is a type element.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
      */
     public static @Nullable TypeElement enclosingClass(final Element elem) {
         if (isClassElement(elem)) {
-            return elem;
+            return (TypeElement) elem;
         }
 
         if (elem instanceof Symbol) {
-            return ((Symbol) element).enclClass();
+            return ((Symbol) elem).enclClass();
         }
 
         Element result = elem.getEnclosingElement();
@@ -300,11 +300,11 @@ public class ElementUtils {
      */
     public static boolean isElementFromSourceCode(@Nullable Element element) {
         TypeElement enclosingClass = enclosingClass(element);
-        if (element == null) {
+        if (enclosingClass == null) {
             // This should not happen.
             return false;
         }
-        return isElementFromSourceCode((Symbol.ClassSymbol) element);
+        return isElementFromSourceCode((Symbol.ClassSymbol) enclosingClass);
     }
 
     /**
