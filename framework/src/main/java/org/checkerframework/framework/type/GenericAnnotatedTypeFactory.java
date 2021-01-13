@@ -80,6 +80,7 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -103,6 +104,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -261,6 +263,15 @@ public abstract class GenericAnnotatedTypeFactory<
                     TransferInput<Value, Store>,
                     IdentityHashMap<Node, TransferResult<Value, Store>>>
             flowResultAnalysisCaches;
+
+    /**
+     * Subcheckers share the same ControlFlowGraph for each analyzed code statement. This maps from
+     * code statements to the shared control flow graphs. This map is null in all subcheckers (i.e.
+     * it is null exactly when {@code this.checker.parentChecker} is non-null, and vice-versa).
+     *
+     * <p>The default size of the map is set by {@link #getCacheSize()}.
+     */
+    protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
 
     /**
      * Creates a type factory for checking the given compilation unit with respect to the given
@@ -2436,5 +2447,57 @@ public abstract class GenericAnnotatedTypeFactory<
         builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
         builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
         return builder.build();
+    }
+
+    /**
+     * Add a new entry to the shared CFG. If this is a subchecker, this method delegates to the
+     * superchecker's GenericAnnotatedTypeFactory, if it exists. Duplicate keys are ignored.
+     *
+     * @param tree the source code corresponding to cfg
+     * @param cfg the control flow graph to use for tree
+     * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
+     */
+    public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
+        SourceChecker parentChecker = this.checker.getParentChecker();
+        if (parentChecker != null) {
+            AnnotationProvider parentAtf = parentChecker.getAnnotationProvider();
+            if (parentAtf instanceof GenericAnnotatedTypeFactory) {
+                return ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) parentAtf)
+                        .addSharedCFGForTree(tree, cfg);
+            }
+            return false;
+        }
+        if (this.subcheckerSharedCFG == null) {
+            this.subcheckerSharedCFG = new HashMap<>(getCacheSize());
+        }
+        if (!this.subcheckerSharedCFG.containsKey(tree)) {
+            this.subcheckerSharedCFG.put(tree, cfg);
+        }
+        return true;
+    }
+
+    /**
+     * Get the shared control flow graph used for tree by this checker's topmost superchecker.
+     * Returns null if no information is available about the given tree, or if this checker has a
+     * parent checker that does not have a GenericAnnotatedTypeFactory.
+     *
+     * @param tree the tree whose CFG should be looked up
+     * @return the CFG stored by this checker's uppermost superchecker for tree, or null if it is
+     *     not available
+     */
+    public @Nullable ControlFlowGraph getSharedCFGForTree(Tree tree) {
+        SourceChecker parentChecker = this.checker.getParentChecker();
+        if (parentChecker != null) {
+            AnnotationProvider parentAtf = parentChecker.getAnnotationProvider();
+            if (parentAtf instanceof GenericAnnotatedTypeFactory) {
+                return ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) parentAtf)
+                        .getSharedCFGForTree(tree);
+            } else {
+                return null;
+            }
+        }
+        return this.subcheckerSharedCFG == null
+                ? null
+                : this.subcheckerSharedCFG.getOrDefault(tree, null);
     }
 }

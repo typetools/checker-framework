@@ -27,6 +27,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -53,6 +54,17 @@ public class CFCFGBuilder extends CFGBuilder {
                     "Assertions cannot be assumed to be enabled and disabled at the same time.");
         }
 
+        // Subcheckers with dataflow share control-flow graph structure to
+        // allow a super-checker to query the stores of a subchecker.
+        if (factory instanceof GenericAnnotatedTypeFactory) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
+                    (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
+            ControlFlowGraph sharedCFG = asGATF.getSharedCFGForTree(underlyingAST.getCode());
+            if (sharedCFG != null) {
+                return sharedCFG;
+            }
+        }
+
         CFTreeBuilder builder = new CFTreeBuilder(env);
         PhaseOneResult phase1result =
                 new CFCFGTranslationPhaseOne(
@@ -65,6 +77,11 @@ public class CFCFGBuilder extends CFGBuilder {
                         .process(root, underlyingAST);
         ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
+        if (factory instanceof GenericAnnotatedTypeFactory) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
+                    (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
+            asGATF.addSharedCFGForTree(underlyingAST.getCode(), phase3result);
+        }
         return phase3result;
     }
 
