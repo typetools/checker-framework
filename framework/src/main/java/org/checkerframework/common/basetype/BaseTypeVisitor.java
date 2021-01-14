@@ -986,6 +986,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
 
+            // TODO: if (expr != null)
+
             if (formalParamNames != null && formalParamNames.contains(expression)) {
                 String locationOfExpression =
                         contract.kind.errorKey
