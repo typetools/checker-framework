@@ -10,6 +10,8 @@ Replaced several error message keys by `expression.parameter.name`:
 
 **Implementation details:**
 
+Removed methods on `TreePath`s from class 'TreeUtils` that are duplicated in TreePathUtil`.
+
 **Closed issues:**
 
 ---------------------------------------------------------------------------
