@@ -22,6 +22,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -30,7 +34,6 @@ import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
@@ -89,6 +92,7 @@ public class AnnotationClassLoader {
     protected final ProcessingEnvironment processingEnv;
 
     /** The resource URL of the qual directory of a checker class. */
+    @SuppressWarnings("UnusedVariable")
     private final URL resourceURL;
 
     /** The class loader used to load annotation classes. */
@@ -490,61 +494,16 @@ public class AnnotationClassLoader {
      * Checker Framework.
      */
     private void loadBundledAnnotationClasses() {
-        // if there's no resourceURL, then there's nothing we can load
-        if (resourceURL == null) {
-            return;
-        }
-
         // retrieve the fully qualified class names of the annotations
-        Set<@BinaryName String> annotationNames;
+        Set<@BinaryName String> annotationNames = new LinkedHashSet<>();
 
-        // see whether the resource URL has a protocol of jar or file
-        if (resourceURL.getProtocol().contentEquals("jar")) {
-            // if the checker class file is contained within a jar, then the
-            // resource URL for the qual directory will have the protocol
-            // "jar". This means the whole checker is loaded as a jar file.
+        PackageElement pkgEle = checker.getElementUtils().getPackageElement(packageName);
 
-            JarURLConnection connection;
-            // create a connection to the jar file
-            try {
-                connection = (JarURLConnection) resourceURL.openConnection();
-
-                // disable caching / connection sharing of the low level URLConnection to the Jar
-                // file
-                connection.setDefaultUseCaches(false);
-                connection.setUseCaches(false);
-
-                // connect to the Jar file
-                connection.connect();
-            } catch (IOException e) {
-                throw new BugInCF(
-                        "AnnotationClassLoader: cannot open a connection to the Jar file "
-                                + resourceURL.getFile());
+        for (Element e : pkgEle.getEnclosedElements()) {
+            if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
+                annotationNames.add(((TypeElement) e).getQualifiedName().toString());
             }
-
-            // open up that jar file and extract annotation class names
-            try (JarFile jarFile = connection.getJarFile()) {
-                // get class names inside the jar file within the particular package
-                annotationNames = getBundledAnnotationNamesFromJar(jarFile);
-            } catch (IOException e) {
-                throw new BugInCF(
-                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
-            }
-
-        } else if (resourceURL.getProtocol().contentEquals("file")) {
-            // if the checker class file is found within the file system itself
-            // within some directory (usually development build directories),
-            // then process the package as a file directory in the file system
-            // and load the annotations contained in the qual directory
-
-            // open up the directory
-            File packageDir = new File(resourceURL.getFile());
-            annotationNames = getAnnotationNamesFromDirectory(packageName, packageDir, packageDir);
-        } else {
-            // We do not support a resource URL with any other protocols, so create an empty set.
-            annotationNames = Collections.emptySet();
         }
-
         supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
     }
 
@@ -568,7 +527,7 @@ public class AnnotationClassLoader {
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
-    @SuppressWarnings("JdkObsolete")
+    @SuppressWarnings({"JdkObsolete", "UnusedMethod"})
     private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
         Set<@BinaryName String> annos = new LinkedHashSet<>();
 
@@ -787,7 +746,6 @@ public class AnnotationClassLoader {
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
             final @Nullable Set<@BinaryName String> annoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
-
         if (annoNames != null && !annoNames.isEmpty()) {
             // loop through each class name & load the class
             for (String annoName : annoNames) {
