@@ -986,19 +986,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
 
-            if (expr != null) {
-                if (formalParamNames != null && formalParamNames.contains(expression)) {
-                    String locationOfExpression =
-                            contract.kind.errorKey
-                                    + " "
-                                    + contract.contractAnnotation
-                                            .getAnnotationType()
-                                            .asElement()
-                                            .getSimpleName()
-                                    + " on the declaration";
+            if (formalParamNames != null && formalParamNames.contains(expression)) {
+                String locationOfExpression =
+                        contract.kind.errorKey
+                                + " "
+                                + contract.contractAnnotation
+                                        .getAnnotationType()
+                                        .asElement()
+                                        .getSimpleName()
+                                + " on the declaration";
+                if (expr == null) {
                     checker.reportWarning(
                             node,
-                            "expression.parameter.name",
+                            "expression.parameter.name.invalid",
+                            locationOfExpression,
+                            node.getName().toString(),
+                            expression,
+                            formalParamNames.indexOf(expression) + 1);
+                } else {
+                    checker.reportWarning(
+                            node,
+                            "expression.parameter.name.shadows.field",
                             locationOfExpression,
                             node.getName().toString(),
                             expression,
