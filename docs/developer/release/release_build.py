@@ -165,7 +165,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
     update_project_dev_website("annotation-file-utilities", version)
 
 def build_and_locally_deploy_maven(version):
-    execute("./gradlew deployArtifactsToLocalRepo", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
 
 def build_checker_framework_release(version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir):
     """Build the release files for the Checker Framework project, including the
@@ -294,13 +294,13 @@ def main(argv):
     # Recall that there are 3 relevant sets of repositories for the release:
     # * build repository - repository where the project is built for release
     # * intermediate repository - repository to which release related changes are pushed after the project is built
-    # * release repository - GitHub/Bitbucket repositories, the central repository.
+    # * release repository - GitHub repositories, the central repository.
 
     # Every time we run release_build, changes are committed to the intermediate repository from build but NOT to
     # the release repositories. If we are running the build script multiple times without actually committing the
     # release then these changes need to be cleaned before we run the release_build script again.
     # The "Clone/update repositories" step updates the repositories with respect to the live repositories on
-    # GitHub/Bitbucket, but it is the "Verify repositories" step that ensures that they are clean,
+    # GitHub, but it is the "Verify repositories" step that ensures that they are clean,
     # i.e. indistinguishable from a freshly cloned repository.
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE

@@ -34,8 +34,8 @@ public @interface EnsuresLockHeldIf {
      *     Java expressions</a>
      */
     // It would be clearer for users if this field were named "lock".
-    // However, method ContractUtils.getConditionalPostconditions in the CF implementation assumes
-    // that conditional postconditions have a field named "expression".
+    // However, method ContractsFromMethod.getConditionalPostconditions in the CF implementation
+    // assumes that conditional postconditions have a field named "expression".
     String[] expression();
 
     /**

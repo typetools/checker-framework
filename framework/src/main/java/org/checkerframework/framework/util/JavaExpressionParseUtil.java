@@ -770,6 +770,7 @@ public class JavaExpressionParseUtil {
      * {@code @A(E)}, the context is the program element that is annotated by {@code @A(E)}.
      */
     public static class JavaExpressionContext {
+        /** The value of {@code this} in this context. */
         public final JavaExpression receiver;
         /**
          * In a context for a method declaration or lambda, the formals. In a context for a method
@@ -879,25 +880,22 @@ public class JavaExpressionParseUtil {
                 TypeMirror enclosingType,
                 BaseContext checkerContext) {
 
+            ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
+
             Node receiver;
             if (methodDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
-                Element classElt =
-                        ElementUtils.enclosingClass(
-                                TreeUtils.elementFromDeclaration(methodDeclaration));
+                Element classElt = ElementUtils.enclosingClass(methodElt);
                 receiver = new ClassNameNode(enclosingType, classElt);
             } else {
                 receiver = new ImplicitThisNode(enclosingType);
             }
             JavaExpression receiverJe =
                     JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
-            List<JavaExpression> argumentsJe = new ArrayList<>();
-            for (VariableTree arg : methodDeclaration.getParameters()) {
-                argumentsJe.add(
-                        JavaExpression.fromNode(
-                                checkerContext.getAnnotationProvider(),
-                                new LocalVariableNode(arg, receiver)));
+            List<JavaExpression> parametersJe = new ArrayList<>();
+            for (VariableElement param : methodElt.getParameters()) {
+                parametersJe.add(new LocalVariable(param));
             }
-            return new JavaExpressionContext(receiverJe, argumentsJe, checkerContext);
+            return new JavaExpressionContext(receiverJe, parametersJe, checkerContext);
         }
 
         /**
@@ -914,14 +912,14 @@ public class JavaExpressionParseUtil {
             Node receiver = new ImplicitThisNode(enclosingType);
             JavaExpression receiverJe =
                     JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
-            List<JavaExpression> argumentsJe = new ArrayList<>();
+            List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableTree arg : lambdaTree.getParameters()) {
-                argumentsJe.add(
+                parametersJe.add(
                         JavaExpression.fromNode(
                                 checkerContext.getAnnotationProvider(),
                                 new LocalVariableNode(arg, receiver)));
             }
-            return new JavaExpressionContext(receiverJe, argumentsJe, checkerContext);
+            return new JavaExpressionContext(receiverJe, parametersJe, checkerContext);
         }
 
         /**
