@@ -34,6 +34,7 @@ import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
@@ -496,12 +497,60 @@ public class AnnotationClassLoader {
     private void loadBundledAnnotationClasses() {
         // retrieve the fully qualified class names of the annotations
         Set<@BinaryName String> annotationNames = new LinkedHashSet<>();
+        // see whether the resource URL has a protocol of jar or file
+        if (resourceURL != null && resourceURL.getProtocol().contentEquals("jar")) {
+            // if the checker class file is contained within a jar, then the
+            // resource URL for the qual directory will have the protocol
+            // "jar". This means the whole checker is loaded as a jar file.
 
-        PackageElement pkgEle = checker.getElementUtils().getPackageElement(packageName);
+            JarURLConnection connection;
+            // create a connection to the jar file
+            try {
+                connection = (JarURLConnection) resourceURL.openConnection();
 
-        for (Element e : pkgEle.getEnclosedElements()) {
-            if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
-                annotationNames.add(((TypeElement) e).getQualifiedName().toString());
+                // disable caching / connection sharing of the low level URLConnection to the Jar
+                // file
+                connection.setDefaultUseCaches(false);
+                connection.setUseCaches(false);
+
+                // connect to the Jar file
+                connection.connect();
+            } catch (IOException e) {
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open a connection to the Jar file "
+                                + resourceURL.getFile());
+            }
+
+            // open up that jar file and extract annotation class names
+            try (JarFile jarFile = connection.getJarFile()) {
+                // get class names inside the jar file within the particular package
+                annotationNames = getBundledAnnotationNamesFromJar(jarFile);
+            } catch (IOException e) {
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
+            }
+
+        } else if (resourceURL != null && resourceURL.getProtocol().contentEquals("file")) {
+            // if the checker class file is found within the file system itself
+            // within some directory (usually development build directories),
+            // then process the package as a file directory in the file system
+            // and load the annotations contained in the qual directory
+
+            // open up the directory
+            File packageDir = new File(resourceURL.getFile());
+            annotationNames = getAnnotationNamesFromDirectory(packageName, packageDir, packageDir);
+        } else {
+            // We do not support a resource URL with any other protocols, so create an empty set.
+            annotationNames = Collections.emptySet();
+        }
+        if (annotationNames.isEmpty()) {
+            PackageElement pkgEle = checker.getElementUtils().getPackageElement(packageName);
+            if (pkgEle != null) {
+                for (Element e : pkgEle.getEnclosedElements()) {
+                    if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
+                        annotationNames.add(((TypeElement) e).getQualifiedName().toString());
+                    }
+                }
             }
         }
         supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
