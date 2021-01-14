@@ -32,7 +32,7 @@ compileJava {
     // and the Nullness Checker run.
     options.errorprone.warn('CollectionIncompatibleType')
     options.errorprone.errorproneArgs = [
-        // The HidingField test is buggy: https://github.com/google/error-prone/issues/2092
+        // The HidingField test causes crashes: https://github.com/google/error-prone/issues/2092
         '-Xep:HidingField:OFF',
     ]
 }
