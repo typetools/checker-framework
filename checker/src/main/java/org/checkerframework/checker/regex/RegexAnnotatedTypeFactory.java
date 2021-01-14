@@ -23,6 +23,8 @@ import org.checkerframework.checker.regex.qual.RegexBottom;
 import org.checkerframework.checker.regex.qual.UnknownRegex;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -99,6 +101,14 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     0,
                     processingEnv);
 
+    /** The group method of the Matcher class. */
+    protected final ExecutableElement group =
+            TreeUtils.getMethod(
+                    java.util.regex.Matcher.class.getCanonicalName(),
+                    "group",
+                    processingEnv,
+                    "int");
+
     /**
      * The value method of the PartialRegex qualifier.
      *
@@ -151,6 +161,11 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         return new RegexQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
+    }
+
+    /** Returns true if the method invocation is Matcher.group(int) */
+    public boolean isMatcherGroup(Node n) {
+        return NodeUtils.isMethodInvocation(n, group, getProcessingEnv());
     }
 
     /**

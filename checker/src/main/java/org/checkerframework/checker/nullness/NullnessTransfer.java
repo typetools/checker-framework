@@ -1,8 +1,10 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +18,9 @@ import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.regex.RegexAnnotatedTypeFactory;
+import org.checkerframework.checker.regex.RegexChecker;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -87,6 +92,9 @@ public class NullnessTransfer
     /** The type factory for the map key analysis. */
     protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
 
+    /** The type factory for the regex analysis. */
+    protected final RegexAnnotatedTypeFactory regexTypeFactory;
+
     /** Create a new NullnessTransfer for the given analysis. */
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
@@ -95,6 +103,9 @@ public class NullnessTransfer
         this.keyForTypeFactory =
                 ((BaseTypeChecker) nullnessTypeFactory.getContext().getChecker())
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+        this.regexTypeFactory =
+                ((BaseTypeChecker) nullnessTypeFactory.getContext().getChecker())
+                        .getTypeFactoryOfSubchecker(RegexChecker.class);
         NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
@@ -375,6 +386,25 @@ public class NullnessTransfer
                     && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
                 makeNonNull(result, n);
                 refineToNonNull(result);
+            }
+        }
+
+        // Refine result to @NonNull if n is an invocation of Matcher.group and the invocation is
+        // verified by the RegexChecker.
+        if (regexTypeFactory != null && regexTypeFactory.isMatcherGroup(n)) {
+            AnnotationMirror receiverType =
+                    regexTypeFactory.getAnnotationMirror(receiver.getTree(), Regex.class);
+            if (receiverType != null) {
+                int annoGroup = regexTypeFactory.getGroupCount(receiverType);
+                ExpressionTree param = methodArgs.get(0);
+                if (param != null && param.getKind() == Tree.Kind.INT_LITERAL) {
+                    LiteralTree paramVal = (LiteralTree) param;
+                    int paramGroup = (Integer) paramVal.getValue();
+                    if (paramGroup <= annoGroup) {
+                        makeNonNull(result, n);
+                        refineToNonNull(result);
+                    }
+                }
             }
         }
 
