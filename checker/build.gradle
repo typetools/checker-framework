@@ -17,6 +17,12 @@ sourceSets {
     testannotations
 }
 
+
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 dependencies {
     implementation project(':javacutil')
     implementation project(':dataflow')
