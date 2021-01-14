@@ -11,6 +11,11 @@ sourceSets {
     testannotations
 }
 
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 def versions = [
         autoValue       : "1.7.4",
         lombok          : "1.18.16",
