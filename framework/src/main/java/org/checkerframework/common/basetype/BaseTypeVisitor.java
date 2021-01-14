@@ -1001,7 +1001,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         locationOfExpression,
                         node.getName().toString(),
                         expression,
-                        formalParamNames.indexOf(expression) + 1,
+                        expression,
                         expression);
             }
 
