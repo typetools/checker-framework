@@ -100,7 +100,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.9.1'
+    version '3.9.2-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -843,7 +843,8 @@ subprojects {
                     dependsOn('jtregJdk11Tests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                          'wholeProgramInferenceTests', 'wpiManyTests')
+                // TODO: Add back 'wpiPlumeLibTests' once they work on buffalo.
             }
 
             if (project.name.is('dataflow')) {

@@ -4,7 +4,7 @@ plugins {
     // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-gradle.html,
     // because the build fails with the Gradle 5+ way, saying that it can't find ec2.
     // I believe that this is because the CF only needs the AWS SDK during testing, not during the build.
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 sourceSets {
@@ -41,19 +41,13 @@ dependencies {
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
     testannotationsImplementation project(':checker-qual')
-}
-
-// The AWS SDK is used for testing the Called Methods Checker.
-dependencyManagement {
-    imports {
-        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.923"
-    }
 }
 
 jar {
@@ -122,6 +116,7 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker.jar"
+    // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
@@ -643,7 +638,6 @@ final checkerPom(publication) {
         }
     }
 }
-
 publishing {
     publications {
         checker(MavenPublication) {
@@ -653,4 +647,7 @@ publishing {
             artifact allJavadocJar
         }
     }
+}
+signing {
+    sign publishing.publications.checker
 }
