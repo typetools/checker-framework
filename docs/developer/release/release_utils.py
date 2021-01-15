@@ -11,7 +11,7 @@ Copyright (c) 2012 University of Washington
 """
 
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
 import subprocess
 import os
@@ -47,7 +47,7 @@ def read_projects(argv, error_call_back):
     arg_length = len(sys.argv)
 
     if arg_length < 2:
-        print "You  must select at least one project!"
+        print("You  must select at least one project!")
         error_call_back()
         sys.exit(1)
 
@@ -62,7 +62,7 @@ def read_projects(argv, error_call_back):
 
         matched_project = match_arg(argv[index])
         if matched_project is None:
-            print  "Unmatched project: " + argv[index]
+            print("Unmatched project: " + argv[index])
             error = True
         else:
             matched_projects[matched_project[0]] = True
@@ -85,14 +85,14 @@ def print_projects(indent_level, indent_size):
     indentation = duplicate(duplicate(" ", indent_size), indent_level)
     project_to_short_cols = 27
 
-    print "projects:   You must specify at least one of the following projects or \"all\""
+    print("projects:   You must specify at least one of the following projects or \"all\"")
 
-    print  indentation + pad_to("project", " ", project_to_short_cols) + "short-name"
+    print(indentation + pad_to("project", " ", project_to_short_cols) + "short-name")
 
     for project in PROJECTS_TO_SHORTNAMES:
-        print indentation + pad_to(project[0], " ", project_to_short_cols) + project[1]
+        print(indentation + pad_to(project[0], " ", project_to_short_cols) + project[1])
 
-    print indentation + ALL_OPT
+    print(indentation + ALL_OPT)
 
 def duplicate(string, times):
     """Returns a string that is the concatenation of the given string repeated the
@@ -121,7 +121,7 @@ def read_command_line_option(argv, argument):
 
 def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
     """Execute the given command, capturing the output to the given file."""
-    print "Executing: %s" % (command_args)
+    print("Executing: %s" % (command_args))
     import shlex
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
@@ -140,7 +140,7 @@ def check_command(command):
     p = execute(['which', command], False)
     if p:
         raise AssertionError('command not found: %s' % command)
-    print ''
+    print('')
 
 def prompt_yes_no(msg, default=False):
     """Prints the given message and continually prompts the user until they
@@ -160,8 +160,8 @@ def prompt_yn(msg):
     answer y or n. Returns true if the answer was y, false otherwise."""
     y_or_n = 'z'
     while y_or_n != 'y' and y_or_n != 'n':
-        print msg + " [y|n]"
-        y_or_n = raw_input().lower()
+        print(msg + " [y|n]")
+        y_or_n = input().lower()
 
     return y_or_n == 'y'
 
@@ -175,7 +175,7 @@ def prompt_w_default(msg, default, valid_regex=None):
     If default is None, requires an answer."""
     answer = None
     while answer is None:
-        answer = raw_input(msg + " (%s): " % default)
+        answer = input(msg + " (%s): " % default)
 
         if answer is None or answer == "":
             answer = default
@@ -186,7 +186,7 @@ def prompt_w_default(msg, default, valid_regex=None):
                 m = re.match(valid_regex, answer)
                 if m is None:
                     answer = None
-                    print "Invalid answer.  Validating regex: " + valid_regex
+                    print("Invalid answer.  Validating regex: " + valid_regex)
             else:
                 answer = default
 
@@ -195,13 +195,13 @@ def prompt_w_default(msg, default, valid_regex=None):
 def check_tools(tools):
     """Given an array specifying a set of tools, verify that the tools are
     installed and on the PATH."""
-    print "\nChecking to make sure the following programs are installed:"
-    print ', '.join(tools)
-    print('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
+    print("\nChecking to make sure the following programs are installed:")
+    print(', '.join(tools))
+    print(('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
           'likely need to change the variables that are set in release.py\n' +
-          'Search for "Set environment variables".')
-    map(check_command, tools)
-    print ''
+          'Search for "Set environment variables".'))
+    list(map(check_command, tools))
+    print('')
 
 def continue_or_exit(msg):
     "Prompts the user whether to continue executing the script."
@@ -262,9 +262,9 @@ def current_distribution_by_website(site):
     Reads the checker framework version from the checker framework website and
     returns the version of the current release.
     """
-    print 'Looking up checker-framework-version from %s\n' % site
+    print('Looking up checker-framework-version from %s\n' % site)
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
-    text = urllib2.urlopen(url=site).read()
+    text = urllib.request.urlopen(url=site).read()
     result = ver_re.search(text)
     return result.group(1)
 
@@ -282,7 +282,7 @@ def current_distribution(checker_framework_dir):
         if match:
             return match.group(1)
 
-    print  "Couldn't find checker framework version in file: " + build_props_location
+    print("Couldn't find checker framework version in file: " + build_props_location)
     sys.exit(1)
 
 def extract_from_site(site, open_tag, close_tag):
@@ -292,7 +292,7 @@ def extract_from_site(site, open_tag, close_tag):
     regex_str = open_tag + "(.*)" + close_tag
 
     ver_re = re.compile(regex_str)
-    text = urllib2.urlopen(url=site).read()
+    text = urllib.request.urlopen(url=site).read()
     result = ver_re.search(text)
     return result.group(1)
 
@@ -371,7 +371,7 @@ def push_changes_prompt_if_fail(repo_root):
         if result == 0:
             break
         else:
-            print "Could not push from: " + repo_root + "; result=" + str(result) + " for command: " + cmd + "` in " + os.getcwd()
+            print("Could not push from: " + repo_root + "; result=" + str(result) + " for command: " + cmd + "` in " + os.getcwd())
             if not prompt_yn("Try again (responding 'n' will skip this push command but will not exit the script) ?"):
                 break
 
@@ -492,8 +492,8 @@ def check_repos(repos, fail_on_error, is_intermediate_repo_list):
         if repo_exists(repo):
             if not is_repo_cleaned_and_updated(repo):
                 if is_intermediate_repo_list:
-                    print("\nWARNING: Intermediate repository " + repo + " is not up to date with respect to the live repository.\n" +
-                          "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository.")
+                    print(("\nWARNING: Intermediate repository " + repo + " is not up to date with respect to the live repository.\n" +
+                          "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository."))
                 if fail_on_error:
                     raise Exception('repo %s is not cleaned and updated!' % repo)
                 else:
@@ -595,8 +595,8 @@ def propose_documentation_change_review(dir_title, old_version, repository_path,
         # Alternatively the process could be modified such that the version number updates are not made
         # before the user sees the diff. However that would mean the user never gets a chance to review
         # those updates.
-        print  "Please review " + dir_title + " and make any edits you deem necessary in your local clone of the repository."
-        print  "Diff file: " + diff_output_file
+        print("Please review " + dir_title + " and make any edits you deem necessary in your local clone of the repository.")
+        print("Diff file: " + diff_output_file)
         prompt_to_continue()
 
 #=========================================================================================
@@ -605,13 +605,13 @@ def propose_documentation_change_review(dir_title, old_version, repository_path,
 def wget_file(source_url, destination_dir):
     """Download a file from the source URL to the given destination directory.
     Useful since download_binary does not seem to work on source files."""
-    print "DEST DIR: " + destination_dir
+    print("DEST DIR: " + destination_dir)
     execute("wget %s" % source_url, True, False, destination_dir)
 
 def download_binary(source_url, destination):
     """Download a file from the given URL and save its contents to the
     destination filename."""
-    http_response = urllib2.urlopen(url=source_url)
+    http_response = urllib.request.urlopen(url=source_url)
     content_length = http_response.headers['content-length']
 
     if content_length is None:
@@ -783,13 +783,13 @@ def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, ja
 
 def print_step(step):
     "Print a step in the release_build or release_push script."
-    print  "\n"
-    print  step
+    print("\n")
+    print(step)
 
     dashStr = ""
     for dummy in range(0, len(step)):
         dashStr += "-"
-    print  dashStr
+    print(dashStr)
 
 def get_announcement_email(version):
     """Return the template for the e-mail announcing a new release of the

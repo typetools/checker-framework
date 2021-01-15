@@ -1,12 +1,3 @@
-plugins {
-    // To only load the parts of the AWS SDK needed to test the Called Methods Checker, rather
-    // than the whole AWS SDK. Uses the "legacy" version listed here:
-    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-gradle.html,
-    // because the build fails with the Gradle 5+ way, saying that it can't find ec2.
-    // I believe that this is because the CF only needs the AWS SDK during testing, not during the build.
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-}
-
 sourceSets {
     main {
         resources {
@@ -47,6 +38,7 @@ dependencies {
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
+    // The AWS SDK is used for testing the Called Methods Checker.
     testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
@@ -644,6 +636,7 @@ final checkerPom(publication) {
         }
     }
 }
+
 publishing {
     publications {
         checker(MavenPublication) {
