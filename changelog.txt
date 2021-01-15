@@ -2,9 +2,19 @@ Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
 
+Replaced several error message keys by `expression.parameter.name`:
+ * `contracts.precondition.expression.parameter.name`
+ * `contracts.postcondition.expression.parameter.name`
+ * `contracts.conditional.postcondition.expression.parameter.name`
+ * `method.declaration.expression.parameter.name`
+
 **Implementation details:**
 
-Removed methods on `TreePath`s from class 'TreeUtils` that are duplicated in TreePathUtil`.
+Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
+
+**Closed issues:**
+
+---------------------------------------------------------------------------
 
 Version 3.9.1, January 13, 2021
 
