@@ -45,7 +45,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
      */
     private final Map<Kind, Set<AnnotationMirror>> treeKinds;
     private final Map<Class<?>, Set<AnnotationMirror>> treeClasses;
-    private final Map<Pattern, Set<AnnotationMirror>> stringPatterns;
+    private final IdentityHashMap<Pattern, Set<AnnotationMirror>> stringPatterns;
 
     protected final QualifierHierarchy qualHierarchy;
 
