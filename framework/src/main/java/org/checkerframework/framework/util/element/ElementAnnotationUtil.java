@@ -290,7 +290,7 @@ public class ElementAnnotationUtil {
     static void annotateViaTypeAnnoPosition(
             final AnnotatedTypeMirror type, final Collection<TypeCompound> annos)
             throws UnexpectedAnnotationLocationException {
-        final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
+        final IdentityHashMap<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
             AnnotatedTypeMirror target =
