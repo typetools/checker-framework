@@ -13,7 +13,7 @@ by new message keys:
 
 **Implementation details:**
 
-Removed methods on `TreePath`s from class 'TreeUtils` that are duplicated in TreePathUtil`.
+Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
 
 **Closed issues:**
 
