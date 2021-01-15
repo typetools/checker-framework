@@ -496,7 +496,7 @@ public class AnnotationClassLoader {
      */
     private void loadBundledAnnotationClasses() {
         // retrieve the fully qualified class names of the annotations
-        Set<@BinaryName String> annotationNames = new LinkedHashSet<>();
+        Set<@BinaryName String> annotationNames;
         // see whether the resource URL has a protocol of jar or file
         if (resourceURL != null && resourceURL.getProtocol().contentEquals("jar")) {
             // if the checker class file is contained within a jar, then the
@@ -548,7 +548,11 @@ public class AnnotationClassLoader {
             if (pkgEle != null) {
                 for (Element e : pkgEle.getEnclosedElements()) {
                     if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
-                        annotationNames.add(((TypeElement) e).getQualifiedName().toString());
+                        // Elements needs to be annotated.
+                        @SuppressWarnings("signature:assignment.type.incompatible")
+                        @BinaryName String annoBinName =
+                                checker.getElementUtils().getBinaryName((TypeElement) e).toString();
+                        annotationNames.add(annoBinName);
                     }
                 }
             }
