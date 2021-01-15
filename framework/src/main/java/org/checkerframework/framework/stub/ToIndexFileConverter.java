@@ -459,7 +459,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return null;
     }
 
-    /** Copies information from an AST type node's inner type nodes to an {@link ATypeElement}. */
+    /**
+     * Copies information from an AST type node's inner type nodes to an {@link ATypeElement}.
+     *
+     * @param type AST Type node to inspect
+     * @param elem destination type element
+     */
     private static Void visitInnerTypes(Type type, final ATypeElement elem) {
         return type.accept(
                 new GenericVisitorAdapter<Void, List<TypePathEntry>>() {
