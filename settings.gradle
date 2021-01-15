@@ -13,3 +13,5 @@ includeBuild ('../annotation-tools/annotation-file-utilities') {
         }
     }
 }
+include 'checker-util'
+
