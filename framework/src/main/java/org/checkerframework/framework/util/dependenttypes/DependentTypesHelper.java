@@ -422,7 +422,7 @@ public class DependentTypesHelper {
             AnnotatedTypeMirror atm,
             boolean removeErroneousExpressions) {
 
-        TypeMirror enclosingType = ElementUtils.enclosingType(elt).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(elt).asType();
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, enclosingType, factory.getContext());
@@ -480,7 +480,7 @@ public class DependentTypesHelper {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
-                TypeMirror enclosingType = ElementUtils.enclosingType(variableElt).asType();
+                TypeMirror enclosingType = ElementUtils.enclosingTypeElement(variableElt).asType();
                 JavaExpression receiver =
                         JavaExpression.getPseudoReceiver(pathToVariableDecl, enclosingType);
                 List<JavaExpression> params =
@@ -974,7 +974,7 @@ public class DependentTypesHelper {
      */
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
         Element ele = TreeUtils.elementFromDeclaration(node);
-        TypeMirror enclosingType = ElementUtils.enclosingType(ele).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(ele).asType();
 
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(

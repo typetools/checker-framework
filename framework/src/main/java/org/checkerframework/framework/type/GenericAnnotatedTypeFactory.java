@@ -1799,7 +1799,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         applyLocalVariableQualifierParameterDefaults(elt, type);
 
-        TypeElement enclosingClass = ElementUtils.enclosingType(elt);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
         Set<AnnotationMirror> tops;
         if (enclosingClass != null) {
             tops = getQualifierParameterHierarchies(enclosingClass);

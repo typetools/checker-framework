@@ -803,7 +803,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @return the "flatname" of the class enclosing {@code variableElement}
      */
     private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
-        return getClassName(ElementUtils.enclosingType(variableElement));
+        return getClassName(ElementUtils.enclosingTypeElement(variableElement));
     }
 
     /**
@@ -814,7 +814,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingType(localVariableNode.getElement()))
+        return ((ClassSymbol) ElementUtils.enclosingTypeElement(localVariableNode.getElement()))
                 .flatName()
                 .toString();
     }
@@ -827,17 +827,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *     class
      */
     private TypeElement toplevelEnclosingClass(Element element) {
-        if (ElementUtils.enclosingType(element) == null) {
+        if (ElementUtils.enclosingTypeElement(element) == null) {
             return (TypeElement) element;
         }
 
-        TypeElement result = ElementUtils.enclosingType(element);
-        TypeElement enclosing = ElementUtils.enclosingType(result);
+        TypeElement result = ElementUtils.enclosingTypeElement(element);
+        TypeElement enclosing = ElementUtils.enclosingTypeElement(result);
         // ElementUtils.enclosingType returns its argument if it's already a class, so an Element
         // being the same as its enclosing class is a sufficient stopping condition.
         while (enclosing != null && !enclosing.equals(result)) {
-            result = ElementUtils.enclosingType(result);
-            enclosing = ElementUtils.enclosingType(result);
+            result = ElementUtils.enclosingTypeElement(result);
+            enclosing = ElementUtils.enclosingTypeElement(result);
         }
 
         return result;

@@ -13,7 +13,7 @@ by new message keys:
 
 **Implementation details:**
 
-Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingType`.
+Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingTypeElement`.
 
 Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
 

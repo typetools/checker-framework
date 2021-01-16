@@ -491,7 +491,7 @@ public class AnnotatedTypes {
         // 2. Find the base type of enclosingClassOfMember (e.g. type of enclosingClassOfMember as
         //      supertype of passed type)
         // 3. Substitute for type variables if any exist
-        TypeElement enclosingClassOfMember = ElementUtils.enclosingType(member);
+        TypeElement enclosingClassOfMember = ElementUtils.enclosingTypeElement(member);
         final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
 
         // Look for all enclosing classes that have type variables
@@ -499,7 +499,7 @@ public class AnnotatedTypes {
         while (enclosingClassOfMember != null) {
             addTypeVarMappings(types, atypeFactory, receiverType, enclosingClassOfMember, mappings);
             enclosingClassOfMember =
-                    ElementUtils.enclosingType(enclosingClassOfMember.getEnclosingElement());
+                    ElementUtils.enclosingTypeElement(enclosingClassOfMember.getEnclosingElement());
         }
 
         if (!mappings.isEmpty()) {
@@ -570,7 +570,7 @@ public class AnnotatedTypes {
      */
     private static AnnotatedTypeMirror substituteUninferredTypeArgs(
             AnnotatedTypeFactory atypeFactory, Element member, AnnotatedTypeMirror memberType) {
-        TypeElement enclosingClassOfMember = ElementUtils.enclosingType(member);
+        TypeElement enclosingClassOfMember = ElementUtils.enclosingTypeElement(member);
         final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
 
         while (enclosingClassOfMember != null) {
@@ -585,7 +585,7 @@ public class AnnotatedTypes {
                 }
             }
             enclosingClassOfMember =
-                    ElementUtils.enclosingType(enclosingClassOfMember.getEnclosingElement());
+                    ElementUtils.enclosingTypeElement(enclosingClassOfMember.getEnclosingElement());
         }
 
         if (!mappings.isEmpty()) {

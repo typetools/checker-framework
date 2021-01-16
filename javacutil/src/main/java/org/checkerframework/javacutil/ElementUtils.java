@@ -55,20 +55,30 @@ public class ElementUtils {
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
-     * @deprecated use {@link #enclosingType}
+     * @deprecated use {@link #enclosingTypeElement}
      */
-    @Deprecated // use enclosingType
+    @Deprecated // use enclosingTypeElement
     public static @Nullable TypeElement enclosingClass(final Element elem) {
-        return enclosingType(elem);
+        return enclosingTypeElement(elem);
     }
 
     /**
      * Returns the innermost type element enclosing the given element.
      *
+     * <p>Note that in this code:
+     *
+     * <pre>{@code
+     * class Outer {
+     *   static class Inner {  }
+     * }
+     * }</pre>
+     *
+     * {@code Inner} has no enclosing type, but this method returns {@code Outer}.
+     *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
      */
-    public static @Nullable TypeElement enclosingType(final Element elem) {
+    public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
         Element result = elem;
         while (result != null && !isTypeElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
