@@ -55,10 +55,32 @@ public class ElementUtils {
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
+     * @deprecated use {@link #enclosingTypeElement}
      */
+    @Deprecated // use enclosingTypeElement
     public static @Nullable TypeElement enclosingClass(final Element elem) {
+        return enclosingTypeElement(elem);
+    }
+
+    /**
+     * Returns the innermost type element enclosing the given element.
+     *
+     * <p>Note that in this code:
+     *
+     * <pre>{@code
+     * class Outer {
+     *   static class Inner {  }
+     * }
+     * }</pre>
+     *
+     * {@code Inner} has no enclosing type, but this method returns {@code Outer}.
+     *
+     * @param elem the enclosed element of a class
+     * @return the innermost type element, or null if no type element encloses {@code elem}
+     */
+    public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
         Element result = elem;
-        while (result != null && !isClassElement(result)) {
+        while (result != null && !isTypeElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
@@ -187,7 +209,7 @@ public class ElementUtils {
      * @return the qualified name of the given element
      */
     public static String getQualifiedName(Element elt) {
-        if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
+        if (elt.getKind() == ElementKind.PACKAGE || isTypeElement(elt)) {
             Name n = getQualifiedClassName(elt);
             if (n == null) {
                 return "Unexpected element: " + elt;
@@ -211,7 +233,7 @@ public class ElementUtils {
         if (enclosing == null) { // is this possible?
             return simpleName;
         }
-        if (ElementUtils.isClassElement(enclosing)) {
+        if (ElementUtils.isTypeElement(enclosing)) {
             return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
         } else if (enclosing.getKind() == ElementKind.PACKAGE) {
             PackageElement pe = (PackageElement) enclosing;
