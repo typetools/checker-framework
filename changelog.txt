@@ -2,11 +2,14 @@ Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
 
-Replaced several error message keys by `expression.parameter.name`:
+Replaced several error message keys:
  * `contracts.precondition.expression.parameter.name`
  * `contracts.postcondition.expression.parameter.name`
  * `contracts.conditional.postcondition.expression.parameter.name`
  * `method.declaration.expression.parameter.name`
+by new message keys:
+ * `expression.parameter.name.invalid`
+ * `expression.parameter.name.shadows.field`
 
 **Implementation details:**
 
