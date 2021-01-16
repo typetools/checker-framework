@@ -13,7 +13,7 @@ apply plugin: 'org.checkerframework'
 
 dependencies {
     // Must use at least version 2.4.0 of Error Prone.
-    errorprone 'com.google.errorprone:error_prone_core:2.4.0'
+    errorprone 'com.google.errorprone:error_prone_core:2.5.1'
 }
 
 repositories {
@@ -31,4 +31,8 @@ compileJava {
     // convert the expected error to a warning to test that both Error Prone
     // and the Nullness Checker run.
     options.errorprone.warn('CollectionIncompatibleType')
+    options.errorprone.errorproneArgs = [
+        // The HidingField test causes crashes: https://github.com/google/error-prone/issues/2092
+        '-Xep:HidingField:OFF',
+    ]
 }

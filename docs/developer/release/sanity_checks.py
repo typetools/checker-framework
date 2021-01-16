@@ -32,7 +32,7 @@ def javac_sanity_check(checker_framework_website, release_version):
 
     javac_sanity_zip = os.path.join(javac_sanity_dir, "checker-framework-%s.zip" % release_version)
 
-    print  "Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip)
+    print("Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip))
     download_binary(new_checkers_release_zip, javac_sanity_zip)
 
     nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
@@ -46,7 +46,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     deploy_dir = os.path.join(javac_sanity_dir, "checker-framework-" + release_version)
 
     if os.path.exists(deploy_dir):
-        print  "Deleting existing path: " + deploy_dir
+        print("Deleting existing path: " + deploy_dir)
         delete_path(deploy_dir)
 
     with zipfile.ZipFile(javac_sanity_zip, "r") as z:
@@ -95,10 +95,10 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     execute(get_example_dir_cmd)
     path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
     if repo_url != "":
-        print("This script will now delete your Maven Checker Framework artifacts.\n" +
+        print(("This script will now delete your Maven Checker Framework artifacts.\n" +
             "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
             "will need to be re-downloaded the next time you need them.  This will be " +
-            "done automatically by Maven next time you use the plugin.")
+            "done automatically by Maven next time you use the plugin."))
 
         if os.path.isdir(path_to_artifacts):
             delete_path(path_to_artifacts)
@@ -123,7 +123,7 @@ def check_results(title, output_log, expected_errors):
                         "File: " + output_log + "\n" +
                         "should contain the following errors: [ " + ", ".join(expected_errors))
     else:
-        print  "%s check: passed!\n" % title
+        print("%s check: passed!\n" % title)
 
 
 def add_repo_information(pom, repo_url):
@@ -148,5 +148,5 @@ def add_repo_information(pom, repo_url):
     result_str = execute('grep -nm 1 "<build>" %s' % pom, True, True)
     line_no_str = result_str.split(":")[0]
     line_no = int(line_no_str)
-    print " LINE_NO: " + line_no_str
+    print(" LINE_NO: " + line_no_str)
     insert_before_line(to_insert, pom, line_no)
