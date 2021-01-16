@@ -217,6 +217,9 @@ public final class SceneToStubWriter {
         }
     }
 
+    /* Static variable to improve performance of getNextArrayLevel. */
+    private static List<TypePathEntry> location;
+
     /**
      * Gets the outermost array level (or the component if not an array) from the given type
      * element, or null if scene-lib is not storing any more information about this array (for
@@ -232,7 +235,7 @@ public final class SceneToStubWriter {
         }
 
         for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
-            List<TypePathEntry> location = ite.getKey();
+            location = ite.getKey();
             if (location.contains(new TypePathEntry(TypePath.ARRAY_ELEMENT, 0))) {
                 return ite.getValue();
             }
