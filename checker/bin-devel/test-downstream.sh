@@ -16,7 +16,6 @@ source "$SCRIPTDIR"/build.sh
 ## These are here so they can be run by pull requests.  (Pull requests
 ## currently don't trigger downstream jobs.)
 ## Exceptions:
-##  * checker-framework-inference is run by test-cf-inference.sh
 ##  * plume-lib is run by test-plume-lib.sh
 ##  * daikon-typecheck is run as a separate CI project
 ##  * guava is run as a separate CI project
