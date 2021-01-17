@@ -163,7 +163,12 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new RegexQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    /** Returns true if the method invocation is Matcher.group(int) */
+    /**
+     * Returns true if the method invocation is Matcher.group(int)
+     *
+     * @param n the method invocation node to check.
+     * @return whether the method invocation node is Matcher.group(int).
+     */
     public boolean isMatcherGroup(Node n) {
         return NodeUtils.isMethodInvocation(n, group, getProcessingEnv());
     }

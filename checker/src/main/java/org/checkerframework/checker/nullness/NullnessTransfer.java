@@ -95,7 +95,11 @@ public class NullnessTransfer
     /** The type factory for the regex analysis. */
     protected final RegexAnnotatedTypeFactory regexTypeFactory;
 
-    /** Create a new NullnessTransfer for the given analysis. */
+    /**
+     * Create a new NullnessTransfer for the given analysis.
+     *
+     * @param analysis The analysis used to create the transfer function.
+     */
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
         this.nullnessTypeFactory = analysis.getTypeFactory();
