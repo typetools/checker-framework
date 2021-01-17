@@ -25,9 +25,9 @@ PLUME_SCRIPTS="$CHECKERFRAMEWORK/checker/bin-devel/.plume-scripts"
 if [ -d "$PLUME_SCRIPTS" ] ; then
   (cd "$PLUME_SCRIPTS" && git pull -q)
 else
-  cd "$CHECKERFRAMEWORK/checker/bin-devel" && \
+  (cd "$CHECKERFRAMEWORK/checker/bin-devel" && \
       (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts || \
-       git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts)
+       git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts))
 fi
 
 # Clone the annotated JDK into ../jdk .
