@@ -41,6 +41,8 @@ eval $(/tmp/plume-scripts/ci-info typetools)
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
+./gradlew getPlumeScripts -q
+
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPTDIR=$ROOTDIR/checker/bin-devel/
 

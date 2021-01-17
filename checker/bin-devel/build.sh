@@ -20,11 +20,8 @@ else
 fi
 echo "JAVA_HOME=${JAVA_HOME}"
 
-if [ -d "/tmp/$USER/plume-scripts" ] ; then
-  (cd "/tmp/$USER/plume-scripts" && git pull -q)
-else
-  mkdir -p "/tmp/$USER" && (cd "/tmp/$USER" && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
-fi
+(cd "$CHECKERFRAMEWORK" && ./gradlew getPlumeScripts)
+PLUME_SCRIPTS="$CHECKERFRAMEWORK/
 
 # Clone the annotated JDK into ../jdk .
 "/tmp/$USER/plume-scripts/git-clone-related" typetools jdk
