@@ -228,23 +228,31 @@ done <"${INLIST}"
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
-results_available=$(grep -Zvl -e "no build file found for" \
+grep -Zvl -e "no build file found for" \
     -e "dljc could not run the Checker Framework" \
     -e "dljc could not run the build successfully" \
     -e "dljc timed out for" \
-    "${OUTDIR}-results/"*.log)
+    "${OUTDIR}-results/"*.log \
+ > "${OUTDIR}-results/results_available.txt"
 
-echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
-
-if [ -n "${results_available}" ]; then
+if [ ! -s "${OUTDIR}-results/results_available.txt" ]; then
+  echo "File ${OUTDIR}-results/results_available.txt is empty"
+  echo "Log files:"
+  echo ${OUTDIR}-results/*.log
+  echo "End of log files."
+else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
+
+    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
 
-    if [ ! -s diff.txt ] ; then
+    if [ ! -s "${listpath}" ] ; then
         echo "No java files found in files in ${OUTDIR}-results/results_available.txt"
+        echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
+        cat "${OUTDIR}-results/results_available.txt"
+        echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
         exit 1
     fi
 
