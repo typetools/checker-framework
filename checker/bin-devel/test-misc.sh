@@ -11,9 +11,10 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$SCRIPTDIR"/build.sh
 
+PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
 
 # Checker Framework demos
-"/tmp/$USER/plume-scripts/git-clone-related" typetools checker-framework.demos
+"$PLUME_SCRIPTS/git-clone-related" typetools checker-framework.demos
 ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
 
 status=0
@@ -35,9 +36,9 @@ fi
 # top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
 if [ ! -f SKIP-REQUIRE-JAVADOC ]; then
   (./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
-  /tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt || status=1
+  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-rjp.txt || status=1
   (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
-  /tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt || status=1
+  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-jda.txt || status=1
 fi
 if [ $status -ne 0 ]; then exit $status; fi
 
