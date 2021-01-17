@@ -487,6 +487,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             wholeProgramInference = new WholeProgramInferenceScenes(this);
+            if (!checker.hasOption("warns")) {
+                // Without -Awarns, the inference output may be incomplete, because javac halts
+                // after issuing an error.
+                throw new UserError("Do not supply -Ainfer without -Awarns");
+            }
         } else {
             wholeProgramInference = null;
         }
