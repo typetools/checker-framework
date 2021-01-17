@@ -192,6 +192,12 @@ do
     touch "${RESULT_LOG}"
 
     /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+
+    if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
+        echo "TROUBLE: failed to clone do-like-javac."
+        exit 1
+    fi
+
     rm -f "${OUTDIR}-results/wpi-out"
 
     cd "${OUTDIR}" || exit 5
@@ -238,7 +244,7 @@ grep -Zvl -e "no build file found for" \
 if [ ! -s "${OUTDIR}-results/results_available.txt" ]; then
   echo "File ${OUTDIR}-results/results_available.txt is empty"
   echo "Log files:"
-  echo ${OUTDIR}-results/*.log
+  echo "${OUTDIR}-results"/*.log
   echo "End of log files."
 else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
