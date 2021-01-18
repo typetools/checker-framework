@@ -28,11 +28,13 @@ final javacUtilPom(publication) {
         }
     }
 }
-
 publishing {
     publications {
         javacUtil(MavenPublication) {
             javacUtilPom it
         }
     }
+}
+signing {
+    sign publishing.publications.javacUtil
 }

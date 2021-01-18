@@ -422,7 +422,7 @@ public class DependentTypesHelper {
             AnnotatedTypeMirror atm,
             boolean removeErroneousExpressions) {
 
-        TypeMirror enclosingType = ElementUtils.enclosingClass(elt).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(elt).asType();
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, enclosingType, factory.getContext());
@@ -480,7 +480,7 @@ public class DependentTypesHelper {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
-                TypeMirror enclosingType = ElementUtils.enclosingClass(variableElt).asType();
+                TypeMirror enclosingType = ElementUtils.enclosingTypeElement(variableElt).asType();
                 JavaExpression receiver =
                         JavaExpression.getPseudoReceiver(pathToVariableDecl, enclosingType);
                 List<JavaExpression> params =
@@ -964,9 +964,17 @@ public class DependentTypesHelper {
         }
     }
 
+    /**
+     * Checks all Java expressions in the type variables to see if the expression string is an error
+     * string as specified by DependentTypesError#isExpressionError. If the annotated type has any
+     * errors, a flowexpr.parse.error is issued.
+     *
+     * @param node a method declaration
+     * @param methodType annotated type of the method
+     */
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
         Element ele = TreeUtils.elementFromDeclaration(node);
-        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(ele).asType();
 
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(

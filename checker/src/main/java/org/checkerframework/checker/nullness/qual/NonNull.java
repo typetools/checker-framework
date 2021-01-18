@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 
 /**
  * If an expression's type is qualified by {@code @NonNull}, then the expression never evaluates to
- * {@code null}.
+ * {@code null}. (Unless the program has a bug; annotations specify intended behavior.)
  *
  * <p>For fields of a class, the {@link NonNull} annotation indicates that this field is never
  * {@code null} <em>after the class has been fully initialized</em>. For static fields, the {@link

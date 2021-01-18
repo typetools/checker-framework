@@ -2347,9 +2347,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (element == null) {
             return false;
         }
-        TypeElement typeElement = ElementUtils.enclosingClass(element);
+        TypeElement typeElement = ElementUtils.enclosingTypeElement(element);
         if (typeElement == null) {
-            throw new BugInCF("enclosingClass(%s [%s]) => null%n", element, element.getClass());
+            throw new BugInCF(
+                    "enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
         }
         @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
         // @FullyQualifiedName

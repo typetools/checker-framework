@@ -100,7 +100,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.9.1'
+    version '3.9.2-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -232,6 +232,8 @@ allprojects {
                 options.errorprone.enabled = true
                 options.errorprone.disableWarningsInGeneratedCode = true
                 options.errorprone.errorproneArgs = [
+                        // The HidingField test causes crashes: https://github.com/google/error-prone/issues/2092
+                        '-Xep:HidingField:OFF',
                         // Many compiler classes are interned.
                         '-Xep:ReferenceEquality:OFF',
                         // These might be worth fixing.
@@ -596,7 +598,7 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.5.1'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -841,7 +843,8 @@ subprojects {
                     dependsOn('jtregJdk11Tests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                          'wholeProgramInferenceTests', 'wpiManyTests')
+                // TODO: Add back 'wpiPlumeLibTests' once they work on buffalo.
             }
 
             if (project.name.is('dataflow')) {

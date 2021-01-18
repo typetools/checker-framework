@@ -24,7 +24,7 @@ public class SelfDependentType {
 
         HashMap<T, List<@KeyFor("childMap") T>> childMap;
 
-        // :: error: method.declaration.expression.parameter.name
+        // :: error: (expression.parameter.name)
         public SdtGraph1(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
             this.childMap = childMap;
         }
@@ -34,7 +34,7 @@ public class SelfDependentType {
 
         HashMap<T, List<@KeyFor("this.childMap") T>> childMap;
 
-        // :: error: method.declaration.expression.parameter.name
+        // :: error: (expression.parameter.name)
         public SdtGraph2(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
             this.childMap = childMap;
         }
@@ -80,7 +80,7 @@ public class SelfDependentType {
 
         HashMap<T, List<@KeyFor("childMapField") T>> childMapField;
 
-        // :: error: method.declaration.expression.parameter.name
+        // :: error: (expression.parameter.name)
         public SdtGraph11(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
             this.childMapField = childMap;
         }
@@ -90,7 +90,7 @@ public class SelfDependentType {
 
         HashMap<T, List<@KeyFor("this.childMapField") T>> childMapField;
 
-        // :: error: method.declaration.expression.parameter.name
+        // :: error: (expression.parameter.name)
         public SdtGraph12(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
             this.childMapField = childMap;
         }

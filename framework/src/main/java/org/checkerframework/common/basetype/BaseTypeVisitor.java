@@ -987,16 +987,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             if (formalParamNames != null && formalParamNames.contains(expression)) {
-                @SuppressWarnings("compilermessages")
-                @CompilerMessageKey String key = "contracts." + contract.kind.errorKey + ".expression.parameter.name";
-                checker.reportWarning(
-                        node,
-                        key,
-                        contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                        node.getName().toString(),
-                        expression,
-                        formalParamNames.indexOf(expression) + 1,
-                        expression);
+                String locationOfExpression =
+                        contract.kind.errorKey
+                                + " "
+                                + contract.contractAnnotation
+                                        .getAnnotationType()
+                                        .asElement()
+                                        .getSimpleName()
+                                + " on the declaration";
+                if (expr == null) {
+                    checker.reportWarning(
+                            node,
+                            "expression.parameter.name.invalid",
+                            locationOfExpression,
+                            node.getName().toString(),
+                            expression,
+                            formalParamNames.indexOf(expression) + 1);
+                } else {
+                    checker.reportWarning(
+                            node,
+                            "expression.parameter.name.shadows.field",
+                            locationOfExpression,
+                            node.getName().toString(),
+                            expression,
+                            expression,
+                            formalParamNames.indexOf(expression) + 1);
+                }
             }
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);

@@ -38,11 +38,13 @@ final frameworkTest(publication) {
         }
     }
 }
-
 publishing {
     publications {
         frameworkTest(MavenPublication) {
             frameworkTest it
         }
     }
+}
+signing {
+    sign publishing.publications.frameworkTest
 }
