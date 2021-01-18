@@ -192,12 +192,6 @@ do
     touch "${RESULT_LOG}"
 
     /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
-
-    if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-        echo "TROUBLE: failed to clone do-like-javac."
-        exit 1
-    fi
-
     rm -f "${OUTDIR}-results/wpi-out"
 
     cd "${OUTDIR}" || exit 5
@@ -242,26 +236,12 @@ results_available=$(grep -Zvl -e "no build file found for" \
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
 
-if [ ! -s "${OUTDIR}-results/results_available.txt" ]; then
-  echo "File ${OUTDIR}-results/results_available.txt is empty"
-  echo "Log files:"
-  echo "${OUTDIR}-results"/*.log
-  echo "End of log files."
-else
+if [ -n "${results_available}" ]; then
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
-
-    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
-
-    if [ ! -s "${listpath}" ] ; then
-        echo "No java files found in files in ${OUTDIR}-results/results_available.txt"
-        echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
-        cat "${OUTDIR}-results/results_available.txt"
-        echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
-        exit 1
-    fi
 
     cd "${SCRIPTDIR}/.do-like-javac" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
