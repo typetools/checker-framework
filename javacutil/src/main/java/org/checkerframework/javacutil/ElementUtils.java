@@ -63,13 +63,18 @@ public class ElementUtils {
         }
 
         if (elem instanceof Symbol) {
+            if (((Symbol) elem).enclClass() == null) {
+                System.out.printf("enclosingClass(%s [%s] => null%n", elem, elem.getClass());
+            }
             return ((Symbol) elem).enclClass();
         }
 
         Element result = elem;
         while (result != null && !isClassElement(result)) {
-            @Nullable Element encl = result.getEnclosingElement();
-            result = encl;
+            result = result.getEnclosingElement();
+        }
+        if (result == null) {
+            System.out.printf("enclosingClass(%s [%s] => null%n", elem, elem.getClass());
         }
         return (TypeElement) result;
     }
@@ -299,6 +304,9 @@ public class ElementUtils {
      * @return true if a source file containing the element is being compiled
      */
     public static boolean isElementFromSourceCode(@Nullable Element element) {
+        if (element == null) {
+            return false;
+        }
         TypeElement enclosingClass = enclosingClass(element);
         if (enclosingClass == null) {
             // This should not happen.
