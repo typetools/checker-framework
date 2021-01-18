@@ -2439,7 +2439,14 @@ public abstract class GenericAnnotatedTypeFactory<
         return builder.build();
     }
 
-    /** Standardize a type qualifier annotation obtained from a contract. */
+    /**
+     * Standardize a type qualifier annotation obtained from a contract.
+     *
+     * @param annoFromContract the annotation to be standardized
+     * @param flowExprContext the context to use for standardization
+     * @param path the path to a use of the contract (a method call) or to the method declaration
+     * @return the standardized annotation, or the argument if it does not need standardization
+     */
     public AnnotationMirror standardizeAnnotationFromContract(
             AnnotationMirror annoFromContract,
             JavaExpressionContext flowExprContext,
