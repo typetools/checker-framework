@@ -243,6 +243,16 @@ if [ -n "${results_available}" ]; then
     # results can be inspected by hand (that is, those that WPI succeeded on).
     grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
 
+    if [ ! -s "${listpath}" ] ; then
+        echo "${listpath} has size zero"
+        ls -l "${listpath}"
+        echo "results_available = ${results_available}"
+        echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
+        cat "${OUTDIR}-results/results_available.txt"
+        echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
+        exit 1
+    fi
+
     cd "${SCRIPTDIR}/.do-like-javac" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
