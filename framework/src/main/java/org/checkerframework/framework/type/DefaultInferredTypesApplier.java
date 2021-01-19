@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Utility class for applying the annotations inferred by dataflow to a given type. */
@@ -70,8 +71,9 @@ public class DefaultInferredTypesApplier {
             TypeMirror inferredTypeMirror,
             AnnotationMirror top) {
         AnnotationMirror primary = type.getAnnotationInHierarchy(top);
-        if (inferred == null) {
-
+        if (inferred == null
+                || (AnnotationUtils.areSame(inferred, top)
+                        && inferredTypeMirror.getKind() == TypeKind.TYPEVAR)) {
             if (primary == null) {
                 // Type doesn't have a primary either, nothing to remove
             } else if (type.getKind() == TypeKind.TYPEVAR) {

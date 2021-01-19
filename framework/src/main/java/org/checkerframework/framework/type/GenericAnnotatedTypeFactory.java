@@ -2457,6 +2457,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
      */
     public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
+        if (!shouldCache) {
+            return false;
+        }
         SourceChecker parentChecker = this.checker.getParentChecker();
         if (parentChecker instanceof BaseTypeChecker) {
             GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf =
@@ -2484,6 +2487,9 @@ public abstract class GenericAnnotatedTypeFactory<
      *     not available
      */
     public @Nullable ControlFlowGraph getSharedCFGForTree(Tree tree) {
+        if (!shouldCache) {
+            return null;
+        }
         SourceChecker parentChecker = this.checker.getParentChecker();
         if (parentChecker instanceof BaseTypeChecker) {
             GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf =
