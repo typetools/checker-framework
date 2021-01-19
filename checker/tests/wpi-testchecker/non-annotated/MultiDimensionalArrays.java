@@ -18,7 +18,7 @@ public class MultiDimensionalArrays {
     int[] twoDimArray;
 
     void testField() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2(twoDimArray);
     }
 
@@ -27,7 +27,7 @@ public class MultiDimensionalArrays {
     }
 
     void testParam(int[] x) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2(x);
     }
 
@@ -41,9 +41,9 @@ public class MultiDimensionalArrays {
 
     void testReturn() {
         requiresS1S2(
-                // :: error: argument.type.incompatible
+                // :: warning: argument.type.incompatible
                 useReturn(
-                        // :: error: argument.type.incompatible
+                        // :: warning: argument.type.incompatible
                         twoDimArray));
     }
 
@@ -54,7 +54,7 @@ public class MultiDimensionalArrays {
     int[][] threeDimArray;
 
     void testField2() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2S1(threeDimArray);
     }
 
@@ -63,7 +63,7 @@ public class MultiDimensionalArrays {
     }
 
     void testParam2(int[][] x) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2S1(x);
     }
 
@@ -76,7 +76,7 @@ public class MultiDimensionalArrays {
     }
 
     void testReturn2() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2S1(useReturn2(threeDimArray));
     }
 
@@ -87,7 +87,7 @@ public class MultiDimensionalArrays {
     int[][] threeDimArray2;
 
     void testField3() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2N(threeDimArray2);
     }
 
@@ -96,7 +96,7 @@ public class MultiDimensionalArrays {
     }
 
     void testParam3(int[][] x) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2N(x);
     }
 
@@ -109,7 +109,7 @@ public class MultiDimensionalArrays {
     }
 
     void testReturn3() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2N(useReturn3(threeDimArray2));
     }
 
@@ -120,7 +120,7 @@ public class MultiDimensionalArrays {
     int[][] threeDimArray3;
 
     void testField4() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS2S1(threeDimArray3);
     }
 
@@ -129,7 +129,7 @@ public class MultiDimensionalArrays {
     }
 
     void testParam4(int[][] x) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS2S1(x);
     }
 
@@ -142,7 +142,7 @@ public class MultiDimensionalArrays {
     }
 
     void testReturn4() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS2S1(useReturn4(threeDimArray3));
     }
 
@@ -156,7 +156,7 @@ public class MultiDimensionalArrays {
     int[][] threeDimArray4;
 
     void testField5() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresSf1Sf2Sf3(threeDimArray4);
     }
 
@@ -168,7 +168,7 @@ public class MultiDimensionalArrays {
     }
 
     void testParam5(int[][] x) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresSf1Sf2Sf3(x);
     }
 
@@ -187,7 +187,7 @@ public class MultiDimensionalArrays {
     }
 
     void testReturn5() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresSf1Sf2Sf3(useReturn5(threeDimArray4));
     }
 
@@ -196,7 +196,7 @@ public class MultiDimensionalArrays {
     int[][] threeDimArray5;
 
     void testField6() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2S1(threeDimArray5);
     }
 
@@ -205,7 +205,7 @@ public class MultiDimensionalArrays {
     }
 
     void testParam6(int[][] x) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2S1(x);
     }
 
@@ -218,7 +218,7 @@ public class MultiDimensionalArrays {
     }
 
     void testReturn6() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2S1(useReturn6(threeDimArray));
     }
 
@@ -228,7 +228,7 @@ public class MultiDimensionalArrays {
     List<String[]>[] arrayofListsOfStringArrays;
 
     void testField7() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2L(arrayofListsOfStringArrays);
     }
 
@@ -239,7 +239,7 @@ public class MultiDimensionalArrays {
     }
 
     void testParam7(List<String[]>[] x) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2L(x);
     }
 
@@ -253,7 +253,7 @@ public class MultiDimensionalArrays {
     }
 
     void testReturn7() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requiresS1S2L(useReturn7(arrayofListsOfStringArrays));
     }
 }
