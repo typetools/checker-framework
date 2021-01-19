@@ -56,7 +56,7 @@ test_wpi_plume_lib() {
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
     if ! cmp --quiet expected.txt actual.txt ; then
-      echo "Comparing $EXPECTED_FILE $ACTUAL_FILE"
+      echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
       diff -u expected.txt actual.txt
       exit 1
     fi
