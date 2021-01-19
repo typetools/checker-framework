@@ -23,6 +23,7 @@ dependencies {
     implementation('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
+    shadow project(':checker-qual')
     implementation project(':checker-qual')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
@@ -111,19 +112,65 @@ task allJavadocJar(type: Jar) {
 
 
 shadowJar {
-    description 'Creates the "fat" checker.jar in dist/.'
-    destinationDirectory = file("${projectDir}/dist")
-    archiveFileName = "checker.jar"
-    // Without this line, the Maven artifact will have the classifier "all".
-    archiveClassifier = ''
+    description 'Creates checker-VERSION-all.jar and copies it to dist/checker-all.jar.'
+
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
+    doLast{
+        copy {
+            from archiveFile.get()
+            into file("${projectDir}/dist")
+            rename 'checker.*', 'checker-all.jar'
+        }
+    }
 }
+
+// Shadowing Test Sources and Dependencies
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+task checkerJar(type: ShadowJar, dependsOn: compileJava) {
+    description 'Builds checker.jar with all dependencies except checker-qual.'
+    destinationDirectory = file("${projectDir}/dist")
+    includeEmptyDirs = false
+    archiveFileName = 'checker.jar'
+    archiveClassifier = ''
+
+    from shadowJar.source
+    configurations = shadowJar.configurations
+    // To see what files are incorporated into the shadow jar file:
+     doLast { println sourceSets.main.runtimeClasspath.asPath }
+
+    dependencies {
+        exclude(project(':checker-qual'))
+        exclude(dependency('org.checkerframework:checker-qual:*'))
+    }
+
+    // TODO: These are copied from checker-framework/build.gradle.
+    // Relocate packages that might conflict with user's classpath.
+    doFirst {
+        if (release) {
+            // Only relocate JavaParser during a release:
+            relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
+        }
+    }
+
+    // These appear in annotation-file-utilities-all.jar:
+    relocate 'org.apache', 'org.checkerframework.org.apache'
+    relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
+    relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+    relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
+    // relocate 'sun', 'org.checkerframework.sun'
+    relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+    relocate 'com.google', 'org.checkerframework.com.google'
+    relocate 'plume', 'org.checkerframework.plume'
+}
+
 artifacts {
     // Don't add this here or else the Javadoc and the sources jar is built during the assemble task.
     // archives allJavadocJar
     // archives allSourcesJar
     archives shadowJar
+    archives checkerJar
 }
 
 clean {
@@ -636,12 +683,13 @@ final checkerPom(publication) {
         }
     }
 }
-
 publishing {
     publications {
         checker(MavenPublication) {
+            project.shadow.component it
             checkerPom it
-            artifact shadowJar
+//            artifact shadowJar
+            artifact checkerJar
             artifact allSourcesJar
             artifact allJavadocJar
         }
