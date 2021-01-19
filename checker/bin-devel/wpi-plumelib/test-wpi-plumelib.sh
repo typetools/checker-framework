@@ -48,7 +48,7 @@ test_wpi_plume_lib() {
 
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
-    java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference .
+    java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
