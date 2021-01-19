@@ -121,7 +121,6 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -952,7 +951,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotationMirror annotation = contract.annotation;
 
             annotation =
-                    standardizeAnnotationFromContract(
+                    atypeFactory.standardizeAnnotationFromContract(
                             annotation, flowExprContext, getCurrentPath());
 
             JavaExpression expr = null;
@@ -995,36 +994,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                         .asElement()
                                         .getSimpleName()
                                 + " on the declaration";
-                checker.reportWarning(
-                        node,
-                        "expression.parameter.name",
-                        locationOfExpression,
-                        node.getName().toString(),
-                        expression,
-                        expression,
-                        expression);
+                if (expr == null) {
+                    checker.reportWarning(
+                            node,
+                            "expression.parameter.name.invalid",
+                            locationOfExpression,
+                            node.getName().toString(),
+                            expression,
+                            formalParamNames.indexOf(expression) + 1);
+                } else {
+                    checker.reportWarning(
+                            node,
+                            "expression.parameter.name.shadows.field",
+                            locationOfExpression,
+                            node.getName().toString(),
+                            expression,
+                            expression,
+                            formalParamNames.indexOf(expression) + 1);
+                }
             }
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
         }
-    }
-
-    /** Standardize a type qualifier annotation obtained from a contract. */
-    private AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext flowExprContext,
-            TreePath path) {
-        DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
-        if (dependentTypesHelper != null) {
-            AnnotationMirror standardized =
-                    dependentTypesHelper.standardizeAnnotationIfDependentType(
-                            flowExprContext, path, annoFromContract, false, false);
-            if (standardized != null) {
-                dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
-                return standardized;
-            }
-        }
-        return annoFromContract;
     }
 
     /**
@@ -1684,7 +1675,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
 
-            anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
+            anno =
+                    atypeFactory.standardizeAnnotationFromContract(
+                            anno, flowExprContext, getCurrentPath());
 
             JavaExpression expr;
             try {
@@ -4161,7 +4154,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 checker.getContext());
             }
 
-            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, path);
+            annotation =
+                    atypeFactory.standardizeAnnotationFromContract(
+                            annotation, flowExprContext, path);
 
             try {
                 // TODO: currently, these expressions are parsed many times.

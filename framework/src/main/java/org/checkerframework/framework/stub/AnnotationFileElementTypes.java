@@ -344,7 +344,7 @@ public class AnnotationFileElementTypes {
      *     no class encloses {@code e}
      */
     private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
-        TypeElement enclosingClass = ElementUtils.enclosingClass(e);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(e);
         if (enclosingClass == null) {
             return null;
         }
@@ -353,7 +353,7 @@ public class AnnotationFileElementTypes {
             if (element == null || element.getKind() == ElementKind.PACKAGE) {
                 break;
             }
-            TypeElement t = ElementUtils.enclosingClass(element);
+            TypeElement t = ElementUtils.enclosingTypeElement(element);
             if (t == null) {
                 break;
             }
