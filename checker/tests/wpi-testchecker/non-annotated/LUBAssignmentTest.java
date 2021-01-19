@@ -38,11 +38,11 @@ public class LUBAssignmentTest {
 
     String lubTest2() {
         if (Math.random() > 0.5) {
-            // :: warning: (cast.unsafe)
+            @SuppressWarnings("cast.unsafe")
             @Sibling1 String s = (@Sibling1 String) "";
             return s;
         } else {
-            // :: warning: (cast.unsafe)
+            @SuppressWarnings("cast.unsafe")
             @Sibling2 String s = (@Sibling2 String) "";
             return s;
         }

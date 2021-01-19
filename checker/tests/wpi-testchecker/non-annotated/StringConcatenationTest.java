@@ -19,8 +19,8 @@ public class StringConcatenationTest {
 
     void expectsSibling1(@Sibling1 String t) {}
 
+    @SuppressWarnings("cast.unsafe")
     @Sibling1 String getSibling1() {
-        // :: warning: (cast.unsafe)
         return (@Sibling1 String) " ";
     }
 }

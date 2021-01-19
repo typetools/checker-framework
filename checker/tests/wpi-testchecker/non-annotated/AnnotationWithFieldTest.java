@@ -30,8 +30,8 @@ public class AnnotationWithFieldTest {
                             value2 = "")
                     String s) {}
 
+    @SuppressWarnings("cast.unsafe")
     String getSiblingWithFields() {
-        // :: warning: (cast.unsafe)
         return (@SiblingWithFields(
                         value = {"test", "test2"},
                         value2 = "test3")
@@ -39,8 +39,8 @@ public class AnnotationWithFieldTest {
                 "";
     }
 
+    @SuppressWarnings("cast.unsafe")
     String getSiblingWithFieldsEmpty() {
-        // :: warning: (cast.unsafe)
         return (@SiblingWithFields(
                         value = {},
                         value2 = "")
