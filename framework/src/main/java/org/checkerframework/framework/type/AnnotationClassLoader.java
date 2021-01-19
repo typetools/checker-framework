@@ -798,8 +798,8 @@ public class AnnotationClassLoader {
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
             final @Nullable Set<@BinaryName String> annoNames) {
-
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
+
         if (annoNames != null && !annoNames.isEmpty()) {
             // loop through each class name & load the class
             for (String annoName : annoNames) {
