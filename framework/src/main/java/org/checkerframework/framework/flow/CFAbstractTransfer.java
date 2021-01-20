@@ -606,7 +606,8 @@ public abstract class CFAbstractTransfer<
             AnnotationMirror annoFromContract,
             JavaExpressionContext flowExprContext,
             TreePath path) {
-        // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
+        // TODO: common implementation with
+        // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
         if (analysis.dependentTypesHelper != null) {
             AnnotationMirror standardized =
                     analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
