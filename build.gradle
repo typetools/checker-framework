@@ -223,7 +223,6 @@ allprojects {
             }
 
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
-            // All the classes in checker-qual are also in checker, so they are checked.
             // TODO: enable Error Prone on test classes.
             if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
@@ -397,7 +396,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
-    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+    source(project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = configurations.allProjects
@@ -456,7 +455,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
         destinationDir = file("${rootDir}/docs/tmpapi")
         destinationDir.mkdirs()
         subprojects.forEach {
-            if (!it.name.startsWith("checker-qual")) {
+            if (!it.name.startsWith("checker-qual-android")) {
                 source += it.sourceSets.main.allJava
             }
         }
@@ -601,8 +600,8 @@ subprojects {
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
-        // checker-qual* projects have no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual') }
+        // checker-qual-android project have no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
 
         doFirst {
@@ -620,8 +619,8 @@ subprojects {
 
     task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Format the Java source code'
-        // checker-qual* projects have no source, so skip
-        onlyIf { !project.name.startsWith('checker-qual') }
+        // checker-qual-android project have no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
@@ -650,7 +649,7 @@ subprojects {
         relocate 'plume', 'org.checkerframework.plume'
     }
 
-    if (!project.name.startsWith('checker-qual')) {
+    if (!project.name.startsWith('checker-qual-android')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
             commandLine "bash", "-c", "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
