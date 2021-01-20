@@ -4454,7 +4454,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return this.processingEnv;
     }
 
+    /** Matches addition of a constant. */
     static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+    /** Matches subtraction of a constant. */
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
     /**
