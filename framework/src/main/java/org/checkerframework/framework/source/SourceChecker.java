@@ -66,7 +66,6 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
@@ -382,8 +381,7 @@ import org.plumelib.util.UtilPlume;
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
 })
-public abstract class SourceChecker extends AbstractTypeProcessor
-        implements BaseContext, OptionConfiguration {
+public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -581,7 +579,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @return the {@link ProcessingEnvironment} that was supplied to this checker
      */
-    @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -652,22 +649,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return this;
     }
 
-    @Override
     public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
-    @Override
     public Elements getElementUtils() {
         return getProcessingEnvironment().getElementUtils();
     }
 
-    @Override
     public Types getTypeUtils() {
         return getProcessingEnvironment().getTypeUtils();
     }
 
-    @Override
     public Trees getTreeUtils() {
         return Trees.instance(getProcessingEnvironment());
     }
@@ -683,7 +676,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
 
-    @Override
     public AnnotationProvider getAnnotationProvider() {
         throw new UnsupportedOperationException(
                 "getAnnotationProvider is not implemented for this class.");

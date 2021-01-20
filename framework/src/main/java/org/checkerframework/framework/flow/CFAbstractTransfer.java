@@ -61,13 +61,13 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
@@ -1213,7 +1213,7 @@ public abstract class CFAbstractTransfer<
 
             if (methodUseContext == null) {
                 // Set the lazily initialized variables.
-                BaseContext baseContext = analysis.checker.getContext();
+                SourceChecker baseContext = analysis.checker.getContext();
 
                 methodUseContext =
                         JavaExpressionContext.buildContextForMethodUse(invocationNode, baseContext);

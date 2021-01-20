@@ -73,6 +73,7 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
@@ -779,7 +780,7 @@ public class JavaExpressionParseUtil {
         public final List<JavaExpression> arguments;
 
         /** The checker context. */
-        public final BaseContext checkerContext;
+        public final SourceChecker checkerContext;
         /**
          * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
          * If so, certain constructs like "#2" and local variables cannot occur.
@@ -801,7 +802,7 @@ public class JavaExpressionParseUtil {
         public JavaExpressionContext(
                 JavaExpression receiver,
                 List<JavaExpression> arguments,
-                BaseContext checkerContext) {
+                SourceChecker checkerContext) {
             this(receiver, arguments, checkerContext, false, true);
         }
 
@@ -821,7 +822,7 @@ public class JavaExpressionParseUtil {
         private JavaExpressionContext(
                 JavaExpression receiver,
                 List<JavaExpression> arguments,
-                BaseContext checkerContext,
+                SourceChecker checkerContext,
                 boolean parsingMember,
                 boolean useLocalScope) {
             assert checkerContext != null;
@@ -843,7 +844,7 @@ public class JavaExpressionParseUtil {
          * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, Tree enclosingTree, BaseContext checkerContext) {
+                MethodTree methodDeclaration, Tree enclosingTree, SourceChecker checkerContext) {
             return buildContextForMethodDeclaration(
                     methodDeclaration, TreeUtils.typeOf(enclosingTree), checkerContext);
         }
@@ -860,7 +861,7 @@ public class JavaExpressionParseUtil {
          * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, TreePath currentPath, BaseContext checkerContext) {
+                MethodTree methodDeclaration, TreePath currentPath, SourceChecker checkerContext) {
             Tree classTree = TreePathUtil.enclosingClass(currentPath);
             return buildContextForMethodDeclaration(methodDeclaration, classTree, checkerContext);
         }
@@ -878,7 +879,7 @@ public class JavaExpressionParseUtil {
         public static JavaExpressionContext buildContextForMethodDeclaration(
                 MethodTree methodDeclaration,
                 TypeMirror enclosingType,
-                BaseContext checkerContext) {
+                SourceChecker checkerContext) {
 
             ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
 
@@ -907,7 +908,7 @@ public class JavaExpressionParseUtil {
          * @return context created for {@code lambdaTree}
          */
         public static JavaExpressionContext buildContextForLambda(
-                LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
+                LambdaExpressionTree lambdaTree, TreePath path, SourceChecker checkerContext) {
             TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
             Node receiver = new ImplicitThisNode(enclosingType);
             JavaExpression receiverJe =
@@ -932,7 +933,7 @@ public class JavaExpressionParseUtil {
          *     class declaration
          */
         public static JavaExpressionContext buildContextForClassDeclaration(
-                ClassTree classTree, BaseContext checkerContext) {
+                ClassTree classTree, SourceChecker checkerContext) {
             Node receiver = new ImplicitThisNode(TreeUtils.typeOf(classTree));
 
             JavaExpression receiverJe =
@@ -949,7 +950,7 @@ public class JavaExpressionParseUtil {
          * @return a {@link JavaExpressionContext} for the method {@code methodInvocation}
          */
         public static JavaExpressionContext buildContextForMethodUse(
-                MethodInvocationNode methodInvocation, BaseContext checkerContext) {
+                MethodInvocationNode methodInvocation, SourceChecker checkerContext) {
             Node receiver = methodInvocation.getTarget().getReceiver();
             JavaExpression receiverJe =
                     JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
@@ -970,7 +971,7 @@ public class JavaExpressionParseUtil {
          * @return a {@link JavaExpressionContext} for the method {@code methodInvocation}
          */
         public static JavaExpressionContext buildContextForMethodUse(
-                MethodInvocationTree methodInvocation, BaseContext checkerContext) {
+                MethodInvocationTree methodInvocation, SourceChecker checkerContext) {
             JavaExpression receiverJe =
                     JavaExpression.getReceiver(
                             methodInvocation, checkerContext.getAnnotationProvider());
@@ -995,7 +996,7 @@ public class JavaExpressionParseUtil {
          *     {@link Node} as seen at the constructor use (i.e., at a "new" expression)
          */
         public static JavaExpressionContext buildContextForNewClassUse(
-                ObjectCreationNode n, BaseContext checkerContext) {
+                ObjectCreationNode n, SourceChecker checkerContext) {
 
             // This returns an Unknown with the type set to the class in which the
             // constructor is declared

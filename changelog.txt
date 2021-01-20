@@ -17,9 +17,10 @@ Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingTypeElement
 
 Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
 
-Removed classes:
+Removed classes (use `SourceChecker` instead):
  * `BaseTypeContext`
  * `CFContext`
+ * `BaseContext`
 
 **Closed issues:**
 
