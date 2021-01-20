@@ -1211,10 +1211,10 @@ public abstract class CFAbstractTransfer<
 
             if (methodUseContext == null) {
                 // Set the lazily initialized variables.
-                SourceChecker baseContext = analysis.checker;
+                SourceChecker checker = analysis.checker;
 
                 methodUseContext =
-                        JavaExpressionContext.buildContextForMethodUse(invocationNode, baseContext);
+                        JavaExpressionContext.buildContextForMethodUse(invocationNode, checker);
             }
 
             // Standardize with respect to the method use (the call site).
