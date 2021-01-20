@@ -93,7 +93,6 @@ public class AnnotationClassLoader {
     protected final ProcessingEnvironment processingEnv;
 
     /** The resource URL of the qual directory of a checker class. */
-    @SuppressWarnings("UnusedVariable")
     private final URL resourceURL;
 
     /** The class loader used to load annotation classes. */
@@ -548,8 +547,9 @@ public class AnnotationClassLoader {
             if (pkgEle != null) {
                 for (Element e : pkgEle.getEnclosedElements()) {
                     if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
-                        // Elements needs to be annotated.
-                        @SuppressWarnings("signature:assignment.type.incompatible")
+                        @SuppressWarnings(
+                                "signature:assignment.type.incompatible") // Elements needs to be
+                        // annotated.
                         @BinaryName String annoBinName =
                                 checker.getElementUtils().getBinaryName((TypeElement) e).toString();
                         annotationNames.add(annoBinName);
@@ -580,7 +580,7 @@ public class AnnotationClassLoader {
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
-    @SuppressWarnings({"JdkObsolete", "UnusedMethod"})
+    @SuppressWarnings("JdkObsolete")
     private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
         Set<@BinaryName String> annos = new LinkedHashSet<>();
 
@@ -799,6 +799,7 @@ public class AnnotationClassLoader {
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
             final @Nullable Set<@BinaryName String> annoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
+
         if (annoNames != null && !annoNames.isEmpty()) {
             // loop through each class name & load the class
             for (String annoName : annoNames) {

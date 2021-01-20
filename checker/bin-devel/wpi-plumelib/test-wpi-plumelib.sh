@@ -48,7 +48,7 @@ test_wpi_plume_lib() {
 
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
-    java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference .
+    java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
@@ -56,7 +56,7 @@ test_wpi_plume_lib() {
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
     if ! cmp --quiet expected.txt actual.txt ; then
-      echo "Comparing $EXPECTED_FILE $ACTUAL_FILE"
+      echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
       diff -u expected.txt actual.txt
       exit 1
     fi

@@ -61,6 +61,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -94,7 +95,6 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
@@ -487,6 +487,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             wholeProgramInference = new WholeProgramInferenceScenes(this);
+            if (!checker.hasOption("warns")) {
+                // Without -Awarns, the inference output may be incomplete, because javac halts
+                // after issuing an error.
+                checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
+            }
         } else {
             wholeProgramInference = null;
         }
@@ -1484,7 +1489,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         TypeElement typeElement = TypesUtils.getTypeElement(declaringType);
-        if (ElementUtils.enclosingClass(field).equals(typeElement)) {
+        if (ElementUtils.enclosingTypeElement(field).equals(typeElement)) {
             // If the field is declared in the accessedVia class, then the field in the invariant
             // cannot be this field, even if the field has the same name.
             return;
@@ -1720,11 +1725,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
 
-        TypeElement elementOfImplicitReceiver = ElementUtils.enclosingClass(element);
+        TypeElement elementOfImplicitReceiver = ElementUtils.enclosingTypeElement(element);
         if (tree.getKind() == Kind.NEW_CLASS) {
             if (elementOfImplicitReceiver.getEnclosingElement() != null) {
                 elementOfImplicitReceiver =
-                        ElementUtils.enclosingClass(
+                        ElementUtils.enclosingTypeElement(
                                 elementOfImplicitReceiver.getEnclosingElement());
             } else {
                 elementOfImplicitReceiver = null;
@@ -4455,12 +4460,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return this.processingEnv;
     }
 
-    /** Accessor for the {@link CFContext}. */
-    public CFContext getContext() {
-        return checker;
-    }
-
+    /** Matches addition of a constant. */
     static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+    /** Matches subtraction of a constant. */
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
     /**

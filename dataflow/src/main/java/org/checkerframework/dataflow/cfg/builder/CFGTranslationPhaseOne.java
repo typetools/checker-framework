@@ -320,6 +320,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     /** The OutOfMemoryError type. */
     final TypeMirror outOfMemoryErrorType;
 
+    /** The ClassCircularityError type. */
+    final TypeMirror classCircularityErrorType;
+
+    /** The ClassFormatErrorType type. */
+    final TypeMirror classFormatErrorType;
+
+    /** The NoClassDefFoundError type. */
+    final TypeMirror noClassDefFoundErrorType;
+
     /** The String type. */
     final TypeMirror stringType;
 
@@ -377,6 +386,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
         nullPointerExceptionType = getTypeMirror(NullPointerException.class);
         outOfMemoryErrorType = getTypeMirror(OutOfMemoryError.class);
+        classCircularityErrorType = getTypeMirror(ClassCircularityError.class);
+        classFormatErrorType = getTypeMirror(ClassFormatError.class);
+        noClassDefFoundErrorType = getTypeMirror(NoClassDefFoundError.class);
         stringType = getTypeMirror(String.class);
         throwableType = getTypeMirror(Throwable.class);
     }
@@ -568,6 +580,25 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /**
+     * Extend a list of extended nodes with a ClassName node.
+     *
+     * <p>Evaluating a class literal kicks off class loading (JLS 15.8.2) which can fail and throw
+     * one of the specified subclasses of a LinkageError or an OutOfMemoryError (JLS 12.2.1).
+     *
+     * @param node the ClassName node to add
+     * @return the node holder
+     */
+    protected NodeWithExceptionsHolder extendWithClassNameNode(ClassNameNode node) {
+        Set<TypeMirror> thrownSet = new HashSet<>();
+        thrownSet.add(classCircularityErrorType);
+        thrownSet.add(classFormatErrorType);
+        thrownSet.add(noClassDefFoundErrorType);
+        thrownSet.add(outOfMemoryErrorType);
+
+        return extendWithNodeWithExceptions(node, thrownSet);
+    }
+
+    /**
      * Insert {@code node} after {@code pred} in the list of extended nodes, or append to the list
      * if {@code pred} is not present.
      *
@@ -687,6 +718,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
             IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
             handleArtificialTree(classTree);
+            // No need to handle possible errors from evaluating a class literal here
+            // since this is a synthetic code that can't fail
             ClassNameNode className = new ClassNameNode(classTree);
             className.setInSource(false);
             insertNodeAfter(className, node);
@@ -1518,11 +1551,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             return scan(mtree.getExpression(), null);
         } else {
             Element ele = TreeUtils.elementFromUse(tree);
-            TypeElement declaringClass = ElementUtils.enclosingClass(ele);
+            TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
             TypeMirror type = ElementUtils.getType(declaringClass);
             if (ElementUtils.isStatic(ele)) {
-                Node node = new ClassNameNode(type, declaringClass);
-                extendWithNode(node);
+                ClassNameNode node = new ClassNameNode(type, declaringClass);
+                extendWithClassNameNode(node);
                 return node;
             } else {
                 Node node = new ImplicitThisNode(type);
@@ -2709,7 +2742,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     throw new BugInCF("bad element kind " + element.getKind());
             }
         }
-        extendWithNode(node);
+        if (node instanceof ClassNameNode) {
+            extendWithClassNameNode((ClassNameNode) node);
+        } else {
+            extendWithNode(node);
+        }
         return node;
     }
 
@@ -2967,8 +3004,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             // Could be a selector of a class or package
             Element element = TreeUtils.elementFromUse(tree);
             if (ElementUtils.isTypeElement(element)) {
-                Node result = new ClassNameNode(tree, expr);
-                extendWithNode(result);
+                ClassNameNode result = new ClassNameNode(tree, expr);
+                extendWithClassNameNode(result);
                 return result;
             } else if (element.getKind() == ElementKind.PACKAGE) {
                 Node result = new PackageNameNode(tree, (PackageNameNode) expr);

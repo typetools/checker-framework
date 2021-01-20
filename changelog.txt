@@ -2,17 +2,34 @@ Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
 
-Move utility classes from checker-qual.jar to the new checker-util.jar.
+Moved utility classes from checker-qual.jar to the new checker-util.jar.
 
-Replaced several error message keys by `expression.parameter.name`:
+When supplying the `-Ainfer=...` command-line argument, you must also supply `-Awarns`.
+
+Replaced several error message keys:
  * `contracts.precondition.expression.parameter.name`
  * `contracts.postcondition.expression.parameter.name`
  * `contracts.conditional.postcondition.expression.parameter.name`
  * `method.declaration.expression.parameter.name`
+by new message keys:
+ * `expression.parameter.name.invalid`
+ * `expression.parameter.name.shadows.field`
 
 **Implementation details:**
 
+Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingTypeElement`.
+
 Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
+
+Removed classes (use `SourceChecker` instead):
+ * `BaseTypeContext`
+ * `CFContext`
+ * `BaseContext`
+
+Removed methods:
+ * `SourceChecker.getContext()`: it returned the receiver
+ * `SourceChecker.getChecker()`: it returned the receiver
+ * `AnnotatedTypeFactory.getContext()`: use `getChecker()`
 
 **Closed issues:**
 
