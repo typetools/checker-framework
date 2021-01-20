@@ -232,8 +232,6 @@ allprojects {
                 options.errorprone.enabled = true
                 options.errorprone.disableWarningsInGeneratedCode = true
                 options.errorprone.errorproneArgs = [
-                        // The HidingField test causes crashes: https://github.com/google/error-prone/issues/2092
-                        '-Xep:HidingField:OFF',
                         // Many compiler classes are interned.
                         '-Xep:ReferenceEquality:OFF',
                         // These might be worth fixing.

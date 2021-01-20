@@ -66,7 +66,6 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
@@ -382,8 +381,7 @@ import org.plumelib.util.UtilPlume;
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
 })
-public abstract class SourceChecker extends AbstractTypeProcessor
-        implements CFContext, OptionConfiguration {
+public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -581,7 +579,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @return the {@link ProcessingEnvironment} that was supplied to this checker
      */
-    @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -640,40 +637,46 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Returns the {@link CFContext} used by this checker.
+     * Returns the OptionConfiguration associated with this.
      *
-     * @return the {@link CFContext} used by this checker
+     * @return the OptionConfiguration associated with this
      */
-    public CFContext getContext() {
-        return this;
-    }
-
-    @Override
-    public SourceChecker getChecker() {
-        return this;
-    }
-
-    @Override
     public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
-    @Override
+    /**
+     * Returns the element utilities associated with this.
+     *
+     * @return the element utilities associated with this
+     */
     public Elements getElementUtils() {
         return getProcessingEnvironment().getElementUtils();
     }
 
-    @Override
+    /**
+     * Returns the type utilities associated with this.
+     *
+     * @return the type utilities associated with this
+     */
     public Types getTypeUtils() {
         return getProcessingEnvironment().getTypeUtils();
     }
 
-    @Override
+    /**
+     * Returns the tree utilities associated with this.
+     *
+     * @return the tree utilities associated with this
+     */
     public Trees getTreeUtils() {
         return Trees.instance(getProcessingEnvironment());
     }
 
-    @Override
+    /**
+     * Returns the SourceVisitor associated with this.
+     *
+     * @return the SourceVisitor associated with this
+     */
     public SourceVisitor<?, ?> getVisitor() {
         return this.visitor;
     }
@@ -685,7 +688,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
 
-    @Override
+    /**
+     * Returns the AnnotationProvider (the type factory) associated with this.
+     *
+     * @return the AnnotationProvider (the type factory) associated with this
+     */
     public AnnotationProvider getAnnotationProvider() {
         throw new UnsupportedOperationException(
                 "getAnnotationProvider is not implemented for this class.");
@@ -2347,7 +2354,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (element == null) {
             return false;
         }
-        TypeElement typeElement = ElementUtils.enclosingClass(element);
+        TypeElement typeElement = ElementUtils.enclosingTypeElement(element);
         @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
         // @FullyQualifiedName
         )
