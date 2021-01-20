@@ -317,7 +317,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 } else {
                     relevantJavaTypes.add(
                             TypesUtils.typeFromClass(
-                                    clazz, getContext().getTypeUtils(), getElementUtils()));
+                                    clazz, getChecker().getTypeUtils(), getElementUtils()));
                 }
             }
         }
@@ -872,7 +872,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
                         JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
-                        this.getContext());
+                        this.getChecker());
 
         return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
     }

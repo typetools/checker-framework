@@ -2,6 +2,8 @@ Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
 
+When supplying the `-Ainfer=...` command-line argument, you must also supply `-Awarns`.
+
 Replaced several error message keys:
  * `contracts.precondition.expression.parameter.name`
  * `contracts.postcondition.expression.parameter.name`
@@ -16,6 +18,16 @@ by new message keys:
 Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingTypeElement`.
 
 Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
+
+Removed classes (use `SourceChecker` instead):
+ * `BaseTypeContext`
+ * `CFContext`
+ * `BaseContext`
+
+Removed methods:
+ * `SourceChecker.getContext()`: it returned the receiver
+ * `SourceChecker.getChecker()`: it returned the receiver
+ * `AnnotatedTypeFactory.getContext()`: use `getChecker()`
 
 **Closed issues:**
 

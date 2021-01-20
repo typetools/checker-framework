@@ -296,7 +296,7 @@ public class AnnotatedTypes {
             if (enclosingType == null) {
                 // TODO: https://github.com/typetools/checker-framework/issues/724
                 // testcase javacheck -processor nullness  src/java/util/AbstractMap.java
-                //                SourceChecker checker =  atypeFactory.getContext().getChecker();
+                //                SourceChecker checker =  atypeFactory.getChecker().getChecker();
                 //                String msg = (String.format("OuterAsSuper did not find outer
                 // class. type: %s superType: %s", type, superType));
                 //                checker.message(Kind.WARNING, msg);
@@ -856,7 +856,7 @@ public class AnnotatedTypes {
 
     /**
      * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter
-     * type expected at the indexth position (unwrapping var args if necessary).
+     * type expected at the indexth position (unwrapping varargs if necessary).
      *
      * @param methodType AnnotatedExecutableType of method or constructor containing parameter to
      *     return
