@@ -600,7 +600,7 @@ subprojects {
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
-        // checker-qual-android project have no source, so skip
+        // checker-qual-android project has no source, so skip
         onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
 
@@ -619,7 +619,7 @@ subprojects {
 
     task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Format the Java source code'
-        // checker-qual-android project have no source, so skip
+        // checker-qual-android project has no source, so skip
         onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
         doFirst {
