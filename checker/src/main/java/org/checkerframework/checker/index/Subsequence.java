@@ -125,6 +125,10 @@ public class Subsequence {
      * returns null.
      *
      * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
+     *
+     * @param the expression from which to obtain a context
+     * @param checker the type-checker
+     * @return the expression context for the given expression and checker
      */
     public static JavaExpressionContext getContextFromJavaExpression(
             JavaExpression expr, SourceChecker checker) {

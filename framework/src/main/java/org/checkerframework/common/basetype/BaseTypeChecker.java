@@ -330,6 +330,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return (BaseTypeVisitor<?>) super.getVisitor();
     }
 
+    /**
+     * Return the type factory associated with this checker.
+     *
+     * @returns the type factory associated with this checker
+     */
     public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory() {
         BaseTypeVisitor<?> visitor = getVisitor();
         // Avoid NPE if this method is called during initialization.

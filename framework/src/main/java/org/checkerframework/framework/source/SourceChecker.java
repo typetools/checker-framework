@@ -636,22 +636,47 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         return upstreamCheckerNames;
     }
 
+    /**
+     * Returns the OptionConfiguration associated with this.
+     *
+     * @return the OptionConfiguration associated with this
+     */
     public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
+    /**
+     * Returns the element utilities associated with this.
+     *
+     * @return the element utilities associated with this
+     */
     public Elements getElementUtils() {
         return getProcessingEnvironment().getElementUtils();
     }
 
+    /**
+     * Returns the type utilities associated with this.
+     *
+     * @return the type utilities associated with this
+     */
     public Types getTypeUtils() {
         return getProcessingEnvironment().getTypeUtils();
     }
 
+    /**
+     * Returns the tree utilities associated with this.
+     *
+     * @return the tree utilities associated with this
+     */
     public Trees getTreeUtils() {
         return Trees.instance(getProcessingEnvironment());
     }
 
+    /**
+     * Returns the SourceVisitor associated with this.
+     *
+     * @return the SourceVisitor associated with this
+     */
     public SourceVisitor<?, ?> getVisitor() {
         return this.visitor;
     }
