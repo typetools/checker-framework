@@ -219,14 +219,13 @@ public final class TypesUtils {
         return null;
     }
 
-    // TODO: Is there a better name for this concept?
     /**
-     * Given an array, returns it "base type": the type with all array levels stripped off.
+     * Given an array type, returns the type with all array levels stripped off.
      *
      * @param at an array type
      * @return the type with all array levels stripped off
      */
-    public static TypeMirror getArrayBaseType(ArrayType at) {
+    public static TypeMirror getInnermostComponentType(ArrayType at) {
         TypeMirror result = at;
         while (result.getKind() == TypeKind.ARRAY) {
             result = ((ArrayType) result).getComponentType();
