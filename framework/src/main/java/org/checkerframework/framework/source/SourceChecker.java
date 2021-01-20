@@ -688,6 +688,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
 
+    /**
+     * Returns the AnnotationProvider (the type factory) associated with this.
+     *
+     * @return the AnnotationProvider (the type factory) associated with this
+     */
     public AnnotationProvider getAnnotationProvider() {
         throw new UnsupportedOperationException(
                 "getAnnotationProvider is not implemented for this class.");
