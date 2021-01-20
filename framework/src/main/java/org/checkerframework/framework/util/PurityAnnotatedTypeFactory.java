@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.PurityUnqualified;
 
 public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
