@@ -103,7 +103,7 @@ public class CheckerMain {
      * Option name for specifying an alternative checker-util.jar location. The accompanying value
      * MUST be the path to the jar file (NOT the path to its encompassing directory)
      */
-    public static final String CHECKER_UTIL_PATH_OPT = "-checkerQualJar";
+    public static final String CHECKER_UTIL_PATH_OPT = "-checkerUtilJar";
 
     /**
      * Option name for specifying an alternative javac.jar location. The accompanying value MUST be
