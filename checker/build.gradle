@@ -150,10 +150,7 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava) {
     // To see what files are incorporated into the shadow jar file:
      doLast { println sourceSets.main.runtimeClasspath.asPath }
 
-    dependencies {
-        exclude(project(':checker-qual'))
-        exclude(dependency('org.checkerframework:checker-qual:*'))
-    }
+    exclude 'org/checkerframework/**/qual/*'
 
     // TODO: These are copied from checker-framework/build.gradle.
     // Relocate packages that might conflict with user's classpath.
