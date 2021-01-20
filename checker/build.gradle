@@ -584,7 +584,15 @@ task wpiManyTests(group: "Verification") {
                 throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
             }
             file.eachLine { line ->
-                if (line.startsWith("Running ") || line.startsWith("warning: [path]")
+                if (
+                        // Ignore the line that WPI echoes with the javac command being run.
+                        line.startsWith("Running ")
+                        // Warnings about bad path elements aren't related to WPI and are ignored.
+                        || line.startsWith("warning: [path]")
+                        // WPI issues this warning when no stub files are generated (i.e. when no annotations are
+                        // inferred). This is the case for some of the tests, so it should be ignored.
+                        || line.startsWith("warning: Did not find annotation file")
+                        // Ignore the summary line that reports the total number of warnings.
                         || line.endsWith("warnings")) {
                   return;
                 }
