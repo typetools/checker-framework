@@ -6,7 +6,8 @@ Move utility classes from checker-qual.jar to the new checker-util.jar.
 
 When supplying the `-Ainfer=...` command-line argument, you must also supply `-Awarns`.
 
-Replaced several error message keys: * `contracts.precondition.expression.parameter.name`
+Replaced several error message keys:
+ * `contracts.precondition.expression.parameter.name`
  * `contracts.postcondition.expression.parameter.name`
  * `contracts.conditional.postcondition.expression.parameter.name`
  * `method.declaration.expression.parameter.name`
