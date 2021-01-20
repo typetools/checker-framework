@@ -1797,7 +1797,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         classMethodAnnotationKinds.add(Kind.ANNOTATION);
     }
     /**
-     * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
+     * Returns the innermost enclosing method or class tree of {@code tree}. If {@code tree} is
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
      * is used to find the enclosing tree.
      *
