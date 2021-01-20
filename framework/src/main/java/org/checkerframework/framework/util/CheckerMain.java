@@ -70,6 +70,7 @@ public class CheckerMain {
     /** The path to checker-util.jar. */
     protected final File checkerUtilJar;
 
+    /** Compilation bootclasspath. */
     private final List<String> compilationBootclasspath;
 
     private final List<String> runtimeClasspath;
