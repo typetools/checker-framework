@@ -126,7 +126,7 @@ public class Subsequence {
      *
      * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
      *
-     * @param the expression from which to obtain a context
+     * @param expr the expression from which to obtain a context
      * @param checker the type-checker
      * @return the expression context for the given expression and checker
      */
