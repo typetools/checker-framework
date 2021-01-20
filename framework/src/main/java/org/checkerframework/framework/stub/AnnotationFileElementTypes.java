@@ -194,8 +194,9 @@ public class AnnotationFileElementTypes {
             // Special case when running in jtreg.
             String base = System.getProperty("test.src");
             String fullPath = (base == null) ? path : base + "/" + path;
+
             List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(fullPath);
-            if (!allFiles.isEmpty()) {
+            if (allFiles != null) {
                 for (AnnotationFileResource resource : allFiles) {
                     InputStream annotationFileStream;
                     try {

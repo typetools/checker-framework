@@ -16,7 +16,7 @@ public class TypeVariablesTest<T1 extends @Parent Object, T2 extends @Parent Obj
     public static <A extends @Parent Object, B extends A> void typeVarWithTypeVarUB(A a, B b) {}
 
     void test1() {
-        // :: warning: (cast.unsafe)
+        @SuppressWarnings("cast.unsafe")
         @Parent String s = (@Parent String) "";
         foo(getSibling1(), getSibling2());
         typeVarWithTypeVarUB(getSibling1(), getSibling2());

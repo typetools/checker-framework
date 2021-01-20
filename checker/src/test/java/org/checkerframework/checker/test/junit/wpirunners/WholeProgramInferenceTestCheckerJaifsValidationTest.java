@@ -20,7 +20,8 @@ public class WholeProgramInferenceTestCheckerJaifsValidationTest
                 testFiles,
                 WholeProgramInferenceTestChecker.class,
                 "wpi-testchecker/non-annotated",
-                "-Anomsgtext");
+                "-Anomsgtext",
+                "-Awarns");
     }
 
     @Override

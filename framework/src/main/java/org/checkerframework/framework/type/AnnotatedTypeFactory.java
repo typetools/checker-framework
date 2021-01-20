@@ -61,6 +61,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -487,6 +488,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             wholeProgramInference = new WholeProgramInferenceScenes(this);
+            if (!checker.hasOption("warns")) {
+                // Without -Awarns, the inference output may be incomplete, because javac halts
+                // after issuing an error.
+                checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
+            }
         } else {
             wholeProgramInference = null;
         }
