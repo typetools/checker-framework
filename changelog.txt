@@ -2,7 +2,7 @@ Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
 
-Move utility classes from checker-qual.jar to the new checker-util.jar.
+Moved utility classes from checker-qual.jar to the new checker-util.jar.
 
 When supplying the `-Ainfer=...` command-line argument, you must also supply `-Awarns`.
 
