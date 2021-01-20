@@ -77,6 +77,15 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
         }
 
         copy {
+            from file(project(':checker-util').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                // remove version number on checker-util.jar
+                fileName.replace(fileName, "checker-util.jar")
+            }
+        }
+
+        copy {
             from configurations.javacJar
             into "${projectDir}/dist"
             rename { String fileName ->
