@@ -589,9 +589,6 @@ task wpiManyTests(group: "Verification") {
                         line.startsWith("Running ")
                         // Warnings about bad path elements aren't related to WPI and are ignored.
                         || line.startsWith("warning: [path]")
-                        // WPI issues this warning when no stub files are generated (i.e. when no annotations are
-                        // inferred). This is the case for some of the tests, so it should be ignored.
-                        || line.startsWith("warning: Did not find annotation file")
                         // Ignore the summary line that reports the total number of warnings.
                         || line.endsWith("warnings")) {
                   return;
