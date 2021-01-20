@@ -19,6 +19,7 @@ Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `Tree
 
 Removed classes:
  * `BaseTypeContext`
+ * `CFContext`
 
 **Closed issues:**
 

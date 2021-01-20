@@ -66,7 +66,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
@@ -383,7 +383,7 @@ import org.plumelib.util.UtilPlume;
     "parseAllJdk",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
-        implements CFContext, OptionConfiguration {
+        implements BaseContext, OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -640,15 +640,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Returns the {@link CFContext} used by this checker.
+     * Returns this checker.
      *
-     * @return the {@link CFContext} used by this checker
+     * @return this checker
      */
-    public CFContext getContext() {
+    public SourceChecker getContext() {
         return this;
     }
 
-    @Override
     public SourceChecker getChecker() {
         return this;
     }
@@ -673,7 +672,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return Trees.instance(getProcessingEnvironment());
     }
 
-    @Override
     public SourceVisitor<?, ?> getVisitor() {
         return this.visitor;
     }
