@@ -326,11 +326,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     @Override
-    public BaseTypeChecker getChecker() {
-        return this;
-    }
-
-    @Override
     public BaseTypeVisitor<?> getVisitor() {
         return (BaseTypeVisitor<?>) super.getVisitor();
     }

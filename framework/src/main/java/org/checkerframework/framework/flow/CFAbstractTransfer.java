@@ -569,9 +569,7 @@ public abstract class CFAbstractTransfer<
             if (methodUseContext == null) {
                 methodUseContext =
                         JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodDeclTree,
-                                methodAst.getClassTree(),
-                                analysis.checker.getContext());
+                                methodDeclTree, methodAst.getClassTree(), analysis.checker);
             }
 
             TreePath localScope = analysis.atypeFactory.getPath(methodDeclTree);
@@ -1213,7 +1211,7 @@ public abstract class CFAbstractTransfer<
 
             if (methodUseContext == null) {
                 // Set the lazily initialized variables.
-                SourceChecker baseContext = analysis.checker.getContext();
+                SourceChecker baseContext = analysis.checker;
 
                 methodUseContext =
                         JavaExpressionContext.buildContextForMethodUse(invocationNode, baseContext);

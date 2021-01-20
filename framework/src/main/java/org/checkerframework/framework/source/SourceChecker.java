@@ -636,19 +636,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         return upstreamCheckerNames;
     }
 
-    /**
-     * Returns this checker.
-     *
-     * @return this checker
-     */
-    public SourceChecker getContext() {
-        return this;
-    }
-
-    public SourceChecker getChecker() {
-        return this;
-    }
-
     public OptionConfiguration getOptionConfiguration() {
         return this;
     }

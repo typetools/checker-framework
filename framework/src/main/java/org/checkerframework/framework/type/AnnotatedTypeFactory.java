@@ -4454,15 +4454,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return this.processingEnv;
     }
 
-    /**
-     * Accessor for the checker.
-     *
-     * @return the checker
-     */
-    public BaseTypeChecker getContext() {
-        return checker;
-    }
-
     static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 

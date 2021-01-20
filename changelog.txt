@@ -22,6 +22,11 @@ Removed classes (use `SourceChecker` instead):
  * `CFContext`
  * `BaseContext`
 
+Removed methods:
+ * `SourceChecker.getContext()`: it returned the receiver
+ * `SourceChecker.getChecker()`: it returned the receiver
+ * `AnnotatedTypeFactory.getContext()`: use `getChecker()`
+
 **Closed issues:**
 
 ---------------------------------------------------------------------------

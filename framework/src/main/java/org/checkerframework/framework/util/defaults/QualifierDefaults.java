@@ -171,9 +171,9 @@ public class QualifierDefaults {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
         this.useConservativeDefaultsBytecode =
-                atypeFactory.getContext().getChecker().useConservativeDefault("bytecode");
+                atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
-                atypeFactory.getContext().getChecker().useConservativeDefault("source");
+                atypeFactory.getChecker().useConservativeDefault("source");
     }
 
     @Override

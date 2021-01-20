@@ -92,10 +92,8 @@ public class NullnessTransfer
         this.nullnessTypeFactory = analysis.getTypeFactory();
         Elements elements = nullnessTypeFactory.getElementUtils();
         this.keyForTypeFactory =
-                nullnessTypeFactory
-                        .getContext()
-                        .getChecker()
-                        .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+                nullnessTypeFactory.getChecker().getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+
         NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
