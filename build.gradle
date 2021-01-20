@@ -396,7 +396,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
-    source(project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+    source(project(':checker-util').sourceSets.main.allJava, project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = configurations.allProjects
@@ -667,7 +667,7 @@ subprojects {
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
-            if (archiveFileName.get().startsWith("checker-qual")) {
+            if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                 metaInf {
                     from './LICENSE.txt'
                 }
@@ -682,7 +682,7 @@ subprojects {
                 if (! archiveFileName.get().endsWith("source.jar")) {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
                 }
-                if (archiveFileName.get().startsWith("checker-qual")) {
+                if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                     attributes("Bundle-License": "MIT")
                 } else {
                     attributes("Bundle-License": "(GPL-2.0-only WITH Classpath-exception-2.0)")
