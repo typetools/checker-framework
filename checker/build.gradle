@@ -1,12 +1,3 @@
-plugins {
-    // To only load the parts of the AWS SDK needed to test the Called Methods Checker, rather
-    // than the whole AWS SDK. Uses the "legacy" version listed here:
-    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-gradle.html,
-    // because the build fails with the Gradle 5+ way, saying that it can't find ec2.
-    // I believe that this is because the CF only needs the AWS SDK during testing, not during the build.
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-}
-
 sourceSets {
     main {
         resources {
@@ -15,6 +6,12 @@ sourceSets {
         }
     }
     testannotations
+}
+
+
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
@@ -41,19 +38,14 @@ dependencies {
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
+    // The AWS SDK is used for testing the Called Methods Checker.
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
     testannotationsImplementation project(':checker-qual')
-}
-
-// The AWS SDK is used for testing the Called Methods Checker.
-dependencyManagement {
-    imports {
-        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.923"
-    }
 }
 
 jar {
@@ -103,6 +95,7 @@ task allSourcesJar(type: Jar) {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-source.jar"
+    archiveClassifier = "sources"
     from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 }
@@ -112,6 +105,7 @@ task allJavadocJar(type: Jar) {
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-javadoc.jar"
+    archiveClassifier = "javadoc"
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
@@ -120,6 +114,8 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker.jar"
+    // Without this line, the Maven artifact will have the classifier "all".
+    archiveClassifier = ''
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
@@ -260,23 +256,6 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 // ./gradlew NullnessJspecifySamplesTest
 test {
     exclude '**/org/checkerframework/checker/test/junit/NullnessJspecifySamplesTest.class'
-}
-
-
-task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
-    description 'Deploys checker.jar to the local Maven repository'
-    doLast {
-        mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${pomFiles}/checker-pom.xml")
-    }
-}
-
-task deployArtifactsToSonatype {
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
-    }
 }
 
 task delombok {
@@ -568,7 +547,7 @@ task wholeProgramInferenceTests(group: 'Verification') {
 // This is run as part of the nonJunitTests task.
 task wpiManyTests(group: "Verification") {
     description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
-
+    dependsOn(copyJarsToDist)
     // This test must always be re-run when requested.
     outputs.upToDateWhen { false }
 
@@ -605,7 +584,15 @@ task wpiManyTests(group: "Verification") {
                 throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
             }
             file.eachLine { line ->
-                if (line.startsWith("Running ") || line.startsWith("warning: [path]")
+                if (
+                        // Ignore the line that WPI echoes with the javac command being run.
+                        line.startsWith("Running ")
+                        // Warnings about bad path elements aren't related to WPI and are ignored.
+                        || line.startsWith("warning: [path]")
+                        // WPI issues this warning when no stub files are generated (i.e. when no annotations are
+                        // inferred). This is the case for some of the tests, so it should be ignored.
+                        || line.startsWith("warning: Did not find annotation file")
+                        // Ignore the summary line that reports the total number of warnings.
                         || line.endsWith("warnings")) {
                   return;
                 }
@@ -621,6 +608,7 @@ task wpiManyTests(group: "Verification") {
 // This is run as part of the nonJunitTests task.
 task wpiPlumeLibTests(group: "Verification") {
     description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+    dependsOn(copyJarsToDist)
 
     // This test must always be re-run when requested.
     outputs.upToDateWhen { false }
@@ -631,4 +619,42 @@ task wpiPlumeLibTests(group: "Verification") {
             ignoreExitValue = false
         }
     }
+}
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading to Maven repositories. */
+final checkerPom(publication) {
+    sharedPublicationConfiguration(publication)
+    // Don't use publication.from components.java which would publish the skinny jar as checker.jar.
+    publication.pom {
+        name = 'Checker Framework'
+        description = 'The Checker Framework enhances Java\'s type system to\n' +
+                'make it more powerful and useful. This lets software developers\n' +
+                'detect and prevent errors in their Java programs.\n' +
+                'The Checker Framework includes compiler plug-ins ("checkers")\n' +
+                'that find bugs or verify their absence. It also permits you to\n' +
+                'write your own compiler plug-ins.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        checker(MavenPublication) {
+            checkerPom it
+            artifact shadowJar
+            artifact allSourcesJar
+            artifact allJavadocJar
+        }
+    }
+}
+signing {
+    sign publishing.publications.checker
 }

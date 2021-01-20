@@ -11,6 +11,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -97,7 +98,7 @@ public class Heuristics {
         @SuppressWarnings("interning:not.interned")
         @Override
         public boolean match(TreePath path) {
-            StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
+            StatementTree stmt = TreePathUtil.enclosingOfClass(path, StatementTree.class);
             if (stmt == null) {
                 return false;
             }

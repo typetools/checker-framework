@@ -1198,21 +1198,17 @@ systems) \code{<self>}.
 
   The formal parameter syntax \<\#1> is less natural in source code
   than writing the formal parameter name.  This syntax is necessary for
-  separate compilation, when an annotated method has already been compiled
-  into a \<.class> file and a client of that method is later compiled.
-  In the \<.class> file, no formal parameter name information is available,
-  so it is necessary to use a number to indicate a formal parameter.
-  If all your annotated code is always provided to the checker in source
-  code format (this also implies that you will never provide \<.class>
-  files to clients who might want to do type-checking), then you can use
-  the formal parameter name instead of the numeric index.
-%% At some point, we will start assuming that the .class file was created
-%% by the Checker Framework and this justification, and the #n syntax
-%% itself, will not be necessary.
-% Running
-% the compiler without a checker should create legal annotations in the
-% \<.class> file, so we cannot rely on the checker to translate names to
-% indices.
+  separate compilation, because no formal parameter name information is
+  available in a \<.class> file.  Suppose an annotated method \<m> has
+  already been compiled into a \<.class> file, perhaps by a compilation
+  that did not use the Checker Framework.  When a client of \<m> is later
+  compiled, it cannot interpret a formal parameter name, but it can
+  interpret a number.
+
+  Within a method \emph{body}, you may use the formal parameter name.  The
+  formal parameter name never works within a method \emph{signature} or for
+  a contract (pre- or post-condition) annotation; in those locations, an
+  identifier is interpreted as a field name (not a formal parameter).
 
 \item
   a local variable.  Write the variable name.  For example: \<myLocalVar>.
