@@ -779,7 +779,7 @@ public class JavaExpressionParseUtil {
          */
         public final List<JavaExpression> arguments;
 
-        /** The checker context. */
+        /** The checker. */
         public final SourceChecker checker;
         /**
          * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
@@ -984,7 +984,7 @@ public class JavaExpressionParseUtil {
          * {@link Node} as seen at the constructor use (i.e., at a "new" expression).
          *
          * @param n an object creation node
-         * @param checker the checker context
+         * @param checker the checker
          * @return a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
          *     {@link Node} as seen at the constructor use (i.e., at a "new" expression)
          */
