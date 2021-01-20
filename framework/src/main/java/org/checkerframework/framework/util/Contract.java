@@ -60,11 +60,12 @@ public abstract class Contract {
                 "value"),
         /** A conditional postcondition. */
         CONDITIONALPOSTCONDITION(
-                "conditional.postcondition",
+                "conditional postcondition",
                 ConditionalPostconditionAnnotation.class,
                 EnsuresQualifierIf.class,
                 EnsuresQualifierIf.List.class,
                 "expression");
+
         /** Used for constructing error messages. */
         public final String errorKey;
 
@@ -106,7 +107,8 @@ public abstract class Contract {
     }
 
     /**
-     * Creates a new Contract.
+     * Creates a new Contract. This should be called only by the constructors for {@link
+     * Precondition}, {@link Postcondition}, and {@link ConditionalPostcondition}.
      *
      * @param kind precondition, postcondition, or conditional postcondition
      * @param expression the Java expression that should have a type qualifier
@@ -114,7 +116,7 @@ public abstract class Contract {
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
      */
-    protected Contract(
+    private Contract(
             Kind kind,
             String expression,
             AnnotationMirror annotation,

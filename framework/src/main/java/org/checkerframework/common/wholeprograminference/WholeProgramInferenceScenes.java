@@ -606,19 +606,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the return type of the method methodTree in the Scene of the class with symbol
+     * Updates the return type of the method methodDeclTree in the Scene of the class with symbol
      * classSymbol. Also updates the return types of methods that this method overrides, if they are
      * available as source.
      *
-     * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
-     * type of the value passed to the return expression will be added to the return type of that
-     * method in the Scene. If the Scene previously contained an annotated return type for the
-     * method methodTree, its new type will be the LUB between the previous type and the type of the
-     * value passed to the return expression.
+     * <p>If the Scene does not contain an annotated return type for the method methodDeclTree, then
+     * the type of the value passed to the return expression will be added to the return type of
+     * that method in the Scene. If the Scene previously contained an annotated return type for the
+     * method methodDeclTree, its new type will be the LUB between the previous type and the type of
+     * the value passed to the return expression.
      *
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
-     * @param methodTree the tree of the method whose return type may be updated
+     * @param methodDeclTree the declaration of the method whose return type may be updated
      * @param overriddenMethods the methods that the given method return overrides, each indexed by
      *     the annotated type of the class that defines it
      */
@@ -626,12 +626,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
-            MethodTree methodTree,
+            MethodTree methodDeclTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
         // Don't infer types for code that isn't presented as source.
-        if (methodTree == null
+        if (methodDeclTree == null
                 || !ElementUtils.isElementFromSourceCode(
-                        TreeUtils.elementFromDeclaration(methodTree))) {
+                        TreeUtils.elementFromDeclaration(methodDeclTree))) {
             return;
         }
 
@@ -641,10 +641,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
         String file = getFileForElement(methodElt);
 
-        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodTree).getReturnType();
+        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodDeclTree).getReturnType();
 
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
@@ -654,7 +654,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
         if (dependentTypesHelper != null) {
             dependentTypesHelper.standardizeReturnType(
-                    methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
+                    methodDeclTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
         ATypeElement returnTypeAnnos = getReturnType(methodElt, lhsATM, atypeFactory);
         updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
@@ -803,7 +803,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @return the "flatname" of the class enclosing {@code variableElement}
      */
     private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
-        return getClassName(ElementUtils.enclosingClass(variableElement));
+        return getClassName(ElementUtils.enclosingTypeElement(variableElement));
     }
 
     /**
@@ -814,7 +814,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
+        return ((ClassSymbol) ElementUtils.enclosingTypeElement(localVariableNode.getElement()))
                 .flatName()
                 .toString();
     }
@@ -827,17 +827,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *     class
      */
     private TypeElement toplevelEnclosingClass(Element element) {
-        if (ElementUtils.enclosingClass(element) == null) {
+        if (ElementUtils.enclosingTypeElement(element) == null) {
             return (TypeElement) element;
         }
 
-        TypeElement result = ElementUtils.enclosingClass(element);
-        TypeElement enclosing = ElementUtils.enclosingClass(result);
-        // ElementUtils.enclosingClass returns its argument if it's already a class, so an Element
+        TypeElement result = ElementUtils.enclosingTypeElement(element);
+        TypeElement enclosing = ElementUtils.enclosingTypeElement(result);
+        // ElementUtils.enclosingType returns its argument if it's already a class, so an Element
         // being the same as its enclosing class is a sufficient stopping condition.
         while (enclosing != null && !enclosing.equals(result)) {
-            result = ElementUtils.enclosingClass(result);
-            enclosing = ElementUtils.enclosingClass(result);
+            result = ElementUtils.enclosingTypeElement(result);
+            enclosing = ElementUtils.enclosingTypeElement(result);
         }
 
         return result;

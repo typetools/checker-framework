@@ -41,6 +41,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 // The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
@@ -367,8 +368,8 @@ public abstract class JavaExpression {
                     } else {
                         methodReceiver = getReceiver(mn, provider);
                     }
-                    TypeMirror type = TreeUtils.typeOf(mn);
-                    result = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                    TypeMirror resultType = TreeUtils.typeOf(mn);
+                    result = new MethodCall(resultType, invokedMethod, methodReceiver, parameters);
                 } else {
                     result = null;
                 }
@@ -403,11 +404,12 @@ public abstract class JavaExpression {
                         JavaExpression fieldAccessExpression;
                         @SuppressWarnings(
                                 "nullness:dereference.of.nullable") // a field has enclosing class
-                        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+                        TypeMirror enclosingTypeElement =
+                                ElementUtils.enclosingTypeElement(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
-                            fieldAccessExpression = new ClassName(enclosingType);
+                            fieldAccessExpression = new ClassName(enclosingTypeElement);
                         } else {
-                            fieldAccessExpression = new ThisReference(enclosingType);
+                            fieldAccessExpression = new ThisReference(enclosingTypeElement);
                         }
                         result =
                                 new FieldAccess(
@@ -467,7 +469,7 @@ public abstract class JavaExpression {
      */
     public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {
-        MethodTree methodTree = TreeUtils.enclosingMethod(path);
+        MethodTree methodTree = TreePathUtil.enclosingMethod(path);
         if (methodTree == null) {
             return null;
         }
@@ -511,12 +513,12 @@ public abstract class JavaExpression {
      * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
      * or not. The passed element must be a field, method, or class.
      *
-     * @param ele field, method, or class
+     * @param ele a field, method, or class
      * @return either a new ClassName or a new ThisReference depending on whether ele is static or
      *     not
      */
     public static JavaExpression getImplicitReceiver(Element ele) {
-        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(ele);
         if (enclosingClass == null) {
             throw new BugInCF("getImplicitReceiver's arg has no enclosing class: " + ele);
         }
@@ -540,7 +542,7 @@ public abstract class JavaExpression {
      *     enclosingType
      */
     public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
-        if (TreeUtils.isTreeInStaticScope(path)) {
+        if (TreePathUtil.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
             return new ThisReference(enclosingType);

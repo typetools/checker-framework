@@ -52,7 +52,7 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
@@ -136,10 +136,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
-        if (TreeUtils.enclosingNonParen(pathToExpression).first.getKind()
+        if (TreePathUtil.enclosingNonParen(pathToExpression).first.getKind()
                         == Tree.Kind.LAMBDA_EXPRESSION
                 || (assignedTo == null
-                        && TreeUtils.getAssignmentContext(pathToExpression) != null)) {
+                        && TreePathUtil.getAssignmentContext(pathToExpression) != null)) {
             // If the type of the assignment context isn't found, but the expression is assigned,
             // then don't attempt to infer type arguments, because the Java type inferred will be
             // incorrect.  The assignment type is null when it includes uninferred type arguments.
