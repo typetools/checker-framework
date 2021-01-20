@@ -1,4 +1,4 @@
-package org.checkerframework.checker.signedness;
+package org.checkerframework.checker.signedness.util;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

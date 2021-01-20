@@ -1,4 +1,4 @@
-package org.checkerframework.checker.nullness;
+package org.checkerframework.checker.nullness.util;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;

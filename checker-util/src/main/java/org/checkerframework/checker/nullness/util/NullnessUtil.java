@@ -1,4 +1,4 @@
-package org.checkerframework.checker.nullness;
+package org.checkerframework.checker.nullness.util;
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
