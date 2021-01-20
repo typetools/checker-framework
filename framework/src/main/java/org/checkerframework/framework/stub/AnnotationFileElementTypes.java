@@ -80,8 +80,8 @@ public class AnnotationFileElementTypes {
         this.annotatedJdkVersion =
                 release != null ? release : String.valueOf(SystemUtil.getJreVersion());
 
-        this.shouldParseJdk = !factory.getContext().getChecker().hasOption("ignorejdkastub");
-        this.parseAllJdkFiles = factory.getContext().getChecker().hasOption("parseAllJdk");
+        this.shouldParseJdk = !factory.getChecker().hasOption("ignorejdkastub");
+        this.parseAllJdkFiles = factory.getChecker().hasOption("parseAllJdk");
     }
 
     /**
@@ -116,7 +116,7 @@ public class AnnotationFileElementTypes {
      */
     public void parseStubFiles() {
         parsing = true;
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         // 1. jdk.astub
         // Only look in .jar files, and parse it right away.
@@ -188,7 +188,7 @@ public class AnnotationFileElementTypes {
      * @param annotationFiles list of files and directories to parse
      */
     private void parseAnnotationFiles(List<String> annotationFiles) {
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         for (String path : annotationFiles) {
             // Special case when running in jtreg.
@@ -452,9 +452,9 @@ public class AnnotationFileElementTypes {
         }
         URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         if (resourceURL == null) {
-            if (factory.getContext().getChecker().hasOption("permitMissingJdk")
+            if (factory.getChecker().hasOption("permitMissingJdk")
                     // temporary, for backward compatibility
-                    || factory.getContext().getChecker().hasOption("nocheckjdk")) {
+                    || factory.getChecker().hasOption("nocheckjdk")) {
                 return;
             }
             throw new BugInCF("JDK not found");
@@ -463,9 +463,9 @@ public class AnnotationFileElementTypes {
         } else if (resourceURL.getProtocol().contentEquals("file")) {
             prepJdkFromFile(resourceURL);
         } else {
-            if (factory.getContext().getChecker().hasOption("permitMissingJdk")
+            if (factory.getChecker().hasOption("permitMissingJdk")
                     // temporary, for backward compatibility
-                    || factory.getContext().getChecker().hasOption("nocheckjdk")) {
+                    || factory.getChecker().hasOption("nocheckjdk")) {
                 return;
             }
             throw new BugInCF("JDK not found");

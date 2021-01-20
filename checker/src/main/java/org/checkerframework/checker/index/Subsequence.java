@@ -7,8 +7,8 @@ import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -125,9 +125,13 @@ public class Subsequence {
      * returns null.
      *
      * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
+     *
+     * @param expr the expression from which to obtain a context
+     * @param checker the type-checker
+     * @return the expression context for the given expression and checker
      */
     public static JavaExpressionContext getContextFromJavaExpression(
-            JavaExpression expr, BaseContext checker) {
+            JavaExpression expr, SourceChecker checker) {
         if (expr == null) {
             return null;
         }
