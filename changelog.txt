@@ -33,6 +33,9 @@ Moved class:
  * org.checkerframework.framework.util.PurityUnqualified to
    org.checkerframework.framework.qual.PurityUnqualified
 
+Added `-AhaltOnError` command-line option, which is useful only for debugging
+the Checker Framework itself.
+
 **Closed issues:**
 
 ---------------------------------------------------------------------------
@@ -81,9 +84,6 @@ The Format String Checker recognizes Error Prone's `@FormatMethod` annotation.
 Use of `@SuppressWarnings("fbc")` to suppress initialization warnings is deprecated.
 
 **Implementation details:**
-
-Added -AhaltOnError command-line option, which is useful only for debugging
-the Checker Framework itself.
 
 Class renamings:
  * `StubParser` => `AnnotationFileParser`
