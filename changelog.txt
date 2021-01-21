@@ -29,6 +29,10 @@ Removed methods:
  * `SourceChecker.getChecker()`: it returned the receiver
  * `AnnotatedTypeFactory.getContext()`: use `getChecker()`
 
+Moved class:
+ * org.checkerframework.framework.util.PurityUnqualified to
+   org.checkerframework.framework.qual.PurityUnqualified
+
 **Closed issues:**
 
 ---------------------------------------------------------------------------
