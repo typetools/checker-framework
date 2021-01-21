@@ -246,7 +246,7 @@ else
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-" | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
         echo "${listpath} has size zero"
