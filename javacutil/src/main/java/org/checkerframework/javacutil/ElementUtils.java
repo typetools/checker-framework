@@ -316,6 +316,9 @@ public class ElementUtils {
             return false;
         }
         TypeElement enclosingClass = enclosingClass(element);
+        if (enclosingClass == null) {
+            throw new BugInCF("enclosingClass(%s) is null", element);
+        }
         return isElementFromSourceCodeImpl((Symbol.ClassSymbol) enclosingClass);
     }
 
