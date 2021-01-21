@@ -10,11 +10,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  *
  * <p>To avoid the need to write the NullnessUtil class name, do:
  *
- * <pre>import static org.checkerframework.checker.nullness.NullnessUtil.castNonNull;</pre>
+ * <pre>import static org.checkerframework.checker.nullness.util.NullnessUtil.castNonNull;</pre>
  *
  * or
  *
- * <pre>import static org.checkerframework.checker.nullness.NullnessUtil.*;</pre>
+ * <pre>import static org.checkerframework.checker.nullness.util.NullnessUtil.*;</pre>
  *
  * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
  * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own

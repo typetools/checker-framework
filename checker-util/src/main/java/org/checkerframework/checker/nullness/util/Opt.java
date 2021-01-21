@@ -16,11 +16,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  *
  * <p>To avoid the need to write the {@code Opt} class name at invocation sites, do:
  *
- * <pre>import static org.checkerframework.checker.nullness.Opt.orElse;</pre>
+ * <pre>import static org.checkerframework.checker.nullness.util.Opt.orElse;</pre>
  *
  * or
  *
- * <pre>import static org.checkerframework.checker.nullness.Opt.*;</pre>
+ * <pre>import static org.checkerframework.checker.nullness.util.Opt.*;</pre>
  *
  * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
  * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own

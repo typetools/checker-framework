@@ -1,7 +1,7 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.checker.regex.util.RegexUtil;
 
 public class TestIsRegex {
     void test1(String str1) throws Exception {

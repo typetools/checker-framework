@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation is used internally to annotate {@link
- * org.checkerframework.checker.i18nformatter.I18nFormatUtil#hasFormat} (and will potentially be
- * used to annotate more such functions in the future).
+ * org.checkerframework.checker.i18nformatter.util.I18nFormatUtil#hasFormat} (and will potentially
+ * be used to annotate more such functions in the future).
  *
  * <p>Attach this annotation to a method with the following properties:
  *
