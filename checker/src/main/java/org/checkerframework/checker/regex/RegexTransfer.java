@@ -223,6 +223,9 @@ public class RegexTransfer extends CFTransfer {
      * Returns true if the given receiver is a class named "RegexUtil". Examples of such classes are
      * org.checkerframework.checker.regex.util.RegexUtil and org.plumelib.util.RegexUtil, and the
      * user might copy one into their own project.
+     *
+     * @param receiver some string
+     * @return true if the given receiver is a class named "RegexUtil"
      */
     private boolean isRegexUtil(String receiver) {
         return receiver.equals("RegexUtil") || receiver.endsWith(".RegexUtil");
