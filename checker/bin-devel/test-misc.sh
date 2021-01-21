@@ -45,4 +45,13 @@ if [ $status -ne 0 ]; then exit $status; fi
 
 # User documentation
 make -C docs/manual all
-git update-index --refresh || (git diff && false)
+git diff  --exit-code docs/manual/contributors.tex || \
+    (echo "docs/manual/contributors.tex is not up to date." &&
+     echo "If the given suggestion is appropriate, run: make -C docs/manual contributors.tex" &&
+     echo "If the suggestion contains a username rather than a human name, then do all the following:" &&
+     echo "  * Update your git configuration by running:  git config --global user.name \"YOURFULLNAME\"" &&
+     echo "  * Update your GitHub account profile so it contains your complete name." &&
+     echo "  * Make a pull request to add your GitHub ID to" &&
+     echo "    https://github.com/plume-lib/plume-scripts/blob/master/git-authors.sed" &&
+     echo "    and remake contributors.tex after that pull request is merged." &&
+     false)
