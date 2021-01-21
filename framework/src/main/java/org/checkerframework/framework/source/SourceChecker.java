@@ -2355,6 +2355,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             return false;
         }
         TypeElement typeElement = ElementUtils.enclosingTypeElement(element);
+        if (typeElement == null) {
+            throw new BugInCF(
+                    "enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
+        }
         @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
         // @FullyQualifiedName
         )
