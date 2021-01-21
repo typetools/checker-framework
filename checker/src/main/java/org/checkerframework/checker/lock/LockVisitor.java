@@ -44,7 +44,6 @@ import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
@@ -62,6 +61,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -569,7 +569,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         SideEffectAnnotation seaOfInvokedMethod =
                 atypeFactory.methodSideEffectAnnotation(methodElement, false);
 
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(atypeFactory.getPath(node));
 
         ExecutableElement enclosingMethodElement = null;
         if (enclosingMethod != null) {
@@ -849,7 +849,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             checker.reportError(node, "explicit.lock.synchronized");
         }
 
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(atypeFactory.getPath(node));
 
         ExecutableElement methodElement = null;
         if (enclosingMethod != null) {
@@ -1235,18 +1235,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         TreePath currentPath = getCurrentPath();
         List<JavaExpression> params =
-                JavaExpressions.getParametersOfEnclosingMethod(atypeFactory, currentPath);
+                JavaExpression.getParametersOfEnclosingMethod(atypeFactory, currentPath);
 
-        TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
-                JavaExpressions.getPseudoReceiver(currentPath, enclosingType);
+                JavaExpression.getPseudoReceiver(currentPath, enclosingType);
         JavaExpressionContext exprContext =
-                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
+                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getChecker());
         JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;
         } else if (TreeUtils.isExpressionTree(tree)) {
-            self = JavaExpressions.fromTree(atypeFactory, (ExpressionTree) tree);
+            self = JavaExpression.fromTree(atypeFactory, (ExpressionTree) tree);
         } else {
             self = new Unknown(TreeUtils.typeOf(tree));
         }

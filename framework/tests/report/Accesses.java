@@ -1,6 +1,6 @@
 import org.checkerframework.common.util.report.qual.*;
 
-class Accesses {
+public class Accesses {
     class Demo {
         @ReportReadWrite Object read;
 

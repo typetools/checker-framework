@@ -29,6 +29,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
@@ -299,33 +300,37 @@ public class AnnotationFileUtil {
     /**
      * Return annotation files found in the file system (does not look on classpath).
      *
-     * @param location a stub file, a jarfile, or a directory. Look for it as an absolute file and
-     *     relative to the current directory.
-     * @return annotation files found in the file system (does not look on classpath)
+     * @param location an annotation file (stub file), a jarfile, or a directory. Look for it as an
+     *     absolute file and relative to the current directory.
+     * @return annotation files found in the file system (does not look on classpath), or null if
+     *     the given location does not exist
      */
-    public static List<AnnotationFileResource> allAnnotationFiles(String location) {
-        List<AnnotationFileResource> resources = new ArrayList<>();
+    public static @Nullable List<AnnotationFileResource> allAnnotationFiles(String location) {
         File file = new File(location);
         if (file.exists()) {
+            List<AnnotationFileResource> resources = new ArrayList<>();
             addAnnotationFilesToList(file, resources);
-        } else {
-            // If the file doesn't exist, maybe it is relative to the
-            // current working directory, so try that.
-            String workingDir =
-                    System.getProperty("user.dir") + System.getProperty("file.separator");
-            file = new File(workingDir + location);
-            if (file.exists()) {
-                addAnnotationFilesToList(file, resources);
-            }
+            return resources;
         }
-        return resources;
+
+        // The file doesn't exist.  Maybe it is relative to the
+        // current working directory, so try that.
+        String workingDir = System.getProperty("user.dir") + System.getProperty("file.separator");
+        file = new File(workingDir + location);
+        if (file.exists()) {
+            List<AnnotationFileResource> resources = new ArrayList<>();
+            addAnnotationFilesToList(file, resources);
+            return resources;
+        }
+
+        return null;
     }
 
     /**
      * Returns true if the given file is an annotation file.
      *
-     * @param f a file
-     * @return true if the given file is an annotation file
+     * @param f the file to check
+     * @return true if {@code f} is an annotation file
      */
     private static boolean isAnnotationFile(File f) {
         return f.isFile() && isAnnotationFile(f.getName());
@@ -346,11 +351,11 @@ public class AnnotationFileUtil {
     }
 
     /**
-     * Side-effects {@code resources} by adding stub files (those ending with ".astub") to it.
+     * Side-effects {@code resources} by adding annotation files (stub files) to it.
      *
-     * @param location a stub file, a jarfile, or a directory. If a stub file, add it to the {@code
-     *     resources} list. If a jarfile, use all stub files contained in it. If a directory,
-     *     recurse on all files contained in it.
+     * @param location an annotation file (a stub file), a jarfile, or a directory. If a stub file,
+     *     add it to the {@code resources} list. If a jarfile, use all annotation files contained in
+     *     it. If a directory, recurse on all files contained in it.
      * @param resources the list to add the found files to
      */
     @SuppressWarnings("JdkObsolete") // JarFile.entries()

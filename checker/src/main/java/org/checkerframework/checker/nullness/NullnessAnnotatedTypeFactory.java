@@ -16,7 +16,9 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,13 +36,14 @@ import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -66,6 +69,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -211,18 +215,18 @@ public class NullnessAnnotatedTypeFactory
         tempNullnessAnnos.add(PolyNull.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
-        NONNULL_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NONNULL));
-        NULLABLE_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NULLABLE));
+        NONNULL_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NONNULL));
+        NULLABLE_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NULLABLE));
 
         // Add compatibility annotations:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullDecl", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl",
                 MONOTONIC_NONNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullType", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
@@ -730,8 +734,108 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
+    // If
+    //  1. rhs is @Nullable
+    //  2. lhs is a field of this
+    //  3. in a constructor
+    // then change rhs to @MonotonicNonNull.
     @Override
-    public WholeProgramInference createWholeProgramInference() {
-        return new NullnessWholeProgramInferenceScenes(this);
+    public void wpiAdjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+        if (!rhsATM.hasAnnotation(Nullable.class)) {
+            return;
+        }
+        TreePath lhsPath = getPath(lhsTree);
+        if (TreePathUtil.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
+                && TreePathUtil.inConstructor(lhsPath)) {
+            rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
+        }
+    }
+
+    // If
+    //  1. rhs is @MonotonicNonNull
+    // then change rhs to @Nullable
+    @Override
+    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+        if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
+            rhsATM.replaceAnnotation(NULLABLE);
+        }
+    }
+
+    // This implementation overrides the superclass implementation to:
+    //  * check for @MonotonicNonNull
+    //  * output @RequiresNonNull rather than @RequiresQualifier.
+    @Override
+    public List<AnnotationMirror> getPreconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldType) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return Collections.emptyList();
+        }
+
+        if (AnnotationUtils.containsSameByName(
+                fieldType.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return requiresNonNullAnno(elt);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns a {@code RequiresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code RequiresNonNull("...")} annotation for the given field
+     */
+    private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
+        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        AnnotationMirror am = builder.build();
+        List<AnnotationMirror> result = new ArrayList<>(1);
+        result.add(am);
+        return result;
+    }
+
+    @Override
+    public List<AnnotationMirror> getPostconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return Collections.emptyList();
+        }
+        if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
+                && preconds.contains(requiresNonNullAnno(elt))) {
+            // The postcondition is implied by the precondition and the field being
+            // @MonotonicNonNull.
+            return Collections.emptyList();
+        }
+        if (AnnotationUtils.containsSameByName(
+                fieldAnnos.getAnnotations(),
+                "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return ensuresNonNullAnno(elt);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns a {@code EnsuresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code EnsuresNonNull("...")} annotation for the given field
+     */
+    private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
+        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        AnnotationMirror am = builder.build();
+        List<AnnotationMirror> result = new ArrayList<>(1);
+        result.add(am);
+        return result;
     }
 }

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Widening {
+public class Widening {
     @Nullable Integer i;
 
     void inc(long amt) {}

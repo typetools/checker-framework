@@ -5,7 +5,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.StringVal;
 
-class StringLen {
+public class StringLen {
     void stringValArrayLen(
             @StringVal("") String empty,
             @StringVal("const") String constant,

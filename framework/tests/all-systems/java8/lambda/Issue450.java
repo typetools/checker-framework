@@ -1,4 +1,4 @@
-class Issue450 {
+public class Issue450 {
 
     Issue450(int i, Runnable... runnables) {}
 

@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-class MapMerge {
+public class MapMerge {
     public static void main(String[] args) {
         Map<String, String> map = new HashMap<>();
         map.put("k", "v");

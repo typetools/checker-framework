@@ -22,6 +22,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -490,16 +494,10 @@ public class AnnotationClassLoader {
      * Checker Framework.
      */
     private void loadBundledAnnotationClasses() {
-        // if there's no resourceURL, then there's nothing we can load
-        if (resourceURL == null) {
-            return;
-        }
-
         // retrieve the fully qualified class names of the annotations
         Set<@BinaryName String> annotationNames;
-
         // see whether the resource URL has a protocol of jar or file
-        if (resourceURL.getProtocol().contentEquals("jar")) {
+        if (resourceURL != null && resourceURL.getProtocol().contentEquals("jar")) {
             // if the checker class file is contained within a jar, then the
             // resource URL for the qual directory will have the protocol
             // "jar". This means the whole checker is loaded as a jar file.
@@ -531,7 +529,7 @@ public class AnnotationClassLoader {
                         "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
             }
 
-        } else if (resourceURL.getProtocol().contentEquals("file")) {
+        } else if (resourceURL != null && resourceURL.getProtocol().contentEquals("file")) {
             // if the checker class file is found within the file system itself
             // within some directory (usually development build directories),
             // then process the package as a file directory in the file system
@@ -544,7 +542,21 @@ public class AnnotationClassLoader {
             // We do not support a resource URL with any other protocols, so create an empty set.
             annotationNames = Collections.emptySet();
         }
-
+        if (annotationNames.isEmpty()) {
+            PackageElement pkgEle = checker.getElementUtils().getPackageElement(packageName);
+            if (pkgEle != null) {
+                for (Element e : pkgEle.getEnclosedElements()) {
+                    if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
+                        @SuppressWarnings(
+                                "signature:assignment.type.incompatible") // Elements needs to be
+                        // annotated.
+                        @BinaryName String annoBinName =
+                                checker.getElementUtils().getBinaryName((TypeElement) e).toString();
+                        annotationNames.add(annoBinName);
+                    }
+                }
+            }
+        }
         supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
     }
 

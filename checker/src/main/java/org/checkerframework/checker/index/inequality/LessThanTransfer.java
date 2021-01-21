@@ -15,7 +15,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -52,7 +51,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right < left
         // Refine right to @LessThan("left")
-        JavaExpression leftJe = JavaExpressions.fromNode(factory, left);
+        JavaExpression leftJe = JavaExpression.fromNode(factory, left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
@@ -63,7 +62,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             if (!isDoubleOrFloatLiteral(leftJe)) {
                 lessThanExpressions.add(leftJe.toString());
             }
-            JavaExpression rightJe = JavaExpressions.fromNode(analysis.getTypeFactory(), right);
+            JavaExpression rightJe = JavaExpression.fromNode(analysis.getTypeFactory(), right);
             store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
@@ -84,7 +83,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right is less than left
         // Refine right to @LessThan("left")
-        JavaExpression leftJe = JavaExpressions.fromNode(factory, left);
+        JavaExpression leftJe = JavaExpression.fromNode(factory, left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
@@ -95,7 +94,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             if (!isDoubleOrFloatLiteral(leftJe)) {
                 lessThanExpressions.add(leftJe.toString() + " + 1");
             }
-            JavaExpression rightJe = JavaExpressions.fromNode(analysis.getTypeFactory(), right);
+            JavaExpression rightJe = JavaExpression.fromNode(analysis.getTypeFactory(), right);
             store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
@@ -106,7 +105,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
         LessThanAnnotatedTypeFactory factory =
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-        JavaExpression leftJe = JavaExpressions.fromNode(factory, n.getLeftOperand());
+        JavaExpression leftJe = JavaExpression.fromNode(factory, n.getLeftOperand());
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
             ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
             Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);

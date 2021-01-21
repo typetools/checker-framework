@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class WildcardSubtyping2 {
+public class WildcardSubtyping2 {
     class MyClass {}
 
     class MyCloneClass extends MyClass implements Cloneable {}

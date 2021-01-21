@@ -55,7 +55,6 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -480,7 +479,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, p);
-        refineStringAtLengthInvocation(n, result.getRegularStore());
+        refineAtLengthInvocation(n, result.getRegularStore());
         return result;
     }
 
@@ -497,15 +496,23 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /**
-     * If string.length() is encountered, transform its @IntVal annotation into an @ArrayLen
-     * annotation for string.
+     * If length method is invoked for a sequence, transform its @IntVal annotation into
+     * an @ArrayLen annotation.
+     *
+     * @param lengthNode the length method invocation node
+     * @param store the Checker Framework store
      */
-    private void refineStringAtLengthInvocation(
-            MethodInvocationNode stringLengthNode, CFStore store) {
-        MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
-
-        if (atypeFactory.getMethodIdentifier().isStringLengthMethod(methodAccessNode.getMethod())) {
-            refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
+    private void refineAtLengthInvocation(MethodInvocationNode lengthNode, CFStore store) {
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isStringLengthMethod(lengthNode.getTarget().getMethod())) {
+            MethodAccessNode methodAccessNode = lengthNode.getTarget();
+            refineAtLengthAccess(lengthNode, methodAccessNode.getReceiver(), store);
+        } else if (atypeFactory
+                .getMethodIdentifier()
+                .isArrayGetLengthMethod(lengthNode.getTarget().getMethod())) {
+            Node node = lengthNode.getArguments().get(0);
+            refineAtLengthAccess(lengthNode, node, store);
         }
     }
 
@@ -536,7 +543,7 @@ public class ValueTransfer extends CFTransfer {
      * or @ArrayLenRange annotation for the array or string.
      */
     private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
-        JavaExpression lengthExpr = JavaExpressions.fromNode(analysis.getTypeFactory(), lengthNode);
+        JavaExpression lengthExpr = JavaExpression.fromNode(analysis.getTypeFactory(), lengthNode);
 
         // If the expression is not representable (for example if String.length() for some reason is
         // not marked @Pure, then do not refine.
@@ -556,7 +563,7 @@ public class ValueTransfer extends CFTransfer {
         if (AnnotationUtils.areSameByName(lengthAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             // If the length is bottom, then this is dead code, so the receiver type
             // should also be bottom.
-            JavaExpression receiver = JavaExpressions.fromNode(atypeFactory, receiverNode);
+            JavaExpression receiver = JavaExpression.fromNode(atypeFactory, receiverNode);
             store.insertValue(receiver, lengthAnno);
             return;
         }
@@ -583,7 +590,7 @@ public class ValueTransfer extends CFTransfer {
         } else {
             combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
         }
-        JavaExpression receiver = JavaExpressions.fromNode(analysis.getTypeFactory(), receiverNode);
+        JavaExpression receiver = JavaExpression.fromNode(analysis.getTypeFactory(), receiverNode);
         store.insertValue(receiver, combinedRecAnno);
     }
 
@@ -661,7 +668,7 @@ public class ValueTransfer extends CFTransfer {
         List<String> rightValues = getStringValues(rightOperand, p);
 
         boolean nonNullStringConcat =
-                atypeFactory.getContext().getChecker().hasOption("nonNullStringsConcatenation");
+                atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
 
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
@@ -1380,7 +1387,7 @@ public class ValueTransfer extends CFTransfer {
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
         // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            JavaExpression je = JavaExpressions.fromNode(analysis.getTypeFactory(), internal);
+            JavaExpression je = JavaExpression.fromNode(analysis.getTypeFactory(), internal);
             CFValue currentValueFromStore;
             if (CFAbstractStore.canInsertJavaExpression(je)) {
                 currentValueFromStore = store.getValue(je);
@@ -1400,7 +1407,8 @@ public class ValueTransfer extends CFTransfer {
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
             } else if (node instanceof MethodInvocationNode) {
-                refineStringAtLengthInvocation((MethodInvocationNode) internal, store);
+                MethodInvocationNode miNode = (MethodInvocationNode) node;
+                refineAtLengthInvocation(miNode, store);
             }
         }
     }
@@ -1537,7 +1545,7 @@ public class ValueTransfer extends CFTransfer {
             // Update the annotation of the receiver
             if (minLength != 0) {
                 JavaExpression receiver =
-                        JavaExpressions.fromNode(atypeFactory, n.getTarget().getReceiver());
+                        JavaExpression.fromNode(atypeFactory, n.getTarget().getReceiver());
 
                 AnnotationMirror minLenAnno =
                         atypeFactory.createArrayLenRangeAnnotation(minLength, Integer.MAX_VALUE);

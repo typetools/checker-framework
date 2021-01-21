@@ -1,6 +1,6 @@
 import java.util.function.Function;
 
-class Issue3598 {
+public class Issue3598 {
 
     static class DClass extends EClass {}
 

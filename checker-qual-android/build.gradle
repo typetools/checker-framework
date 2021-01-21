@@ -1,6 +1,6 @@
 evaluationDependsOn(":checker-qual")
 
-task copySources(type: Copy, dependsOn: ':checker-qual:copySources') {
+task copySources(type: Copy) {
     description 'Copy checker-qual source to checker-qual-android'
 
     includeEmptyDirs = false
@@ -39,17 +39,41 @@ clean {
     delete file('src')
 }
 
-task deployArtifactsToLocalRepo(dependsOn: jar) {
-    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
-    doLast {
-        mvnDeployToLocalRepo(project, "${pomFiles}/checker-qual-android-pom.xml")
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading to Maven repositories. */
+final checkerQualAndroidPom(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+    publication.pom {
+        name = 'Checker Qual Android'
+        description = 'checker-qual-android contains annotations (type qualifiers)\n' +
+                        'used by the Checker Framework to type-check Java source code.\n' +
+                        'It also contains utility classes for programmers to use at run time.\n' +
+                        '\n' +
+                        'The checker-qual-android artifact is identical to the checker-qual\n' +
+                        'artifact, except that in checker-qual-android annotations have classfile\n' +
+                        'retention.  The default Android Gradle plugin retains types annotated with\n' +
+                        'runtime annotations in the main dex, but strips out class-retention\n' +
+                        'annotations.\n' +
+                        '\n' +
+                        'Please see artifact: org.checkerframework:checker'
+        licenses {
+            license {
+                name = 'The MIT License'
+                url = 'http://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
     }
 }
-
-task deployArtifactsToSonatype {
-    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
-    dependsOn ('jar', 'sourcesJar', 'javadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/checker-qual-android-pom.xml")
+publishing {
+    publications {
+        checkerQualAndroid(MavenPublication) {
+            checkerQualAndroidPom it
+        }
     }
+}
+signing {
+    sign publishing.publications.checkerQualAndroid
 }

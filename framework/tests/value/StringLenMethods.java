@@ -3,7 +3,7 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.StringVal;
 
-class StringLenMethods {
+public class StringLenMethods {
     void toString(boolean b, char c, byte y, short s, int i, long l) {
 
         @StringVal({"true", "false"}) String bs = Boolean.toString(b);

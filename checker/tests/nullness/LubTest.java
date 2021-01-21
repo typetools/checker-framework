@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class LubTest {
+public class LubTest {
 
     @Nullable String str;
 

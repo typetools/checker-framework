@@ -1,6 +1,6 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 
-class CastsFenum {
+public class CastsFenum {
     @Fenum("A") Object fa;
 
     void m(Object p, @Fenum("A") Object a) {

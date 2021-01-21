@@ -16,7 +16,6 @@ import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -87,8 +86,8 @@ public class RegexTransfer extends CFTransfer {
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
             JavaExpression firstParam =
-                    JavaExpressions.fromNode(
-                            factory.getContext().getAnnotationProvider(), n.getArgument(0));
+                    JavaExpression.fromNode(
+                            factory.getChecker().getAnnotationProvider(), n.getArgument(0));
 
             // add annotation with correct group count (if possible,
             // regex annotation without count otherwise)
@@ -198,7 +197,7 @@ public class RegexTransfer extends CFTransfer {
         Node receiver = methodAccessNode.getReceiver();
 
         JavaExpression matcherReceiver =
-                JavaExpressions.fromNode(analysis.getTypeFactory(), receiver);
+                JavaExpression.fromNode(analysis.getTypeFactory(), receiver);
 
         IntegerLiteralNode iln = (IntegerLiteralNode) possibleConstant;
         int groupCount;

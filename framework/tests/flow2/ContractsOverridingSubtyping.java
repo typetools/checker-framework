@@ -4,7 +4,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.testchecker.util.Odd;
 
-class ContractsOverridingSubtyping {
+public class ContractsOverridingSubtyping {
     static class Base {
         String f;
         @Odd String g;

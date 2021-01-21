@@ -3,7 +3,7 @@ import java.util.List;
 import org.checkerframework.checker.interning.qual.*;
 
 // Test case lifted from plume.Options
-class Options {
+public class Options {
 
     public void minimal(String s) {
         String arg = ""; // interned here

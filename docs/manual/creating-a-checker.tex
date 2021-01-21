@@ -14,10 +14,10 @@ the checker verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
-There is also a
-\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{developer
-  manual} for people who wish to edit the Checker Framework source code or
-make pull requests.
+People who wish to edit the Checker Framework source code or
+make pull requests should read the
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker
+  Framework Developer Manual}.
 
 
 Writing a simple checker is easy!  For example, here is a complete, useful
@@ -196,7 +196,7 @@ the rules differ from the built in framework rules
 
 \item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
-  type qualifier inference (also known as local variable type inference).
+  type qualifier inference (also sometimes called ``local variable type inference'').
 \end{description}
 
 
@@ -814,9 +814,9 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/analysis}{JavaExpressions}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{fromNode(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{fromTree(AnnotationProvider,
 ExpressionTree)} or
-\refmethodanchortext{dataflow/analysis}{JavaExpressions}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
 Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
@@ -1263,8 +1263,7 @@ which is the Checker Framework's representation of an annotated type.
 
 \sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
 
-By default, every checker performs flow-sensitive type refinement, also known as
-local type inference, as described
+By default, every checker performs flow-sensitive type refinement, as described
 in Section~\ref{type-refinement}.
 
 This section of the manual explains how to enhance the Checker Framework's
@@ -1897,9 +1896,9 @@ output if it cannot parse it.)
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by
+pseudo-assignment check (\<commonAssignmentCheck>) performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
-Section~\ref{creating-extending-visitor}).
+Section~\ref{creating-extending-visitor}.
 
 \item \code{-AshowInferenceSteps}: print debugging information
 about intermediate steps in method type argument inference
@@ -1913,11 +1912,16 @@ about intermediate steps in method type argument inference
 
 \item \code{-AoutputArgsToFile}:
   This saves the final command-line parameters as passed to the compiler in a file.
-  This file can be used as a script (if the file is marked as executable on Unix, or
-  if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
-  Note that this argument cannot be included in a file containing command-line arguments
-  passed to the compiler using the @argfile syntax.
+  The file can be used as a script to re-execute the same compilation command.
+  (The script file must be marked as executable on Unix, or
+  must have a \code{.bat} extension on Windows.)
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
+
+  The \code{-AoutputArgsToFile} command-line argument is processed by
+  CheckerMain, not by the annotation processor.  That means that it can be
+  supplied only when you use the Checker Framework compiler (the ``Checker
+  Framework javac wrapper''), and it cannot be written in a file containing
+  command-line arguments passed to the compiler using the @argfile syntax.
 
 \end{itemize}
 

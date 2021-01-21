@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class Predicates {
+public class Predicates {
 
     void testOr1() {
         MyClass m1 = new MyClass();

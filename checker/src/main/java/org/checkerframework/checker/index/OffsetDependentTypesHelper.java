@@ -55,8 +55,8 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             return result.toString();
         }
 
-        // The expression is a sum of several terms. This expression is standardized by splitting it
-        // into individual terms in an OffsetEquation and standardizing each term.
+        // The expression is a sum of several terms. Split it into individual terms and standardize
+        // each term.
         OffsetEquation equation = OffsetEquation.createOffsetFromJavaExpression(expression);
         if (equation.hasError()) {
             return equation.getError();
@@ -73,7 +73,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     }
 
     @Override
-    public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
+    public TreeAnnotator createDependentTypesTreeAnnotator() {
         return new DependentTypesTreeAnnotator(factory, this) {
             @Override
             public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {

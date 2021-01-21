@@ -1,4 +1,4 @@
-class PrimitiveDotClass {
+public class PrimitiveDotClass {
 
     void test() {
         doStuff(int.class);

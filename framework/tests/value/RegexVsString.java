@@ -2,7 +2,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-class RegexVsString {
+public class RegexVsString {
     void stringToRegex1(@StringVal({"(a)"}) String a) {
         // :: error: assignment.type.incompatible
         @MatchesRegex("(a)") String a2 = a;

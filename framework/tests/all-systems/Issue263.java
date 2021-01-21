@@ -18,8 +18,8 @@ abstract class Outer<T> {
     public abstract Inner getInner();
 }
 
-class Harness {
-    public Harness(Outer<String> outer) {
+public class Issue263 {
+    public Issue263(Outer<String> outer) {
         this.outer = outer;
     }
 

@@ -8,7 +8,7 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class MapGet {
+public class MapGet {
     private final Map<String, String> labels = new HashMap<>();
 
     void foo1(String v) {

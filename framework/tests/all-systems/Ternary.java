@@ -1,6 +1,6 @@
 import java.lang.ref.WeakReference;
 
-class Ternary<F> {
+public class Ternary<F> {
     void m1(boolean b) {
         String s = b ? new String("foo") : null;
     }

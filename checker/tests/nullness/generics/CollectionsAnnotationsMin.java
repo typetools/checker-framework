@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class CollectionsAnnotationsMin {
+public class CollectionsAnnotationsMin {
     static class Collection1<E extends @Nullable Object> {
         public void add(E elt) {
             // :: error: (dereference.of.nullable)

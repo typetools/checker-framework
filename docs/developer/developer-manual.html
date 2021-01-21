@@ -23,9 +23,15 @@ including people who wish to edit its source code or make pull requests.
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
     <ul>
-      <li><a href="#Directory_structure">Directory structure</a></li>
+      <li><a href="#Directory_structure">Directory structure</a>
+        <ul>
+          <li><a href="#Related_repositories">Related repositories</a></li>
+        </ul></li>
       <li><a href="#Build_tasks">Build tasks</a></li>
-      <li><a href="#tests">Testing the Checker Framework</a></li>
+      <li><a href="#tests">Testing the Checker Framework</a>
+        <ul>
+          <li><a href="#testing-optimizations">Testing optimizations</a></li>
+        </ul></li>
       <li><a href="#Code_style">Code style</a></li>
       <li><a href="#IDE_configuration">IDE configuration</a></li>
       <li><a href="#pull-requests">Pull requests</a>
@@ -38,7 +44,6 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
         </ul></li>
-      <li><a href="#testing-optimizations">Testing optimizations</a></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
@@ -73,10 +78,39 @@ The repository also contains the following directories:
 <dl>
   <dt><code>docs</code></dt>
   <dd>documentation: manual, tutorial, examples, developer docs</dd>
-
-  <dt><code>maven-artifacts</code></dt>
-  <dd>artifacts to be uploaded to Maven Central</dd>
 </dl>
+
+
+<h3 id="Related_repositories">Related repositories</h3>
+
+<p>
+  The <a href="https://github.com/typetools/checker-framework"><code>checker-framework</code></a> project
+  depends on
+  the <a href="https://github.com/typetools/jdk"><code>typetools/jdk</code></a> project,
+  the <a href="https://github.com/typetools/annotation-tools"><code>annotation-tools</code></a> project,
+  and the <a href="https://github.com/typetools/stubparser"><code>stubparser</code></a> project.
+When making changes to one of these projects, you may also need to make changes to one or more of the others.
+</p>
+
+<p>
+If you make related changes in the <code>checker-framework</code> and <code>jdk</code>
+repositories, use the <em>same
+branch name</em> for each.  The continuous integration framework will find
+and use that branch when running tests.
+For example, when continuous integration runs for branch <em>B</em> of fork <em>F</em> of <code>checker-framework</code>, it will use branch <em>B</em> of fork <em>F</em> of the other repositories (if they exist).
+The same is true for the other projects.
+</p>
+
+<p>
+If a change spans multiple projects, make pull requests for all of them.  Each pull request description's should link to all the others.
+</p>
+
+<p>
+Furthermore, whenever you make a pull request from
+a <code>checker-framework</code> branch A into branch B, if B has a
+corresponding <code>jdk</code>
+branch, then A also needs one (even if identical to B's version).
+</p>
 
 
 <h2 id="Build_tasks">Build tasks</h2>
@@ -123,6 +157,21 @@ main directory or any subproject runs the <code>allTests</code> task only in the
 
 <p>
 For writing new test cases, see file <a href="https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README"><code>checker/tests/README</code></a>.
+</p>
+
+
+<h3 id="testing-optimizations">Testing optimizations</h3>
+
+<p>
+To test an optimization that should speed up type-checking, see
+the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
+of the Azure Pipelines CI job.  Compare the run time of this stage (or of
+the entire <code>daikon_jdk8</code> job) between the master branch and a
+branch with your improvements.
+</p>
+
+<p>
+You can also compare run times of the Checker Framework test suite.
 </p>
 
 
@@ -225,19 +274,6 @@ Ernst's advice about creating GitHub pull requests</a>.
   Do not make changes to a branch of the upstream (<code>typetools</code>) repository.
   Such a branch competes for CI resources with all pull requests.
   Make changes on a branch of your own fork, so that both you and others get faster CI feedback.
-</p>
-
-<p>
-If you make related changes in the <code>checker-framework</code> and <code>jdk</code>
-repositories, use the <em>same
-branch name</em> for each.  The continuous integration framework will find
-and use that branch when running tests.
-
-<p>
-Furthermore, whenever you make a pull request from
-a <code>checker-framework</code> branch A into branch B, if B has a
-corresponding <code>jdk</code>
-branch,then A also needs one (even if identical to B's version).
 </p>
 
 <p>
@@ -357,28 +393,13 @@ from the CI configuration file (such as <code>azure-pipelines.yml</code>).
 </p>
 
 
-<h2 id="testing-optimizations">Testing optimizations</h2>
-
-<p>
-To test an optimization that should speed up type-checking, see
-the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
-of the Azure Pipelines CI job.  Compare the run time of this stage (or of
-the entire <code>daikon_jdk8</code> job) between the master branch and a
-branch with your improvements.
-</p>
-
-<p>
-You can also compare run times of the Checker Framework test suite.
-</p>
-
-
 <h2 id="Documenting_refactoring_ideas">Documenting refactoring ideas</h2>
 
 <p>
-If you have an idea for a code improvement (such as a refactoring), please
-document it.  If it can be described concisely and is low priority, a TODO
-comment in the code is more appropriate than an enhancement request in the
-issue tracker.  The code comment is more likely to be noticed by someone
+Don't open issues for code improvement ideas (such as potential refactorings).
+If it can be described concisely and is unlikely to be rediscovered by other
+people, write a TODO comment in the code.  The code comment is more likely to be
+noticed by someone
 working with the code, and it is equally easy to search for.  Furthermore,
 it doesn't clutter the issue tracker.  Clutter in the issue tracker reduces
 morale, makes it harder to search, and makes the project appear

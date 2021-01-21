@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 
-class Issue1027 {
+public class Issue1027 {
 
     // Stand-alone reproduction
 

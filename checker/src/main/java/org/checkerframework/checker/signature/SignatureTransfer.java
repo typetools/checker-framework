@@ -9,7 +9,6 @@ import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -55,8 +54,8 @@ public class SignatureTransfer extends CFTransfer {
                                 superResult.getResultValue(), thenStore, elseStore);
                 // The refined expression is the receive of the method call.
                 JavaExpression refinedExpr =
-                        JavaExpressions.fromNode(
-                                aTypeFactory.getContext().getAnnotationProvider(), receiver);
+                        JavaExpression.fromNode(
+                                aTypeFactory.getChecker().getAnnotationProvider(), receiver);
 
                 elseStore.insertValue(refinedExpr, aTypeFactory.CANONICAL_NAME);
                 return result;

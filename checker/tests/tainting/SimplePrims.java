@@ -1,6 +1,6 @@
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-class SimplePrims {
+public class SimplePrims {
 
     void execute(@Untainted int s) {}
 
