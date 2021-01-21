@@ -55,4 +55,5 @@ git diff  --exit-code docs/manual/contributors.tex || \
      echo "  * Make a pull request to add your GitHub ID to" &&
      echo "    https://github.com/plume-lib/plume-scripts/blob/master/git-authors.sed" &&
      echo "    and remake contributors.tex after that pull request is merged." &&
+     git log &&
      false)
