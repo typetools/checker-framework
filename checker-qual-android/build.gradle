@@ -1,6 +1,6 @@
 evaluationDependsOn(":checker-qual")
 
-task copySources(type: Copy, dependsOn: ':checker-qual:copySources') {
+task copySources(type: Copy) {
     description 'Copy checker-qual source to checker-qual-android'
 
     includeEmptyDirs = false
