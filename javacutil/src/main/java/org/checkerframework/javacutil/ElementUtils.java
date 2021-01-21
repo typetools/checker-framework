@@ -84,9 +84,6 @@ public class ElementUtils {
         while (result != null && !isTypeElement(result)) {
             result = result.getEnclosingElement();
         }
-        if (result == null) {
-            System.out.printf("enclosingClass(%s [%s] => null%n", elem, elem.getClass());
-        }
         return (TypeElement) result;
     }
 
@@ -311,7 +308,7 @@ public class ElementUtils {
      * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
      * a classfile for the given element, even if there is also a source file.
      *
-     * @param element the element to check
+     * @param element the element to check, or null
      * @return true if a source file containing the element is being compiled
      */
     public static boolean isElementFromSourceCode(@Nullable Element element) {
@@ -319,11 +316,7 @@ public class ElementUtils {
             return false;
         }
         TypeElement enclosingClass = enclosingClass(element);
-        if (enclosingClass == null) {
-            // This should not happen.
-            return false;
-        }
-        return isElementFromSourceCode((Symbol.ClassSymbol) enclosingClass);
+        return isElementFromSourceCodeImpl((Symbol.ClassSymbol) enclosingClass);
     }
 
     /**
@@ -335,7 +328,7 @@ public class ElementUtils {
      * @param symbol the class to check
      * @return true if a source file containing the class is being compiled
      */
-    private static boolean isElementFromSourceCode(Symbol.ClassSymbol symbol) {
+    private static boolean isElementFromSourceCodeImpl(Symbol.ClassSymbol symbol) {
         // This is a bit of a hack to avoid treating JDK as source files. JDK files' toUri() method
         // returns just the name of the file (e.g. "Object.java"), but any file actually being
         // compiled returns a file URI to the source file.
