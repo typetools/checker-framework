@@ -26,7 +26,6 @@ final checkerQualPom(publication) {
         name = 'Checker Qual'
         description = 'checker-qual contains annotations (type qualifiers)\n' +
                 'used by the Checker Framework to type-check Java source code.\n' +
-                'It also contains utility classes for programmers to use at run time.\n' +
                 '\n' +
                 'Please see artifact: org.checkerframework:checker'
         licenses {

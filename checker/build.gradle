@@ -24,6 +24,7 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
+    implementation project(':checker-util')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
@@ -71,6 +72,15 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             rename { String fileName ->
                 // remove version number on checker-qual.jar
                 fileName.replace(fileName, "checker-qual.jar")
+            }
+        }
+
+        copy {
+            from file(project(':checker-util').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                // remove version number on checker-util.jar
+                fileName.replace(fileName, "checker-util.jar")
             }
         }
 

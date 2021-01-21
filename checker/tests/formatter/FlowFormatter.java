@@ -1,8 +1,8 @@
 import java.util.Date;
 import java.util.Formatter;
-import org.checkerframework.checker.formatter.FormatUtil;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
+import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.junit.Assert;
 
 public class FlowFormatter {

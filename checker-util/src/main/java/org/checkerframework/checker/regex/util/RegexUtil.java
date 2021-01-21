@@ -1,6 +1,6 @@
 // This class should be kept in sync with org.plumelib.util.RegexUtil in the plume-util project.
 
-package org.checkerframework.checker.regex;
+package org.checkerframework.checker.regex.util;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;

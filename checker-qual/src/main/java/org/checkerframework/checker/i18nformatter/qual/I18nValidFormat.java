@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation is used internally to annotate {@link
- * org.checkerframework.checker.i18nformatter.I18nFormatUtil#isFormat}.
+ * org.checkerframework.checker.i18nformatter.util.I18nFormatUtil#isFormat}.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */

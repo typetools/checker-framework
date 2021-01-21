@@ -5,6 +5,7 @@ include 'dataflow'
 include 'framework'
 include 'checker-qual'
 include 'checker-qual-android'
+include 'checker-util'
 include 'framework-test'
 includeBuild ('../annotation-tools/annotation-file-utilities') {
     if (!file('../annotation-tools/annotation-file-utilities').exists()) {
