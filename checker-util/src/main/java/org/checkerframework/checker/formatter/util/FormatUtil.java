@@ -1,4 +1,4 @@
-package org.checkerframework.checker.formatter;
+package org.checkerframework.checker.formatter.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
