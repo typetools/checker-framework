@@ -23,7 +23,6 @@ dependencies {
     implementation('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
-    shadow project(':checker-qual')
     implementation project(':checker-qual')
     implementation project(':checker-util')
     // As of 2019-12-16, the version of reflection-util in the Annotation
@@ -31,6 +30,9 @@ dependencies {
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'org.plumelib:plume-util:1.4.1'
+
+    shadow project(':checker-qual')
+    shadow project(':checker-util')
 
     // Called Methods Checker AutoValue + Lombok support
     testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
@@ -53,13 +55,6 @@ dependencies {
 jar {
     manifest {
         attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
-    }
-    doLast {
-        new File("$projectDir/build/libs/README.txt").text =
-"""Do not use file checker-X.Y.Z.jar, which contains only the checker subproject
-and lacks other parts of the Checker Framework.
-Instead, use checker/dist/checker.jar.
-"""
     }
 }
 
@@ -123,8 +118,8 @@ task allJavadocJar(type: Jar) {
 // Shadowing Test Sources and Dependencies
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-task checkerJar(type: ShadowJar, dependsOn: compileJava) {
-    description 'Builds checker.jar with all dependencies except checker-qual.'
+task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+    description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
     includeEmptyDirs = false
     archivesBaseName = 'checker'
     archiveClassifier = ''
@@ -160,8 +155,7 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava) {
 }
 
 shadowJar {
-    description 'Creates checker-VERSION-all.jar and copies it to dist/checker-all.jar.'
-    dependsOn(checkerJar)
+    description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
     doLast{
@@ -701,7 +695,6 @@ publishing {
         checker(MavenPublication) {
             project.shadow.component it
             checkerPom it
-//            artifact shadowJar
             artifact checkerJar
             artifact allSourcesJar
             artifact allJavadocJar
