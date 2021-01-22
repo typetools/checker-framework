@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class divisionTest {
+public class DivisionTest {
 
     public static void division() {
         System.out.println(1 / (2.0));

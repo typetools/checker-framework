@@ -5,6 +5,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
@@ -20,6 +21,7 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.ClassTree;
@@ -65,12 +67,14 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.BinaryOperation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
@@ -422,13 +426,23 @@ public class JavaExpressionParseUtil {
 
             // `expr` is a method call.  If it has scope (a receiver expression), change the parsing
             // context so that identifiers are resolved with respect to the receiver.
+            JavaExpression receiver = null;
             if (expr.getScope().isPresent()) {
-                JavaExpression receiver = expr.getScope().get().accept(this, context);
+                receiver = expr.getScope().get().accept(this, context);
                 context = context.copyChangeToParsingMemberOfReceiver(receiver);
                 expr = expr.removeScope();
             }
 
             String methodName = expr.getNameAsString();
+
+            // Length of string literal: convert it to an integer literal.
+            if (methodName.equals("length") && receiver instanceof ValueLiteral) {
+                Object value = ((ValueLiteral) receiver).getValue();
+                if (value instanceof String) {
+                    return new ValueLiteral(
+                            types.getPrimitiveType(TypeKind.INT), ((String) value).length());
+                }
+            }
 
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
@@ -630,6 +644,89 @@ public class JavaExpressionParseUtil {
                 arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
             }
             return new ArrayCreation(arrayType, dimensions, initializers);
+        }
+
+        @Override
+        public JavaExpression visit(UnaryExpr expr, JavaExpressionContext context) {
+            switch (expr.getOperator()) {
+                case PLUS:
+                    return expr.getExpression().accept(this, context);
+                case MINUS:
+                    JavaExpression negatedResult = expr.getExpression().accept(this, context);
+                    if (negatedResult instanceof ValueLiteral) {
+                        return ((ValueLiteral) negatedResult).negate();
+                    }
+                    return new UnaryOperation(
+                            negatedResult.getType(), Tree.Kind.UNARY_MINUS, negatedResult);
+                default:
+                    // TODO: There is no particular reason to
+                    return defaultAction(expr, context);
+            }
+        }
+
+        @Override
+        public JavaExpression visit(BinaryExpr expr, JavaExpressionContext context) {
+            JavaExpression leftJe = expr.getLeft().accept(this, context);
+            JavaExpression rightJe = expr.getRight().accept(this, context);
+            TypeMirror leftType = leftJe.getType();
+            TypeMirror rightType = rightJe.getType();
+            TypeMirror type;
+            if (types.isSameType(leftType, rightType)) {
+                type = leftType;
+            } else if (types.isSubtype(leftType, rightType)) {
+                type = rightType;
+            } else if (types.isSubtype(rightType, leftType)) {
+                type = leftType;
+            } else {
+                throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
+            }
+            return new BinaryOperation(
+                    type, javaParserOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
+        }
+
+        Tree.Kind javaParserOperatorToTreeKind(BinaryExpr.Operator beo) {
+            switch (beo) {
+                case AND:
+                    return Tree.Kind.CONDITIONAL_AND;
+                case BINARY_AND:
+                    return Tree.Kind.AND;
+                case BINARY_OR:
+                    return Tree.Kind.OR;
+                case DIVIDE:
+                    return Tree.Kind.DIVIDE;
+                case EQUALS:
+                    return Tree.Kind.EQUAL_TO;
+                case GREATER:
+                    return Tree.Kind.GREATER_THAN;
+                case GREATER_EQUALS:
+                    return Tree.Kind.GREATER_THAN_EQUAL;
+                case LEFT_SHIFT:
+                    return Tree.Kind.LEFT_SHIFT;
+                case LESS:
+                    return Tree.Kind.LESS_THAN;
+                case LESS_EQUALS:
+                    return Tree.Kind.LESS_THAN_EQUAL;
+                case MINUS:
+                    return Tree.Kind.MINUS;
+                case MULTIPLY:
+                    return Tree.Kind.MULTIPLY;
+                case NOT_EQUALS:
+                    return Tree.Kind.NOT_EQUAL_TO;
+                case OR:
+                    return Tree.Kind.CONDITIONAL_OR;
+                case PLUS:
+                    return Tree.Kind.PLUS;
+                case REMAINDER:
+                    return Tree.Kind.REMAINDER;
+                case SIGNED_RIGHT_SHIFT:
+                    return Tree.Kind.RIGHT_SHIFT;
+                case UNSIGNED_RIGHT_SHIFT:
+                    return Tree.Kind.UNSIGNED_RIGHT_SHIFT;
+                case XOR:
+                    return Tree.Kind.XOR;
+                default:
+                    throw new Error("unhandled " + beo);
+            }
         }
 
         /**

@@ -39,7 +39,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             return new DependentTypesError(expression, e).toString();
         }
         if (result == null) {
-            return new DependentTypesError(expression, " ").toString();
+            return new DependentTypesError(expression, /*error message=*/ " ").toString();
         }
         if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
             Object constant = ((FieldAccess) result).getField().getConstantValue();

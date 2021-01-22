@@ -37,6 +37,49 @@ public class ValueLiteral extends JavaExpression {
         this.value = value;
     }
 
+    /**
+     * Returns the negation of this literal. Throws an exception if negation is not possible.
+     *
+     * @return the negation of this literal
+     */
+    public ValueLiteral negate() {
+        if (TypesUtils.isIntegralPrimitive(type)) {
+            return new ValueLiteral(type, negateBoxedPrimitive(value));
+        }
+        throw new Error(String.format("cannot negate: %s type=%s", this, type));
+    }
+
+    private Object negateBoxedPrimitive(Object o) {
+        if (value instanceof Byte) {
+            return Byte.valueOf((byte) -((Byte) value).byteValue());
+        }
+        if (value instanceof Short) {
+            return Short.valueOf((short) -((Short) value).shortValue());
+        }
+        if (value instanceof Integer) {
+            return Integer.valueOf(-((Integer) value).intValue());
+        }
+        if (value instanceof Long) {
+            return Long.valueOf(-((Long) value).longValue());
+        }
+        if (value instanceof Float) {
+            return Float.valueOf(-((Float) value).floatValue());
+        }
+        if (value instanceof Double) {
+            return Double.valueOf(-((Double) value).doubleValue());
+        }
+        throw new Error("Cannot be negated: " + o + " " + o.getClass());
+    }
+
+    /**
+     * Returns the value of this literal.
+     *
+     * @return the value of this literal
+     */
+    public @Nullable Object getValue() {
+        return value;
+    }
+
     @Override
     public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
@@ -51,6 +94,18 @@ public class ValueLiteral extends JavaExpression {
     public boolean isUnmodifiableByOtherCode() {
         return true;
     }
+
+    @Override
+    public boolean syntacticEquals(JavaExpression other) {
+        return this.equals(other);
+    }
+
+    @Override
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+        return false; // not modifiable
+    }
+
+    /// java.lang.Object methods
 
     @Override
     public boolean equals(@Nullable Object obj) {
@@ -79,24 +134,5 @@ public class ValueLiteral extends JavaExpression {
     @Override
     public int hashCode() {
         return Objects.hash(value, type.toString());
-    }
-
-    @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        return this.equals(other);
-    }
-
-    @Override
-    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-        return false; // not modifiable
-    }
-
-    /**
-     * Returns the value of this literal.
-     *
-     * @return the value of this literal
-     */
-    public @Nullable Object getValue() {
-        return value;
     }
 }
