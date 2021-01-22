@@ -328,20 +328,6 @@ public abstract class AbstractAnalysis<
     protected TransferResult<V, S> callTransferFunction(
             Node node, TransferInput<V, S> transferInput) {
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
-        if (node.toString().contains("constant") && node instanceof AssignmentNode) {
-            // System.out.println("calling transfer fcn on: " + node.toStringDebug());
-            // System.out.println("isLValue? " + node.isLValue());
-            AssignmentNode assignment = (AssignmentNode) node;
-            Node lhst = assignment.getTarget();
-            if (lhst instanceof LocalVariableNode) {
-                LocalVariableNode lhs = (LocalVariableNode) lhst;
-                Element elem = lhs.getElement();
-                if (ElementUtils.isEffectivelyFinal(elem)) {
-                    // System.out.println("it's effectively final!");
-                    // System.out.println("elem: " + elem);
-                }
-            }
-        }
         if (node.isLValue()) {
             // TODO: should the default behavior return a regular transfer result, a conditional
             //  transfer result (depending on store.containsTwoStores()), or is the following
@@ -362,9 +348,6 @@ public abstract class AbstractAnalysis<
                 Element elem = lhs.getElement();
                 if (ElementUtils.isEffectivelyFinal(elem)) {
                     V resval = transferResult.getResultValue();
-                    if (node.toString().contains("constant")) {
-                        // System.out.println("resval: " + resval);
-                    }
                     if (resval != null) {
                         finalLocalValues.put(elem, resval);
                     }
@@ -407,13 +390,10 @@ public abstract class AbstractAnalysis<
      * @return true if the node's value changed, or a store was updated
      */
     protected boolean updateNodeValues(Node node, TransferResult<V, S> transferResult) {
-        // System.out.println("updating nodeValues for " + node.toStringDebug());
         V newVal = transferResult.getResultValue();
-        // System.out.println("newVal: " + newVal);
         boolean nodeValueChanged = false;
         if (newVal != null) {
             V oldVal = nodeValues.get(node);
-            // System.out.println("oldVal: " + oldVal);
             nodeValues.put(node, newVal);
             nodeValueChanged = !Objects.equals(oldVal, newVal);
         }

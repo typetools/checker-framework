@@ -129,14 +129,6 @@ public class ForwardAnalysisImpl<
                         assert currentInput != null : "@AssumeAssertion(nullness): invariant";
                         TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
                         addToWorklistAgain |= updateNodeValues(n, transferResult);
-                        //                        if (n.toString().contains("constant")) {
-                        //                            System.out.println("updating this node: " +
-                        // n.toStringDebug());
-                        //                            System.out.println("transferResult: " +
-                        // transferResult);
-                        //                            System.out.println("inputBefore: " +
-                        // currentInput);
-                        //                        }
                         currentInput = new TransferInput<>(n, this, transferResult);
                         lastNode = n;
                     }
@@ -357,7 +349,6 @@ public class ForwardAnalysisImpl<
         S initialStore = transferFunction.initialStore(underlyingAST, parameters);
         thenStores.put(entry, initialStore);
         elseStores.put(entry, initialStore);
-        // System.out.println("initial store for entry " + entry + ": " + initialStore);
         inputs.put(entry, new TransferInput<>(null, this, initialStore));
     }
 

@@ -192,20 +192,12 @@ public abstract class CFAbstractTransfer<
     protected V getValueFromFactory(Tree tree, Node node) {
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
                 analysis.atypeFactory;
-
-        // System.out.println("calling getValueFromFactory on " + tree);
-        // System.out.println("node: " + (node == null? null : node.toStringDebug()));
-
         Tree preTree = analysis.getCurrentTree();
-
-        // System.out.println("preTree: " +preTree);
-
         Pair<Tree, AnnotatedTypeMirror> preContext =
                 factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
-            // System.out.println("node and node.getAssignmentContext are non-null");
             // get the declared type of the assignment context by looking up the
             // assignment context tree's type in the factory while flow is
             // disabled.
@@ -222,7 +214,6 @@ public abstract class CFAbstractTransfer<
             }
 
             if (assignmentContext != null) {
-                // System.out.println("assignmentContext was nonnull");
                 if (assignmentContext instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
@@ -244,9 +235,6 @@ public abstract class CFAbstractTransfer<
         } else {
             at = factory.getAnnotatedType(tree);
         }
-        // System.out.println("at: " + at);
-        // System.out.println("at.getAnnoInHierarchy(top): " +
-        // at.getAnnotationInHierarchy(factory.getQualifierHierarchy().getTopAnnotations().iterator().next()));
         analysis.setCurrentTree(preTree);
         factory.getVisitorState().setAssignmentContext(preContext);
         return analysis.createAbstractValue(at);
@@ -524,6 +512,7 @@ public abstract class CFAbstractTransfer<
             Element enclosingMethodOfVariableDeclaration = elem.getEnclosingElement();
 
             if (enclosingMethodOfVariableDeclaration != null) {
+
                 // Now find all the enclosing methods of the code we are analyzing. If any one of
                 // them matches the above, then the final local variable value applies.
                 Element enclosingMethodOfCurrentMethod = enclosingElement;
@@ -916,12 +905,6 @@ public abstract class CFAbstractTransfer<
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
-
-        //        if (n.toString().contains("constant =")) {
-        //            System.out.println("calling visitAssignment on " + n.toStringDebug());
-        //            System.out.println("info: " + info);
-        //            System.out.println("rhsVal: " + rhsValue);
-        //        }
 
         if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
             // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD.
