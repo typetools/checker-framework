@@ -367,7 +367,14 @@ rules about what type refinement it performs.
 
 The value in parentheses is a lowercase checker name,
 exactly as in the \<@SuppressWarnings> annotation
-(Section~\ref{suppresswarnings-annotation-syntax}).  The same good practices apply
+(Section~\ref{suppresswarnings-annotation-syntax}).
+If the value in parentheses refers to a checker with
+subcheckers, then its subcheckers will also assume that the
+assertion is true (e.g. the KeyFor Checker will assume that
+the assertion in the example above cannot fail, when it runs
+as a subchecker of the Nullness Checker).
+
+The same good practices apply
 as for \<@SuppressWarnings> annotations, such as writing a comment
 justifying why the assumption is safe
 (Section~\ref{suppresswarnings-best-practices}).

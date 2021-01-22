@@ -110,6 +110,14 @@ public class CFCFGBuilder extends CFGBuilder {
         return false;
     }
 
+    /**
+     * Finds the ultimate parent checker of the given checker. The ultimate parent checker is the
+     * checker that the user actually requested, i.e. the one with no parent.
+     *
+     * @param checker the checker from which to start the search
+     * @return the first checker in the parent checker chain with no parent checker of its own, i.e.
+     *     the ultimate parent checker
+     */
     private static BaseTypeChecker getUltimateParent(BaseTypeChecker checker) {
         BaseTypeChecker ultimateParent = checker;
         while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
@@ -118,6 +126,13 @@ public class CFCFGBuilder extends CFGBuilder {
         return ultimateParent;
     }
 
+    /**
+     * A specialized phase-one CFG builder that is aware of Checker Framework annotated types. It is
+     * responsible for: 1) translating foreach loops in a way that is aware of CF annotated types,
+     * 2) registering the containing elements of artificial trees with the relevant type factories,
+     * and 3) generating appropriate assertion CFG structure in the presence of @AssumeAssertion
+     * assertion strings which mention the checker or its supercheckers.
+     */
     protected static class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
         /** The associated checker. */
         protected final BaseTypeChecker checker;
@@ -154,6 +169,15 @@ public class CFCFGBuilder extends CFGBuilder {
             handleArtificialTreeImpl(ultimateParent.getTypeFactory(), tree, getCurrentPath());
         }
 
+        /**
+         * Registers the artificial tree's containing element with the given type factory. This
+         * implementation is separate from {@link #handleArtificialTree(Tree)} to allow calls for
+         * different factories to share this code.
+         *
+         * @param factory the factory with which to register the tree
+         * @param tree an artificial tree created on the current path
+         * @param currentPath the current path
+         */
         private static void handleArtificialTreeImpl(
                 GenericAnnotatedTypeFactory<?, ?, ?, ?> factory, Tree tree, TreePath currentPath) {
             // Record the method or class that encloses the newly created tree.

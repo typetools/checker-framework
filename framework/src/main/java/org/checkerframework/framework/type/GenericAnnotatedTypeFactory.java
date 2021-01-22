@@ -1710,7 +1710,15 @@ public abstract class GenericAnnotatedTypeFactory<
             if (artificialTreeToEnclosingElementMap.containsKey(tree)
                     && type.getKind() == TypeKind.TYPEVAR) {
                 // TODO this is a kludge to avoid a problem with artificial trees generated
-                // for enhanced-for loops
+                // for enhanced-for loops. For any checker but the first subchecker to run
+                // when using a shared CFG, the call to applyInferredAnnotations() above
+                // fails to remove the primary annotation on a type variable use derived from
+                // an artificial iterator in a foreach loop, because a (top) type is inferred (for
+                // some
+                // reason that must be related to the shared CFG, but that I cannot find). See the
+                // test
+                // framework/tests/all-systems/TypeVarAndArrayRefinementSmall.java
+                // for an example of such code.
                 DefaultInferredTypesApplier applier =
                         new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
                 applier.applyInferredType(type, Collections.emptySet(), type.underlyingType);
