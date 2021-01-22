@@ -416,7 +416,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         List<VariableDeclarator> varDecls = expr.getVariables();
         for (int i = 0; i < varDecls.size(); i++) {
             VariableDeclarator decl = varDecls.get(i);
-            LocalLocation loc = new LocalLocation(decl.getNameAsString(), i);
+            LocalLocation loc = new LocalLocation(i, decl.getNameAsString());
             AField field = method.body.locals.getVivify(loc);
             visitType(expr.getCommonType(), field.type);
             if (annos != null) {
@@ -536,7 +536,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                             List<TypePathEntry> loc, int tag, int arg) {
                         List<TypePathEntry> path = new ArrayList<>(loc.size() + 1);
                         path.addAll(loc);
-                        path.add(new TypePathEntry(tag, arg));
+                        path.add(TypePathEntry.createTypePathEntry(tag, arg));
                         return path;
                     }
                 },
