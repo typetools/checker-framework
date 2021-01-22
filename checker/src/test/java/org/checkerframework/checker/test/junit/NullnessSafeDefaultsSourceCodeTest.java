@@ -28,7 +28,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
                 "nullness",
                 "-AuseConservativeDefaultsForUncheckedCode=source",
                 "-cp",
-                "dist/checker-all.jar:tests/build/testclasses/",
+                "dist/checker.jar:tests/build/testclasses/",
                 "-Anomsgtext");
     }
 

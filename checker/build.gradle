@@ -125,9 +125,8 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 task checkerJar(type: ShadowJar, dependsOn: compileJava) {
     description 'Builds checker.jar with all dependencies except checker-qual.'
-    destinationDirectory = file("${projectDir}/dist")
     includeEmptyDirs = false
-    archiveFileName = 'checker.jar'
+    archivesBaseName = 'checker'
     archiveClassifier = ''
 
     from shadowJar.source
@@ -169,7 +168,7 @@ shadowJar {
         copy {
             from archiveFile.get()
             into file("${projectDir}/dist")
-            rename 'checker.*', 'checker-all.jar'
+            rename 'checker.*', 'checker.jar'
         }
     }
 }
