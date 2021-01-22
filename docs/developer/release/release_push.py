@@ -86,7 +86,8 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     released can be dropped, which for our purposes is equivalent to never
     having staged them."""
     gnupgPassphrase = read_first_line("/projects/swlab1/checker-framework/hosting-info/release-private.password")
-    execute('./gradlew publish --no-parallel -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
+    # When bufalo uses gpg2 version 2.2+, then remove signing.gnupg.useLegacyGpg=true
+    execute('./gradlew publish --no-parallel -Psigning.gnupg.useLegacyGpg=true -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
 
 def is_file_empty(filename):
     "Returns true if the given file has size 0."
@@ -106,10 +107,10 @@ def run_link_checker(site, output, additional_param=""):
 
     out_file = open(output, 'w+')
 
-    print("Executing: "
-          + ' '.join("%s=%r" % (key2, val2) for (key2, val2) in env.items())
+    print(("Executing: "
+          + ' '.join("%s=%r" % (key2, val2) for (key2, val2) in list(env.items()))
           + " "
-          + " ".join(cmd))
+          + " ".join(cmd)))
     process = subprocess.Popen(cmd, env=env, stdout=out_file, stderr=out_file)
     process.communicate()
     process.wait()
@@ -140,11 +141,11 @@ def check_all_links(afu_website, checker_website, suffix, test_mode, checker_ver
 
     errors_reported = not (is_afuCheck_empty and is_checkerCheck_empty)
     if errors_reported:
-        print  "Link checker results can be found at:\n"
+        print("Link checker results can be found at:\n")
     if not is_afuCheck_empty:
-        print  "\t" + afuCheck     + "\n"
+        print("\t" + afuCheck     + "\n")
     if not is_checkerCheck_empty:
-        print  "\t" + checkerCheck + "\n"
+        print("\t" + checkerCheck + "\n")
     if errors_reported:
         release_option = ""
         if not test_mode:
@@ -174,10 +175,10 @@ def validate_args(argv):
 def print_usage():
     """Print instructions on how to use this script, and in particular how to
     set test or release mode."""
-    print ("Usage: python3 release_build.py [release]\n" +
+    print(("Usage: python3 release_build.py [release]\n" +
            "If the \"release\" argument is " +
            "NOT specified then the script will execute all steps that checking and prompting " +
-           "steps but will NOT actually perform a release.  This is for testing the script.")
+           "steps but will NOT actually perform a release.  This is for testing the script."))
 
 def main(argv):
     """The release_push script is mainly responsible for copying the artifacts
@@ -211,9 +212,9 @@ def main(argv):
 
     continue_or_exit(msg + "\n")
     if test_mode:
-        print "Continuing in test mode."
+        print("Continuing in test mode.")
     else:
-        print "Continuing in release mode."
+        print("Continuing in release mode.")
 
     if not os.path.exists(RELEASE_BUILD_COMPLETED_FLAG_FILE):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
@@ -239,8 +240,8 @@ def main(argv):
     new_afu_version = get_afu_version_from_html(dev_afu_website_file)
     check_release_version(current_afu_version, new_afu_version)
 
-    print "Checker Framework:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version)
-    print "AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version)
+    print("Checker Framework:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version))
+    print("AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version))
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/dev/
@@ -309,7 +310,7 @@ def main(argv):
 
         print_step("4c: Run Maven sanity test on Maven central artifacts.")
         if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
-            repo_url = raw_input("Please enter the repo URL of the closed artifacts:\n")
+            repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
             maven_sanity_check("maven-staging", repo_url, new_checker_version)
 
@@ -321,13 +322,13 @@ def main(argv):
     print_step("Push Step 5. Copy dev current release website to live website") # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Copy release to the live website?"):
-            print "Copying to live site"
+            print("Copying to live site")
             copy_releases_to_live_site(new_checker_version, new_afu_version)
             copy_htaccess()
             ensure_group_access_to_releases()
             ### update_release_symlinks(new_checker_version, new_afu_version)
     else:
-        print  "Test mode: Skipping copy to live site!"
+        print("Test mode: Skipping copy to live site!")
 
     # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
@@ -342,7 +343,7 @@ def main(argv):
             sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
             execute("sh " + sanity_test_script + " " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
     else:
-        print  "Test mode: Skipping javac sanity tests on the live release."
+        print("Test mode: Skipping javac sanity tests on the live release.")
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/
@@ -360,7 +361,7 @@ def main(argv):
         if prompt_yes_no("Run link checker on LIVE site?", True):
             check_all_links(live_afu_website, live_checker_website, "live", test_mode)
     else:
-        print  "Test mode: Skipping checking of live site links."
+        print("Test mode: Skipping checking of live site links.")
 
     # This step pushes the changes committed to the interm repositories to the GitHub
     # repositories. This is the first irreversible change. After this point, you can no longer
@@ -371,9 +372,9 @@ def main(argv):
     if not test_mode:
         if prompt_yes_no("Push the release to GitHub repositories?  This is irreversible.", True):
             push_interm_to_release_repos()
-            print  "Pushed to repos"
+            print("Pushed to repos")
     else:
-        print  "Test mode: Skipping push to GitHub!"
+        print("Test mode: Skipping push to GitHub!")
 
     # This is a manual step that releases the staged Maven artifacts to the actual Central repository.
     # This is also an irreversible step. Once you have released these artifacts they will be forever
@@ -394,11 +395,11 @@ def main(argv):
                "leave the \"Automatically drop\" box checked. For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
-    print  msg
+    print(msg)
     prompt_to_continue()
 
     if test_mode:
-        print "Test complete"
+        print("Test complete")
     else:
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
@@ -427,7 +428,7 @@ def main(argv):
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 
-        print  msg
+        print(msg)
 
         print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
@@ -442,7 +443,7 @@ def main(argv):
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    print "Done with release_push.py"
+    print("Done with release_push.py")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

@@ -101,10 +101,10 @@ public class QualifierDefaults {
      * earlier name for the field was "qualifierCache"). It can also be used by type systems to set
      * defaults for certain Elements.
      */
-    private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+    private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
 
     /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
-    private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
+    private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /** CLIMB locations whose standard default is top for a given type system. */
     public static final List<TypeUseLocation> STANDARD_CLIMB_DEFAULTS_TOP =
@@ -171,9 +171,9 @@ public class QualifierDefaults {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
         this.useConservativeDefaultsBytecode =
-                atypeFactory.getContext().getChecker().useConservativeDefault("bytecode");
+                atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
-                atypeFactory.getContext().getChecker().useConservativeDefault("source");
+                atypeFactory.getChecker().useConservativeDefault("source");
     }
 
     @Override

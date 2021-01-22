@@ -67,7 +67,7 @@ public final class TreePathUtil {
 
     /**
      * Gets path to the first (innermost) enclosing class tree, where class is defined by the {@link
-     * TreeUtils#classTreeKinds} method.
+     * TreeUtils#classTreeKinds()} method.
      *
      * @param path the path defining the tree node
      * @return the path to the enclosing class tree, {@code null} otherwise

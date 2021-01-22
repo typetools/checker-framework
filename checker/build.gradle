@@ -1,12 +1,3 @@
-plugins {
-    // To only load the parts of the AWS SDK needed to test the Called Methods Checker, rather
-    // than the whole AWS SDK. Uses the "legacy" version listed here:
-    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-gradle.html,
-    // because the build fails with the Gradle 5+ way, saying that it can't find ec2.
-    // I believe that this is because the CF only needs the AWS SDK during testing, not during the build.
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-}
-
 sourceSets {
     main {
         resources {
@@ -15,6 +6,12 @@ sourceSets {
         }
     }
     testannotations
+}
+
+
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
@@ -27,6 +24,7 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
+    implementation project(':checker-util')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
@@ -41,19 +39,14 @@ dependencies {
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
+    // The AWS SDK is used for testing the Called Methods Checker.
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
     testannotationsImplementation project(':checker-qual')
-}
-
-// The AWS SDK is used for testing the Called Methods Checker.
-dependencyManagement {
-    imports {
-        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.923"
-    }
 }
 
 jar {
@@ -79,6 +72,15 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             rename { String fileName ->
                 // remove version number on checker-qual.jar
                 fileName.replace(fileName, "checker-qual.jar")
+            }
+        }
+
+        copy {
+            from file(project(':checker-util').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                // remove version number on checker-util.jar
+                fileName.replace(fileName, "checker-util.jar")
             }
         }
 
@@ -122,6 +124,7 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker.jar"
+    // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
@@ -359,7 +362,7 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
         from files("tests/${testdir}/non-annotated")
         into file("tests/${testdir}/annotated")
         filter { String line ->
-            line.contains('// :: error:') ? null : line
+            line.contains('// :: error:') || line.contains('// :: warning:') ? null : line
         }
     }
     // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
@@ -554,7 +557,7 @@ task wholeProgramInferenceTests(group: 'Verification') {
 // This is run as part of the nonJunitTests task.
 task wpiManyTests(group: "Verification") {
     description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
-
+    dependsOn(copyJarsToDist)
     // This test must always be re-run when requested.
     outputs.upToDateWhen { false }
 
@@ -591,7 +594,12 @@ task wpiManyTests(group: "Verification") {
                 throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
             }
             file.eachLine { line ->
-                if (line.startsWith("Running ") || line.startsWith("warning: [path]")
+                if (
+                        // Ignore the line that WPI echoes with the javac command being run.
+                        line.startsWith("Running ")
+                        // Warnings about bad path elements aren't related to WPI and are ignored.
+                        || line.startsWith("warning: [path]")
+                        // Ignore the summary line that reports the total number of warnings.
                         || line.endsWith("warnings")) {
                   return;
                 }
@@ -607,6 +615,7 @@ task wpiManyTests(group: "Verification") {
 // This is run as part of the nonJunitTests task.
 task wpiPlumeLibTests(group: "Verification") {
     description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+    dependsOn(copyJarsToDist)
 
     // This test must always be re-run when requested.
     outputs.upToDateWhen { false }
@@ -652,4 +661,7 @@ publishing {
             artifact allJavadocJar
         }
     }
+}
+signing {
+    sign publishing.publications.checker
 }

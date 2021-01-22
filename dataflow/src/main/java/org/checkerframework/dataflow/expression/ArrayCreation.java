@@ -2,8 +2,11 @@ package org.checkerframework.dataflow.expression;
 
 import java.util.List;
 import java.util.Objects;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
 /** FlowExpression for array creations. {@code new String[]()}. */
@@ -27,6 +30,7 @@ public class ArrayCreation extends JavaExpression {
             List<? extends @Nullable JavaExpression> dimensions,
             List<JavaExpression> initializers) {
         super(type);
+        assert type.getKind() == TypeKind.ARRAY;
         this.dimensions = dimensions;
         this.initializers = initializers;
     }
@@ -100,8 +104,10 @@ public class ArrayCreation extends JavaExpression {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("new " + type);
-        if (!dimensions.isEmpty()) {
+        if (dimensions.isEmpty()) {
+            sb.append("new " + type);
+        } else {
+            sb.append("new " + TypesUtils.getInnermostComponentType((ArrayType) type));
             for (JavaExpression dim : dimensions) {
                 sb.append("[");
                 sb.append(dim == null ? "" : dim);
@@ -114,5 +120,18 @@ public class ArrayCreation extends JavaExpression {
             sb.append("}");
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toStringDebug() {
+        return "\""
+                + super.toStringDebug()
+                + "\""
+                + " type="
+                + type
+                + " dimensions="
+                + dimensions
+                + " initializers="
+                + initializers;
     }
 }

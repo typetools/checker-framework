@@ -368,8 +368,8 @@ public abstract class JavaExpression {
                     } else {
                         methodReceiver = getReceiver(mn, provider);
                     }
-                    TypeMirror type = TreeUtils.typeOf(mn);
-                    result = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                    TypeMirror resultType = TreeUtils.typeOf(mn);
+                    result = new MethodCall(resultType, invokedMethod, methodReceiver, parameters);
                 } else {
                     result = null;
                 }
@@ -404,11 +404,12 @@ public abstract class JavaExpression {
                         JavaExpression fieldAccessExpression;
                         @SuppressWarnings(
                                 "nullness:dereference.of.nullable") // a field has enclosing class
-                        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+                        TypeMirror enclosingTypeElement =
+                                ElementUtils.enclosingTypeElement(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
-                            fieldAccessExpression = new ClassName(enclosingType);
+                            fieldAccessExpression = new ClassName(enclosingTypeElement);
                         } else {
-                            fieldAccessExpression = new ThisReference(enclosingType);
+                            fieldAccessExpression = new ThisReference(enclosingTypeElement);
                         }
                         result =
                                 new FieldAccess(
@@ -517,7 +518,7 @@ public abstract class JavaExpression {
      *     not
      */
     public static JavaExpression getImplicitReceiver(Element ele) {
-        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(ele);
         if (enclosingClass == null) {
             throw new BugInCF("getImplicitReceiver's arg has no enclosing class: " + ele);
         }

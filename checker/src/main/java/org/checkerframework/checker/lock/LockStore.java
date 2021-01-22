@@ -172,7 +172,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     protected boolean isSideEffectFree(
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
-        SourceChecker checker = lockAnnotatedTypeFactory.getContext().getChecker();
+        SourceChecker checker = lockAnnotatedTypeFactory.getChecker();
         return checker.hasOption("assumeSideEffectFree")
                 || checker.hasOption("assumePure")
                 || lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false)

@@ -98,6 +98,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -326,7 +327,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 } else {
                     relevantJavaTypes.add(
                             TypesUtils.typeFromClass(
-                                    clazz, getContext().getTypeUtils(), getElementUtils()));
+                                    clazz, getChecker().getTypeUtils(), getElementUtils()));
                 }
             }
         }
@@ -881,7 +882,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
                         JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
-                        this.getContext());
+                        this.getChecker());
 
         return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
     }
@@ -1817,7 +1818,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         applyLocalVariableQualifierParameterDefaults(elt, type);
 
-        TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
         Set<AnnotationMirror> tops;
         if (enclosingClass != null) {
             tops = getQualifierParameterHierarchies(enclosingClass);
@@ -2509,5 +2510,30 @@ public abstract class GenericAnnotatedTypeFactory<
         return this.subcheckerSharedCFG == null
                 ? null
                 : this.subcheckerSharedCFG.getOrDefault(tree, null);
+    }
+
+    /**
+     * Standardize a type qualifier annotation obtained from a contract.
+     *
+     * @param annoFromContract the annotation to be standardized
+     * @param flowExprContext the context to use for standardization
+     * @param path the path to a use of the contract (a method call) or to the method declaration
+     * @return the standardized annotation, or the argument if it does not need standardization
+     */
+    public AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            JavaExpressionContext flowExprContext,
+            TreePath path) {
+        DependentTypesHelper dependentTypesHelper = getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            AnnotationMirror standardized =
+                    dependentTypesHelper.standardizeAnnotationIfDependentType(
+                            flowExprContext, path, annoFromContract, false, false);
+            if (standardized != null) {
+                dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
+                return standardized;
+            }
+        }
+        return annoFromContract;
     }
 }

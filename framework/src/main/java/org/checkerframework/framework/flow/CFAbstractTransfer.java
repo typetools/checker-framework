@@ -61,6 +61,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -569,24 +570,23 @@ public abstract class CFAbstractTransfer<
             MethodTree methodDeclTree,
             ExecutableElement methodElement) {
         ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
-        JavaExpressionContext flowExprContext = null;
+        JavaExpressionContext methodUseContext = null;
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror annotation = p.annotation;
 
-            if (flowExprContext == null) {
-                flowExprContext =
+            if (methodUseContext == null) {
+                methodUseContext =
                         JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodDeclTree,
-                                methodAst.getClassTree(),
-                                analysis.checker.getContext());
+                                methodDeclTree, methodAst.getClassTree(), analysis.checker);
             }
 
             TreePath localScope = analysis.atypeFactory.getPath(methodDeclTree);
 
-            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, localScope);
+            annotation =
+                    standardizeAnnotationFromContract(annotation, methodUseContext, localScope);
 
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -595,7 +595,7 @@ public abstract class CFAbstractTransfer<
                 // (same for other annotations)
                 JavaExpression expr =
                         JavaExpressionParseUtil.parse(
-                                expression, flowExprContext, localScope, false);
+                                expression, methodUseContext, localScope, false);
                 initialStore.insertValue(expr, annotation);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
@@ -615,7 +615,8 @@ public abstract class CFAbstractTransfer<
             AnnotationMirror annoFromContract,
             JavaExpressionContext flowExprContext,
             TreePath path) {
-        // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
+        // TODO: common implementation with
+        // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
         if (analysis.dependentTypesHelper != null) {
             AnnotationMirror standardized =
                     analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
@@ -1215,26 +1216,35 @@ public abstract class CFAbstractTransfer<
             S thenStore,
             S elseStore,
             Set<? extends Contract> postconditions) {
-        JavaExpressionContext flowExprContext = null; // lazily initialized
+
+        GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = analysis.getTypeFactory();
+
+        // These lazily initialized variables are needed only if the method has any contracts.
+        JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
         for (Contract p : postconditions) {
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
 
-            if (flowExprContext == null) {
-                flowExprContext =
-                        JavaExpressionContext.buildContextForMethodUse(
-                                invocationNode, analysis.checker.getContext());
+            if (methodUseContext == null) {
+                // Set the lazily initialized variables.
+                SourceChecker checker = analysis.checker;
+
+                methodUseContext =
+                        JavaExpressionContext.buildContextForMethodUse(invocationNode, checker);
             }
 
-            TreePath pathToInvocation = analysis.atypeFactory.getPath(invocationTree);
+            // Standardize with respect to the method use (the call site).
+            TreePath pathToInvocation = atypeFactory.getPath(invocationTree);
+            AnnotationMirror standardizedUse =
+                    standardizeAnnotationFromContract(anno, methodUseContext, pathToInvocation);
 
-            anno = standardizeAnnotationFromContract(anno, flowExprContext, pathToInvocation);
+            anno = standardizedUse;
 
             try {
                 JavaExpression je =
                         JavaExpressionParseUtil.parse(
-                                expression, flowExprContext, pathToInvocation, false);
+                                expression, methodUseContext, pathToInvocation, false);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call

@@ -86,7 +86,7 @@ import org.checkerframework.javacutil.UserError;
  *
  * @checker_framework.manual #creating-compiler-interface The checker class
  */
-public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
+public abstract class BaseTypeChecker extends SourceChecker {
 
     @Override
     public void initChecker() {
@@ -326,21 +326,15 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     @Override
-    public BaseTypeContext getContext() {
-        return this;
-    }
-
-    @Override
-    public BaseTypeChecker getChecker() {
-        return this;
-    }
-
-    @Override
     public BaseTypeVisitor<?> getVisitor() {
         return (BaseTypeVisitor<?>) super.getVisitor();
     }
 
-    @Override
+    /**
+     * Return the type factory associated with this checker.
+     *
+     * @return the type factory associated with this checker
+     */
     public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory() {
         BaseTypeVisitor<?> visitor = getVisitor();
         // Avoid NPE if this method is called during initialization.

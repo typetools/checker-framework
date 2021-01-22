@@ -89,7 +89,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                     // Declaration annotations apply to the outer type.
                     result.addAnnotation(anno);
                 } else {
-                    // Type annotations apply to the inner most type.
+                    // Type annotations apply to the innermost type.
                     innerType.addAnnotation(anno);
                 }
             }
