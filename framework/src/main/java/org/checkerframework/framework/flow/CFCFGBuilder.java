@@ -23,7 +23,6 @@ import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseOne;
 import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseThree;
 import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseTwo;
 import org.checkerframework.dataflow.cfg.builder.PhaseOneResult;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -91,11 +90,15 @@ public class CFCFGBuilder extends CFGBuilder {
      * uses an @AssumeAssertion string that is relevant to the SourceChecker.
      */
     public static boolean assumeAssertionsActivatedForAssertTree(
-            SourceChecker checker, AssertTree tree) {
+            BaseTypeChecker checker, AssertTree tree) {
         ExpressionTree detail = tree.getDetail();
         if (detail != null) {
             String msg = detail.toString();
-            Collection<String> prefixes = checker.getSuppressWarningsPrefixes();
+            BaseTypeChecker ultimateParent = getUltimateParent(checker);
+            Collection<String> prefixes = ultimateParent.getSuppressWarningsPrefixes();
+            for (BaseTypeChecker subchecker : ultimateParent.getSubcheckers()) {
+                prefixes.addAll(subchecker.getSuppressWarningsPrefixes());
+            }
             for (String prefix : prefixes) {
                 String assumeAssert = "@AssumeAssertion(" + prefix + ")";
                 if (msg.contains(assumeAssert)) {
@@ -105,6 +108,14 @@ public class CFCFGBuilder extends CFGBuilder {
         }
 
         return false;
+    }
+
+    private static BaseTypeChecker getUltimateParent(BaseTypeChecker checker) {
+        BaseTypeChecker ultimateParent = checker;
+        while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
+            ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
+        }
+        return ultimateParent;
     }
 
     protected static class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
@@ -136,10 +147,7 @@ public class CFCFGBuilder extends CFGBuilder {
 
         @Override
         public void handleArtificialTree(Tree tree) {
-            BaseTypeChecker ultimateParent = checker;
-            while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
-                ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
-            }
+            BaseTypeChecker ultimateParent = getUltimateParent(checker);
             for (BaseTypeChecker subchecker : ultimateParent.getSubcheckers()) {
                 handleArtificialTreeImpl(subchecker.getTypeFactory(), tree, getCurrentPath());
             }
