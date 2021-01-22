@@ -2,7 +2,6 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
-import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -33,43 +32,22 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
-        if (expression.indexOf('-') == -1 && expression.indexOf('+') == -1) {
-            // The expression contains no "-" or "+", so it can be standardized directly.
-            JavaExpression result;
-            try {
-                result =
-                        JavaExpressionParseUtil.parse(
-                                expression, context, localScope, useLocalScope);
-            } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                return new DependentTypesError(expression, e).toString();
-            }
-            if (result == null) {
-                return new DependentTypesError(expression, " ").toString();
-            }
-            if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
-                Object constant = ((FieldAccess) result).getField().getConstantValue();
-                if (constant != null && !(constant instanceof String)) {
-                    return constant.toString();
-                }
-            }
-            return result.toString();
-        }
-
-        // The expression is a sum of several terms. Split it into individual terms and standardize
-        // each term.
-        OffsetEquation equation = OffsetEquation.createOffsetFromJavaExpression(expression);
-        if (equation.hasError()) {
-            return equation.getError();
-        }
+        JavaExpression result;
         try {
-            // Standardize individual terms of the expression.
-            equation.standardizeAndViewpointAdaptExpressions(
-                    context, localScope, useLocalScope, factory);
+            result = JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
-
-        return equation.toString();
+        if (result == null) {
+            return new DependentTypesError(expression, " ").toString();
+        }
+        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
+            Object constant = ((FieldAccess) result).getField().getConstantValue();
+            if (constant != null && !(constant instanceof String)) {
+                return constant.toString();
+            }
+        }
+        return result.toString();
     }
 
     @Override
