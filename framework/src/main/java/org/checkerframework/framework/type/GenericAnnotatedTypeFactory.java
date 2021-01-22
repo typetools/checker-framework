@@ -1706,6 +1706,14 @@ public abstract class GenericAnnotatedTypeFactory<
                         "%s GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n",
                         thisClass, treeString, type, as);
             }
+            if (artificialTreeToEnclosingElementMap.containsKey(tree)
+                    && type.getKind() == TypeKind.TYPEVAR) {
+                // TODO this is a kludge to avoid a problem with artificial trees generated
+                // for enhanced-for loops
+                DefaultInferredTypesApplier applier =
+                        new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
+                applier.applyInferredType(type, Collections.emptySet(), type.underlyingType);
+            }
         }
         log(
                 "%s GATF.addComputedTypeAnnotations#9(%s, %s, %s) done%n",

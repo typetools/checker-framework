@@ -666,9 +666,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
         this.root = root;
-        // Do not clear here. Only the primary checker should clear this cache.
+        // Do not clear here. Only the primary checker should clear these.
         // treePathCache.clear();
-        artificialTreeToEnclosingElementMap.clear();
+        // artificialTreeToEnclosingElementMap.clear();
 
         if (shouldCache) {
             // Clear the caches with trees because once the compilation unit changes,

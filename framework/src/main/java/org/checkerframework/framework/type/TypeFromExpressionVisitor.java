@@ -223,7 +223,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             f.visitorState.setAssignmentContext(null);
 
             AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
+            // System.out.println("array type: " + type.toString(true));
             if (type.getKind() == TypeKind.ARRAY) {
+                // System.out.println("component type: " + ((AnnotatedArrayType)
+                // type).getComponentType().toString(true));
                 return ((AnnotatedArrayType) type).getComponentType();
             } else if (type.getKind() == TypeKind.WILDCARD
                     && ((AnnotatedWildcardType) type).isUninferredTypeArgument()) {

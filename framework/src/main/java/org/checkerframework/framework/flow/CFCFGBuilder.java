@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -135,13 +136,25 @@ public class CFCFGBuilder extends CFGBuilder {
 
         @Override
         public void handleArtificialTree(Tree tree) {
+            BaseTypeChecker ultimateParent = checker;
+            while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
+                ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
+            }
+            for (BaseTypeChecker subchecker : ultimateParent.getSubcheckers()) {
+                handleArtificialTreeImpl(subchecker.getTypeFactory(), tree, getCurrentPath());
+            }
+            handleArtificialTreeImpl(ultimateParent.getTypeFactory(), tree, getCurrentPath());
+        }
+
+        private static void handleArtificialTreeImpl(
+                GenericAnnotatedTypeFactory<?, ?, ?, ?> factory, Tree tree, TreePath currentPath) {
             // Record the method or class that encloses the newly created tree.
-            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(currentPath);
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
                 factory.setEnclosingElementForArtificialTree(tree, methodElement);
             } else {
-                ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+                ClassTree enclosingClass = TreePathUtil.enclosingClass(currentPath);
                 if (enclosingClass != null) {
                     Element classElement = TreeUtils.elementFromDeclaration(enclosingClass);
                     factory.setEnclosingElementForArtificialTree(tree, classElement);
