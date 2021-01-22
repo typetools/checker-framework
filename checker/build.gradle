@@ -24,6 +24,7 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
+    implementation project(':checker-util')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
@@ -71,6 +72,15 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             rename { String fileName ->
                 // remove version number on checker-qual.jar
                 fileName.replace(fileName, "checker-qual.jar")
+            }
+        }
+
+        copy {
+            from file(project(':checker-util').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                // remove version number on checker-util.jar
+                fileName.replace(fileName, "checker-util.jar")
             }
         }
 
@@ -352,7 +362,7 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
         from files("tests/${testdir}/non-annotated")
         into file("tests/${testdir}/annotated")
         filter { String line ->
-            line.contains('// :: error:') ? null : line
+            line.contains('// :: error:') || line.contains('// :: warning:') ? null : line
         }
     }
     // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
@@ -584,7 +594,12 @@ task wpiManyTests(group: "Verification") {
                 throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
             }
             file.eachLine { line ->
-                if (line.startsWith("Running ") || line.startsWith("warning: [path]")
+                if (
+                        // Ignore the line that WPI echoes with the javac command being run.
+                        line.startsWith("Running ")
+                        // Warnings about bad path elements aren't related to WPI and are ignored.
+                        || line.startsWith("warning: [path]")
+                        // Ignore the summary line that reports the total number of warnings.
                         || line.endsWith("warnings")) {
                   return;
                 }

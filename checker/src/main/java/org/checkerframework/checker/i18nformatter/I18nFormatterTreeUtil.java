@@ -30,6 +30,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nMakeFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
+import org.checkerframework.checker.i18nformatter.util.I18nFormatUtil;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -304,8 +305,7 @@ public class I18nFormatterTreeUtil {
                         return;
                     }
                     JavaExpressionContext flowExprContext =
-                            JavaExpressionContext.buildContextForMethodUse(
-                                    node, checker.getContext());
+                            JavaExpressionContext.buildContextForMethodUse(node, checker);
                     String formatforArg =
                             AnnotationUtils.getElementValue(
                                     paramType.getAnnotation(I18nFormatFor.class),

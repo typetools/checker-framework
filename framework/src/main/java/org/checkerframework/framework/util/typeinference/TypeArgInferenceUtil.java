@@ -231,7 +231,7 @@ public class TypeArgInferenceUtil {
             List<? extends ExpressionTree> arguments) {
         AnnotatedExecutableType method =
                 AnnotatedTypes.asMemberOf(
-                        atypeFactory.getContext().getTypeUtils(),
+                        atypeFactory.getChecker().getTypeUtils(),
                         atypeFactory,
                         receiver,
                         methodElt);
