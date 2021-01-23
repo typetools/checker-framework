@@ -51,6 +51,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
                 return constant.toString();
             }
         }
+        // TODO: Maybe move this into standardizeString, so that this class is not necessary.
         ValueAnnotatedTypeFactory vatf =
                 ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
                         .getTypeFactoryOfSubchecker(ValueChecker.class);
