@@ -650,18 +650,18 @@ public class JavaExpressionParseUtil {
                     return new UnaryOperation(negatedResult.getType(), treeKind, negatedResult);
                 default:
                     JavaExpression operand = expr.getExpression().accept(this, context);
-                    return new UnaryOperation(operand.getType, treeKind, operand);
+                    return new UnaryOperation(operand.getType(), treeKind, operand);
             }
         }
 
         /**
          * Convert a JavaParser unary operator to a TreeKind.
          *
-         * @param beo a JavaParser unary operator
+         * @param op a JavaParser unary operator
          * @return a TreeKind for the unary operator
          */
-        Tree.Kind javaParserUnaryOperatorToTreeKind(UnaryExpr.Operator beo) {
-            switch (beo) {
+        Tree.Kind javaParserUnaryOperatorToTreeKind(UnaryExpr.Operator op) {
+            switch (op) {
                 case BITWISE_COMPLEMENT:
                     return Tree.Kind.BITWISE_COMPLEMENT;
                 case LOGICAL_COMPLEMENT:
@@ -678,6 +678,8 @@ public class JavaExpressionParseUtil {
                     return Tree.Kind.PREFIX_DECREMENT;
                 case PREFIX_INCREMENT:
                     return Tree.Kind.PREFIX_INCREMENT;
+                default:
+                    throw new Error("unhandled " + op);
             }
         }
 
@@ -708,11 +710,11 @@ public class JavaExpressionParseUtil {
         /**
          * Convert a JavaParser binary operator to a TreeKind.
          *
-         * @param beo a JavaParser binary operator
+         * @param op a JavaParser binary operator
          * @return a TreeKind for the binary operator
          */
-        Tree.Kind javaParserBinaryOperatorToTreeKind(BinaryExpr.Operator beo) {
-            switch (beo) {
+        Tree.Kind javaParserBinaryOperatorToTreeKind(BinaryExpr.Operator op) {
+            switch (op) {
                 case AND:
                     return Tree.Kind.CONDITIONAL_AND;
                 case BINARY_AND:
@@ -752,7 +754,7 @@ public class JavaExpressionParseUtil {
                 case XOR:
                     return Tree.Kind.XOR;
                 default:
-                    throw new Error("unhandled " + beo);
+                    throw new Error("unhandled " + op);
             }
         }
 
