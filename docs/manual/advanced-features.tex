@@ -1167,12 +1167,13 @@ expression as an argument include:
 \end{itemize}
 
 The set of permitted expressions is a subset of all Java expressions,
-with a few extensions, formal parameters like \<\#1> and (for some type
+with a few extensions.
+The extensions are formal parameters like \<\#1> and (for some type
 systems) \code{<self>}.
 
 \begin{itemize}
 \item
-  the receiver object, \<this>.  You can write \<this> to annotate any
+  \<this>, the receiver object.  You can write \<this> to annotate any
   variable or declaration where you could write \<this> in code.
   Notably, it cannot be used in annotations on declarations of
   static fields or methods.  For a field, \<this> is the field's
@@ -1180,7 +1181,7 @@ systems) \code{<self>}.
   method's receiver.
 
 \item
-  the receiver object as seen from the superclass, \<super>.  This can be used
+  \<super>, the receiver object as seen from the superclass.  This can be used
   to refer to fields shadowed in the subclass (although shadowing fields is
   discouraged in Java).
 
@@ -1192,7 +1193,7 @@ systems) \code{<self>}.
   referenced by \<o>.
 
 \item
-  a formal parameter, represented as \<\#> followed by the \textbf{one-based} parameter
+  a formal parameter, e.g., \<\#2>.  It is represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
   refer to the receiver object; use \<this> instead.
 
@@ -1211,13 +1212,13 @@ systems) \code{<self>}.
   identifier is interpreted as a field name (not a formal parameter).
 
 \item
-  a local variable.  Write the variable name.  For example: \<myLocalVar>.
+  a local variable, e.g., \<myLocalVar>.
   The variable must be in scope; for example, a method annotation on method
   \<m> cannot mention a local variable that is declared inside \<m>.
 
 \item
-  a static variable.  Write the class name and the variable, as in
-  \<System.out>.
+  a static variable, e.g., \<System.out>.
+  Write the class name and the variable.
 
 \item
   a field of any expression.  For example:  \<next>,
