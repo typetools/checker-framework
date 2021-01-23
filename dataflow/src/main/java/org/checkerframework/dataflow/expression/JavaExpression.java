@@ -90,8 +90,8 @@ public abstract class JavaExpression {
     /**
      * Returns true if and only if the value this expression stands for cannot be changed (with
      * respect to ==) by a method call. This is the case for local variables, the self reference,
-     * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and binary
-     * operations whose left and right operands are both {@link #isUnmodifiableByOtherCode}.
+     * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and operations
+     * whose operands are all {@link #isUnmodifiableByOtherCode}.
      *
      * @see #isUnmodifiableByOtherCode
      */
