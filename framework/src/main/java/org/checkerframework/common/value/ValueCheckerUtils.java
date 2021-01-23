@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -471,6 +472,15 @@ public class ValueCheckerUtils {
         } else if (je instanceof ThisReference) {
             ThisReference e = (ThisReference) je;
             return e;
+
+        } else if (je instanceof UnaryOperation) {
+            UnaryOperation e = (UnaryOperation) je;
+            JavaExpression optExpr = optimize(e.getExpr(), factory);
+            if (e.getExpr() == optExpr) {
+                return e;
+            } else {
+                return new UnaryOperation(e.getType(), e.getOperationKind(), optExpr);
+            }
 
         } else if (je instanceof Unknown) {
             Unknown e = (Unknown) je;
