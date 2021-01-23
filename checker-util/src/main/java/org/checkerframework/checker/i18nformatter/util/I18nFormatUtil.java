@@ -1,4 +1,4 @@
-package org.checkerframework.checker.i18nformatter;
+package org.checkerframework.checker.i18nformatter.util;
 
 import java.text.ChoiceFormat;
 import java.text.DecimalFormat;

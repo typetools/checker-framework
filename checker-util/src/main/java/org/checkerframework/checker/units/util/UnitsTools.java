@@ -1,4 +1,4 @@
-package org.checkerframework.checker.units;
+package org.checkerframework.checker.units.util;
 
 import org.checkerframework.checker.units.qual.A;
 import org.checkerframework.checker.units.qual.C;

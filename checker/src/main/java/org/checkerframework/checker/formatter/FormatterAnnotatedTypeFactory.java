@@ -11,6 +11,7 @@ import org.checkerframework.checker.formatter.qual.FormatBottom;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
+import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
