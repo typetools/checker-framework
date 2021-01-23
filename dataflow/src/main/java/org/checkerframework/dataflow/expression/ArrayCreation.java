@@ -12,8 +12,11 @@ import org.plumelib.util.StringsPlume;
 /** FlowExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {
 
-    /** List of dimensions expressions. {code null} means that there is no dimension expression. */
-    protected final List<? extends @Nullable JavaExpression> dimensions;
+    /**
+     * List of dimensions expressions. {code null} means that there is no dimension expression for
+     * the given array level.
+     */
+    protected final List<@Nullable JavaExpression> dimensions;
     /** List of initializers. */
     protected final List<JavaExpression> initializers;
 
@@ -27,7 +30,7 @@ public class ArrayCreation extends JavaExpression {
      */
     public ArrayCreation(
             TypeMirror type,
-            List<? extends @Nullable JavaExpression> dimensions,
+            List<@Nullable JavaExpression> dimensions,
             List<JavaExpression> initializers) {
         super(type);
         assert type.getKind() == TypeKind.ARRAY;
@@ -40,7 +43,7 @@ public class ArrayCreation extends JavaExpression {
      *
      * @return a list of receivers representing the dimension of this array creation
      */
-    public List<? extends @Nullable JavaExpression> getDimensions() {
+    public List<@Nullable JavaExpression> getDimensions() {
         return dimensions;
     }
 
