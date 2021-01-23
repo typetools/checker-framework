@@ -684,6 +684,12 @@ public class JavaExpressionParseUtil {
                     type, javaParserOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
         }
 
+        /**
+         * Convert a JavaParser operator to a TreeKind.
+         *
+         * @param beo a JavaParser binary operator
+         * @return a TreeKind for the binary operator
+         */
         Tree.Kind javaParserOperatorToTreeKind(BinaryExpr.Operator beo) {
             switch (beo) {
                 case AND:

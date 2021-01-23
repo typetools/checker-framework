@@ -402,8 +402,14 @@ public class ValueCheckerUtils {
         return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
     }
 
+    /**
+     * Optimize the given JavaExpression, using Value Checker annotations.
+     *
+     * @param je the expression to optimize
+     * @param factory the Valueannotatedtypefactory
+     * @return an optimized version of the argument, or the argument if it cannot be optimized
+     */
     // Could use a visitor instead, but this quick-and-dirty solution works.
-
     public static JavaExpression optimize(JavaExpression je, ValueAnnotatedTypeFactory factory) {
 
         if (je instanceof ArrayAccess) {
@@ -495,6 +501,14 @@ public class ValueCheckerUtils {
         }
     }
 
+    /**
+     * Optimize the given list of JavaExpressions, using Value Checker annotations.
+     *
+     * @param list the expressions to optimize
+     * @param factory the Valueannotatedtypefactory
+     * @return an optimized version of the argument, or the argument if nothing in it can be
+     *     optimized
+     */
     private static List<JavaExpression> optimize(
             List<JavaExpression> list, ValueAnnotatedTypeFactory factory) {
         boolean changed = false;

@@ -49,6 +49,12 @@ public class ValueLiteral extends JavaExpression {
         throw new Error(String.format("cannot negate: %s type=%s", this, type));
     }
 
+    /**
+     * Negate a boxed primitive.
+     *
+     * @param o a boxed primitive
+     * @return a boxed primitive that is the negation of the argument
+     */
     private Object negateBoxedPrimitive(Object o) {
         if (value instanceof Byte) {
             return Byte.valueOf((byte) -((Byte) value).byteValue());

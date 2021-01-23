@@ -154,7 +154,12 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         }
     }
 
-    /** Return the string representation of {@code expr + 1}. */
+    /**
+     * Return the string representation of {@code expr + 1}.
+     *
+     * @param expr a JavaExpression
+     * @return the string representation of {@code expr + 1}
+     */
     private String incrementedExpression(JavaExpression expr) {
         String exprString = expr.toString();
         if (expr instanceof ValueLiteral) {
