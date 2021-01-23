@@ -30,7 +30,6 @@ import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.objectweb.asm.TypePath;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -236,7 +235,7 @@ public final class SceneToStubWriter {
 
         for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
             location = ite.getKey();
-            if (location.contains(TypePathEntry.create(TypePath.ARRAY_ELEMENT, 0))) {
+            if (location.contains(TypePathEntry.ARRAY_ELEMENT)) {
                 return ite.getValue();
             }
         }
