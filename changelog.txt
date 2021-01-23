@@ -88,7 +88,8 @@ Use of `@SuppressWarnings("fbc")` to suppress initialization warnings is depreca
 Class renamings:
  * `StubParser` => `AnnotationFileParser`
  * `Receiver` => `JavaExpression`
-     *  also related class and method renamings
+   Also related class and method renamings, such as
+    * `FlowExpressions.internalReprOf` => `JavaExpressions.fromNode`
  * In the Dataflow Framework:
     * `ThisLiteralNode` => `ThisNode`
     * `ExplicitThisLiteralNode` => `ExplicitThisNode`
