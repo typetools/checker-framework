@@ -236,7 +236,7 @@ public final class SceneToStubWriter {
 
         for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
             location = ite.getKey();
-            if (location.contains(TypePathEntry.createTypePathEntry(TypePath.ARRAY_ELEMENT, 0))) {
+            if (location.contains(TypePathEntry.create(TypePath.ARRAY_ELEMENT, 0))) {
                 return ite.getValue();
             }
         }
