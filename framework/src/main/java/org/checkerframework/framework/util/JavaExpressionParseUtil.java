@@ -647,19 +647,49 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(UnaryExpr expr, JavaExpressionContext context) {
-            switch (expr.getOperator()) {
-                case PLUS:
+            Tree.Kind treeKind = javaParserUnaryOperatorToTreeKind(expr.getOperator());
+            // This performs constant-folding for + and -; it could also do so for other operations.
+            switch (treeKind) {
+                case UNARY_PLUS:
                     return expr.getExpression().accept(this, context);
-                case MINUS:
+                case UNARY_MINUS:
                     JavaExpression negatedResult = expr.getExpression().accept(this, context);
                     if (negatedResult instanceof ValueLiteral) {
                         return ((ValueLiteral) negatedResult).negate();
                     }
-                    return new UnaryOperation(
-                            negatedResult.getType(), Tree.Kind.UNARY_MINUS, negatedResult);
+                    return new UnaryOperation(negatedResult.getType(), treeKind, negatedResult);
                 default:
-                    // TODO: There is no particular reason to
-                    return defaultAction(expr, context);
+                    JavaExpression operand = expr.getExpression().accept(this, context);
+                    return new UnaryOperation(operand.getType(), treeKind, operand);
+            }
+        }
+
+        /**
+         * Convert a JavaParser unary operator to a TreeKind.
+         *
+         * @param op a JavaParser unary operator
+         * @return a TreeKind for the unary operator
+         */
+        Tree.Kind javaParserUnaryOperatorToTreeKind(UnaryExpr.Operator op) {
+            switch (op) {
+                case BITWISE_COMPLEMENT:
+                    return Tree.Kind.BITWISE_COMPLEMENT;
+                case LOGICAL_COMPLEMENT:
+                    return Tree.Kind.LOGICAL_COMPLEMENT;
+                case MINUS:
+                    return Tree.Kind.UNARY_MINUS;
+                case PLUS:
+                    return Tree.Kind.UNARY_PLUS;
+                case POSTFIX_DECREMENT:
+                    return Tree.Kind.POSTFIX_DECREMENT;
+                case POSTFIX_INCREMENT:
+                    return Tree.Kind.POSTFIX_INCREMENT;
+                case PREFIX_DECREMENT:
+                    return Tree.Kind.PREFIX_DECREMENT;
+                case PREFIX_INCREMENT:
+                    return Tree.Kind.PREFIX_INCREMENT;
+                default:
+                    throw new Error("unhandled " + op);
             }
         }
 
@@ -684,17 +714,17 @@ public class JavaExpressionParseUtil {
                 throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
             }
             return new BinaryOperation(
-                    type, javaParserOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
+                    type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
         }
 
         /**
-         * Convert a JavaParser operator to a TreeKind.
+         * Convert a JavaParser binary operator to a TreeKind.
          *
-         * @param beo a JavaParser binary operator
+         * @param op a JavaParser binary operator
          * @return a TreeKind for the binary operator
          */
-        Tree.Kind javaParserOperatorToTreeKind(BinaryExpr.Operator beo) {
-            switch (beo) {
+        Tree.Kind javaParserBinaryOperatorToTreeKind(BinaryExpr.Operator op) {
+            switch (op) {
                 case AND:
                     return Tree.Kind.CONDITIONAL_AND;
                 case BINARY_AND:
@@ -734,7 +764,7 @@ public class JavaExpressionParseUtil {
                 case XOR:
                     return Tree.Kind.XOR;
                 default:
-                    throw new Error("unhandled " + beo);
+                    throw new Error("unhandled " + op);
             }
         }
 

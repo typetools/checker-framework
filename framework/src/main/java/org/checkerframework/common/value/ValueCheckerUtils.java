@@ -482,11 +482,11 @@ public class ValueCheckerUtils {
 
         } else if (je instanceof UnaryOperation) {
             UnaryOperation e = (UnaryOperation) je;
-            JavaExpression optExpr = optimize(e.getExpr(), factory);
-            if (e.getExpr() == optExpr) {
+            JavaExpression optOperand = optimize(e.getOperand(), factory);
+            if (e.getOperand() == optOperand) {
                 return e;
             } else {
-                return new UnaryOperation(e.getType(), e.getOperationKind(), optExpr);
+                return new UnaryOperation(e.getType(), e.getOperationKind(), optOperand);
             }
 
         } else if (je instanceof Unknown) {
