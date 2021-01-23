@@ -410,7 +410,7 @@ public class ValueCheckerUtils {
      * @return an optimized version of the argument, or the argument if it cannot be optimized
      */
     // Could use a visitor instead, but this quick-and-dirty solution works.
-    @SuppressWarnings("interning") // == on return value indicates whether `optimize` had any effect
+    @SuppressWarnings("interning:not.interned") // ==  indicates whether `optimize` had any effect
     public static JavaExpression optimize(JavaExpression je, ValueAnnotatedTypeFactory factory) {
 
         if (je instanceof ArrayAccess) {
@@ -510,6 +510,7 @@ public class ValueCheckerUtils {
      * @return an optimized version of the argument, or the argument if nothing in it can be
      *     optimized
      */
+    @SuppressWarnings("interning:not.interned") // ==  indicates whether `optimize` had any effect
     private static List<JavaExpression> optimize(
             List<JavaExpression> list, ValueAnnotatedTypeFactory factory) {
         boolean changed = false;
