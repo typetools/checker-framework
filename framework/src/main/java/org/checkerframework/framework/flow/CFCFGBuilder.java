@@ -85,9 +85,14 @@ public class CFCFGBuilder extends CFGBuilder {
         return phase3result;
     }
 
-    /*
-     * Given a SourceChecker and an AssertTree, returns whether the AssertTree
-     * uses an @AssumeAssertion string that is relevant to the SourceChecker.
+    /**
+     * Given a SourceChecker and an AssertTree, returns whether the AssertTree uses
+     * an @AssumeAssertion string that is relevant to the SourceChecker.
+     *
+     * @param checker the checker
+     * @param tree an assert tree
+     * @return true if the assert tree contains an @AssumeAssertion(checker) message string for any
+     *     subchecker of the given checker's ultimate parent checker
      */
     public static boolean assumeAssertionsActivatedForAssertTree(
             BaseTypeChecker checker, AssertTree tree) {
