@@ -208,6 +208,9 @@ public class JavaExpressionParseUtil {
         /** The type utilities. */
         private final Types types;
 
+        /** The java.lang.String type. */
+        TypeMirror stringTypeMirror;
+
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
          *
@@ -218,6 +221,8 @@ public class JavaExpressionParseUtil {
             this.annotatedConstruct = annotatedConstruct;
             this.env = env;
             this.types = env.getTypeUtils();
+            this.stringTypeMirror =
+                    env.getElementUtils().getTypeElement("java.lang.String").asType();
         }
 
         /** Sets the {@code resolver} field if necessary. */
@@ -265,9 +270,7 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(StringLiteralExpr expr, JavaExpressionContext context) {
-            TypeMirror stringTM =
-                    TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
-            return new ValueLiteral(stringTM, expr.asString());
+            return new ValueLiteral(stringTypeMirror, expr.asString());
         }
 
         @Override
@@ -677,6 +680,10 @@ public class JavaExpressionParseUtil {
                 type = rightType;
             } else if (types.isSubtype(rightType, leftType)) {
                 type = leftType;
+            } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
+                    && (types.isSameType(leftType, stringTypeMirror)
+                            || types.isSameType(rightType, stringTypeMirror))) {
+                type = stringTypeMirror;
             } else {
                 throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
             }
