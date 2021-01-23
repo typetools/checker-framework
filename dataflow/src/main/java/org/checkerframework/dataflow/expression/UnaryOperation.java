@@ -69,10 +69,7 @@ public class UnaryOperation extends JavaExpression {
             return false;
         }
         UnaryOperation unOp = (UnaryOperation) other;
-        if (!(operationKind == unOp.getOperationKind())) {
-            return false;
-        }
-        return operand.equals(unOp.operand);
+        return operationKind == unOp.getOperationKind() && operand.equals(unOp.operand);
     }
 
     @Override
