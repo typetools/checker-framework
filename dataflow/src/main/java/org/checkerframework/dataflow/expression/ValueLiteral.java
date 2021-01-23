@@ -45,7 +45,7 @@ public class ValueLiteral extends JavaExpression {
     public ValueLiteral negate() {
         if (TypesUtils.isIntegralPrimitive(type)) {
             if (value == null) {
-                throw new Error("null value fo integral type " + type);
+                throw new Error("null value of integral type " + type);
             }
             return new ValueLiteral(type, negateBoxedPrimitive(value));
         }
