@@ -422,17 +422,13 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(MethodCallExpr expr, JavaExpressionContext context) {
             setResolverField();
 
-            /// TODO: ***** Should only the method name use the changed scope?  I don't see why
-            /// arguments should use a different parsing context, and this might be buggy if
-            /// arguments coincidentally had the same name as a formal parameter.  A Java expression
-            /// can be with respect to its local scope.
-
+            JavaExpressionContext methodContext = context;
             // `expr` is a method call.  If it has scope (a receiver expression), change the parsing
-            // context so that identifiers are resolved with respect to the receiver.
+            // context so that the method name is resolved with respect to the receiver.
             JavaExpression receiver = null;
             if (expr.getScope().isPresent()) {
                 receiver = expr.getScope().get().accept(this, context);
-                context = context.copyChangeToParsingMemberOfReceiver(receiver);
+                methodContext = context.copyChangeToParsingMemberOfReceiver(receiver);
                 expr = expr.removeScope();
             }
 
@@ -450,7 +446,7 @@ public class JavaExpressionParseUtil {
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
             if (!expr.getArguments().isEmpty()) {
-                JavaExpressionContext argContext = context.copyNotParsingMember();
+                JavaExpressionContext argContext = context;
                 for (Expression argument : expr.getArguments()) {
                     arguments.add(argument.accept(this, argContext));
                 }
@@ -461,7 +457,7 @@ public class JavaExpressionParseUtil {
                 methodElement =
                         getMethodElement(
                                 methodName,
-                                context.receiver.getType(),
+                                methodContext.receiver.getType(),
                                 annotatedConstruct,
                                 arguments,
                                 resolver);
@@ -498,7 +494,7 @@ public class JavaExpressionParseUtil {
 
             // TODO: reinstate this test, but issue a warning that the user
             // can override, rather than halting parsing which the user cannot override.
-            /*if (!PurityUtils.isDeterministic(context.checker.getAnnotationProvider(),
+            /*if (!PurityUtils.isDeterministic(SOMEcontext.checker.getAnnotationProvider(),
                     methodElement)) {
                 throw new JavaExpressionParseException(new DiagMessage(ERROR,
                         "flowexpr.method.not.deterministic",
@@ -513,7 +509,7 @@ public class JavaExpressionParseUtil {
                         staticClassReceiver,
                         arguments);
             } else {
-                if (context.receiver instanceof ClassName) {
+                if (methodContext.receiver instanceof ClassName) {
                     throw new ParseRuntimeException(
                             constructFlowexprParseError(
                                     expr.toString(),
@@ -521,8 +517,8 @@ public class JavaExpressionParseUtil {
                 }
                 TypeMirror methodType =
                         TypesUtils.substituteMethodReturnType(
-                                methodElement, context.receiver.getType(), env);
-                return new MethodCall(methodType, methodElement, context.receiver, arguments);
+                                methodElement, methodContext.receiver.getType(), env);
+                return new MethodCall(methodType, methodElement, methodContext.receiver, arguments);
             }
         }
 
