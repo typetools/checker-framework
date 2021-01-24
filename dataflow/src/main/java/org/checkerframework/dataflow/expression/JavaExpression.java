@@ -298,22 +298,27 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Returns the internal representation of any {@link ExpressionTree}. Might contain {@link
-     * Unknown}.
+     * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
+     * {@link Unknown}.
      *
-     * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
-     *     Unknown}.
+     * @param provider the annotation provider (for example, an {@code AnnotatedTypeFactory})
+     * @param tree a javac tree
+     * @return a JavaExpression for the given javac tree
      */
-    public static JavaExpression fromTree(
-            AnnotationProvider provider, ExpressionTree receiverTree) {
-        return fromTree(provider, receiverTree, true);
+    public static JavaExpression fromTree(AnnotationProvider provider, ExpressionTree tree) {
+        return fromTree(provider, tree, true);
     }
     /**
-     * We ignore operations such as widening and narrowing when computing the internal
-     * representation.
+     * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
+     * {@link Unknown}.
      *
-     * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
-     *     Unknown}.
+     * <p>We ignore operations such as widening and narrowing when computing the JavaExpression.
+     *
+     * @param provider the annotation provider (for example, an {@code AnnotatedTypeFactory})
+     * @param tree a javac tree
+     * @param allowNonDeterministic if false, convert nondeterministic method calls to {@link
+     *     org.checkerframework.dataflow.expression.Unknown}
+     * @return a JavaExpression for the given javac tree
      */
     public static JavaExpression fromTree(
             AnnotationProvider provider, ExpressionTree tree, boolean allowNonDeterministic) {
