@@ -163,7 +163,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition.
      *     Otherwise, return the first argument.
      */
-    String adjustMethodNameUsingValueChecker(
+    public String adjustMethodNameUsingValueChecker(
             final String methodName, final MethodInvocationTree tree) {
         if (!useValueChecker) {
             return methodName;
@@ -171,7 +171,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
         ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
         if (!"com.amazonaws.services.ec2.model.DescribeImagesRequest"
-                .equals(ElementUtils.enclosingClass(invokedMethod).getQualifiedName().toString())) {
+                .equals(
+                        ElementUtils.enclosingTypeElement(invokedMethod)
+                                .getQualifiedName()
+                                .toString())) {
             return methodName;
         }
 

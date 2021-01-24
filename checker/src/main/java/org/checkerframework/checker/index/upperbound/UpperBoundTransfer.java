@@ -609,7 +609,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     }
 
                     JavaExpressionContext context =
-                            Subsequence.getContextFromJavaExpression(je, atypeFactory.getContext());
+                            Subsequence.getContextFromJavaExpression(je, atypeFactory.getChecker());
 
                     Subsequence subsequence =
                             Subsequence.getSubsequenceFromReceiver(

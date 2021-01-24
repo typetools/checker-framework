@@ -1,6 +1,6 @@
 package org.checkerframework.checker.test.junit;
 
-import org.checkerframework.checker.formatter.FormatUtil;
+import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.junit.Assert;
 import org.junit.Test;
 

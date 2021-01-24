@@ -60,11 +60,12 @@ public abstract class Contract {
                 "value"),
         /** A conditional postcondition. */
         CONDITIONALPOSTCONDITION(
-                "conditional.postcondition",
+                "conditional postcondition",
                 ConditionalPostconditionAnnotation.class,
                 EnsuresQualifierIf.class,
                 EnsuresQualifierIf.List.class,
                 "expression");
+
         /** Used for constructing error messages. */
         public final String errorKey;
 

@@ -148,7 +148,7 @@ public class DependentTypesHelper {
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
         JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
-        JavaExpressionContext context = new JavaExpressionContext(r, null, factory.getContext());
+        JavaExpressionContext context = new JavaExpressionContext(r, null, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocalScope(context, pathToUse, bound.getUpperBound());
             standardizeDoNotUseLocalScope(context, pathToUse, bound.getLowerBound());
@@ -207,7 +207,7 @@ public class DependentTypesHelper {
         TreePath currentPath = factory.getPath(tree);
 
         JavaExpressionContext context =
-                new JavaExpressionContext(receiver, argsJe, factory.getContext());
+                new JavaExpressionContext(receiver, argsJe, factory.getChecker());
 
         // methodType cannot be viewpoint adapted directly because it is the type post type variable
         // substitution.  Dependent type annotations on type arguments cannot be
@@ -332,7 +332,7 @@ public class DependentTypesHelper {
                 new JavaExpressionContext(
                         r,
                         JavaExpression.getParametersOfEnclosingMethod(factory, path),
-                        factory.getContext());
+                        factory.getChecker());
         standardizeUseLocalScope(context, path, type);
     }
 
@@ -353,7 +353,7 @@ public class DependentTypesHelper {
         }
         JavaExpression receiverJe = JavaExpression.getImplicitReceiver(classElt);
         JavaExpressionContext classignmentContext =
-                new JavaExpressionContext(receiverJe, null, factory.getContext());
+                new JavaExpressionContext(receiverJe, null, factory.getChecker());
         standardizeDoNotUseLocalScope(classignmentContext, path, type);
     }
 
@@ -422,10 +422,10 @@ public class DependentTypesHelper {
             AnnotatedTypeMirror atm,
             boolean removeErroneousExpressions) {
 
-        TypeMirror enclosingType = ElementUtils.enclosingClass(elt).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(elt).asType();
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodDeclTree, enclosingType, factory.getContext());
+                        methodDeclTree, enclosingType, factory.getChecker());
         standardizeDoNotUseLocalScope(context, pathToMethodDecl, atm, removeErroneousExpressions);
     }
 
@@ -470,7 +470,7 @@ public class DependentTypesHelper {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForLambda(
-                                    lambdaTree, pathToVariableDecl, factory.getContext());
+                                    lambdaTree, pathToVariableDecl, factory.getChecker());
                     // Uses paths.getParentPath to prevent a StackOverflowError, see Issue #1027.
                     standardizeUseLocalScope(
                             parameterContext, pathToVariableDecl.getParentPath(), type);
@@ -480,13 +480,13 @@ public class DependentTypesHelper {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
-                TypeMirror enclosingType = ElementUtils.enclosingClass(variableElt).asType();
+                TypeMirror enclosingType = ElementUtils.enclosingTypeElement(variableElt).asType();
                 JavaExpression receiver =
                         JavaExpression.getPseudoReceiver(pathToVariableDecl, enclosingType);
                 List<JavaExpression> params =
                         JavaExpression.getParametersOfEnclosingMethod(factory, pathToVariableDecl);
                 JavaExpressionContext localContext =
-                        new JavaExpressionContext(receiver, params, factory.getContext());
+                        new JavaExpressionContext(receiver, params, factory.getChecker());
                 standardizeUseLocalScope(localContext, pathToVariableDecl, type);
                 break;
 
@@ -503,7 +503,7 @@ public class DependentTypesHelper {
                     receiverJe = JavaExpression.getImplicitReceiver(variableElt);
                 }
                 JavaExpressionContext fieldContext =
-                        new JavaExpressionContext(receiverJe, null, factory.getContext());
+                        new JavaExpressionContext(receiverJe, null, factory.getChecker());
                 standardizeDoNotUseLocalScope(fieldContext, pathToVariableDecl, type);
                 break;
 
@@ -534,7 +534,7 @@ public class DependentTypesHelper {
 
         JavaExpression receiver = JavaExpression.fromTree(factory, node.getExpression());
         JavaExpressionContext context =
-                new JavaExpressionContext(receiver, null, factory.getContext());
+                new JavaExpressionContext(receiver, null, factory.getChecker());
         standardizeDoNotUseLocalScope(context, factory.getPath(node), type);
     }
 
@@ -561,7 +561,7 @@ public class DependentTypesHelper {
                 new JavaExpressionContext(
                         receiver,
                         JavaExpression.getParametersOfEnclosingMethod(factory, path),
-                        factory.getContext());
+                        factory.getChecker());
         standardizeUseLocalScope(localContext, path, annotatedType);
     }
 
@@ -689,16 +689,25 @@ public class DependentTypesHelper {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
+        JavaExpression result;
         try {
-            JavaExpression result =
-                    JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
-            if (result == null) {
-                return new DependentTypesError(expression, /*error message=*/ " ").toString();
-            }
-            return result.toString();
+            result = JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
+        if (result == null) {
+            return new DependentTypesError(expression, /*error message=*/ " ").toString();
+        }
+        // Replace references to compile-time constant fields by the constant itself.  (This is only
+        // desirable if the name doesn't matter.  The name matters for @KeyFor and @GuardedBy, but
+        // they are not relevant to primitives.)
+        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
+            Object constant = ((FieldAccess) result).getField().getConstantValue();
+            if (constant != null && !(constant instanceof String)) {
+                return constant.toString();
+            }
+        }
+        return result.toString();
     }
 
     /**
@@ -879,7 +888,7 @@ public class DependentTypesHelper {
      * @param errors the errors to report
      */
     protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         for (DependentTypesError dte : errors) {
             checker.reportError(errorTree, "expression.unparsable.type.invalid", dte.format());
         }
@@ -920,7 +929,7 @@ public class DependentTypesHelper {
         if (errors.isEmpty()) {
             return;
         }
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         String error = StringsPlume.joinLines(errors);
         checker.reportError(errorTree, "flowexpr.parse.error", error);
     }
@@ -964,13 +973,21 @@ public class DependentTypesHelper {
         }
     }
 
+    /**
+     * Checks all Java expressions in the type variables to see if the expression string is an error
+     * string as specified by DependentTypesError#isExpressionError. If the annotated type has any
+     * errors, a flowexpr.parse.error is issued.
+     *
+     * @param node a method declaration
+     * @param methodType annotated type of the method
+     */
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
         Element ele = TreeUtils.elementFromDeclaration(node);
-        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(ele).asType();
 
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        node, enclosingType, factory.getContext());
+                        node, enclosingType, factory.getChecker());
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
             standardizeDoNotUseLocalScope(context, factory.getPath(node), atm);
