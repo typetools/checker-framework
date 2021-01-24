@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -330,6 +331,7 @@ public abstract class JavaExpression {
                 JavaExpression index = fromTree(provider, a.getIndex());
                 result = new ArrayAccess(TreeUtils.typeOf(a), arrayAccessExpression, index);
                 break;
+
             case BOOLEAN_LITERAL:
             case CHAR_LITERAL:
             case DOUBLE_LITERAL:
@@ -341,6 +343,7 @@ public abstract class JavaExpression {
                 LiteralTree vn = (LiteralTree) tree;
                 result = new ValueLiteral(TreeUtils.typeOf(tree), vn.getValue());
                 break;
+
             case NEW_ARRAY:
                 NewArrayTree newArrayTree = (NewArrayTree) tree;
                 List<@Nullable JavaExpression> dimensions = new ArrayList<>();
@@ -358,6 +361,7 @@ public abstract class JavaExpression {
 
                 result = new ArrayCreation(TreeUtils.typeOf(tree), dimensions, initializers);
                 break;
+
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) tree;
                 assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
@@ -379,9 +383,11 @@ public abstract class JavaExpression {
                     result = null;
                 }
                 break;
+
             case MEMBER_SELECT:
                 result = fromMemberSelect(provider, (MemberSelectTree) tree);
                 break;
+
             case IDENTIFIER:
                 IdentifierTree identifierTree = (IdentifierTree) tree;
                 TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
@@ -424,9 +430,49 @@ public abstract class JavaExpression {
                         result = null;
                 }
                 break;
+
             case UNARY_PLUS:
                 return fromTree(
                         provider, ((UnaryTree) tree).getExpression(), allowNonDeterministic);
+            case BITWISE_COMPLEMENT:
+            case LOGICAL_COMPLEMENT:
+            case POSTFIX_DECREMENT:
+            case POSTFIX_INCREMENT:
+            case PREFIX_DECREMENT:
+            case PREFIX_INCREMENT:
+            case UNARY_MINUS:
+                JavaExpression operand =
+                        fromTree(
+                                provider,
+                                ((UnaryTree) tree).getExpression(),
+                                allowNonDeterministic);
+                return new UnaryOperation(TreeUtils.typeOf(tree), tree.getKind(), operand);
+
+            case CONDITIONAL_AND:
+            case CONDITIONAL_OR:
+            case DIVIDE:
+            case EQUAL_TO:
+            case GREATER_THAN:
+            case GREATER_THAN_EQUAL:
+            case LEFT_SHIFT:
+            case LESS_THAN:
+            case LESS_THAN_EQUAL:
+            case MINUS:
+            case MULTIPLY:
+            case NOT_EQUAL_TO:
+            case OR:
+            case PLUS:
+            case REMAINDER:
+            case RIGHT_SHIFT:
+            case UNSIGNED_RIGHT_SHIFT:
+            case XOR:
+                BinaryTree binaryTree = (BinaryTree) tree;
+                JavaExpression left =
+                        fromTree(provider, binaryTree.getLeftOperand(), allowNonDeterministic);
+                JavaExpression right =
+                        fromTree(provider, binaryTree.getRightOperand(), allowNonDeterministic);
+                return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
+
             default:
                 result = null;
         }
