@@ -944,7 +944,7 @@ public final class TreeUtils {
      * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
      * tree} to be a field access, as determined by {@code isFieldAccess}.
      *
-     * @return the name of the field accessed by {@code tree}.
+     * @return the name of the field accessed by {@code tree}
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
@@ -992,7 +992,7 @@ public final class TreeUtils {
      * Compute the name of the method that the method access {@code tree} accesses. Requires {@code
      * tree} to be a method access, as determined by {@code isMethodAccess}.
      *
-     * @return the name of the method accessed by {@code tree}.
+     * @return the name of the method accessed by {@code tree}
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);
@@ -1248,7 +1248,7 @@ public final class TreeUtils {
      * typed lambda. (See JLS 15.27.1)
      *
      * @param tree any kind of tree
-     * @return true iff {@code tree} is an implicitly typed lambda.
+     * @return true iff {@code tree} is an implicitly typed lambda
      */
     public static boolean isImplicitlyTypedLambda(Tree tree) {
         return tree.getKind() == Kind.LAMBDA_EXPRESSION
@@ -1260,7 +1260,7 @@ public final class TreeUtils {
      * to the compiler logic.
      *
      * @param node the expression to be checked
-     * @return true if {@code node} has the constant value true.
+     * @return true if {@code node} has the constant value true
      */
     public static boolean isExprConstTrue(final ExpressionTree node) {
         assert node instanceof JCExpression;

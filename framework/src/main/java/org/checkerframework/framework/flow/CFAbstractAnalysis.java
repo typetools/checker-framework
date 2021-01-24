@@ -142,7 +142,7 @@ public abstract class CFAbstractAnalysis<
      * the annotations in the created value are the primary annotations on the extends bound. See
      * {@link CFAbstractValue} for an explanation.
      *
-     * @return an abstract value containing the given annotated {@code type}.
+     * @return an abstract value containing the given annotated {@code type}
      */
     public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
         Set<AnnotationMirror> annos;
