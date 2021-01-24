@@ -91,23 +91,28 @@ public class UnaryOperation extends JavaExpression {
         return operationKind == unOp.getOperationKind() && operand.equals(unOp.operand);
     }
 
-    /**
-     * Return the Java source code representation of the given operation.
-     *
-     * @param operationKind an unary operation kind
-     * @return the Java source code representation of the given operation
-     */
-    private String operationKindToString(Tree.Kind operationKind) {
-        switch (operationKind) {
-            case UNARY_MINUS:
-                return "-";
-            default:
-                throw new Error("Not yet implemented " + operationKind);
-        }
-    }
-
     @Override
     public String toString() {
-        return operationKindToString(operationKind) + operand.toString();
+        String operandString = operand.toString();
+        switch (operationKind) {
+            case BITWISE_COMPLEMENT:
+                return "~" + operandString;
+            case LOGICAL_COMPLEMENT:
+                return "!" + operandString;
+            case POSTFIX_DECREMENT:
+                return operandString + "--";
+            case POSTFIX_INCREMENT:
+                return operandString + "++";
+            case PREFIX_DECREMENT:
+                return "--" + operandString;
+            case PREFIX_INCREMENT:
+                return "++" + operandString;
+            case UNARY_MINUS:
+                return "-" + operandString;
+            case UNARY_PLUS:
+                return "+" + operandString;
+            default:
+                throw new Error("Unrecognized unary operation kind " + operationKind);
+        }
     }
 }
