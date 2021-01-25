@@ -536,7 +536,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                             List<TypePathEntry> loc, int tag, int arg) {
                         List<TypePathEntry> path = new ArrayList<>(loc.size() + 1);
                         path.addAll(loc);
-                        path.add(TypePathEntry.createTypePathEntry(tag, arg));
+                        path.add(TypePathEntry.create(tag, arg));
                         return path;
                     }
                 },
