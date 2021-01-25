@@ -773,7 +773,7 @@ public final class TypesUtils {
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     * @return the least upper bound of {@code tm1} and {@code tm2}.
+     * @return the least upper bound of {@code tm1} and {@code tm2}
      */
     public static TypeMirror leastUpperBound(
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
@@ -835,7 +835,7 @@ public final class TypesUtils {
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     * @return the greatest lower bound of {@code tm1} and {@code tm2}.
+     * @return the greatest lower bound of {@code tm1} and {@code tm2}
      */
     public static TypeMirror greatestLowerBound(
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
