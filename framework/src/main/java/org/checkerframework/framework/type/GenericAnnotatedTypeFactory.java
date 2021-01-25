@@ -1131,10 +1131,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
      * a {@link Node} at all.
      *
+     * @param <T> the type of node to return
+     * @param tree the tree in which to search
+     * @param kind the kind of node to return
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}
      */
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);

@@ -944,6 +944,7 @@ public final class TreeUtils {
      * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
      * tree} to be a field access, as determined by {@code isFieldAccess}.
      *
+     * @param tree a field access tree
      * @return the name of the field accessed by {@code tree}
      */
     public static String getFieldName(Tree tree) {
@@ -992,6 +993,7 @@ public final class TreeUtils {
      * Compute the name of the method that the method access {@code tree} accesses. Requires {@code
      * tree} to be a method access, as determined by {@code isMethodAccess}.
      *
+     * @param tree a method access tree
      * @return the name of the method accessed by {@code tree}
      */
     public static String getMethodName(Tree tree) {
