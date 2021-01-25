@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'org.plumelib:plume-util:1.4.1'
 
+    // Dependencies added to "shadow" appear as dependencies in Maven central.
     shadow project(':checker-qual')
     shadow project(':checker-util')
 
@@ -115,6 +116,9 @@ task allJavadocJar(type: Jar) {
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
+jar {
+    archiveClassifier = 'do-not-use'
+}
 // Shadowing Test Sources and Dependencies
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
@@ -133,25 +137,7 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
     }
     exclude 'org/checkerframework/**/qual/*'
     exclude 'org/checkerframework/checker/*/util/*'
-
-    // TODO: These are copied from checker-framework/build.gradle.
-    // Relocate packages that might conflict with user's classpath.
-    doFirst {
-        if (release) {
-            // Only relocate JavaParser during a release:
-            relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
-        }
-    }
-
-    // These appear in annotation-file-utilities-all.jar:
-    relocate 'org.apache', 'org.checkerframework.org.apache'
-    relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
-    relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
-    relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-    // relocate 'sun', 'org.checkerframework.sun'
-    relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
-    relocate 'com.google', 'org.checkerframework.com.google'
-    relocate 'plume', 'org.checkerframework.plume'
+    relocators = shadowJar.getRelocators()
 }
 
 shadowJar {
