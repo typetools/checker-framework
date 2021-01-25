@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
+import java.math.BigInteger;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -13,6 +14,9 @@ public class ValueLiteral extends JavaExpression {
 
     /** The value of the literal. */
     protected final @Nullable Object value;
+
+    /** The negative of Long.MIN_VALUE, which does not fit in a long. */
+    private final BigInteger NEGATIVE_LONG_MIN_VALUE = new BigInteger("9223372036854775808");
 
     /**
      * Creates a ValueLiteral from the node with the given type.
@@ -76,6 +80,10 @@ public class ValueLiteral extends JavaExpression {
         }
         if (value instanceof Double) {
             return Double.valueOf(-((Double) value).doubleValue());
+        }
+        if (value instanceof BigInteger) {
+            assert value.equals(NEGATIVE_LONG_MIN_VALUE);
+            return Long.MIN_VALUE;
         }
         throw new Error("Cannot be negated: " + o + " " + o.getClass());
     }
