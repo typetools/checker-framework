@@ -116,9 +116,6 @@ task allJavadocJar(type: Jar) {
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
-jar {
-    archiveClassifier = 'do-not-use'
-}
 // Shadowing Test Sources and Dependencies
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
@@ -138,6 +135,13 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
     exclude 'org/checkerframework/**/qual/*'
     exclude 'org/checkerframework/checker/*/util/*'
     relocators = shadowJar.getRelocators()
+}
+
+jar {
+    dependsOn(checkerJar)
+    // Never build the skinny jar.
+    onlyIf {false}
+    archiveClassifier = 'skinny'
 }
 
 shadowJar {
