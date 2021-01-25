@@ -32,7 +32,6 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
-    implementation 'org.ow2.asm:asm:7.2'
     implementation 'org.plumelib:plume-util:1.4.1'
     implementation 'org.plumelib:reflection-util:1.0.3'
 
