@@ -70,7 +70,7 @@ class ValueMethodIdentifier {
      * Determines whether a method is the {@code String.length()} method.
      *
      * @param method the element to check
-     * @return true iff the argument methid is {@code String.length()} method.
+     * @return true iff the argument methid is {@code String.length()} method
      */
     public boolean isStringLengthMethod(ExecutableElement method) {
         // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
@@ -109,7 +109,7 @@ class ValueMethodIdentifier {
      *
      * @param tree tree to check
      * @param processingEnv the processing environment
-     * @return true iff the argument is an invocation of {@code Arrays.copyOf()} method.
+     * @return true iff the argument is an invocation of {@code Arrays.copyOf()} method
      */
     public boolean isArraysCopyOfInvocation(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, copyOfMethod, processingEnv);
