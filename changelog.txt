@@ -25,8 +25,6 @@ by new message keys:
 
 Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingTypeElement`.
 
-Removed methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
-
 Removed classes (use `SourceChecker` instead):
  * `BaseTypeContext`
  * `CFContext`
@@ -36,10 +34,15 @@ Removed methods:
  * `SourceChecker.getContext()`: it returned the receiver
  * `SourceChecker.getChecker()`: it returned the receiver
  * `AnnotatedTypeFactory.getContext()`: use `getChecker()`
+ * methods on `TreePath`s from class 'TreeUtils`; use the versions in `TreePathUtil`.
 
 Moved class:
  * org.checkerframework.framework.util.PurityUnqualified to
    org.checkerframework.framework.qual.PurityUnqualified
+
+Renamed methods:
+ * `AnnotatedTypeMirror.directSuperTypes` => `directSupertypes` (note
+   capitalization) for consistency with `javax.lang.model.util.Types`
 
 **Closed issues:**
 
