@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 
 /** JavaExpression for unary operations. */
 public class UnaryOperation extends JavaExpression {
@@ -25,6 +26,16 @@ public class UnaryOperation extends JavaExpression {
         super(operand.type);
         this.operationKind = operationKind;
         this.operand = operand;
+    }
+
+    /**
+     * Create a unary operation.
+     *
+     * @param node the unary operation node
+     * @param operand the operand
+     */
+    public UnaryOperation(UnaryOperationNode node, JavaExpression operand) {
+        this(node.getType(), node.getTree().getKind(), operand);
     }
 
     /**
