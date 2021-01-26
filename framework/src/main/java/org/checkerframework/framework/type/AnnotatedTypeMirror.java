@@ -552,6 +552,17 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Adds an annotation to this type without checking that the annotation is a supported
+     * qualifier. Only use this if you know what you're doing. After calling this method, this type
+     * may no longer be usable.
+     *
+     * @param a the annotation to add
+     */
+    public void addAnnotation_unsafe(AnnotationMirror a) {
+        this.annotations.add(a);
+    }
+
+    /**
      * Adds an annotation to this type. Only annotations supported by the type factory are added.
      *
      * @param a the annotation to add
