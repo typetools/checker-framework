@@ -64,22 +64,22 @@ public class ValueLiteral extends JavaExpression {
      */
     private Object negateBoxedPrimitive(Object o) {
         if (value instanceof Byte) {
-            return Byte.valueOf((byte) -((Byte) value).byteValue());
+            return (byte) -(Byte) value;
         }
         if (value instanceof Short) {
-            return Short.valueOf((short) -((Short) value).shortValue());
+            return (short) -(Short) value;
         }
         if (value instanceof Integer) {
-            return Integer.valueOf(-((Integer) value).intValue());
+            return -(Integer) value;
         }
         if (value instanceof Long) {
-            return Long.valueOf(-((Long) value).longValue());
+            return -(Long) value;
         }
         if (value instanceof Float) {
-            return Float.valueOf(-((Float) value).floatValue());
+            return -(Float) value;
         }
         if (value instanceof Double) {
-            return Double.valueOf(-((Double) value).doubleValue());
+            return -(Double) value;
         }
         if (value instanceof BigInteger) {
             assert value.equals(NEGATIVE_LONG_MIN_VALUE);
