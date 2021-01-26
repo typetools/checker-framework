@@ -344,13 +344,15 @@ public final class SignednessUtil {
     /**
      * Compares two unsigned shorts x and y.
      *
+     * <p>In Java 11 or later, use Short.compareUnsigned.
+     *
      * @param x the first value to compare
      * @param y the second value to compare
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
-     * @deprecated use Short.compareUnsigned
      */
-    @Deprecated // use Short.compareUnsigned
+    // * @deprecated use Short.compareUnsigned
+    // @Deprecated // use Short.compareUnsigned
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
         return Integer.compareUnsigned(Short.toUnsignedInt(x), Short.toUnsignedInt(y));
@@ -359,13 +361,15 @@ public final class SignednessUtil {
     /**
      * Compares two unsigned bytes x and y.
      *
+     * <p>In Java 11 or later, use Byte.compareUnsigned.
+     *
      * @param x the first value to compare
      * @param y the second value to compare
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
-     * @deprecated use Byte.compareUnsigned
      */
-    @Deprecated // use Byte.compareUnsigned
+    // * @deprecated use Byte.compareUnsigned
+    // @Deprecated // use Byte.compareUnsigned
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
         return Integer.compareUnsigned(Byte.toUnsignedInt(x), Byte.toUnsignedInt(y));
