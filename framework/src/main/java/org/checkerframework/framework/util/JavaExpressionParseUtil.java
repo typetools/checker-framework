@@ -700,9 +700,8 @@ public class JavaExpressionParseUtil {
             TypeMirror leftType = leftJe.getType();
             TypeMirror rightType = rightJe.getType();
             TypeMirror type;
-            if (types.isSameType(leftType, rightType)) {
-                type = leftType;
-            } else if (types.isSubtype(leftType, rightType)) {
+            // isSubtype() first does the cheaper test isSameType()
+            if (types.isSubtype(leftType, rightType)) {
                 type = rightType;
             } else if (types.isSubtype(rightType, leftType)) {
                 type = leftType;
