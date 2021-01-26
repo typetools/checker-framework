@@ -121,6 +121,9 @@ allprojects {
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
+    configurations {
+        checkerFatJar
+    }
     dependencies {
         if (isJava8) {
             javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
@@ -129,7 +132,9 @@ allprojects {
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
         allProjects subprojects
+        checkerFatJar project(path: ':checker', configuration: 'shadow')
     }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -146,7 +151,7 @@ allprojects {
                 if (!name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
-                classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
+                classpath += rootProject.configurations.getByName('checkerFatJar').asFileTree
                 if (isJava8) {
                     classpath += configurations.javacJar
                 }
@@ -638,13 +643,12 @@ subprojects {
             }
         }
 
-        // These appear in annotation-file-utilities-all.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
         relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-        // relocate 'sun', 'org.checkerframework.sun'
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+        // relocate 'sun', 'org.checkerframework.sun'
         relocate 'com.google', 'org.checkerframework.com.google'
         relocate 'plume', 'org.checkerframework.plume'
     }
