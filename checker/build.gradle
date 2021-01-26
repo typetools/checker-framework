@@ -31,7 +31,7 @@ dependencies {
     implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'org.plumelib:plume-util:1.4.1'
 
-    // Dependencies added to "shadow" appear as dependencies in Maven central.
+    // Dependencies added to "shadow" appear as dependencies in Maven Central.
     shadow project(':checker-qual')
     shadow project(':checker-util')
 
