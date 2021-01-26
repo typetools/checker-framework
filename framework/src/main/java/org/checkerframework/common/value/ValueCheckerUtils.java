@@ -446,8 +446,7 @@ public class ValueCheckerUtils {
             }
 
         } else if (je instanceof ClassName) {
-            ClassName e = (ClassName) je;
-            return e;
+            return je;
 
         } else if (je instanceof FieldAccess) {
             FieldAccess e = (FieldAccess) je;
