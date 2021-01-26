@@ -344,6 +344,8 @@ public final class SignednessUtil {
     /**
      * Compares two unsigned shorts x and y.
      *
+     * @param x the first value to compare
+     * @param y the second value to compare
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
      * @deprecated use Short.compareUnsigned
@@ -357,6 +359,8 @@ public final class SignednessUtil {
     /**
      * Compares two unsigned bytes x and y.
      *
+     * @param x the first value to compare
+     * @param y the second value to compare
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
      * @deprecated use Byte.compareUnsigned
