@@ -403,7 +403,9 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Optimize the given JavaExpression, using Value Checker annotations.
+     * Optimize the given JavaExpression, using Value Checker annotations. This implementation
+     * replaces any expression that the factory has an exact value for, and does a small (not
+     * exhaustive) amount of constant-folding as well.
      *
      * @param je the expression to optimize
      * @param factory the Valueannotatedtypefactory
