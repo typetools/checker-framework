@@ -71,26 +71,26 @@ public class Utils {
         res = Integer.compareUnsigned(uint, uint);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(sshort, sshort);
+        res = Short.compareUnsigned(sshort, sshort);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(sshort, ushort);
+        res = Short.compareUnsigned(sshort, ushort);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(ushort, sshort);
+        res = Short.compareUnsigned(ushort, sshort);
 
-        res = SignednessUtil.compareUnsigned(ushort, ushort);
-
-        // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(sbyte, sbyte);
+        res = Short.compareUnsigned(ushort, ushort);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(sbyte, ubyte);
+        res = Byte.compareUnsigned(sbyte, sbyte);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(ubyte, sbyte);
+        res = Byte.compareUnsigned(sbyte, ubyte);
 
-        res = SignednessUtil.compareUnsigned(ubyte, ubyte);
+        // :: error: (argument.type.incompatible)
+        res = Byte.compareUnsigned(ubyte, sbyte);
+
+        res = Byte.compareUnsigned(ubyte, ubyte);
     }
 
     public void stringTests(
