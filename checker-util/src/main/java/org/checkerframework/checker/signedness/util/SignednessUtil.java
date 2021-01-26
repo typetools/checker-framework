@@ -9,10 +9,14 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
- * Provides static utility methods for unsigned values. Most of these re-implement functionality
- * that was introduced in JDK 8, making it available in earlier versions of Java. Others provide new
- * functionality. {@link SignednessUtilExtra} has more methods that reference packages that Android
- * does not provide.
+ * Provides static utility methods for unsigned values, beyond what is available in the JDK's
+ * Unsigned Integer API. The JDK's Unsigned Integer API is methods in primitive wrapper classes and
+ * in classes {@code Arrays}, {@code RandomAccessFile}, {@code ObjectInputStream}, and {@code
+ * DataInputStream}.
+ *
+ * <p>{@link SignednessUtilExtra} has more methods that reference packages that Android does not
+ * provide. That is, {@code SignednessUtil} can be used anywhere, and {@link SignednessUtilExtra}
+ * can be used anywhere except on Android.
  *
  * @checker_framework.manual #signedness-utilities Utility routines for manipulating unsigned values
  */
@@ -342,7 +346,9 @@ public final class SignednessUtil {
      *
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
+     * @deprecated use Short.compareUnsigned
      */
+    @Deprecated // use Short.compareUnsigned
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
         return Integer.compareUnsigned(Short.toUnsignedInt(x), Short.toUnsignedInt(y));
@@ -353,7 +359,9 @@ public final class SignednessUtil {
      *
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
+     * @deprecated use Byte.compareUnsigned
      */
+    @Deprecated // use Byte.compareUnsigned
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
         return Integer.compareUnsigned(Byte.toUnsignedInt(x), Byte.toUnsignedInt(y));
