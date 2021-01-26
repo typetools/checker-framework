@@ -7,7 +7,10 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Provides more static utility methods for unsigned values. These methods use Java packages not
- * included in Android. {@link SignednessUtil} has more methods.
+ * included in Android.
+ *
+ * <p>{@link SignednessUtil} has more methods that can be used anywhere, whereas {@code
+ * SignednessUtilExtra} can be used anywhere except on Android.
  *
  * @checker_framework.manual #signedness-utilities Utility routines for manipulating unsigned values
  */
