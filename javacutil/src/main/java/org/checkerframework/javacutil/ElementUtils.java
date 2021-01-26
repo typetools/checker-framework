@@ -423,7 +423,7 @@ public class ElementUtils {
      * called.
      *
      * @param type where to look for fields
-     * @param names simple names of fields that might be declared in {@code type} or a supertype.
+     * @param names simple names of fields that might be declared in {@code type} or a supertype
      *     (Names that are found are removed from this list.)
      * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
      *     whose simple names were in {@code names} when the method was called.

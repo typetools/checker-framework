@@ -342,7 +342,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code from} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation
      * @return either the from value from the passed int range annotation, or the minimum value of
      *     the domain of the underlying type (i.e. Integer.MIN_VALUE if the underlying type is int)
      */
@@ -361,7 +361,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code to} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation
      * @return either the to value from the passed int range annotation, or the maximum value of the
      *     domain of the underlying type (i.e. Integer.MAX_VALUE if the underlying type is int)
      */

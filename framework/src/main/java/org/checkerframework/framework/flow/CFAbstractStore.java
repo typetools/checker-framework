@@ -451,7 +451,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * (e.g. @MonotonicNonNull to @NonNull). Always returns false if {@code sequentialSemantics} is
      * true.
      *
-     * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
+     * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier
      *     (e.g. @MonotonicNonNull to @NonNull)
      */
     protected boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {

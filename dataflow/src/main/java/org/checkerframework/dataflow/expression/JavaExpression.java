@@ -258,7 +258,7 @@ public abstract class JavaExpression {
             result = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            List<JavaExpression> dimensions = new ArrayList<>();
+            List<@Nullable JavaExpression> dimensions = new ArrayList<>();
             for (Node dimension : an.getDimensions()) {
                 dimensions.add(fromNode(provider, dimension, allowNonDeterministic));
             }
@@ -338,7 +338,7 @@ public abstract class JavaExpression {
                 break;
             case NEW_ARRAY:
                 NewArrayTree newArrayTree = (NewArrayTree) tree;
-                List<JavaExpression> dimensions = new ArrayList<>();
+                List<@Nullable JavaExpression> dimensions = new ArrayList<>();
                 if (newArrayTree.getDimensions() != null) {
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
                         dimensions.add(fromTree(provider, dimension, allowNonDeterministic));
