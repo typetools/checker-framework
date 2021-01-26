@@ -5,9 +5,10 @@ Version 3.10.0, February 1, 2021
 Moved utility classes from `checker-qual.jar` to the new `checker-util.jar`.
 Also, added `util` to the end of all the packages of the utility classes.
 
-In Maven central, checker.jar no longer contains checker-qual classes, but rather
-uses a Maven dependency. A jar file with all the required dependencies is available with
-the classifier "all".
+In Maven central, `checker.jar` no longer contains duplicates of qualiifiers in
+`checker-qual.jar`, but rather uses a Maven dependency. A fat jar file with all
+the dependencies (like the old `checker.jar`) is available with the classifier
+"all".
 
 When supplying the `-Ainfer=...` command-line argument, you must also supply `-Awarns`.
 
