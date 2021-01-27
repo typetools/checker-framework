@@ -16,17 +16,17 @@ class RequiresQualifierTest {
     @WholeProgramInferenceBottom int bottom;
 
     void field1IsParent() {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Parent int x = field1;
     }
 
     void field1IsSibling2() {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Sibling2 int x = field1;
     }
 
     void parentIsSibling1() {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Sibling1 int x = parent;
     }
 

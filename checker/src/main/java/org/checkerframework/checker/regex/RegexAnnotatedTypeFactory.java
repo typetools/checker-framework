@@ -21,6 +21,7 @@ import org.checkerframework.checker.regex.qual.PolyRegex;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.regex.qual.RegexBottom;
 import org.checkerframework.checker.regex.qual.UnknownRegex;
+import org.checkerframework.checker.regex.util.RegexUtil;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;

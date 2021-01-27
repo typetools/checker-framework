@@ -1,0 +1,33 @@
+dependencies {
+    implementation project(':checker-qual')
+}
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading to Maven repositories. */
+final checkerUtilPom(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+    publication.pom {
+        name = 'Checker Util'
+        description = 'checker-util contains utility classes for programmers to use at run time.\n' +
+                '\n' +
+                'Please see artifact: org.checkerframework:checker'
+        licenses {
+            license {
+                name = 'The MIT License'
+                url = 'http://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+publishing {
+    publications {
+        checkerUtil(MavenPublication) {
+            checkerUtilPom it
+        }
+    }
+}
+signing {
+    sign publishing.publications.checkerUtil
+}

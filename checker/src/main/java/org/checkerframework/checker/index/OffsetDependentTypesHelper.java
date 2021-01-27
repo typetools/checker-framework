@@ -63,8 +63,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         }
         try {
             // Standardize individual terms of the expression.
-            equation.standardizeAndViewpointAdaptExpressions(
-                    context, localScope, useLocalScope, factory);
+            equation.standardizeAndViewpointAdapt(context, localScope, useLocalScope, factory);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }

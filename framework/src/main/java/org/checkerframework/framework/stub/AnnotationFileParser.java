@@ -1581,6 +1581,7 @@ public class AnnotationFileParser {
      * @param typeElt the class in which {@code member} is declared
      * @param member the stub file declaration of a method
      * @param typeDeclName used only for debugging
+     * @param astNode where to report errors
      */
     private void putNewElement(
             Map<Element, BodyDeclaration<?>> elementsToDecl,

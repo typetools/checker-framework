@@ -849,6 +849,10 @@ read whether the library's annotations are parsed.
   reading and writing.
 \end{description}
 
+A syntax error in a stub file or the annotated JDK can lead to the file
+being silently ignored.  A typo in an annotation name, or a missing
+\<import> statement, can lead to annotations being silently ignored.
+
 
 % LocalWords: plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords: sourcepath Nullness javac classpath src quals pathSeparator JDKs

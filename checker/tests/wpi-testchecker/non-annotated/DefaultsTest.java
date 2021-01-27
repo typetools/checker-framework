@@ -21,7 +21,7 @@ public class DefaultsTest {
         if (Math.random() > 0.5) {
             return ""; // @DefaultType
         } else {
-            // :: warning: (cast.unsafe)
+            @SuppressWarnings("cast.unsafe")
             @WholeProgramInferenceBottom String s = (@WholeProgramInferenceBottom String) "";
             return s;
         }

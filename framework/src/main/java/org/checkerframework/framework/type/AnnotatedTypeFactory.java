@@ -65,6 +65,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -77,8 +78,9 @@ import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.JavaParserUtils;
@@ -102,7 +104,6 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
@@ -125,6 +126,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.ATypeElement;
 
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
@@ -510,9 +512,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             if (checker.getOption("infer").equals("ajava")) {
-                wholeProgramInference = new WholeProgramInferenceJavaParser(this);
+                wholeProgramInference =
+                        new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
+                                this, new WholeProgramInferenceJavaParserStorage(this));
             } else {
-                wholeProgramInference = new WholeProgramInferenceScenes(this);
+                wholeProgramInference =
+                        new WholeProgramInferenceImplementation<ATypeElement>(
+                                this, new WholeProgramInferenceScenesStorage(this));
+            }
+            if (!checker.hasOption("warns")) {
+                // Without -Awarns, the inference output may be incomplete, because javac halts
+                // after issuing an error.
+                checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
             }
         } else {
             wholeProgramInference = null;
@@ -705,16 +716,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root, boolean shouldCheckVisitor) {
-        if (root != null && wholeProgramInference instanceof WholeProgramInferenceJavaParser) {
+        if (root != null && wholeProgramInference != null) {
             for (Tree typeDecl : root.getTypeDecls()) {
                 if (typeDecl.getKind() != Kind.CLASS) {
                     continue;
                 }
 
                 ClassTree classTree = (ClassTree) typeDecl;
-                WholeProgramInferenceJavaParser wpiJavaParser =
-                        (WholeProgramInferenceJavaParser) wholeProgramInference;
-                wpiJavaParser.addClassTree(classTree);
+                wholeProgramInference.preprocessClassTree(classTree);
             }
         }
 
@@ -1374,7 +1383,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * declared type of the functional interface and the executable type of its method.
      *
      * @param tree MethodTree or VariableTree
-     * @return AnnotatedTypeMirror with explicit annotations from {@code tree}.
+     * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
      */
     private final AnnotatedTypeMirror fromMember(Tree tree) {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
@@ -1620,7 +1629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         TypeElement typeElement = TypesUtils.getTypeElement(declaringType);
-        if (ElementUtils.enclosingClass(field).equals(typeElement)) {
+        if (ElementUtils.enclosingTypeElement(field).equals(typeElement)) {
             // If the field is declared in the accessedVia class, then the field in the invariant
             // cannot be this field, even if the field has the same name.
             return;
@@ -1856,11 +1865,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
 
-        TypeElement elementOfImplicitReceiver = ElementUtils.enclosingClass(element);
+        TypeElement elementOfImplicitReceiver = ElementUtils.enclosingTypeElement(element);
         if (tree.getKind() == Kind.NEW_CLASS) {
             if (elementOfImplicitReceiver.getEnclosingElement() != null) {
                 elementOfImplicitReceiver =
-                        ElementUtils.enclosingClass(
+                        ElementUtils.enclosingTypeElement(
                                 elementOfImplicitReceiver.getEnclosingElement());
             } else {
                 elementOfImplicitReceiver = null;
@@ -1886,9 +1895,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type of {@code this} at the location of {@code tree}. If {@code tree} is in a
-     * location where {@code this} has no meaning, such as the body of a static method, then {@code
-     * null} is returned.
+     * Returns the type of {@code this} at the location of {@code tree}. Returns {@code null} if
+     * {@code tree} is in a location where {@code this} has no meaning, such as the body of a static
+     * method.
      *
      * <p>The parameter is an arbitrary tree and does not have to mention "this", neither explicitly
      * nor implicitly. This method can be overridden for type-system specific behavior.
@@ -1918,24 +1927,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return null;
     }
 
-    /** A set of class, method, and annotation tree kinds. */
-    private final Set<Tree.Kind> classMethodAnnotationKinds =
+    /** A set containing class, method, and annotation tree kinds. */
+    private static final Set<Tree.Kind> classMethodAnnotationKinds =
             EnumSet.copyOf(TreeUtils.classTreeKinds());
 
-    {
+    static {
         classMethodAnnotationKinds.add(Kind.METHOD);
         classMethodAnnotationKinds.add(Kind.TYPE_ANNOTATION);
         classMethodAnnotationKinds.add(Kind.ANNOTATION);
     }
     /**
-     * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
+     * Returns the innermost enclosing method or class tree of {@code tree}. If {@code tree} is
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
      * is used to find the enclosing tree.
      *
      * <p>If the tree is inside an annotation, then {@code null} is returned.
      *
-     * @param tree tree to whose innermost enclosing method or class is returned
-     * @return the innermost enclosing method or class tree of {@code tree} or {@code null} if
+     * @param tree tree to whose innermost enclosing method or class to return
+     * @return the innermost enclosing method or class tree of {@code tree}, or {@code null} if
      *     {@code tree} is inside an annotation
      */
     protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
@@ -4622,12 +4631,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return this.processingEnv;
     }
 
-    /** Accessor for the {@link CFContext}. */
-    public CFContext getContext() {
-        return checker;
-    }
-
+    /** Matches addition of a constant. */
     static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+    /** Matches subtraction of a constant. */
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
     /**
@@ -4823,7 +4829,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param methodAnnos the method or constructor annotations to modify
      */
     public void prepareMethodForWriting(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         // This implementation does nothing.
     }
 

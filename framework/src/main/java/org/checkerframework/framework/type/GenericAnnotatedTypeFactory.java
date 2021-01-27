@@ -41,8 +41,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -98,6 +99,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -317,7 +319,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 } else {
                     relevantJavaTypes.add(
                             TypesUtils.typeFromClass(
-                                    clazz, getContext().getTypeUtils(), getElementUtils()));
+                                    clazz, getChecker().getTypeUtils(), getElementUtils()));
                 }
             }
         }
@@ -872,7 +874,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
                         JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
-                        this.getContext());
+                        this.getChecker());
 
         return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
     }
@@ -982,7 +984,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * initializers).
      *
      * @param tree a MethodTree or other code block, such as a static initializer
-     * @return the exceptional exit store, or {@code null}, if there is no such store.
+     * @return the exceptional exit store, or {@code null}, if there is no such store
      */
     public @Nullable Store getExceptionalExitStore(Tree tree) {
         return exceptionalExitStores.get(tree);
@@ -1131,10 +1133,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
      * a {@link Node} at all.
      *
+     * @param <T> the type of node to return
+     * @param tree the tree in which to search
+     * @param kind the kind of node to return
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
      */
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
@@ -1803,7 +1808,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         applyLocalVariableQualifierParameterDefaults(elt, type);
 
-        TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
         Set<AnnotationMirror> tops;
         if (enclosingClass != null) {
             tops = getQualifierParameterHierarchies(enclosingClass);
@@ -2259,11 +2264,13 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
-            WholeProgramInferenceScenes wholeProgramInference =
-                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            WholeProgramInferenceImplementation<?> wholeProgramInference =
+                    (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+            WholeProgramInferenceScenesStorage storage =
+                    (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
             TypeMirror typeMirror = entry.getKey().asType();
             AnnotatedTypeMirror inferredType =
-                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+                    storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
             result.addAll(getPreconditionAnnotation(entry.getKey(), inferredType));
         }
         Collections.sort(result, Ordering.usingToString());
@@ -2283,11 +2290,13 @@ public abstract class GenericAnnotatedTypeFactory<
             AMethod m, List<AnnotationMirror> preconds) {
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
-            WholeProgramInferenceScenes wholeProgramInference =
-                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            WholeProgramInferenceImplementation<?> wholeProgramInference =
+                    (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+            WholeProgramInferenceScenesStorage storage =
+                    (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
             TypeMirror typeMirror = entry.getKey().asType();
             AnnotatedTypeMirror inferredType =
-                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+                    storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
             result.addAll(getPostconditionAnnotation(entry.getKey(), inferredType, preconds));
         }
         Collections.sort(result, Ordering.usingToString());
@@ -2302,7 +2311,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return contract annotations for the method
      */
     public List<AnnotationMirror> getContractAnnotations(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         List<AnnotationMirror> preconds = getPreconditionAnnotations(methodAnnos);
         List<AnnotationMirror> postconds = getPostconditionAnnotations(methodAnnos, preconds);
         List<AnnotationMirror> result = preconds;
@@ -2318,7 +2327,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the method
      */
     public List<AnnotationMirror> getPreconditionAnnotations(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos) {
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         List<AnnotationMirror> result = new ArrayList<>();
         if (methodAnnos.fieldToPreconditions == null) {
             return result;
@@ -2342,7 +2351,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return postcondition annotations for the method
      */
     public List<AnnotationMirror> getPostconditionAnnotations(
-            WholeProgramInferenceJavaParser.CallableDeclarationAnnos methodAnnos,
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
             List<AnnotationMirror> preconds) {
         List<AnnotationMirror> result = new ArrayList<>();
         if (methodAnnos.fieldToPostconditions == null) {
@@ -2506,5 +2515,30 @@ public abstract class GenericAnnotatedTypeFactory<
         builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
         builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
         return builder.build();
+    }
+
+    /**
+     * Standardize a type qualifier annotation obtained from a contract.
+     *
+     * @param annoFromContract the annotation to be standardized
+     * @param flowExprContext the context to use for standardization
+     * @param path the path to a use of the contract (a method call) or to the method declaration
+     * @return the standardized annotation, or the argument if it does not need standardization
+     */
+    public AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            JavaExpressionContext flowExprContext,
+            TreePath path) {
+        DependentTypesHelper dependentTypesHelper = getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            AnnotationMirror standardized =
+                    dependentTypesHelper.standardizeAnnotationIfDependentType(
+                            flowExprContext, path, annoFromContract, false, false);
+            if (standardized != null) {
+                dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
+                return standardized;
+            }
+        }
+        return annoFromContract;
     }
 }
