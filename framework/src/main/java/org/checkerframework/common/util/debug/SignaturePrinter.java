@@ -273,6 +273,11 @@ public class SignaturePrinter extends AbstractTypeProcessor {
             return null;
         }
 
+        /**
+         * Print the supertypes.
+         *
+         * @param dt the type whos supertypes to print
+         */
         private void printSupers(AnnotatedDeclaredType dt) {
             if (dt.directSupertypes().isEmpty()) {
                 return;

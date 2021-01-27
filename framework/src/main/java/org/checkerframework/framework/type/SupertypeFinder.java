@@ -44,6 +44,8 @@ class SupertypeFinder {
     /**
      * See {@link Types#directSupertypes(TypeMirror)}.
      *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
      * @see Types#directSupertypes(TypeMirror)
      */
     public static List<AnnotatedDeclaredType> directSupertypes(AnnotatedDeclaredType type) {
@@ -58,6 +60,8 @@ class SupertypeFinder {
     /**
      * See {@link Types#directSupertypes(TypeMirror)}.
      *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
      * @see Types#directSupertypes(TypeMirror)
      */
     public static final List<? extends AnnotatedTypeMirror> directSupertypes(
