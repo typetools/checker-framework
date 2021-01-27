@@ -787,7 +787,7 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2) {
-        Types types = atypeFactory.getContext().getTypeUtils();
+        Types types = atypeFactory.types;
         if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
             return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
         } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
