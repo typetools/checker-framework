@@ -31,6 +31,10 @@ dependencies {
     implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'org.plumelib:plume-util:1.4.1'
 
+    // Dependencies added to "shadow" appear as dependencies in Maven Central.
+    shadow project(':checker-qual')
+    shadow project(':checker-util')
+
     // Called Methods Checker AutoValue + Lombok support
     testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
     testImplementation "com.google.auto.value:auto-value:1.7.4"
@@ -52,13 +56,6 @@ dependencies {
 jar {
     manifest {
         attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
-    }
-    doLast {
-        new File("$projectDir/build/libs/README.txt").text =
-"""Do not use file checker-X.Y.Z.jar, which contains only the checker subproject
-and lacks other parts of the Checker Framework.
-Instead, use checker/dist/checker.jar.
-"""
     }
 }
 
@@ -119,21 +116,53 @@ task allJavadocJar(type: Jar) {
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
+// Shadowing Test Sources and Dependencies
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+    description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
+    includeEmptyDirs = false
+    archivesBaseName = 'checker'
+    archiveClassifier = ''
+
+    from shadowJar.source
+    configurations = shadowJar.configurations
+    // To see what files are incorporated into the shadow jar file:
+    // doLast { println sourceSets.main.runtimeClasspath.asPath }
+    manifest {
+        attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
+    }
+    exclude 'org/checkerframework/**/qual/*'
+    exclude 'org/checkerframework/checker/*/util/*'
+    relocators = shadowJar.getRelocators()
+}
+
+jar {
+    dependsOn(checkerJar)
+    // Never build the skinny jar.
+    onlyIf {false}
+    archiveClassifier = 'skinny'
+}
 
 shadowJar {
-    description 'Creates the "fat" checker.jar in dist/.'
-    destinationDirectory = file("${projectDir}/dist")
-    archiveFileName = "checker.jar"
-    // Without this line, the Maven artifact will have the classifier "all".
-    archiveClassifier = ''
+    description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
+    doLast{
+        copy {
+            from archiveFile.get()
+            into file("${projectDir}/dist")
+            rename 'checker.*', 'checker.jar'
+        }
+    }
 }
+
 artifacts {
     // Don't add this here or else the Javadoc and the sources jar is built during the assemble task.
     // archives allJavadocJar
     // archives allSourcesJar
     archives shadowJar
+    archives checkerJar
 }
 
 clean {
@@ -651,12 +680,12 @@ final checkerPom(publication) {
         }
     }
 }
-
 publishing {
     publications {
         checker(MavenPublication) {
+            project.shadow.component it
             checkerPom it
-            artifact shadowJar
+            artifact checkerJar
             artifact allSourcesJar
             artifact allJavadocJar
         }

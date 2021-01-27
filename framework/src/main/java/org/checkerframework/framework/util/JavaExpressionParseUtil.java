@@ -5,6 +5,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
@@ -20,6 +21,7 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.ClassTree;
@@ -65,12 +67,14 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.BinaryOperation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
@@ -204,6 +208,9 @@ public class JavaExpressionParseUtil {
         /** The type utilities. */
         private final Types types;
 
+        /** The java.lang.String type. */
+        TypeMirror stringTypeMirror;
+
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
          *
@@ -214,6 +221,8 @@ public class JavaExpressionParseUtil {
             this.annotatedConstruct = annotatedConstruct;
             this.env = env;
             this.types = env.getTypeUtils();
+            this.stringTypeMirror =
+                    env.getElementUtils().getTypeElement("java.lang.String").asType();
         }
 
         /** Sets the {@code resolver} field if necessary. */
@@ -261,9 +270,7 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(StringLiteralExpr expr, JavaExpressionContext context) {
-            TypeMirror stringTM =
-                    TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
-            return new ValueLiteral(stringTM, expr.asString());
+            return new ValueLiteral(stringTypeMirror, expr.asString());
         }
 
         @Override
@@ -415,25 +422,31 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(MethodCallExpr expr, JavaExpressionContext context) {
             setResolverField();
 
-            /// TODO: ***** Should only the method name use the changed scope?  I don't see why
-            /// arguments should use a different parsing context, and this might be buggy if
-            /// arguments coincidentally had the same name as a formal parameter.  A Java expression
-            /// can be with respect to its local scope.
-
+            JavaExpressionContext methodContext = context;
             // `expr` is a method call.  If it has scope (a receiver expression), change the parsing
-            // context so that identifiers are resolved with respect to the receiver.
+            // context so that the method name is resolved with respect to the receiver.
+            JavaExpression receiver = null;
             if (expr.getScope().isPresent()) {
-                JavaExpression receiver = expr.getScope().get().accept(this, context);
-                context = context.copyChangeToParsingMemberOfReceiver(receiver);
+                receiver = expr.getScope().get().accept(this, context);
+                methodContext = context.copyChangeToParsingMemberOfReceiver(receiver);
                 expr = expr.removeScope();
             }
 
             String methodName = expr.getNameAsString();
 
+            // Length of string literal: convert it to an integer literal.
+            if (methodName.equals("length") && receiver instanceof ValueLiteral) {
+                Object value = ((ValueLiteral) receiver).getValue();
+                if (value instanceof String) {
+                    return new ValueLiteral(
+                            types.getPrimitiveType(TypeKind.INT), ((String) value).length());
+                }
+            }
+
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
             if (!expr.getArguments().isEmpty()) {
-                JavaExpressionContext argContext = context.copyNotParsingMember();
+                JavaExpressionContext argContext = context;
                 for (Expression argument : expr.getArguments()) {
                     arguments.add(argument.accept(this, argContext));
                 }
@@ -444,7 +457,7 @@ public class JavaExpressionParseUtil {
                 methodElement =
                         getMethodElement(
                                 methodName,
-                                context.receiver.getType(),
+                                methodContext.receiver.getType(),
                                 annotatedConstruct,
                                 arguments,
                                 resolver);
@@ -481,7 +494,7 @@ public class JavaExpressionParseUtil {
 
             // TODO: reinstate this test, but issue a warning that the user
             // can override, rather than halting parsing which the user cannot override.
-            /*if (!PurityUtils.isDeterministic(context.checker.getAnnotationProvider(),
+            /*if (!PurityUtils.isDeterministic(SOMEcontext.checker.getAnnotationProvider(),
                     methodElement)) {
                 throw new JavaExpressionParseException(new DiagMessage(ERROR,
                         "flowexpr.method.not.deterministic",
@@ -496,7 +509,7 @@ public class JavaExpressionParseUtil {
                         staticClassReceiver,
                         arguments);
             } else {
-                if (context.receiver instanceof ClassName) {
+                if (methodContext.receiver instanceof ClassName) {
                     throw new ParseRuntimeException(
                             constructFlowexprParseError(
                                     expr.toString(),
@@ -504,8 +517,8 @@ public class JavaExpressionParseUtil {
                 }
                 TypeMirror methodType =
                         TypesUtils.substituteMethodReturnType(
-                                methodElement, context.receiver.getType(), env);
-                return new MethodCall(methodType, methodElement, context.receiver, arguments);
+                                methodElement, methodContext.receiver.getType(), env);
+                return new MethodCall(methodType, methodElement, methodContext.receiver, arguments);
             }
         }
 
@@ -630,6 +643,128 @@ public class JavaExpressionParseUtil {
                 arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
             }
             return new ArrayCreation(arrayType, dimensions, initializers);
+        }
+
+        @Override
+        public JavaExpression visit(UnaryExpr expr, JavaExpressionContext context) {
+            Tree.Kind treeKind = javaParserUnaryOperatorToTreeKind(expr.getOperator());
+            // This performs constant-folding for + and -; it could also do so for other operations.
+            switch (treeKind) {
+                case UNARY_PLUS:
+                    return expr.getExpression().accept(this, context);
+                case UNARY_MINUS:
+                    JavaExpression negatedResult = expr.getExpression().accept(this, context);
+                    if (negatedResult instanceof ValueLiteral) {
+                        return ((ValueLiteral) negatedResult).negate();
+                    }
+                    return new UnaryOperation(negatedResult.getType(), treeKind, negatedResult);
+                default:
+                    JavaExpression operand = expr.getExpression().accept(this, context);
+                    return new UnaryOperation(operand.getType(), treeKind, operand);
+            }
+        }
+
+        /**
+         * Convert a JavaParser unary operator to a TreeKind.
+         *
+         * @param op a JavaParser unary operator
+         * @return a TreeKind for the unary operator
+         */
+        Tree.Kind javaParserUnaryOperatorToTreeKind(UnaryExpr.Operator op) {
+            switch (op) {
+                case BITWISE_COMPLEMENT:
+                    return Tree.Kind.BITWISE_COMPLEMENT;
+                case LOGICAL_COMPLEMENT:
+                    return Tree.Kind.LOGICAL_COMPLEMENT;
+                case MINUS:
+                    return Tree.Kind.UNARY_MINUS;
+                case PLUS:
+                    return Tree.Kind.UNARY_PLUS;
+                case POSTFIX_DECREMENT:
+                    return Tree.Kind.POSTFIX_DECREMENT;
+                case POSTFIX_INCREMENT:
+                    return Tree.Kind.POSTFIX_INCREMENT;
+                case PREFIX_DECREMENT:
+                    return Tree.Kind.PREFIX_DECREMENT;
+                case PREFIX_INCREMENT:
+                    return Tree.Kind.PREFIX_INCREMENT;
+                default:
+                    throw new Error("unhandled " + op);
+            }
+        }
+
+        @Override
+        public JavaExpression visit(BinaryExpr expr, JavaExpressionContext context) {
+            JavaExpression leftJe = expr.getLeft().accept(this, context);
+            JavaExpression rightJe = expr.getRight().accept(this, context);
+            TypeMirror leftType = leftJe.getType();
+            TypeMirror rightType = rightJe.getType();
+            TypeMirror type;
+            // isSubtype() first does the cheaper test isSameType()
+            if (types.isSubtype(leftType, rightType)) {
+                type = rightType;
+            } else if (types.isSubtype(rightType, leftType)) {
+                type = leftType;
+            } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
+                    && (types.isSameType(leftType, stringTypeMirror)
+                            || types.isSameType(rightType, stringTypeMirror))) {
+                type = stringTypeMirror;
+            } else {
+                throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
+            }
+            return new BinaryOperation(
+                    type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
+        }
+
+        /**
+         * Convert a JavaParser binary operator to a TreeKind.
+         *
+         * @param op a JavaParser binary operator
+         * @return a TreeKind for the binary operator
+         */
+        Tree.Kind javaParserBinaryOperatorToTreeKind(BinaryExpr.Operator op) {
+            switch (op) {
+                case AND:
+                    return Tree.Kind.CONDITIONAL_AND;
+                case BINARY_AND:
+                    return Tree.Kind.AND;
+                case BINARY_OR:
+                    return Tree.Kind.OR;
+                case DIVIDE:
+                    return Tree.Kind.DIVIDE;
+                case EQUALS:
+                    return Tree.Kind.EQUAL_TO;
+                case GREATER:
+                    return Tree.Kind.GREATER_THAN;
+                case GREATER_EQUALS:
+                    return Tree.Kind.GREATER_THAN_EQUAL;
+                case LEFT_SHIFT:
+                    return Tree.Kind.LEFT_SHIFT;
+                case LESS:
+                    return Tree.Kind.LESS_THAN;
+                case LESS_EQUALS:
+                    return Tree.Kind.LESS_THAN_EQUAL;
+                case MINUS:
+                    return Tree.Kind.MINUS;
+                case MULTIPLY:
+                    return Tree.Kind.MULTIPLY;
+                case NOT_EQUALS:
+                    return Tree.Kind.NOT_EQUAL_TO;
+                case OR:
+                    return Tree.Kind.CONDITIONAL_OR;
+                case PLUS:
+                    return Tree.Kind.PLUS;
+                case REMAINDER:
+                    return Tree.Kind.REMAINDER;
+                case SIGNED_RIGHT_SHIFT:
+                    return Tree.Kind.RIGHT_SHIFT;
+                case UNSIGNED_RIGHT_SHIFT:
+                    return Tree.Kind.UNSIGNED_RIGHT_SHIFT;
+                case XOR:
+                    return Tree.Kind.XOR;
+                default:
+                    throw new Error("unhandled " + op);
+            }
         }
 
         /**

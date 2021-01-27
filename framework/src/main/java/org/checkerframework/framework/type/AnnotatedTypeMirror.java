@@ -989,8 +989,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public List<AnnotatedDeclaredType> directSuperTypes() {
-            return Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
+        public List<AnnotatedDeclaredType> directSupertypes() {
+            return Collections.unmodifiableList(SupertypeFinder.directSupertypes(this));
         }
 
         @Override
@@ -2112,7 +2112,7 @@ public abstract class AnnotatedTypeMirror {
          * @return the direct super types of this
          */
         @Override
-        public List<? extends AnnotatedTypeMirror> directSuperTypes() {
+        public List<? extends AnnotatedTypeMirror> directSupertypes() {
             return getBounds();
         }
 
@@ -2121,7 +2121,7 @@ public abstract class AnnotatedTypeMirror {
          * in an explicitly written intersections, during capture conversion, intersections with
          * other kinds of types are created.
          *
-         * <p>This returns the same types as {@link #directSuperTypes()}.
+         * <p>This returns the same types as {@link #directSupertypes()}.
          *
          * @return the bounds of this, which are also the direct super types of this
          */
@@ -2274,9 +2274,10 @@ public abstract class AnnotatedTypeMirror {
      * The direct supertypes of the ATM {@code @Nullable A} are {@code @Nullable B <@NonNull
      * String>} and {@code @Nullable List<@NonNull Integer>}.
      *
+     * @return the immediate supertypes of this
      * @see Types#directSupertypes(TypeMirror)
      */
-    public List<? extends AnnotatedTypeMirror> directSuperTypes() {
-        return SupertypeFinder.directSuperTypes(this);
+    public List<? extends AnnotatedTypeMirror> directSupertypes() {
+        return SupertypeFinder.directSupertypes(this);
     }
 }

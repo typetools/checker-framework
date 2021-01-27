@@ -689,16 +689,25 @@ public class DependentTypesHelper {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
+        JavaExpression result;
         try {
-            JavaExpression result =
-                    JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
-            if (result == null) {
-                return new DependentTypesError(expression, /*error message=*/ " ").toString();
-            }
-            return result.toString();
+            result = JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
+        if (result == null) {
+            return new DependentTypesError(expression, /*error message=*/ " ").toString();
+        }
+        // Replace references to compile-time constant fields by the constant itself.  (This is only
+        // desirable if the name doesn't matter.  The name matters for @KeyFor and @GuardedBy, but
+        // they are not relevant to primitives.)
+        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
+            Object constant = ((FieldAccess) result).getField().getConstantValue();
+            if (constant != null && !(constant instanceof String)) {
+                return constant.toString();
+            }
+        }
+        return result.toString();
     }
 
     /**

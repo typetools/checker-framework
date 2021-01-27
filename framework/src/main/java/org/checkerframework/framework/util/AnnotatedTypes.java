@@ -71,7 +71,7 @@ public class AnnotatedTypes {
      * of {@code superType} have been substituted. How the annotations are copied depends on the
      * kinds of AnnotatedTypeMirrors given. Generally, if {@code type} and {@code superType} are
      * both declared types, asSuper is called recursively on the direct super types, see {@link
-     * AnnotatedTypeMirror#directSuperTypes()}, of {@code type} until {@code type}'s erased Java
+     * AnnotatedTypeMirror#directSupertypes()}, of {@code type} until {@code type}'s erased Java
      * type is the same as {@code superType}'s erased super type. Then {@code type is returned}. For
      * compound types, asSuper is called recursively on components.
      *
@@ -619,7 +619,7 @@ public class AnnotatedTypes {
             // For each direct supertype of the current type, if it
             // hasn't already been visited, push it onto the stack and
             // add it to our supertypes set.
-            for (AnnotatedDeclaredType supertype : current.directSuperTypes()) {
+            for (AnnotatedDeclaredType supertype : current.directSupertypes()) {
                 if (!supertypes.contains(supertype)) {
                     stack.push(supertype);
                     supertypes.add(supertype);
