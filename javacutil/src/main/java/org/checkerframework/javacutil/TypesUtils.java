@@ -36,7 +36,7 @@ import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.plumelib.util.ImmutableTypes;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /** A utility class that helps with {@link TypeMirror}s. */
 public final class TypesUtils {
@@ -1063,6 +1063,6 @@ public final class TypesUtils {
                 return candidate;
             }
         }
-        throw new BugInCF("Not found: %s", UtilPlume.join(",", collection));
+        throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
     }
 }
