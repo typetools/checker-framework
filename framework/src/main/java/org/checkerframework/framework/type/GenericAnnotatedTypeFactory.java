@@ -2266,7 +2266,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
             TypeMirror typeMirror = entry.getKey().asType();
             AnnotatedTypeMirror inferredType =
-                    storage.atmFromAnnotationLocation(typeMirror, entry.getValue().type);
+                    storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
             result.addAll(getPreconditionAnnotation(entry.getKey(), inferredType));
         }
         Collections.sort(result, Ordering.usingToString());
@@ -2292,7 +2292,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
             TypeMirror typeMirror = entry.getKey().asType();
             AnnotatedTypeMirror inferredType =
-                    storage.atmFromAnnotationLocation(typeMirror, entry.getValue().type);
+                    storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
             result.addAll(getPostconditionAnnotation(entry.getKey(), inferredType, preconds));
         }
         Collections.sort(result, Ordering.usingToString());

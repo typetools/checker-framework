@@ -126,7 +126,7 @@ public class WholeProgramInferenceScenesStorage
         switch (elt.getKind()) {
             case CONSTRUCTOR:
             case METHOD:
-                className = getEnclosingClassName((ExecutableElement) elt);
+                className = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
                 break;
             case LOCAL_VARIABLE:
                 className = getEnclosingClassName((LocalVariableNode) elt);
@@ -166,7 +166,7 @@ public class WholeProgramInferenceScenesStorage
      * @return the annotations for a method or constructor
      */
     private AMethod getMethodAnnos(ExecutableElement methodElt) {
-        String className = getEnclosingClassName(methodElt);
+        String className = ElementUtils.getEnclosingClassName(methodElt);
         String file = getFileForElement(methodElt);
         AClass classAnnos = getClassAnnos(className, file, ((MethodSymbol) methodElt).enclClass());
         AMethod methodAnnos =
@@ -176,13 +176,13 @@ public class WholeProgramInferenceScenesStorage
     }
 
     @Override
-    public boolean hasMethodAnnos(ExecutableElement methodElt) {
+    public boolean hasStorageLocationForMethod(ExecutableElement methodElt) {
         // The scenes implementation can always add annotations to a method.
         return true;
     }
 
     @Override
-    public ATypeElement getParameterType(
+    public ATypeElement getParameterAnnotations(
             ExecutableElement methodElt,
             int i,
             AnnotatedTypeMirror paramATM,
@@ -196,7 +196,7 @@ public class WholeProgramInferenceScenesStorage
     }
 
     @Override
-    public ATypeElement getReceiverType(
+    public ATypeElement getReceiverAnnotations(
             ExecutableElement methodElt,
             AnnotatedTypeMirror paramATM,
             AnnotatedTypeFactory atypeFactory) {
@@ -205,7 +205,7 @@ public class WholeProgramInferenceScenesStorage
     }
 
     @Override
-    public ATypeElement getReturnType(
+    public ATypeElement getReturnAnnotations(
             ExecutableElement methodElt,
             AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atypeFactory) {
@@ -214,7 +214,7 @@ public class WholeProgramInferenceScenesStorage
     }
 
     @Override
-    public ATypeElement getFieldType(
+    public ATypeElement getFieldAnnotations(
             Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
@@ -422,8 +422,7 @@ public class WholeProgramInferenceScenesStorage
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
-        AnnotatedTypeMirror atmFromScene =
-                atmFromAnnotationLocation(rhsATM.getUnderlyingType(), type);
+        AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsATM.getUnderlyingType(), type);
         updateAtmWithLub(rhsATM, atmFromScene);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
@@ -603,7 +602,7 @@ public class WholeProgramInferenceScenesStorage
     }
 
     @Override
-    public AnnotatedTypeMirror atmFromAnnotationLocation(
+    public AnnotatedTypeMirror atmFromStorageLocation(
             TypeMirror typeMirror, ATypeElement storageLocation) {
         AnnotatedTypeMirror result =
                 AnnotatedTypeMirror.createType(typeMirror, atypeFactory, false);
@@ -840,32 +839,6 @@ public class WholeProgramInferenceScenesStorage
         private static final long serialVersionUID = 20200321L;
     }
 
-    ///
-    /// Classes and class names
-    ///
-
-    // TODO: Move these or call them from somewhere else.
-    /**
-     * Returns the binary name of the type declaration in {@code element}
-     *
-     * @param element a type declaration
-     * @return the binary name of {@code element}
-     */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private static @BinaryName String getClassName(Element element) {
-        return ((ClassSymbol) element).flatName().toString();
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code executableElement}.
-     *
-     * @param executableElement the ExecutableElement
-     * @return the "flatname" of the class enclosing {@code executableElement}
-     */
-    private static @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
-        return getClassName(((MethodSymbol) executableElement).enclClass());
-    }
-
     /**
      * Returns the "flatname" of the class enclosing {@code localVariableNode}.
      *
@@ -873,7 +846,7 @@ public class WholeProgramInferenceScenesStorage
      * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
     private static @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return getClassName(
-                (ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()));
+        return ElementUtils.getBinaryName(
+                ElementUtils.enclosingClass(localVariableNode.getElement()));
     }
 }

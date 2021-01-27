@@ -23,7 +23,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -48,7 +47,6 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.framework.ajava.AnnotationConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
@@ -126,7 +124,7 @@ public class WholeProgramInferenceJavaParserStorage
     ///
 
     @Override
-    public boolean hasMethodAnnos(ExecutableElement methodElt) {
+    public boolean hasStorageLocationForMethod(ExecutableElement methodElt) {
         return getMethodAnnos(methodElt) != null;
     }
 
@@ -137,7 +135,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return the annotations for a method or constructor
      */
     private CallableDeclarationAnnos getMethodAnnos(ExecutableElement methodElt) {
-        String className = getEnclosingClassName(methodElt);
+        String className = ElementUtils.getEnclosingClassName(methodElt);
         // Read in classes for the element.
         getFileForElement(methodElt);
         ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
@@ -146,9 +144,8 @@ public class WholeProgramInferenceJavaParserStorage
         return methodAnnos;
     }
 
-    @SuppressWarnings("UnusedVariable")
     @Override
-    public AnnotatedTypeMirror getParameterType(
+    public AnnotatedTypeMirror getParameterAnnotations(
             ExecutableElement methodElt,
             int i,
             AnnotatedTypeMirror paramATM,
@@ -159,7 +156,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     @Override
-    public AnnotatedTypeMirror getReceiverType(
+    public AnnotatedTypeMirror getReceiverAnnotations(
             ExecutableElement methodElt,
             AnnotatedTypeMirror paramATM,
             AnnotatedTypeFactory atypeFactory) {
@@ -168,7 +165,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     @Override
-    public AnnotatedTypeMirror getReturnType(
+    public AnnotatedTypeMirror getReturnAnnotations(
             ExecutableElement methodElt,
             AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atypeFactory) {
@@ -177,7 +174,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     @Override
-    public AnnotatedTypeMirror getFieldType(
+    public AnnotatedTypeMirror getFieldAnnotations(
             Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
@@ -256,32 +253,11 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     @Override
-    public AnnotatedTypeMirror atmFromAnnotationLocation(
+    public AnnotatedTypeMirror atmFromStorageLocation(
             TypeMirror typeMirror, AnnotatedTypeMirror storageLocation) {
         return storageLocation;
     }
 
-    /**
-     * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} to have the
-     * annotations of an {@code AnnotatedTypeMirror} passed as argument. Annotations in the original
-     * set that should be ignored (see {@code #shouldIgnore}) are not added to the resulting set.
-     * This method also checks if the AnnotatedTypeMirror has explicit annotations in source code,
-     * and if that is the case no annotations are added for that location.
-     *
-     * <p>This method removes from the {@code AnnotatedTypeMirror} all annotations supported by the
-     * AnnotatedTypeFactory before inserting new ones. It is assumed that every time this method is
-     * called, the new {@code AnnotatedTypeMirror} has a better type estimate for the given
-     * location. Therefore, it is not a problem to remove all annotations before inserting the new
-     * annotations.
-     *
-     * @param newATM the type whose annotations will be added to the {@code AnnotatedTypeMirror}
-     * @param curATM used to check if the element which will be updated has explicit annotations in
-     *     source code
-     * @param typeToUpdate the {@code AnnotatedTypeMirror} which will be updated
-     * @param defLoc the location where the annotation will be added
-     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
-     *     source code
-     */
     @Override
     public void updateStorageLocationFromAtm(
             AnnotatedTypeMirror newATM,
@@ -355,7 +331,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private void addClassTree(ClassTree tree) {
         TypeElement element = TreeUtils.elementFromDeclaration(tree);
-        String className = getClassName(element);
+        String className = ElementUtils.getBinaryName(element);
         if (classToAnnos.containsKey(className)) {
             return;
         }
@@ -432,7 +408,7 @@ public class WholeProgramInferenceJavaParserStorage
                      */
                     private void addClass(ClassTree tree) {
                         TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-                        String className = getClassName(classElt);
+                        String className = ElementUtils.getBinaryName(classElt);
                         ClassOrInterfaceAnnos typeWrapper = new ClassOrInterfaceAnnos();
                         if (!classToAnnos.containsKey(className)) {
                             classToAnnos.put(className, typeWrapper);
@@ -463,7 +439,7 @@ public class WholeProgramInferenceJavaParserStorage
                     private void addCallableDeclaration(
                             MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
                         ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
-                        String className = getEnclosingClassName(elt);
+                        String className = ElementUtils.getEnclosingClassName(elt);
                         ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
                         String executableName = JVMNames.getJVMMethodSignature(javacTree);
                         if (!enclosingClass.callableDeclarations.containsKey(executableName)) {
@@ -487,7 +463,7 @@ public class WholeProgramInferenceJavaParserStorage
                             return;
                         }
 
-                        String className = getEnclosingClassName(elt);
+                        String className = ElementUtils.getEnclosingClassName(elt);
                         ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
                         String fieldName = javacTree.getName().toString();
                         if (!enclosingClass.fields.containsKey(fieldName)) {
@@ -511,7 +487,7 @@ public class WholeProgramInferenceJavaParserStorage
 
         TypeElement toplevelClass = toplevelEnclosingClass(element);
         String path = ElementUtils.getSourceFilePath(toplevelClass);
-        if (classToAnnos.containsKey(getClassName(toplevelClass))) {
+        if (classToAnnos.containsKey(ElementUtils.getBinaryName(toplevelClass))) {
             return path;
         }
 
@@ -524,55 +500,6 @@ public class WholeProgramInferenceJavaParserStorage
                         toplevelClass.getSimpleName().toString());
         createWrappersForClass(toplevelClassTree, javaParserNode, sourceAnnos);
         return path;
-    }
-
-    ///
-    /// Classes and class names
-    ///
-
-    /**
-     * Returns the binary name of the type declaration in {@code element}
-     *
-     * @param element a type declaration
-     * @return the binary name of {@code element}
-     */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-    private static @BinaryName String getClassName(Element element) {
-        return ((ClassSymbol) element).flatName().toString();
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code executableElement}.
-     *
-     * @param executableElement the ExecutableElement
-     * @return the "flatname" of the class enclosing {@code executableElement}
-     */
-    private static @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
-        return getClassName(((MethodSymbol) executableElement).enclClass());
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code variableElement}.
-     *
-     * @param variableElement the VariableElement
-     * @return the "flatname" of the class enclosing {@code variableElement}
-     */
-    private static @BinaryName String getEnclosingClassName(VariableElement variableElement) {
-        return getClassName(ElementUtils.enclosingClass(variableElement));
-    }
-
-    /**
-     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
-     *
-     * @param localVariableNode the {@link LocalVariableNode}
-     * @return the "flatname" of the class enclosing {@code localVariableNode}
-     */
-    @SuppressWarnings({
-        "UnusedMethod" // remove this method
-    })
-    private static @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return getClassName(
-                (ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()));
     }
 
     /**

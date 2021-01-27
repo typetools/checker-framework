@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -79,6 +80,26 @@ public class ElementUtils {
         }
 
         return enclosingClass(enclosingElement);
+    }
+
+    /**
+     * Returns the binary name of the class enclosing {@code executableElement}.
+     *
+     * @param executableElement the ExecutableElement
+     * @return the binary name of the class enclosing {@code executableElement}
+     */
+    public static @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return getBinaryName(((MethodSymbol) executableElement).enclClass());
+    }
+
+    /**
+     * Returns the binary name of the class enclosing {@code variableElement}.
+     *
+     * @param variableElement the VariableElement
+     * @return the binary name of the class enclosing {@code variableElement}
+     */
+    public static @BinaryName String getEnclosingClassName(VariableElement variableElement) {
+        return getBinaryName(enclosingClass(variableElement));
     }
 
     /**
@@ -237,7 +258,8 @@ public class ElementUtils {
                 return pe.getQualifiedName() + "." + simpleName;
             }
         } else {
-            throw new BugInCF("Unexpected enclosing %s for %s", enclosing, te);
+            // This case occurs for anonymous inner classes. Fall back to the flatname method.
+            return ((ClassSymbol) te).flatName().toString();
         }
     }
 

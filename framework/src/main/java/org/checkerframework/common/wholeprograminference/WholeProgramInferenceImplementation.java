@@ -61,7 +61,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <ol>
  *   <li>The inferred type of an element that should be written into a file is a subtype of the
- *       upper bounds of this element's currently-written type in the source code.
+ *       upper bounds of this element's written type in the source code.
  *   <li>The annotation annotates a {@code null} literal, except when doing inference for the
  *       NullnessChecker. (The rationale for this is that {@code null} is a frequently-used default
  *       value, and it would be undesirable infer the bottom type if {@code null} were the only
@@ -151,7 +151,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return;
         }
 
-        if (!storage.hasMethodAnnos(methodElt)) {
+        if (!storage.hasStorageLocationForMethod(methodElt)) {
             return;
         }
 
@@ -187,7 +187,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            T paramType = storage.getParameterType(methodElt, i, paramATM, ve, atypeFactory);
+            T paramType = storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
     }
@@ -208,7 +208,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
 
-        if (!storage.hasMethodAnnos(methodElt)) {
+        if (!storage.hasStorageLocationForMethod(methodElt)) {
             return;
         }
 
@@ -257,7 +257,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      * Converts a CFAbstractValue to an AnnotatedTypeMirror.
      *
      * @param v a value to convert to an AnnotatedTypeMirror
-     * @param fieldType a type that is copied, then updated to use {@code v}'s annotations
+     * @param fieldType an {@code AnnotatedTypeMirror} with the same underlying type as {@code v}
+     *     that is copied, then updated to use {@code v}'s annotations
      * @return a copy of {@code fieldType} with {@code v}'s annotations
      */
     private AnnotatedTypeMirror convertCFAbstractValueToAnnotatedTypeMirror(
@@ -284,7 +285,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            T paramType = storage.getParameterType(methodElt, i, paramATM, ve, atypeFactory);
+            T paramType = storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
 
@@ -293,7 +294,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM =
                     atypeFactory.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                T receiver = storage.getReceiverType(methodElt, paramATM, atypeFactory);
+                T receiver = storage.getReceiverAnnotations(methodElt, paramATM, atypeFactory);
                 updateAnnotationSet(receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file);
             }
         }
@@ -324,7 +325,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(argATM);
         int i = methodElt.getParameters().indexOf(paramElt);
         assert i != -1;
-        T paramType = storage.getParameterType(methodElt, i, paramATM, paramElt, atypeFactory);
+        T paramType =
+                storage.getParameterAnnotations(methodElt, i, paramATM, paramElt, atypeFactory);
         String file = storage.getFileForElement(methodElt);
         updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
@@ -370,7 +372,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         String file = storage.getFileForElement(element);
 
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
-        T fieldType = storage.getFieldType(element, fieldName, lhsATM, atypeFactory);
+        T fieldType = storage.getFieldAnnotations(element, fieldName, lhsATM, atypeFactory);
 
         updateAnnotationSet(fieldType, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
     }
@@ -445,7 +447,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             dependentTypesHelper.standardizeReturnType(
                     methodDeclTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
-        T returnTypeAnnos = storage.getReturnType(methodElt, lhsATM, atypeFactory);
+        T returnTypeAnnos = storage.getReturnAnnotations(methodElt, lhsATM, atypeFactory);
         updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
@@ -478,7 +480,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             String superClassFile = storage.getFileForElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
             T storedOverriddenMethodReturnType =
-                    storage.getReturnType(
+                    storage.getReturnAnnotations(
                             overriddenMethodElement, overriddenMethodReturnType, atypeFactory);
 
             updateAnnotationSet(
@@ -565,8 +567,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return;
         }
         AnnotatedTypeMirror atmFromStorage =
-                storage.atmFromAnnotationLocation(rhsATM.getUnderlyingType(), typeToUpdate);
-        updateATMWithLUB(rhsATM, atmFromStorage);
+                storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), typeToUpdate);
+        updateAtmWithLub(rhsATM, atmFromStorage);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
@@ -592,14 +594,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      * @param sourceCodeATM the annotated type on the source code
      * @param ajavaATM the annotated type on the ajava file
      */
-    private void updateATMWithLUB(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
+    private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
 
         switch (sourceCodeATM.getKind()) {
             case TYPEVAR:
-                updateATMWithLUB(
+                updateAtmWithLub(
                         ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
                         ((AnnotatedTypeVariable) ajavaATM).getLowerBound());
-                updateATMWithLUB(
+                updateAtmWithLub(
                         ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
                         ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
                 break;
@@ -619,7 +621,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
                 // break;
             case ARRAY:
-                updateATMWithLUB(
+                updateAtmWithLub(
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
                         ((AnnotatedArrayType) ajavaATM).getComponentType());
                 break;

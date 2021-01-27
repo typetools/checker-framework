@@ -20,8 +20,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * implementation.
  *
  * @param <T> the type used by the storage to store annotations. The methods {@link
- *     #atmFromAnnotationLocation} and {@link #updateStorageLocationFromAtm} can be used to
- *     manipulate a storage location.
+ *     #atmFromStorageLocation} and {@link #updateStorageLocationFromAtm} can be used to manipulate
+ *     a storage location.
  */
 public interface WholeProgramInferenceStorage<T> {
     /**
@@ -44,7 +44,7 @@ public interface WholeProgramInferenceStorage<T> {
      * @param methodElt a method or constructor Element
      * @return true if the storage has a method corresponding to {@code elt}, false otherwise
      */
-    public boolean hasMethodAnnos(ExecutableElement methodElt);
+    public boolean hasStorageLocationForMethod(ExecutableElement methodElt);
 
     /**
      * Get the annotations for a formal parameter type.
@@ -56,7 +56,7 @@ public interface WholeProgramInferenceStorage<T> {
      * @param atypeFactory the type factory
      * @return the annotations for a formal parameter type
      */
-    public T getParameterType(
+    public T getParameterAnnotations(
             ExecutableElement methodElt,
             int i,
             AnnotatedTypeMirror paramATM,
@@ -71,7 +71,7 @@ public interface WholeProgramInferenceStorage<T> {
      * @param atypeFactory the type factory
      * @return the annotations for the receiver type
      */
-    public T getReceiverType(
+    public T getReceiverAnnotations(
             ExecutableElement methodElt,
             AnnotatedTypeMirror paramATM,
             AnnotatedTypeFactory atypeFactory);
@@ -84,7 +84,7 @@ public interface WholeProgramInferenceStorage<T> {
      * @param atypeFactory the type factory
      * @return the annotations for the return type
      */
-    public T getReturnType(
+    public T getReturnAnnotations(
             ExecutableElement methodElt,
             AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atypeFactory);
@@ -98,7 +98,7 @@ public interface WholeProgramInferenceStorage<T> {
      * @param atypeFactory the annotated type factory
      * @return the annotations for a field type
      */
-    public T getFieldType(
+    public T getFieldAnnotations(
             Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
@@ -138,12 +138,13 @@ public interface WholeProgramInferenceStorage<T> {
      * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
      *     {@code storageLocation}
      */
-    public AnnotatedTypeMirror atmFromAnnotationLocation(TypeMirror typeMirror, T storageLocation);
+    public AnnotatedTypeMirror atmFromStorageLocation(TypeMirror typeMirror, T storageLocation);
 
     /**
      * Updates a storage location to have the annotations of the given {@code AnnotatedTypeMirror}.
-     * Annotations in the original set that should be ignored are not added to the resulting set.
-     * Adds no annotations for a location if that location has explicit annotations in source code.
+     * Annotations in the original set that should be ignored are not added to the resulting set. If
+     * {@code ignoreIfAnnotated} is true, doesn't add annotations for locations with explicit
+     * annotations in source code.
      *
      * <p>This method removes from the storage location all annotations supported by the
      * AnnotatedTypeFactory before inserting new ones. It is assumed that every time this method is
@@ -152,9 +153,9 @@ public interface WholeProgramInferenceStorage<T> {
      * annotations.
      *
      * @param newATM the type whose annotations will be added to the {@code AnnotatedTypeMirror}
-     * @param curATM used to check if the element which will be updated has explicit annotations in
-     *     source code
-     * @param typeToUpdate the storage location which will be updated
+     * @param curATM the annotations currently stored at the location, used to check if the element
+     *     which will be updated has explicit annotations in source code
+     * @param storageLocationToUpdate the storage location which will be updated
      * @param defLoc the location where the annotation will be added
      * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
      *     source code
@@ -162,7 +163,7 @@ public interface WholeProgramInferenceStorage<T> {
     public void updateStorageLocationFromAtm(
             AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM,
-            T typeToUpdate,
+            T storageLocationToUpdate,
             TypeUseLocation defLoc,
             boolean ignoreIfAnnotated);
 
