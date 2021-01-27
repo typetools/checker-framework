@@ -4,7 +4,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Target;
@@ -48,7 +47,7 @@ import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.io.IndexFileParser;
 import scenelib.annotations.util.JVMNames;
 
@@ -785,9 +784,8 @@ public class WholeProgramInferenceScenesStorage
             AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
             updateTypeElementFromATM(
                     typeToUpdate.innerTypes.getVivify(
-                            new InnerTypeLocation(
-                                    TypeAnnotationPosition.getTypePathFromBinary(
-                                            Collections.nCopies(2 * idx, 0)))),
+                            TypePathEntry.getTypePathEntryListFromBinary(
+                                    Collections.nCopies(2 * idx, 0))),
                     idx + 1,
                     defLoc,
                     newAAT.getComponentType(),
@@ -847,6 +845,6 @@ public class WholeProgramInferenceScenesStorage
      */
     private static @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
         return ElementUtils.getBinaryName(
-                ElementUtils.enclosingClass(localVariableNode.getElement()));
+                ElementUtils.enclosingTypeElement(localVariableNode.getElement()));
     }
 }

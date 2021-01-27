@@ -105,8 +105,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final boolean showInferenceSteps;
 
     public DefaultTypeArgumentInference(AnnotatedTypeFactory typeFactory) {
-        this.showInferenceSteps =
-                typeFactory.getContext().getChecker().hasOption("showInferenceSteps");
+        this.showInferenceSteps = typeFactory.getChecker().hasOption("showInferenceSteps");
     }
 
     @Override
@@ -123,7 +122,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
-        SourceChecker checker = typeFactory.getContext().getChecker();
+        SourceChecker checker = typeFactory.getChecker();
 
         if (showInferenceSteps) {
             checker.message(
@@ -706,7 +705,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     if (TypesUtils.isErasedSubtype(
                             equalityATM.getUnderlyingType(),
                             superATM.getUnderlyingType(),
-                            typeFactory.getContext().getTypeUtils())) {
+                            typeFactory.getChecker().getTypeUtils())) {
                         // If the underlying type of equalityATM is a subtype of the underlying
                         // type of superATM, then the call to isSubtype below will issue an error.
                         // So call asSuper so that the isSubtype call below works correctly.

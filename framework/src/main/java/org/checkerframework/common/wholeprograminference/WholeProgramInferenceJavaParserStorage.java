@@ -510,7 +510,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     class
      */
     private static TypeElement toplevelEnclosingClass(Element element) {
-        TypeElement result = ElementUtils.enclosingClass(element);
+        TypeElement result = ElementUtils.enclosingTypeElement(element);
         if (result == null) {
             return (TypeElement) element;
         }

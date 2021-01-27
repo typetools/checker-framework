@@ -19,9 +19,9 @@ public class ValueCheck {
 
     void test() {
         int x = getSibling1withValue5();
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requireSibling1(x);
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         requireIntVal5(x);
     }
 }

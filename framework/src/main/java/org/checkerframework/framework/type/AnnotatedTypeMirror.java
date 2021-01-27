@@ -1179,10 +1179,10 @@ public abstract class AnnotatedTypeMirror {
         public @Nullable AnnotatedDeclaredType getReceiverType() {
             if (receiverType == null && ElementUtils.hasReceiver(getElement())) {
 
-                TypeElement encl = ElementUtils.enclosingClass(getElement());
+                TypeElement encl = ElementUtils.enclosingTypeElement(getElement());
                 if (getElement().getKind() == ElementKind.CONSTRUCTOR) {
                     // Can only reach this branch if we're the constructor of a nested class
-                    encl = ElementUtils.enclosingClass(encl.getEnclosingElement());
+                    encl = ElementUtils.enclosingTypeElement(encl.getEnclosingElement());
                 }
                 AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory, false);
                 assert type instanceof AnnotatedDeclaredType;

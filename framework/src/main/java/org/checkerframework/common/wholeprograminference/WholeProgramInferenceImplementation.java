@@ -418,6 +418,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         return false;
     }
 
+    /**
+     * Updates the return type of the method methodDeclTree in the Scene of the class with symbol
+     * classSymbol. Also updates the return types of methods that this method overrides, if they are
+     * available as source.
+     *
+     * <p>If the Scene does not contain an annotated return type for the method methodDeclTree, then
+     * the type of the value passed to the return expression will be added to the return type of
+     * that method in the Scene. If the Scene previously contained an annotated return type for the
+     * method methodDeclTree, its new type will be the LUB between the previous type and the type of
+     * the value passed to the return expression.
+     *
+     * @param retNode the node that contains the expression returned
+     * @param classSymbol the symbol of the class that contains the method
+     * @param methodDeclTree the declaration of the method whose return type may be updated
+     * @param overriddenMethods the methods that the given method return overrides, each indexed by
+     *     the annotated type of the class that defines it
+     */
     @Override
     public void updateFromReturn(
             ReturnNode retNode,
@@ -425,11 +442,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             MethodTree methodDeclTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
         // Don't infer types for code that isn't presented as source.
-        if (methodDeclTree == null) {
+        if (methodDeclTree == null
+                || !ElementUtils.isElementFromSourceCode(
+                        TreeUtils.elementFromDeclaration(methodDeclTree))) {
             return;
         }
-        assert ElementUtils.isElementFromSourceCode(
-                TreeUtils.elementFromDeclaration(methodDeclTree));
 
         // Whole-program inference ignores some locations.  See Issue 682:
         // https://github.com/typetools/checker-framework/issues/682

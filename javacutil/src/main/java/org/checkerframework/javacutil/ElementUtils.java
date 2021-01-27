@@ -52,17 +52,38 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element, including possibly the
-     * element itself.
+     * Returns the innermost type element enclosing the given element. Returns the element itself if
+     * it is a type element.
+     *
+     * @param elem the enclosed element of a class
+     * @return the innermost type element, or null if no type element encloses {@code elem}
+     * @deprecated use {@link #enclosingTypeElement}
+     */
+    @Deprecated // use enclosingTypeElement
+    public static @Nullable TypeElement enclosingClass(final Element elem) {
+        return enclosingTypeElement(elem);
+    }
+
+    /**
+     * Returns the innermost type element enclosing the given element.
+     *
+     * <p>Note that in this code:
+     *
+     * <pre>{@code
+     * class Outer {
+     *   static class Inner {  }
+     * }
+     * }</pre>
+     *
+     * {@code Inner} has no enclosing type, but this method returns {@code Outer}.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
      */
-    public static @Nullable TypeElement enclosingClass(final Element elem) {
+    public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
         Element result = elem;
-        while (result != null && !isClassElement(result)) {
-            @Nullable Element encl = result.getEnclosingElement();
-            result = encl;
+        while (result != null && !isTypeElement(result)) {
+            result = result.getEnclosingElement();
         }
         return (TypeElement) result;
     }
@@ -224,7 +245,7 @@ public class ElementUtils {
      * @return the qualified name of the given element
      */
     public static String getQualifiedName(Element elt) {
-        if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
+        if (elt.getKind() == ElementKind.PACKAGE || isTypeElement(elt)) {
             Name n = getQualifiedClassName(elt);
             if (n == null) {
                 return "Unexpected element: " + elt;
@@ -248,7 +269,7 @@ public class ElementUtils {
         if (enclosing == null) { // is this possible?
             return simpleName;
         }
-        if (ElementUtils.isClassElement(enclosing)) {
+        if (ElementUtils.isTypeElement(enclosing)) {
             return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
         } else if (enclosing.getKind() == ElementKind.PACKAGE) {
             PackageElement pe = (PackageElement) enclosing;
@@ -331,10 +352,11 @@ public class ElementUtils {
         if (element == null) {
             return false;
         }
-        if (element instanceof Symbol.ClassSymbol) {
-            return isElementFromSourceCodeImpl((Symbol.ClassSymbol) element);
+        TypeElement enclosingClass = enclosingClass(element);
+        if (enclosingClass == null) {
+            throw new BugInCF("enclosingClass(%s) is null", element);
         }
-        return isElementFromSourceCode(element.getEnclosingElement());
+        return isElementFromSourceCodeImpl((Symbol.ClassSymbol) enclosingClass);
     }
 
     /**
@@ -438,7 +460,7 @@ public class ElementUtils {
      * called.
      *
      * @param type where to look for fields
-     * @param names simple names of fields that might be declared in {@code type} or a supertype.
+     * @param names simple names of fields that might be declared in {@code type} or a supertype
      *     (Names that are found are removed from this list.)
      * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
      *     whose simple names were in {@code names} when the method was called.

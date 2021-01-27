@@ -1,12 +1,3 @@
-plugins {
-    // To only load the parts of the AWS SDK needed to test the Called Methods Checker, rather
-    // than the whole AWS SDK. Uses the "legacy" version listed here:
-    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-gradle.html,
-    // because the build fails with the Gradle 5+ way, saying that it can't find ec2.
-    // I believe that this is because the CF only needs the AWS SDK during testing, not during the build.
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-}
-
 sourceSets {
     main {
         resources {
@@ -15,6 +6,12 @@ sourceSets {
         }
     }
     testannotations
+}
+
+
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
@@ -27,11 +24,16 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
+    implementation project(':checker-util')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'org.plumelib:plume-util:1.4.1'
+
+    // Dependencies added to "shadow" appear as dependencies in Maven Central.
+    shadow project(':checker-qual')
+    shadow project(':checker-util')
 
     // Called Methods Checker AutoValue + Lombok support
     testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
@@ -41,6 +43,8 @@ dependencies {
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
+    // The AWS SDK is used for testing the Called Methods Checker.
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
     testImplementation project(':framework-test')
@@ -49,23 +53,9 @@ dependencies {
     testannotationsImplementation project(':checker-qual')
 }
 
-// The AWS SDK is used for testing the Called Methods Checker.
-dependencyManagement {
-    imports {
-        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.923"
-    }
-}
-
 jar {
     manifest {
         attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
-    }
-    doLast {
-        new File("$projectDir/build/libs/README.txt").text =
-"""Do not use file checker-X.Y.Z.jar, which contains only the checker subproject
-and lacks other parts of the Checker Framework.
-Instead, use checker/dist/checker.jar.
-"""
     }
 }
 
@@ -79,6 +69,15 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             rename { String fileName ->
                 // remove version number on checker-qual.jar
                 fileName.replace(fileName, "checker-qual.jar")
+            }
+        }
+
+        copy {
+            from file(project(':checker-util').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                // remove version number on checker-util.jar
+                fileName.replace(fileName, "checker-util.jar")
             }
         }
 
@@ -117,20 +116,53 @@ task allJavadocJar(type: Jar) {
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
+// Shadowing Test Sources and Dependencies
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+    description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
+    includeEmptyDirs = false
+    archivesBaseName = 'checker'
+    archiveClassifier = ''
+
+    from shadowJar.source
+    configurations = shadowJar.configurations
+    // To see what files are incorporated into the shadow jar file:
+    // doLast { println sourceSets.main.runtimeClasspath.asPath }
+    manifest {
+        attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
+    }
+    exclude 'org/checkerframework/**/qual/*'
+    exclude 'org/checkerframework/checker/*/util/*'
+    relocators = shadowJar.getRelocators()
+}
+
+jar {
+    dependsOn(checkerJar)
+    // Never build the skinny jar.
+    onlyIf {false}
+    archiveClassifier = 'skinny'
+}
 
 shadowJar {
-    description 'Creates the "fat" checker.jar in dist/.'
-    destinationDirectory = file("${projectDir}/dist")
-    archiveFileName = "checker.jar"
-    archiveClassifier = ''
+    description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
+    doLast{
+        copy {
+            from archiveFile.get()
+            into file("${projectDir}/dist")
+            rename 'checker.*', 'checker.jar'
+        }
+    }
 }
+
 artifacts {
     // Don't add this here or else the Javadoc and the sources jar is built during the assemble task.
     // archives allJavadocJar
     // archives allSourcesJar
     archives shadowJar
+    archives checkerJar
 }
 
 clean {
@@ -400,7 +432,7 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
         from files("tests/${testdir}/non-annotated")
         into file("tests/${testdir}/annotated")
         filter { String line ->
-            line.contains('// :: error:') ? null : line
+            line.contains('// :: error:') || line.contains('// :: warning:') ? null : line
         }
     }
     // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
@@ -640,7 +672,12 @@ task wpiManyTests(group: "Verification") {
                 throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
             }
             file.eachLine { line ->
-                if (line.startsWith("Running ") || line.startsWith("warning: [path]")
+                if (
+                        // Ignore the line that WPI echoes with the javac command being run.
+                        line.startsWith("Running ")
+                        // Warnings about bad path elements aren't related to WPI and are ignored.
+                        || line.startsWith("warning: [path]")
+                        // Ignore the summary line that reports the total number of warnings.
                         || line.endsWith("warnings")) {
                   return;
                 }
@@ -692,14 +729,17 @@ final checkerPom(publication) {
         }
     }
 }
-
 publishing {
     publications {
         checker(MavenPublication) {
+            project.shadow.component it
             checkerPom it
-            artifact shadowJar
+            artifact checkerJar
             artifact allSourcesJar
             artifact allJavadocJar
         }
     }
+}
+signing {
+    sign publishing.publications.checker
 }

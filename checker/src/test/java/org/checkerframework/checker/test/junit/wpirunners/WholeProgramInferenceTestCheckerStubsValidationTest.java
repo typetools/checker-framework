@@ -24,7 +24,8 @@ public class WholeProgramInferenceTestCheckerStubsValidationTest
                 "-Anomsgtext",
                 "-Astubs=tests/wpi-testchecker/inference-output",
                 // "-AstubDebug",
-                "-AmergeStubsWithSource");
+                "-AmergeStubsWithSource",
+                "-Awarns");
     }
 
     @Override

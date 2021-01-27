@@ -100,7 +100,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.9.1'
+    version '3.9.2-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -121,6 +121,9 @@ allprojects {
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
+    configurations {
+        checkerFatJar
+    }
     dependencies {
         if (isJava8) {
             javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
@@ -129,7 +132,9 @@ allprojects {
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
         allProjects subprojects
+        checkerFatJar project(path: ':checker', configuration: 'shadow')
     }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -146,7 +151,7 @@ allprojects {
                 if (!name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
-                classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
+                classpath += rootProject.configurations.getByName('checkerFatJar').asFileTree
                 if (isJava8) {
                     classpath += configurations.javacJar
                 }
@@ -223,7 +228,6 @@ allprojects {
             }
 
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
-            // All the classes in checker-qual are also in checker, so they are checked.
             // TODO: enable Error Prone on test classes.
             if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
@@ -397,7 +401,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
-    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+    source(project(':checker-util').sourceSets.main.allJava, project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = configurations.allProjects
@@ -456,7 +460,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
         destinationDir = file("${rootDir}/docs/tmpapi")
         destinationDir.mkdirs()
         subprojects.forEach {
-            if (!it.name.startsWith("checker-qual")) {
+            if (!it.name.startsWith("checker-qual-android")) {
                 source += it.sourceSets.main.allJava
             }
         }
@@ -575,7 +579,7 @@ task tags {
     description 'Create Emacs TAGS table'
     doLast {
         exec {
-            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+            commandLine "etags", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
         }
         exec {
             commandLine "make", "-C", "docs/manual", "tags"
@@ -596,13 +600,13 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.5.1'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
-        // checker-qual* projects have no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual') }
+        // checker-qual-android project has no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
 
         doFirst {
@@ -620,8 +624,8 @@ subprojects {
 
     task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Format the Java source code'
-        // checker-qual* projects have no source, so skip
-        onlyIf { !project.name.startsWith('checker-qual') }
+        // checker-qual-android project has no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
@@ -639,18 +643,17 @@ subprojects {
             }
         }
 
-        // These appear in annotation-file-utilities-all.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
         relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-        // relocate 'sun', 'org.checkerframework.sun'
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+        // relocate 'sun', 'org.checkerframework.sun'
         relocate 'com.google', 'org.checkerframework.com.google'
         relocate 'plume', 'org.checkerframework.plume'
     }
 
-    if (!project.name.startsWith('checker-qual')) {
+    if (!project.name.startsWith('checker-qual-android')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
             commandLine "bash", "-c", "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
@@ -668,7 +671,7 @@ subprojects {
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
-            if (archiveFileName.get().startsWith("checker-qual")) {
+            if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                 metaInf {
                     from './LICENSE.txt'
                 }
@@ -683,7 +686,7 @@ subprojects {
                 if (! archiveFileName.get().endsWith("source.jar")) {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
                 }
-                if (archiveFileName.get().startsWith("checker-qual")) {
+                if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                     attributes("Bundle-License": "MIT")
                 } else {
                     attributes("Bundle-License": "(GPL-2.0-only WITH Classpath-exception-2.0)")
