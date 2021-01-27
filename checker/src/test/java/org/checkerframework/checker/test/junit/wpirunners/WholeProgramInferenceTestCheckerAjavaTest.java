@@ -25,7 +25,8 @@ public class WholeProgramInferenceTestCheckerAjavaTest extends CheckerFrameworkP
                 WholeProgramInferenceTestChecker.class,
                 "wpi-testchecker/non-annotated",
                 "-Anomsgtext",
-                "-Ainfer=ajava");
+                "-Ainfer=ajava",
+                "-Awarns");
     }
 
     @Parameters
