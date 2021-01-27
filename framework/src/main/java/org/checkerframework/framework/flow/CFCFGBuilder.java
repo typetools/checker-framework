@@ -10,14 +10,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
-import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -28,8 +23,6 @@ import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseTwo;
 import org.checkerframework.dataflow.cfg.builder.PhaseOneResult;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -229,47 +222,8 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopArrayVariable(
                 ExpressionTree expression, VariableElement variableElement) {
-            // We do not want to cache flow-insensitive types
-            // retrieved during CFG building.
-            boolean oldShouldCache = factory.shouldCache;
-            factory.shouldCache = false;
-            AnnotatedTypeMirror annotatedArrayType = factory.getAnnotatedType(expression);
-            factory.shouldCache = oldShouldCache;
-            if (annotatedArrayType.getKind() == TypeKind.WILDCARD
-                    && ((AnnotatedWildcardType) annotatedArrayType).isUninferredTypeArgument()) {
-                TypeMirror type = TreeUtils.typeOf(expression);
-                AnnotatedArrayType newArrayType =
-                        (AnnotatedArrayType) AnnotatedTypeMirror.createType(type, factory, false);
-                newArrayType.setComponentType(annotatedArrayType);
-                newArrayType.addAnnotations(annotatedArrayType.getEffectiveAnnotations());
-                annotatedArrayType = newArrayType;
-            }
-
-            // Copy any annotations that were explicitly written on the array variable into the
-            // annotated type mirror that will be used to build the tree.
-            TypeMirror arrayDeclType = TreeUtils.typeOf(expression);
-            AnnotatedTypeMirror corresponding = annotatedArrayType;
-            while (arrayDeclType.getKind() == TypeKind.ARRAY) {
-                List<? extends AnnotationMirror> explicitAnnosC =
-                        arrayDeclType.getAnnotationMirrors();
-                for (AnnotationMirror anm : explicitAnnosC) {
-                    corresponding.addAnnotation_unsafe(anm);
-                }
-                ArrayType at = (ArrayType) arrayDeclType;
-                arrayDeclType = at.getComponentType();
-                corresponding = ((AnnotatedArrayType) corresponding).getComponentType();
-            }
-            // Handle the final component type
-            List<? extends AnnotationMirror> explicitAnnosC = arrayDeclType.getAnnotationMirrors();
-            for (AnnotationMirror anm : explicitAnnosC) {
-                corresponding.addAnnotation_unsafe(anm);
-            }
-
-            assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType)
-                    : "ArrayType must be represented by AnnotatedArrayType";
-
             Tree annotatedArrayTypeTree =
-                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(annotatedArrayType);
+                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(TreeUtils.typeOf(expression));
             handleArtificialTree(annotatedArrayTypeTree);
 
             // Declare and initialize a temporary array variable
