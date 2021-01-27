@@ -198,15 +198,10 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopIteratorVariable(
                 MethodInvocationTree iteratorCall, VariableElement variableElement) {
-            // We do not want to cache flow-insensitive types
-            // retrieved during CFG building.
-            boolean oldShouldCache = factory.shouldCache;
-            factory.shouldCache = false;
-            AnnotatedTypeMirror annotatedIteratorType = factory.getAnnotatedType(iteratorCall);
-            factory.shouldCache = oldShouldCache;
 
             Tree annotatedIteratorTypeTree =
-                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(annotatedIteratorType);
+                    ((CFTreeBuilder) treeBuilder)
+                            .buildAnnotatedType(TreeUtils.typeOf(iteratorCall));
             handleArtificialTree(annotatedIteratorTypeTree);
 
             // Declare and initialize a new, unique iterator variable
