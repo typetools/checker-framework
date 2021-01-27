@@ -425,13 +425,23 @@ public class JavaExpressionParseUtil {
             JavaExpressionContext methodContext = context;
             // `expr` is a method call.  If it has scope (a receiver expression), change the parsing
             // context so that the method name is resolved with respect to the receiver.
+            JavaExpression receiver = null;
             if (expr.getScope().isPresent()) {
-                JavaExpression receiver = expr.getScope().get().accept(this, context);
+                receiver = expr.getScope().get().accept(this, context);
                 methodContext = context.copyChangeToParsingMemberOfReceiver(receiver);
                 expr = expr.removeScope();
             }
 
             String methodName = expr.getNameAsString();
+
+            // Length of string literal: convert it to an integer literal.
+            if (methodName.equals("length") && receiver instanceof ValueLiteral) {
+                Object value = ((ValueLiteral) receiver).getValue();
+                if (value instanceof String) {
+                    return new ValueLiteral(
+                            types.getPrimitiveType(TypeKind.INT), ((String) value).length());
+                }
+            }
 
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
