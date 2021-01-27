@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.ToStringComparator;
+import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -73,6 +73,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Information collected about fields, using the internal representation {@link FieldAccess}.
      */
     protected Map<FieldAccess, V> fieldValues;
+
+    /**
+     * Returns information about fields. Clients should not side-effect the returned value, which is
+     * aliased to internal state.
+     *
+     * @return information about fields
+     */
+    public Map<FieldAccess, V> getFieldValues() {
+        return fieldValues;
+    }
 
     /**
      * Information collected about arrays, using the internal representation {@link ArrayAccess}.
@@ -441,7 +451,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * (e.g. @MonotonicNonNull to @NonNull). Always returns false if {@code sequentialSemantics} is
      * true.
      *
-     * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
+     * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier
      *     (e.g. @MonotonicNonNull to @NonNull)
      */
     protected boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
@@ -570,6 +580,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public @Nullable V getValue(FieldAccessNode n) {
         FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(analysis.getTypeFactory(), n);
+        return fieldValues.get(fieldAccess);
+    }
+
+    /**
+     * Returns the current abstract value of a field access, or {@code null} if no information is
+     * available.
+     *
+     * @param fieldAccess the field access to look up in this store
+     * @return current abstract value of a field access, or {@code null} if no information is
+     *     available
+     */
+    public @Nullable V getFieldValue(FieldAccess fieldAccess) {
         return fieldValues.get(fieldAccess);
     }
 

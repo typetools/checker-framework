@@ -76,6 +76,8 @@ public abstract class AbstractAnalysis<
      *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
+    // currentNode == null when isRunning is true.
+    // See https://github.com/typetools/checker-framework/issues/4115
     protected @InternedDistinct @Nullable Node currentNode;
 
     /**

@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type;
 
+import com.google.common.collect.Ordering;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -18,6 +19,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +41,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -71,9 +74,11 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -92,6 +97,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -103,12 +109,15 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.SystemPlume;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -246,7 +255,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
-     * @see AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput, IdentityHashMap, Map)
+     * @see AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
+     *     IdentityHashMap, Map)
      */
     protected final Map<
                     TransferInput<Value, Store>,
@@ -307,7 +317,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 } else {
                     relevantJavaTypes.add(
                             TypesUtils.typeFromClass(
-                                    clazz, getContext().getTypeUtils(), getElementUtils()));
+                                    clazz, getChecker().getTypeUtils(), getElementUtils()));
                 }
             }
         }
@@ -429,7 +439,7 @@ public abstract class GenericAnnotatedTypeFactory<
         treeAnnotators.add(new PropagationTreeAnnotator(this));
         treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
         if (dependentTypesHelper != null) {
-            treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator(this));
+            treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator());
         }
         return new ListTreeAnnotator(treeAnnotators);
     }
@@ -849,19 +859,20 @@ public abstract class GenericAnnotatedTypeFactory<
      * Produces the JavaExpression associated with expression on currentPath.
      *
      * @param expression a Java expression
-     * @param currentPath location at which expression is evaluated
+     * @param currentPath the path to an annotation containing {@code expression}
+     * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
             throws JavaExpressionParseException {
-        TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingClass = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
 
         JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
         JavaExpressionParseUtil.JavaExpressionContext context =
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
                         JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
-                        this.getContext());
+                        this.getChecker());
 
         return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
     }
@@ -971,7 +982,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * initializers).
      *
      * @param tree a MethodTree or other code block, such as a static initializer
-     * @return the exceptional exit store, or {@code null}, if there is no such store.
+     * @return the exceptional exit store, or {@code null}, if there is no such store
      */
     public @Nullable Store getExceptionalExitStore(Tree tree) {
         return exceptionalExitStores.get(tree);
@@ -1120,10 +1131,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
      * a {@link Node} at all.
      *
+     * @param <T> the type of node to return
+     * @param tree the tree in which to search
+     * @param kind the kind of node to return
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
      */
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
@@ -1291,7 +1305,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     MethodTree mt =
                             (MethodTree)
-                                    TreeUtils.enclosingOfKind(
+                                    TreePathUtil.enclosingOfKind(
                                             getPath(lambdaPair.first), Kind.METHOD);
                     analyze(
                             queue,
@@ -1789,7 +1803,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         applyLocalVariableQualifierParameterDefaults(elt, type);
 
-        TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
         Set<AnnotationMirror> tops;
         if (enclosingClass != null) {
             tops = getQualifierParameterHierarchies(enclosingClass);
@@ -2120,7 +2134,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private static void log(String format, Object... args) {
         if (debug) {
-            UtilPlume.sleep(1); // logging can interleave with typechecker output
+            SystemPlume.sleep(1); // logging can interleave with typechecker output
             System.out.printf(format, args);
         }
     }
@@ -2217,5 +2231,239 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(
                 TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
         return defaultValue;
+    }
+
+    /**
+     * Return the contract annotations (that is, pre- and post-conditions) for the given AMethod.
+     * Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return contract annotations for the method
+     */
+    public List<AnnotationMirror> getContractAnnotations(AMethod m) {
+        List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
+        List<AnnotationMirror> postconds = getPostconditionAnnotations(m, preconds);
+        List<AnnotationMirror> result = preconds;
+        result.addAll(postconds);
+        return result;
+    }
+
+    /**
+     * Return the precondition annotations for the given AMethod. Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return precondition annotations for the method
+     */
+    public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
+        List<AnnotationMirror> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
+            WholeProgramInferenceScenes wholeProgramInference =
+                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            TypeMirror typeMirror = entry.getKey().asType();
+            AnnotatedTypeMirror inferredType =
+                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+            result.addAll(getPreconditionAnnotation(entry.getKey(), inferredType));
+        }
+        Collections.sort(result, Ordering.usingToString());
+        return result;
+    }
+
+    /**
+     * Return the postcondition annotations for the given AMethod. Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return postcondition annotations for the method
+     */
+    public List<AnnotationMirror> getPostconditionAnnotations(
+            AMethod m, List<AnnotationMirror> preconds) {
+        List<AnnotationMirror> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
+            WholeProgramInferenceScenes wholeProgramInference =
+                    (WholeProgramInferenceScenes) getWholeProgramInference();
+            TypeMirror typeMirror = entry.getKey().asType();
+            AnnotatedTypeMirror inferredType =
+                    wholeProgramInference.atmFromATypeElement(typeMirror, entry.getValue().type);
+            result.addAll(getPostconditionAnnotation(entry.getKey(), inferredType, preconds));
+        }
+        Collections.sort(result, Ordering.usingToString());
+        return result;
+    }
+
+    /**
+     * Return a list of precondition annotations for the given field. Returns an empty list if none
+     * can be created, because the qualifier has elements/arguments, which
+     * {@code @RequiresQualifier} does not support.
+     *
+     * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param elt element for a field, which is declared in the same class as the method
+     * @param fieldAnnos the field's precondition annotations
+     * @return precondition annotations for the element (possibly an empty list)
+     */
+    public List<AnnotationMirror> getPreconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos) {
+        return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.BEFORE, null);
+    }
+
+    /**
+     * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns an empty list if
+     * none can be created, because the qualifier has elements/arguments, which
+     * {@code @EnsuresQualifier} does not support.
+     *
+     * <p>This implementation makes no assumptions about preconditions suppressing postconditions,
+     * but subclasses may do so.
+     *
+     * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param elt element for a field
+     * @param fieldAnnos the field's postcondition annotations
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return postcondition annotations for the element (possibly an empty list)
+     */
+    public List<AnnotationMirror> getPostconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
+        return getPreOrPostconditionAnnotation(elt, fieldAnnos, BeforeOrAfter.AFTER, preconds);
+    }
+
+    /**
+     * Helper method for {@link #getPreconditionAnnotation} and {@link #getPostconditionAnnotation}.
+     *
+     * <p>Returns an {@code @EnsuresQualifier} or {@code @EnsuresQualifier} annotation for the given
+     * field. Returns an empty list if none can be created, because the qualifier has
+     * elements/arguments, which {@code @EnsuresQualifier} and {@code @RequiresQualifier} do not
+     * support.
+     *
+     * <p>This implementation makes no assumptions about preconditions suppressing postconditions,
+     * but subclasses may do so.
+     *
+     * @param elt element for a field
+     * @param fieldAnnos the field's precondition or postcondition annotations
+     * @param preOrPost whether to return preconditions or postconditions
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
+     * @return postcondition annotations for the element (possibly an empty list)
+     */
+    protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
+            VariableElement elt,
+            AnnotatedTypeMirror fieldAnnos,
+            Analysis.BeforeOrAfter preOrPost,
+            @Nullable List<AnnotationMirror> preconds) {
+        assert (preOrPost == BeforeOrAfter.BEFORE) == (preconds == null);
+
+        if (getWholeProgramInference() == null) {
+            return Collections.emptyList();
+        }
+
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        AnnotatedTypeMirror inferredType = fieldAnnos;
+
+        // TODO: should this only check the top-level annotations?
+        if (declaredType.equals(inferredType)) {
+            return Collections.emptyList();
+        }
+
+        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+        for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
+            AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+            if (declaredAm == null && declaredType.getKind() != TypeKind.TYPEVAR) {
+                // There is no explicitly-written annotation for the given qualifier hierarchy.
+                // Determine the default.
+                addComputedTypeAnnotations(elt, declaredType);
+                declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+                if (declaredAm == null) {
+                    throw new BugInCF(
+                            "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s  [%s %s]%n  inferredType=%s  [%s %s]%n",
+                            elt,
+                            fieldAnnos,
+                            declaredType.toString(true),
+                            declaredType.getKind(),
+                            declaredType.getClass(),
+                            inferredType.toString(true),
+                            inferredType.getKind(),
+                            inferredType.getClass());
+                }
+            }
+
+            if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
+                continue;
+            }
+            // inferredAm must be a subtype of declaredAm (since they are not equal).
+            AnnotationMirror anno = requiresOrEnsuresQualifierAnno(elt, inferredAm, preOrPost);
+            if (anno != null) {
+                result.add(anno);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
+     * the given field. Returns null if none can be created, because the qualifier has
+     * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
+     * support.
+     *
+     * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param fieldElement a field
+     * @param qualifier the qualifier that must be present
+     * @param preOrPost whether to return a precondition or postcondition annotation
+     * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
+     *     the given field, or null
+     */
+    protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnno(
+            VariableElement fieldElement,
+            AnnotationMirror qualifier,
+            Analysis.BeforeOrAfter preOrPost) {
+        if (!qualifier.getElementValues().isEmpty()) {
+            // @RequiresQualifier does not yet support annotations with elements/arguments.
+            return null;
+        }
+
+        AnnotationBuilder builder =
+                new AnnotationBuilder(
+                        processingEnv,
+                        preOrPost == BeforeOrAfter.BEFORE
+                                ? RequiresQualifier.class
+                                : EnsuresQualifier.class);
+
+        builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
+        builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
+        return builder.build();
+    }
+
+    /**
+     * Standardize a type qualifier annotation obtained from a contract.
+     *
+     * @param annoFromContract the annotation to be standardized
+     * @param flowExprContext the context to use for standardization
+     * @param path the path to a use of the contract (a method call) or to the method declaration
+     * @return the standardized annotation, or the argument if it does not need standardization
+     */
+    public AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            JavaExpressionContext flowExprContext,
+            TreePath path) {
+        DependentTypesHelper dependentTypesHelper = getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            AnnotationMirror standardized =
+                    dependentTypesHelper.standardizeAnnotationIfDependentType(
+                            flowExprContext, path, annoFromContract, false, false);
+            if (standardized != null) {
+                dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
+                return standardized;
+            }
+        }
+        return annoFromContract;
     }
 }

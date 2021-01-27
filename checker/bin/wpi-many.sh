@@ -121,7 +121,7 @@ export PATH="${JAVA_HOME}/bin:${PATH}"
 mkdir -p "${OUTDIR}"
 mkdir -p "${OUTDIR}-results"
 
-pushd "${OUTDIR}" || exit 5
+cd "${OUTDIR}" || exit 5
 
 while IFS='' read -r line || [ "$line" ]
 do
@@ -139,14 +139,25 @@ do
     # TODO: consider just using hash, to skip hard forks?
     mkdir -p "${REPO_NAME_HASH}"
 
-    pushd "${REPO_NAME_HASH}" || exit 5
+    cd "${REPO_NAME_HASH}" || exit 5
 
     if [ ! -d "${REPO_NAME}" ]; then
+        # see https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
+        # for the inspiration for this code
+        mkdir "${REPO_NAME}"
+        cd "${REPO_NAME}" || exit 5
+        git init
+        git remote add origin "${REPO}"
+
         # The "GIT_TERMINAL_PROMPT=0" setting prevents git from prompting for
         # username/password if the repository no longer exists.
-        GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
+        GIT_TERMINAL_PROMPT=0 git fetch origin "${HASH}"
+
+        git reset --hard FETCH_HEAD
+
+        cd .. || exit 5
         # Skip the rest of the loop and move on to the next project
-        # if cloning isn't successful.
+        # if the checkout isn't successful.
         if [ ! -d "${REPO_NAME}" ]; then
            continue
         fi
@@ -154,7 +165,7 @@ do
         rm -rf "${REPO_NAME}/dljc-out"
     fi
 
-    pushd "${REPO_NAME}" || exit 5
+    cd "${REPO_NAME}" || exit 5
 
     git checkout "${HASH}"
 
@@ -162,63 +173,92 @@ do
 
     if [ "${OWNER}" = "${GITHUB_USER}" ]; then
         ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
-        git remote add unannotated "${ORIGIN}"
+        # Piping to /dev/null is usually a bad idea.
+        # However, in this case it is intentional: the goal is to
+        # suppress error output, because there is no real harm done if
+        # the `unannotated` remote is not added - it's just a convenience
+        # for data analysis. But, running this script twice in a row on projects
+        # whose owner is the github user always causes an error on this line,
+        # because the `unannotated` remote is already set. The output is piped
+        # to /dev/null to suppress that error.
+        git remote add unannotated "${ORIGIN}" &> /dev/null
     fi
 
     REPO_FULLPATH=$(pwd)
 
-    popd || exit 5
+    cd "${OUTDIR}/${REPO_NAME_HASH}" || exit 5
 
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/tmp.log" || cat "${OUTDIR}-results/tmp.log"
+    /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+    rm -f "${OUTDIR}-results/wpi-out"
 
-    popd || exit 5
+    cd "${OUTDIR}" || exit 5
 
     # If the result is unusable (i.e. wpi cannot run),
     # we don't need it for data analysis and we can
     # delete it right away.
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
-        # rm -rf "${REPO_NAME_HASH}" &
-        echo "I love deleting things"
+        echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
+        rm -rf "${REPO_NAME_HASH}"
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
+        TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
+        if [ -f "$TYPECHECK_FILE" ]; then
+            cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+        else
+            echo "Could not find file $TYPECHECK_FILE"
+            ls -l "${REPO_FULLPATH}/dljc-out"
+            cat "${REPO_FULLPATH}"/dljc-out/*.log
+            echo "Start of toplevel.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
+            echo "End of toplevel.log."
+            echo "Start of wpi.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/wpi.log
+            echo "End of wpi.log."
+        fi
     fi
 
     cd "${OUTDIR}" || exit 5
 
 done <"${INLIST}"
 
-popd || exit 5
-
 ## This section is here rather than in wpi-summary.sh because counting lines can be moderately expensive.
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
-results_available=$(grep -Zvl "no build file found for" "${OUTDIR}-results/"*.log \
-    | xargs -0 grep -Zvl "dljc could not run the Checker Framework" \
-    | xargs -0 grep -Zvl "dljc could not run the build successfully" \
-    | xargs -0 grep -Zvl "dljc timed out for" \
-    | xargs -0 echo)
+results_available=$(grep -Zvl -e "no build file found for" \
+    -e "dljc could not run the Checker Framework" \
+    -e "dljc could not run the build successfully" \
+    -e "dljc timed out for" \
+    "${OUTDIR}-results/"*.log)
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
 
-if [ -n "${results_available}" ]; then
+if [ -z "${results_available}" ]; then
+  echo "No results are available."
+  echo "Log files:"
+  ls "${OUTDIR}-results"/*.log
+  echo "End of log files."
+else
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
-    grep -oh "\S*\.java" "${results_available}" | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
 
-    pushd "${SCRIPTDIR}/.do-like-javac" || exit 5
+    cd "${SCRIPTDIR}/.do-like-javac" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
-    popd || exit 5
 
     "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
         "$(< "${listpath}")"
 
     rm -f "${listpath}"
+  else
+    echo "skipping computation of lines of code because the operating system is not linux: ${OSTYPE}}"
+  fi
 fi
 
 export JAVA_HOME="${JAVA_HOME_BACKUP}"

@@ -15,6 +15,18 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.BinaryOperation;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
+import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -388,5 +400,131 @@ public class ValueCheckerUtils {
     public static int getMinLen(Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
         AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
+    }
+
+    /**
+     * Optimize the given JavaExpression, using Value Checker annotations. This implementation
+     * replaces any expression that the factory has an exact value for, and does a small (not
+     * exhaustive) amount of constant-folding as well.
+     *
+     * @param je the expression to optimize
+     * @param factory the Valueannotatedtypefactory
+     * @return an optimized version of the argument, or the argument if it cannot be optimized
+     */
+    // Could use a visitor instead, but this quick-and-dirty solution works.
+    @SuppressWarnings("interning:not.interned") // ==  indicates whether `optimize` had any effect
+    public static JavaExpression optimize(JavaExpression je, ValueAnnotatedTypeFactory factory) {
+
+        if (je instanceof ArrayAccess) {
+            ArrayAccess e = (ArrayAccess) je;
+            JavaExpression optReceiver = optimize(e.getReceiver(), factory);
+            JavaExpression optIndex = optimize(e.getIndex(), factory);
+            if (e.getReceiver() == optReceiver && e.getIndex() == optIndex) {
+                return e;
+            } else {
+                return new ArrayAccess(e.getType(), optReceiver, optIndex);
+            }
+
+        } else if (je instanceof ArrayCreation) {
+            ArrayCreation e = (ArrayCreation) je;
+            List<JavaExpression> optDimensions = optimize(e.getDimensions(), factory);
+            List<JavaExpression> optInializers = optimize(e.getInitializers(), factory);
+            if (e.getDimensions() == optDimensions && e.getInitializers() == optInializers) {
+                return e;
+            } else {
+                return new ArrayCreation(e.getType(), optDimensions, optInializers);
+            }
+
+        } else if (je instanceof BinaryOperation) {
+            BinaryOperation e = (BinaryOperation) je;
+            JavaExpression optLeft = optimize(e.getLeft(), factory);
+            JavaExpression optRight = optimize(e.getRight(), factory);
+            if (e.getLeft() == optLeft && e.getRight() == optRight) {
+                return e;
+            } else {
+                return new BinaryOperation(e.getType(), e.getOperationKind(), optLeft, optRight);
+            }
+
+        } else if (je instanceof ClassName) {
+            return je;
+
+        } else if (je instanceof FieldAccess) {
+            FieldAccess e = (FieldAccess) je;
+            JavaExpression optReceiver = optimize(e.getReceiver(), factory);
+            if (e.getReceiver() == optReceiver) {
+                return e;
+            } else {
+                return new FieldAccess(optReceiver, e.getType(), e.getField());
+            }
+
+        } else if (je instanceof LocalVariable) {
+            LocalVariable e = (LocalVariable) je;
+            Element element = e.getElement();
+            Long exactValue = ValueCheckerUtils.getExactValue(element, factory);
+            if (exactValue != null) {
+                return new ValueLiteral(e.getType(), exactValue.intValue());
+            } else {
+                return e;
+            }
+
+        } else if (je instanceof MethodCall) {
+            MethodCall e = (MethodCall) je;
+            JavaExpression optReceiver = optimize(e.getReceiver(), factory);
+            List<JavaExpression> optParameters = optimize(e.getParameters(), factory);
+            if (e.getReceiver() == optReceiver && e.getParameters() == optParameters) {
+                return e;
+            } else {
+                return new MethodCall(e.getType(), e.getElement(), optReceiver, optParameters);
+            }
+
+        } else if (je instanceof ThisReference) {
+            ThisReference e = (ThisReference) je;
+            return e;
+
+        } else if (je instanceof UnaryOperation) {
+            UnaryOperation e = (UnaryOperation) je;
+            JavaExpression optOperand = optimize(e.getOperand(), factory);
+            if (e.getOperand() == optOperand) {
+                return e;
+            } else {
+                return new UnaryOperation(e.getType(), e.getOperationKind(), optOperand);
+            }
+
+        } else if (je instanceof Unknown) {
+            Unknown e = (Unknown) je;
+            return e;
+
+        } else if (je instanceof ValueLiteral) {
+            ValueLiteral e = (ValueLiteral) je;
+            return e;
+
+        } else {
+            throw new BugInCF("Unhandled JavaExpression %s %s", je.getClass(), je);
+        }
+    }
+
+    /**
+     * Optimize the given list of JavaExpressions, using Value Checker annotations.
+     *
+     * @param list the expressions to optimize
+     * @param factory the Valueannotatedtypefactory
+     * @return an optimized version of the argument, or the argument if nothing in it can be
+     *     optimized
+     */
+    @SuppressWarnings("interning:not.interned") // ==  indicates whether `optimize` had any effect
+    private static List<JavaExpression> optimize(
+            List<JavaExpression> list, ValueAnnotatedTypeFactory factory) {
+        boolean changed = false;
+        List<JavaExpression> result = new ArrayList<>(list.size());
+        for (JavaExpression je : list) {
+            JavaExpression opt = optimize(je, factory);
+            changed = changed || (je != opt);
+            result.add(opt);
+        }
+        if (changed) {
+            return result;
+        } else {
+            return list;
+        }
     }
 }

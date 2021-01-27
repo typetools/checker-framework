@@ -21,7 +21,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ToStringComparator;
+import org.plumelib.util.ToStringComparator;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'

@@ -280,8 +280,9 @@ class SupertypeFinder {
                                 AnnotatedTypeMirror.createType(
                                         element.asType(), atypeFactory, false);
                         // TODO: After #979 is fixed, calculate the correct type using inference.
-                        atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);
-                        args.add(arg);
+                        args.add(
+                                atypeFactory.getUninferredWildcardType(
+                                        (AnnotatedTypeVariable) arg));
                     }
                     adt.setTypeArguments(args);
                 }

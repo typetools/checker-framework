@@ -1,7 +1,21 @@
 package org.checkerframework.common.value;
 
-import com.sun.source.tree.*;
-import java.util.*;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -428,6 +442,18 @@ class ValueTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
             AnnotationMirror resultAnno =
                     atypeFactory.createArrayLengthResultAnnotation(receiverType);
+            if (resultAnno != null) {
+                type.replaceAnnotation(resultAnno);
+            }
+            return null;
+        }
+
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isArrayGetLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
+            List<? extends ExpressionTree> args = tree.getArguments();
+            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(args.get(0));
+            AnnotationMirror resultAnno = atypeFactory.createArrayLengthResultAnnotation(argType);
             if (resultAnno != null) {
                 type.replaceAnnotation(resultAnno);
             }

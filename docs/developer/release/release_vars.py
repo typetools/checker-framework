@@ -29,7 +29,7 @@ def getAndAppend(name, append):
     its value and returns the new value. The environment variable is not
     modified. Returns an empty string if the environment variable does not
     exist."""
-    if os.environ.has_key(name):
+    if name in os.environ:
         return os.environ[name] + append
 
     else:
@@ -41,9 +41,9 @@ If capture_output is true, then return the output (and ignore the halt_if_fail a
 If capture_output is not true, return the return code of the subprocess call."""
 
   if working_dir != None:
-    print "Executing in %s: %s" % (working_dir, command_args)
+    print("Executing in %s: %s" % (working_dir, command_args))
   else:
-    print "Executing: %s" % (command_args)
+    print("Executing: %s" % (command_args))
   args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
   if capture_output:
@@ -135,6 +135,9 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_CHECKER_REPO, INTERM_CHECKER_REPO),
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO)
 )
+
+AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
+AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
 
 CHECKER_LIVE_SITE = FILE_PATH_TO_LIVE_SITE
 CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, "releases")

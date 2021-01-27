@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Target;
@@ -36,7 +35,7 @@ import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.io.IndexFileParser;
 
 /**
@@ -217,13 +216,16 @@ public class WholeProgramInferenceScenesStorage {
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
      * @param defLoc the location where the annotation will be added
+     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
+     *     source code
      */
     protected void updateAnnotationSetInScene(
             ATypeElement type,
             TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
-            String jaifPath) {
+            String jaifPath,
+            boolean ignoreIfAnnotated) {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
@@ -241,7 +243,7 @@ public class WholeProgramInferenceScenesStorage {
                 return;
             }
         }
-        updateTypeElementFromATM(type, 1, defLoc, rhsATM, lhsATM);
+        updateTypeElementFromATM(type, 1, defLoc, rhsATM, lhsATM, ignoreIfAnnotated);
         modifiedScenes.add(jaifPath);
     }
 
@@ -414,7 +416,7 @@ public class WholeProgramInferenceScenesStorage {
      * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
      *     {@code type}
      */
-    private AnnotatedTypeMirror atmFromATypeElement(TypeMirror typeMirror, ATypeElement type) {
+    public AnnotatedTypeMirror atmFromATypeElement(TypeMirror typeMirror, ATypeElement type) {
         AnnotatedTypeMirror result =
                 AnnotatedTypeMirror.createType(typeMirror, atypeFactory, false);
         updateAtmFromATypeElement(result, type);
@@ -468,13 +470,16 @@ public class WholeProgramInferenceScenesStorage {
      * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement
      * @param curATM used to check if the element which will be updated has explicit annotations in
      *     source code
+     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
+     *     source code
      */
     private void updateTypeElementFromATM(
             ATypeElement typeToUpdate,
             int idx,
             TypeUseLocation defLoc,
             AnnotatedTypeMirror newATM,
-            AnnotatedTypeMirror curATM) {
+            AnnotatedTypeMirror curATM,
+            boolean ignoreIfAnnotated) {
         // Clears only the annotations that are supported by the relevant AnnotatedTypeFactory.
         // The others stay intact.
         if (idx == 1) {
@@ -488,8 +493,8 @@ public class WholeProgramInferenceScenesStorage {
             typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
         }
 
-        // Only update the ATypeElement if there are no explicit annotations
-        if (curATM.getExplicitAnnotations().isEmpty()) {
+        // Only update the ATypeElement if there are no explicit annotations.
+        if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
                         newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
@@ -516,13 +521,13 @@ public class WholeProgramInferenceScenesStorage {
             AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
             updateTypeElementFromATM(
                     typeToUpdate.innerTypes.getVivify(
-                            new InnerTypeLocation(
-                                    TypeAnnotationPosition.getTypePathFromBinary(
-                                            Collections.nCopies(2 * idx, 0)))),
+                            TypePathEntry.getTypePathEntryListFromBinary(
+                                    Collections.nCopies(2 * idx, 0))),
                     idx + 1,
                     defLoc,
                     newAAT.getComponentType(),
-                    oldAAT.getComponentType());
+                    oldAAT.getComponentType(),
+                    ignoreIfAnnotated);
         }
     }
 

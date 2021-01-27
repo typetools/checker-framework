@@ -385,7 +385,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         public String visitNull(AnnotatedNullType type, Set<AnnotatedTypeMirror> visiting) {
             return annoFormatter.formatAnnotationString(
                             type.getAnnotations(), currentPrintInvisibleSetting)
-                    + "null";
+                    + "NullType";
         }
 
         @Override

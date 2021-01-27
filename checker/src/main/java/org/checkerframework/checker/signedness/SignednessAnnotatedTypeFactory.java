@@ -42,6 +42,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -508,7 +509,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *     same effect
      */
     /*package-private*/ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
-        Pair<Tree, Tree> enclosingPair = TreeUtils.enclosingNonParen(path);
+        Pair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
         // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
         Tree enclosing = enclosingPair.first;
         // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
@@ -557,7 +558,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     /*package-private*/ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
         // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
-        Tree enclosing = TreeUtils.enclosingNonParen(path).first;
+        Tree enclosing = TreePathUtil.enclosingNonParen(path).first;
 
         PrimitiveTypeTree castPrimitiveType = primitiveTypeCast(enclosing);
         if (castPrimitiveType == null) {

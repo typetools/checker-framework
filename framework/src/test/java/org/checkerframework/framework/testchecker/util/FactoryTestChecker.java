@@ -273,7 +273,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
                     if (!actualType.equals(expectedType)) {
 
                         // The key is added above using a setProperty call, which is not supported
-                        // by the CompilerMessageChecker
+                        // by the CompilerMessagesChecker.
                         @SuppressWarnings("compilermessages")
                         @CompilerMessageKey String key = "type.unexpected";
                         FactoryTestChecker.this.reportError(

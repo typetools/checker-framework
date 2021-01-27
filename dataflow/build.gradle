@@ -1,36 +1,19 @@
 dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
-    implementation 'org.plumelib:plume-util:1.2.0'
+    implementation 'org.plumelib:plume-util:1.4.1'
 }
 
 shadowJar {
     archiveFileName = "dataflow-shaded.jar"
+    // Without this line, the Maven artifact will have the classifier "all".
+    archiveClassifier = ''
     relocate 'org.checkerframework.dataflow', 'org.checkerframework.shaded.dataflow'
     relocate 'org.checkerframework.javacutil', 'org.checkerframework.shaded.javacutil'
 }
 
 artifacts {
     archives shadowJar
-}
-
-task deployArtifactsToLocalRepo(dependsOn: jar) {
-    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
-    dependsOn ('jar', 'shadowJar')
-
-    doLast {
-        mvnDeployToLocalRepo(project, "${pomFiles}/dataflow-pom.xml")
-        mvnDeployToLocalRepo(shadowJar.archiveFile.get().toString(), "${pomFiles}/dataflow-shaded-pom.xml")
-    }
-}
-
-task deployArtifactsToSonatype {
-    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
-    dependsOn ('jar', 'sourcesJar', 'javadocJar', 'shadowJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/dataflow-pom.xml")
-        mvnSignAndDeployMultipleToSonatype(shadowJar.archiveFile.get().toString(), sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${pomFiles}/dataflow-shaded-pom.xml")
-    }
 }
 
 task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
@@ -78,4 +61,68 @@ task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
             main = 'livevar.LiveVariable'
         }
     }
+}
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
+final dataflowPom(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
+    publication.pom {
+        name = 'Dataflow'
+        description = 'Dataflow is a dataflow framework based on the javac compiler.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+/** Adds information to the publication for uploading the dataflow-shaded artifacts to Maven repositories. */
+final dataflowShadedPom(publication) {
+    sharedPublicationConfiguration(publication)
+
+    publication.artifactId = 'dataflow-shaded'
+    publication.pom {
+        name = 'Dataflow (shaded)'
+        description = 'dataflow-shaded is a dataflow framework based on the javac compiler.\n' +
+                '\n' +
+                'It differs from the dataflow artifact in two ways.\n' +
+                'First, The packages in this artifact have been renamed to org.checkerframework.shaded.*.\n' +
+                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.\n' +
+                '\n' +
+                'Please see artifact: org.checkerframework:dataflow'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+
+publishing {
+    publications {
+        dataflow(MavenPublication) {
+            dataflowPom it
+        }
+
+        dataflowShaded(MavenPublication) {
+            dataflowShadedPom it
+            artifact shadowJar
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+signing {
+    sign publishing.publications.dataflow
+    sign publishing.publications.dataflowShaded
 }

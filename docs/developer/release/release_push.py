@@ -85,7 +85,9 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     Central. This is a reversible step, since artifacts that have not been
     released can be dropped, which for our purposes is equivalent to never
     having staged them."""
-    execute("./gradlew deployArtifactsToSonatype --no-parallel", working_dir=CHECKER_FRAMEWORK)
+    gnupgPassphrase = read_first_line("/projects/swlab1/checker-framework/hosting-info/release-private.password")
+    # When bufalo uses gpg2 version 2.2+, then remove signing.gnupg.useLegacyGpg=true
+    execute('./gradlew publish --no-parallel -Psigning.gnupg.useLegacyGpg=true -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
 
 def is_file_empty(filename):
     "Returns true if the given file has size 0."
@@ -105,10 +107,10 @@ def run_link_checker(site, output, additional_param=""):
 
     out_file = open(output, 'w+')
 
-    print("Executing: "
-          + ' '.join("%s=%r" % (key2, val2) for (key2, val2) in env.items())
+    print(("Executing: "
+          + ' '.join("%s=%r" % (key2, val2) for (key2, val2) in list(env.items()))
           + " "
-          + " ".join(cmd))
+          + " ".join(cmd)))
     process = subprocess.Popen(cmd, env=env, stdout=out_file, stderr=out_file)
     process.communicate()
     process.wait()
@@ -139,21 +141,21 @@ def check_all_links(afu_website, checker_website, suffix, test_mode, checker_ver
 
     errors_reported = not (is_afuCheck_empty and is_checkerCheck_empty)
     if errors_reported:
-        print  "Link checker results can be found at:\n"
+        print("Link checker results can be found at:\n")
     if not is_afuCheck_empty:
-        print  "\t" + afuCheck     + "\n"
+        print("\t" + afuCheck     + "\n")
     if not is_checkerCheck_empty:
-        print  "\t" + checkerCheck + "\n"
+        print("\t" + checkerCheck + "\n")
     if errors_reported:
         release_option = ""
         if not test_mode:
             release_option = " release"
         raise Exception("The link checker reported errors.  Please fix them by committing changes to the mainline\n" +
-                        "repository and pushing them to GitHub/Bitbucket, running \"python3 release_build.py all\" again\n" +
-                        "(in order to update the development site), and running \"python3 release_push" + release_option + "\" again.")
+                        "repository and pushing them to GitHub, running \"python release_build.py all\" again\n" +
+                        "(in order to update the development site), and running \"python release_push" + release_option + "\" again.")
 
 def push_interm_to_release_repos():
-    """Push the release to the GitHub/Bitbucket repositories for
+    """Push the release to the GitHub repositories for
     the AFU and the Checker Framework. This is an
     irreversible step."""
     push_changes_prompt_if_fail(INTERM_ANNO_REPO)
@@ -166,35 +168,32 @@ def validate_args(argv):
         print_usage()
         raise Exception("Invalid arguments. " + ",".join(argv))
     for i in range(1, len(argv)):
-        if argv[i] != "release" and argv[i] != "--auto":
+        if argv[i] != "release":
             print_usage()
             raise Exception("Invalid arguments. " + ",".join(argv))
 
 def print_usage():
     """Print instructions on how to use this script, and in particular how to
     set test or release mode."""
-    print ("Usage: python3 release_build.py [release] [--auto]\n" +
+    print(("Usage: python3 release_build.py [release]\n" +
            "If the \"release\" argument is " +
            "NOT specified then the script will execute all steps that checking and prompting " +
-           "steps but will NOT actually perform a release.  This is for testing the script.")
+           "steps but will NOT actually perform a release.  This is for testing the script."))
 
 def main(argv):
     """The release_push script is mainly responsible for copying the artifacts
     (for the AFU and the Checker Framework) from the
     development web site to Maven Central and to
     the live site. It also performs link checking on the live site, pushes
-    the release to GitHub/Bitbucket repositories, and guides the user to
+    the release to GitHub repositories, and guides the user to
     perform manual steps such as sending the
     release announcement e-mail."""
     # MANUAL Indicates a manual step
-    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most
-    # of these steps become fully automated when --auto is used.
     # AUTO Indicates the step is fully automated.
 
     set_umask()
 
     validate_args(argv)
-    auto = read_command_line_option(argv, "--auto")
     test_mode = not read_command_line_option(argv, "release")
 
     m2_settings = expanduser("~") + "/.m2/settings.xml"
@@ -213,9 +212,9 @@ def main(argv):
 
     continue_or_exit(msg + "\n")
     if test_mode:
-        print "Continuing in test mode."
+        print("Continuing in test mode.")
     else:
-        print "Continuing in release mode."
+        print("Continuing in release mode.")
 
     if not os.path.exists(RELEASE_BUILD_COMPLETED_FLAG_FILE):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
@@ -241,8 +240,8 @@ def main(argv):
     new_afu_version = get_afu_version_from_html(dev_afu_website_file)
     check_release_version(current_afu_version, new_afu_version)
 
-    print "Checker Framework:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version)
-    print "AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version)
+    print("Checker Framework:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version))
+    print("AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version))
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/dev/
@@ -256,21 +255,21 @@ def main(argv):
 
     print_step("Push Step 2: Check links on development site") # SEMIAUTO
 
-    if auto or prompt_yes_no("Run link checker on DEV site?", True):
+    if prompt_yes_no("Run link checker on DEV site?", True):
         check_all_links(dev_afu_website, dev_checker_website, "dev", test_mode, new_checker_version)
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
 
     print_step("Push Step 3: Run development sanity tests") # SEMIAUTO
-    if auto or prompt_yes_no("Perform this step?", True):
+    if prompt_yes_no("Perform this step?", True):
 
         print_step("3a: Run javac sanity test on development release.")
-        if auto or prompt_yes_no("Run javac sanity test on development release?", True):
+        if prompt_yes_no("Run javac sanity test on development release?", True):
             javac_sanity_check(dev_checker_website, new_checker_version)
 
         print_step("3b: Run Maven sanity test on development release.")
-        if auto or prompt_yes_no("Run Maven sanity test on development repo?", True):
+        if prompt_yes_no("Run Maven sanity test on development repo?", True):
             maven_sanity_check("maven-dev", "", new_checker_version)
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
@@ -282,7 +281,7 @@ def main(argv):
 
     # This step deploys the artifacts to the Central repository and prompts the user to close the
     # artifacts. Later, you will be prompted to release the staged artifacts after we push the
-    # release to our GitHub/Bitbucket repositories.
+    # release to our GitHub repositories.
 
     # For more information on deploying to the Central Repository see:
     # https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
@@ -290,7 +289,7 @@ def main(argv):
     print_step("Push Step 4: Stage Maven artifacts in Central") # SEMIAUTO
 
     print_step("4a: Stage the artifacts at Maven central.")
-    if (auto and not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
+    if (not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
         stage_maven_artifacts_in_maven_central(new_checker_version)
 
         print_step("4b: Close staged artifacts at Maven central.")
@@ -310,8 +309,8 @@ def main(argv):
 
 
         print_step("4c: Run Maven sanity test on Maven central artifacts.")
-        if auto or prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
-            repo_url = raw_input("Please enter the repo URL of the closed artifacts:\n")
+        if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
+            repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
             maven_sanity_check("maven-staging", repo_url, new_checker_version)
 
@@ -322,21 +321,21 @@ def main(argv):
 
     print_step("Push Step 5. Copy dev current release website to live website") # SEMIAUTO
     if not test_mode:
-        if auto or prompt_yes_no("Copy release to the live website?"):
-            print "Copying to live site"
+        if prompt_yes_no("Copy release to the live website?"):
+            print("Copying to live site")
             copy_releases_to_live_site(new_checker_version, new_afu_version)
             copy_htaccess()
             ensure_group_access_to_releases()
             ### update_release_symlinks(new_checker_version, new_afu_version)
     else:
-        print  "Test mode: Skipping copy to live site!"
+        print("Test mode: Skipping copy to live site!")
 
     # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
     if not test_mode:
-        if auto or prompt_yes_no("Run javac sanity test on live release?", True):
+        if prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
             SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
@@ -344,7 +343,7 @@ def main(argv):
             sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
             execute("sh " + sanity_test_script + " " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
     else:
-        print  "Test mode: Skipping javac sanity tests on the live release."
+        print("Test mode: Skipping javac sanity tests on the live release.")
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/
@@ -359,23 +358,23 @@ def main(argv):
 
     print_step("Push Step 7. Check live site links") # SEMIAUTO
     if not test_mode:
-        if auto or prompt_yes_no("Run link checker on LIVE site?", True):
+        if prompt_yes_no("Run link checker on LIVE site?", True):
             check_all_links(live_afu_website, live_checker_website, "live", test_mode)
     else:
-        print  "Test mode: Skipping checking of live site links."
+        print("Test mode: Skipping checking of live site links.")
 
-    # This step pushes the changes committed to the interm repositories to the GitHub/Bitbucket
+    # This step pushes the changes committed to the interm repositories to the GitHub
     # repositories. This is the first irreversible change. After this point, you can no longer
     # backout changes and should do another release in case of critical errors.
 
     print_step("Push Step 8. Push changes to repositories") # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
-        if prompt_yes_no("Push the release to GitHub/Bitbucket repositories?  This is irreversible.", True):
+        if prompt_yes_no("Push the release to GitHub repositories?  This is irreversible.", True):
             push_interm_to_release_repos()
-            print  "Pushed to repos"
+            print("Pushed to repos")
     else:
-        print  "Test mode: Skipping push to GitHub/Bitbucket!"
+        print("Test mode: Skipping push to GitHub!")
 
     # This is a manual step that releases the staged Maven artifacts to the actual Central repository.
     # This is also an irreversible step. Once you have released these artifacts they will be forever
@@ -396,11 +395,11 @@ def main(argv):
                "leave the \"Automatically drop\" box checked. For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
-    print  msg
+    print(msg)
     prompt_to_continue()
 
     if test_mode:
-        print "Test complete"
+        print("Test complete")
     else:
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
@@ -429,7 +428,7 @@ def main(argv):
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 
-        print  msg
+        print(msg)
 
         print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
@@ -444,7 +443,7 @@ def main(argv):
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    print "Done with release_push.py"
+    print("Done with release_push.py")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

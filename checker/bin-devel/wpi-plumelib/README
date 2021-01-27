@@ -1,0 +1,31 @@
+This directory contains the expected result of type-checking projects from
+https://github.com/plume-lib/, after whole-program inference.
+The script `test-wpi-plumelib.sh` runs the tests.
+
+If the tests fail, you may need to fix a problem with whole-program
+inference, or you might need to edit the `*.expected` files in this
+directory.  Those files are just like the `typecheck.out` file created by
+running wpi.sh, with two permitted additions:
+ * comments (a line starting with "#") to explain type-checking errors
+ * blank lines to improve readability
+
+The script `test-wpi-plumelib.sh` complements the Gradle `wpiManyTests`
+task.  Here are differences:
+ * different projects use a different list of type-checkers.
+   (wpi-many.sh uses a fixed set of type-checkers for all projects)
+ * this uses the HEAD commit
+   (wpi-many.sh uses a fixed commit)
+ * this checks for expected type-checking errors
+   (the Gradle wpiManyTests target requires that there are no errors, so it
+   skips type systems for which inference does not currently work)
+
+The use of the HEAD commit makes these tests brittle.  They might fail if:
+ * The Checker Framework is changed in a way that makes whole-program
+   inference fail to infer all needed annotations.
+ * A plume-lib project is changed in a way that exposes a limitation of
+   whole-program inference.
+
+A test failure always indicates a limitation of whole-program inference, or
+the removal of a limitation.  It is unfortunate that commits to a different
+repository can make the Checker Framework tests fail, but that is the price
+of staying at the head commit.

@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -59,10 +59,10 @@ public class ElementAnnotationUtil {
             throw new BugInCF(
                     "Number of types and elements don't match. "
                             + "types ( "
-                            + UtilPlume.join(", ", types)
+                            + StringsPlume.join(", ", types)
                             + " ) "
                             + "element ( "
-                            + UtilPlume.join(", ", elements)
+                            + StringsPlume.join(", ", elements)
                             + " ) ");
         }
 
@@ -288,7 +288,7 @@ public class ElementAnnotationUtil {
     static void annotateViaTypeAnnoPosition(
             final AnnotatedTypeMirror type, final Collection<TypeCompound> annos)
             throws UnexpectedAnnotationLocationException {
-        final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
+        final IdentityHashMap<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
             AnnotatedTypeMirror target =
@@ -443,7 +443,7 @@ public class ElementAnnotationUtil {
             TypeCompound anno,
             boolean isComponentTypeOfArray)
             throws UnexpectedAnnotationLocationException {
-        // List order by outer most type to inner most type.
+        // List order by outermost type to innermost type.
         ArrayDeque<AnnotatedDeclaredType> outerToInner = new ArrayDeque<>();
         AnnotatedDeclaredType enclosing = type;
         while (enclosing != null) {
@@ -548,7 +548,7 @@ public class ElementAnnotationUtil {
 
     /**
      * When we have an (e.g. @Odd int @NonNull []) the type-annotation position of the array
-     * annotation (@NonNull) is really the outer most type in the TypeAnnotationPosition and will
+     * annotation (@NonNull) is really the outermost type in the TypeAnnotationPosition and it will
      * NOT have TypePathEntryKind.ARRAY at the end of its position. The position of the component
      * type (@Odd) is considered deeper in the type and therefore has the TypePathEntryKind.ARRAY in
      * its position.

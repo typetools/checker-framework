@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -35,12 +36,14 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 // The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
@@ -89,8 +92,8 @@ public abstract class JavaExpression {
     /**
      * Returns true if and only if the value this expression stands for cannot be changed (with
      * respect to ==) by a method call. This is the case for local variables, the self reference,
-     * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and binary
-     * operations whose left and right operands are both {@link #isUnmodifiableByOtherCode}.
+     * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and operations
+     * whose operands are all {@link #isUnmodifiableByOtherCode}.
      *
      * @see #isUnmodifiableByOtherCode
      */
@@ -243,6 +246,10 @@ public abstract class JavaExpression {
         } else if (receiverNode instanceof NarrowingConversionNode) {
             // ignore narrowing
             return fromNode(provider, ((NarrowingConversionNode) receiverNode).getOperand());
+        } else if (receiverNode instanceof UnaryOperationNode) {
+            UnaryOperationNode uopn = (UnaryOperationNode) receiverNode;
+            return new UnaryOperation(
+                    uopn, fromNode(provider, uopn.getOperand(), allowNonDeterministic));
         } else if (receiverNode instanceof BinaryOperationNode) {
             BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
             return new BinaryOperation(
@@ -257,7 +264,7 @@ public abstract class JavaExpression {
             result = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            List<JavaExpression> dimensions = new ArrayList<>();
+            List<@Nullable JavaExpression> dimensions = new ArrayList<>();
             for (Node dimension : an.getDimensions()) {
                 dimensions.add(fromNode(provider, dimension, allowNonDeterministic));
             }
@@ -297,22 +304,27 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Returns the internal representation of any {@link ExpressionTree}. Might contain {@link
-     * Unknown}.
+     * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
+     * {@link Unknown}.
      *
-     * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
-     *     Unknown}.
+     * @param provider the annotation provider (for example, an {@code AnnotatedTypeFactory})
+     * @param tree a javac tree
+     * @return a JavaExpression for the given javac tree
      */
-    public static JavaExpression fromTree(
-            AnnotationProvider provider, ExpressionTree receiverTree) {
-        return fromTree(provider, receiverTree, true);
+    public static JavaExpression fromTree(AnnotationProvider provider, ExpressionTree tree) {
+        return fromTree(provider, tree, true);
     }
     /**
-     * We ignore operations such as widening and narrowing when computing the internal
-     * representation.
+     * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
+     * {@link Unknown}.
      *
-     * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
-     *     Unknown}.
+     * <p>We ignore operations such as widening and narrowing when computing the JavaExpression.
+     *
+     * @param provider the annotation provider (for example, an {@code AnnotatedTypeFactory})
+     * @param tree a javac tree
+     * @param allowNonDeterministic if false, convert nondeterministic method calls to {@link
+     *     org.checkerframework.dataflow.expression.Unknown}
+     * @return a JavaExpression for the given javac tree
      */
     public static JavaExpression fromTree(
             AnnotationProvider provider, ExpressionTree tree, boolean allowNonDeterministic) {
@@ -324,6 +336,7 @@ public abstract class JavaExpression {
                 JavaExpression index = fromTree(provider, a.getIndex());
                 result = new ArrayAccess(TreeUtils.typeOf(a), arrayAccessExpression, index);
                 break;
+
             case BOOLEAN_LITERAL:
             case CHAR_LITERAL:
             case DOUBLE_LITERAL:
@@ -335,9 +348,10 @@ public abstract class JavaExpression {
                 LiteralTree vn = (LiteralTree) tree;
                 result = new ValueLiteral(TreeUtils.typeOf(tree), vn.getValue());
                 break;
+
             case NEW_ARRAY:
                 NewArrayTree newArrayTree = (NewArrayTree) tree;
-                List<JavaExpression> dimensions = new ArrayList<>();
+                List<@Nullable JavaExpression> dimensions = new ArrayList<>();
                 if (newArrayTree.getDimensions() != null) {
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
                         dimensions.add(fromTree(provider, dimension, allowNonDeterministic));
@@ -352,6 +366,7 @@ public abstract class JavaExpression {
 
                 result = new ArrayCreation(TreeUtils.typeOf(tree), dimensions, initializers);
                 break;
+
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) tree;
                 assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
@@ -367,15 +382,17 @@ public abstract class JavaExpression {
                     } else {
                         methodReceiver = getReceiver(mn, provider);
                     }
-                    TypeMirror type = TreeUtils.typeOf(mn);
-                    result = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                    TypeMirror resultType = TreeUtils.typeOf(mn);
+                    result = new MethodCall(resultType, invokedMethod, methodReceiver, parameters);
                 } else {
                     result = null;
                 }
                 break;
+
             case MEMBER_SELECT:
                 result = fromMemberSelect(provider, (MemberSelectTree) tree);
                 break;
+
             case IDENTIFIER:
                 IdentifierTree identifierTree = (IdentifierTree) tree;
                 TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
@@ -403,11 +420,12 @@ public abstract class JavaExpression {
                         JavaExpression fieldAccessExpression;
                         @SuppressWarnings(
                                 "nullness:dereference.of.nullable") // a field has enclosing class
-                        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+                        TypeMirror enclosingTypeElement =
+                                ElementUtils.enclosingTypeElement(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
-                            fieldAccessExpression = new ClassName(enclosingType);
+                            fieldAccessExpression = new ClassName(enclosingTypeElement);
                         } else {
-                            fieldAccessExpression = new ThisReference(enclosingType);
+                            fieldAccessExpression = new ThisReference(enclosingTypeElement);
                         }
                         result =
                                 new FieldAccess(
@@ -417,9 +435,49 @@ public abstract class JavaExpression {
                         result = null;
                 }
                 break;
+
             case UNARY_PLUS:
                 return fromTree(
                         provider, ((UnaryTree) tree).getExpression(), allowNonDeterministic);
+            case BITWISE_COMPLEMENT:
+            case LOGICAL_COMPLEMENT:
+            case POSTFIX_DECREMENT:
+            case POSTFIX_INCREMENT:
+            case PREFIX_DECREMENT:
+            case PREFIX_INCREMENT:
+            case UNARY_MINUS:
+                JavaExpression operand =
+                        fromTree(
+                                provider,
+                                ((UnaryTree) tree).getExpression(),
+                                allowNonDeterministic);
+                return new UnaryOperation(TreeUtils.typeOf(tree), tree.getKind(), operand);
+
+            case CONDITIONAL_AND:
+            case CONDITIONAL_OR:
+            case DIVIDE:
+            case EQUAL_TO:
+            case GREATER_THAN:
+            case GREATER_THAN_EQUAL:
+            case LEFT_SHIFT:
+            case LESS_THAN:
+            case LESS_THAN_EQUAL:
+            case MINUS:
+            case MULTIPLY:
+            case NOT_EQUAL_TO:
+            case OR:
+            case PLUS:
+            case REMAINDER:
+            case RIGHT_SHIFT:
+            case UNSIGNED_RIGHT_SHIFT:
+            case XOR:
+                BinaryTree binaryTree = (BinaryTree) tree;
+                JavaExpression left =
+                        fromTree(provider, binaryTree.getLeftOperand(), allowNonDeterministic);
+                JavaExpression right =
+                        fromTree(provider, binaryTree.getRightOperand(), allowNonDeterministic);
+                return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
+
             default:
                 result = null;
         }
@@ -467,7 +525,7 @@ public abstract class JavaExpression {
      */
     public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {
-        MethodTree methodTree = TreeUtils.enclosingMethod(path);
+        MethodTree methodTree = TreePathUtil.enclosingMethod(path);
         if (methodTree == null) {
             return null;
         }
@@ -511,12 +569,12 @@ public abstract class JavaExpression {
      * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
      * or not. The passed element must be a field, method, or class.
      *
-     * @param ele field, method, or class
+     * @param ele a field, method, or class
      * @return either a new ClassName or a new ThisReference depending on whether ele is static or
      *     not
      */
     public static JavaExpression getImplicitReceiver(Element ele) {
-        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(ele);
         if (enclosingClass == null) {
             throw new BugInCF("getImplicitReceiver's arg has no enclosing class: " + ele);
         }
@@ -540,7 +598,7 @@ public abstract class JavaExpression {
      *     enclosingType
      */
     public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
-        if (TreeUtils.isTreeInStaticScope(path)) {
+        if (TreePathUtil.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
             return new ThisReference(enclosingType);
