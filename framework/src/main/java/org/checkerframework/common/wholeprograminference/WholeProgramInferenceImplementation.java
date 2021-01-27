@@ -187,8 +187,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            T paramType = storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
-            updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
+            T paramAnnotations =
+                    storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
+            updateAnnotationSet(
+                    paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
     }
 
@@ -285,8 +287,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            T paramType = storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
-            updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
+            T paramAnnotations =
+                    storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
+            updateAnnotationSet(
+                    paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
@@ -325,10 +329,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(argATM);
         int i = methodElt.getParameters().indexOf(paramElt);
         assert i != -1;
-        T paramType =
+        T paramAnnotations =
                 storage.getParameterAnnotations(methodElt, i, paramATM, paramElt, atypeFactory);
         String file = storage.getFileForElement(methodElt);
-        updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
+        updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
 
     @Override
@@ -372,9 +376,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         String file = storage.getFileForElement(element);
 
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
-        T fieldType = storage.getFieldAnnotations(element, fieldName, lhsATM, atypeFactory);
+        T fieldAnnotations = storage.getFieldAnnotations(element, fieldName, lhsATM, atypeFactory);
 
-        updateAnnotationSet(fieldType, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
+        updateAnnotationSet(fieldAnnotations, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
     }
 
     /**
@@ -479,12 +483,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
             String superClassFile = storage.getFileForElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
-            T storedOverriddenMethodReturnType =
+            T storedOverriddenMethodReturnTypeAnnotations =
                     storage.getReturnAnnotations(
                             overriddenMethodElement, overriddenMethodReturnType, atypeFactory);
 
             updateAnnotationSet(
-                    storedOverriddenMethodReturnType,
+                    storedOverriddenMethodReturnTypeAnnotations,
                     TypeUseLocation.RETURN,
                     rhsATM,
                     overriddenMethodReturnType,
@@ -519,7 +523,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *
      * <p>Subclasses can customize this behavior.
      *
-     * @param typeToUpdate the type whose annotations are modified by this method
+     * @param annotationsToUpdate the type whose annotations are modified by this method
      * @param defLoc the location where the annotation will be added
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
@@ -527,12 +531,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *     as modified (needing to be written to disk)
      */
     protected void updateAnnotationSet(
-            T typeToUpdate,
+            T annotationsToUpdate,
             TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
             String file) {
-        updateAnnotationSet(typeToUpdate, defLoc, rhsATM, lhsATM, file, true);
+        updateAnnotationSet(annotationsToUpdate, defLoc, rhsATM, lhsATM, file, true);
     }
 
     /**
@@ -547,7 +551,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *
      * <p>Subclasses can customize this behavior.
      *
-     * @param typeToUpdate the type whose annotations are modified by this method
+     * @param annotationsToUpdate the type whose annotations are modified by this method
      * @param defLoc the location where the annotation will be added
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
@@ -557,7 +561,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *     source code
      */
     protected void updateAnnotationSet(
-            T typeToUpdate,
+            T annotationsToUpdate,
             TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
@@ -567,7 +571,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             return;
         }
         AnnotatedTypeMirror atmFromStorage =
-                storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), typeToUpdate);
+                storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
         updateAtmWithLub(rhsATM, atmFromStorage);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
@@ -582,7 +586,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             }
         }
         storage.updateStorageLocationFromAtm(
-                rhsATM, lhsATM, typeToUpdate, defLoc, ignoreIfAnnotated);
+                rhsATM, lhsATM, annotationsToUpdate, defLoc, ignoreIfAnnotated);
         storage.setFileModified(file);
     }
 
