@@ -90,17 +90,18 @@ public class ElementUtils {
 
     /**
      * Returns the innermost type element enclosing the given element different from the element.
+     * See {@link #enclosingTypeElement}.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
      */
-    public static @Nullable TypeElement strictEnclosingClass(final Element elem) {
+    public static @Nullable TypeElement strictEnclosingTypeElement(final Element elem) {
         Element enclosingElement = elem.getEnclosingElement();
         if (enclosingElement == null) {
             return null;
         }
 
-        return enclosingClass(enclosingElement);
+        return enclosingTypeElement(enclosingElement);
     }
 
     /**
@@ -120,7 +121,11 @@ public class ElementUtils {
      * @return the binary name of the class enclosing {@code variableElement}
      */
     public static @BinaryName String getEnclosingClassName(VariableElement variableElement) {
-        return getBinaryName(enclosingClass(variableElement));
+        TypeElement enclosingType = enclosingTypeElement(variableElement);
+        if (enclosingType == null) {
+            throw new BugInCF("enclosingTypeElement(%s) is null", variableElement);
+        }
+        return getBinaryName(enclosingType);
     }
 
     /**

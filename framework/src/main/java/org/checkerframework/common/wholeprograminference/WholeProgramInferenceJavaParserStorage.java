@@ -515,10 +515,10 @@ public class WholeProgramInferenceJavaParserStorage
             return (TypeElement) element;
         }
 
-        TypeElement enclosing = ElementUtils.strictEnclosingClass(result);
+        TypeElement enclosing = ElementUtils.strictEnclosingTypeElement(result);
         while (enclosing != null) {
             result = enclosing;
-            enclosing = ElementUtils.strictEnclosingClass(enclosing);
+            enclosing = ElementUtils.strictEnclosingTypeElement(enclosing);
         }
 
         return result;
