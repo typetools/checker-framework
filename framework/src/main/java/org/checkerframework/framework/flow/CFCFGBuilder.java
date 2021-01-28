@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.cfg.builder.PhaseOneResult;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -198,7 +199,6 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopIteratorVariable(
                 MethodInvocationTree iteratorCall, VariableElement variableElement) {
-
             Tree annotatedIteratorTypeTree =
                     ((CFTreeBuilder) treeBuilder)
                             .buildAnnotatedType(TreeUtils.typeOf(iteratorCall));
@@ -217,8 +217,12 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopArrayVariable(
                 ExpressionTree expression, VariableElement variableElement) {
+            // It is necessary to get the elt because just getting the type of expression
+            // directly (via TreeUtils.typeOf) doesn't include annotations on the declarations
+            // of local variables, for some reason.
+            Element elt = TreeUtils.elementFromTree(expression);
             Tree annotatedArrayTypeTree =
-                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(TreeUtils.typeOf(expression));
+                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(ElementUtils.getType(elt));
             handleArtificialTree(annotatedArrayTypeTree);
 
             // Declare and initialize a temporary array variable
