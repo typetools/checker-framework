@@ -185,7 +185,8 @@ public class LockAnnotatedTypeFactory
                             JavaExpressionParseUtil.parse(
                                     expression, context, localScope, useLocalScope);
                     if (result == null) {
-                        return new DependentTypesError(expression, " ").toString();
+                        return new DependentTypesError(expression, /*error message=*/ " ")
+                                .toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
