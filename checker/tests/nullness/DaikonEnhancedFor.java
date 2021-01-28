@@ -16,14 +16,14 @@ class DaikonEnhancedFor {
 
     void process(@KeyFor("this.cmap") Object super_c) {
         @SuppressWarnings("keyfor") // the loop below makes all these keys to cmap
-        @KeyFor("cmap") Object[] clazzes = getObjects();
+        @KeyFor("this.cmap") Object[] clazzes = getObjects();
         // go through all of the classes and intialize the map
         for (Object cd : clazzes) {
             cmap.put(cd, new TreeSet<@KeyFor("cmap") Object>());
         }
         // go through the list again and put in the derived class information
         for (Object cd : clazzes) {
-            Set<@KeyFor("cmap") Object> derived = cmap.get(super_c);
+            Set<@KeyFor("this.cmap") Object> derived = cmap.get(super_c);
             derived.add(cd);
         }
     }

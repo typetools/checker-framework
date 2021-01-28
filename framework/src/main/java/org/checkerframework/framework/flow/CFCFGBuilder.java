@@ -224,16 +224,19 @@ public class CFCFGBuilder extends CFGBuilder {
             // directly (via TreeUtils.typeOf) doesn't include annotations on the declarations
             // of local variables, for some reason.
             Element elt = TreeUtils.elementFromTree(expression);
-            TypeMirror type = ElementUtils.getType(elt);
+            TypeMirror type = null;
+            if (elt != null) {
+                type = ElementUtils.getType(elt);
+            }
 
             // But if the declaration is a generic, such as in tests/all-systems/Issue1775.java,
             // then the type from the element will also be a typevar. In those cases, instead
             // get the type of the expression, which is guaranteed to be an array. The generic
             // will only have primary annotations (it won't have a component type - since it
             // isn't an array), so it's sufficient to only copy the primary annotation.
-            if (type.getKind() != TypeKind.ARRAY) {
+            if (type == null || type.getKind() != TypeKind.ARRAY) {
                 TypeMirror expressionType = TreeUtils.typeOf(expression);
-                // TODO: copy the primary annotation first!
+                // TODO: copy the primary annotation first? Is that possible with TypeMirrors?
                 type = expressionType;
             }
 
