@@ -1,5 +1,3 @@
-package chapter;
-
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class TestConcurrentSemantics2 {

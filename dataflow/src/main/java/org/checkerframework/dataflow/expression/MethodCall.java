@@ -3,12 +3,12 @@ package org.checkerframework.dataflow.expression;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
-import org.plumelib.util.StringsPlume;
 
 /** A call to a @Deterministic method. */
 public class MethodCall extends JavaExpression {
@@ -162,18 +162,20 @@ public class MethodCall extends JavaExpression {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        StringBuilder preParen = new StringBuilder();
         if (receiver instanceof ClassName) {
-            result.append(receiver.getType());
+            preParen.append(receiver.getType());
         } else {
-            result.append(receiver);
+            preParen.append(receiver);
         }
-        result.append(".");
+        preParen.append(".");
         String methodName = method.getSimpleName().toString();
-        result.append(methodName);
-        result.append("(");
-        result.append(StringsPlume.join(", ", parameters));
-        result.append(")");
+        preParen.append(methodName);
+        preParen.append("(");
+        StringJoiner result = new StringJoiner(", ", preParen, ")");
+        for (JavaExpression parameter : parameters) {
+            result.add(parameter.toString());
+        }
         return result.toString();
     }
 }

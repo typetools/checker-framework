@@ -1428,7 +1428,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * A callback method for the AnnotatedTypeFactory subtypes to customize directSuperTypes().
+     * A callback method for the AnnotatedTypeFactory subtypes to customize directSupertypes().
      * Overriding methods should merely change the annotations on the supertypes, without adding or
      * removing new types.
      *
@@ -4079,7 +4079,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         final boolean intersectionType;
         final TypeMirror boundType;
         if (typeVar.getUpperBound().getKind() == TypeKind.INTERSECTION) {
-            boundType = typeVar.getUpperBound().directSuperTypes().get(0).getUnderlyingType();
+            boundType = typeVar.getUpperBound().directSupertypes().get(0).getUnderlyingType();
             intersectionType = true;
         } else {
             boundType = typeVar.getUnderlyingType().getUpperBound();
@@ -4192,7 +4192,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
                 if (castATM.getKind() == TypeKind.INTERSECTION) {
                     AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
-                    for (AnnotatedTypeMirror t : itype.directSuperTypes()) {
+                    for (AnnotatedTypeMirror t : itype.directSupertypes()) {
                         if (TypesUtils.isFunctionalInterface(
                                 t.getUnderlyingType(), getProcessingEnv())) {
                             return t;
