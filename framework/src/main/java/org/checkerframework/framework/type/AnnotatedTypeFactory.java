@@ -4512,8 +4512,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     && typeMirror.getKind() == TypeKind.DECLARED
                     && type.getKind() == TypeKind.DECLARED) {
                 // If capture conversion is not applied because the type contains uninferred
-                // wildcards,
-                // then mark any uncaptured wildcards as "uninferred".
+                // wildcards, then mark any uncaptured wildcards as "uninferred".
                 DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
                 AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
                 for (int i = 0; i < capturedTypeMirror.getTypeArguments().size(); i++) {
