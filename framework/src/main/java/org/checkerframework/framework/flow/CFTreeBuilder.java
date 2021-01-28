@@ -75,16 +75,24 @@ public class CFTreeBuilder extends TreeBuilder {
     }
 
     /**
-     * Builds an AST Tree representing an type, including AnnotationTree_s for its annotations.
+     * Builds an AST Tree representing a type, including AnnotationTrees for its annotations.
      *
-     * @param type the annotated type
-     * @return a Tree representing the annotated type
+     * @param type the type
+     * @return a Tree representing the type
      */
     public Tree buildAnnotatedType(TypeMirror type) {
         visitedWildcards.clear();
         return createAnnotatedType(type);
     }
 
+    /**
+     * Builds an AST Tree representing a type, including AnnotationTrees for its annotations. This
+     * internal method differs from the public {@link #buildAnnotatedType(TypeMirror)} only in that
+     * it does not reset the list of visited wildcards.
+     *
+     * @param type the type for which to create a tree
+     * @return a Tree representing the type
+     */
     private Tree createAnnotatedType(TypeMirror type) {
         // Implementation based on com.sun.tools.javac.tree.TreeMaker.Type
 
