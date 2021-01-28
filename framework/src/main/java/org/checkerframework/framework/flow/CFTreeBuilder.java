@@ -36,8 +36,7 @@ public class CFTreeBuilder extends TreeBuilder {
 
     /**
      * To avoid infinite recursions, record each wildcard that has been converted to a tree. This
-     * set is cleared each time {@link #buildAnnotatedType(AnnotatedTypeMirror)} or {@link
-     * #buildAnnotatedType(TypeMirror)} is called.
+     * set is cleared each time {@link #buildAnnotatedType(TypeMirror)} is called.
      */
     private final Set<WildcardType> visitedWildcards = new HashSet<>();
 
