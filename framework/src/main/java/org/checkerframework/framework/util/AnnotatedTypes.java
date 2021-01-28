@@ -818,7 +818,7 @@ public class AnnotatedTypes {
                 (AnnotatedIntersectionType)
                         AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
 
-        for (AnnotatedTypeMirror bound : glb.directSuperTypes()) {
+        for (AnnotatedTypeMirror bound : glb.getBounds()) {
             if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
                 AnnotatedTypeReplacer.replace(type1, bound);
             } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
