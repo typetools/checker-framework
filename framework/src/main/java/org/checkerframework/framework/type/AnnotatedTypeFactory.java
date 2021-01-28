@@ -4508,6 +4508,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeMirror applyCaptureConversion(
             AnnotatedTypeMirror type, TypeMirror typeMirror) {
         if (!shouldCapture(type, typeMirror)) {
+            if (type.containsUninferredTypeArguments()
+                    && typeMirror.getKind() == TypeKind.DECLARED
+                    && type.getKind() == TypeKind.DECLARED) {
+                // If capture conversion is not applied because the type contains uninferred
+                // wildcards,
+                // then mark any uncaptured wildcards as "uninferred".
+                DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
+                AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
+                for (int i = 0; i < capturedTypeMirror.getTypeArguments().size(); i++) {
+                    TypeMirror capturedTypeArgTM = capturedTypeMirror.getTypeArguments().get(i);
+                    AnnotatedTypeMirror uncapturedTypeArg =
+                            uncapturedType.getTypeArguments().get(i);
+                    if (uncapturedTypeArg.getKind() != TypeKind.WILDCARD) {
+                        continue;
+                    }
+                    if (TypesUtils.isCaptured(capturedTypeArgTM)
+                            || capturedTypeArgTM.getKind() != TypeKind.WILDCARD) {
+                        ((AnnotatedWildcardType) uncapturedTypeArg).setUninferredTypeArgument();
+                    }
+                }
+            }
             return type;
         }
 
