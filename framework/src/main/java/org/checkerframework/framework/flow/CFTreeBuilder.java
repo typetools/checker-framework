@@ -24,11 +24,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
@@ -56,139 +51,11 @@ public class CFTreeBuilder extends TreeBuilder {
     }
 
     /**
-     * Builds an AST Tree representing an AnnotatedTypeMirror.
+     * Converts a list of AnnotationMirrors to the a corresponding list of new AnnotationTrees.
      *
-     * @param annotatedType the annotated type
-     * @return a Tree representing the annotated type
+     * @param annotations the annotations
+     * @return new annotation trees representing the annotations
      */
-    public Tree buildAnnotatedType(AnnotatedTypeMirror annotatedType) {
-        visitedWildcards.clear();
-        return createAnnotatedType(annotatedType);
-    }
-
-    private Tree createAnnotatedType(AnnotatedTypeMirror annotatedType) {
-        // Implementation based on com.sun.tools.javac.tree.TreeMaker.Type
-
-        // Convert the annotations from a set of AnnotationMirrors
-        // to a list of AnnotationTrees.
-        Set<AnnotationMirror> annotations = annotatedType.getAnnotations();
-        List<JCAnnotation> annotationTrees = convertAnnotationMirrorsToAnnotationTrees(annotations);
-
-        // Convert the underlying type from a TypeMirror to an
-        // ExpressionTree and combine with the AnnotationTrees
-        // to form a ClassTree of kind ANNOTATION_TYPE.
-        JCExpression underlyingTypeTree;
-        switch (annotatedType.getKind()) {
-            case BYTE:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.BYTE);
-                break;
-            case CHAR:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.CHAR);
-                break;
-            case SHORT:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.SHORT);
-                break;
-            case INT:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.INT);
-                break;
-            case LONG:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.LONG);
-                break;
-            case FLOAT:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.FLOAT);
-                break;
-            case DOUBLE:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.DOUBLE);
-                break;
-            case BOOLEAN:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.BOOLEAN);
-                break;
-            case VOID:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.VOID);
-                break;
-            case TYPEVAR:
-                // No recursive annotations.
-                AnnotatedTypeVariable variable = (AnnotatedTypeVariable) annotatedType;
-                TypeVariable underlyingTypeVar = variable.getUnderlyingType();
-                underlyingTypeTree = maker.Ident((TypeSymbol) underlyingTypeVar.asElement());
-                break;
-            case WILDCARD:
-                AnnotatedWildcardType wildcard = (AnnotatedWildcardType) annotatedType;
-                WildcardType wildcardType = wildcard.getUnderlyingType();
-                boolean visitedBefore = visitedWildcards.contains(wildcardType);
-                visitedWildcards.add(wildcardType);
-                if (!visitedBefore && wildcardType.getExtendsBound() != null) {
-                    Tree annotatedExtendsBound = createAnnotatedType(wildcard.getExtendsBound());
-                    underlyingTypeTree =
-                            maker.Wildcard(
-                                    maker.TypeBoundKind(BoundKind.EXTENDS),
-                                    (JCTree) annotatedExtendsBound);
-                } else if (!visitedBefore && wildcardType.getSuperBound() != null) {
-                    Tree annotatedSuperBound = createAnnotatedType(wildcard.getSuperBound());
-                    underlyingTypeTree =
-                            maker.Wildcard(
-                                    maker.TypeBoundKind(BoundKind.SUPER),
-                                    (JCTree) annotatedSuperBound);
-                } else {
-                    underlyingTypeTree =
-                            maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-                }
-                break;
-            case INTERSECTION:
-                AnnotatedIntersectionType intersectionType =
-                        (AnnotatedIntersectionType) annotatedType;
-                List<JCExpression> components = List.nil();
-                for (AnnotatedTypeMirror bound : intersectionType.getBounds()) {
-                    components = components.append((JCExpression) createAnnotatedType(bound));
-                }
-                underlyingTypeTree = maker.TypeIntersection(components);
-                break;
-                // case UNION:
-                // TODO: case UNION similar to INTERSECTION, but write test first.
-            case DECLARED:
-                underlyingTypeTree = maker.Type((Type) annotatedType.getUnderlyingType());
-
-                if (underlyingTypeTree instanceof JCTypeApply) {
-                    // Replace the type parameters with annotated versions.
-                    AnnotatedDeclaredType annotatedDeclaredType =
-                            (AnnotatedDeclaredType) annotatedType;
-                    List<JCExpression> typeArgTrees = List.nil();
-                    for (AnnotatedTypeMirror arg : annotatedDeclaredType.getTypeArguments()) {
-                        typeArgTrees = typeArgTrees.append((JCExpression) createAnnotatedType(arg));
-                    }
-                    JCExpression clazz =
-                            (JCExpression) ((JCTypeApply) underlyingTypeTree).getType();
-                    underlyingTypeTree = maker.TypeApply(clazz, typeArgTrees);
-                }
-                break;
-            case ARRAY:
-                AnnotatedArrayType annotatedArrayType = (AnnotatedArrayType) annotatedType;
-                Tree annotatedComponentTree =
-                        createAnnotatedType(annotatedArrayType.getComponentType());
-                underlyingTypeTree = maker.TypeArray((JCExpression) annotatedComponentTree);
-                break;
-            case ERROR:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.ERROR);
-                break;
-            default:
-                assert false : "unexpected type: " + annotatedType;
-                underlyingTypeTree = null;
-                break;
-        }
-
-        underlyingTypeTree.setType((Type) annotatedType.getUnderlyingType());
-
-        if (annotationTrees.isEmpty()) {
-            return underlyingTypeTree;
-        }
-
-        JCAnnotatedType annotatedTypeTree =
-                maker.AnnotatedType(annotationTrees, underlyingTypeTree);
-        annotatedTypeTree.setType((Type) annotatedType.getUnderlyingType());
-
-        return annotatedTypeTree;
-    }
-
     private List<JCAnnotation> convertAnnotationMirrorsToAnnotationTrees(
             Collection<? extends AnnotationMirror> annotations) {
         List<JCAnnotation> annotationTrees = List.nil();
