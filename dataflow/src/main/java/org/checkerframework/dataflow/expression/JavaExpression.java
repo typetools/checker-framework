@@ -150,8 +150,7 @@ public abstract class JavaExpression {
      * @return a verbose string representation of this
      */
     public String toStringDebug() {
-        return String.format(
-                "JavaExpression (%s) %s type=%s", getClass().getSimpleName(), toString(), type);
+        return String.format("%s(%s): %s", getClass().getSimpleName(), type, toString());
     }
 
     ///
