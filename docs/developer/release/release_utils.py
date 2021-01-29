@@ -222,13 +222,6 @@ def version_array_to_string(version_array):
     a string representation of the version, such as \"1.2.3\" """
     return ".".join(str(x) for x in version_array)
 
-# From http://stackoverflow.com/a/1714190/173852
-def compare_version_numbers(version1, version2):
-    """Given two versions in string form, returns a negative value if
-    version1 < version2, 0 if version1 == version2 and a strictly positive
-    value if version1 > version2."""
-    return cmp(version_number_to_array(version1), version_number_to_array(version2))
-
 def increment_version(version_num):
     """
     Returns the next incremental version after the argument.
@@ -264,7 +257,7 @@ def current_distribution_by_website(site):
     """
     print('Looking up checker-framework-version from %s\n' % site)
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
-    text = urllib.request.urlopen(url=site).read()
+    text = urllib.request.urlopen(url=site).read().decode('utf-8')
     result = ver_re.search(text)
     return result.group(1)
 
