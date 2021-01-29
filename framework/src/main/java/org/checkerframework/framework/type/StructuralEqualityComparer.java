@@ -44,26 +44,15 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     @Override
     protected Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        if (type1.atypeFactory.ignoreUninferredTypeArguments) {
-            if (type1.getKind() == TypeKind.WILDCARD
-                    && ((AnnotatedWildcardType) type1).isUninferredTypeArgument()) {
-                return true;
-            }
-
-            if (type2.getKind() == TypeKind.WILDCARD
-                    && ((AnnotatedWildcardType) type2).isUninferredTypeArgument()) {
-                return true;
-            }
-        }
-        if (type1.getKind() == TypeKind.TYPEVAR || type2.getKind() == TypeKind.TYPEVAR) {
-            // TODO: Handle any remaining typevar combinations correctly.
-            // return true;
-            throw new BugInCF("type1: %s, type2: %s", type1.toString(true), type2.toString(true));
-        }
         if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
             // If one of the types is the NULL type, compare main qualifiers only.
             return arePrimeAnnosEqual(type1, type2);
         }
+
+        if (type1.containsUninferredTypeArguments() || type2.containsUninferredTypeArguments()) {
+            return type1.atypeFactory.ignoreUninferredTypeArguments;
+        }
+
         return super.defaultAction(type1, type2, p);
     }
 
