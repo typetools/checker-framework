@@ -648,7 +648,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the class of the annotation to remove
      * @return true if the annotation was removed, false if the type's annotations were unchanged
      */
-    public boolean removeAnnotation(Class<? extends Annotation> a) {
+    public boolean removeAnnotationByClass(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(annotations, a);
         if (anno != null) {
             return annotations.remove(anno);

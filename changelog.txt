@@ -43,6 +43,7 @@ Moved class:
 Renamed methods:
  * `AnnotatedTypeMirror.directSuperTypes` => `directSupertypes` (note
    capitalization) for consistency with `javax.lang.model.util.Types`
+ * `AnnotatedTypeMirror.removeAnnotation(Class)` => `AnnotatedTypeMirror.removeAnnotationByClass`
 
 **Closed issues:**
 
