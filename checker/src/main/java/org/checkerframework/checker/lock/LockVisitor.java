@@ -1258,6 +1258,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return lockExpressions;
     }
 
+    /**
+     * Parse a Java expression.
+     *
+     * @param expression the Java expression
+     * @param jeContext the Java Expression parsing context
+     * @param path the path to the expression
+     * @param itself the self expression
+     * @return the parsed expression
+     */
     private LockExpression parseExpressionString(
             String expression,
             JavaExpressionContext jeContext,
