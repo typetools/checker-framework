@@ -36,6 +36,7 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -102,7 +103,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String to = AnnotationUtils.getElementValue(anno, "to", String.class, true);
 
             // check that each expression is parseable in this context
-            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
             JavaExpressionContext context =
                     JavaExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
             checkEffectivelyFinalAndParsable(seq, context, node);

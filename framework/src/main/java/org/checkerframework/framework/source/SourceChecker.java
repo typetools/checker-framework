@@ -66,7 +66,6 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
@@ -75,6 +74,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
@@ -381,8 +381,7 @@ import org.plumelib.util.UtilPlume;
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
 })
-public abstract class SourceChecker extends AbstractTypeProcessor
-        implements CFContext, OptionConfiguration {
+public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -580,7 +579,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @return the {@link ProcessingEnvironment} that was supplied to this checker
      */
-    @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -639,40 +637,46 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Returns the {@link CFContext} used by this checker.
+     * Returns the OptionConfiguration associated with this.
      *
-     * @return the {@link CFContext} used by this checker
+     * @return the OptionConfiguration associated with this
      */
-    public CFContext getContext() {
-        return this;
-    }
-
-    @Override
-    public SourceChecker getChecker() {
-        return this;
-    }
-
-    @Override
     public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
-    @Override
+    /**
+     * Returns the element utilities associated with this.
+     *
+     * @return the element utilities associated with this
+     */
     public Elements getElementUtils() {
         return getProcessingEnvironment().getElementUtils();
     }
 
-    @Override
+    /**
+     * Returns the type utilities associated with this.
+     *
+     * @return the type utilities associated with this
+     */
     public Types getTypeUtils() {
         return getProcessingEnvironment().getTypeUtils();
     }
 
-    @Override
+    /**
+     * Returns the tree utilities associated with this.
+     *
+     * @return the tree utilities associated with this
+     */
     public Trees getTreeUtils() {
         return Trees.instance(getProcessingEnvironment());
     }
 
-    @Override
+    /**
+     * Returns the SourceVisitor associated with this.
+     *
+     * @return the SourceVisitor associated with this
+     */
     public SourceVisitor<?, ?> getVisitor() {
         return this.visitor;
     }
@@ -684,7 +688,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
 
-    @Override
+    /**
+     * Returns the AnnotationProvider (the type factory) associated with this.
+     *
+     * @return the AnnotationProvider (the type factory) associated with this
+     */
     public AnnotationProvider getAnnotationProvider() {
         throw new UnsupportedOperationException(
                 "getAnnotationProvider is not implemented for this class.");
@@ -2003,12 +2011,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // trees.getPath might be slow, but this is only used in error reporting
         @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
 
-        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
+        @Nullable VariableTree var = TreePathUtil.enclosingVariable(path);
         if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
             return true;
         }
 
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
+        @Nullable MethodTree method = TreePathUtil.enclosingMethod(path);
         if (method != null) {
             @Nullable Element elt = TreeUtils.elementFromTree(method);
 
@@ -2024,7 +2032,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
+        @Nullable ClassTree cls = TreePathUtil.enclosingClass(path);
         if (cls != null) {
             @Nullable Element elt = TreeUtils.elementFromTree(cls);
 
@@ -2346,7 +2354,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (element == null) {
             return false;
         }
-        TypeElement typeElement = ElementUtils.enclosingClass(element);
+        TypeElement typeElement = ElementUtils.enclosingTypeElement(element);
+        if (typeElement == null) {
+            throw new BugInCF(
+                    "enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
+        }
         @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
         // @FullyQualifiedName
         )

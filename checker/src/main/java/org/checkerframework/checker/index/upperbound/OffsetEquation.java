@@ -294,9 +294,15 @@ public class OffsetEquation {
      * Terms that evaluate to a integer constant are removed from the list, and the constants are
      * added to or subtracted from the intValue field.
      *
+     * @param terms should be either addedTerms or subtractedTerms of this
+     * @param subtract whether the terms are negative or positive
+     * @param context the JavaExpressionContext, for standardization
+     * @param scope the local scope, for standardization
+     * @param useLocalScope whether to use the local scope for standardization
      * @param factory the AnnotatedTypeFactory used for annotation accessing. It can be null.
+     * @throws JavaExpressionParseException if a term cannot be parsed
      */
-    private void standardizeAndViewpointAdaptExpressions(
+    private void standardizeAndViewpointAdaptTerms(
             List<String> terms,
             boolean subtract,
             JavaExpressionContext context,
@@ -334,16 +340,16 @@ public class OffsetEquation {
      * @throws JavaExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
-    public void standardizeAndViewpointAdaptExpressions(
+    public void standardizeAndViewpointAdapt(
             JavaExpressionContext context,
             TreePath scope,
             boolean useLocalScope,
-            AnnotatedTypeFactory factory)
+            @Nullable AnnotatedTypeFactory factory)
             throws JavaExpressionParseException {
 
-        standardizeAndViewpointAdaptExpressions(
+        standardizeAndViewpointAdaptTerms(
                 addedTerms, false, context, scope, useLocalScope, factory);
-        standardizeAndViewpointAdaptExpressions(
+        standardizeAndViewpointAdaptTerms(
                 subtractedTerms, true, context, scope, useLocalScope, factory);
     }
 
@@ -356,11 +362,11 @@ public class OffsetEquation {
      * @throws JavaExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
-    public void standardizeAndViewpointAdaptExpressions(
+    public void standardizeAndViewpointAdapt(
             JavaExpressionContext context, TreePath scope, boolean useLocalScope)
             throws JavaExpressionParseException {
 
-        standardizeAndViewpointAdaptExpressions(context, scope, useLocalScope, null);
+        standardizeAndViewpointAdapt(context, scope, useLocalScope, null);
     }
 
     /**

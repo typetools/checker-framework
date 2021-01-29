@@ -61,6 +61,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -568,7 +569,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         SideEffectAnnotation seaOfInvokedMethod =
                 atypeFactory.methodSideEffectAnnotation(methodElement, false);
 
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(atypeFactory.getPath(node));
 
         ExecutableElement enclosingMethodElement = null;
         if (enclosingMethod != null) {
@@ -848,7 +849,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             checker.reportError(node, "explicit.lock.synchronized");
         }
 
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(atypeFactory.getPath(node));
 
         ExecutableElement methodElement = null;
         if (enclosingMethod != null) {
@@ -1236,11 +1237,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         List<JavaExpression> params =
                 JavaExpression.getParametersOfEnclosingMethod(atypeFactory, currentPath);
 
-        TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
                 JavaExpression.getPseudoReceiver(currentPath, enclosingType);
         JavaExpressionContext exprContext =
-                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
+                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getChecker());
         JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;

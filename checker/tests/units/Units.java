@@ -1,7 +1,8 @@
-import static org.checkerframework.checker.units.UnitsTools.s;
+import static org.checkerframework.checker.units.util.UnitsTools.s;
 
-import org.checkerframework.checker.units.*;
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.m;
+import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.util.UnitsTools;
 
 public class Units {
     @m int m1 = 5 * UnitsTools.m;

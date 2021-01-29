@@ -97,6 +97,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -108,6 +109,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -315,7 +317,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 } else {
                     relevantJavaTypes.add(
                             TypesUtils.typeFromClass(
-                                    clazz, getContext().getTypeUtils(), getElementUtils()));
+                                    clazz, getChecker().getTypeUtils(), getElementUtils()));
                 }
             }
         }
@@ -437,7 +439,7 @@ public abstract class GenericAnnotatedTypeFactory<
         treeAnnotators.add(new PropagationTreeAnnotator(this));
         treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
         if (dependentTypesHelper != null) {
-            treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator(this));
+            treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator());
         }
         return new ListTreeAnnotator(treeAnnotators);
     }
@@ -857,19 +859,20 @@ public abstract class GenericAnnotatedTypeFactory<
      * Produces the JavaExpression associated with expression on currentPath.
      *
      * @param expression a Java expression
-     * @param currentPath location at which expression is evaluated
+     * @param currentPath the path to an annotation containing {@code expression}
+     * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
             throws JavaExpressionParseException {
-        TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingClass = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
 
         JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
         JavaExpressionParseUtil.JavaExpressionContext context =
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
                         JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
-                        this.getContext());
+                        this.getChecker());
 
         return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
     }
@@ -979,7 +982,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * initializers).
      *
      * @param tree a MethodTree or other code block, such as a static initializer
-     * @return the exceptional exit store, or {@code null}, if there is no such store.
+     * @return the exceptional exit store, or {@code null}, if there is no such store
      */
     public @Nullable Store getExceptionalExitStore(Tree tree) {
         return exceptionalExitStores.get(tree);
@@ -1128,10 +1131,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
      * a {@link Node} at all.
      *
+     * @param <T> the type of node to return
+     * @param tree the tree in which to search
+     * @param kind the kind of node to return
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
      */
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
@@ -1299,7 +1305,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     MethodTree mt =
                             (MethodTree)
-                                    TreeUtils.enclosingOfKind(
+                                    TreePathUtil.enclosingOfKind(
                                             getPath(lambdaPair.first), Kind.METHOD);
                     analyze(
                             queue,
@@ -1797,7 +1803,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         applyLocalVariableQualifierParameterDefaults(elt, type);
 
-        TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
         Set<AnnotationMirror> tops;
         if (enclosingClass != null) {
             tops = getQualifierParameterHierarchies(enclosingClass);
@@ -2434,5 +2440,30 @@ public abstract class GenericAnnotatedTypeFactory<
         builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
         builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
         return builder.build();
+    }
+
+    /**
+     * Standardize a type qualifier annotation obtained from a contract.
+     *
+     * @param annoFromContract the annotation to be standardized
+     * @param flowExprContext the context to use for standardization
+     * @param path the path to a use of the contract (a method call) or to the method declaration
+     * @return the standardized annotation, or the argument if it does not need standardization
+     */
+    public AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            JavaExpressionContext flowExprContext,
+            TreePath path) {
+        DependentTypesHelper dependentTypesHelper = getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            AnnotationMirror standardized =
+                    dependentTypesHelper.standardizeAnnotationIfDependentType(
+                            flowExprContext, path, annoFromContract, false, false);
+            if (standardized != null) {
+                dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
+                return standardized;
+            }
+        }
+        return annoFromContract;
     }
 }

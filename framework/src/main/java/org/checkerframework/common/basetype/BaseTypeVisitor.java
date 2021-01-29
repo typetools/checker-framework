@@ -121,13 +121,13 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -944,14 +944,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         JavaExpressionContext flowExprContext =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        node, getCurrentPath(), checker.getContext());
+                        node, getCurrentPath(), checker);
 
         for (Contract contract : contracts) {
             String expression = contract.expression;
             AnnotationMirror annotation = contract.annotation;
 
             annotation =
-                    standardizeAnnotationFromContract(
+                    atypeFactory.standardizeAnnotationFromContract(
                             annotation, flowExprContext, getCurrentPath());
 
             JavaExpression expr = null;
@@ -986,36 +986,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             if (formalParamNames != null && formalParamNames.contains(expression)) {
-                @SuppressWarnings("compilermessages")
-                @CompilerMessageKey String key = "contracts." + contract.kind.errorKey + ".expression.parameter.name";
-                checker.reportWarning(
-                        node,
-                        key,
-                        contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                        node.getName().toString(),
-                        expression,
-                        formalParamNames.indexOf(expression) + 1,
-                        expression);
+                String locationOfExpression =
+                        contract.kind.errorKey
+                                + " "
+                                + contract.contractAnnotation
+                                        .getAnnotationType()
+                                        .asElement()
+                                        .getSimpleName()
+                                + " on the declaration";
+                if (expr == null) {
+                    checker.reportWarning(
+                            node,
+                            "expression.parameter.name.invalid",
+                            locationOfExpression,
+                            node.getName().toString(),
+                            expression,
+                            formalParamNames.indexOf(expression) + 1);
+                } else {
+                    checker.reportWarning(
+                            node,
+                            "expression.parameter.name.shadows.field",
+                            locationOfExpression,
+                            node.getName().toString(),
+                            expression,
+                            expression,
+                            formalParamNames.indexOf(expression) + 1);
+                }
             }
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
-        }
-    }
-
-    /** Standardize a type qualifier annotation obtained from a contract. */
-    private AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext flowExprContext,
-            TreePath path) {
-        DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
-        if (dependentTypesHelper != null) {
-            AnnotationMirror anno =
-                    dependentTypesHelper.standardizeAnnotation(
-                            flowExprContext, path, annoFromContract, false, false);
-            dependentTypesHelper.checkAnnotation(anno, path.getLeaf());
-            return anno;
-        } else {
-            return annoFromContract;
         }
     }
 
@@ -1564,7 +1563,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkThisOrSuperConstructorCall(
             MethodInvocationTree call, @CompilerMessageKey String errorKey) {
         TreePath path = atypeFactory.getPath(call);
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
         AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
         AnnotatedExecutableType constructorType = atypeFactory.getAnnotatedType(enclosingMethod);
         Set<? extends AnnotationMirror> topAnnotations =
@@ -1654,7 +1653,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that all the given {@code preconditions} hold true immediately prior to the method
      * invocation or variable access at {@code tree}.
      *
-     * @param tree the Tree immediately prior to which the preconditions must hold true
+     * @param tree the method invocation; immediately prior to it, the preconditions must hold true
      * @param preconditions the preconditions to be checked
      */
     protected void checkPreconditions(MethodInvocationTree tree, Set<Precondition> preconditions) {
@@ -1664,7 +1663,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
         JavaExpressionContext flowExprContext =
-                JavaExpressionContext.buildContextForMethodUse(tree, checker.getContext());
+                JavaExpressionContext.buildContextForMethodUse(tree, checker);
 
         if (flowExprContext == null) {
             checker.reportError(tree, "flowexpr.parse.context.not.determined", tree);
@@ -1676,7 +1675,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
 
-            anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
+            anno =
+                    atypeFactory.standardizeAnnotationFromContract(
+                            anno, flowExprContext, getCurrentPath());
 
             JavaExpression expr;
             try {
@@ -1898,7 +1899,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
 
             Tree enclosing =
-                    TreeUtils.enclosingOfKind(
+                    TreePathUtil.enclosingOfKind(
                             getCurrentPath(),
                             new HashSet<>(
                                     Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
@@ -1906,7 +1907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror ret = null;
             if (enclosing.getKind() == Tree.Kind.METHOD) {
 
-                MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+                MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
                 boolean valid = validateTypeOf(enclosing);
                 if (valid) {
                     ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
@@ -4148,12 +4149,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (flowExprContext == null) {
                 flowExprContext =
                         JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodTree,
-                                method.getReceiverType().getUnderlyingType(),
-                                checker.getContext());
+                                methodTree, method.getReceiverType().getUnderlyingType(), checker);
             }
 
-            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, path);
+            annotation =
+                    atypeFactory.standardizeAnnotationFromContract(
+                            annotation, flowExprContext, path);
 
             try {
                 // TODO: currently, these expressions are parsed many times.

@@ -1286,7 +1286,7 @@ The steps to customizing type refinement are:
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
-\refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-}
+\refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-}
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
@@ -1893,9 +1893,9 @@ output if it cannot parse it.)
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by
+pseudo-assignment check (\<commonAssignmentCheck>) performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
-Section~\ref{creating-extending-visitor}).
+Section~\ref{creating-extending-visitor}.
 
 \item \code{-AshowInferenceSteps}: print debugging information
 about intermediate steps in method type argument inference

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
-import org.checkerframework.framework.test.*;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** Test case for Called Methods Checker's AutoValue support. */
