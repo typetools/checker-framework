@@ -5,8 +5,10 @@ package defaulting.upperbound;
 
 import org.checkerframework.framework.testchecker.defaulting.UpperBoundQual.*;
 
+// Upper bound: @UbExplicit, Lower bound: @UbBottom.
 class MyArrayList<MAL extends String> {}
 
+// Upper bound: @UbExplicit, Lower bound: @UbBottom.
 class MyExplicitArray<MEA extends String> {}
 
 public class UpperBoundDefaulting {
@@ -48,9 +50,8 @@ public class UpperBoundDefaulting {
     public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) {
         @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
 
-        @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible =
-                // :: error: (assignment.type.incompatible)
-                elbList;
+        // Upper bound: GLB(@UbExplicit, @UbImplicit), Lower bound: @UbBottom.
+        @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible = elbList;
 
         @UbTop MyArrayList<@UbExplicit ? super @UbBottom String> iebLowerBoundCompatible = elbList;
     }
