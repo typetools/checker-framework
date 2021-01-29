@@ -1260,7 +1260,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     private LockExpression parseExpressionString(
             String expression,
-            JavaExpressionContext flowExprContext,
+            JavaExpressionContext jeContext,
             TreePath path,
             JavaExpression itself) {
 
@@ -1285,7 +1285,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     return lockExpression;
                 } else {
                     // TODO: The proper way to do this is to call
-                    // flowExprContext.copyChangeToParsingMemberOfReceiver to set the receiver to
+                    // jeContext.copyChangeToParsingMemberOfReceiver to set the receiver to
                     // the <self> expression, and then call JavaExpressionParseUtil.parse on the
                     // remaining expression string with the new JavaExpressionContext. However,
                     // this currently results in a JavaExpression that has a different
@@ -1298,7 +1298,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     lockExpression.lockExpression =
                             JavaExpressionParseUtil.parse(
                                     itself.toString() + "." + remainingExpression,
-                                    flowExprContext,
+                                    jeContext,
                                     path,
                                     true);
                     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpression.lockExpression)) {
@@ -1311,7 +1311,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             } else {
                 lockExpression.lockExpression =
-                        JavaExpressionParseUtil.parse(expression, flowExprContext, path, true);
+                        JavaExpressionParseUtil.parse(expression, jeContext, path, true);
                 return lockExpression;
             }
         } catch (JavaExpressionParseException ex) {

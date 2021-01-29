@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
-/** FlowExpression for array creations. {@code new String[]()}. */
+/** JavaExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {
 
     /**

@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** FlowExpression.JavaExpression for literals. */
+/** JavaExpression for literals. */
 public class ValueLiteral extends JavaExpression {
 
     /** The value of the literal. */
