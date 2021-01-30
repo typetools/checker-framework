@@ -137,10 +137,8 @@ public abstract class JavaExpression {
         for (int i = 0; i < lst1.size(); i++) {
             JavaExpression dim1 = lst1.get(i);
             JavaExpression dim2 = lst2.get(i);
-            if (dim1 == null) {
-                if (dim2 != null) {
-                    return false;
-                }
+            if (dim1 == null || dim2 == null) {
+                return dim1 == dim2;
             } else {
                 if (!dim1.syntacticEquals(dim2)) {
                     return false;
@@ -154,6 +152,7 @@ public abstract class JavaExpression {
      * Returns true if and only if this contains a JavaExpression that is syntactically equal to
      * {@code other}.
      *
+     * @param other the JavaExpression to search for
      * @return true if and only if this contains a JavaExpression that is syntactically equal to
      *     {@code other}
      */
@@ -163,9 +162,12 @@ public abstract class JavaExpression {
      * Returns true if the given list contains a JavaExpression that is syntactically equal to
      * {@code other}.
      *
+     * @param list the list in which to search for a match
+     * @param other the JavaExpression to search for
      * @return true if and only if the list contains a JavaExpression that is syntactically equal to
      *     {@code other}
      */
+    @SuppressWarnings("nullness:dereference.of.nullable") // flow within a lambda
     public static boolean listContainsSyntacticEqualJavaExpression(
             List<? extends @Nullable JavaExpression> list, JavaExpression other) {
         return list.stream()

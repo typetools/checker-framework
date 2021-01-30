@@ -13,10 +13,20 @@ import org.checkerframework.dataflow.analysis.Store;
 /** A call to a @Deterministic method. */
 public class MethodCall extends JavaExpression {
 
-    protected final JavaExpression receiver;
-    protected final List<JavaExpression> arguments;
+    /** The method being called. */
     protected final ExecutableElement method;
+    /** The receiver argument. */
+    protected final JavaExpression receiver;
+    /** The arguments. */
+    protected final List<JavaExpression> arguments;
 
+    /**
+     * Creates a new MethodCall.
+     *
+     * @param method the method being called
+     * @param receiver the receiver argument
+     * @param arguments the arguments
+     */
     public MethodCall(
             TypeMirror type,
             ExecutableElement method,
@@ -45,6 +55,15 @@ public class MethodCall extends JavaExpression {
     }
 
     /**
+     * Returns the ExecutableElement for the method call.
+     *
+     * @return the ExecutableElement for the method call
+     */
+    public ExecutableElement getElement() {
+        return method;
+    }
+
+    /**
      * Returns the method call receiver (for inspection only - do not modify).
      *
      * @return the method call receiver (for inspection only - do not modify)
@@ -60,15 +79,6 @@ public class MethodCall extends JavaExpression {
      */
     public List<JavaExpression> getArguments() {
         return Collections.unmodifiableList(arguments);
-    }
-
-    /**
-     * Returns the ExecutableElement for the method call.
-     *
-     * @return the ExecutableElement for the method call
-     */
-    public ExecutableElement getElement() {
-        return method;
     }
 
     @Override
@@ -97,13 +107,9 @@ public class MethodCall extends JavaExpression {
             return false;
         }
         MethodCall other = (MethodCall) je;
-        return this.receiver.syntacticEquals(other.receiver)
-                && JavaExpression.syntacticEqualsList(this.arguments, other.arguments)
-                && method.equals(other.method);
-    }
-
-    public boolean containsSyntacticEqualArgument(LocalVariable var) {
-        return JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, var);
+        return method.equals(other.method)
+                && this.receiver.syntacticEquals(other.receiver)
+                && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
     }
 
     @Override
@@ -131,9 +137,9 @@ public class MethodCall extends JavaExpression {
             return false;
         }
         MethodCall other = (MethodCall) obj;
-        return arguments.equals(other.arguments)
+        return method.equals(other.method)
                 && receiver.equals(other.receiver)
-                && method.equals(other.method);
+                && arguments.equals(other.arguments);
     }
 
     @Override

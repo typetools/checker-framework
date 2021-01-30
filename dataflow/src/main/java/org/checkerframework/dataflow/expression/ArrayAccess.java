@@ -8,9 +8,18 @@ import org.checkerframework.dataflow.analysis.Store;
 /** An array access. */
 public class ArrayAccess extends JavaExpression {
 
+    /** The array being accessed. */
     protected final JavaExpression array;
+    /** The index; an expression of type int. */
     protected final JavaExpression index;
 
+    /**
+     * Create a new ArrayAccess.
+     *
+     * @param type the type of the array access
+     * @param array the array being accessed
+     * @param index the index; an expression of type int
+     */
     public ArrayAccess(TypeMirror type, JavaExpression array, JavaExpression index) {
         super(type);
         this.array = array;
@@ -28,6 +37,11 @@ public class ArrayAccess extends JavaExpression {
         return index.containsOfClass(clazz);
     }
 
+    /**
+     * Returns the array being accessed.
+     *
+     * @return the array being accessed
+     */
     public JavaExpression getArray() {
         return array;
     }

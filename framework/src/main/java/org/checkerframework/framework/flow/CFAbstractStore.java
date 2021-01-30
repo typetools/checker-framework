@@ -846,8 +846,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             Map.Entry<MethodCall, V> entry = methodValuesIterator.next();
             MethodCall otherMethodAccess = entry.getKey();
             // case 3:
-            if (otherMethodAccess.containsSyntacticEqualJavaExpression(var)
-                    || otherMethodAccess.containsSyntacticEqualArgument(var)) {
+            if (otherMethodAccess.containsSyntacticEqualJavaExpression(var)) {
                 methodValuesIterator.remove();
             }
         }
