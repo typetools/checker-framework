@@ -567,7 +567,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             ClassName c = (ClassName) expr;
             return classValues.get(c);
         } else {
-            throw new BugInCF("Unexpected FlowExpression: " + expr + " (" + expr.getClass() + ")");
+            throw new BugInCF("Unexpected JavaExpression: " + expr + " (" + expr.getClass() + ")");
         }
     }
 

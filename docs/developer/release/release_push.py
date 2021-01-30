@@ -19,7 +19,7 @@ from sanity_checks import *
 def check_release_version(previous_release, new_release):
     """Ensure that the given new release version is greater than the given
     previous one."""
-    if compare_version_numbers(previous_release, new_release) >= 0:
+    if version_number_to_array(previous_release) >= version_number_to_array(new_release):
         raise Exception("Previous release version (" + previous_release + ") should be less than " +
                         "the new release version (" + new_release + ")")
 
