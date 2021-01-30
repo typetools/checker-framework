@@ -8,12 +8,12 @@ import org.checkerframework.dataflow.analysis.Store;
 /** An array access. */
 public class ArrayAccess extends JavaExpression {
 
-    protected final JavaExpression receiver;
+    protected final JavaExpression array;
     protected final JavaExpression index;
 
-    public ArrayAccess(TypeMirror type, JavaExpression receiver, JavaExpression index) {
+    public ArrayAccess(TypeMirror type, JavaExpression array, JavaExpression index) {
         super(type);
-        this.receiver = receiver;
+        this.array = array;
         this.index = index;
     }
 
@@ -22,14 +22,14 @@ public class ArrayAccess extends JavaExpression {
         if (getClass() == clazz) {
             return true;
         }
-        if (receiver.containsOfClass(clazz)) {
+        if (array.containsOfClass(clazz)) {
             return true;
         }
         return index.containsOfClass(clazz);
     }
 
-    public JavaExpression getReceiver() {
-        return receiver;
+    public JavaExpression getArray() {
+        return array;
     }
 
     public JavaExpression getIndex() {
@@ -49,8 +49,8 @@ public class ArrayAccess extends JavaExpression {
     @Override
     public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return syntacticEquals(other)
-                || receiver.syntacticEquals(other)
-                || index.syntacticEquals(other);
+                || array.containsSyntacticEqualJavaExpression(other)
+                || index.containsSyntacticEqualJavaExpression(other);
     }
 
     @Override
@@ -59,12 +59,12 @@ public class ArrayAccess extends JavaExpression {
             return false;
         }
         ArrayAccess other = (ArrayAccess) je;
-        return receiver.syntacticEquals(other.receiver) && index.syntacticEquals(other.index);
+        return array.syntacticEquals(other.array) && index.syntacticEquals(other.index);
     }
 
     @Override
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-        if (receiver.containsModifiableAliasOf(store, other)) {
+        if (array.containsModifiableAliasOf(store, other)) {
             return true;
         }
         return index.containsModifiableAliasOf(store, other);
@@ -76,18 +76,18 @@ public class ArrayAccess extends JavaExpression {
             return false;
         }
         ArrayAccess other = (ArrayAccess) obj;
-        return receiver.equals(other.receiver) && index.equals(other.index);
+        return array.equals(other.array) && index.equals(other.index);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(receiver, index);
+        return Objects.hash(array, index);
     }
 
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append(receiver.toString());
+        result.append(array.toString());
         result.append("[");
         result.append(index.toString());
         result.append("]");

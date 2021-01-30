@@ -101,6 +101,13 @@ public class BinaryOperation extends JavaExpression {
     }
 
     @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other)
+                || left.containsSyntacticEqualJavaExpression(other)
+                || right.containsSyntacticEqualJavaExpression(other);
+    }
+
+    @Override
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return left.containsModifiableAliasOf(store, other)
                 || right.containsModifiableAliasOf(store, other);

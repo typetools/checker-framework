@@ -779,7 +779,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // case 1:
             if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
                 arrayValuesIterator.remove(); // remove information completely
-            } else if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
+            } else if (canAlias(arrayAccess.getArray(), otherArrayAccess.getArray())) {
                 // TODO: one could be less strict here, and only raise the abstract
                 // value for all array expressions with potentially aliasing receivers.
                 arrayValuesIterator.remove(); // remove information completely
@@ -847,7 +847,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             MethodCall otherMethodAccess = entry.getKey();
             // case 3:
             if (otherMethodAccess.containsSyntacticEqualJavaExpression(var)
-                    || otherMethodAccess.containsSyntacticEqualParameter(var)) {
+                    || otherMethodAccess.containsSyntacticEqualArgument(var)) {
                 methodValuesIterator.remove();
             }
         }

@@ -84,6 +84,11 @@ public class UnaryOperation extends JavaExpression {
     }
 
     @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other) || operand.containsSyntacticEqualJavaExpression(other);
+    }
+
+    @Override
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return operand.containsModifiableAliasOf(store, other);
     }

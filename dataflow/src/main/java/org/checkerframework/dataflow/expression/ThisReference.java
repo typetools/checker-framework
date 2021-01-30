@@ -36,6 +36,11 @@ public class ThisReference extends JavaExpression {
     }
 
     @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other);
+    }
+
+    @Override
     public boolean isUnassignableByOtherCode() {
         return true;
     }

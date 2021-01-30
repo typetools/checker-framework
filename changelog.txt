@@ -43,6 +43,9 @@ Moved class:
 Renamed methods:
  * `AnnotatedTypeMirror.directSuperTypes` => `directSupertypes` (note
    capitalization) for consistency with `javax.lang.model.util.Types`
+ * `MethodCall.getParameters` => `getArguments`
+ * `MethodCall.containsSyntacticEqualParameter` => `containsSyntacticEqualArgument`
+ * `ArrayAccess.getReceiver` => `getArray`
 
 **Closed issues:**
 

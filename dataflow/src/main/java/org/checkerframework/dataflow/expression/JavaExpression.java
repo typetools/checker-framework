@@ -116,7 +116,7 @@ public abstract class JavaExpression {
      * <p>This exists for use by {@link containsSyntacticEqualJavaExpression}.
      *
      * @param je the other Java expression to compare to this one
-     * @return true if and only if the two Java expressions receivers are syntactically identical
+     * @return true if and only if the two Java expressions are syntactically identical
      */
     @EqualsMethod
     public abstract boolean syntacticEquals(JavaExpression je);
@@ -151,20 +151,31 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Returns true if and only if this receiver contains a receiver that is syntactically equal to
+     * Returns true if and only if this contains a JavaExpression that is syntactically equal to
      * {@code other}.
      *
-     * @return true if and only if this receiver contains a receiver that is syntactically equal to
+     * @return true if and only if this contains a JavaExpression that is syntactically equal to
      *     {@code other}
      */
-    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other);
+    public abstract boolean containsSyntacticEqualJavaExpression(JavaExpression other);
+
+    /**
+     * Returns true if the given list contains a JavaExpression that is syntactically equal to
+     * {@code other}.
+     *
+     * @return true if and only if the list contains a JavaExpression that is syntactically equal to
+     *     {@code other}
+     */
+    public static boolean listContainsSyntacticEqualJavaExpression(
+            List<? extends @Nullable JavaExpression> list, JavaExpression other) {
+        return list.stream()
+                .anyMatch(je -> je != null && je.containsSyntacticEqualJavaExpression(other));
     }
 
     /**
-     * Returns true if and only if {@code other} appears anywhere in this receiver or an expression
-     * appears in this receiver such that {@code other} might alias this expression, and that
-     * expression is modifiable.
+     * Returns true if and only if {@code other} appears anywhere in this or an expression appears
+     * in this such that {@code other} might alias this expression, and that expression is
+     * modifiable.
      *
      * <p>This is always true, except for cases where the Java type information prevents aliasing
      * and none of the subexpressions can alias 'other'.
@@ -188,7 +199,7 @@ public abstract class JavaExpression {
 
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     * Can contain {@link Unknown} as receiver.
+     * The result may contain {@link Unknown} as receiver.
      *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
@@ -207,7 +218,7 @@ public abstract class JavaExpression {
 
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     * Can contain {@link Unknown} as receiver.
+     * The result may contain {@link Unknown} as receiver.
      *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.

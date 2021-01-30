@@ -9,9 +9,9 @@ import org.checkerframework.dataflow.analysis.Store;
 @UsesObjectEquals
 public class Unknown extends JavaExpression {
     /**
-     * Create a new Unknown receiver.
+     * Create a new Unknown JavaExpression.
      *
-     * @param type the Java type of this receiver
+     * @param type the Java type of this
      */
     public Unknown(TypeMirror type) {
         super(type);
@@ -36,6 +36,11 @@ public class Unknown extends JavaExpression {
     @Override
     public boolean syntacticEquals(JavaExpression je) {
         return this == je;
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other);
     }
 
     @Override

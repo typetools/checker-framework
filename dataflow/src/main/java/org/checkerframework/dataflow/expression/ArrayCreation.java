@@ -39,10 +39,10 @@ public class ArrayCreation extends JavaExpression {
     }
 
     /**
-     * Returns a list of receivers representing the dimensions of this array creation. A {code null}
-     * element means that there is no dimension expression for the given array level.
+     * Returns a list representing the dimensions of this array creation. A {code null} element
+     * means that there is no dimension expression for the given array level.
      *
-     * @return a list of receivers representing the dimensions of this array creation
+     * @return a list representing the dimensions of this array creation
      */
     public List<@Nullable JavaExpression> getDimensions() {
         return dimensions;
@@ -108,7 +108,9 @@ public class ArrayCreation extends JavaExpression {
 
     @Override
     public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other);
+        return syntacticEquals(other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(dimensions, other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(initializers, other);
     }
 
     @Override
