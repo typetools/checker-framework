@@ -92,25 +92,14 @@ public class MethodCall extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        if (!(other instanceof MethodCall)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof MethodCall)) {
             return false;
         }
-        MethodCall otherMethod = (MethodCall) other;
-        if (!receiver.syntacticEquals(otherMethod.receiver)) {
-            return false;
-        }
-        if (parameters.size() != otherMethod.parameters.size()) {
-            return false;
-        }
-        int i = 0;
-        for (JavaExpression p : parameters) {
-            if (!p.syntacticEquals(otherMethod.parameters.get(i))) {
-                return false;
-            }
-            i++;
-        }
-        return method.equals(otherMethod.method);
+        MethodCall other = (MethodCall) je;
+        return this.receiver.syntacticEquals(other.receiver)
+                && JavaExpression.syntacticEqualsList(this.parameters, other.parameters)
+                && method.equals(other.method);
     }
 
     public boolean containsSyntacticEqualParameter(LocalVariable var) {

@@ -113,8 +113,8 @@ public class ValueLiteral extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        return this.equals(other);
+    public boolean syntacticEquals(JavaExpression je) {
+        return this.equals(je);
     }
 
     @Override

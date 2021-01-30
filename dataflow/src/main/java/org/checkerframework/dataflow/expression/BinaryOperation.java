@@ -90,15 +90,14 @@ public class BinaryOperation extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        if (!(other instanceof BinaryOperation)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof BinaryOperation)) {
             return false;
         }
-        BinaryOperation biOp = (BinaryOperation) other;
-        if (!(operationKind == biOp.getOperationKind())) {
-            return false;
-        }
-        return left.equals(biOp.left) && right.equals(biOp.right);
+        BinaryOperation other = (BinaryOperation) je;
+        return operationKind == other.getOperationKind()
+                && left.syntacticEquals(other.left)
+                && right.syntacticEquals(other.right);
     }
 
     @Override

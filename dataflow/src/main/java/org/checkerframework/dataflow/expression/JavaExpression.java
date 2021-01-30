@@ -111,14 +111,43 @@ public abstract class JavaExpression {
     public abstract boolean isUnmodifiableByOtherCode();
 
     /**
-     * Returns true if and only if the two receivers are syntactically identical.
+     * Returns true if and only if the two Java expressions are syntactically identical.
      *
-     * @param other the other object to compare to this one
-     * @return true if and only if the two receivers are syntactically identical
+     * <p>This exists for use by {@link containsSyntacticEqualJavaExpression}.
+     *
+     * @param je the other Java expression to compare to this one
+     * @return true if and only if the two Java expressions receivers are syntactically identical
      */
     @EqualsMethod
-    public boolean syntacticEquals(JavaExpression other) {
-        return other == this;
+    public abstract boolean syntacticEquals(JavaExpression je);
+
+    /**
+     * Returns true if the corresponding list elements satisfy {@link #syntacticEquals}.
+     *
+     * @param lst1 the first list to compare
+     * @param lst2 the second list to compare
+     * @return true if the corresponding list elements satisfy {@link #syntacticEquals}
+     */
+    static boolean syntacticEqualsList(
+            List<? extends @Nullable JavaExpression> lst1,
+            List<? extends @Nullable JavaExpression> lst2) {
+        if (lst1.size() != lst2.size()) {
+            return false;
+        }
+        for (int i = 0; i < lst1.size(); i++) {
+            JavaExpression dim1 = lst1.get(i);
+            JavaExpression dim2 = lst2.get(i);
+            if (dim1 == null) {
+                if (dim2 != null) {
+                    return false;
+                }
+            } else {
+                if (!dim1.syntacticEquals(dim2)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

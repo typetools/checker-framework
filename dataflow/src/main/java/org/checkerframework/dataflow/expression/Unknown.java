@@ -34,6 +34,11 @@ public class Unknown extends JavaExpression {
     }
 
     @Override
+    public boolean syntacticEquals(JavaExpression je) {
+        return this == je;
+    }
+
+    @Override
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return true;
     }
