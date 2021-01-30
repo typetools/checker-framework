@@ -23,6 +23,7 @@ public class MethodCall extends JavaExpression {
     /**
      * Creates a new MethodCall.
      *
+     * @param type the type of the method call
      * @param method the method being called
      * @param receiver the receiver argument
      * @param arguments the arguments

@@ -137,8 +137,10 @@ public abstract class JavaExpression {
         for (int i = 0; i < lst1.size(); i++) {
             JavaExpression dim1 = lst1.get(i);
             JavaExpression dim2 = lst2.get(i);
-            if (dim1 == null || dim2 == null) {
-                return dim1 == dim2;
+            if (dim1 == null && dim2 == null) {
+                continue;
+            } else if (dim1 == null || dim2 == null) {
+                return false;
             } else {
                 if (!dim1.syntacticEquals(dim2)) {
                     return false;
