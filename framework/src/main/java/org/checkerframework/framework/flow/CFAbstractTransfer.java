@@ -597,21 +597,19 @@ public abstract class CFAbstractTransfer<
      * Standardize a type qualifier annotation obtained from a contract.
      *
      * @param annoFromContract a contract annotation that was written on a method declaration
-     * @param flowExprContext the context to use for standardization
+     * @param jeContext the context to use for standardization
      * @param path the program element that will be annotated by the returned annotation
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     private AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext flowExprContext,
-            TreePath path) {
+            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
         // TODO: common implementation with
         // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
         DependentTypesHelper dependentTypesHelper = analysis.dependentTypesHelper;
         if (dependentTypesHelper != null) {
             AnnotationMirror standardized =
                     dependentTypesHelper.standardizeAnnotationIfDependentType(
-                            flowExprContext, path, annoFromContract, false, false);
+                            jeContext, path, annoFromContract, false, false);
             if (standardized != null) {
                 // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
                 // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().

@@ -2447,19 +2447,17 @@ public abstract class GenericAnnotatedTypeFactory<
      * Standardize a type qualifier annotation obtained from a contract.
      *
      * @param annoFromContract the annotation to be standardized
-     * @param flowExprContext the context to use for standardization
+     * @param jeContext the context to use for standardization
      * @param path the path to a use of the contract (a method call) or to the method declaration
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     public AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext flowExprContext,
-            TreePath path) {
+            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
         DependentTypesHelper dependentTypesHelper = getDependentTypesHelper();
         if (dependentTypesHelper != null) {
             AnnotationMirror standardized =
                     dependentTypesHelper.standardizeAnnotationIfDependentType(
-                            flowExprContext, path, annoFromContract, false, false);
+                            jeContext, path, annoFromContract, false, false);
             if (standardized != null) {
                 dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
                 return standardized;

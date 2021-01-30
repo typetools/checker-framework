@@ -347,6 +347,7 @@ List<String> getJavaFilesToFormat(projectName) {
     project(':' + projectName).sourceSets.forEach { set ->
         javaFiles.addAll(set.java.files)
     }
+
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
         // If you change this, also change checker/bin-devel/git.pre-commit
@@ -357,7 +358,8 @@ List<String> getJavaFilesToFormat(projectName) {
             javaFiles.add(details.file)
         }
     }
-     // Collect all java files in jtreg directory
+
+    // Collect all java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
             javaFiles.add(details.file)

@@ -951,7 +951,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        JavaExpressionContext flowExprContext =
+        JavaExpressionContext jeContext =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodTree, getCurrentPath(), checker);
 
@@ -961,13 +961,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             annotation =
                     atypeFactory.standardizeAnnotationFromContract(
-                            annotation, flowExprContext, getCurrentPath());
+                            annotation, jeContext, getCurrentPath());
 
             JavaExpression exprJe = null;
             try {
                 exprJe =
                         JavaExpressionParseUtil.parse(
-                                expressionString, flowExprContext, getCurrentPath(), false);
+                                expressionString, jeContext, getCurrentPath(), false);
             } catch (JavaExpressionParseException e) {
                 checker.report(methodTree, e.getDiagMessage());
             }
@@ -1676,10 +1676,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (preconditions.isEmpty()) {
             return;
         }
-        JavaExpressionContext flowExprContext =
+        JavaExpressionContext jeContext =
                 JavaExpressionContext.buildContextForMethodUse(tree, checker);
 
-        if (flowExprContext == null) {
+        if (jeContext == null) {
             checker.reportError(tree, "flowexpr.parse.context.not.determined", tree);
             return;
         }
@@ -1691,13 +1691,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             anno =
                     atypeFactory.standardizeAnnotationFromContract(
-                            anno, flowExprContext, getCurrentPath());
+                            anno, jeContext, getCurrentPath());
 
             JavaExpression exprJe;
             try {
                 exprJe =
                         JavaExpressionParseUtil.parse(
-                                expressionString, flowExprContext, getCurrentPath(), false);
+                                expressionString, jeContext, getCurrentPath(), false);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());
@@ -4161,27 +4161,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         MethodTree methodTree = visitorState.getMethodTree();
         TreePath path = atypeFactory.getPath(methodTree);
-        JavaExpressionContext flowExprContext = null; // lazily initialized, for efficiency
+        JavaExpressionContext jeContext = null; // lazily initialized, for efficiency
         for (Contract p : contractSet) {
             String expressionString = p.expression;
             AnnotationMirror annotation = p.annotation;
-            if (flowExprContext == null) {
-                flowExprContext =
+            if (jeContext == null) {
+                jeContext =
                         JavaExpressionContext.buildContextForMethodDeclaration(
                                 methodTree, method.getReceiverType().getUnderlyingType(), checker);
             }
 
             annotation =
-                    atypeFactory.standardizeAnnotationFromContract(
-                            annotation, flowExprContext, path);
+                    atypeFactory.standardizeAnnotationFromContract(annotation, jeContext, path);
 
             try {
                 // TODO: currently, these expressions are parsed many times.
                 // This could be optimized to store the result the first time.
                 // (same for other annotations)
                 JavaExpression exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, flowExprContext, path, false);
+                        JavaExpressionParseUtil.parse(expressionString, jeContext, path, false);
                 result.add(Pair.of(exprJe, annotation));
             } catch (JavaExpressionParseException e) {
                 // report errors here
