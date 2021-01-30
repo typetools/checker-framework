@@ -41,6 +41,7 @@ nl='
 '
 for i in "$@" ; do
    IFS=
+   # shellcheck disable=SC2027
    args=$args$nl"'"$i"'"
    IFS="$saveIFS"
 done
