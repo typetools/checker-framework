@@ -230,8 +230,8 @@ public class LockAnnotatedTypeFactory
             return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
         } else if (expr instanceof MethodCall) {
             MethodCall methodCall = (MethodCall) expr;
-            for (JavaExpression param : methodCall.getParameters()) {
-                if (!isExpressionEffectivelyFinal(param)) {
+            for (JavaExpression arg : methodCall.getArguments()) {
+                if (!isExpressionEffectivelyFinal(arg)) {
                     return false;
                 }
             }

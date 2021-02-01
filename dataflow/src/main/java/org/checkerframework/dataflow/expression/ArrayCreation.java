@@ -13,8 +13,8 @@ import org.plumelib.util.StringsPlume;
 public class ArrayCreation extends JavaExpression {
 
     /**
-     * List of dimensions expressions. {code null} means that there is no dimension expression for
-     * the given array level.
+     * List of dimensions expressions. A {code null} element means that there is no dimension
+     * expression for the given array level.
      */
     protected final List<@Nullable JavaExpression> dimensions;
     /** List of initializers. */
@@ -24,8 +24,8 @@ public class ArrayCreation extends JavaExpression {
      * Creates an ArrayCreation object.
      *
      * @param type array type
-     * @param dimensions list of dimension expressions; {code null} means that there is no dimension
-     *     expression
+     * @param dimensions list of dimension expressions; a {code null} element means that there is no
+     *     dimension expression for the given array level.
      * @param initializers list of initializer expressions
      */
     public ArrayCreation(
@@ -39,9 +39,10 @@ public class ArrayCreation extends JavaExpression {
     }
 
     /**
-     * Returns a list of receivers representing the dimension of this array creation.
+     * Returns a list representing the dimensions of this array creation. A {code null} element
+     * means that there is no dimension expression for the given array level.
      *
-     * @return a list of receivers representing the dimension of this array creation
+     * @return a list representing the dimensions of this array creation
      */
     public List<@Nullable JavaExpression> getDimensions() {
         return dimensions;
@@ -95,13 +96,21 @@ public class ArrayCreation extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        return this.equals(other);
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof ArrayCreation)) {
+            return false;
+        }
+        ArrayCreation other = (ArrayCreation) je;
+        return JavaExpression.syntacticEqualsList(this.dimensions, other.dimensions)
+                && JavaExpression.syntacticEqualsList(this.initializers, other.initializers)
+                && getType().toString().equals(other.getType().toString());
     }
 
     @Override
     public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other);
+        return syntacticEquals(other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(dimensions, other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(initializers, other);
     }
 
     @Override

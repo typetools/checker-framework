@@ -42,8 +42,17 @@ public class ClassName extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        return this.equals(other);
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof ClassName)) {
+            return false;
+        }
+        ClassName other = (ClassName) je;
+        return typeString.equals(other.typeString);
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other);
     }
 
     @Override

@@ -13,18 +13,29 @@ import org.checkerframework.dataflow.analysis.Store;
 /** A call to a @Deterministic method. */
 public class MethodCall extends JavaExpression {
 
-    protected final JavaExpression receiver;
-    protected final List<JavaExpression> parameters;
+    /** The method being called. */
     protected final ExecutableElement method;
+    /** The receiver argument. */
+    protected final JavaExpression receiver;
+    /** The arguments. */
+    protected final List<JavaExpression> arguments;
 
+    /**
+     * Creates a new MethodCall.
+     *
+     * @param type the type of the method call
+     * @param method the method being called
+     * @param receiver the receiver argument
+     * @param arguments the arguments
+     */
     public MethodCall(
             TypeMirror type,
             ExecutableElement method,
             JavaExpression receiver,
-            List<JavaExpression> parameters) {
+            List<JavaExpression> arguments) {
         super(type);
         this.receiver = receiver;
-        this.parameters = parameters;
+        this.arguments = arguments;
         this.method = method;
     }
 
@@ -36,12 +47,21 @@ public class MethodCall extends JavaExpression {
         if (receiver.containsOfClass(clazz)) {
             return true;
         }
-        for (JavaExpression p : parameters) {
+        for (JavaExpression p : arguments) {
             if (p.containsOfClass(clazz)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the ExecutableElement for the method call.
+     *
+     * @return the ExecutableElement for the method call
+     */
+    public ExecutableElement getElement() {
+        return method;
     }
 
     /**
@@ -54,23 +74,12 @@ public class MethodCall extends JavaExpression {
     }
 
     /**
-     * Returns the method call parameters (for inspection only - do not modify any of the
-     * parameters).
+     * Returns the method call arguments (for inspection only - do not modify any of the arguments).
      *
-     * @return the method call parameters (for inspection only - do not modify any of the
-     *     parameters)
+     * @return the method call arguments (for inspection only - do not modify any of the arguments)
      */
-    public List<JavaExpression> getParameters() {
-        return Collections.unmodifiableList(parameters);
-    }
-
-    /**
-     * Returns the ExecutableElement for the method call.
-     *
-     * @return the ExecutableElement for the method call
-     */
-    public ExecutableElement getElement() {
-        return method;
+    public List<JavaExpression> getArguments() {
+        return Collections.unmodifiableList(arguments);
     }
 
     @Override
@@ -78,7 +87,7 @@ public class MethodCall extends JavaExpression {
         // There is no need to check that the method is deterministic, because a MethodCall is
         // only created for deterministic methods.
         return receiver.isUnmodifiableByOtherCode()
-                && parameters.stream().allMatch(JavaExpression::isUnmodifiableByOtherCode);
+                && arguments.stream().allMatch(JavaExpression::isUnmodifiableByOtherCode);
     }
 
     @Override
@@ -88,38 +97,20 @@ public class MethodCall extends JavaExpression {
 
     @Override
     public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other) || receiver.syntacticEquals(other);
+        return syntacticEquals(other)
+                || receiver.containsSyntacticEqualJavaExpression(other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        if (!(other instanceof MethodCall)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof MethodCall)) {
             return false;
         }
-        MethodCall otherMethod = (MethodCall) other;
-        if (!receiver.syntacticEquals(otherMethod.receiver)) {
-            return false;
-        }
-        if (parameters.size() != otherMethod.parameters.size()) {
-            return false;
-        }
-        int i = 0;
-        for (JavaExpression p : parameters) {
-            if (!p.syntacticEquals(otherMethod.parameters.get(i))) {
-                return false;
-            }
-            i++;
-        }
-        return method.equals(otherMethod.method);
-    }
-
-    public boolean containsSyntacticEqualParameter(LocalVariable var) {
-        for (JavaExpression p : parameters) {
-            if (p.containsSyntacticEqualJavaExpression(var)) {
-                return true;
-            }
-        }
-        return false;
+        MethodCall other = (MethodCall) je;
+        return method.equals(other.method)
+                && this.receiver.syntacticEquals(other.receiver)
+                && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
     }
 
     @Override
@@ -127,7 +118,7 @@ public class MethodCall extends JavaExpression {
         if (receiver.containsModifiableAliasOf(store, other)) {
             return true;
         }
-        for (JavaExpression p : parameters) {
+        for (JavaExpression p : arguments) {
             if (p.containsModifiableAliasOf(store, other)) {
                 return true;
             }
@@ -147,9 +138,9 @@ public class MethodCall extends JavaExpression {
             return false;
         }
         MethodCall other = (MethodCall) obj;
-        return parameters.equals(other.parameters)
+        return method.equals(other.method)
                 && receiver.equals(other.receiver)
-                && method.equals(other.method);
+                && arguments.equals(other.arguments);
     }
 
     @Override
@@ -157,7 +148,7 @@ public class MethodCall extends JavaExpression {
         if (method.getKind() == ElementKind.CONSTRUCTOR) {
             return super.hashCode();
         }
-        return Objects.hash(method, receiver, parameters);
+        return Objects.hash(method, receiver, arguments);
     }
 
     @Override
@@ -173,8 +164,8 @@ public class MethodCall extends JavaExpression {
         preParen.append(methodName);
         preParen.append("(");
         StringJoiner result = new StringJoiner(", ", preParen, ")");
-        for (JavaExpression parameter : parameters) {
-            result.add(parameter.toString());
+        for (JavaExpression argument : arguments) {
+            result.add(argument.toString());
         }
         return result.toString();
     }

@@ -111,31 +111,75 @@ public abstract class JavaExpression {
     public abstract boolean isUnmodifiableByOtherCode();
 
     /**
-     * Returns true if and only if the two receivers are syntactically identical.
+     * Returns true if and only if the two Java expressions are syntactically identical.
      *
-     * @param other the other object to compare to this one
-     * @return true if and only if the two receivers are syntactically identical
+     * <p>This exists for use by {@link containsSyntacticEqualJavaExpression}.
+     *
+     * @param je the other Java expression to compare to this one
+     * @return true if and only if the two Java expressions are syntactically identical
      */
     @EqualsMethod
-    public boolean syntacticEquals(JavaExpression other) {
-        return other == this;
+    public abstract boolean syntacticEquals(JavaExpression je);
+
+    /**
+     * Returns true if the corresponding list elements satisfy {@link #syntacticEquals}.
+     *
+     * @param lst1 the first list to compare
+     * @param lst2 the second list to compare
+     * @return true if the corresponding list elements satisfy {@link #syntacticEquals}
+     */
+    static boolean syntacticEqualsList(
+            List<? extends @Nullable JavaExpression> lst1,
+            List<? extends @Nullable JavaExpression> lst2) {
+        if (lst1.size() != lst2.size()) {
+            return false;
+        }
+        for (int i = 0; i < lst1.size(); i++) {
+            JavaExpression dim1 = lst1.get(i);
+            JavaExpression dim2 = lst2.get(i);
+            if (dim1 == null && dim2 == null) {
+                continue;
+            } else if (dim1 == null || dim2 == null) {
+                return false;
+            } else {
+                if (!dim1.syntacticEquals(dim2)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
-     * Returns true if and only if this receiver contains a receiver that is syntactically equal to
+     * Returns true if and only if this contains a JavaExpression that is syntactically equal to
      * {@code other}.
      *
-     * @return true if and only if this receiver contains a receiver that is syntactically equal to
+     * @param other the JavaExpression to search for
+     * @return true if and only if this contains a JavaExpression that is syntactically equal to
      *     {@code other}
      */
-    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other);
+    public abstract boolean containsSyntacticEqualJavaExpression(JavaExpression other);
+
+    /**
+     * Returns true if the given list contains a JavaExpression that is syntactically equal to
+     * {@code other}.
+     *
+     * @param list the list in which to search for a match
+     * @param other the JavaExpression to search for
+     * @return true if and only if the list contains a JavaExpression that is syntactically equal to
+     *     {@code other}
+     */
+    @SuppressWarnings("nullness:dereference.of.nullable") // flow within a lambda
+    public static boolean listContainsSyntacticEqualJavaExpression(
+            List<? extends @Nullable JavaExpression> list, JavaExpression other) {
+        return list.stream()
+                .anyMatch(je -> je != null && je.containsSyntacticEqualJavaExpression(other));
     }
 
     /**
-     * Returns true if and only if {@code other} appears anywhere in this receiver or an expression
-     * appears in this receiver such that {@code other} might alias this expression, and that
-     * expression is modifiable.
+     * Returns true if and only if {@code other} appears anywhere in this or an expression appears
+     * in this such that {@code other} might alias this expression, and that expression is
+     * modifiable.
      *
      * <p>This is always true, except for cases where the Java type information prevents aliasing
      * and none of the subexpressions can alias 'other'.
@@ -159,7 +203,7 @@ public abstract class JavaExpression {
 
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     * Can contain {@link Unknown} as receiver.
+     * The result may contain {@link Unknown} as receiver.
      *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
@@ -178,7 +222,7 @@ public abstract class JavaExpression {
 
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     * Can contain {@link Unknown} as receiver.
+     * The result may contain {@link Unknown} as receiver.
      *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
