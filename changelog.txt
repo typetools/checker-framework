@@ -49,6 +49,7 @@ Renamed methods:
  * `ArrayAccess.getReceiver` => `getArray`
 
 **Closed issues:**
+#3325 , #3474.
 
 ---------------------------------------------------------------------------
 
