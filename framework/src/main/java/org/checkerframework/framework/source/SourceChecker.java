@@ -867,7 +867,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
         @Nullable Trees trees = Trees.instance(processingEnv);
-        assert trees != null; /*nninvariant*/
+        assert trees != null;
         this.trees = trees;
 
         this.messager = processingEnv.getMessager();
@@ -1557,7 +1557,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
 
         @Nullable String @Nullable [] slValue = sl.value();
-        assert slValue != null; /*nninvariant*/
+        assert slValue != null;
 
         @Nullable String[] lintArray = slValue;
         Set<String> lintSet = new HashSet<>(lintArray.length);
