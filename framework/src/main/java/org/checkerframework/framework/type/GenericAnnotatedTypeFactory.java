@@ -567,7 +567,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates an {@link DependentTypesHelper} and returns it.
+     * Creates a {@link DependentTypesHelper} and returns it. Use {@link #getDependentTypesHelper}
+     * to access the value.
      *
      * @return a new {@link DependentTypesHelper}
      */

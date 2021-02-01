@@ -3231,7 +3231,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * will be returned.
      *
      * @param node the {@link Tree} to get the path for
-     * @return the path for {@code node} under the current root
+     * @return the path for {@code node} under the current root. Returns null if {@code node} is not
+     *     within the current compilation unit.
      */
     public final TreePath getPath(@FindDistinct Tree node) {
         assert root != null
