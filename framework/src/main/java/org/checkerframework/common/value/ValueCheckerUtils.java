@@ -417,12 +417,12 @@ public class ValueCheckerUtils {
 
         if (je instanceof ArrayAccess) {
             ArrayAccess e = (ArrayAccess) je;
-            JavaExpression optReceiver = optimize(e.getReceiver(), factory);
+            JavaExpression optArray = optimize(e.getArray(), factory);
             JavaExpression optIndex = optimize(e.getIndex(), factory);
-            if (e.getReceiver() == optReceiver && e.getIndex() == optIndex) {
+            if (e.getArray() == optArray && e.getIndex() == optIndex) {
                 return e;
             } else {
-                return new ArrayAccess(e.getType(), optReceiver, optIndex);
+                return new ArrayAccess(e.getType(), optArray, optIndex);
             }
 
         } else if (je instanceof ArrayCreation) {
@@ -470,11 +470,11 @@ public class ValueCheckerUtils {
         } else if (je instanceof MethodCall) {
             MethodCall e = (MethodCall) je;
             JavaExpression optReceiver = optimize(e.getReceiver(), factory);
-            List<JavaExpression> optParameters = optimize(e.getParameters(), factory);
-            if (e.getReceiver() == optReceiver && e.getParameters() == optParameters) {
+            List<JavaExpression> optArguments = optimize(e.getArguments(), factory);
+            if (e.getReceiver() == optReceiver && e.getArguments() == optArguments) {
                 return e;
             } else {
-                return new MethodCall(e.getType(), e.getElement(), optReceiver, optParameters);
+                return new MethodCall(e.getType(), e.getElement(), optReceiver, optArguments);
             }
 
         } else if (je instanceof ThisReference) {

@@ -646,19 +646,11 @@ public abstract class AnnotatedTypeMirror {
      * @return true if the annotation was removed, false if the type's annotations were unchanged
      */
     public boolean removeAnnotation(AnnotationMirror a) {
-        // Going from the AnnotationMirror to its name and then calling
-        // getAnnotation ensures that we get the canonical AnnotationMirror that can be
-        // removed.
-        // TODO: however, this also means that if we are annotated with "@I(1)" and
-        // remove "@I(2)" it will be removed. Is this what we want?
-        // It's currently necessary for the Lock Checker.
-        AnnotationMirror anno =
-                AnnotationUtils.getAnnotationByName(annotations, AnnotationUtils.annotationName(a));
+        AnnotationMirror anno = AnnotationUtils.getSame(annotations, a);
         if (anno != null) {
             return annotations.remove(anno);
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -667,13 +659,12 @@ public abstract class AnnotatedTypeMirror {
      * @param a the class of the annotation to remove
      * @return true if the annotation was removed, false if the type's annotations were unchanged
      */
-    public boolean removeAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
-        if (!atypeFactory.isSupportedQualifier(anno)) {
-            throw new BugInCF(
-                    "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
+    public boolean removeAnnotationByClass(Class<? extends Annotation> a) {
+        AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(annotations, a);
+        if (anno != null) {
+            return annotations.remove(anno);
         }
-        return removeAnnotation(anno);
+        return false;
     }
 
     /**
@@ -2238,9 +2229,10 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * This method returns a list of AnnotatedTypeMirrors where the Java type of each ATM is an
-     * immediate supertype (class or interface) of the Java type of this. If the directSuperType has
-     * type arguments, then the annotations on those type arguments are taken with proper
-     * translation from the declaration of the Java type of this.
+     * immediate supertype (class or interface) of the Java type of this. The interface types, if
+     * any, appear at the end of the list. If the directSuperType has type arguments, then the
+     * annotations on those type arguments are taken with proper translation from the declaration of
+     * the Java type of this.
      *
      * <p>For example,
      *

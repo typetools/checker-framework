@@ -76,6 +76,7 @@ import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -563,7 +564,7 @@ public abstract class CFAbstractTransfer<
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
-            String expression = p.expression;
+            String expressionString = p.expression;
             AnnotationMirror annotation = p.annotation;
 
             if (methodUseContext == null) {
@@ -572,20 +573,20 @@ public abstract class CFAbstractTransfer<
                                 methodDeclTree, methodAst.getClassTree(), analysis.checker);
             }
 
-            TreePath localScope = analysis.atypeFactory.getPath(methodDeclTree);
+            TreePath methodDeclPath = analysis.atypeFactory.getPath(methodDeclTree);
 
             annotation =
-                    standardizeAnnotationFromContract(annotation, methodUseContext, localScope);
+                    standardizeAnnotationFromContract(annotation, methodUseContext, methodDeclPath);
 
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                JavaExpression expr =
+                JavaExpression exprJe =
                         JavaExpressionParseUtil.parse(
-                                expression, methodUseContext, localScope, false);
-                initialStore.insertValue(expr, annotation);
+                                expressionString, methodUseContext, methodDeclPath, false);
+                initialStore.insertValue(exprJe, annotation);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
             }
@@ -595,21 +596,20 @@ public abstract class CFAbstractTransfer<
     /**
      * Standardize a type qualifier annotation obtained from a contract.
      *
-     * @param annoFromContract a controct annotation that was written on a method declaration
-     * @param flowExprContext context
+     * @param annoFromContract a contract annotation that was written on a method declaration
+     * @param jeContext the context to use for standardization
      * @param path the program element that will be annotated by the returned annotation
-     * @return a type qualifier annotation obtained from the given contract
+     * @return the standardized annotation, or the argument if it does not need standardization
      */
     private AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext flowExprContext,
-            TreePath path) {
+            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
         // TODO: common implementation with
         // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
-        if (analysis.dependentTypesHelper != null) {
+        DependentTypesHelper dependentTypesHelper = analysis.dependentTypesHelper;
+        if (dependentTypesHelper != null) {
             AnnotationMirror standardized =
-                    analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
-                            flowExprContext, path, annoFromContract, false, false);
+                    dependentTypesHelper.standardizeAnnotationIfDependentType(
+                            jeContext, path, annoFromContract, false, false);
             if (standardized != null) {
                 // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
                 // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
@@ -841,11 +841,15 @@ public abstract class CFAbstractTransfer<
      * #splitAssignments} should be called, and the new type should be inserted into the store for
      * each of the resulting nodes.
      *
+     * @param firstNode the node that might be more precise
+     * @param secondNode the node whose type to possibly refine
+     * @param firstValue the abstract value that might be more precise
+     * @param secondValue the abstract value that might be less precise
      * @param res the previous result
      * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is
      *     added to the {@code elseStore} instead of the {@code thenStore}) for a not-equal
      *     comparison.
-     * @return the conditional transfer result (if information has been added), or {@code null}.
+     * @return the conditional transfer result (if information has been added), or {@code null}
      */
     protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
             TransferResult<V, S> res,
@@ -1206,7 +1210,7 @@ public abstract class CFAbstractTransfer<
         JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
         for (Contract p : postconditions) {
-            String expression = p.expression;
+            String expressionString = p.expression;
             AnnotationMirror anno = p.annotation;
 
             if (methodUseContext == null) {
@@ -1227,7 +1231,7 @@ public abstract class CFAbstractTransfer<
             try {
                 JavaExpression je =
                         JavaExpressionParseUtil.parse(
-                                expression, methodUseContext, pathToInvocation, false);
+                                expressionString, methodUseContext, pathToInvocation, false);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call
