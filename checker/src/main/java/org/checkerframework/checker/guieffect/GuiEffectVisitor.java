@@ -32,6 +32,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -142,11 +143,11 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         public GuiEffectOverrideChecker(
                 Tree overriderTree,
-                AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+                AnnotatedExecutableType overrider,
                 AnnotatedTypeMirror overridingType,
                 AnnotatedTypeMirror overridingReturnType,
                 AnnotatedExecutableType overridden,
-                AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+                AnnotatedDeclaredType overriddenType,
                 AnnotatedTypeMirror overriddenReturnType) {
             super(
                     overriderTree,

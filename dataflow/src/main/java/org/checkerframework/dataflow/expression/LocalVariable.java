@@ -9,9 +9,16 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** A local variable. */
 public class LocalVariable extends JavaExpression {
+    /** The element for this local variable. */
     protected final Element element;
 
+    /**
+     * Creates a new LocalVariable.
+     *
+     * @param localVar a CFG local variable
+     */
     public LocalVariable(LocalVariableNode localVar) {
         super(localVar.getType());
         this.element = localVar.getElement();
@@ -56,6 +63,11 @@ public class LocalVariable extends JavaExpression {
     @Override
     public String toString() {
         return element.toString();
+    }
+
+    @Override
+    public String toStringDebug() {
+        return super.toStringDebug() + " [owner=" + ((VarSymbol) element).owner + "]";
     }
 
     @Override
