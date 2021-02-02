@@ -341,19 +341,14 @@ public class JavaExpressionParseUtil {
                 return getParameterJavaExpression(s, context);
             }
 
-            // Local variable, parameter, or field.
+            // Local variable or parameter.
             if (!context.parsingMember && context.useLocalScope) {
                 // Attempt to match a local variable within the scope of the
                 // given path before attempting to match a field.
                 VariableElement varElem =
-                        resolver.findLocalVariableOrParameterOrField(s, annotatedConstruct);
+                        resolver.findLocalVariableOrParameter(s, annotatedConstruct);
                 if (varElem != null) {
-                    if (varElem.getKind() == ElementKind.FIELD) {
-                        boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                        return getFieldJavaExpression(varElem, context, isOriginalReceiver);
-                    } else {
-                        return new LocalVariable(varElem);
-                    }
+                    return new LocalVariable(varElem);
                 }
             }
 
