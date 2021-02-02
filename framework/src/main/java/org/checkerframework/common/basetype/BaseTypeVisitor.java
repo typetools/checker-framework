@@ -956,7 +956,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         methodTree, getCurrentPath(), checker);
 
         for (Contract contract : contracts) {
-            String expressionString = contract.expression;
+            String expressionString = contract.expressionString;
             AnnotationMirror annotation = contract.annotation;
 
             annotation =
@@ -1686,7 +1686,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         for (Contract c : preconditions) {
             Precondition p = (Precondition) c;
-            String expressionString = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror anno = p.annotation;
 
             anno =
@@ -4099,7 +4099,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Contract c : conditionalPostconditions) {
             ConditionalPostcondition p = (ConditionalPostcondition) c;
             if (p.resultValue == b) {
-                result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
+                result.add(
+                        new Postcondition(p.expressionString, p.annotation, p.contractAnnotation));
             }
         }
         return result;
@@ -4163,7 +4164,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         TreePath path = atypeFactory.getPath(methodTree);
         JavaExpressionContext jeContext = null; // lazily initialized, for efficiency
         for (Contract p : contractSet) {
-            String expressionString = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
             if (jeContext == null) {
                 jeContext =
