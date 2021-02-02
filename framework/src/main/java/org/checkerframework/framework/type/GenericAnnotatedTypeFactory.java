@@ -121,8 +121,13 @@ import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
- * inference, qualifier polymorphism, default annotations via {@link DefaultFor}, and user-specified
- * defaults via {@link DefaultQualifier}.
+ * inference.
+ *
+ * <p>It also adds other features: qualifier polymorphism, default annotations via {@link
+ * DefaultFor}, user-specified defaults via {@link DefaultQualifier}, standardization via {@link
+ * DependentTypesHelper}, etc. Those features, and {@link #addComputedTypeAnnotations} (other than
+ * the part related to flow-sensitivity), could and should be in the superclass {@link
+ * AnnotatedTypeFactory}; it is not clear why they are defined in this class.
  */
 public abstract class GenericAnnotatedTypeFactory<
                 Value extends CFAbstractValue<Value>,
