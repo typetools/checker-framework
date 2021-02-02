@@ -148,7 +148,7 @@ public class DependentTypesHelper {
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
         JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
-        JavaExpressionContext context = new JavaExpressionContext(r, null, factory.getChecker());
+        JavaExpressionContext context = new JavaExpressionContext(r, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocalScope(context, pathToUse, bound.getUpperBound());
             standardizeDoNotUseLocalScope(context, pathToUse, bound.getLowerBound());
@@ -353,7 +353,7 @@ public class DependentTypesHelper {
         }
         JavaExpression receiverJe = JavaExpression.getImplicitReceiver(classElt);
         JavaExpressionContext classignmentContext =
-                new JavaExpressionContext(receiverJe, null, factory.getChecker());
+                new JavaExpressionContext(receiverJe, factory.getChecker());
         standardizeDoNotUseLocalScope(classignmentContext, path, type);
     }
 
@@ -505,7 +505,7 @@ public class DependentTypesHelper {
                     receiverJe = JavaExpression.getImplicitReceiver(variableElt);
                 }
                 JavaExpressionContext fieldContext =
-                        new JavaExpressionContext(receiverJe, null, factory.getChecker());
+                        new JavaExpressionContext(receiverJe, factory.getChecker());
                 standardizeDoNotUseLocalScope(fieldContext, pathToVariableDecl, type);
                 break;
 
@@ -535,8 +535,7 @@ public class DependentTypesHelper {
         }
 
         JavaExpression receiver = JavaExpression.fromTree(factory, node.getExpression());
-        JavaExpressionContext context =
-                new JavaExpressionContext(receiver, null, factory.getChecker());
+        JavaExpressionContext context = new JavaExpressionContext(receiver, factory.getChecker());
         standardizeDoNotUseLocalScope(context, factory.getPath(node), type);
     }
 
