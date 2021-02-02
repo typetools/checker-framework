@@ -33,6 +33,9 @@ public class ClassName extends JavaExpression {
 
     @Override
     public String toString() {
+        if (typeString.endsWith(">")) {
+            return typeString.substring(0, typeString.indexOf("<")) + ".class";
+        }
         return typeString + ".class";
     }
 
