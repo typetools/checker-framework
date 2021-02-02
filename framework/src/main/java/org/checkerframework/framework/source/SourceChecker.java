@@ -915,9 +915,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
             messager.printMessage(
                     Kind.WARNING,
-                    "Memory constraints are impeding performance; please increase max heap size (currently "
-                            + Runtime.getRuntime().maxMemory()
-                            + " bytes).");
+                    String.format(
+                            "Memory constraints are impeding performance; please increase max heap size (max memory = %d, total memory = %d, free memory = %d)",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
             warnedAboutGarbageCollection = true;
         }
 
