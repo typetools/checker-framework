@@ -3312,7 +3312,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected OverrideChecker createOverrideChecker(
             Tree overriderTree,
-            AnnotatedExecutableType overrider,
+            AnnotatedExecutableType overriderMethodType,
             AnnotatedTypeMirror overridingType,
             AnnotatedTypeMirror overridingReturnType,
             AnnotatedExecutableType overriddenMethodType,
@@ -3320,7 +3320,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror overriddenReturnType) {
         return new OverrideChecker(
                 overriderTree,
-                overrider,
+                overriderMethodType,
                 overridingType,
                 overridingReturnType,
                 overriddenMethodType,
@@ -3349,12 +3349,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedDeclaredType overriddenType) {
 
         // Get the type of the overriding method.
-        AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
+        AnnotatedExecutableType overriderMethodType = atypeFactory.getAnnotatedType(overriderTree);
 
-        // Call the other version of the method, which takes overrider. Both versions
+        // Call the other version of the method, which takes overriderMethodType. Both versions
         // exist to allow checkers to override one or the other depending on their needs.
         return checkOverride(
-                overriderTree, overrider, overridingType, overriddenMethodType, overriddenType);
+                overriderTree,
+                overriderMethodType,
+                overridingType,
+                overriddenMethodType,
+                overriddenType);
     }
 
     /**
@@ -3366,7 +3370,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @see #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedDeclaredType,
      *     AnnotatedTypeMirror.AnnotatedExecutableType, AnnotatedTypeMirror.AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
-     * @param overrider type of the overriding method
+     * @param overriderMethodType type of the overriding method
      * @param overridingType type of overriding class
      * @param overriddenMethodType type of overridden method
      * @param overriddenType type of overridden class
@@ -3374,14 +3378,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean checkOverride(
             MethodTree overriderTree,
-            AnnotatedExecutableType overrider,
+            AnnotatedExecutableType overriderMethodType,
             AnnotatedDeclaredType overridingType,
             AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType) {
 
-        // This needs to be done before overrider.getReturnType() and
+        // This needs to be done before overriderMethodType.getReturnType() and
         // overriddenMethodType.getReturnType()
-        if (overrider.getTypeVariables().isEmpty()
+        if (overriderMethodType.getTypeVariables().isEmpty()
                 && !overriddenMethodType.getTypeVariables().isEmpty()) {
             overriddenMethodType = overriddenMethodType.getErased();
         }
@@ -3389,9 +3393,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         OverrideChecker overrideChecker =
                 createOverrideChecker(
                         overriderTree,
-                        overrider,
+                        overriderMethodType,
                         overridingType,
-                        overrider.getReturnType(),
+                        overriderMethodType.getReturnType(),
                         overriddenMethodType,
                         overriddenType,
                         overriddenMethodType.getReturnType());
