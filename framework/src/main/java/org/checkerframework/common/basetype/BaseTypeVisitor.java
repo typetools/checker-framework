@@ -3309,6 +3309,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>This exists so that subclasses can subclass OverrideChecker and use their subclass instead
      * of using OverrideChecker itself.
+     *
+     * @param overriderTree the AST node of the overriding method or method reference
+     * @param overriderMethodType the type of the overriding method
+     * @param overridingType the type enclosing the overrider method, usually an
+     *     AnnotatedDeclaredType; for Method References may be something else
+     * @param overridingReturnType the return type of the overriding method
+     * @param overriddenMethodType the type of the overridden method
+     * @param overriddenType the declared type enclosing the overridden method
+     * @param overriddenReturnType the return type of the overridden method
+     * @return an OverrideChecker
      */
     protected OverrideChecker createOverrideChecker(
             Tree overriderTree,
