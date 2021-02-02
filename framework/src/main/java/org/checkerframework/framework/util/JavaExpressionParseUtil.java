@@ -927,6 +927,18 @@ public class JavaExpressionParseUtil {
         public final boolean useLocalScope;
 
         /**
+         * Creates a context for parsing a Java expression, with "null" for arguments.
+         *
+         * @param receiver used to replace "this" in a Java expression and used to resolve
+         *     identifiers in any Java expression with an implicit "this"
+         * @param checker used to create {@link
+         *     org.checkerframework.dataflow.expression.JavaExpression}s
+         */
+        public JavaExpressionContext(JavaExpression receiver, SourceChecker checker) {
+            this(receiver, null, checker);
+        }
+
+        /**
          * Creates a context for parsing a Java expression.
          *
          * @param receiver used to replace "this" in a Java expression and used to resolve
