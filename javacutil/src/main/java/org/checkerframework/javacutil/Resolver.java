@@ -218,24 +218,23 @@ public class Resolver {
     }
 
     /**
-     * Finds the local variable with name {@code name} in the given scope.
+     * Finds the local variable (including formal parameters) with name {@code name} in the given
+     * scope.
      *
      * @param name the name of the local variable
      * @param path the tree path to the local scope
      * @return the element for the local variable, {@code null} otherwise
      */
-    public @Nullable VariableElement findLocalVariableOrParameterOrField(
-            String name, TreePath path) {
+    public @Nullable VariableElement findLocalVariableOrParameter(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
             Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
             if (res.getKind() == ElementKind.LOCAL_VARIABLE
-                    || res.getKind() == ElementKind.PARAMETER
-                    || res.getKind() == ElementKind.FIELD) {
+                    || res.getKind() == ElementKind.PARAMETER) {
                 return (VariableElement) res;
             } else {
-                // Most likely didn't find the variable and the Element is a SymbolNotFoundError
+                // The Element might be FIELD or a SymbolNotFoundError.
                 return null;
             }
         } finally {
