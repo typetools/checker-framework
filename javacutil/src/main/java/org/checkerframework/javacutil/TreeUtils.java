@@ -1222,9 +1222,14 @@ public final class TreeUtils {
      * Returns the type as a TypeMirror of {@code tree}. To obtain {@code tree}'s
      * AnnotatedTypeMirror, call {@code AnnotatedTypeFactory.getAnnotatedType()}.
      *
-     * @return the type as a TypeMirror of {@code tree}
+     * <p>This may return null if the tree occurs in a compilation unit earlier than the tree's type
+     * is defined. (For example, when a compilation unit (= file) defines multiple types at the top
+     * level.)
+     *
+     * @param tree the tree whose type to return
+     * @return the type as a TypeMirror of {@code tree}, or null
      */
-    public static TypeMirror typeOf(Tree tree) {
+    public static /*@Nullable*/ TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }
 
