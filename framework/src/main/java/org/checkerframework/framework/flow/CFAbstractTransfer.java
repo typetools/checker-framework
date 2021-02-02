@@ -564,7 +564,7 @@ public abstract class CFAbstractTransfer<
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
-            String expressionString = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
 
             if (methodUseContext == null) {
@@ -1210,7 +1210,7 @@ public abstract class CFAbstractTransfer<
         JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
         for (Contract p : postconditions) {
-            String expressionString = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror anno = p.annotation;
 
             if (methodUseContext == null) {
