@@ -566,6 +566,12 @@ public class DependentTypesHelper {
         standardizeUseLocalScope(localContext, path, annotatedType);
     }
 
+    /**
+     * Standardize the Java expressions in annotations in a type.
+     *
+     * @param type the type to standardize
+     * @param elt the element whose type is {@code type}
+     */
     public void standardizeVariable(AnnotatedTypeMirror type, Element elt) {
         if (!hasDependentType(type)) {
             return;
