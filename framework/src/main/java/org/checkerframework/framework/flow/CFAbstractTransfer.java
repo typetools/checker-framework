@@ -573,9 +573,16 @@ public abstract class CFAbstractTransfer<
             }
 
             TreePath methodDeclPath = analysis.atypeFactory.getPath(methodDeclTree);
+            TreePath methodBodyPath = new TreePath(methodDeclPath, methodDeclTree.getBody());
 
+            System.out.printf(
+                    "addInformationFromPreconditions(%s): annotation =  %s%n",
+                    methodElement, annotation);
             annotation =
-                    standardizeAnnotationFromContract(annotation, methodUseContext, methodDeclPath);
+                    standardizeAnnotationFromContract(annotation, methodUseContext, methodBodyPath);
+            System.out.printf(
+                    "addInformationFromPreconditions(%s): annotation => %s%n",
+                    methodElement, annotation);
 
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -611,6 +618,7 @@ public abstract class CFAbstractTransfer<
                 annoFromContract,
                 TreePathUtil.leafToStringTruncated(path, 65),
                 jeContext.toStringDebug());
+        new Error("backtrace").printStackTrace(System.out);
 
         // TODO: common implementation with
         // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
@@ -1219,6 +1227,8 @@ public abstract class CFAbstractTransfer<
         JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
         for (Contract p : postconditions) {
+            System.out.printf("processPostconditionsAndConditionalPostconditions: p = %s%n", p);
+
             String expressionString = p.expressionString;
             AnnotationMirror anno = p.annotation;
 

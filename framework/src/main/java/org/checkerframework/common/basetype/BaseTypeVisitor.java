@@ -975,6 +975,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // Check the contract, which is a postcondition.
                 // Preconditions are checked at method invocations, not declarations.
 
+                System.out.printf(
+                        "checkContractsAtMethodDeclaration about to relocalize %s %s %s%n",
+                        contract.annotation,
+                        TreeUtils.toStringTruncated(methodTree.getBody(), 65),
+                        jeContext.toStringDebug());
                 // Undo delocalization
                 AnnotationMirror annotation =
                         atypeFactory.standardizeAnnotationFromContract(
@@ -982,6 +987,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 jeContext,
                                 // This TreePath prevents delocalization.
                                 new TreePath(pathToMethodDecl, methodTree.getBody()));
+                System.out.printf(
+                        "checkContractsAtMethodDeclaration relocalized:%n    %s%n => %s%n",
+                        contract.annotation, annotation);
 
                 switch (contract.kind) {
                     case POSTCONDITION:
@@ -4194,8 +4202,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 methodTree, method.getReceiverType().getUnderlyingType(), checker);
             }
 
+            System.out.printf(
+                    "resolveContracts about to standardize %s using %s%n",
+                    annotation, TreePathUtil.leafToStringTruncated(path, 65));
             annotation =
                     atypeFactory.standardizeAnnotationFromContract(annotation, jeContext, path);
+            System.out.printf("resolveContracts standardized => %s%n", annotation);
 
             try {
                 // TODO: currently, these expressions are parsed many times.
