@@ -2448,19 +2448,10 @@ public abstract class GenericAnnotatedTypeFactory<
             return annoFromContract;
         }
 
-        System.out.printf(
-                "GATF.standardizeAnnotationFromContract(%s, context, %s)%n context = %s%n",
-                annoFromContract,
-                TreePathUtil.leafToStringTruncated(path, 65),
-                jeContext.toStringDebug());
-
         AnnotationMirror standardized =
                 dependentTypesHelper.standardizeAnnotationIfDependentType(
                         jeContext, path, annoFromContract, true, false);
         if (standardized != null) {
-            System.out.printf(
-                    "GATF.standardizeAnnotationFromContract: %s => %s%n",
-                    annoFromContract, standardized);
             dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
             return standardized;
         }

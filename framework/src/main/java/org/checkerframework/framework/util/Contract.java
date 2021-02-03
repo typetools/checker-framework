@@ -158,9 +158,6 @@ public abstract class Contract {
             throw new BugInCF("Mismatch: ensuresQualifierIf=%s, kind=%s", ensuresQualifierIf, kind);
         }
 
-        System.out.printf(
-                "Contract.create(%s, %s, %s)%n", expressionString, annotation, contractAnnotation);
-
         // pathToMethodDecl is null if the method is not declared in source code.
         // TODO: The annotations still need to be standardized in that case.  We don't currently
         // have a way to standardize such annotations.
@@ -170,9 +167,6 @@ public abstract class Contract {
                 AnnotationMirror standardized =
                         atypeFactory.standardizeAnnotationFromContract(
                                 annotation, context, pathToMethodDecl);
-                System.out.printf(
-                        "Contract.create standardization:%n    %s%n => %s%n",
-                        annotation, standardized);
                 annotation = standardized;
             }
         }

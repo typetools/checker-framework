@@ -575,14 +575,8 @@ public abstract class CFAbstractTransfer<
             TreePath methodDeclPath = analysis.atypeFactory.getPath(methodDeclTree);
             TreePath methodBodyPath = new TreePath(methodDeclPath, methodDeclTree.getBody());
 
-            System.out.printf(
-                    "addInformationFromPreconditions(%s): annotation =  %s%n",
-                    methodElement, annotation);
             annotation =
                     standardizeAnnotationFromContract(annotation, methodUseContext, methodBodyPath);
-            System.out.printf(
-                    "addInformationFromPreconditions(%s): annotation => %s%n",
-                    methodElement, annotation);
 
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -613,13 +607,6 @@ public abstract class CFAbstractTransfer<
             return annoFromContract;
         }
 
-        System.out.printf(
-                "CFAT.standardizeAnnotationFromContract(%s, context, %s)%n context = %s%n",
-                annoFromContract,
-                TreePathUtil.leafToStringTruncated(path, 65),
-                jeContext.toStringDebug());
-        new Error("backtrace").printStackTrace(System.out);
-
         // TODO: common implementation with
         // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
         AnnotationMirror standardized =
@@ -628,9 +615,6 @@ public abstract class CFAbstractTransfer<
         if (standardized != null) {
             // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
             // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
-            System.out.printf(
-                    "CFAT.standardizeAnnotationFromContract: %s => %s%n",
-                    annoFromContract, standardized);
             return standardized;
         }
         return annoFromContract;
@@ -1227,8 +1211,6 @@ public abstract class CFAbstractTransfer<
         JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
         for (Contract p : postconditions) {
-            System.out.printf("processPostconditionsAndConditionalPostconditions: p = %s%n", p);
-
             String expressionString = p.expressionString;
             AnnotationMirror anno = p.annotation;
 

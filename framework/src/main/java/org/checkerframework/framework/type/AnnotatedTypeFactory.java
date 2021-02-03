@@ -1066,6 +1066,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // No caching otherwise
         }
 
+        // For debugging
+        if (false) {
+            System.out.printf(
+                    "AnnotatedTypeFactory::getAnnotatedType(%s) => %s%n",
+                    TreeUtils.toStringTruncated(tree, 65), type);
+        }
+
         return type;
     }
 
