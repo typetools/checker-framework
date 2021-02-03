@@ -354,8 +354,8 @@ public class JavaExpressionParseUtil {
 
             // Field access
             TypeMirror receiverType = context.receiver.getType();
-            // originalReceiver is true if receiverType has not been reassigned.
-            boolean originalReceiver = true;
+            // isOriginalReceiver is true if receiverType has not been reassigned.
+            boolean isOriginalReceiver = true;
             VariableElement fieldElem = null;
             if (s.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
                 fieldElem = resolver.findField(s, receiverType, annotatedConstruct);
@@ -368,15 +368,15 @@ public class JavaExpressionParseUtil {
                         break;
                     }
                     receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-                    originalReceiver = false;
+                    isOriginalReceiver = false;
                 }
             }
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
                 FieldAccess fieldAccess =
-                        (FieldAccess) getFieldJavaExpression(fieldElem, context, originalReceiver);
+                        getFieldJavaExpression(fieldElem, context, isOriginalReceiver);
                 TypeElement scopeClassElement =
                         TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
-                if (!originalReceiver
+                if (!isOriginalReceiver
                         && !ElementUtils.isStatic(fieldElem)
                         && ElementUtils.isStatic(scopeClassElement)) {
                     throw new ParseRuntimeException(
@@ -811,13 +811,13 @@ public class JavaExpressionParseUtil {
          *
          * @param fieldElem the field
          * @param context the context
-         * @param originalReceiver whether the receiver is the original one
+         * @param isOriginalReceiver whether the receiver is the original one
          * @return a JavaExpression for the given name
          */
-        private static JavaExpression getFieldJavaExpression(
+        private static FieldAccess getFieldJavaExpression(
                 VariableElement fieldElem,
                 JavaExpressionContext context,
-                boolean originalReceiver) {
+                boolean isOriginalReceiver) {
             TypeMirror receiverType = context.receiver.getType();
 
             TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -827,7 +827,7 @@ public class JavaExpressionParseUtil {
                 return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
             }
             JavaExpression locationOfField;
-            if (originalReceiver) {
+            if (isOriginalReceiver) {
                 locationOfField = context.receiver;
             } else {
                 locationOfField =
@@ -1235,6 +1235,14 @@ public class JavaExpressionParseUtil {
         }
     }
 
+    /**
+     * Get a JavaExpression from a VariableTree.
+     *
+     * @param provider gives the context
+     * @param tree the VariableTree
+     * @return a JavaExpression for the given VariableTree
+     * @throws JavaExpressionParseException if the expression string cannot be parsed
+     */
     public static JavaExpression fromVariableTree(AnnotatedTypeFactory provider, VariableTree tree)
             throws JavaExpressionParseException {
         Element elt = TreeUtils.elementFromDeclaration(tree);

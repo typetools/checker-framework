@@ -32,10 +32,9 @@ public class ParameterExpression {
     @EnsuresNonNull("#3")
     public void m4(@Nullable Object x1, @Nullable Object x2, final @Nullable Object x3) {}
 
-    // Formal parameter names should not be used on pre/postcondition, conditional postcondition
-    // and formal parameter annotations in the same method declaration as the formal parameter
-    // being referred. In this case, "#paramNum" should be used. This is because
-    // the parameter names are not saved in bytecode.
+    // Formal parameter names should not be used in signatures (pre/postcondition, conditional
+    // postcondition, and formal parameter annotations).  Use "#paramNum", because the parameter
+    // names are not saved in bytecode.
 
     @Nullable Object field = null;
 
