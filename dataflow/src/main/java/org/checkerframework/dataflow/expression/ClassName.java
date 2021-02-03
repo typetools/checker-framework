@@ -10,7 +10,7 @@ import org.checkerframework.dataflow.analysis.Store;
  * invocation.
  */
 public class ClassName extends JavaExpression {
-    /** The string representation of the type of this. */
+    /** The string representation of the raw type of this. */
     private final String typeString;
 
     /**
@@ -20,7 +20,11 @@ public class ClassName extends JavaExpression {
      */
     public ClassName(TypeMirror type) {
         super(type);
-        typeString = type.toString();
+        String typeString = type.toString();
+        if (typeString.endsWith(">")) {
+            typeString = typeString.substring(0, typeString.indexOf("<"));
+        }
+        this.typeString = typeString;
     }
 
     @Override
