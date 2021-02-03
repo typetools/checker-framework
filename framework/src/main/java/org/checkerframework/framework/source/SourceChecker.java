@@ -2307,7 +2307,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 this.getClass().getAnnotation(SuppressWarningsPrefix.class);
         if (prefixMetaAnno != null) {
             for (String prefix : prefixMetaAnno.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }
@@ -2317,7 +2317,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {
             for (String prefix : annotation.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }

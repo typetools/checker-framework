@@ -619,7 +619,8 @@ public class DependentTypesHelper {
                 return;
 
             default:
-                // Nothing to do.
+                // It's not a variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE, for
+                // example), so there is nothing to do.
         }
     }
 
@@ -898,6 +899,8 @@ public class DependentTypesHelper {
             errorTree = ((VariableTree) errorTree).getType();
             for (AnnotationTree annoTree : modifiers.getAnnotations()) {
                 for (Class<?> annoClazz : annoToElements.keySet()) {
+                    // TODO: Simple string containment seems too simplistic.  At least check for a
+                    // word boundary.
                     if (annoTree.toString().contains(annoClazz.getSimpleName())) {
                         errorTree = annoTree;
                         break;
@@ -1023,9 +1026,10 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         node, enclosingType, factory.getChecker());
+        TreePath methodDeclPath = factory.getPath(node);
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
-            standardizeDoNotUseLocalScope(context, factory.getPath(node), atm);
+            standardizeDoNotUseLocalScope(context, methodDeclPath, atm);
             checkType(atm, node.getTypeParameters().get(i));
         }
     }

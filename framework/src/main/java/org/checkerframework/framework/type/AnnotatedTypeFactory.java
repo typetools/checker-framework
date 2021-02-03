@@ -1796,6 +1796,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         classMethodAnnotationKinds.add(Kind.TYPE_ANNOTATION);
         classMethodAnnotationKinds.add(Kind.ANNOTATION);
     }
+
     /**
      * Returns the innermost enclosing method or class tree of {@code tree}. If {@code tree} is
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
@@ -3126,7 +3127,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // TODO: handle type parameter declarations?
         Tree fromElt;
         // Prevent calling declarationFor on elements we know we don't have
-        // the tree for
+        // the tree for.
 
         switch (elt.getKind()) {
             case CLASS:
@@ -3234,7 +3235,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the path for {@code node} under the current root. Returns null if {@code node} is not
      *     within the current compilation unit.
      */
-    public final TreePath getPath(@FindDistinct Tree node) {
+    public final @Nullable TreePath getPath(@FindDistinct Tree node) {
         assert root != null
                 : "AnnotatedTypeFactory.getPath("
                         + node.getKind()
