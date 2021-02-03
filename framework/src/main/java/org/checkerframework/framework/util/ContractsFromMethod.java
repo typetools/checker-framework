@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -10,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -20,8 +23,10 @@ import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract.Kind;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -112,11 +117,26 @@ public class ContractsFromMethod {
      */
     private <T extends Contract> Set<T> getContracts(
             ExecutableElement executableElement, Kind kind, Class<T> clazz) {
+
+        // Variables used for standardizing the annotation.
+        MethodTree methodDecl = (MethodTree) factory.declarationFromElement(executableElement);
+        TreePath pathToMethodDecl = factory.getPath(methodDecl);
+        JavaExpressionContext context;
+        if (pathToMethodDecl == null) {
+            context = null;
+        } else {
+            TypeMirror enclosingType =
+                    ElementUtils.enclosingTypeElement(executableElement).asType();
+            context =
+                    JavaExpressionContext.buildContextForMethodDeclaration(
+                            methodDecl, enclosingType, factory.getChecker());
+        }
+
         Set<T> result = new LinkedHashSet<>();
         // Check for a single framework-defined contract annotation.
         AnnotationMirror frameworkContractAnno =
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
-        result.addAll(getContract(kind, frameworkContractAnno, clazz));
+        result.addAll(getContract(kind, frameworkContractAnno, clazz, context, pathToMethodDecl));
 
         // Check for a framework-defined wrapper around contract annotations.
         AnnotationMirror frameworkContractAnnos =
@@ -126,7 +146,7 @@ public class ContractsFromMethod {
                     AnnotationUtils.getElementValueArray(
                             frameworkContractAnnos, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : frameworkContractAnnoList) {
-                result.addAll(getContract(kind, a, clazz));
+                result.addAll(getContract(kind, a, clazz, context, pathToMethodDecl));
             }
         }
 
@@ -151,7 +171,15 @@ public class ContractsFromMethod {
             for (String expr : expressions) {
                 T contract =
                         clazz.cast(
-                                Contract.create(kind, expr, enforcedQualifier, anno, annoResult));
+                                Contract.create(
+                                        kind,
+                                        expr,
+                                        enforcedQualifier,
+                                        anno,
+                                        annoResult,
+                                        factory,
+                                        context,
+                                        pathToMethodDecl));
                 result.add(contract);
             }
         }
@@ -166,11 +194,17 @@ public class ContractsFromMethod {
      * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, {@link
      *     EnsuresQualifierIf}, or null
      * @param clazz the class to determine the return type
+     * @param context used for standardizing {@code annotation}
+     * @param pathToMethodDecl used for standardizing {@code annotation}
      * @return the contracts expressed by the given annotation, or the empty set if the argument is
      *     null
      */
     private <T extends Contract> Set<T> getContract(
-            Contract.Kind kind, AnnotationMirror contractAnnotation, Class<T> clazz) {
+            Contract.Kind kind,
+            AnnotationMirror contractAnnotation,
+            Class<T> clazz,
+            JavaExpressionContext context,
+            TreePath pathToMethodDecl) {
         if (contractAnnotation == null) {
             return Collections.emptySet();
         }
@@ -191,7 +225,14 @@ public class ContractsFromMethod {
             T contract =
                     clazz.cast(
                             Contract.create(
-                                    kind, expr, enforcedQualifier, contractAnnotation, annoResult));
+                                    kind,
+                                    expr,
+                                    enforcedQualifier,
+                                    contractAnnotation,
+                                    annoResult,
+                                    factory,
+                                    context,
+                                    pathToMethodDecl));
             result.add(contract);
         }
         return result;

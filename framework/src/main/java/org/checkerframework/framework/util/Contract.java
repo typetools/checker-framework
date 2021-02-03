@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
@@ -10,6 +11,9 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -136,17 +140,37 @@ public abstract class Contract {
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
      * @param ensuresQualifierIf the ensuresQualifierIf field, for a conditional postcondition
+     * @param atypeFactory used for standardizing annotations
+     * @param context used for standardizing annotations
+     * @param pathToMethodDecl used for standardizing annotations
      * @return a new contract
      */
-    public static Contract create(
+    protected static Contract create(
             Kind kind,
             String expressionString,
             AnnotationMirror annotation,
             AnnotationMirror contractAnnotation,
-            Boolean ensuresQualifierIf) {
+            Boolean ensuresQualifierIf,
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
+            JavaExpressionContext context,
+            TreePath pathToMethodDecl) {
         if ((ensuresQualifierIf != null) != (kind == Kind.CONDITIONALPOSTCONDITION)) {
             throw new BugInCF("Mismatch: ensuresQualifierIf=%s, kind=%s", ensuresQualifierIf, kind);
         }
+
+        // pathToMethodDecl is null if the method is not declared in source code.
+        // TODO: The annotations still need to be standardized in that case.  We don't currently
+        // have a way to standardize such annotations.
+        if (pathToMethodDecl != null) {
+            DependentTypesHelper dth = atypeFactory.getDependentTypesHelper();
+            if (dth.hasDependentAnnotations()) {
+                AnnotationMirror standardized =
+                        atypeFactory.standardizeAnnotationFromContract(
+                                annotation, context, pathToMethodDecl);
+                annotation = standardized;
+            }
+        }
+
         switch (kind) {
             case PRECONDITION:
                 return new Precondition(expressionString, annotation, contractAnnotation);
@@ -199,7 +223,8 @@ public abstract class Contract {
          * Create a precondition contract.
          *
          * @param expressionString the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expressionString} should have
+         * @param annotation the type qualifier that {@code expressionString} should have. It is not
+         *     necessarily standardized.
          * @param contractAnnotation the precondition annotation that the programmer wrote; used for
          *     diagnostic messages
          */
@@ -217,7 +242,8 @@ public abstract class Contract {
          * Create a postcondition contract.
          *
          * @param expressionString the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expressionString} should have
+         * @param annotation the type qualifier that {@code expressionString} should have. It is not
+         *     necessarily standardized.
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
          */
@@ -253,7 +279,8 @@ public abstract class Contract {
          * Create a new conditional postcondition.
          *
          * @param expressionString the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expressionString} should have
+         * @param annotation the type qualifier that {@code expressionString} should have. It is not
+         *     necessarily standardized.
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
          * @param resultValue whether the condition is the method returning true or false
