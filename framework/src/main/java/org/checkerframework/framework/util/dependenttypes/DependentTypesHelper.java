@@ -201,6 +201,7 @@ public class DependentTypesHelper {
             ExpressionTree tree,
             AnnotatedExecutableType methodType,
             List<? extends ExpressionTree> argTrees) {
+        assert hasDependentAnnotations();
         Element methodElt = TreeUtils.elementFromUse(tree);
         // The annotations on `viewpointAdaptedType` will be copied to `methodType`.
         AnnotatedExecutableType viewpointAdaptedType =
@@ -318,6 +319,7 @@ public class DependentTypesHelper {
      * @return a new TreeAnnotator that standardizes dependent type annotations
      */
     public TreeAnnotator createDependentTypesTreeAnnotator() {
+        assert hasDependentAnnotations();
         return new DependentTypesTreeAnnotator(factory, this);
     }
 
@@ -929,6 +931,8 @@ public class DependentTypesHelper {
      * @return the elements of {@code am} that are errors
      */
     private List<DependentTypesError> errorElements(AnnotationMirror am) {
+        assert hasDependentAnnotations();
+
         List<DependentTypesError> errors = new ArrayList<>();
 
         for (String element : getListOfExpressionElements(am)) {
@@ -952,6 +956,10 @@ public class DependentTypesHelper {
      * @param errorTree location at which to issue errors
      */
     public void checkAnnotation(AnnotationMirror annotation, Tree errorTree) {
+        if (!hasDependentAnnotations()) {
+            return;
+        }
+
         List<DependentTypesError> errors = errorElements(annotation);
         if (errors.isEmpty()) {
             return;
