@@ -285,8 +285,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         protected final AnnotatedTypeMirror upper;
 
         /**
-         * Whether this has an explict lower bound that is not the null type; in other words,
-         * whether the source code syntax of this contains "super".
+         * Whether this has an explicit lower bound that is not the null type; in other words,
+         * whether the source code syntax of this contains "super". Because BoundTypes can represent
+         * captured types, if a bound type has an explicit lower bound, its upper bound may be
+         * {@code Object} or any other type that is a supertype of the lower bound.
          */
         protected final boolean hasExplicitLowerBound;
 
@@ -392,6 +394,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *   <li>Otherwise, return {@code outside.lower <: inside && inside <: outside.upper}.
      * </ul>
      *
+     * If {@code canBeCovariant} is true, then the checks on lower bounds return true.
+     *
      * @param inside a possibly-contained type
      * @param outside a possibly-containing type
      * @param canBeCovariant whether or not type arguments are allowed to be covariant
@@ -403,10 +407,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         if (BoundType.isBoundType(inside)) {
             BoundType insideBoundType = new BoundType(inside);
             if (!insideBoundType.hasExplicitLowerBound && !outside.hasExplicitLowerBound) {
+                // Both inside and outside have a lower bound of null type, but the annotations on
+                // the bounds may differ.  If canBeCovariant is true, ignore the difference.
+                // Otherwise, check that the annotations on the lower bound of
+                // outside are subtypes of the annotations on the lower bound of inside.
+                // Then recur on the upper bounds.
                 return (canBeCovariant || isSubtype(outside.lower, insideBoundType.lower))
                         && isContainedByBoundType(insideBoundType.upper, outside, canBeCovariant);
             } else if (outside.hasExplicitLowerBound
                     || TypesUtils.isObject(outside.upper.getUnderlyingType())) {
+                // TODO: I don't understand this case.
                 return (canBeCovariant || isSubtype(insideBoundType.upper, outside.upper))
                         && isContainedByBoundType(insideBoundType.lower, outside, canBeCovariant);
             }
