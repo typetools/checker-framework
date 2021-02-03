@@ -167,6 +167,9 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptMethod(
             MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodDeclType) {
+        if (!hasDependentAnnotations()) {
+            return;
+        }
         List<? extends ExpressionTree> args = methodInvocationTree.getArguments();
         viewpointAdaptExecutable(methodInvocationTree, methodDeclType, args);
     }
@@ -180,6 +183,9 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptConstructor(
             NewClassTree newClassTree, AnnotatedExecutableType constructorType) {
+        if (!hasDependentAnnotations()) {
+            return;
+        }
         List<? extends ExpressionTree> args = newClassTree.getArguments();
         viewpointAdaptExecutable(newClassTree, constructorType, args);
     }
@@ -326,10 +332,6 @@ public class DependentTypesHelper {
      * @param type the type of the expression; is side-effected by this method
      */
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
-        if (!hasDependentAnnotations()) {
-            return;
-        }
-
         if (!hasDependentType(type)) {
             return;
         }
@@ -357,6 +359,7 @@ public class DependentTypesHelper {
         if (!hasDependentType(type)) {
             return;
         }
+
         TreePath path = factory.getPath(node);
         if (path == null) {
             return;
@@ -393,9 +396,6 @@ public class DependentTypesHelper {
             MethodTree methodDeclTree,
             AnnotatedTypeMirror atm,
             boolean removeErroneousExpressions) {
-        if (!hasDependentAnnotations()) {
-            return;
-        }
         if (!hasDependentType(atm)) {
             return;
         }
@@ -434,6 +434,9 @@ public class DependentTypesHelper {
             Element elt,
             AnnotatedTypeMirror atm,
             boolean removeErroneousExpressions) {
+        if (!hasDependentAnnotations()) {
+            return;
+        }
 
         TypeMirror enclosingType = ElementUtils.enclosingTypeElement(elt).asType();
         JavaExpressionContext context =
@@ -562,6 +565,7 @@ public class DependentTypesHelper {
         if (!hasDependentType(annotatedType)) {
             return;
         }
+
         TreePath path = factory.getPath(tree);
         if (path == null) {
             return;
@@ -586,9 +590,6 @@ public class DependentTypesHelper {
      * @param elt the element whose type is {@code type}
      */
     public void standardizeVariable(AnnotatedTypeMirror type, Element elt) {
-        if (!hasDependentAnnotations()) {
-            return;
-        }
         if (!hasDependentType(type)) {
             return;
         }
@@ -1042,6 +1043,9 @@ public class DependentTypesHelper {
      * @return true if {@code am} is an expression annotation
      */
     private boolean isExpressionAnno(AnnotationMirror am) {
+        if (!hasDependentAnnotations()) {
+            return;
+        }
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
             if (factory.areSameByClass(am, clazz)) {
                 return true;
@@ -1139,6 +1143,9 @@ public class DependentTypesHelper {
      * @return true if {@code atm} has any dependent type annotations
      */
     private boolean hasDependentType(AnnotatedTypeMirror atm) {
+        if (!hasDependentAnnotations()) {
+            return;
+        }
         if (atm == null) {
             return false;
         }
