@@ -10,8 +10,14 @@ import org.checkerframework.dataflow.analysis.Store;
  * invocation.
  */
 public class ClassName extends JavaExpression {
+    /** The raw type of the class. */
     private final String typeString;
 
+    /**
+     * Creates a new ClassName.
+     *
+     * @type the type of the class
+     */
     public ClassName(TypeMirror type) {
         super(type);
         String typeString = type.toString();
