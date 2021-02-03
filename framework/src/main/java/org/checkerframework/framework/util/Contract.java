@@ -223,8 +223,7 @@ public abstract class Contract {
          * Create a precondition contract.
          *
          * @param expressionString the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expressionString} should have. It is not
-         *     necessarily standardized.
+         * @param annotation the type qualifier that {@code expressionString} should have
          * @param contractAnnotation the precondition annotation that the programmer wrote; used for
          *     diagnostic messages
          */
@@ -242,8 +241,7 @@ public abstract class Contract {
          * Create a postcondition contract.
          *
          * @param expressionString the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expressionString} should have. It is not
-         *     necessarily standardized.
+         * @param annotation the type qualifier that {@code expressionString} should have
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
          */
@@ -279,8 +277,7 @@ public abstract class Contract {
          * Create a new conditional postcondition.
          *
          * @param expressionString the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expressionString} should have. It is not
-         *     necessarily standardized.
+         * @param annotation the type qualifier that {@code expressionString} should have
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
          * @param resultValue whether the condition is the method returning true or false
