@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol;
+import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -110,5 +111,16 @@ public class FieldAccess extends JavaExpression {
     @Override
     public boolean isUnmodifiableByOtherCode() {
         return isUnassignableByOtherCode() && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
+    }
+
+    @Override
+    @SuppressWarnings("interning:not.interned") // test whether method returns its argument
+    public FieldAccess atMethodSignature(List<JavaExpression> parameters) {
+        JavaExpression newReceiver = receiver.atMethodSignature(parameters);
+        if (receiver == newReceiver) {
+            return this;
+        } else {
+            return new FieldAccess(newReceiver, type, field);
+        }
     }
 }

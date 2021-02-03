@@ -167,6 +167,9 @@ public abstract class Contract {
                 AnnotationMirror standardized =
                         atypeFactory.standardizeAnnotationFromContract(
                                 annotation, context, pathToMethodDecl);
+                System.out.printf(
+                        "Contract.create standardization:%n    %s%n => %s%n",
+                        annotation, standardized);
                 annotation = standardized;
             }
         }

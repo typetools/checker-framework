@@ -459,6 +459,8 @@ public class DependentTypesHelper {
             return;
         }
 
+        System.out.printf("standardizeVariable(%s, %s, %s)%n", declarationTree, type, variableElt);
+
         TreePath pathToVariableDecl = factory.getPath(declarationTree);
         if (pathToVariableDecl == null) {
             return;
@@ -593,6 +595,8 @@ public class DependentTypesHelper {
             return;
         }
 
+        System.out.printf("standardizeVariable(%s, %s)%n", type, elt);
+
         switch (elt.getKind()) {
             case PARAMETER:
             case LOCAL_VARIABLE:
@@ -621,6 +625,7 @@ public class DependentTypesHelper {
             default:
                 // It's not a variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE, for
                 // example), so there is nothing to do.
+                break;
         }
     }
 
@@ -688,6 +693,15 @@ public class DependentTypesHelper {
             AnnotatedTypeMirror type,
             boolean useLocalScope,
             boolean removeErroneousExpressions) {
+        System.out.printf(
+                "standardizeAtm(context, %s, %s, useLocalScope=%s, removeErroneousExpressions=%s)%n context=%s%n",
+                TreePathUtil.leafToStringTruncated(localScope, 65),
+                type,
+                useLocalScope,
+                removeErroneousExpressions,
+                context.toStringDebug());
+        new Error("backtrace").printStackTrace(System.out);
+
         // localScope is null in dataflow when creating synthetic trees for enhanced for loops.
         if (localScope == null) {
             return;
@@ -709,7 +723,8 @@ public class DependentTypesHelper {
             String expression,
             JavaExpressionContext context,
             TreePath localScope,
-            boolean useLocalScope) {
+            boolean useLocalScope,
+            boolean delocalize) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
@@ -772,9 +787,21 @@ public class DependentTypesHelper {
             AnnotationMirror anno,
             boolean useLocalScope,
             boolean removeErroneousExpressions) {
+        System.out.printf(
+                "standardizeDependentTypeAnnotation(context, %s, %s, useLocalScope=%s, removeErroneousExpressions=%s)%n context=%s%n",
+                TreePathUtil.leafToStringTruncated(localScope, 65),
+                anno,
+                useLocalScope,
+                removeErroneousExpressions,
+                context.toStringDebug());
+
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
+
+        // localScope can be null if the method is not from source code
+        boolean delocalize =
+                localScope != null && localScope.getLeaf().getKind() == Tree.Kind.METHOD;
 
         for (String value : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
@@ -782,7 +809,9 @@ public class DependentTypesHelper {
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
                 String standardized =
-                        standardizeString(expression, context, localScope, useLocalScope);
+                        standardizeString(
+                                expression, context, localScope, useLocalScope, delocalize);
+                System.out.printf("standardized:%n    %s%n => %s%n", expression, standardized);
                 if (removeErroneousExpressions
                         && DependentTypesError.isExpressionError(standardized)) {
                     // nothing to do
@@ -825,6 +854,12 @@ public class DependentTypesHelper {
             this.localScope = localScope;
             this.useLocalScope = useLocalScope;
             this.removeErroneousExpressions = removeErroneousExpressions;
+            System.out.printf(
+                    "new StandardizeTypeAnnotator(context, %s, useLocalScope=%s, removeErroneousExpressions=%s)%n context = %s%n",
+                    TreePathUtil.leafToStringTruncated(localScope, 65),
+                    useLocalScope,
+                    removeErroneousExpressions,
+                    context.toStringDebug());
         }
 
         @Override
@@ -853,6 +888,7 @@ public class DependentTypesHelper {
 
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
+            System.out.printf("STA.scan(%s)%n", type);
             for (AnnotationMirror anno :
                     AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
                 AnnotationMirror newAnno =

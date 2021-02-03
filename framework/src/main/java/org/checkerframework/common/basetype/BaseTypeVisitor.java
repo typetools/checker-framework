@@ -83,6 +83,7 @@ import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -955,18 +956,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
-            AnnotationMirror annotation = contract.annotation;
 
-            annotation =
-                    atypeFactory.standardizeAnnotationFromContract(
-                            annotation, jeContext, getCurrentPath());
-
-            JavaExpression exprJe = null;
+            JavaExpression exprJe;
             try {
                 exprJe =
                         JavaExpressionParseUtil.parse(
-                                expressionString, jeContext, getCurrentPath(), false);
+                                expressionString, jeContext, pathToMethodDecl, true);
             } catch (JavaExpressionParseException e) {
+                exprJe = null;
                 checker.report(methodTree, e.getDiagMessage());
             }
             // If exprJe is null, then an error was issued above.
@@ -977,6 +974,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (exprJe != null && !abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
                 // Check the contract, which is a postcondition.
                 // Preconditions are checked at method invocations, not declarations.
+
+                // Undo delocalization
+                AnnotationMirror annotation =
+                        atypeFactory.standardizeAnnotationFromContract(
+                                contract.annotation,
+                                jeContext,
+                                // This TreePath prevents delocalization.
+                                new TreePath(pathToMethodDecl, methodTree.getBody()));
 
                 switch (contract.kind) {
                     case POSTCONDITION:
@@ -1077,6 +1082,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 Set<AnnotationMirror> annos = value.getAnnotations();
                 inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
             }
+            System.out.printf(
+                    "About to call checkContract(%s, %s, %s, %s)%n",
+                    expression, annotation, inferredAnno, exitStore);
             if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.reportError(
                         methodTree,
@@ -4136,7 +4144,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             for (Pair<JavaExpression, AnnotationMirror> strong : set) {
                 // are we looking at a contract of the same receiver?
-                if (weak.first.equals(strong.first)) {
+                if (weak.first.equals(strong.first)
+                        || LocalVariable.isSameFormalParameter(
+                                weak.first, strong.first, elements)) {
                     // check subtyping relationship of annotations
                     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
                     if (qualifierHierarchy.isSubtype(strong.second, weak.second)) {

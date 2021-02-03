@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
+import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -61,5 +62,10 @@ public class Unknown extends JavaExpression {
     @Override
     public boolean isUnmodifiableByOtherCode() {
         return false;
+    }
+
+    @Override
+    public Unknown atMethodSignature(List<JavaExpression> parameters) {
+        return this;
     }
 }

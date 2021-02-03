@@ -146,4 +146,18 @@ public class ArrayCreation extends JavaExpression {
                 + " initializers="
                 + initializers;
     }
+
+    @Override
+    @SuppressWarnings("interning:not.interned") // test whether method returns its argument
+    public ArrayCreation atMethodSignature(List<JavaExpression> parameters) {
+        List<@Nullable JavaExpression> newDimensions =
+                JavaExpression.listAtMethodSignature(dimensions, parameters);
+        List<JavaExpression> newInitializers =
+                JavaExpression.listAtMethodSignature(initializers, parameters);
+        if (dimensions == newDimensions && initializers == newInitializers) {
+            return this;
+        } else {
+            return new ArrayCreation(type, newDimensions, newInitializers);
+        }
+    }
 }
