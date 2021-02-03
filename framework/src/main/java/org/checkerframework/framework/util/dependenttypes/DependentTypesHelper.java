@@ -201,10 +201,6 @@ public class DependentTypesHelper {
             ExpressionTree tree,
             AnnotatedExecutableType methodType,
             List<? extends ExpressionTree> argTrees) {
-        if (!hasDependentAnnotations()) {
-            return;
-        }
-
         Element methodElt = TreeUtils.elementFromUse(tree);
         // The annotations on `viewpointAdaptedType` will be copied to `methodType`.
         AnnotatedExecutableType viewpointAdaptedType =
