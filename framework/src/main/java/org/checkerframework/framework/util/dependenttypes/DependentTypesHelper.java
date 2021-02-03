@@ -1048,7 +1048,7 @@ public class DependentTypesHelper {
      */
     private boolean isExpressionAnno(AnnotationMirror am) {
         if (!hasDependentAnnotations()) {
-            return;
+            return false;
         }
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
             if (factory.areSameByClass(am, clazz)) {
@@ -1147,10 +1147,10 @@ public class DependentTypesHelper {
      * @return true if {@code atm} has any dependent type annotations
      */
     private boolean hasDependentType(AnnotatedTypeMirror atm) {
-        if (!hasDependentAnnotations()) {
-            return;
-        }
         if (atm == null) {
+            return false;
+        }
+        if (!hasDependentAnnotations()) {
             return false;
         }
         boolean b =
