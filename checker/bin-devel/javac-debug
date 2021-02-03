@@ -10,7 +10,7 @@
 #  ./gradlew compileJava
 # to debug changes rather than creating .jar files with "./gradlew assemble".
 
-# When editing, keep this file in sync with javac in this directory.
+# When editing, keep this file in sync with ./javac .
 
 mydir="$(dirname "$0")"
 case $(uname -s) in
@@ -41,6 +41,7 @@ nl='
 '
 for i in "$@" ; do
    IFS=
+   # shellcheck disable=SC2027
    args=$args$nl"'"$i"'"
    IFS="$saveIFS"
 done

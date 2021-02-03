@@ -1,4 +1,3 @@
-package chapter;
 // This test contains the sample code from the Lock Checker manual chapter
 // modified to fit testing instead of illustrative purposes,
 // and contains other miscellaneous Lock Checker testing.

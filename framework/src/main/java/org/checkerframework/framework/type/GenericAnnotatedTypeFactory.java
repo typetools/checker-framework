@@ -121,8 +121,13 @@ import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
- * inference, qualifier polymorphism, default annotations via {@link DefaultFor}, and user-specified
- * defaults via {@link DefaultQualifier}.
+ * inference.
+ *
+ * <p>It also adds other features: qualifier polymorphism, default annotations via {@link
+ * DefaultFor}, user-specified defaults via {@link DefaultQualifier}, standardization via {@link
+ * DependentTypesHelper}, etc. Those features, and {@link #addComputedTypeAnnotations} (other than
+ * the part related to flow-sensitivity), could and should be in the superclass {@link
+ * AnnotatedTypeFactory}; it is not clear why they are defined in this class.
  */
 public abstract class GenericAnnotatedTypeFactory<
                 Value extends CFAbstractValue<Value>,
@@ -567,7 +572,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates an {@link DependentTypesHelper} and returns it.
+     * Creates a {@link DependentTypesHelper} and returns it. Use {@link #getDependentTypesHelper}
+     * to access the value.
      *
      * @return a new {@link DependentTypesHelper}
      */
@@ -982,7 +988,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * initializers).
      *
      * @param tree a MethodTree or other code block, such as a static initializer
-     * @return the exceptional exit store, or {@code null}, if there is no such store.
+     * @return the exceptional exit store, or {@code null}, if there is no such store
      */
     public @Nullable Store getExceptionalExitStore(Tree tree) {
         return exceptionalExitStores.get(tree);
@@ -1131,10 +1137,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
      * a {@link Node} at all.
      *
+     * @param <T> the type of node to return
+     * @param tree the tree in which to search
+     * @param kind the kind of node to return
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
      */
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
@@ -2443,19 +2452,17 @@ public abstract class GenericAnnotatedTypeFactory<
      * Standardize a type qualifier annotation obtained from a contract.
      *
      * @param annoFromContract the annotation to be standardized
-     * @param flowExprContext the context to use for standardization
+     * @param jeContext the context to use for standardization
      * @param path the path to a use of the contract (a method call) or to the method declaration
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     public AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext flowExprContext,
-            TreePath path) {
+            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
         DependentTypesHelper dependentTypesHelper = getDependentTypesHelper();
         if (dependentTypesHelper != null) {
             AnnotationMirror standardized =
                     dependentTypesHelper.standardizeAnnotationIfDependentType(
-                            flowExprContext, path, annoFromContract, false, false);
+                            jeContext, path, annoFromContract, false, false);
             if (standardized != null) {
                 dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
                 return standardized;

@@ -467,27 +467,44 @@ the CLIMB-to-top rule.
 
 \subsectionAndLabel{Inherited defaults}{inherited-defaults}
 
-In certain situations, it would be convenient for an annotation on a
-superclass member to be automatically inherited by subclasses that override
-it.  (An example is that programmers must add `@Nullable` to the formal
-parameter type of every implementation of the `equals()` method.)
-Such a feature would reduce annotation effort, but it would also reduce program
-comprehensibility.  In general, a program is read more often than it is
-edited/annotated, so the Checker Framework does not currently support this
-feature.  In the future, this feature may be added.
+When overriding a method, programmers must fully specify types in the overridding
+method, which duplicates information on the overridden method.
+By contrast, declaration annotations that are meta-annotated with
+\<@InheritedAnnotation> are inherited by overriding methods.
 
+An example for type annotations is that when definining an \<equals()>
+method, programmers must write the type annotation \<@Nullable>:
+
+\begin{Verbatim}
+  public boolean equals(@Nullable Object obj) {
+      ...
+  }
+\end{Verbatim}
+
+An alternate design would be for every annotation on a superclass member to
+to be automatically inherited by subclasses that override it.
+
+The alternate design would reduce annotation effort.
+
+The alternate design would reduce program comprehensibility.
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
-Computation is necessary because different annotations might be inherited
+For declaration annotations, no computation is necessary; that is why they
+may be inherited.
+Computation is necessary for type annotations because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
 annotations on overridden implementations in supertypes.  For method
 parameters, the inherited type should be the greatest lower bound of all
-annotations on overridden implementations in supertypes.  In each case, an
-error would be thrown if no such annotations existed.
+annotations on overridden implementations in supertypes.  In each case, the
+Checker Framework would need to issue an error if no such annotations existed.
+
+Because a program is read more often than it is edited/annotated, the
+Checker Framework does not currently support the alternate design.  In the
+future, this feature may be added.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
@@ -1256,6 +1273,9 @@ systems) \code{<self>}.
 
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
+
+\item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
+  the Index Checker, for example.
 
 \end{itemize}
 

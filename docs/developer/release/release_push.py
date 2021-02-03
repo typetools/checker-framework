@@ -19,7 +19,7 @@ from sanity_checks import *
 def check_release_version(previous_release, new_release):
     """Ensure that the given new release version is greater than the given
     previous one."""
-    if compare_version_numbers(previous_release, new_release) >= 0:
+    if version_number_to_array(previous_release) >= version_number_to_array(new_release):
         raise Exception("Previous release version (" + previous_release + ") should be less than " +
                         "the new release version (" + new_release + ")")
 
@@ -87,7 +87,7 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     having staged them."""
     gnupgPassphrase = read_first_line("/projects/swlab1/checker-framework/hosting-info/release-private.password")
     # When bufalo uses gpg2 version 2.2+, then remove signing.gnupg.useLegacyGpg=true
-    execute('./gradlew publish --no-parallel -Psigning.gnupg.useLegacyGpg=true -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
+    execute('./gradlew publish -Prelease=true --no-parallel -Psigning.gnupg.useLegacyGpg=true -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s' % gnupgPassphrase, working_dir=CHECKER_FRAMEWORK)
 
 def is_file_empty(filename):
     "Returns true if the given file has size 0."

@@ -112,7 +112,7 @@ CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 # If a new Gradle wrapper was recently installed, the first ./gradlew command outputs:
 #   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
 CF_VERSION_WARMUP = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
-CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
+CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip().decode('utf-8')
 
 ANNO_TOOLS = os.path.join(BUILD_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, 'annotation-file-utilities')

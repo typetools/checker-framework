@@ -145,7 +145,7 @@ def add_repo_information(pom, repo_url):
         </pluginRepositories>
         """ % (repo_url, repo_url)
 
-    result_str = execute('grep -nm 1 "<build>" %s' % pom, True, True)
+    result_str = execute('grep -nm 1 "<build>" %s' % pom, True, True).decode()
     line_no_str = result_str.split(":")[0]
     line_no = int(line_no_str)
     print(" LINE_NO: " + line_no_str)

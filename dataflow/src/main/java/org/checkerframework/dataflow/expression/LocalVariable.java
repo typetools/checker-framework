@@ -64,12 +64,12 @@ public class LocalVariable extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        if (!(other instanceof LocalVariable)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof LocalVariable)) {
             return false;
         }
-        LocalVariable l = (LocalVariable) other;
-        return l.equals(this);
+        LocalVariable other = (LocalVariable) je;
+        return this.equals(other);
     }
 
     @Override

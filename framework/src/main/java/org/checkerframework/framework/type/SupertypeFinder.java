@@ -44,9 +44,11 @@ class SupertypeFinder {
     /**
      * See {@link Types#directSupertypes(TypeMirror)}.
      *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
      * @see Types#directSupertypes(TypeMirror)
      */
-    public static List<AnnotatedDeclaredType> directSuperTypes(AnnotatedDeclaredType type) {
+    public static List<AnnotatedDeclaredType> directSupertypes(AnnotatedDeclaredType type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
         List<AnnotatedDeclaredType> supertypes = supertypeFindingVisitor.visitDeclared(type, null);
@@ -58,9 +60,11 @@ class SupertypeFinder {
     /**
      * See {@link Types#directSupertypes(TypeMirror)}.
      *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
      * @see Types#directSupertypes(TypeMirror)
      */
-    public static final List<? extends AnnotatedTypeMirror> directSuperTypes(
+    public static final List<? extends AnnotatedTypeMirror> directSupertypes(
             AnnotatedTypeMirror type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
@@ -364,7 +368,7 @@ class SupertypeFinder {
             serializableType.addAnnotations(annotations);
             superTypes.add(serializableType);
 
-            for (AnnotatedTypeMirror sup : type.getComponentType().directSuperTypes()) {
+            for (AnnotatedTypeMirror sup : type.getComponentType().directSupertypes()) {
                 ArrayType arrType = atypeFactory.types.getArrayType(sup.getUnderlyingType());
                 AnnotatedArrayType aarrType =
                         (AnnotatedArrayType) atypeFactory.toAnnotatedType(arrType, false);

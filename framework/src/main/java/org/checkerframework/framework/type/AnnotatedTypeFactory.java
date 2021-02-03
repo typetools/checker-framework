@@ -1251,7 +1251,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * declared type of the functional interface and the executable type of its method.
      *
      * @param tree MethodTree or VariableTree
-     * @return AnnotatedTypeMirror with explicit annotations from {@code tree}.
+     * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
      */
     private final AnnotatedTypeMirror fromMember(Tree tree) {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
@@ -1427,7 +1427,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * A callback method for the AnnotatedTypeFactory subtypes to customize directSuperTypes().
+     * A callback method for the AnnotatedTypeFactory subtypes to customize directSupertypes().
      * Overriding methods should merely change the annotations on the supertypes, without adding or
      * removing new types.
      *
@@ -3231,9 +3231,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * will be returned.
      *
      * @param node the {@link Tree} to get the path for
-     * @return the path for {@code node} under the current root
+     * @return the path for {@code node} under the current root. Returns null if {@code node} is not
+     *     within the current compilation unit.
      */
-    public final TreePath getPath(@FindDistinct Tree node) {
+    public final @Nullable TreePath getPath(@FindDistinct Tree node) {
         assert root != null
                 : "AnnotatedTypeFactory.getPath("
                         + node.getKind()
@@ -4017,7 +4018,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         final boolean intersectionType;
         final TypeMirror boundType;
         if (typeVar.getUpperBound().getKind() == TypeKind.INTERSECTION) {
-            boundType = typeVar.getUpperBound().directSuperTypes().get(0).getUnderlyingType();
+            boundType = typeVar.getUpperBound().directSupertypes().get(0).getUnderlyingType();
             intersectionType = true;
         } else {
             boundType = typeVar.getUnderlyingType().getUpperBound();
@@ -4210,7 +4211,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
                 if (castATM.getKind() == TypeKind.INTERSECTION) {
                     AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
-                    for (AnnotatedTypeMirror t : itype.directSuperTypes()) {
+                    for (AnnotatedTypeMirror t : itype.directSupertypes()) {
                         if (TypesUtils.isFunctionalInterface(
                                 t.getUnderlyingType(), getProcessingEnv())) {
                             return t;

@@ -148,7 +148,7 @@ public class DependentTypesHelper {
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
         JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
-        JavaExpressionContext context = new JavaExpressionContext(r, null, factory.getChecker());
+        JavaExpressionContext context = new JavaExpressionContext(r, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocalScope(context, pathToUse, bound.getUpperBound());
             standardizeDoNotUseLocalScope(context, pathToUse, bound.getLowerBound());
@@ -353,7 +353,7 @@ public class DependentTypesHelper {
         }
         JavaExpression receiverJe = JavaExpression.getImplicitReceiver(classElt);
         JavaExpressionContext classignmentContext =
-                new JavaExpressionContext(receiverJe, null, factory.getChecker());
+                new JavaExpressionContext(receiverJe, factory.getChecker());
         standardizeDoNotUseLocalScope(classignmentContext, path, type);
     }
 
@@ -436,16 +436,17 @@ public class DependentTypesHelper {
     /**
      * Standardize the Java expressions in annotations in a variable declaration.
      *
-     * @param node the variable declaration
+     * @param declarationTree the variable declaration
      * @param type the type of the variable declaration
      * @param variableElt the element of the variable declaration
      */
-    public void standardizeVariable(Tree node, AnnotatedTypeMirror type, Element variableElt) {
+    public void standardizeVariable(
+            Tree declarationTree, AnnotatedTypeMirror type, Element variableElt) {
         if (!hasDependentType(type)) {
             return;
         }
 
-        TreePath pathToVariableDecl = factory.getPath(node);
+        TreePath pathToVariableDecl = factory.getPath(declarationTree);
         if (pathToVariableDecl == null) {
             return;
         }
@@ -493,8 +494,9 @@ public class DependentTypesHelper {
             case FIELD:
             case ENUM_CONSTANT:
                 JavaExpression receiverJe;
-                if (node.getKind() == Tree.Kind.IDENTIFIER) {
-                    JavaExpression nodeJe = JavaExpression.fromTree(factory, (IdentifierTree) node);
+                if (declarationTree.getKind() == Tree.Kind.IDENTIFIER) {
+                    JavaExpression nodeJe =
+                            JavaExpression.fromTree(factory, (IdentifierTree) declarationTree);
                     receiverJe =
                             nodeJe instanceof FieldAccess
                                     ? ((FieldAccess) nodeJe).getReceiver()
@@ -503,7 +505,7 @@ public class DependentTypesHelper {
                     receiverJe = JavaExpression.getImplicitReceiver(variableElt);
                 }
                 JavaExpressionContext fieldContext =
-                        new JavaExpressionContext(receiverJe, null, factory.getChecker());
+                        new JavaExpressionContext(receiverJe, factory.getChecker());
                 standardizeDoNotUseLocalScope(fieldContext, pathToVariableDecl, type);
                 break;
 
@@ -533,8 +535,7 @@ public class DependentTypesHelper {
         }
 
         JavaExpression receiver = JavaExpression.fromTree(factory, node.getExpression());
-        JavaExpressionContext context =
-                new JavaExpressionContext(receiver, null, factory.getChecker());
+        JavaExpressionContext context = new JavaExpressionContext(receiver, factory.getChecker());
         standardizeDoNotUseLocalScope(context, factory.getPath(node), type);
     }
 
@@ -575,8 +576,8 @@ public class DependentTypesHelper {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
-                Tree tree = factory.declarationFromElement(elt);
-                if (tree == null) {
+                Tree declarationTree = factory.declarationFromElement(elt);
+                if (declarationTree == null) {
                     if (elt.getKind() == ElementKind.PARAMETER) {
                         // The tree might be null when
                         // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
@@ -585,14 +586,14 @@ public class DependentTypesHelper {
                         return;
                     }
                     throw new BugInCF(this.getClass() + ": tree not found");
-                } else if (TreeUtils.typeOf(tree) == null) {
+                } else if (TreeUtils.typeOf(declarationTree) == null) {
                     // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
                     // gets the assignment context for a pseudo assignment of an argument to
                     // a method parameter.
                     return;
                 }
 
-                standardizeVariable(tree, type, elt);
+                standardizeVariable(declarationTree, type, elt);
                 return;
 
             default:
