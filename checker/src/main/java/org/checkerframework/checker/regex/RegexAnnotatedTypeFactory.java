@@ -102,7 +102,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     0,
                     processingEnv);
 
-    /** The group method of the Matcher class. */
+    /** The {@code Matcher.group} method. */
     protected final ExecutableElement group =
             TreeUtils.getMethod(
                     java.util.regex.Matcher.class.getCanonicalName(),
@@ -165,7 +165,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if the method invocation is Matcher.group(int)
+     * Returns true if the method invocation is Matcher.group(int).
      *
      * @param n the method invocation node to check.
      * @return whether the method invocation node is Matcher.group(int).

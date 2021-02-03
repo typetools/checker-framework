@@ -595,19 +595,21 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 \subsectionAndLabel{Utilising the Regex Checker analysis}{nullness-enable-regex-checker}
 
-In certain cases, the analysis done by the Regex Checker can be utilised to
-prevent some false positives. Consider the following snippet of code:
+In general, the \<Matcher.group> method may return \<null>, so its return
+type is annotated as \<@Nullable>.
+In certain cases, the Regex Checker can determine that a particular group
+exists, so some calls to \<Matcher.group> return a non-null value.
+Here is an example:
 
 \begin{Verbatim}
   Pattern PATTERN = Pattern.compile("^.(.*).$");
   Matcher matcher = PATTERN.matcher(input);
-  // :: error: (assignment.type.incompatible)
-  @NonNull String a = matcher.group(1); // Will not throw a NullPointerException. False positive.
+  @NonNull String a = matcher.group(1); // OK, result is non-null.
 \end{Verbatim}
 
-To prevent such false positives, you can run the Regex Checker as a sub-checker
-of the Nullness Checker. To do this supply the -AenableRegexChecker flag.
-
+To prevent a false positive warning on the last line of code, you can run
+the Regex Checker as a sub-checker of the Nullness Checker. To do this,
+supply the \<-AenableRegexChecker> flag.
 
 
 \sectionAndLabel{Suppressing nullness warnings}{suppressing-warnings-nullness}

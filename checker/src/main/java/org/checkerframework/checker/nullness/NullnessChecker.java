@@ -71,14 +71,14 @@ public class NullnessChecker extends InitializationChecker {
     public static final boolean LINT_DEFAULT_PERMITCLEARPROPERTY = false;
 
     /**
-     * If this option is specified, Regex Checker is run as a subchecker of the Nullness checker to
-     * infer whether calls to Matcher.group(int) are valid or not.
+     * If this option is specified, the Regex Checker is run as a subchecker of the Nullness Checker
+     * to infer whether calls to {@code Matcher.group(int)} are valid or not.
      */
     public static final String ENABLE_REGEX_CHECKER = "enableRegexChecker";
 
     /**
-     * Whether the -AenableRegexChecker option was passed on the command line. Do not access this
-     * variable directly, instead call {@link #isRegexCheckerEnabled()}.
+     * Whether the {@code -AenableRegexChecker} option was passed on the command line. Do not access
+     * this variable directly, instead call {@link #isRegexCheckerEnabled()}.
      */
     private @MonotonicNonNull Boolean regexCheckerEnabled = null;
 
@@ -94,7 +94,9 @@ public class NullnessChecker extends InitializationChecker {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
         checkers.add(KeyForSubchecker.class);
-        if (isRegexCheckerEnabled()) checkers.add(RegexChecker.class);
+        if (isRegexCheckerEnabled()) {
+            checkers.add(RegexChecker.class);
+        }
         return checkers;
     }
 
@@ -113,7 +115,7 @@ public class NullnessChecker extends InitializationChecker {
     /**
      * Was the Regex Checker is enabled on the command line?
      *
-     * @return whether the -AenableRegexChecker option passed on the command line.
+     * @return whether the {@code -AenableRegexChecker} option was passed on the command line
      */
     private boolean isRegexCheckerEnabled() {
         if (regexCheckerEnabled == null) {

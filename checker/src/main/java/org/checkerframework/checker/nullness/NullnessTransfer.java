@@ -97,7 +97,7 @@ public class NullnessTransfer
     /**
      * Create a new NullnessTransfer for the given analysis.
      *
-     * @param analysis The analysis used to create the transfer function.
+     * @param analysis the analysis used to create the transfer function
      */
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
