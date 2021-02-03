@@ -189,7 +189,7 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Print this verbosely, for debugging.
+     * Format this verbosely, for debugging.
      *
      * @return a verbose string representation of this
      */
