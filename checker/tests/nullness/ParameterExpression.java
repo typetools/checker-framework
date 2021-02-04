@@ -45,8 +45,7 @@ public class ParameterExpression {
     }
 
     @EnsuresNonNull("param")
-    // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
+    // :: error: (expression.parameter.name.shadows.field)
     public void m6(Object param) {
         param = new Object();
     }
@@ -56,8 +55,7 @@ public class ParameterExpression {
     @EnsuresNonNull("field")
     // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
     // the field.
-    // :: error: (contracts.postcondition.not.satisfied)
-    // :: warning: (expression.parameter.name.shadows.field)
+    // :: error: (expression.parameter.name.shadows.field)
     public void m7(Object field) {
         field = new Object();
     }
@@ -67,8 +65,7 @@ public class ParameterExpression {
     public void m8() {}
 
     @RequiresNonNull("param")
-    // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
+    // :: error: (expression.parameter.name.shadows.field)
     public void m9(Object param) {}
 
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
@@ -76,7 +73,7 @@ public class ParameterExpression {
     @RequiresNonNull("field")
     // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
     // the field.
-    // :: warning: (expression.parameter.name.shadows.field)
+    // :: error: (expression.parameter.name.shadows.field)
     public void m10(Object field) {}
 
     // Conditional postconditions
@@ -87,8 +84,7 @@ public class ParameterExpression {
     }
 
     @EnsuresNonNullIf(result = true, expression = "param")
-    // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
+    // :: error: (expression.parameter.name.shadows.field)
     public boolean m12(Object param) {
         param = new Object();
         return true;
@@ -99,10 +95,9 @@ public class ParameterExpression {
     @EnsuresNonNullIf(result = true, expression = "field")
     // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
     // the field.
-    // :: warning: (expression.parameter.name.shadows.field)
+    // :: error: (expression.parameter.name.shadows.field)
     public boolean m13(Object field) {
         field = new Object();
-        // :: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
