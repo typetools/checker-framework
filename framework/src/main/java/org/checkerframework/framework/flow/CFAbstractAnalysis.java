@@ -46,7 +46,8 @@ public abstract class CFAbstractAnalysis<
     protected final TypeHierarchy typeHierarchy;
 
     /**
-     * The dependent type helper used to standardize annotations belonging to the type hierarchy.
+     * The dependent type helper used to standardize both annotations belonging to the type
+     * hierarchy, and contract expressions.
      */
     protected final DependentTypesHelper dependentTypesHelper;
 
