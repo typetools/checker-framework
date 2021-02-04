@@ -68,14 +68,12 @@ public class FieldAccess extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        if (!(other instanceof FieldAccess)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof FieldAccess)) {
             return false;
         }
-        FieldAccess fa = (FieldAccess) other;
-        return super.syntacticEquals(other)
-                || (fa.getField().equals(getField())
-                        && fa.getReceiver().syntacticEquals(getReceiver()));
+        FieldAccess other = (FieldAccess) je;
+        return this.receiver.syntacticEquals(other.receiver) && this.field.equals(other.field);
     }
 
     @Override

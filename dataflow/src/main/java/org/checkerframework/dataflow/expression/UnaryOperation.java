@@ -75,12 +75,17 @@ public class UnaryOperation extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        if (!(other instanceof UnaryOperation)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof UnaryOperation)) {
             return false;
         }
-        UnaryOperation unOp = (UnaryOperation) other;
-        return operationKind == unOp.getOperationKind() && operand.equals(unOp.operand);
+        UnaryOperation other = (UnaryOperation) je;
+        return operationKind == other.getOperationKind() && operand.syntacticEquals(other.operand);
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other) || operand.containsSyntacticEqualJavaExpression(other);
     }
 
     @Override
