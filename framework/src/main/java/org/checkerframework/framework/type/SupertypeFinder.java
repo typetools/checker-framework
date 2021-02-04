@@ -72,6 +72,7 @@ class SupertypeFinder {
         return supertypes;
     }
 
+    /** Computes the direct supertypes of annotated types. */
     private static class SupertypeFindingVisitor
             extends SimpleAnnotatedTypeVisitor<List<? extends AnnotatedTypeMirror>, Void> {
 
