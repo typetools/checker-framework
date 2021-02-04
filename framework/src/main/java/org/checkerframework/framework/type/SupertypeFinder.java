@@ -74,9 +74,17 @@ class SupertypeFinder {
 
     private static class SupertypeFindingVisitor
             extends SimpleAnnotatedTypeVisitor<List<? extends AnnotatedTypeMirror>, Void> {
+
+        /** Types util class. */
         private final Types types;
+        /** Annotated type factory. */
         private final AnnotatedTypeFactory atypeFactory;
 
+        /**
+         * Creates a {@code SupertypeFindingVisitor}
+         *
+         * @param atypeFactory annotated type factory
+         */
         SupertypeFindingVisitor(AnnotatedTypeFactory atypeFactory) {
             this.atypeFactory = atypeFactory;
             this.types = atypeFactory.types;
