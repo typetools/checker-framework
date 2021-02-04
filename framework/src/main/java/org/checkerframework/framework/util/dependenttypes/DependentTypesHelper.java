@@ -620,6 +620,7 @@ public class DependentTypesHelper {
             default:
                 // It's not a variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE, for
                 // example), so there is nothing to do.
+                break;
         }
     }
 
