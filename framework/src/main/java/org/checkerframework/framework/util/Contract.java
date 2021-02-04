@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util;
 
-import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
@@ -13,7 +12,6 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -142,7 +140,6 @@ public abstract class Contract {
      * @param ensuresQualifierIf the ensuresQualifierIf field, for a conditional postcondition
      * @param atypeFactory used for standardizing annotations
      * @param context used for standardizing annotations
-     * @param pathToMethodDecl used for standardizing annotations
      * @return a new contract
      */
     protected static Contract create(
@@ -152,23 +149,9 @@ public abstract class Contract {
             AnnotationMirror contractAnnotation,
             Boolean ensuresQualifierIf,
             GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
-            JavaExpressionContext context,
-            TreePath pathToMethodDecl) {
+            JavaExpressionContext context) {
         if ((ensuresQualifierIf != null) != (kind == Kind.CONDITIONALPOSTCONDITION)) {
             throw new BugInCF("Mismatch: ensuresQualifierIf=%s, kind=%s", ensuresQualifierIf, kind);
-        }
-
-        // pathToMethodDecl is null if the method is not declared in source code.
-        // TODO: The annotations still need to be standardized in that case.  We don't currently
-        // have a way to standardize such annotations.
-        if (pathToMethodDecl != null) {
-            DependentTypesHelper dth = atypeFactory.getDependentTypesHelper();
-            if (dth.hasDependentAnnotations()) {
-                AnnotationMirror standardized =
-                        atypeFactory.standardizeAnnotationFromContract(
-                                annotation, context, pathToMethodDecl);
-                annotation = standardized;
-            }
         }
 
         switch (kind) {

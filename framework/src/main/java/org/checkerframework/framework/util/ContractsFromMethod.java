@@ -136,7 +136,7 @@ public class ContractsFromMethod {
         // Check for a single framework-defined contract annotation.
         AnnotationMirror frameworkContractAnno =
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
-        result.addAll(getContract(kind, frameworkContractAnno, clazz, context, pathToMethodDecl));
+        result.addAll(getContract(kind, frameworkContractAnno, clazz, context));
 
         // Check for a framework-defined wrapper around contract annotations.
         AnnotationMirror frameworkContractAnnos =
@@ -146,7 +146,7 @@ public class ContractsFromMethod {
                     AnnotationUtils.getElementValueArray(
                             frameworkContractAnnos, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : frameworkContractAnnoList) {
-                result.addAll(getContract(kind, a, clazz, context, pathToMethodDecl));
+                result.addAll(getContract(kind, a, clazz, context));
             }
         }
 
@@ -178,8 +178,7 @@ public class ContractsFromMethod {
                                         anno,
                                         annoResult,
                                         factory,
-                                        context,
-                                        pathToMethodDecl));
+                                        context));
                 result.add(contract);
             }
         }
@@ -195,16 +194,14 @@ public class ContractsFromMethod {
      *     EnsuresQualifierIf}, or null
      * @param clazz the class to determine the return type
      * @param context used for standardizing {@code annotation}
-     * @param pathToMethodDecl used for standardizing {@code annotation}
      * @return the contracts expressed by the given annotation, or the empty set if the argument is
      *     null
      */
     private <T extends Contract> Set<T> getContract(
-            Contract.Kind kind,
+            Kind kind,
             AnnotationMirror contractAnnotation,
             Class<T> clazz,
-            JavaExpressionContext context,
-            TreePath pathToMethodDecl) {
+            JavaExpressionContext context) {
         if (contractAnnotation == null) {
             return Collections.emptySet();
         }
@@ -231,8 +228,7 @@ public class ContractsFromMethod {
                                     contractAnnotation,
                                     annoResult,
                                     factory,
-                                    context,
-                                    pathToMethodDecl));
+                                    context));
             result.add(contract);
         }
         return result;

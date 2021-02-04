@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -176,15 +175,5 @@ public class LocalVariable extends JavaExpression {
     @Override
     public boolean isUnmodifiableByOtherCode() {
         return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
-    }
-
-    @Override
-    public LocalVariable atMethodSignature(List<JavaExpression> parameters) {
-        int index = parameters.indexOf(this);
-        if (index == -1) {
-            return this;
-        } else {
-            return new FormalParameter(index + 1, element);
-        }
     }
 }

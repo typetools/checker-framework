@@ -32,8 +32,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             final String expression,
             JavaExpressionContext context,
             TreePath localScope,
-            boolean useLocalScope,
-            boolean atMethodSignature) {
+            boolean useLocalScope) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
@@ -58,10 +57,6 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
                         .getTypeFactoryOfSubchecker(ValueChecker.class);
         if (vatf != null) {
             result = ValueCheckerUtils.optimize(result, vatf);
-        }
-
-        if (atMethodSignature) {
-            result = result.atMethodSignature(context.arguments);
         }
         return result.toString();
     }

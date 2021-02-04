@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.List;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -110,10 +109,5 @@ public class FormalParameter extends LocalVariable {
     @Override
     public boolean isUnmodifiableByOtherCode() {
         return true;
-    }
-
-    @Override
-    public FormalParameter atMethodSignature(List<JavaExpression> parameters) {
-        return this;
     }
 }

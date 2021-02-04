@@ -704,15 +704,13 @@ public class DependentTypesHelper {
      * @param context the context
      * @param localScope the local scope
      * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
-     * @param atMethodSignature if true, use "#2" instead of names for formal parameters
      * @return the standardized version of the Java expression
      */
     protected String standardizeString(
             String expression,
             JavaExpressionContext context,
             TreePath localScope,
-            boolean useLocalScope,
-            boolean atMethodSignature) {
+            boolean useLocalScope) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
@@ -779,18 +777,13 @@ public class DependentTypesHelper {
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
 
-        // localScope can be null if the method is not from source code
-        boolean atMethodSignature =
-                localScope != null && localScope.getLeaf().getKind() == Tree.Kind.METHOD;
-
         for (String value : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
                 String standardized =
-                        standardizeString(
-                                expression, context, localScope, useLocalScope, atMethodSignature);
+                        standardizeString(expression, context, localScope, useLocalScope);
                 if (removeErroneousExpressions
                         && DependentTypesError.isExpressionError(standardized)) {
                     // nothing to do
