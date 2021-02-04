@@ -961,12 +961,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     atypeFactory.standardizeAnnotationFromContract(
                             annotation, jeContext, getCurrentPath());
 
-            JavaExpression exprJe = null;
+            JavaExpression exprJe;
             try {
                 exprJe =
                         JavaExpressionParseUtil.parse(
                                 expressionString, jeContext, getCurrentPath(), false);
             } catch (JavaExpressionParseException e) {
+                exprJe = null;
                 checker.report(methodTree, e.getDiagMessage());
             }
             // If exprJe is null, then an error was issued above.
