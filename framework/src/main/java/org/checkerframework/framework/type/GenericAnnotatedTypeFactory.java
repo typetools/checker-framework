@@ -861,10 +861,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Produces the JavaExpression associated with expression on currentPath.
+     * Converts the given {@code expression} string to a {@link JavaExpression} by resolving
+     * identifiers as if they were written in Java code that {@code currentPath}.
      *
      * @param expression a Java expression
-     * @param currentPath the path to an annotation containing {@code expression}
+     * @param currentPath the path to use to resolve identifiers
      * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
