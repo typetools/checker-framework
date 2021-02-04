@@ -12,6 +12,7 @@ import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -25,8 +26,7 @@ import org.checkerframework.dataflow.cfg.builder.PhaseOneResult;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -135,15 +135,9 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopIteratorVariable(
                 MethodInvocationTree iteratorCall, VariableElement variableElement) {
-            // We do not want to cache flow-insensitive types
-            // retrieved during CFG building.
-            boolean oldShouldCache = factory.shouldCache;
-            factory.shouldCache = false;
-            AnnotatedTypeMirror annotatedIteratorType = factory.getAnnotatedType(iteratorCall);
-            factory.shouldCache = oldShouldCache;
-
             Tree annotatedIteratorTypeTree =
-                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(annotatedIteratorType);
+                    ((CFTreeBuilder) treeBuilder)
+                            .buildAnnotatedType(TreeUtils.typeOf(iteratorCall));
             handleArtificialTree(annotatedIteratorTypeTree);
 
             // Declare and initialize a new, unique iterator variable
@@ -159,27 +153,29 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopArrayVariable(
                 ExpressionTree expression, VariableElement variableElement) {
-            // We do not want to cache flow-insensitive types
-            // retrieved during CFG building.
-            boolean oldShouldCache = factory.shouldCache;
-            factory.shouldCache = false;
-            AnnotatedTypeMirror annotatedArrayType = factory.getAnnotatedType(expression);
-            factory.shouldCache = oldShouldCache;
-            if (annotatedArrayType.getKind() == TypeKind.WILDCARD
-                    && ((AnnotatedWildcardType) annotatedArrayType).isUninferredTypeArgument()) {
-                TypeMirror type = TreeUtils.typeOf(expression);
-                AnnotatedArrayType newArrayType =
-                        (AnnotatedArrayType) AnnotatedTypeMirror.createType(type, factory, false);
-                newArrayType.setComponentType(annotatedArrayType);
-                newArrayType.addAnnotations(annotatedArrayType.getEffectiveAnnotations());
-                annotatedArrayType = newArrayType;
+            // It is necessary to get the elt because just getting the type of expression
+            // directly (via TreeUtils.typeOf) doesn't include annotations on the declarations
+            // of local variables, for some reason.
+            Element elt = TreeUtils.elementFromTree(expression);
+            TypeMirror type = null;
+            if (elt != null) {
+                type = ElementUtils.getType(elt);
             }
 
-            assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType)
-                    : "ArrayType must be represented by AnnotatedArrayType";
+            // But if the declaration is a generic, such as in tests/all-systems/Issue1775.java,
+            // then the type from the element will also be a typevar. In those cases, instead
+            // get the type of the expression, which is guaranteed to be an array. The generic
+            // will only have primary annotations (it won't have a component type - since it
+            // isn't an array), so it's sufficient to only copy the primary annotation.
+            if (type == null || type.getKind() != TypeKind.ARRAY) {
+                TypeMirror expressionType = TreeUtils.typeOf(expression);
+                // TODO: copy the primary annotation first? Is that possible with TypeMirrors?
+                type = expressionType;
+            }
 
-            Tree annotatedArrayTypeTree =
-                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(annotatedArrayType);
+            assert (type instanceof ArrayType) : "array types must be represented by ArrayType";
+
+            Tree annotatedArrayTypeTree = ((CFTreeBuilder) treeBuilder).buildAnnotatedType(type);
             handleArtificialTree(annotatedArrayTypeTree);
 
             // Declare and initialize a temporary array variable
