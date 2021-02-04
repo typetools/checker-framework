@@ -11,17 +11,20 @@ Copyright (c) 2012 University of Washington
 """
 
 import sys
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import re
 import subprocess
 import os
 import os.path
 import shutil
-import errno
 from release_vars import *
 
 # =========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module
+
+
 def match_arg(arg):
     """Check if the given command-line argument matches one of the following
     strings, and returns the matching project if it does:
@@ -814,16 +817,16 @@ def prompt_to_delete(path):
             delete_path(path)
 
 
-### def force_symlink(target_of_link, path_to_symlink):
-###     """Forces the creation of a symlink to the given path at the given target
-###     location. That is, if a file or symlink exists at the target location, it
-###     is deleted and the symlink is then created."""
-###     try:
-###         os.symlink(target_of_link, path_to_symlink)
-###     except OSError, e:
-###         if e.errno == errno.EEXIST:
-###             os.remove(path_to_symlink)
-###             os.symlink(target_of_link, path_to_symlink)
+# def force_symlink(target_of_link, path_to_symlink):
+#     """Forces the creation of a symlink to the given path at the given target
+#     location. That is, if a file or symlink exists at the target location, it
+#     is deleted and the symlink is then created."""
+#     try:
+#         os.symlink(target_of_link, path_to_symlink)
+#     except OSError, e:
+#         if e.errno == errno.EEXIST:
+#             os.remove(path_to_symlink)
+#             os.symlink(target_of_link, path_to_symlink)
 
 
 def are_in_file(file_path, strs_to_find):

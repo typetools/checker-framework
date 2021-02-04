@@ -416,7 +416,7 @@ def main(argv):
             copy_releases_to_live_site(new_checker_version, new_afu_version)
             copy_htaccess()
             ensure_group_access_to_releases()
-            ### update_release_symlinks(new_checker_version, new_afu_version)
+            # update_release_symlinks(new_checker_version, new_afu_version)
     else:
         print("Test mode: Skipping copy to live site!")
 

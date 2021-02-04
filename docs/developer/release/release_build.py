@@ -120,7 +120,7 @@ def get_new_version(project_name, curr_version):
 def create_dev_website_release_version_dir(project_name, version):
     """Create the directory for the given version of the given project under
     the releases directory of the dev web site."""
-    if project_name == None or project_name == "checker-framework":
+    if project_name in (None, "checker-framework"):
         interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, "releases", version)
     else:
         interm_dir = os.path.join(
@@ -147,16 +147,16 @@ def create_dirs_for_dev_website_release_versions(cf_version, afu_version):
     return (afu_interm_dir, checker_framework_interm_dir)
 
 
-### def update_project_dev_website_symlink(project_name, release_version):
-###     """Update the \"current\" symlink in the dev web site for the given project
-###     to point to the given release of the project on the dev web site."""
-###     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
-###     link_path = os.path.join(project_dev_site, "current")
-###
-###     dev_website_relative_dir = os.path.join("releases", release_version)
-###
-###     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
-###     force_symlink(dev_website_relative_dir, link_path)
+# def update_project_dev_website_symlink(project_name, release_version):
+#     """Update the \"current\" symlink in the dev web site for the given project
+#     to point to the given release of the project on the dev web site."""
+#     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+#     link_path = os.path.join(project_dev_site, "current")
+#
+#     dev_website_relative_dir = os.path.join("releases", release_version)
+#
+#     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
+#     force_symlink(dev_website_relative_dir, link_path)
 
 
 def update_project_dev_website(project_name, release_version):
@@ -433,7 +433,7 @@ def main(argv):
         )
         prompt_to_continue()
 
-    ## I don't think this should be necessary in general.  It's just to put files in place so link checking will work, and it takes a loooong time to run.
+    # I don't think this should be necessary in general.  It's just to put files in place so link checking will work, and it takes a loooong time to run.
     # print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # MANUAL
 
     # if prompt_yes_no("Proceed with copy of live site to dev site?", True):

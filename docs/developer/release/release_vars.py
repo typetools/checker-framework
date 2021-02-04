@@ -13,7 +13,6 @@ Copyright (c) 2014 University of Washington. All rights reserved.
 # release process
 
 import os
-import datetime
 import pwd
 import subprocess
 import shlex
@@ -41,7 +40,7 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
     If capture_output is true, then return the output (and ignore the halt_if_fail argument).
     If capture_output is not true, return the return code of the subprocess call."""
 
-    if working_dir != None:
+    if working_dir is not None:
         print("Executing in %s: %s" % (working_dir, command_args))
     else:
         print("Executing: %s" % (command_args))
