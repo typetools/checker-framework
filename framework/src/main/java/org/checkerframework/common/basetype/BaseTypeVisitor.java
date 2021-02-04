@@ -4169,8 +4169,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Takes a set of contracts identified by their expression and annotation strings and resolves
-     * them to the correct {@link JavaExpression} and {@link AnnotationMirror}.
+     * Takes as input a set of contracts, each of which contains an expression string an an
+     * annotation. Outputs a set of pairs of {@link JavaExpression} (the parsed expression string)
+     * and standardized annotation.
+     *
+     * <p>This discards any contract whose expression cannot be parsed into a JavaExpression (and
+     * issues a warning message).
      *
      * @param contractSet a set of contracts
      * @param method the method that the contracts are for
