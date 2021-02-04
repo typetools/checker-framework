@@ -416,14 +416,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                         && isContainedByBoundType(insideBoundType.upper, outside, canBeCovariant);
             } else {
                 // One of the two have an explicit super bound, so check the upper bounds
-                if (isSubtype(insideBoundType.upper, outside.upper)) {
-                    // Recur on the lower inside bound. If canBeCovariant, don't check the lower
-                    // bound.
-                    return (canBeCovariant
-                            || isContainedByBoundType(insideBoundType.lower, outside, false));
-                } else {
-                    return false;
-                }
+                // Recur on the lower inside bound. If canBeCovariant, don't check the lower
+                // bound.
+                return isSubtype(insideBoundType.upper, outside.upper)
+                        && (canBeCovariant
+                                || isContainedByBoundType(insideBoundType.lower, outside, false));
             }
         }
 
