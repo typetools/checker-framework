@@ -46,18 +46,28 @@ public class ParameterExpression {
 
     @EnsuresNonNull("param")
     // :: error: (expression.parameter.name.shadows.field)
-    public void m6(Object param) {
+    public void m6a(@Nullable Object param) {
         param = new Object();
     }
 
-    // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
-    // formal parameter.
-    @EnsuresNonNull("field")
-    // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
+    @EnsuresNonNull("param")
+    // :: error: (contracts.postcondition.not.satisfied)
     // :: error: (expression.parameter.name.shadows.field)
-    public void m7(Object field) {
+    public void m6b(@Nullable Object param) {
+        param = null;
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (expression.parameter.name.shadows.field)
+    public void m7a(@Nullable Object field) {
         field = new Object();
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (expression.parameter.name.shadows.field)
+    public void m7b(@Nullable Object field) {
+        field = null;
     }
 
     // Preconditions
@@ -68,11 +78,7 @@ public class ParameterExpression {
     // :: error: (expression.parameter.name.shadows.field)
     public void m9(Object param) {}
 
-    // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
-    // formal parameter.
     @RequiresNonNull("field")
-    // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
     // :: error: (expression.parameter.name.shadows.field)
     public void m10(Object field) {}
 
@@ -90,15 +96,33 @@ public class ParameterExpression {
         return true;
     }
 
-    // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
-    // formal parameter.
     @EnsuresNonNullIf(result = true, expression = "field")
-    // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
     // :: error: (expression.parameter.name.shadows.field)
-    public boolean m13(Object field) {
+    public boolean m13a(@Nullable Object field) {
         field = new Object();
         return true;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: error: (expression.parameter.name.shadows.field)
+    public boolean m13b(@Nullable Object field) {
+        field = new Object();
+        return false;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: error: (expression.parameter.name.shadows.field)
+    public boolean m13c(@Nullable Object field) {
+        field = null;
+        // :: error: (contracts.conditional.postcondition.not.satisfied)
+        return true;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: error: (expression.parameter.name.shadows.field)
+    public boolean m13d(@Nullable Object field) {
+        field = null;
+        return false;
     }
 
     // Annotations on formal parameters referring to a formal parameter of the same method.
