@@ -171,7 +171,7 @@ public class LockAnnotatedTypeFactory
                     JavaExpressionContext context,
                     TreePath localScope,
                     boolean useLocalScope,
-                    boolean delocalize) {
+                    boolean atMethodSignature) {
                 if (DependentTypesError.isExpressionError(expression)) {
                     return expression;
                 }
@@ -195,7 +195,7 @@ public class LockAnnotatedTypeFactory
                         return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
                                 .toString();
                     }
-                    if (delocalize) {
+                    if (atMethodSignature) {
                         result = result.atMethodSignature(context.arguments);
                     }
                     return result.toString();
