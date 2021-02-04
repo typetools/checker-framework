@@ -58,6 +58,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         if (vatf != null) {
             result = ValueCheckerUtils.optimize(result, vatf);
         }
+
         return result.toString();
     }
 
