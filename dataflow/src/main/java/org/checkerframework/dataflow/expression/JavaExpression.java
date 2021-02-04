@@ -657,6 +657,8 @@ public abstract class JavaExpression {
      * Returns a variant of this with LocalVariable replaced by FormalParameter where possible. That
      * is, it replaces formal parameter names by "#2" syntax.
      *
+     * @param parameters the formal parameters of the method; the index withing this list is the "2"
+     *     in "#2"
      * @return a variant of this with formal parameters expressed as "#2"
      */
     public abstract JavaExpression atMethodSignature(List<JavaExpression> parameters);
@@ -666,6 +668,8 @@ public abstract class JavaExpression {
      * possible. That is, it replaces formal parameter names by "#2" syntax.
      *
      * @param list a list of JavaExpressions
+     * @param parameters the formal parameters of the method; the index withing this list is the "2"
+     *     in "#2"
      * @return a variant of the given list with formal parameters expressed as "#2"
      */
     @SuppressWarnings("interning:not.interned") // test whether method returns its argument
