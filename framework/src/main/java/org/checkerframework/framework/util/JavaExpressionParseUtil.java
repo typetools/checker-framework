@@ -341,26 +341,21 @@ public class JavaExpressionParseUtil {
                 return getParameterJavaExpression(s, context);
             }
 
-            // Local variable, parameter, or field.
+            // Local variable or parameter.
             if (!context.parsingMember && context.useLocalScope) {
                 // Attempt to match a local variable within the scope of the
                 // given path before attempting to match a field.
                 VariableElement varElem =
-                        resolver.findLocalVariableOrParameterOrField(s, annotatedConstruct);
+                        resolver.findLocalVariableOrParameter(s, annotatedConstruct);
                 if (varElem != null) {
-                    if (varElem.getKind() == ElementKind.FIELD) {
-                        boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                        return getFieldJavaExpression(varElem, context, isOriginalReceiver);
-                    } else {
-                        return new LocalVariable(varElem);
-                    }
+                    return new LocalVariable(varElem);
                 }
             }
 
             // Field access
             TypeMirror receiverType = context.receiver.getType();
-            // originalReceiver is true if receiverType has not been reassigned.
-            boolean originalReceiver = true;
+            // isOriginalReceiver is true if receiverType has not been reassigned.
+            boolean isOriginalReceiver = true;
             VariableElement fieldElem = null;
             if (s.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
                 fieldElem = resolver.findField(s, receiverType, annotatedConstruct);
@@ -373,15 +368,15 @@ public class JavaExpressionParseUtil {
                         break;
                     }
                     receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-                    originalReceiver = false;
+                    isOriginalReceiver = false;
                 }
             }
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
                 FieldAccess fieldAccess =
-                        (FieldAccess) getFieldJavaExpression(fieldElem, context, originalReceiver);
+                        getFieldJavaExpression(fieldElem, context, isOriginalReceiver);
                 TypeElement scopeClassElement =
                         TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
-                if (!originalReceiver
+                if (!isOriginalReceiver
                         && !ElementUtils.isStatic(fieldElem)
                         && ElementUtils.isStatic(scopeClassElement)) {
                     throw new ParseRuntimeException(
@@ -816,13 +811,13 @@ public class JavaExpressionParseUtil {
          *
          * @param fieldElem the field
          * @param context the context
-         * @param originalReceiver whether the receiver is the original one
+         * @param isOriginalReceiver whether the receiver is the original one
          * @return a JavaExpression for the given name
          */
-        private static JavaExpression getFieldJavaExpression(
+        private static FieldAccess getFieldJavaExpression(
                 VariableElement fieldElem,
                 JavaExpressionContext context,
-                boolean originalReceiver) {
+                boolean isOriginalReceiver) {
             TypeMirror receiverType = context.receiver.getType();
 
             TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -832,7 +827,7 @@ public class JavaExpressionParseUtil {
                 return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
             }
             JavaExpression locationOfField;
-            if (originalReceiver) {
+            if (isOriginalReceiver) {
                 locationOfField = context.receiver;
             } else {
                 locationOfField =
@@ -925,6 +920,18 @@ public class JavaExpressionParseUtil {
         public final boolean parsingMember;
         /** Whether the TreePath should be used to find identifiers. */
         public final boolean useLocalScope;
+
+        /**
+         * Creates a context for parsing a Java expression, with "null" for arguments.
+         *
+         * @param receiver used to replace "this" in a Java expression and used to resolve
+         *     identifiers in any Java expression with an implicit "this"
+         * @param checker used to create {@link
+         *     org.checkerframework.dataflow.expression.JavaExpression}s
+         */
+        public JavaExpressionContext(JavaExpression receiver, SourceChecker checker) {
+            this(receiver, null, checker);
+        }
 
         /**
          * Creates a context for parsing a Java expression.
@@ -1228,6 +1235,14 @@ public class JavaExpressionParseUtil {
         }
     }
 
+    /**
+     * Get a JavaExpression from a VariableTree.
+     *
+     * @param provider gives the context
+     * @param tree the VariableTree
+     * @return a JavaExpression for the given VariableTree
+     * @throws JavaExpressionParseException if the expression string cannot be parsed
+     */
     public static JavaExpression fromVariableTree(AnnotatedTypeFactory provider, VariableTree tree)
             throws JavaExpressionParseException {
         Element elt = TreeUtils.elementFromDeclaration(tree);

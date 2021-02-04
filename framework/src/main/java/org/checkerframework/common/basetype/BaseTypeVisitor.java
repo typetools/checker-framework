@@ -370,9 +370,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         AnnotatedDeclaredType classType = atypeFactory.getAnnotatedType(classTree);
-        if (atypeFactory.getDependentTypesHelper() != null) {
-            atypeFactory.getDependentTypesHelper().checkClass(classTree, classType);
-        }
+        atypeFactory.getDependentTypesHelper().checkClass(classTree, classType);
         validateType(classTree, classType);
 
         Tree ext = classTree.getExtendsClause();
@@ -715,9 +713,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(thr);
             }
 
-            if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory.getDependentTypesHelper().checkMethod(node, methodType);
-            }
+            atypeFactory.getDependentTypesHelper().checkMethod(node, methodType);
 
             // Check method overrides
             AnnotatedDeclaredType enclosingType =
@@ -730,10 +726,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
                     overriddenMethods.entrySet()) {
                 AnnotatedDeclaredType overriddenType = pair.getKey();
-                AnnotatedExecutableType overriddenMethod =
+                ExecutableElement overriddenMethodElt = pair.getValue();
+                AnnotatedExecutableType overriddenMethodType =
                         AnnotatedTypes.asMemberOf(
-                                types, atypeFactory, overriddenType, pair.getValue());
-                if (!checkOverride(node, enclosingType, overriddenMethod, overriddenType)) {
+                                types, atypeFactory, overriddenType, overriddenMethodElt);
+                if (!checkOverride(node, enclosingType, overriddenMethodType, overriddenType)) {
                     // Stop at the first mismatch; this makes a difference only if
                     // -Awarns is passed, in which case multiple warnings might be raised on
                     // the same method, not adding any value. See Issue 373.
@@ -951,24 +948,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
+        TreePath pathToMethodDecl = getCurrentPath();
         JavaExpressionContext jeContext =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodTree, getCurrentPath(), checker);
+                        methodTree, pathToMethodDecl, checker);
 
         for (Contract contract : contracts) {
-            String expressionString = contract.expression;
+            String expressionString = contract.expressionString;
             AnnotationMirror annotation = contract.annotation;
 
             annotation =
                     atypeFactory.standardizeAnnotationFromContract(
                             annotation, jeContext, getCurrentPath());
 
-            JavaExpression exprJe = null;
+            JavaExpression exprJe;
             try {
                 exprJe =
                         JavaExpressionParseUtil.parse(
                                 expressionString, jeContext, getCurrentPath(), false);
             } catch (JavaExpressionParseException e) {
+                exprJe = null;
                 checker.report(methodTree, e.getDiagMessage());
             }
             // If exprJe is null, then an error was issued above.
@@ -976,7 +975,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(methodTree, "flowexpr.parse.error", expressionString);
                 exprJe = null;
             }
-            if (exprJe != null && !abstractMethod) {
+            if (exprJe != null && !abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
+                // Check the contract, which is a postcondition.
+                // Preconditions are checked at method invocations, not declarations.
+
                 switch (contract.kind) {
                     case POSTCONDITION:
                         checkPostcondition(methodTree, annotation, exprJe);
@@ -988,9 +990,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 exprJe,
                                 ((ConditionalPostcondition) contract).resultValue);
                         break;
-                    case PRECONDITION:
-                        // Preconditions are checked at method invocations, not declarations
-                        break;
+                    default:
+                        throw new BugInCF("Impossible: " + contract.kind);
                 }
             }
 
@@ -1255,9 +1256,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setAssignmentContext(Pair.of(node, variableType));
 
         try {
-            if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory.getDependentTypesHelper().checkType(variableType, node);
-            }
+            atypeFactory.getDependentTypesHelper().checkType(variableType, node);
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
                 commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
@@ -1686,7 +1685,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         for (Contract c : preconditions) {
             Precondition p = (Precondition) c;
-            String expressionString = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror anno = p.annotation;
 
             anno =
@@ -1846,9 +1845,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid) {
             AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
-            if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory.getDependentTypesHelper().checkType(dt, node);
-            }
+            atypeFactory.getDependentTypesHelper().checkType(dt, node);
             checkConstructorInvocation(dt, constructorType, node);
         }
         // Do not call super, as that would observe the arguments without
@@ -2108,9 +2105,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid && node.getType() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory.getDependentTypesHelper().checkType(arrayType, node);
-            }
+            atypeFactory.getDependentTypesHelper().checkType(arrayType, node);
             if (node.getInitializers() != null) {
                 checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
             }
@@ -2298,7 +2293,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checkTypecastSafety(node);
             checkTypecastRedundancy(node);
         }
-        if (atypeFactory.getDependentTypesHelper() != null) {
+        if (atypeFactory.getDependentTypesHelper().hasDependentAnnotations()) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
             atypeFactory.getDependentTypesHelper().checkType(type, node.getType());
         }
@@ -3305,21 +3300,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>This exists so that subclasses can subclass OverrideChecker and use their subclass instead
      * of using OverrideChecker itself.
+     *
+     * @param overriderTree the AST node of the overriding method or method reference
+     * @param overriderMethodType the type of the overriding method
+     * @param overridingType the type enclosing the overrider method, usually an
+     *     AnnotatedDeclaredType; for Method References may be something else
+     * @param overridingReturnType the return type of the overriding method
+     * @param overriddenMethodType the type of the overridden method
+     * @param overriddenType the declared type enclosing the overridden method
+     * @param overriddenReturnType the return type of the overridden method
+     * @return an OverrideChecker
      */
     protected OverrideChecker createOverrideChecker(
             Tree overriderTree,
-            AnnotatedExecutableType overrider,
+            AnnotatedExecutableType overriderMethodType,
             AnnotatedTypeMirror overridingType,
             AnnotatedTypeMirror overridingReturnType,
-            AnnotatedExecutableType overridden,
+            AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType,
             AnnotatedTypeMirror overriddenReturnType) {
         return new OverrideChecker(
                 overriderTree,
-                overrider,
+                overriderMethodType,
                 overridingType,
                 overridingReturnType,
-                overridden,
+                overriddenMethodType,
                 overriddenType,
                 overriddenReturnType);
     }
@@ -3334,22 +3339,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     AnnotatedTypeMirror.AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
      * @param overridingType type of overriding class
-     * @param overridden type of overridden method
+     * @param overriddenMethodType type of overridden method
      * @param overriddenType type of overridden class
      * @return true if the override is allowed
      */
     protected boolean checkOverride(
             MethodTree overriderTree,
             AnnotatedDeclaredType overridingType,
-            AnnotatedExecutableType overridden,
+            AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType) {
 
         // Get the type of the overriding method.
-        AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
+        AnnotatedExecutableType overriderMethodType = atypeFactory.getAnnotatedType(overriderTree);
 
-        // Call the other version of the method, which takes overrider. Both versions
+        // Call the other version of the method, which takes overriderMethodType. Both versions
         // exist to allow checkers to override one or the other depending on their needs.
-        return checkOverride(overriderTree, overrider, overridingType, overridden, overriddenType);
+        return checkOverride(
+                overriderTree,
+                overriderMethodType,
+                overridingType,
+                overriddenMethodType,
+                overriddenType);
     }
 
     /**
@@ -3361,33 +3371,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @see #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedDeclaredType,
      *     AnnotatedTypeMirror.AnnotatedExecutableType, AnnotatedTypeMirror.AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
-     * @param overrider type of the overriding method
+     * @param overriderMethodType type of the overriding method
      * @param overridingType type of overriding class
-     * @param overridden type of overridden method
+     * @param overriddenMethodType type of overridden method
      * @param overriddenType type of overridden class
      * @return true if the override is allowed
      */
     protected boolean checkOverride(
             MethodTree overriderTree,
-            AnnotatedExecutableType overrider,
+            AnnotatedExecutableType overriderMethodType,
             AnnotatedDeclaredType overridingType,
-            AnnotatedExecutableType overridden,
+            AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType) {
 
-        // This needs to be done before overrider.getReturnType() and overridden.getReturnType()
-        if (overrider.getTypeVariables().isEmpty() && !overridden.getTypeVariables().isEmpty()) {
-            overridden = overridden.getErased();
+        // This needs to be done before overriderMethodType.getReturnType() and
+        // overriddenMethodType.getReturnType()
+        if (overriderMethodType.getTypeVariables().isEmpty()
+                && !overriddenMethodType.getTypeVariables().isEmpty()) {
+            overriddenMethodType = overriddenMethodType.getErased();
         }
 
         OverrideChecker overrideChecker =
                 createOverrideChecker(
                         overriderTree,
-                        overrider,
+                        overriderMethodType,
                         overridingType,
-                        overrider.getReturnType(),
-                        overridden,
+                        overriderMethodType.getReturnType(),
+                        overriddenMethodType,
                         overriddenType,
-                        overridden.getReturnType());
+                        overriddenMethodType.getReturnType());
 
         return overrideChecker.checkOverride();
     }
@@ -3680,6 +3692,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
+        /** Checks that overrides obey behavioral subtyping. */
         private void checkPreAndPostConditions() {
             String msgKey = methodReference ? "methodref" : "override";
             if (methodReference) {
@@ -4099,7 +4112,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Contract c : conditionalPostconditions) {
             ConditionalPostcondition p = (ConditionalPostcondition) c;
             if (p.resultValue == b) {
-                result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
+                result.add(
+                        new Postcondition(p.expressionString, p.annotation, p.contractAnnotation));
             }
         }
         return result;
@@ -4163,7 +4177,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         TreePath path = atypeFactory.getPath(methodTree);
         JavaExpressionContext jeContext = null; // lazily initialized, for efficiency
         for (Contract p : contractSet) {
-            String expressionString = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
             if (jeContext == null) {
                 jeContext =

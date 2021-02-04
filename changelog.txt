@@ -5,7 +5,7 @@ Version 3.10.0, February 1, 2021
 Moved utility classes from `checker-qual.jar` to the new `checker-util.jar`.
 Also, added `util` to the end of all the packages of the utility classes.
 
-In Maven Central, `checker.jar` no longer contains duplicates of qualiifiers in
+In Maven Central, `checker.jar` no longer contains duplicates of qualifiers in
 `checker-qual.jar`, but rather uses a Maven dependency. A fat jar file with all
 the dependencies (like the old `checker.jar`) is available in Maven Central with
 the classifier "all".
