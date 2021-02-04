@@ -76,7 +76,6 @@ import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -603,18 +602,19 @@ public abstract class CFAbstractTransfer<
      */
     private AnnotationMirror standardizeAnnotationFromContract(
             AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
+        if (!analysis.dependentTypesHelper.hasDependentAnnotations()) {
+            return annoFromContract;
+        }
+
         // TODO: common implementation with
         // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
-        DependentTypesHelper dependentTypesHelper = analysis.dependentTypesHelper;
-        if (dependentTypesHelper != null) {
-            AnnotationMirror standardized =
-                    dependentTypesHelper.standardizeAnnotationIfDependentType(
-                            jeContext, path, annoFromContract, false, false);
-            if (standardized != null) {
-                // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
-                // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
-                return standardized;
-            }
+        AnnotationMirror standardized =
+                analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
+                        jeContext, path, annoFromContract, false, false);
+        if (standardized != null) {
+            // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
+            // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
+            return standardized;
         }
         return annoFromContract;
     }
