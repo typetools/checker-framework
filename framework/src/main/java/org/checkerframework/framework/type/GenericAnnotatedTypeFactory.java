@@ -274,7 +274,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * code statements to the shared control flow graphs. This map is null in all subcheckers (i.e.
      * it is null exactly when {@code this.checker.parentChecker} is non-null, and vice-versa).
      *
-     * <p>The default size of the map is set by {@link #getCacheSize()}.
+     * <p>The initial capacity of the map is set by {@link #getCacheSize()}.
      */
     protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
 
