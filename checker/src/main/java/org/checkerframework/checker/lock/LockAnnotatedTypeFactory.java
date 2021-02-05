@@ -185,7 +185,8 @@ public class LockAnnotatedTypeFactory
                             JavaExpressionParseUtil.parse(
                                     expression, context, localScope, useLocalScope);
                     if (result == null) {
-                        return new DependentTypesError(expression, " ").toString();
+                        return new DependentTypesError(expression, /*error message=*/ " ")
+                                .toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
@@ -229,8 +230,8 @@ public class LockAnnotatedTypeFactory
             return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
         } else if (expr instanceof MethodCall) {
             MethodCall methodCall = (MethodCall) expr;
-            for (JavaExpression param : methodCall.getParameters()) {
-                if (!isExpressionEffectivelyFinal(param)) {
+            for (JavaExpression arg : methodCall.getArguments()) {
+                if (!isExpressionEffectivelyFinal(arg)) {
                     return false;
                 }
             }

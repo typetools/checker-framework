@@ -111,7 +111,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         if (hasFormatMethodAnno(methodAnnos)) {
             AnnotatedTypeMirror atm = methodAnnos.parameterTypes.get(0);
-            atm.removeAnnotation(org.checkerframework.checker.formatter.qual.Format.class);
+            atm.removeAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);
         }
     }
 

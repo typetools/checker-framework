@@ -326,9 +326,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
 
         // Not same erased Java type.
-        // Walk up the directSuperTypes.
-        // directSuperTypes() annotates type variables correctly and handles substitution.
-        for (AnnotatedDeclaredType dst : type.directSuperTypes()) {
+        // Walk up the directSupertypes.
+        // directSupertypes() annotates type variables correctly and handles substitution.
+        for (AnnotatedDeclaredType dst : type.directSupertypes()) {
             if (isErasedJavaSubtype(dst, superType)) {
                 // If two direct supertypes of type, dst1 and dst2, are subtypes of superType then
                 // asSuper(dst1, superType) and asSuper(dst2, superType) return equivalent ATMs, so

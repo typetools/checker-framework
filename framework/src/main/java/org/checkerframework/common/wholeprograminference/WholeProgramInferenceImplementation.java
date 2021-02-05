@@ -464,10 +464,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(rhsATM);
         DependentTypesHelper dependentTypesHelper =
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
-        if (dependentTypesHelper != null) {
-            dependentTypesHelper.standardizeReturnType(
-                    methodDeclTree, rhsATM, /*removeErroneousExpressions=*/ true);
-        }
+        dependentTypesHelper.standardizeReturnType(
+                methodDeclTree, rhsATM, /*removeErroneousExpressions=*/ true);
         T returnTypeAnnos = storage.getReturnAnnotations(methodElt, lhsATM, atypeFactory);
         updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 

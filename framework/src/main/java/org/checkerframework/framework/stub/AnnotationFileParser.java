@@ -951,7 +951,7 @@ public class AnnotationFileParser {
         if (typeDecl.getExtendedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType annotatedSupertype =
-                        findAnnotatedType(supertype, type.directSuperTypes(), typeDecl);
+                        findAnnotatedType(supertype, type.directSupertypes(), typeDecl);
                 if (annotatedSupertype == null) {
                     warn(
                             typeDecl,
@@ -968,7 +968,7 @@ public class AnnotationFileParser {
         if (typeDecl.getImplementedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType annotatedSupertype =
-                        findAnnotatedType(supertype, type.directSuperTypes(), typeDecl);
+                        findAnnotatedType(supertype, type.directSupertypes(), typeDecl);
                 if (annotatedSupertype == null) {
                     warn(
                             typeDecl,

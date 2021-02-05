@@ -874,7 +874,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
         @Nullable Trees trees = Trees.instance(processingEnv);
-        assert trees != null; /*nninvariant*/
+        assert trees != null;
         this.trees = trees;
 
         this.messager = processingEnv.getMessager();
@@ -922,7 +922,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
             messager.printMessage(
                     Kind.WARNING,
-                    "Memory constraints are impeding performance; please increase max heap size.");
+                    String.format(
+                            "Memory constraints are impeding performance; please increase max heap size (max memory = %d, total memory = %d, free memory = %d)",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
             warnedAboutGarbageCollection = true;
         }
 
@@ -1564,7 +1568,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
 
         @Nullable String @Nullable [] slValue = sl.value();
-        assert slValue != null; /*nninvariant*/
+        assert slValue != null;
 
         @Nullable String[] lintArray = slValue;
         Set<String> lintSet = new HashSet<>(lintArray.length);
@@ -2310,7 +2314,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 this.getClass().getAnnotation(SuppressWarningsPrefix.class);
         if (prefixMetaAnno != null) {
             for (String prefix : prefixMetaAnno.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }
@@ -2320,7 +2324,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {
             for (String prefix : annotation.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }
@@ -2480,65 +2484,75 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      */
     private void logBugInCF(BugInCF ce) {
         StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
-        msg.add(ce.getMessage());
-        boolean noPrintErrorStack =
-                (processingEnv != null
-                        && processingEnv.getOptions() != null
-                        && processingEnv.getOptions().containsKey("noPrintErrorStack"));
-
-        msg.add("; The Checker Framework crashed.  Please report the crash.");
-        if (noPrintErrorStack) {
+        if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
             msg.add(
-                    " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+                    "The JVM ran out of memory.  Run with a larger max heap size (currently "
+                            + Runtime.getRuntime().maxMemory()
+                            + " bytes).");
         } else {
-            if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
-                msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
-            }
 
-            if (this.visitor != null) {
-                DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-                if (pos != null) {
-                    DiagnosticSource source =
-                            new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-                    int linenr = source.getLineNumber(pos.getStartPosition());
-                    int col = source.getColumnNumber(pos.getStartPosition(), true);
-                    String line = source.getLine(pos.getStartPosition());
+            msg.add(ce.getMessage());
+            boolean noPrintErrorStack =
+                    (processingEnv != null
+                            && processingEnv.getOptions() != null
+                            && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
-                    msg.add("Last visited tree at line " + linenr + " column " + col + ":");
-                    msg.add(line);
-                }
-            }
-
-            msg.add(
-                    "Exception: "
-                            + ce.getCause()
-                            + "; "
-                            + UtilPlume.stackTraceToString(ce.getCause()));
-            boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-            Throwable cause = ce.getCause().getCause();
-            while (cause != null) {
+            msg.add("; The Checker Framework crashed.  Please report the crash.");
+            if (noPrintErrorStack) {
                 msg.add(
-                        "Underlying Exception: "
-                                + cause
-                                + "; "
-                                + UtilPlume.stackTraceToString(cause));
-                printClasspath |= cause instanceof NoClassDefFoundError;
-                cause = cause.getCause();
-            }
+                        " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+            } else {
+                if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
+                    msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
+                }
 
-            if (printClasspath) {
-                ClassLoader cl = ClassLoader.getSystemClassLoader();
+                if (this.visitor != null) {
+                    DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
+                    if (pos != null) {
+                        DiagnosticSource source =
+                                new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+                        int linenr = source.getLineNumber(pos.getStartPosition());
+                        int col = source.getColumnNumber(pos.getStartPosition(), true);
+                        String line = source.getLine(pos.getStartPosition());
 
-                if (cl instanceof URLClassLoader) {
-                    msg.add("Classpath:");
-                    URL[] urls = ((URLClassLoader) cl).getURLs();
-                    for (URL url : urls) {
-                        msg.add(url.getFile());
+                        msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+                        msg.add(line);
                     }
-                } else {
-                    // TODO: Java 9+ use an internal classloader that doesn't support getting URLs,
-                    // so we will need an alternative approach to retrieve the classpath on Java 9+.
-                    msg.add("Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                }
+
+                msg.add(
+                        "Exception: "
+                                + ce.getCause()
+                                + "; "
+                                + UtilPlume.stackTraceToString(ce.getCause()));
+                boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
+                Throwable cause = ce.getCause().getCause();
+                while (cause != null) {
+                    msg.add(
+                            "Underlying Exception: "
+                                    + cause
+                                    + "; "
+                                    + UtilPlume.stackTraceToString(cause));
+                    printClasspath |= cause instanceof NoClassDefFoundError;
+                    cause = cause.getCause();
+                }
+
+                if (printClasspath) {
+                    ClassLoader cl = ClassLoader.getSystemClassLoader();
+
+                    if (cl instanceof URLClassLoader) {
+                        msg.add("Classpath:");
+                        URL[] urls = ((URLClassLoader) cl).getURLs();
+                        for (URL url : urls) {
+                            msg.add(url.getFile());
+                        }
+                    } else {
+                        // TODO: Java 9+ use an internal classloader that doesn't support getting
+                        // URLs, so we will need an alternative approach to retrieve the classpath
+                        // on Java 9+.
+                        msg.add(
+                                "Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                    }
                 }
             }
         }

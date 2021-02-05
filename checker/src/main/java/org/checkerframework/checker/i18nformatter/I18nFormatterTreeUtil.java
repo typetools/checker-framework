@@ -304,7 +304,7 @@ public class I18nFormatterTreeUtil {
                         // Invalid FormatFor invocation
                         return;
                     }
-                    JavaExpressionContext flowExprContext =
+                    JavaExpressionContext jeContext =
                             JavaExpressionContext.buildContextForMethodUse(node, checker);
                     String formatforArg =
                             AnnotationUtils.getElementValue(
@@ -312,15 +312,15 @@ public class I18nFormatterTreeUtil {
                                     "value",
                                     String.class,
                                     false);
-                    if (flowExprContext != null) {
+                    if (jeContext != null) {
                         try {
                             paramArg =
                                     JavaExpressionParseUtil.parse(
                                             formatforArg,
-                                            flowExprContext,
+                                            jeContext,
                                             atypeFactory.getPath(tree),
                                             true);
-                            paramIndex = flowExprContext.arguments.indexOf(paramArg);
+                            paramIndex = jeContext.arguments.indexOf(paramArg);
                         } catch (JavaExpressionParseException e) {
                             // report errors here
                             checker.reportError(tree, "i18nformat.invalid.formatfor");

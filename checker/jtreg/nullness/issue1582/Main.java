@@ -6,8 +6,8 @@
  *
  * @compile/fail/ref=Foo.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext foo/Foo.java
  * @compile -XDrawDiagnostics foo/Foo.java
- * @compile/fail/ref=FlowExprParseError.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext mainrepropkg/FlowExprParseError.java
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext mainrepropkg/FlowExprParseError.java -AsuppressWarnings=flowexpr.parse.error.postcondition
+ * @compile/fail/ref=JavaExpressionParseError.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext mainrepropkg/JavaExpressionParseError.java
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext mainrepropkg/JavaExpressionParseError.java -AsuppressWarnings=flowexpr.parse.error.postcondition
  *
  */
 
