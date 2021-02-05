@@ -710,8 +710,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Set the CompilationUnitTree that should be used.
      *
      * @param root the new compilation unit to use
-     * @param shouldCheckVisitor true if the visitor that verifies the javac tree can be visited
-     *     with its corresponding JavaParser AST should be run. The check only occurs if
+     * @param shouldCheckVisitor if true, run the visitor that verifies that the javac tree can be
+     *     visited with its corresponding JavaParser AST. The check only occurs if
      *     -AcheckJavaParserVisitor is passed on the command line.
      */
     @SuppressWarnings("CatchAndPrintStackTrace")

@@ -799,7 +799,7 @@ For example:
 \begin{myxsmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker \
-    -Aajava=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
+    -Aajava=path/to/String.ajava:ajavadir MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
@@ -829,7 +829,7 @@ a source file, the greatest lower bound is used (as with the
 \code{-AmergeStubsWithSource} option).
 
 Ajava files may contain annotations within anonymous classes and local classes.
-Annotations in such locations are ignored in stub files.x
+Annotations in such locations are ignored in stub files.
 
 
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
