@@ -212,15 +212,13 @@ public class CFCFGBuilder extends CFGBuilder {
                 }
             }
 
-            // But if the declaration is a generic, such as in
-            // framework/tests/all-systems/java8inference/Issue1775.java,
-            // then the type from the element will also be a typevar. In those cases, instead
-            // get the type of the expression, which is guaranteed to be an array. The generic
-            // will only have primary annotations (it won't have a component type - since it
-            // isn't an array), so it's sufficient to only copy the primary annotation.
+            // In all other cases cases, instead get the type of the expression. This case is
+            // also triggered when the type from the element is not an array, which can occur
+            // if the declaration of the local is a generic, such as in
+            // framework/tests/all-systems/java8inference/Issue1775.java.
+            // Getting the type from the expression itself guarantees the result will be an array.
             if (type == null || type.getKind() != TypeKind.ARRAY) {
                 TypeMirror expressionType = TreeUtils.typeOf(expression);
-                // TODO: copy the primary annotation first? Is that possible with TypeMirrors?
                 type = expressionType;
             }
 
