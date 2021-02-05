@@ -49,6 +49,17 @@ public class CFTreeBuilder extends TreeBuilder {
     }
 
     /**
+     * Builds an AST Tree representing a type, including AnnotationTrees for its annotations.
+     *
+     * @param type the type
+     * @return a Tree representing the type
+     */
+    public Tree buildAnnotatedType(TypeMirror type) {
+        visitedWildcards.clear();
+        return createAnnotatedType(type);
+    }
+
+    /**
      * Converts a list of AnnotationMirrors to the a corresponding list of new AnnotationTrees.
      *
      * @param annotations the annotations
@@ -57,6 +68,7 @@ public class CFTreeBuilder extends TreeBuilder {
     private List<JCAnnotation> convertAnnotationMirrorsToAnnotationTrees(
             Collection<? extends AnnotationMirror> annotations) {
         List<JCAnnotation> annotationTrees = List.nil();
+
         for (AnnotationMirror am : annotations) {
             // TODO: what TypeAnnotationPosition should be used?
             Attribute.TypeCompound typeCompound =
@@ -72,17 +84,6 @@ public class CFTreeBuilder extends TreeBuilder {
             annotationTrees = annotationTrees.append(typeAnnotationTree);
         }
         return annotationTrees;
-    }
-
-    /**
-     * Builds an AST Tree representing a type, including AnnotationTrees for its annotations.
-     *
-     * @param type the type
-     * @return a Tree representing the type
-     */
-    public Tree buildAnnotatedType(TypeMirror type) {
-        visitedWildcards.clear();
-        return createAnnotatedType(type);
     }
 
     /**

@@ -387,7 +387,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from a Tree to its TreePath. Shared between all instances. */
     private final TreePathCacher treePathCache;
 
-    /** Mapping from CFG generated trees to their enclosing elements. */
+    /** Mapping from CFG-generated trees to their enclosing elements. */
     protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
     /**
@@ -671,7 +671,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
         this.root = root;
-        // Do not clear here. Only the primary checker should clear these.
+        // Do not clear here. Only the primary checker should clear these caches.
         // treePathCache.clear();
         // artificialTreeToEnclosingElementMap.clear();
 
@@ -3319,7 +3319,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Handle an artificial tree by mapping it to the enclosing element.
+     * Adds the given mapping from a synthetic (generated) tree to its enclosing element.
      *
      * <p>See {@code
      * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.

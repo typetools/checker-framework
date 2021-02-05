@@ -340,9 +340,10 @@ option also serves the latter purpose).
 \sectionAndLabel{\code{@AssumeAssertion} string in an \<assert> message}{assumeassertion}
 
 \begin{sloppypar}
-You can suppress a warning by \<assert>ing that some property is true, and
-placing the string \<@AssumeAssertion(\emph{checkername})> in the assertion
-message.
+Sometimes, it is too disruptive to refactor your code to create a location
+where \<@SuppressWarnings> can be written.  You can instead suppress a
+warning by writing an assertion whose message contains the string
+\<@AssumeAssertion(\emph{checkername})>.
 \end{sloppypar}
 
 For example, in this code:
@@ -368,9 +369,8 @@ rules about what type refinement it performs.
 The value in parentheses is a lowercase checker name,
 exactly as in the \<@SuppressWarnings> annotation
 (Section~\ref{suppresswarnings-annotation-syntax}).
-If the value in parentheses refers to a checker with
-subcheckers, then its subcheckers will also assume that the
-assertion is true (e.g. the KeyFor Checker will assume that
+Any subcheckers will also assume that the
+assertion is true (e.g., the Map Key Checker will assume that
 the assertion in the example above cannot fail, when it runs
 as a subchecker of the Nullness Checker).
 
@@ -378,9 +378,6 @@ The same good practices apply
 as for \<@SuppressWarnings> annotations, such as writing a comment
 justifying why the assumption is safe
 (Section~\ref{suppresswarnings-best-practices}).
-Sometimes, writing an assertion and \<@AssumeAssertion> is a less
-disruptive code change than refactoring to create a location where
-\<@SuppressWarnings> can be written.
 
 The \<-AassumeAssertionsAreEnabled> and \<-AassumeAssertionsAreDisabled>
 command-line options (Section~\ref{type-refinement-assertions}) do not
