@@ -175,9 +175,8 @@ public class CFCFGBuilder extends CFGBuilder {
         }
 
         /**
-         * Registers the artificial tree's containing element with the given type factory. This
-         * implementation is separate from {@link #handleArtificialTree(Tree)} to allow calls for
-         * different factories to share this code.
+         * Adds a mapping from the artificial tree to its enclosing element, for the given type
+         * factory.
          *
          * @param factory the factory with which to register the tree
          * @param tree an artificial tree created on the current path

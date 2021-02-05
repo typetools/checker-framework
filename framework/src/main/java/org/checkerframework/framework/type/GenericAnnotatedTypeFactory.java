@@ -279,8 +279,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
 
     /**
-     * Creates a type factory for checking the given compilation unit with respect to the given
-     * annotation.
+     * Creates a type factory. Its compilation unit is not yet set.
      *
      * @param checker the checker to which this type factory belongs
      * @param useFlow whether flow analysis should be performed
@@ -377,8 +376,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates a type factory for checking the given compilation unit with respect to the given
-     * annotation.
+     * Creates a type factory. Its compilation unit is not yet set.
      *
      * @param checker the checker to which this type factory belongs
      */
