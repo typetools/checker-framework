@@ -1,5 +1,6 @@
 package org.checkerframework.common.basetype;
 
+import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -143,6 +144,12 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * also called from instantiateSubcheckers).
      */
     private TreePathCacher treePathCacher = null;
+
+    /**
+     * The list of suppress warnings prefixes supported by this checker or any of its subcheckers
+     * (including indirect subcheckers).
+     */
+    private @MonotonicNonNull Collection<String> suppressWarningsPrefixesOfSubcheckers = null;
 
     @Override
     protected void setRoot(CompilationUnitTree newRoot) {
@@ -511,6 +518,39 @@ public abstract class BaseTypeChecker extends SourceChecker {
             // Update errsOnLastExit to reflect the errors issued.
             this.errsOnLastExit = log.nerrors;
         }
+    }
+
+    /**
+     * Like {@link SourceChecker#getSuppressWarningsPrefixes()}, but includes all prefixes supported
+     * by this checker or any of its subcheckers. Does not guarantee that the result is in any
+     * particular order. The result is always immutable.
+     *
+     * @return the suppress warnings prefixes supported by this checker or any of its subcheckers
+     */
+    public Collection<String> getSuppressWarningsPrefixesOfSubcheckers() {
+        if (this.suppressWarningsPrefixesOfSubcheckers == null) {
+            Collection<String> prefixes = getSuppressWarningsPrefixes();
+            for (BaseTypeChecker subchecker : getSubcheckers()) {
+                prefixes.addAll(subchecker.getSuppressWarningsPrefixes());
+            }
+            this.suppressWarningsPrefixesOfSubcheckers = prefixes;
+        }
+        return ImmutableSet.copyOf(this.suppressWarningsPrefixesOfSubcheckers);
+    }
+
+    /**
+     * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker
+     * that the user actually requested, i.e. the one with no parent.
+     *
+     * @return the first checker in the parent checker chain with no parent checker of its own, i.e.
+     *     the ultimate parent checker
+     */
+    public BaseTypeChecker getUltimateParentChecker() {
+        BaseTypeChecker ultimateParent = this;
+        while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
+            ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
+        }
+        return ultimateParent;
     }
 
     /**

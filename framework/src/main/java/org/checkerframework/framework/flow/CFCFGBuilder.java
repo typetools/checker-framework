@@ -99,11 +99,8 @@ public class CFCFGBuilder extends CFGBuilder {
         ExpressionTree detail = tree.getDetail();
         if (detail != null) {
             String msg = detail.toString();
-            BaseTypeChecker ultimateParent = getUltimateParent(checker);
-            Collection<String> prefixes = ultimateParent.getSuppressWarningsPrefixes();
-            for (BaseTypeChecker subchecker : ultimateParent.getSubcheckers()) {
-                prefixes.addAll(subchecker.getSuppressWarningsPrefixes());
-            }
+            BaseTypeChecker ultimateParent = checker.getUltimateParentChecker();
+            Collection<String> prefixes = ultimateParent.getSuppressWarningsPrefixesOfSubcheckers();
             for (String prefix : prefixes) {
                 String assumeAssert = "@AssumeAssertion(" + prefix + ")";
                 if (msg.contains(assumeAssert)) {
@@ -113,22 +110,6 @@ public class CFCFGBuilder extends CFGBuilder {
         }
 
         return false;
-    }
-
-    /**
-     * Finds the ultimate parent checker of the given checker. The ultimate parent checker is the
-     * checker that the user actually requested, i.e. the one with no parent.
-     *
-     * @param checker the checker from which to start the search
-     * @return the first checker in the parent checker chain with no parent checker of its own, i.e.
-     *     the ultimate parent checker
-     */
-    private static BaseTypeChecker getUltimateParent(BaseTypeChecker checker) {
-        BaseTypeChecker ultimateParent = checker;
-        while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
-            ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
-        }
-        return ultimateParent;
     }
 
     /**
@@ -167,7 +148,7 @@ public class CFCFGBuilder extends CFGBuilder {
 
         @Override
         public void handleArtificialTree(Tree tree) {
-            BaseTypeChecker ultimateParent = getUltimateParent(checker);
+            BaseTypeChecker ultimateParent = checker.getUltimateParentChecker();
             for (BaseTypeChecker subchecker : ultimateParent.getSubcheckers()) {
                 handleArtificialTreeImpl(subchecker.getTypeFactory(), tree, getCurrentPath());
             }

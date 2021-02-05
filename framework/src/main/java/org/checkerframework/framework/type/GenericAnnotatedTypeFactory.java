@@ -2470,6 +2470,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (!this.subcheckerSharedCFG.containsKey(tree)) {
             this.subcheckerSharedCFG.put(tree, cfg);
         }
+        assert this.subcheckerSharedCFG.get(tree).equals(cfg);
         return true;
     }
 
