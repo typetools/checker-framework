@@ -4124,9 +4124,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                 // These are the annotations that are too weak.
                 StringJoiner strongRelevantAnnos =
-                        new StringJoiner(", ").setEmptyValue("no information");
+                        new StringJoiner(" ").setEmptyValue("no information");
                 for (Pair<JavaExpression, AnnotationMirror> strong : set) {
-                    // are we looking at a contract of the same receiver?
                     if (weak.first.equals(strong.first)) {
                         strongRelevantAnnos.add(strong.second.toString());
                     }
