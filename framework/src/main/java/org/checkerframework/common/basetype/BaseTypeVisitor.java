@@ -3662,6 +3662,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return result;
         }
 
+        /** Check that an override respects purity. */
         private void checkPurity() {
             String msgKey =
                     isMethodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
@@ -4014,6 +4015,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return success;
         }
 
+        /**
+         * Issue an error message or log message about checking an overriding return type.
+         *
+         * @param success whether the check succeeded or failed
+         */
         private void checkReturnMsg(boolean success) {
             String msgKey =
                     isMethodReference ? "methodref.return.invalid" : "override.return.invalid";
