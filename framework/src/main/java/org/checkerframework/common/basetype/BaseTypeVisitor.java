@@ -3585,14 +3585,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     public class OverrideChecker {
 
+        /** The declaration of an overriding method. */
         protected final Tree overriderTree;
-        protected final Boolean methodReference;
+        /** True if {@link #overriderTree} is a MEMBER_REFERENCE. */
+        protected final boolean isMethodReference;
 
+        /** The type of the overriding method. */
         protected final AnnotatedExecutableType overrider;
+        /** The subtype that declares the overriding method. */
         protected final AnnotatedTypeMirror overriderType;
+        /** The type of the overridden method. */
         protected final AnnotatedExecutableType overridden;
+        /** The supertype that declares the overridden method. */
         protected final AnnotatedDeclaredType overriddenType;
+        /** The teturn type of the overridden method. */
         protected final AnnotatedTypeMirror overriddenReturnType;
+        /** The return type of the overriding method. */
         protected final AnnotatedTypeMirror overriderReturnType;
 
         /**
@@ -3628,7 +3636,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             this.overriddenReturnType = overriddenReturnType;
             this.overriderReturnType = overriderReturnType;
 
-            this.methodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
+            this.isMethodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
         }
 
         /**
@@ -3643,7 +3651,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             boolean result = checkReturn();
             result &= checkParameters();
-            if (methodReference) {
+            if (isMethodReference) {
                 result &= checkMemberReferenceReceivers();
             } else {
                 result &= checkReceiverOverride();
@@ -3656,7 +3664,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         private void checkPurity() {
             String msgKey =
-                    methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
+                    isMethodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
 
             // check purity annotations
             EnumSet<Pure.Kind> superPurity =
@@ -3678,8 +3686,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         /** Checks that overrides obey behavioral subtyping. */
         private void checkPreAndPostConditions() {
-            String msgKey = methodReference ? "methodref" : "override";
-            if (methodReference) {
+            String msgKey = isMethodReference ? "methodref" : "override";
+            if (isMethodReference) {
                 // TODO: Support postconditions and method references.
                 // The parse context always expects instance methods, but method references can be
                 // static.
@@ -3884,7 +3892,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Fix up method reference parameters.
             // See https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1
-            if (methodReference) {
+            if (isMethodReference) {
                 // The functional interface of an unbound member reference has an extra parameter
                 // (the receiver).
                 if (((JCTree.JCMemberReference) overriderTree)
@@ -3921,7 +3929,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 int index,
                 List<AnnotatedTypeMirror> overriderParams,
                 List<AnnotatedTypeMirror> overriddenParams) {
-            String msgKey = methodReference ? "methodref.param.invalid" : "override.param.invalid";
+            String msgKey =
+                    isMethodReference ? "methodref.param.invalid" : "override.param.invalid";
             long valuePos =
                     overriderTree instanceof MethodTree
                             ? positions.getStartPosition(
@@ -3990,7 +3999,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // type.  This leads to defaulting that often makes the overriding return type
             // invalid.  We ignore these.  This happens in Issue403/Issue404.
             if (!success
-                    && methodReference
+                    && isMethodReference
                     && TypesUtils.isCaptured(overriddenReturnType.getUnderlyingType())) {
                 if (ElementUtils.isMethod(
                         overridden.getElement(), functionApply, atypeFactory.getProcessingEnv())) {
@@ -4007,7 +4016,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         private void checkReturnMsg(boolean success) {
             String msgKey =
-                    methodReference ? "methodref.return.invalid" : "override.return.invalid";
+                    isMethodReference ? "methodref.return.invalid" : "override.return.invalid";
             long valuePos =
                     overriderTree instanceof MethodTree
                             ? positions.getStartPosition(
