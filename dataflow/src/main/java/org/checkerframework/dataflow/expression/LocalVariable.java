@@ -36,15 +36,15 @@ public class LocalVariable extends JavaExpression {
         }
 
         LocalVariable other = (LocalVariable) obj;
-        VarSymbol vs = (VarSymbol) element;
-        VarSymbol vsother = (VarSymbol) other.element;
-        // The code below isn't just return vs.equals(vsother) because an element might be
+        VarSymbol vs1 = (VarSymbol) this.element;
+        VarSymbol vs2 = (VarSymbol) other.element;
+        // The code below isn't just return vs1.equals(vs2) because an element might be
         // different between subcheckers.  The owner of a lambda parameter is the enclosing
         // method, so a local variable and a lambda parameter might have the same name and the
         // same owner.  pos is used to differentiate this case.
-        return vs.pos == vsother.pos
-                && vsother.name.contentEquals(vs.name)
-                && vsother.owner.toString().equals(vs.owner.toString());
+        return vs1.pos == vs2.pos
+                && vs1.name.contentEquals(vs2.name)
+                && vs1.owner.toString().equals(vs2.owner.toString());
     }
 
     public Element getElement() {
