@@ -279,6 +279,18 @@ public abstract class GenericAnnotatedTypeFactory<
     protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
 
     /**
+     * This flag controls whether it is safe for {@link #setRoot(CompilationUnitTree)} to clear the
+     * {@link #subcheckerSharedCFG} map, freeing memory.
+     *
+     * <p>It is set to true whenever a checker whose ultimate parent is null runs {@link
+     * #setRoot(CompilationUnitTree)}. Then, that checkers' first subchecker to run (i.e. the one
+     * which will create the shared CFG) is responsible for clearing the map and setting this to
+     * false, so that other subcheckers do NOT clear the map, when their {@link
+     * #setRoot(CompilationUnitTree)} method is called.
+     */
+    protected boolean safeToClearSubcheckerSharedCFGs = true;
+
+    /**
      * Creates a type factory. Its compilation unit is not yet set.
      *
      * @param checker the checker to which this type factory belongs
@@ -400,6 +412,41 @@ public abstract class GenericAnnotatedTypeFactory<
             this.flowResultAnalysisCaches.clear();
             this.initializerCache.clear();
             this.defaultQualifierForUseTypeAnnotator.clearCache();
+
+            if (this.checker.getParentChecker() == null) {
+                // This is an ultimate parent checker, so after it runs the shared CFG it is using
+                // will be dead.
+                this.safeToClearSubcheckerSharedCFGs = true;
+                if (this.checker.getSubcheckers().isEmpty()) {
+                    // If this checker has no subcheckers, then any maps that are currently
+                    // being maintained should be cleared right away.
+                    clearSharedCFG(this);
+                }
+            } else {
+                GenericAnnotatedTypeFactory<?, ?, ?, ?> ultimateParentATF =
+                        this.checker.getUltimateParentChecker().getTypeFactory();
+                clearSharedCFG(ultimateParentATF);
+            }
+        }
+    }
+
+    /**
+     * Clears the caches associated with the shared CFG for the given type factory, if it is safe to
+     * do so.
+     *
+     * @param factory a type factory
+     */
+    private void clearSharedCFG(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
+        if (factory.safeToClearSubcheckerSharedCFGs) {
+            // This is the first subchecker running in a group that might share CFGs, so
+            // it must clear its ultimate parent's shared CFG before adding a new
+            // shared CFG.
+            factory.safeToClearSubcheckerSharedCFGs = false;
+            if (factory.subcheckerSharedCFG != null) {
+                factory.subcheckerSharedCFG.clear();
+            }
+            // The same applies to this map.
+            factory.artificialTreeToEnclosingElementMap.clear();
         }
     }
 
