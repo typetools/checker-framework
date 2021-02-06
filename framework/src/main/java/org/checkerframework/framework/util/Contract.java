@@ -10,8 +10,6 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -138,8 +136,6 @@ public abstract class Contract {
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
      * @param ensuresQualifierIf the ensuresQualifierIf field, for a conditional postcondition
-     * @param atypeFactory used for standardizing annotations
-     * @param context used for standardizing annotations
      * @return a new contract
      */
     protected static Contract create(
@@ -147,9 +143,7 @@ public abstract class Contract {
             String expressionString,
             AnnotationMirror annotation,
             AnnotationMirror contractAnnotation,
-            Boolean ensuresQualifierIf,
-            GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
-            JavaExpressionContext context) {
+            Boolean ensuresQualifierIf) {
         if ((ensuresQualifierIf != null) != (kind == Kind.CONDITIONALPOSTCONDITION)) {
             throw new BugInCF("Mismatch: ensuresQualifierIf=%s, kind=%s", ensuresQualifierIf, kind);
         }
