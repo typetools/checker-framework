@@ -3303,9 +3303,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param overriderTree the AST node of the overriding method or method reference
      * @param overriderMethodType the type of the overriding method
-     * @param overridingType the type enclosing the overrider method, usually an
+     * @param overriderType the type enclosing the overrider method, usually an
      *     AnnotatedDeclaredType; for Method References may be something else
-     * @param overridingReturnType the return type of the overriding method
+     * @param overriderReturnType the return type of the overriding method
      * @param overriddenMethodType the type of the overridden method
      * @param overriddenType the declared type enclosing the overridden method
      * @param overriddenReturnType the return type of the overridden method
@@ -3314,16 +3314,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected OverrideChecker createOverrideChecker(
             Tree overriderTree,
             AnnotatedExecutableType overriderMethodType,
-            AnnotatedTypeMirror overridingType,
-            AnnotatedTypeMirror overridingReturnType,
+            AnnotatedTypeMirror overriderType,
+            AnnotatedTypeMirror overriderReturnType,
             AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType,
             AnnotatedTypeMirror overriddenReturnType) {
         return new OverrideChecker(
                 overriderTree,
                 overriderMethodType,
-                overridingType,
-                overridingReturnType,
+                overriderType,
+                overriderReturnType,
                 overriddenMethodType,
                 overriddenType,
                 overriddenReturnType);
@@ -3338,14 +3338,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
      *     AnnotatedTypeMirror.AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
-     * @param overridingType type of overriding class
+     * @param overriderType type of overriding class
      * @param overriddenMethodType type of overridden method
      * @param overriddenType type of overridden class
      * @return true if the override is allowed
      */
     protected boolean checkOverride(
             MethodTree overriderTree,
-            AnnotatedDeclaredType overridingType,
+            AnnotatedDeclaredType overriderType,
             AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType) {
 
@@ -3357,7 +3357,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return checkOverride(
                 overriderTree,
                 overriderMethodType,
-                overridingType,
+                overriderType,
                 overriddenMethodType,
                 overriddenType);
     }
@@ -3372,7 +3372,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     AnnotatedTypeMirror.AnnotatedExecutableType, AnnotatedTypeMirror.AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
      * @param overriderMethodType type of the overriding method
-     * @param overridingType type of overriding class
+     * @param overriderType type of overriding class
      * @param overriddenMethodType type of overridden method
      * @param overriddenType type of overridden class
      * @return true if the override is allowed
@@ -3380,7 +3380,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean checkOverride(
             MethodTree overriderTree,
             AnnotatedExecutableType overriderMethodType,
-            AnnotatedDeclaredType overridingType,
+            AnnotatedDeclaredType overriderType,
             AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType) {
 
@@ -3395,7 +3395,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 createOverrideChecker(
                         overriderTree,
                         overriderMethodType,
-                        overridingType,
+                        overriderType,
                         overriderMethodType.getReturnType(),
                         overriddenMethodType,
                         overriddenType,
@@ -3584,21 +3584,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * effect.
      */
     public class OverrideChecker {
-        // Strings for printing
-        protected final String overriderMeth;
-        protected final String overriderTyp;
-        protected final String overriddenMeth;
-        protected final String overriddenTyp;
 
         protected final Tree overriderTree;
         protected final Boolean methodReference;
 
         protected final AnnotatedExecutableType overrider;
-        protected final AnnotatedTypeMirror overridingType;
+        protected final AnnotatedTypeMirror overriderType;
         protected final AnnotatedExecutableType overridden;
         protected final AnnotatedDeclaredType overriddenType;
         protected final AnnotatedTypeMirror overriddenReturnType;
-        protected final AnnotatedTypeMirror overridingReturnType;
+        protected final AnnotatedTypeMirror overriderReturnType;
 
         /**
          * Create an OverrideChecker.
@@ -3609,9 +3604,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          *
          * @param overriderTree the AST node of the overriding method or method reference
          * @param overrider the type of the overriding method
-         * @param overridingType the type enclosing the overrider method, usually an
+         * @param overriderType the type enclosing the overrider method, usually an
          *     AnnotatedDeclaredType; for Method References may be something else
-         * @param overridingReturnType the return type of the overriding method
+         * @param overriderReturnType the return type of the overriding method
          * @param overridden the type of the overridden method
          * @param overriddenType the declared type enclosing the overridden method
          * @param overriddenReturnType the return type of the overridden method
@@ -3619,30 +3614,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         public OverrideChecker(
                 Tree overriderTree,
                 AnnotatedExecutableType overrider,
-                AnnotatedTypeMirror overridingType,
-                AnnotatedTypeMirror overridingReturnType,
+                AnnotatedTypeMirror overriderType,
+                AnnotatedTypeMirror overriderReturnType,
                 AnnotatedExecutableType overridden,
                 AnnotatedDeclaredType overriddenType,
                 AnnotatedTypeMirror overriddenReturnType) {
 
             this.overriderTree = overriderTree;
             this.overrider = overrider;
-            this.overridingType = overridingType;
+            this.overriderType = overriderType;
             this.overridden = overridden;
             this.overriddenType = overriddenType;
             this.overriddenReturnType = overriddenReturnType;
-            this.overridingReturnType = overridingReturnType;
-
-            overriderMeth = overrider.toString();
-            if (overridingType.getKind() == TypeKind.DECLARED) {
-                DeclaredType overriderTypeMirror =
-                        ((AnnotatedDeclaredType) overridingType).getUnderlyingType();
-                overriderTyp = overriderTypeMirror.asElement().toString();
-            } else {
-                overriderTyp = overridingType.toString();
-            }
-            overriddenMeth = overridden.toString();
-            overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
+            this.overriderReturnType = overriderReturnType;
 
             this.methodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
         }
@@ -3683,10 +3667,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         overriderTree,
                         msgKey,
-                        overriderMeth,
-                        overriderTyp,
-                        overriddenMeth,
-                        overriddenTyp,
+                        overrider,
+                        overriderType,
+                        overridden,
+                        overriddenType,
                         subPurity,
                         superPurity);
             }
@@ -3704,6 +3688,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             ContractsFromMethod contractsUtils = atypeFactory.getContractsFromMethod();
 
+            // Check preconditions
+            Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
+            Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
+            Set<Pair<JavaExpression, AnnotationMirror>> superPre2 =
+                    resolveContracts(superPre, overridden);
+            Set<Pair<JavaExpression, AnnotationMirror>> subPre2 =
+                    resolveContracts(subPre, overrider);
+            @SuppressWarnings("compilermessages")
+            @CompilerMessageKey String premsg = "contracts.precondition." + msgKey + ".invalid";
+            checkContractsSubset(
+                    overrider,
+                    overriderType,
+                    overridden,
+                    overriddenType,
+                    subPre2,
+                    superPre2,
+                    premsg);
+
             // Check postconditions
             Set<Postcondition> superPost =
                     contractsUtils.getPostconditions(overridden.getElement());
@@ -3715,31 +3717,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String postmsg = "contracts.postcondition." + msgKey + ".invalid";
             checkContractsSubset(
-                    overriderMeth,
-                    overriderTyp,
-                    overriddenMeth,
-                    overriddenTyp,
+                    overrider,
+                    overriderType,
+                    overridden,
+                    overriddenType,
                     superPost2,
                     subPost2,
                     postmsg);
-
-            // Check preconditions
-            Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
-            Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
-            Set<Pair<JavaExpression, AnnotationMirror>> superPre2 =
-                    resolveContracts(superPre, overridden);
-            Set<Pair<JavaExpression, AnnotationMirror>> subPre2 =
-                    resolveContracts(subPre, overrider);
-            @SuppressWarnings("compilermessages")
-            @CompilerMessageKey String premsg = "contracts.precondition." + msgKey + ".invalid";
-            checkContractsSubset(
-                    overriderMeth,
-                    overriderTyp,
-                    overriddenMeth,
-                    overriddenTyp,
-                    subPre2,
-                    superPre2,
-                    premsg);
 
             // Check conditional postconditions
             Set<ConditionalPostcondition> superCPost =
@@ -3756,10 +3740,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String posttruemsg = "contracts.conditional.postcondition.true." + msgKey + ".invalid";
             checkContractsSubset(
-                    overriderMeth,
-                    overriderTyp,
-                    overriddenMeth,
-                    overriddenTyp,
+                    overrider,
+                    overriderType,
+                    overridden,
+                    overriddenType,
                     superCPostTrue2,
                     subCPostTrue2,
                     posttruemsg);
@@ -3775,10 +3759,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             @CompilerMessageKey String postfalsemsg =
                     "contracts.conditional.postcondition.false." + msgKey + ".invalid";
             checkContractsSubset(
-                    overriderMeth,
-                    overriderTyp,
-                    overriddenMeth,
-                    overriddenTyp,
+                    overrider,
+                    overriderType,
+                    overridden,
+                    overriddenType,
                     superCPostFalse2,
                     subCPostFalse2,
                     postfalsemsg);
@@ -3787,7 +3771,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         private boolean checkMemberReferenceReceivers() {
             JCTree.JCMemberReference memberTree = (JCTree.JCMemberReference) overriderTree;
 
-            if (overridingType.getKind() == TypeKind.ARRAY) {
+            if (overriderType.getKind() == TypeKind.ARRAY) {
                 // Assume the receiver for all method on arrays are @Top
                 // This simplifies some logic because an AnnotatedExecutableType for an array method
                 // (ie String[]::clone) has a receiver of "Array." The UNBOUND check would then
@@ -3809,10 +3793,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             "methodref.receiver.invalid",
                             overriderReceiver,
                             overriddenReceiver,
-                            overriderMeth,
-                            overriderTyp,
-                            overriddenMeth,
-                            overriddenTyp);
+                            overrider,
+                            overriderType,
+                            overridden,
+                            overriddenType);
                 }
                 return success;
             }
@@ -3833,7 +3817,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     break;
                 case BOUND:
                     receiverDecl = overrider.getReceiverType();
-                    receiverArg = overridingType;
+                    receiverArg = overriderType;
                     break;
                 case IMPLICIT_INNER:
                     // JLS 15.13.1 "It is a compile-time error if the method reference expression is
@@ -3872,8 +3856,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         receiverArg,
                         receiverDecl,
                         receiverArg,
-                        overriderMeth,
-                        overriderTyp);
+                        overrider,
+                        overriderType);
             }
 
             return success;
@@ -3897,7 +3881,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<AnnotationMirror> overriddenAnnos = overriddenReceiver.getAnnotations();
             if (!qualifierHierarchy.isSubtype(overriddenAnnos, overriderAnnos)) {
                 Set<AnnotationMirror> declaredAnnos =
-                        atypeFactory.getTypeDeclarationBounds(overridingType.getUnderlyingType());
+                        atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
                 if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
                         && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
                     // All the type of an object must be no higher than its upper bound. So if the
@@ -3911,10 +3895,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         "override.receiver.invalid",
                         pair.found,
                         pair.required,
-                        overriderMeth,
-                        overriderTyp,
-                        overriddenMeth,
-                        overriddenTyp);
+                        overrider,
+                        overriderType,
+                        overridden,
+                        overriddenType);
                 return false;
             }
             return true;
@@ -3983,12 +3967,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         (root.getLineMap() != null
                                 ? root.getLineMap().getLineNumber(valuePos)
                                 : -1),
-                        overriderMeth,
-                        overriderTyp,
+                        overrider,
+                        overriderType,
                         index,
                         overriderParams.get(index).toString(),
-                        overriddenMeth,
-                        overriddenTyp,
+                        overridden,
+                        overriddenType,
                         index,
                         overriddenParams.get(index).toString());
             }
@@ -4001,10 +3985,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overrider.getElement().getParameters().get(index).toString(),
                         pair.found,
                         pair.required,
-                        overriderMeth,
-                        overriderTyp,
-                        overriddenMeth,
-                        overriddenTyp);
+                        overrider,
+                        overriderType,
+                        overridden,
+                        overriddenType);
             }
         }
 
@@ -4015,17 +3999,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          * @return true if the return type is correct
          */
         private boolean checkReturn() {
-            if ((overridingReturnType.getKind() == TypeKind.VOID)) {
+            if ((overriderReturnType.getKind() == TypeKind.VOID)) {
                 // Nothing to check.
                 return true;
             }
             final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-            boolean success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
+            boolean success = typeHierarchy.isSubtype(overriderReturnType, overriddenReturnType);
             if (!success) {
                 // If both the overridden method have type variables as return types and both
                 // types were defined in their respective methods then, they can be covariant or
                 // invariant use super/subtypes for the overrides locations
-                success = testTypevarContainment(overridingReturnType, overriddenReturnType);
+                success = testTypevarContainment(overriderReturnType, overriddenReturnType);
             }
 
             // Sometimes the overridden return type of a method reference becomes a captured
@@ -4038,7 +4022,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overridden.getElement(), functionApply, atypeFactory.getProcessingEnv())) {
                     success =
                             typeHierarchy.isSubtype(
-                                    overridingReturnType,
+                                    overriderReturnType,
                                     ((AnnotatedTypeVariable) overriddenReturnType).getUpperBound());
                 }
             }
@@ -4073,24 +4057,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         (root.getLineMap() != null
                                 ? root.getLineMap().getLineNumber(valuePos)
                                 : -1),
-                        overriderMeth,
-                        overriderTyp,
+                        overrider,
+                        overriderType,
                         overrider.getReturnType().toString(),
-                        overriddenMeth,
-                        overriddenTyp,
+                        overridden,
+                        overriddenType,
                         overridden.getReturnType().toString());
             }
             if (!success) {
-                FoundRequired pair = FoundRequired.of(overridingReturnType, overriddenReturnType);
+                FoundRequired pair = FoundRequired.of(overriderReturnType, overriddenReturnType);
                 checker.reportError(
                         posTree,
                         msgKey,
                         pair.found,
                         pair.required,
-                        overriderMeth,
-                        overriderTyp,
-                        overriddenMeth,
-                        overriddenTyp);
+                        overrider,
+                        overriderType,
+                        overridden,
+                        overriddenType);
             }
         }
     }
@@ -4125,10 +4109,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * same (or a stronger) annotation.
      */
     private void checkContractsSubset(
-            String overriderMeth,
-            String overriderTyp,
-            String overriddenMeth,
-            String overriddenTyp,
+            AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror overriderType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
             Set<Pair<JavaExpression, AnnotationMirror>> mustSubset,
             Set<Pair<JavaExpression, AnnotationMirror>> set,
             @CompilerMessageKey String messageKey) {
@@ -4148,14 +4132,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             if (!found) {
-                MethodTree method = visitorState.getMethodTree();
+                MethodTree methodDeclTree = visitorState.getMethodTree();
+
+                String overriddenTypeString =
+                        overriddenType.getUnderlyingType().asElement().toString();
+                String overriderTypeString;
+                if (overriderType.getKind() == TypeKind.DECLARED) {
+                    DeclaredType overriderTypeMirror =
+                            ((AnnotatedDeclaredType) overriderType).getUnderlyingType();
+                    overriderTypeString = overriderTypeMirror.asElement().toString();
+                } else {
+                    overriderTypeString = overriderType.toString();
+                }
+
                 checker.reportError(
-                        method,
+                        methodDeclTree,
                         messageKey,
-                        overriderMeth,
-                        overriderTyp,
-                        overriddenMeth,
-                        overriddenTyp,
+                        overrider,
+                        overriderTypeString,
+                        overridden,
+                        overriddenTypeString,
                         weak.second,
                         weak.first);
             }
