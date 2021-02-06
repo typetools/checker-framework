@@ -3697,14 +3697,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     resolveContracts(subPre, overrider);
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String premsg = "contracts.precondition." + msgKey + ".invalid";
-            checkContractsSubset(
-                    overrider,
-                    overriderType,
-                    overridden,
-                    overriddenType,
-                    subPre2,
-                    superPre2,
-                    premsg);
+            checkContractsSubset(overriderType, overriddenType, subPre2, superPre2, premsg);
 
             // Check postconditions
             Set<Postcondition> superPost =
@@ -3716,14 +3709,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     resolveContracts(subPost, overrider);
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String postmsg = "contracts.postcondition." + msgKey + ".invalid";
-            checkContractsSubset(
-                    overrider,
-                    overriderType,
-                    overridden,
-                    overriddenType,
-                    superPost2,
-                    subPost2,
-                    postmsg);
+            checkContractsSubset(overriderType, overriddenType, superPost2, subPost2, postmsg);
 
             // Check conditional postconditions
             Set<ConditionalPostcondition> superCPost =
@@ -3740,13 +3726,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String posttruemsg = "contracts.conditional.postcondition.true." + msgKey + ".invalid";
             checkContractsSubset(
-                    overrider,
-                    overriderType,
-                    overridden,
-                    overriddenType,
-                    superCPostTrue2,
-                    subCPostTrue2,
-                    posttruemsg);
+                    overriderType, overriddenType, superCPostTrue2, subCPostTrue2, posttruemsg);
 
             // consider only 'false' postconditions
             Set<Postcondition> superCPostFalse = filterConditionalPostconditions(superCPost, false);
@@ -3759,13 +3739,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             @CompilerMessageKey String postfalsemsg =
                     "contracts.conditional.postcondition.false." + msgKey + ".invalid";
             checkContractsSubset(
-                    overrider,
-                    overriderType,
-                    overridden,
-                    overriddenType,
-                    superCPostFalse2,
-                    subCPostFalse2,
-                    postfalsemsg);
+                    overriderType, overriddenType, superCPostFalse2, subCPostFalse2, postfalsemsg);
         }
 
         private boolean checkMemberReferenceReceivers() {
@@ -4107,11 +4081,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that {@code mustSubset} is a subset of {@code set} in the following sense: For every
      * expression in {@code mustSubset} there must be the same expression in {@code set}, with the
      * same (or a stronger) annotation.
+     *
+     * <p>This uses field {@link #visitorState} to determine where to issue an error message.
      */
     private void checkContractsSubset(
-            AnnotatedExecutableType overrider,
             AnnotatedTypeMirror overriderType,
-            AnnotatedExecutableType overridden,
             AnnotatedDeclaredType overriddenType,
             Set<Pair<JavaExpression, AnnotationMirror>> mustSubset,
             Set<Pair<JavaExpression, AnnotationMirror>> set,
@@ -4145,15 +4119,38 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     overriderTypeString = overriderType.toString();
                 }
 
+                // weak.second is the AnnotationMirror that is too strong.  It might be from the
+                // precondition or the postcondition.
+
+                // These are the annotations that are too weak.
+                StringJoiner strongRelevantAnnos =
+                        new StringJoiner(", ").setEmptyValue("no information");
+                for (Pair<JavaExpression, AnnotationMirror> strong : set) {
+                    // are we looking at a contract of the same receiver?
+                    if (weak.first.equals(strong.first)) {
+                        strongRelevantAnnos.add(strong.second.toString());
+                    }
+                }
+
+                Object overriddenAnno;
+                Object overriderAnno;
+                if (messageKey.contains(".precondition.")) {
+                    overriddenAnno = strongRelevantAnnos;
+                    overriderAnno = weak.second;
+                } else {
+                    overriddenAnno = weak.second;
+                    overriderAnno = strongRelevantAnnos;
+                }
+
                 checker.reportError(
                         methodDeclTree,
                         messageKey,
-                        overrider,
-                        overriderTypeString,
-                        overridden,
+                        weak.first,
+                        methodDeclTree.getName(),
                         overriddenTypeString,
-                        weak.second,
-                        weak.first);
+                        overriddenAnno,
+                        overriderTypeString,
+                        overriderAnno);
             }
         }
     }
