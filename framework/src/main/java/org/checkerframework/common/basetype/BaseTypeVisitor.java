@@ -4083,6 +4083,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * same (or a stronger) annotation.
      *
      * <p>This uses field {@link #visitorState} to determine where to issue an error message.
+     *
+     * @param overriderType the subtype
+     * @param overriddenType the supertype
+     * @param mustSubset annotations that should be weaker
+     * @param set anontations that should be stronger
+     * @param messageKey message key for error messages
      */
     private void checkContractsSubset(
             AnnotatedTypeMirror overriderType,
