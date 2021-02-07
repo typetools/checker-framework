@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class GetRefArg {
     private void get_ref_arg(Constructor<?> constructor) throws Exception {
         Object val = constructor.newInstance();
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         assert val != null;
     }
 }

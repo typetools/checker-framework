@@ -67,7 +67,6 @@ public class NullnessVisitor
     // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE =
     // "assignment.type.incompatible";
     private static final @CompilerMessageKey String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
-    private static final @CompilerMessageKey String KNOWN_NONNULL = "known.nonnull";
     private static final @CompilerMessageKey String LOCKING_NULLABLE = "locking.nullable";
     private static final @CompilerMessageKey String THROWING_NULLABLE = "throwing.nullable";
     private static final @CompilerMessageKey String ACCESSING_NULLABLE = "accessing.nullable";
@@ -427,10 +426,10 @@ public class NullnessVisitor
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
                     && right.hasEffectiveAnnotation(NONNULL)) {
-                checker.reportWarning(node, KNOWN_NONNULL, rightOp.toString());
+                checker.reportWarning(node, "nulltest.redundant", rightOp.toString());
             } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
                     && left.hasEffectiveAnnotation(NONNULL)) {
-                checker.reportWarning(node, KNOWN_NONNULL, leftOp.toString());
+                checker.reportWarning(node, "nulltest.redundant", leftOp.toString());
             }
         }
     }
