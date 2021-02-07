@@ -83,7 +83,7 @@ public class LocalVariable extends JavaExpression {
     }
 
     /**
-     * Returns true if this is the same formal parameter as {@code other}.
+     * Returns true if {@code je1} is the same formal parameter as {@code je2}.
      *
      * @param je1 the first JavaExpression to compare
      * @param je2 the second JavaExpression to compare
