@@ -19,6 +19,7 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -39,6 +40,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.InitializationVisitor;
@@ -140,7 +142,7 @@ public class NullnessVisitor
             Element vs = TreeUtils.elementFromTree(tree);
             switch (vs.getKind()) {
                 case PARAMETER:
-                    VariableElement parm = (VariableElement) Element;
+                    VariableElement param = (VariableElement) vs;
                     if (param.getSimpleName().contentEquals("this")) {
                         if (useType.hasAnnotation(NULLABLE)) {
                             return false;
@@ -486,8 +488,14 @@ public class NullnessVisitor
     public Void visitMethod(MethodTree node, Void p) {
         VariableTree receiver = node.getReceiverParameter();
         if (receiver != null) {
-            AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(tree);
+            List<? extends AnnotationTree> annoTrees = receiver.getModifiers().getAnnotations();
+            Tree type = receiver.getType();
+            if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
+                checker.reportError(node, "nullness.on.receiver");
+            }
         }
+
+        return super.visitMethod(node, p);
     }
 
     @Override
@@ -669,12 +677,11 @@ public class NullnessVisitor
 
     @Override
     protected void checkExceptionParameter(CatchTree node) {
-        AnnotatedTypeMirror exceptionParameterType =
-                atypeFactory.getAnnotatedType(node.getParameter());
-        if (exceptionParameterType.hasAnnotation(NONNULL)) {
-            checker.reportWarning(node, "receiver.nonnull.redundant");
-        } else if (exceptionParameterType.hasAnnotation(NULLABLE)) {
-            checker.reportWarning(node, "receiver.nullable.invalid");
+        VariableTree param = node.getParameter();
+        List<? extends AnnotationTree> annoTrees = param.getModifiers().getAnnotations();
+        Tree paramType = param.getType();
+        if (atypeFactory.containsNullnessAnnotation(annoTrees, paramType)) {
+            checker.reportWarning(param, "nullness.on.exception.parameter");
         }
 
         // Don't call super.  BasetypeVisitor forces annotations on exception parameters to be top,
