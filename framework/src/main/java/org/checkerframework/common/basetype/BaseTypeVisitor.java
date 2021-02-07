@@ -3704,6 +3704,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             ContractsFromMethod contractsUtils = atypeFactory.getContractsFromMethod();
 
+            // Check preconditions
+            Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
+            Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
+            Set<Pair<JavaExpression, AnnotationMirror>> superPre2 =
+                    resolveContracts(superPre, overridden);
+            Set<Pair<JavaExpression, AnnotationMirror>> subPre2 =
+                    resolveContracts(subPre, overrider);
+            @SuppressWarnings("compilermessages")
+            @CompilerMessageKey String premsg = "contracts.precondition." + msgKey + ".invalid";
+            checkContractsSubset(
+                    overriderMeth,
+                    overriderTyp,
+                    overriddenMeth,
+                    overriddenTyp,
+                    subPre2,
+                    superPre2,
+                    premsg);
+
             // Check postconditions
             Set<Postcondition> superPost =
                     contractsUtils.getPostconditions(overridden.getElement());
@@ -3722,24 +3740,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     superPost2,
                     subPost2,
                     postmsg);
-
-            // Check preconditions
-            Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
-            Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
-            Set<Pair<JavaExpression, AnnotationMirror>> superPre2 =
-                    resolveContracts(superPre, overridden);
-            Set<Pair<JavaExpression, AnnotationMirror>> subPre2 =
-                    resolveContracts(subPre, overrider);
-            @SuppressWarnings("compilermessages")
-            @CompilerMessageKey String premsg = "contracts.precondition." + msgKey + ".invalid";
-            checkContractsSubset(
-                    overriderMeth,
-                    overriderTyp,
-                    overriddenMeth,
-                    overriddenTyp,
-                    subPre2,
-                    superPre2,
-                    premsg);
 
             // Check conditional postconditions
             Set<ConditionalPostcondition> superCPost =
