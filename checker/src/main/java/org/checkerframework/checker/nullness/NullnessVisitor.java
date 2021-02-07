@@ -132,19 +132,13 @@ public class NullnessVisitor
         return new NullnessAnnotatedTypeFactory(checker);
     }
 
+    // TODO: Drop this.  Move it into the visitor proper instead.
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         if (tree.getKind() == Tree.Kind.VARIABLE) {
             Element vs = TreeUtils.elementFromTree(tree);
             switch (vs.getKind()) {
-                case EXCEPTION_PARAMETER:
-                    if (useType.hasAnnotation(NULLABLE)) {
-                        // Exception parameters cannot use Nullable
-                        // annotations. They default to NonNull.
-                        return false;
-                    }
-                    break;
                 case PARAMETER:
                     VariableElement parm = (VariableElement) Element;
                     if (param.getSimpleName().contentEquals("this")) {
@@ -489,6 +483,14 @@ public class NullnessVisitor
     }
 
     @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        VariableTree receiver = node.getReceiverParameter();
+        if (receiver != null) {
+            AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(tree);
+        }
+    }
+
+    @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (!permitClearProperty) {
             ProcessingEnvironment env = checker.getProcessingEnvironment();
@@ -667,11 +669,13 @@ public class NullnessVisitor
 
     @Override
     protected void checkExceptionParameter(CatchTree node) {
-        AnnotatedTypeMirror exParType = atypeFactory.getAnnotatedType(node.getParameter());
-        if (exParType.hasAnnotation(NULLABLE)) {
-            // TODO: issue warning
+        AnnotatedTypeMirror exceptionParameterType =
+                atypeFactory.getAnnotatedType(node.getParameter());
+        if (exceptionParameterType.hasAnnotation(NONNULL)) {
+            checker.reportWarning(node, "receiver.nonnull.redundant");
+        } else if (exceptionParameterType.hasAnnotation(NULLABLE)) {
+            checker.reportWarning(node, "receiver.nullable.invalid");
         }
-        // TODO: ...
 
         // Don't call super.  BasetypeVisitor forces annotations on exception parameters to be top,
         // but because exceptions can never be null, the Nullness Checker does not require this
