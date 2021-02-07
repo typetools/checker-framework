@@ -3930,6 +3930,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 int index,
                 List<AnnotatedTypeMirror> overriderParams,
                 List<AnnotatedTypeMirror> overriddenParams) {
+            if (success && !checker.hasOption("showchecks")) {
+                return;
+            }
+
             String msgKey =
                     isMethodReference ? "methodref.param.invalid" : "override.param.invalid";
             long valuePos =
@@ -4021,6 +4025,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          * @param success whether the check succeeded or failed
          */
         private void checkReturnMsg(boolean success) {
+            if (success && !checker.hasOption("showchecks")) {
+                return;
+            }
+
             String msgKey =
                     isMethodReference ? "methodref.return.invalid" : "override.return.invalid";
             long valuePos =
