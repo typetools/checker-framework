@@ -116,7 +116,7 @@ public class JavaExpressionParseUtil {
      *
      * @param expression a Java expression to parse
      * @param context information about any receiver and arguments
-     * @param annotatedConstruct a program element annotated with an annotation that contains {@code
+     * @param localScope a program element annotated with an annotation that contains {@code
      *     expression}
      * @param useLocalScope whether {@code annotatedConstruct} should be used to resolve identifiers
      * @return the JavaExpression for the given string
@@ -125,7 +125,7 @@ public class JavaExpressionParseUtil {
     public static JavaExpression parse(
             String expression,
             JavaExpressionContext context,
-            TreePath annotatedConstruct,
+            TreePath localScope,
             boolean useLocalScope)
             throws JavaExpressionParseException {
 
@@ -140,10 +140,7 @@ public class JavaExpressionParseUtil {
         try {
             context = context.copyAndSetUseLocalScope(useLocalScope);
             ProcessingEnvironment env = context.checker.getProcessingEnvironment();
-            result =
-                    expr.accept(
-                            new ExpressionToJavaExpressionVisitor(annotatedConstruct, env),
-                            context);
+            result = expr.accept(new ExpressionToJavaExpressionVisitor(localScope, env), context);
         } catch (ParseRuntimeException e) {
             // Convert unchecked to checked exception. Visitor methods can't throw checked
             // exceptions. They override the methods in the superclass, and a checked exception
