@@ -40,7 +40,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.InitializationVisitor;
@@ -132,30 +131,6 @@ public class NullnessVisitor
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
         return new NullnessAnnotatedTypeFactory(checker);
-    }
-
-    // TODO: Drop this.  Move it into the visitor proper instead.
-    @Override
-    public boolean isValidUse(
-            AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        if (tree.getKind() == Tree.Kind.VARIABLE) {
-            Element vs = TreeUtils.elementFromTree(tree);
-            switch (vs.getKind()) {
-                case PARAMETER:
-                    VariableElement param = (VariableElement) vs;
-                    if (param.getSimpleName().contentEquals("this")) {
-                        if (useType.hasAnnotation(NULLABLE)) {
-                            return false;
-                        }
-                    }
-                    break;
-                default:
-                    // nothing to do
-                    break;
-            }
-        }
-
-        return super.isValidUse(declarationType, useType, tree);
     }
 
     @Override
