@@ -21,6 +21,8 @@ by new message keys:
  * `expression.parameter.name.invalid`
  * `expression.parameter.name.shadows.field`
 
+Renamed the Nullness Chceker's `known.nonnull` error message key to `nulltest.redundant`.
+
 **Implementation details:**
 
 Deprecated `ElementUtils.enclosingClass`; use `ElementUtils.enclosingTypeElement`.
