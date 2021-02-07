@@ -186,9 +186,9 @@ public class NonNullMapValue {
         if (map.containsKey(KEY)) {
             map.get(KEY).toString();
         }
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {}
-        // :: error: (dereference.of.nullable) :: warning: (known.nonnull)
+        // :: error: (dereference.of.nullable) :: warning: (nulltest.redundant)
         if (map2.containsKey(KEY2) && map2.get(KEY2).toString() != null) {}
     }
 
@@ -196,7 +196,7 @@ public class NonNullMapValue {
         if (map.containsKey(KEY)) {
             map.get(KEY).toString();
         }
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
             // do nothing
         }
