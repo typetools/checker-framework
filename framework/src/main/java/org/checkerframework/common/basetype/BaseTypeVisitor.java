@@ -2381,7 +2381,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the annotations are attached to the VariableTree or MethodTree, respectively.
      *
      * @param annoTrees annotations written before a variable/method declaration, if this type is
-     *     from one; null otherwise
+     *     from one; null otherwise. This might contain type annotations that the Java parser
+     *     attached to the declaration rather than to the type.
      * @param typeTree the type that any type annotations in annoTrees apply to
      */
     public void visitAnnotatedType(
@@ -2394,7 +2395,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the @RelevantJavaTypes annotation.
      *
      * @param annoTrees annotations written before a variable/method declaration, if this type is
-     *     from one; null otherwise
+     *     from one; null otherwise. This might contain type annotations that the Java parser
+     *     attached to the declaration rather than to the type.
      * @param typeTree the type that any type annotations in annoTrees apply to
      */
     public void warnAboutIrrelevantJavaTypes(
@@ -3930,6 +3932,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 int index,
                 List<AnnotatedTypeMirror> overriderParams,
                 List<AnnotatedTypeMirror> overriddenParams) {
+            if (success && !checker.hasOption("showchecks")) {
+                return;
+            }
+
             String msgKey =
                     isMethodReference ? "methodref.param.invalid" : "override.param.invalid";
             long valuePos =
@@ -4021,6 +4027,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          * @param success whether the check succeeded or failed
          */
         private void checkReturnMsg(boolean success) {
+            if (success && !checker.hasOption("showchecks")) {
+                return;
+            }
+
             String msgKey =
                     isMethodReference ? "methodref.return.invalid" : "override.return.invalid";
             long valuePos =
@@ -4185,18 +4195,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private Set<Pair<JavaExpression, AnnotationMirror>> resolveContracts(
             Set<? extends Contract> contractSet, AnnotatedExecutableType method) {
+        if (contractSet.isEmpty()) {
+            return Collections.emptySet();
+        }
+
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         MethodTree methodTree = visitorState.getMethodTree();
         TreePath path = atypeFactory.getPath(methodTree);
-        JavaExpressionContext jeContext = null; // lazily initialized, for efficiency
+        JavaExpressionContext jeContext =
+                JavaExpressionContext.buildContextForMethodDeclaration(
+                        methodTree, method.getReceiverType().getUnderlyingType(), checker);
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
-            if (jeContext == null) {
-                jeContext =
-                        JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodTree, method.getReceiverType().getUnderlyingType(), checker);
-            }
 
             annotation =
                     atypeFactory.standardizeAnnotationFromContract(annotation, jeContext, path);
