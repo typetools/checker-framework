@@ -48,6 +48,12 @@ Renamed methods:
  * `MethodCall.containsSyntacticEqualParameter` => `containsSyntacticEqualArgument`
  * `ArrayAccess.getReceiver` => `getArray`
 
+Changes to protected fields in `OverrideChecker`:
+ * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
+ * Renamed `methodReference` => `isMethodReference`
+ * Renamed `overridingType` => `overriderType`
+ * Renamed `overridingReturnType` => `overriderReturnType`
+
 **Closed issues:**
 #3325 , #3474.
 
