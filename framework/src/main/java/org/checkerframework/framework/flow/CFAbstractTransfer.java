@@ -232,6 +232,10 @@ public abstract class CFAbstractTransfer<
                 && ((MethodInvocationNode) node).getIterableExpression() != null) {
             ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
             at = factory.getIterableElementType(iter);
+        } else if (node instanceof ArrayAccessNode
+                && ((ArrayAccessNode) node).getArrayExpression() != null) {
+            ExpressionTree array = ((ArrayAccessNode) node).getArrayExpression();
+            at = factory.getIterableElementType(array);
         } else {
             at = factory.getAnnotatedType(tree);
         }
