@@ -32,8 +32,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -524,7 +522,8 @@ public class NullnessVisitor
         if (classTree.getKind() == Tree.Kind.ENUM) {
             for (Tree member : classTree.getMembers()) {
                 if (member.getKind() == Tree.Kind.VARIABLE
-                        && (((JCVariableDecl) member).mods.flags & Flags.ENUM) != 0) {
+                        && TreeUtils.elementFromDeclaration((VariableTree) member).getKind()
+                                == ElementKind.ENUM_CONSTANT) {
                     VariableTree varDecl = (VariableTree) member;
                     List<? extends AnnotationTree> annoTrees =
                             varDecl.getModifiers().getAnnotations();
