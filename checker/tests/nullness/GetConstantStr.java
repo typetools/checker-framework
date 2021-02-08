@@ -1,6 +1,6 @@
 public class GetConstantStr {
     public static void get_constant_str(Object obj) {
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         assert obj != null;
     }
 }
