@@ -7,6 +7,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
@@ -513,6 +514,27 @@ public class NullnessVisitor
             return literal;
         }
         return null;
+    }
+
+    @Override
+    public void processClassTree(ClassTree classTree) {
+        if (classTree.getKind() == Tree.Kind.ENUM) {
+            for (Tree member : classTree.getMembers()) {
+                if (member.getKind() == Tree.Kind.VARIABLE
+                        && TreeUtils.elementFromDeclaration((VariableTree) member).getKind()
+                                == ElementKind.ENUM_CONSTANT) {
+                    VariableTree varDecl = (VariableTree) member;
+                    List<? extends AnnotationTree> annoTrees =
+                            varDecl.getModifiers().getAnnotations();
+                    Tree type = varDecl.getType();
+                    if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
+                        checker.reportError(member, "nullness.on.enum");
+                    }
+                }
+            }
+        }
+
+        super.processClassTree(classTree);
     }
 
     // ///////////// Utility methods //////////////////////////////
