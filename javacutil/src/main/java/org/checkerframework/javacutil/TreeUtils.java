@@ -1405,7 +1405,7 @@ public final class TreeUtils {
      * @return the annotations explicitly written on the given type
      */
     public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
-            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         while (true) {
             switch (typeTree.getKind()) {
                 case IDENTIFIER:
