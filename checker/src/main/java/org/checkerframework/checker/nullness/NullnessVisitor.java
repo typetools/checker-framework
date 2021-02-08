@@ -536,17 +536,6 @@ public class NullnessVisitor
             }
         }
 
-        /*
-        VariableTree receiver = node.getReceiverParameter();
-        if (receiver != null) {
-            List<? extends AnnotationTree> annoTrees = receiver.getModifiers().getAnnotations();
-            Tree type = receiver.getType();
-            if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
-                checker.reportError(node, "nullness.on.receiver");
-            }
-        }
-        */
-
         super.processClassTree(classTree);
     }
 
