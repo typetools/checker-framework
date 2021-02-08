@@ -292,9 +292,9 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 }
 
 // JSpecify tests are excluded by default.  To run them:
-// ./gradlew NullnessJspecifySamplesTest
+// ./gradlew NullnessJSpecifySamplesTest
 test {
-    exclude '**/org/checkerframework/checker/test/junit/NullnessJspecifySamplesTest.class'
+    exclude '**/org/checkerframework/checker/test/junit/NullnessJSpecifySamplesTest.class'
 }
 
 task delombok {
