@@ -7,6 +7,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
@@ -31,6 +32,8 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -514,6 +517,37 @@ public class NullnessVisitor
             return literal;
         }
         return null;
+    }
+
+    @Override
+    public void processClassTree(ClassTree classTree) {
+        if (classTree.getKind() == Tree.Kind.ENUM) {
+            for (Tree member : classTree.getMembers()) {
+                if (member.getKind() == Tree.Kind.VARIABLE
+                        && (((JCVariableDecl) member).mods.flags & Flags.ENUM) != 0) {
+                    VariableTree varDecl = (VariableTree) member;
+                    List<? extends AnnotationTree> annoTrees =
+                            varDecl.getModifiers().getAnnotations();
+                    Tree type = varDecl.getType();
+                    if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
+                        checker.reportError(member, "nullness.on.enum");
+                    }
+                }
+            }
+        }
+
+        /*
+        VariableTree receiver = node.getReceiverParameter();
+        if (receiver != null) {
+            List<? extends AnnotationTree> annoTrees = receiver.getModifiers().getAnnotations();
+            Tree type = receiver.getType();
+            if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
+                checker.reportError(node, "nullness.on.receiver");
+            }
+        }
+        */
+
+        super.processClassTree(classTree);
     }
 
     // ///////////// Utility methods //////////////////////////////
