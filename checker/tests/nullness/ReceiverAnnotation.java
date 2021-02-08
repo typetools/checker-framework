@@ -8,9 +8,6 @@ public class ReceiverAnnotation {
     // :: error: (nullness.on.receiver)
     void receiver2(@NonNull ReceiverAnnotation this) {}
 
-    // The "type.invalid.annotations.on.use" error message wording is a bit weird, but I think it's
-    // clear enough together with the "nullness.on.receiver" message.
     // :: error: (nullness.on.receiver)
-    // :: error: (type.invalid.annotations.on.use)
     void receiver3(@Nullable ReceiverAnnotation this) {}
 }

@@ -99,9 +99,6 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         this.isValid = true;
         this.checkTopLevelDeclaredOrPrimitiveType =
                 shouldCheckTopLevelDeclaredOrPrimitiveType(type, tree);
-        System.out.printf(
-                "isValid(%s, %s) about to call visit%n",
-                type, TreeUtils.toStringTruncated(tree, 65));
         visit(type, tree);
         return this.isValid;
     }
@@ -293,14 +290,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             elemType.clearAnnotations();
             elemType.addAnnotations(bounds);
 
-            System.out.printf(
-                    "about to call isValidUse(%s, %s, %s)%n",
-                    elemType, type, TreeUtils.toStringTruncated(tree, 65));
             if (!visitor.isValidUse(elemType, type, tree)) {
-                System.out.printf(
-                        "about to call reportInvalidAnnotationsOnUse(%s, %s)%n",
-                        type, TreeUtils.toStringTruncated(tree, 65));
-                new Error("backtrace").printStackTrace(System.out);
                 reportInvalidAnnotationsOnUse(type, tree);
             }
         }
