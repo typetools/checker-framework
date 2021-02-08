@@ -659,9 +659,10 @@ public class NullnessVisitor
             checker.reportWarning(param, "nullness.on.exception.parameter");
         }
 
-        // Don't call super.  BasetypeVisitor forces annotations on exception parameters to be top,
-        // but because exceptions can never be null, the Nullness Checker does not require this
-        // check.
+        // Don't call super.
+        // BasetypeVisitor forces annotations on exception parameters to be top,
+        // but because exceptions can never be null, the Nullness Checker
+        // does not require this check.
     }
 
     @Override
