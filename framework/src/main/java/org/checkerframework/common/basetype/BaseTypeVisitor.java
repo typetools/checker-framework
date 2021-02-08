@@ -3703,9 +3703,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
             Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
             Set<Pair<JavaExpression, AnnotationMirror>> superPre2 =
-                    localizeContracts(superPre, overridden);
+                    parseAndLocalizeContracts(superPre, overridden);
             Set<Pair<JavaExpression, AnnotationMirror>> subPre2 =
-                    localizeContracts(subPre, overrider);
+                    parseAndLocalizeContracts(subPre, overrider);
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String premsg = "contracts.precondition." + msgKey + ".invalid";
             checkContractsSubset(overriderType, overriddenType, subPre2, superPre2, premsg);
@@ -3715,9 +3715,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     contractsUtils.getPostconditions(overridden.getElement());
             Set<Postcondition> subPost = contractsUtils.getPostconditions(overrider.getElement());
             Set<Pair<JavaExpression, AnnotationMirror>> superPost2 =
-                    localizeContracts(superPost, overridden);
+                    parseAndLocalizeContracts(superPost, overridden);
             Set<Pair<JavaExpression, AnnotationMirror>> subPost2 =
-                    localizeContracts(subPost, overrider);
+                    parseAndLocalizeContracts(subPost, overrider);
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String postmsg = "contracts.postcondition." + msgKey + ".invalid";
             checkContractsSubset(overriderType, overriddenType, superPost2, subPost2, postmsg);
@@ -3731,9 +3731,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
             Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
             Set<Pair<JavaExpression, AnnotationMirror>> superCPostTrue2 =
-                    localizeContracts(superCPostTrue, overridden);
+                    parseAndLocalizeContracts(superCPostTrue, overridden);
             Set<Pair<JavaExpression, AnnotationMirror>> subCPostTrue2 =
-                    localizeContracts(subCPostTrue, overrider);
+                    parseAndLocalizeContracts(subCPostTrue, overrider);
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String posttruemsg = "contracts.conditional.postcondition.true." + msgKey + ".invalid";
             checkContractsSubset(
@@ -3743,9 +3743,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Postcondition> superCPostFalse = filterConditionalPostconditions(superCPost, false);
             Set<Postcondition> subCPostFalse = filterConditionalPostconditions(subCPost, false);
             Set<Pair<JavaExpression, AnnotationMirror>> superCPostFalse2 =
-                    localizeContracts(superCPostFalse, overridden);
+                    parseAndLocalizeContracts(superCPostFalse, overridden);
             Set<Pair<JavaExpression, AnnotationMirror>> subCPostFalse2 =
-                    localizeContracts(subCPostFalse, overrider);
+                    parseAndLocalizeContracts(subCPostFalse, overrider);
             @SuppressWarnings("compilermessages")
             @CompilerMessageKey String postfalsemsg =
                     "contracts.conditional.postcondition.false." + msgKey + ".invalid";
@@ -4190,8 +4190,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the value of {@link #visitorState}.
      *
      * <p>The input is a set of {@link Contract}s, each of which contains an expression string and
-     * an annotation. In a {@link Contract}, Java expressions are standardized to the method
-     * signature (e.g., the Java expression uses "#2" for formal parameters).
+     * an annotation. In a {@link Contract}, Java expressions are exactly as written in source code,
+     * not standardized or viewpoint-adapted.
      *
      * <p>The output is a set of pairs of {@link JavaExpression} (parsed expression string) and
      * standardized annotation (with respect to the path of {@link #visitorState}. This method
@@ -4201,7 +4201,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param methodType the type of the method that the contracts are for
      * @return pairs of (expression, AnnotationMirror), which are localized contracts
      */
-    private Set<Pair<JavaExpression, AnnotationMirror>> localizeContracts(
+    private Set<Pair<JavaExpression, AnnotationMirror>> parseAndLocalizeContracts(
             Set<? extends Contract> contractSet, AnnotatedExecutableType methodType) {
         if (contractSet.isEmpty()) {
             return Collections.emptySet();
