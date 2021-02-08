@@ -1,3 +1,15 @@
+Version 3.??.??, March 1, 2021
+
+**User-visible changes:**
+
+Renamed the Nullness Checker's `known.nonnull` error message key to `nulltest.redundant`.
+
+**Implementation details:**
+
+**Closed issues:**
+
+---------------------------------------------------------------------------
+
 Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
