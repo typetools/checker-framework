@@ -7,6 +7,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
@@ -67,7 +68,6 @@ public class NullnessVisitor
     // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE =
     // "assignment.type.incompatible";
     private static final @CompilerMessageKey String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
-    private static final @CompilerMessageKey String KNOWN_NONNULL = "known.nonnull";
     private static final @CompilerMessageKey String LOCKING_NULLABLE = "locking.nullable";
     private static final @CompilerMessageKey String THROWING_NULLABLE = "throwing.nullable";
     private static final @CompilerMessageKey String ACCESSING_NULLABLE = "accessing.nullable";
@@ -427,10 +427,10 @@ public class NullnessVisitor
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
                     && right.hasEffectiveAnnotation(NONNULL)) {
-                checker.reportWarning(node, KNOWN_NONNULL, rightOp.toString());
+                checker.reportWarning(node, "nulltest.redundant", rightOp.toString());
             } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
                     && left.hasEffectiveAnnotation(NONNULL)) {
-                checker.reportWarning(node, KNOWN_NONNULL, leftOp.toString());
+                checker.reportWarning(node, "nulltest.redundant", leftOp.toString());
             }
         }
     }
@@ -514,6 +514,27 @@ public class NullnessVisitor
             return literal;
         }
         return null;
+    }
+
+    @Override
+    public void processClassTree(ClassTree classTree) {
+        if (classTree.getKind() == Tree.Kind.ENUM) {
+            for (Tree member : classTree.getMembers()) {
+                if (member.getKind() == Tree.Kind.VARIABLE
+                        && TreeUtils.elementFromDeclaration((VariableTree) member).getKind()
+                                == ElementKind.ENUM_CONSTANT) {
+                    VariableTree varDecl = (VariableTree) member;
+                    List<? extends AnnotationTree> annoTrees =
+                            varDecl.getModifiers().getAnnotations();
+                    Tree type = varDecl.getType();
+                    if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
+                        checker.reportError(member, "nullness.on.enum");
+                    }
+                }
+            }
+        }
+
+        super.processClassTree(classTree);
     }
 
     // ///////////// Utility methods //////////////////////////////
