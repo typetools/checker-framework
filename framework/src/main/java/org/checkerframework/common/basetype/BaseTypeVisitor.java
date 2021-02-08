@@ -2381,7 +2381,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the annotations are attached to the VariableTree or MethodTree, respectively.
      *
      * @param annoTrees annotations written before a variable/method declaration, if this type is
-     *     from one; null otherwise
+     *     from one; null otherwise. This might contain type annotations that the Java parser
+     *     attached to the declaration rather than to the type.
      * @param typeTree the type that any type annotations in annoTrees apply to
      */
     public void visitAnnotatedType(
@@ -2394,7 +2395,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the @RelevantJavaTypes annotation.
      *
      * @param annoTrees annotations written before a variable/method declaration, if this type is
-     *     from one; null otherwise
+     *     from one; null otherwise. This might contain type annotations that the Java parser
+     *     attached to the declaration rather than to the type.
      * @param typeTree the type that any type annotations in annoTrees apply to
      */
     public void warnAboutIrrelevantJavaTypes(
@@ -4211,17 +4213,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // definition, and the contract might be for a superclass.
         MethodTree methodTree = visitorState.getMethodTree();
         TreePath path = atypeFactory.getPath(methodTree);
-        JavaExpressionContext jeContext = null; // lazily initialized, for efficiency
+        JavaExpressionContext jeContext =
+                JavaExpressionContext.buildContextForMethodDeclaration(
+                        methodTree, methodType.getReceiverType().getUnderlyingType(), checker);
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
-            if (jeContext == null) {
-                jeContext =
-                        JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodTree,
-                                methodType.getReceiverType().getUnderlyingType(),
-                                checker);
-            }
 
             annotation =
                     atypeFactory.standardizeAnnotationFromContract(annotation, jeContext, path);
