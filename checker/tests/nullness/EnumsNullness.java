@@ -21,7 +21,9 @@ public class EnumsNullness {
 
     enum EnumBadAnnos {
         A,
+        // :: error: (nullness.on.enum)
         @NonNull B,
+        // :: error: (nullness.on.enum)
         @Nullable C,
         D;
 
