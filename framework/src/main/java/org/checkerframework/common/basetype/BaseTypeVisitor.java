@@ -3963,6 +3963,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 int index,
                 List<AnnotatedTypeMirror> overriderParams,
                 List<AnnotatedTypeMirror> overriddenParams) {
+            if (success && !checker.hasOption("showchecks")) {
+                return;
+            }
+
             String msgKey = methodReference ? "methodref.param.invalid" : "override.param.invalid";
             long valuePos =
                     overriderTree instanceof MethodTree
@@ -4047,7 +4051,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return success;
         }
 
+        /**
+         * Issue an error message or log message about checking an overriding return type.
+         *
+         * @param success whether the check succeeded or failed
+         */
         private void checkReturnMsg(boolean success) {
+            if (success && !checker.hasOption("showchecks")) {
+                return;
+            }
+
             String msgKey =
                     methodReference ? "methodref.return.invalid" : "override.return.invalid";
             long valuePos =
