@@ -2573,10 +2573,16 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             handleArtificialTree(arrayAccess);
             ArrayAccessNode arrayAccessNode =
                     new ArrayAccessNode(arrayAccess, arrayNode2, indexNode2);
+            arrayAccessNode.setArrayExpression(expression);
             arrayAccessNode.setInSource(false);
             extendWithNode(arrayAccessNode);
-            translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+            AssignmentNode arrayAccessAssignNode =
+                    translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
             extendWithNodeWithException(arrayAccessNode, nullPointerExceptionType);
+            // translateAssignment() scans variable and creates new nodes, so set the expression
+            // there, too.
+            ((ArrayAccessNode) arrayAccessAssignNode.getExpression())
+                    .setArrayExpression(expression);
 
             assert statement != null;
             scan(statement, p);
