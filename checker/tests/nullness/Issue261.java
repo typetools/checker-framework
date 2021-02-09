@@ -2,8 +2,9 @@
 // https://github.com/typetools/checker-framework/issues/261
 public class Issue261 {
     boolean b;
-    // :: error: (initialization.fields.uninitialized)
+
     class Flag<T> {
+        // :: error: (initialization.field.uninitialized)
         T value;
     }
 

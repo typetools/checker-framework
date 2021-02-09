@@ -547,7 +547,8 @@ public final class TreeUtils {
     public static boolean isSynthetic(ExecutableElement ee) {
         MethodSymbol ms = (MethodSymbol) ee;
         long mod = ms.flags();
-        return (mod & Flags.SYNTHETIC) != 0;
+        // GENERATEDCONSTR is for generated constructors, which seem not to have SYNTHETIC set.
+        return (mod & (Flags.SYNTHETIC | Flags.GENERATEDCONSTR)) != 0;
     }
 
     /**

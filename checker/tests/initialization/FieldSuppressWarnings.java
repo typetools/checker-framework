@@ -1,12 +1,12 @@
 public class FieldSuppressWarnings {
 
-    // :: error: (initialization.fields.uninitialized)
     static class FieldSuppressWarnings1 {
+        // :: error: (initialization.field.uninitialized)
         private Object notInitialized;
     }
 
     static class FieldSuppressWarnings2 {
-        @SuppressWarnings("initialization.fields.uninitialized")
+        @SuppressWarnings("initialization.field.uninitialized")
         private Object notInitializedButSuppressed1;
     }
 

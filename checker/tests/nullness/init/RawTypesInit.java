@@ -103,9 +103,9 @@ public class RawTypesInit {
         }
     }
 
-    // :: error: (initialization.fields.uninitialized)
     class C extends B {
 
+        // :: error: (initialization.field.uninitialized)
         @NonNull String[] strings;
 
         @Override
@@ -152,8 +152,8 @@ public class RawTypesInit {
         public void nonRawMethod() {}
     }
 
-    // :: error: (initialization.fields.uninitialized)
     class AFSIICell {
+        // :: error: (initialization.field.uninitialized)
         AllFieldsSetInInitializer afsii;
     }
 
