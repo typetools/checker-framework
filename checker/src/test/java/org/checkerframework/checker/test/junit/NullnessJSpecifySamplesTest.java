@@ -127,6 +127,7 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
                     case "argument.type.incompatible":
                     case "condition.nullable":
                     case "dereference.of.nullable":
+                    case "initialization.field.uninitialized":
                     case "locking.nullable":
                     case "override.param.invalid":
                     case "override.return.invalid":
