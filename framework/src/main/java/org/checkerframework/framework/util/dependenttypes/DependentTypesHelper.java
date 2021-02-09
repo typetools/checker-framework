@@ -95,14 +95,14 @@ public class DependentTypesHelper {
 
     /**
      * A scanner that standardizes Java expression strings in dependent type annotations. Call
-     * {@link StandardizeTypeAnnotator#init(JavaExpressionContext, TreePath, boolean, boolean)}
-     * before using.
+     * {@code StandardizeTypeAnnotator#init(JavaExpressionContext, TreePath, boolean, boolean)}
+     * before each use.
      */
     private final StandardizeTypeAnnotator standardizeTypeAnnotator;
 
     /**
      * Copies annotations that might have been viewpoint adapted from the visited type (the first
-     * formal parameter of the visit method) to the second formal parameter.
+     * formal parameter of the {@code ViewpointAdaptedCopier#visit}) to the second formal parameter.
      */
     private final ViewpointAdaptedCopier viewpointAdaptedCopier;
 
@@ -841,7 +841,7 @@ public class DependentTypesHelper {
         private boolean removeErroneousExpressions;
 
         /**
-         * Constructs a {@code StandardizeTypeAnnotator} with all fields set to null. Call {@link
+         * Constructs a {@code StandardizeTypeAnnotator} with all fields set to null. Call {@code
          * #init(JavaExpressionContext, TreePath, boolean, boolean)} before scanning.
          */
         private StandardizeTypeAnnotator() {
