@@ -1,7 +1,7 @@
 // Based on a false positive encountered in Daikon related to common CFGs
 // for subcheckers. This shows the original version of the Daikon code,
-// with an expected error due to missing standardization. See DaikonEnhancedFor.java
-// for the "fixed" version.
+// before it was modified to avoid missing standardization. See DaikonEnhancedFor.java
+// for the "fixed" version. There are no longer expected errors in this test.
 
 import java.util.*;
 import org.checkerframework.checker.nullness.qual.*;
@@ -26,9 +26,6 @@ class DaikonEnhancedForNoThis {
         // go through the list again and put in the derived class information
         for (Object cd : clazzes) {
             Set<@KeyFor("this.cmap") Object> derived = cmap.get(super_c);
-            // In this version of the test, the type of cd is @KeyFor("cmap") Object,
-            // because it was not standardized during CFG construction.
-            // :: error: argument.type.incompatible
             derived.add(cd);
         }
     }
