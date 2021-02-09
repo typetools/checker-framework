@@ -17,10 +17,9 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -471,8 +470,8 @@ public class DependentTypesHelper {
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
-    private static Set<Tree.Kind> METHOD_OR_LAMBDA =
-            new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
+    private static final Set<Tree.Kind> METHOD_OR_LAMBDA =
+            EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION);
 
     /**
      * Standardize the Java expressions in annotations in a variable declaration.
@@ -513,7 +512,8 @@ public class DependentTypesHelper {
                     JavaExpressionContext parameterContext =
                             JavaExpressionContext.buildContextForLambda(
                                     lambdaTree, pathToVariableDecl, factory.getChecker());
-                    // Uses paths.getParentPath to prevent a StackOverflowError, see Issue #1027.
+                    // Lambdas can use local variables defined in the enclosing method, so allow
+                    // identifiers to be locals in scope at the location of the lambda.
                     standardizeUseLocalScope(
                             parameterContext, pathToVariableDecl.getParentPath(), type);
                 }
