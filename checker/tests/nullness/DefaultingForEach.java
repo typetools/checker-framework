@@ -29,4 +29,16 @@ class DefaultForEach {
             p.toString();
         }
     }
+
+    double[][] foo3() {
+        throw new RuntimeException();
+    }
+
+    void bar3() {
+        for (double[] pa : foo3()) {
+            for (Double p : pa) {
+                p.toString();
+            }
+        }
+    }
 }
