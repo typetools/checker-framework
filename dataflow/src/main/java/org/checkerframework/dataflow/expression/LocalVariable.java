@@ -24,9 +24,14 @@ public class LocalVariable extends JavaExpression {
         this.element = localVar.getElement();
     }
 
-    public LocalVariable(Element elem) {
-        super(ElementUtils.getType(elem));
-        this.element = elem;
+    /**
+     * Creates a LocalVariable
+     *
+     * @param element the element for the local variable
+     */
+    public LocalVariable(Element element) {
+        super(ElementUtils.getType(element));
+        this.element = element;
     }
 
     @Override
