@@ -675,7 +675,8 @@ public class NullnessAnnotatedTypeFactory
      * <p>This method ignores aliases of nullness annotations that are declaration annotations,
      * because they may apply to inner types.
      *
-     * <p><strong>Most clients should call {@link #containsNullnessAnnotation(List, Tree)}.</strong>
+     * <p>Clients that are processing a field or variable definition, or a method return type,
+     * should call {@link #containsNullnessAnnotation(List, Tree)} instead.
      *
      * @param annoTrees a list of annotations to check
      * @return true if some annotation is a nullness annotation
