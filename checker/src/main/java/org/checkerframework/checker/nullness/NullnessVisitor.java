@@ -678,6 +678,8 @@ public class NullnessVisitor
         List<? extends AnnotationTree> annoTrees = param.getModifiers().getAnnotations();
         Tree paramType = param.getType();
         if (atypeFactory.containsNullnessAnnotation(annoTrees, paramType)) {
+            // This is a warning rather than an error because writing `@Nullable` could make sense
+            // if the catch block re-assigns the variable to null.  (That would be bad style.)
             checker.reportWarning(param, "nullness.on.exception.parameter");
         }
 
