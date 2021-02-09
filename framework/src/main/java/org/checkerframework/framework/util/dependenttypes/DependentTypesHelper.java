@@ -87,6 +87,30 @@ public class DependentTypesHelper {
     /** A map of annotation classes to the names of their elements that are Java expressions. */
     private Map<Class<? extends Annotation>, List<String>> annoToElements;
 
+    /**
+     * The {@code ExpressionErrorChecker} that scans an annotated type and returns a list of {@link
+     * DependentTypesError}.
+     */
+    private final ExpressionErrorChecker expressionErrorChecker;
+
+    /**
+     * A scanner that standardizes Java expression strings in dependent type annotations. Call
+     * {@code StandardizeTypeAnnotator#init(JavaExpressionContext, TreePath, boolean, boolean)}
+     * before each use.
+     */
+    private final StandardizeTypeAnnotator standardizeTypeAnnotator;
+
+    /**
+     * Copies annotations that might have been viewpoint adapted from the visited type (the first
+     * formal parameter of the {@code ViewpointAdaptedCopier#visit}) to the second formal parameter.
+     */
+    private final ViewpointAdaptedCopier viewpointAdaptedCopier;
+
+    /**
+     * Creates {@code DependentTypesHelper}.
+     *
+     * @param factory annotated type factory
+     */
     public DependentTypesHelper(AnnotatedTypeFactory factory) {
         this.factory = factory;
 
@@ -97,6 +121,9 @@ public class DependentTypesHelper {
                 annoToElements.put(expressionAnno, elementList);
             }
         }
+        this.expressionErrorChecker = new ExpressionErrorChecker();
+        this.standardizeTypeAnnotator = new StandardizeTypeAnnotator();
+        this.viewpointAdaptedCopier = new ViewpointAdaptedCopier();
     }
 
     /**
@@ -234,7 +261,7 @@ public class DependentTypesHelper {
         // is not on a type that was substituted for a type variable.
 
         standardizeDoNotUseLocalScope(context, currentPath, viewpointAdaptedType);
-        new ViewpointAdaptedCopier().visit(viewpointAdaptedType, methodType);
+        this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
     }
 
     /**
@@ -692,8 +719,9 @@ public class DependentTypesHelper {
         if (localScope == null) {
             return;
         }
-        new StandardizeTypeAnnotator(context, localScope, useLocalScope, removeErroneousExpressions)
-                .visit(type);
+        this.standardizeTypeAnnotator.init(
+                context, localScope, useLocalScope, removeErroneousExpressions);
+        this.standardizeTypeAnnotator.visit(type);
     }
 
     /**
@@ -795,28 +823,44 @@ public class DependentTypesHelper {
         return builder.build();
     }
 
-    /** A visitor that standardizes Java expression strings in dependent type annotations. */
+    /** A scanner that standardizes Java expression strings in dependent type annotations. */
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
         /** The context. */
-        private final JavaExpressionContext context;
+        private JavaExpressionContext context;
         /** The local scope. */
-        private final TreePath localScope;
+        private TreePath localScope;
         /**
          * Whether or not the expression might contain a variable declared in local scope. Really,
          * whether to use {@code localScope} to resolve identifiers.
          */
-        private final boolean useLocalScope;
+        private boolean useLocalScope;
         /**
          * If true, remove erroneous expressions. If false, replace them by an explanation of why
          * they are illegal.
          */
-        private final boolean removeErroneousExpressions;
+        private boolean removeErroneousExpressions;
 
         /**
-         * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-         *     converting them into an explanation of why they are illegal
+         * Constructs a {@code StandardizeTypeAnnotator} with all fields set to null. Call {@code
+         * #init(JavaExpressionContext, TreePath, boolean, boolean)} before scanning.
          */
-        private StandardizeTypeAnnotator(
+        private StandardizeTypeAnnotator() {
+            this.context = null;
+            this.localScope = null;
+            this.useLocalScope = false;
+            this.removeErroneousExpressions = false;
+        }
+
+        /**
+         * Initialize the scanner to standardize with respect to the given context.
+         *
+         * @param context JavaExpressionContext
+         * @param localScope tree path for local scope
+         * @param useLocalScope whether or not to use locals
+         * @param removeErroneousExpressions removeErroneousExpressions if true, remove erroneous
+         *     expressions rather than converting them into an explanation of why they are illegal
+         */
+        private void init(
                 JavaExpressionContext context,
                 TreePath localScope,
                 boolean useLocalScope,
@@ -890,7 +934,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        List<DependentTypesError> errors = new ExpressionErrorChecker().visit(atm);
+        List<DependentTypesError> errors = expressionErrorChecker.visit(atm);
         if (errors == null || errors.isEmpty()) {
             return;
         }
