@@ -1419,7 +1419,8 @@ public final class TreeUtils {
      * Returns the annotations explicitly written on the given type.
      *
      * @param annoTrees annotations written before a variable/method declaration; null if this type
-     *     is not from such a location
+     *     is not from such a location. This might contain type annotations that the Java parser
+     *     attached to the declaration rather than to the type.
      * @param typeTree the type whose annotations to return
      * @return the annotations explicitly written on the given type
      */

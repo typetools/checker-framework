@@ -2,13 +2,21 @@ Version 3.??.??, March 1, 2021
 
 **User-visible changes:**
 
-In the Nullness Checker, changed message key `initialization.static.fields.uninitialized`
-to `initialization.static.field.uninitialized` and it is issued on the field rather than
-on the class.  Also introduced `initialization.field.uninitialized` which is issued on the
-field instead of `initialization.fields.uninitialized` on the class, if there is no
-explicitly-written constructor.
+Nullness Checker error message key changes:
+ * `known.nonnull` => `nulltest.redundant`
+ * `initialization.static.fields.uninitialized` => `initialization.static.field.uninitialized`,
+   and it is now issued on the field rather than on the class
+ * new `initialization.field.uninitialized` is issued on the field instead of
+   `initialization.fields.uninitialized` on the class, if there is no
+   explicitly-written constructor.
 
 **Implementation details:**
+
+Changes to protected fields in `OverrideChecker`:
+ * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
+ * Renamed `methodReference` => `isMethodReference`
+ * Renamed `overridingType` => `overriderType`
+ * Renamed `overridingReturnType` => `overriderReturnType`
 
 **Closed issues:**
 

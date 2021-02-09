@@ -133,7 +133,7 @@ checker-framework/checker/tests/regex/, etc.
 You can indicate an expected warning (as opposed to error) by using
 "warning:" instead of "error:", as in
 
-  // :: warning: (known.nonnull)
+  // :: warning: (nulltest.redundant)
   assert val != null;
 
 Multiple expected messages can be given on the same line using the
