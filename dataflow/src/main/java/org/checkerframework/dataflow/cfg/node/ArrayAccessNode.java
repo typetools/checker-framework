@@ -20,8 +20,13 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ArrayAccessNode extends Node {
 
+    /** The corresponding ArrayAccessTree. */
     protected final Tree tree;
+
+    /** The array expression being accessed. */
     protected final Node array;
+
+    /** The index expresssion used to access the array. */
     protected final Node index;
 
     /**
