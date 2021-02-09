@@ -20,6 +20,7 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -131,28 +132,6 @@ public class NullnessVisitor
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
         return new NullnessAnnotatedTypeFactory(checker);
-    }
-
-    @Override
-    public boolean isValidUse(
-            AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        if (tree.getKind() == Tree.Kind.VARIABLE) {
-            Element vs = TreeUtils.elementFromTree(tree);
-            switch (vs.getKind()) {
-                case EXCEPTION_PARAMETER:
-                    if (useType.hasAnnotation(NULLABLE)) {
-                        // Exception parameters cannot use Nullable
-                        // annotations. They default to NonNull.
-                        return false;
-                    }
-                    break;
-                default:
-                    // nothing to do
-                    break;
-            }
-        }
-
-        return super.isValidUse(declarationType, useType, tree);
     }
 
     @Override
@@ -482,6 +461,20 @@ public class NullnessVisitor
     }
 
     @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        VariableTree receiver = node.getReceiverParameter();
+        if (receiver != null) {
+            List<? extends AnnotationTree> annoTrees = receiver.getModifiers().getAnnotations();
+            Tree type = receiver.getType();
+            if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
+                checker.reportError(node, "nullness.on.receiver");
+            }
+        }
+
+        return super.visitMethod(node, p);
+    }
+
+    @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (!permitClearProperty) {
             ProcessingEnvironment env = checker.getProcessingEnvironment();
@@ -681,6 +674,16 @@ public class NullnessVisitor
 
     @Override
     protected void checkExceptionParameter(CatchTree node) {
+        VariableTree param = node.getParameter();
+        List<? extends AnnotationTree> annoTrees = param.getModifiers().getAnnotations();
+        Tree paramType = param.getType();
+        if (atypeFactory.containsNullnessAnnotation(annoTrees, paramType)) {
+            // This is a warning rather than an error because writing `@Nullable` could make sense
+            // if the catch block re-assigns the variable to null.  (That would be bad style.)
+            checker.reportWarning(param, "nullness.on.exception.parameter");
+        }
+
+        // Don't call super.
         // BasetypeVisitor forces annotations on exception parameters to be top,
         // but because exceptions can never be null, the Nullness Checker
         // does not require this check.

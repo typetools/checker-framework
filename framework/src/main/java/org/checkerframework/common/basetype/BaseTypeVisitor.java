@@ -155,7 +155,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *       using {@code TypeHierarchy.isSubtype} method. This includes method invocation and method
  *       overriding checks.
  *   <li><b>Type Validity Check</b>: It verifies that any user-supplied type is a valid type, using
- *       {@code isValidUse} method.
+ *       one of the {@code isValidUse} methods.
  *   <li><b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using {@code
  *       Checker.isAssignable} method.
  * </ol>
@@ -2339,9 +2339,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks the type of the exception parameter Subclasses should override
-     * checkExceptionParameter(CatchTree node) rather than this method to change the behavior of
-     * this check.
+     * Checks the type of the exception parameter. Subclasses should override {@link
+     * #checkExceptionParameter} rather than this method to change the behavior of this check.
      */
     @Override
     public Void visitCatch(CatchTree node, Void p) {
@@ -2527,12 +2526,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Returns a set of AnnotationMirrors that is a lower bound for exception parameters.
      *
+     * <p>This implementation returns top; subclasses can change this behavior.
+     *
      * <p>Note: by default this method is called by {@link #getThrowUpperBoundAnnotations()}, so
      * that this annotation is enforced.
      *
-     * <p>(Default is top)
-     *
-     * @return set of annotation mirrors, one per hierarchy, that from a lower bound of annotations
+     * @return set of annotation mirrors, one per hierarchy, that form a lower bound of annotations
      *     that can be written on an exception parameter
      */
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
@@ -4344,8 +4343,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests that the qualifiers present on the useType are valid qualifiers, given the qualifiers
-     * on the declaration of the type, declarationType.
+     * Tests that the qualifiers present on {@code useType} are valid qualifiers, given the
+     * qualifiers on the declaration of the type, {@code declarationType}.
      *
      * <p>The check is shallow, as it does not descend into generic or array types (i.e. only
      * performing the validity check on the raw type or outermost array dimension). {@link

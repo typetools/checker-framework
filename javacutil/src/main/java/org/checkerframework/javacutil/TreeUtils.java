@@ -26,6 +26,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.tools.javac.code.Flags;
@@ -1404,7 +1405,7 @@ public final class TreeUtils {
      * @return the annotations explicitly written on the given type
      */
     public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
-            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         while (true) {
             switch (typeTree.getKind()) {
                 case IDENTIFIER:
@@ -1430,6 +1431,12 @@ public final class TreeUtils {
                 case PARAMETERIZED_TYPE:
                     typeTree = ((ParameterizedTypeTree) typeTree).getType();
                     break;
+                case UNION_TYPE:
+                    List<AnnotationTree> result = new ArrayList<>();
+                    for (Tree alternative : ((UnionTypeTree) typeTree).getTypeAlternatives()) {
+                        result.addAll(getExplicitAnnotationTrees(null, alternative));
+                    }
+                    return result;
                 default:
                     throw new BugInCF(
                             "what typeTree? %s %s %s",
