@@ -360,7 +360,11 @@ public class InitializationVisitor<
      * the given store.
      *
      * @param node a {@link ClassTree} if {@code staticFields} is true; a {@link MethodTree} for a
-     *     constructor if {@code staticFields} is false
+     *     constructor if {@code staticFields} is false. This is where errors are reported, if they
+     *     are not reported at the fields themselves
+     * @param staticFields whether to check static fields or instance fields
+     * @param store the store
+     * @param receiverAnnotations the annotations on the receiver
      */
     // TODO: the code for checking if fields are initialized should be re-written,
     // as the current version contains quite a few ugly parts, is hard to understand,
