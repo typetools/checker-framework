@@ -658,15 +658,15 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * Returns true if some annotation in the given list is a nullness annotation such
-     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     * Returns true if some annotation on the given type, or in the given list, is a nullness
+     * annotation such as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
      * <p>This method ignores aliases of nullness annotations that are declaration annotations,
      * because they may apply to inner types.
      *
-     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
-     *     not from such a location. This might contain type annotations that the Java parser
-     *     attached to the declaration rather than to the type.
+     * @param annoTrees a list of annotations that the the Java parser attached to the
+     *     variable/method declaration; null if this type is not from such a location. This is a
+     *     list of extra annotations to check, in addition to those on the type.
      * @param typeTree the type whose annotations to test
      * @return true if some annotation is a nullness annotation
      */
@@ -674,8 +674,25 @@ public class NullnessAnnotatedTypeFactory
             List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         List<? extends AnnotationTree> annos =
                 TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+        return containsNullnessAnnotation(annos);
+    }
 
-        for (AnnotationTree annoTree : annos) {
+    /**
+     * Returns true if some annotation in the given list is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * <p>This method ignores aliases of nullness annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
+     * <p>Clients that are processing a field or variable definition, or a method return type,
+     * should call {@link #containsNullnessAnnotation(List, Tree)} instead.
+     *
+     * @param annoTrees a list of annotations to check
+     * @return true if some annotation is a nullness annotation
+     * @see #containsNullnessAnnotation(List, Tree)
+     */
+    protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annoTrees) {
+        for (AnnotationTree annoTree : annoTrees) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
             if (isNullnessAnnotation(am) && !AnnotationUtils.isDeclarationAnnotation(am)) {
                 return true;
