@@ -4,10 +4,10 @@ import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 
-@SuppressWarnings("fields.uninitialized")
 public class KeyForValidation {
 
     // :: error: (expression.unparsable.type.invalid)
+    // :: error: (initialization.static.field.uninitialized)
     static @KeyFor("this") Object f;
 
     @KeyFor("this") Object g;

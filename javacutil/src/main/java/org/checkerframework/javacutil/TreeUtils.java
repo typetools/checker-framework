@@ -525,20 +525,40 @@ public final class TreeUtils {
      * Determine whether the given class contains an explicit constructor.
      *
      * @param node a class tree
-     * @return true, iff there is an explicit constructor
+     * @return true iff there is an explicit constructor
      */
     public static boolean hasExplicitConstructor(ClassTree node) {
         TypeElement elem = TreeUtils.elementFromDeclaration(node);
-
-        for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
-            MethodSymbol ms = (MethodSymbol) ee;
-            long mod = ms.flags();
-
-            if ((mod & Flags.SYNTHETIC) == 0) {
+        for (ExecutableElement constructorElt :
+                ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+            if (!isSynthetic(constructorElt)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns true if the given method is synthetic.
+     *
+     * @param ee a method or constructor element
+     * @return true iff the given method is synthetic
+     */
+    public static boolean isSynthetic(ExecutableElement ee) {
+        MethodSymbol ms = (MethodSymbol) ee;
+        long mod = ms.flags();
+        return (mod & Flags.SYNTHETIC) != 0;
+    }
+
+    /**
+     * Returns true if the given method is synthetic.
+     *
+     * @param node a method declaration tree
+     * @return true iff the given method is synthetic
+     */
+    public static boolean isSynthetic(MethodTree node) {
+        ExecutableElement ee = TreeUtils.elementFromDeclaration(node);
+        return isSynthetic(ee);
     }
 
     /**

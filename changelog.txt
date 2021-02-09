@@ -1,3 +1,19 @@
+Version 3.??.??, March 1, 2021
+
+**User-visible changes:**
+
+In the Nullness Checker, changed message key `initialization.static.fields.uninitialized`
+to `initialization.static.field.uninitialized` and it is issued on the field rather than
+on the class.  Also introduced `initialization.field.uninitialized` which is issued on the
+field instead of `initialization.fields.uninitialized` on the class, if there is no
+explicitly-written constructor.
+
+**Implementation details:**
+
+**Closed issues:**
+
+---------------------------------------------------------------------------
+
 Version 3.10.0, February 1, 2021
 
 **User-visible changes:**
