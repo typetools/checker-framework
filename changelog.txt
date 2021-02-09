@@ -6,6 +6,12 @@ Renamed the Nullness Checker's `known.nonnull` error message key to `nulltest.re
 
 **Implementation details:**
 
+Changes to protected fields in `OverrideChecker`:
+ * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
+ * Renamed `methodReference` => `isMethodReference`
+ * Renamed `overridingType` => `overriderType`
+ * Renamed `overridingReturnType` => `overriderReturnType`
+
 **Closed issues:**
 
 ---------------------------------------------------------------------------
@@ -59,12 +65,6 @@ Renamed methods:
  * `MethodCall.getParameters` => `getArguments`
  * `MethodCall.containsSyntacticEqualParameter` => `containsSyntacticEqualArgument`
  * `ArrayAccess.getReceiver` => `getArray`
-
-Changes to protected fields in `OverrideChecker`:
- * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
- * Renamed `methodReference` => `isMethodReference`
- * Renamed `overridingType` => `overriderType`
- * Renamed `overridingReturnType` => `overriderReturnType`
 
 **Closed issues:**
 #3325 , #3474.
