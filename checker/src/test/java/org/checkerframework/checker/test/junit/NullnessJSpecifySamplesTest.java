@@ -112,6 +112,7 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
 
             case "jspecify_nullness_intrinsically_not_nullable":
                 switch (cfDiagnostic.getMessage()) {
+                    case "nullness.on.constructor":
                     case "nullness.on.enum":
                     case "nullness.on.outer":
                     case "nullness.on.primitive":
