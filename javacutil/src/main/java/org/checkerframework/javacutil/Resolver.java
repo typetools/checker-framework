@@ -285,7 +285,6 @@ public class Resolver {
             if (ElementUtils.isTypeElement(res)) {
                 return (ClassSymbol) res;
             } else {
-                // Most likely didn't find the field and the Element is a SymbolNotFoundError
                 return null;
             }
         } finally {
