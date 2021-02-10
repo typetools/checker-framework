@@ -4,8 +4,8 @@ public class Uninit4 {
         Object a = new Object();
     }
 
-    // :: error: (initialization.fields.uninitialized)
     class BadSon {
+        // :: error: (initialization.field.uninitialized)
         Object b;
     }
 

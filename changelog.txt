@@ -2,7 +2,13 @@ Version 3.??.??, March 1, 2021
 
 **User-visible changes:**
 
-Renamed the Nullness Checker's `known.nonnull` error message key to `nulltest.redundant`.
+Nullness Checker error message key changes:
+ * `known.nonnull` => `nulltest.redundant`
+ * `initialization.static.fields.uninitialized` => `initialization.static.field.uninitialized`,
+   and it is now issued on the field rather than on the class
+ * new `initialization.field.uninitialized` is issued on the field instead of
+   `initialization.fields.uninitialized` on the class, if there is no
+   explicitly-written constructor.
 
 **Implementation details:**
 

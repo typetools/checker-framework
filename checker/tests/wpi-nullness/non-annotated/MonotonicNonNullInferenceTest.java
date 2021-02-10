@@ -1,6 +1,6 @@
-// :: warning: (initialization.static.fields.uninitialized)
 public class MonotonicNonNullInferenceTest {
 
+    // :: warning: (initialization.static.field.uninitialized)
     static String staticString1;
 
     // :: warning: (assignment.type.incompatible)

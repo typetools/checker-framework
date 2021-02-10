@@ -2251,7 +2251,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns the return type of the method {@code m}.
      *
-     * @param m a tree of method
+     * @param m tree of a method declaration
      * @return the return type of the method
      */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
@@ -2260,11 +2260,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return ret;
     }
 
-    /** Returns the return type of the method {@code m} at the return statement {@code r}. */
+    /**
+     * Returns the return type of the method {@code m} at the return statement {@code r}. This
+     * implementation just calls {@link #getMethodReturnType(MethodTree)}, but subclasses may
+     * override this method to change the type based on the return statement.
+     *
+     * @param m tree of a method declaration
+     * @param r a return statement within method {@code m}
+     * @return the return type of the method {@code m} at the return statement {@code r}
+     */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        AnnotatedExecutableType methodType = getAnnotatedType(m);
-        AnnotatedTypeMirror ret = methodType.getReturnType();
-        return ret;
+        return getMethodReturnType(m);
     }
 
     /**
