@@ -26,6 +26,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.tools.javac.code.Flags;
@@ -525,20 +526,41 @@ public final class TreeUtils {
      * Determine whether the given class contains an explicit constructor.
      *
      * @param node a class tree
-     * @return true, iff there is an explicit constructor
+     * @return true iff there is an explicit constructor
      */
     public static boolean hasExplicitConstructor(ClassTree node) {
         TypeElement elem = TreeUtils.elementFromDeclaration(node);
-
-        for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
-            MethodSymbol ms = (MethodSymbol) ee;
-            long mod = ms.flags();
-
-            if ((mod & Flags.SYNTHETIC) == 0) {
+        for (ExecutableElement constructorElt :
+                ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+            if (!isSynthetic(constructorElt)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns true if the given method is synthetic.
+     *
+     * @param ee a method or constructor element
+     * @return true iff the given method is synthetic
+     */
+    public static boolean isSynthetic(ExecutableElement ee) {
+        MethodSymbol ms = (MethodSymbol) ee;
+        long mod = ms.flags();
+        // GENERATEDCONSTR is for generated constructors, which seem not to have SYNTHETIC set.
+        return (mod & (Flags.SYNTHETIC | Flags.GENERATEDCONSTR)) != 0;
+    }
+
+    /**
+     * Returns true if the given method is synthetic.
+     *
+     * @param node a method declaration tree
+     * @return true iff the given method is synthetic
+     */
+    public static boolean isSynthetic(MethodTree node) {
+        ExecutableElement ee = TreeUtils.elementFromDeclaration(node);
+        return isSynthetic(ee);
     }
 
     /**
@@ -1398,12 +1420,13 @@ public final class TreeUtils {
      * Returns the annotations explicitly written on the given type.
      *
      * @param annoTrees annotations written before a variable/method declaration; null if this type
-     *     is not from such a location
+     *     is not from such a location. This might contain type annotations that the Java parser
+     *     attached to the declaration rather than to the type.
      * @param typeTree the type whose annotations to return
      * @return the annotations explicitly written on the given type
      */
     public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
-            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         while (true) {
             switch (typeTree.getKind()) {
                 case IDENTIFIER:
@@ -1429,6 +1452,12 @@ public final class TreeUtils {
                 case PARAMETERIZED_TYPE:
                     typeTree = ((ParameterizedTypeTree) typeTree).getType();
                     break;
+                case UNION_TYPE:
+                    List<AnnotationTree> result = new ArrayList<>();
+                    for (Tree alternative : ((UnionTypeTree) typeTree).getTypeAlternatives()) {
+                        result.addAll(getExplicitAnnotationTrees(null, alternative));
+                    }
+                    return result;
                 default:
                     throw new BugInCF(
                             "what typeTree? %s %s %s",
