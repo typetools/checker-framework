@@ -165,6 +165,9 @@ public final class TreePathUtil {
      * a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element}
      * can be obtained.
      *
+     * <p>Also see {@code AnnotatedTypeFactory#getEnclosingMethod} and {@code
+     * AnnotatedTypeFactory#getEnclosingClassOrMethod}, which do not require a TreePath.
+     *
      * @param path the path defining the tree node
      * @return the enclosing method as given by the path, or {@code null} if one does not exist
      */

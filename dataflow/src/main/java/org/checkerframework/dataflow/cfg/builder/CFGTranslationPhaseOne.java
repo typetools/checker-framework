@@ -719,7 +719,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
             handleArtificialTree(classTree);
             // No need to handle possible errors from evaluating a class literal here
-            // since this is a synthetic code that can't fail
+            // since this is a synthetic code that can't fail.
             ClassNameNode className = new ClassNameNode(classTree);
             className.setInSource(false);
             insertNodeAfter(className, node);
@@ -2573,10 +2573,23 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             handleArtificialTree(arrayAccess);
             ArrayAccessNode arrayAccessNode =
                     new ArrayAccessNode(arrayAccess, arrayNode2, indexNode2);
+            arrayAccessNode.setArrayExpression(expression);
             arrayAccessNode.setInSource(false);
             extendWithNode(arrayAccessNode);
-            translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+            AssignmentNode arrayAccessAssignNode =
+                    translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
             extendWithNodeWithException(arrayAccessNode, nullPointerExceptionType);
+            // translateAssignment() scans variable and creates new nodes, so set the expression
+            // there, too.
+            Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
+            if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode) {
+                ((ArrayAccessNode) arrayAccessAssignNodeExpr).setArrayExpression(expression);
+            } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode) {
+                // If the array component type is a primitive, there may be a boxing or unboxing
+                // conversion. Treat that as an iterator.
+                MethodInvocationNode boxingNode = (MethodInvocationNode) arrayAccessAssignNodeExpr;
+                boxingNode.setIterableExpression(expression);
+            }
 
             assert statement != null;
             scan(statement, p);
