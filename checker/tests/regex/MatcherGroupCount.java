@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/291
 
 import java.util.regex.*;
-import org.checkerframework.checker.regex.RegexUtil;
+import org.checkerframework.checker.regex.util.RegexUtil;
 
 public class MatcherGroupCount {
     public static void main(String[] args) {

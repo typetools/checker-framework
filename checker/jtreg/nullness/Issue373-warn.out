@@ -4,5 +4,5 @@ required: Set<Entry<@KeyFor("this") String, String>>
 Consequence: method
   Set<Entry<String, String>> entrySet(Issue373 this) in Issue373
 cannot override
-  Set<Entry<@KeyFor("this") String, String>> entrySet(AbstractMap<String, String> this) in java.util.AbstractMap
+  Set<Entry<@KeyFor("this") String, String>> entrySet(AbstractMap<String, String> this) in AbstractMap<String, String>
 1 warning

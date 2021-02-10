@@ -11,11 +11,6 @@ interface Consumer<T> {
     void consume(T t);
 }
 
-// For test purposes, f1 is never initialized
-@SuppressWarnings({
-    "initialization.fields.uninitialized",
-    "initialization.static.fields.uninitialized"
-})
 public class LambdaInit {
     String f1;
     String f2 = "";
@@ -55,6 +50,7 @@ public class LambdaInit {
 
     String f5;
 
+    @SuppressWarnings("initialization.fields.uninitialized") // f1 is not initialized
     LambdaInit() {
         f5 = "";
         FunctionInit<String, String> ff0 =
@@ -163,6 +159,7 @@ public class LambdaInit {
             };
 
     // Tests for static initializers.
+    // :: error: (initialization.static.field.uninitialized)
     static String sf1;
     static String sf2 = "";
     static @Nullable String sf3 = "";

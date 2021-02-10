@@ -1,6 +1,6 @@
 Thanks for submitting an issue.
 As explained in the instructions for submitting an issue at https://checkerframework.org/manual/#reporting-bugs, please include four pieces of information:
- * commands
- * inputs
+ * commands (that can be cut-and-pasted into a command shell),
+ * inputs,
  * outputs, and
  * expectation.

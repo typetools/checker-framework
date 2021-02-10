@@ -31,8 +31,13 @@ public class ThisReference extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        return other instanceof ThisReference;
+    public boolean syntacticEquals(JavaExpression je) {
+        return je instanceof ThisReference;
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other);
     }
 
     @Override

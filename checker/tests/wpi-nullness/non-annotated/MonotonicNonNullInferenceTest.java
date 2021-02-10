@@ -1,26 +1,26 @@
-// :: error: (initialization.static.fields.uninitialized)
 public class MonotonicNonNullInferenceTest {
 
+    // :: warning: (initialization.static.field.uninitialized)
     static String staticString1;
 
-    // :: error: (assignment.type.incompatible)
+    // :: warning: (assignment.type.incompatible)
     static String staticString2 = null;
 
     static String staticString3;
 
     String instanceString1;
 
-    // :: error: (assignment.type.incompatible)
+    // :: warning: (assignment.type.incompatible)
     String instanceString2 = null;
 
     String instanceString3;
 
     static {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         staticString3 = null;
     }
 
-    // :: error: (initialization.fields.uninitialized)
+    // :: warning: (initialization.fields.uninitialized)
     MonotonicNonNullInferenceTest() {
         String instanceString3 = "hello";
     }

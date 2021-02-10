@@ -35,6 +35,6 @@ signing {
 // Only sign releases; snapshots are unsigned.
 tasks.withType(Sign).configureEach {
     onlyIf {
-        !isSnapshot && gradle.taskGraph.hasTask("publish")
+        release
     }
 }

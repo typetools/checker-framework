@@ -1320,11 +1320,11 @@ public class BoundsInitializer {
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedUnionType isect = (AnnotatedUnionType) parent;
-            if (parent.directSuperTypes().size() <= altIndex) {
+            if (parent.directSupertypes().size() <= altIndex) {
                 throw new BugInCF("Invalid altIndex( %s ):%nparent=%s", altIndex, parent);
             }
 
-            return isect.directSuperTypes().get(altIndex);
+            return isect.directSupertypes().get(altIndex);
         }
 
         @Override
