@@ -49,6 +49,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -395,6 +396,7 @@ public class JavaExpressionParseUtil {
          *   <li>the type of "this" in this context
          *   <li>a type declared in "this" or in an enclosing type of "this"
          *   <li>a type in the java.lang package
+         *   <li>a type in the unnamed package
          * </ol>
          *
          * @param context JavaExpressionContext
@@ -438,6 +440,16 @@ public class JavaExpressionParseUtil {
                         resolver.findClassInPackage(identifier, packageSymbol, annotatedConstruct);
                 if (classSymbol != null) {
                     return new ClassName(classSymbol.asType());
+                }
+            }
+
+            // Is identifier a class in the unnamed package?
+            Element classElem = resolver.findClass(identifier, annotatedConstruct);
+            if (classElem.getEnclosingElement().getKind() == ElementKind.PACKAGE
+                    && ((PackageElement) classElem.getEnclosingElement()).isUnnamed()) {
+                TypeMirror classType = ElementUtils.getType(classElem);
+                if (classType != null) {
+                    return new ClassName(classType);
                 }
             }
             return null;
