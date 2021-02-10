@@ -411,20 +411,17 @@ public class JavaExpressionParseUtil {
                     return new ClassName(classType);
                 }
             }
-            TypeMirror typeOfThis = context.receiver.getType();
-            // Is identifier the simple name of this?
-            if (typeOfThis.getKind() == TypeKind.DECLARED) {
-                if (((DeclaredType) typeOfThis)
-                        .asElement()
-                        .getSimpleName()
-                        .contentEquals(identifier)) {
-                    return new ClassName(typeOfThis);
-                }
-            }
 
             // Is identifier an inner class of this or of any enclosing class of this?
             TypeMirror searchType = context.receiver.getType();
             while (searchType.getKind() == TypeKind.DECLARED) {
+                // Is identifier the simple name of this?
+                if (((DeclaredType) searchType)
+                        .asElement()
+                        .getSimpleName()
+                        .contentEquals(identifier)) {
+                    return new ClassName(searchType);
+                }
                 Element classElem =
                         resolver.findClassInType(identifier, searchType, annotatedConstruct);
                 if (classElem != null) {
