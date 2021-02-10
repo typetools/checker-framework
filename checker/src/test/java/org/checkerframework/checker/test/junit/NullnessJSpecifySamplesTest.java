@@ -62,9 +62,6 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
         List<TestDiagnostic> allUnexpectedDiagnostics =
                 Collections.unmodifiableList(new ArrayList<>(unexpectedDiagnostics));
 
-        unexpectedDiagnostics.removeIf(
-                unexpected ->
-                        unexpected.getMessage().equals("initialization.fields.uninitialized"));
         for (TestDiagnostic missing : allMissingDiagnostics) {
             unexpectedDiagnostics.removeIf(unexpected -> matches(missing, unexpected));
         }
