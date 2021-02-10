@@ -1277,6 +1277,12 @@ systems) \code{<self>}.
 \item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
   the Index Checker, for example.
 
+\item a class name expression within another expression, e.g., \<String.class> or \<pkg.MyClass.staticField>.
+At a method signature, a class can only be referenced by its simple name if it can be referenced in
+normal Java code by its simple name at the location of the method signature without an import. For example,
+a class in the same package as the class in which the method is declared does not need to be referenced
+by its fully qualified name.
+
 \end{itemize}
 
 % We want this in the future:

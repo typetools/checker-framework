@@ -458,11 +458,13 @@ public class JavaExpressionParseUtil {
 
             // Is identifier a class in the unnamed package?
             Element classElem = resolver.findClass(identifier, annotatedConstruct);
-            if (classElem.getEnclosingElement().getKind() == ElementKind.PACKAGE
-                    && ((PackageElement) classElem.getEnclosingElement()).isUnnamed()) {
-                TypeMirror classType = ElementUtils.getType(classElem);
-                if (classType != null) {
-                    return new ClassName(classType);
+            if (classElem != null) {
+                PackageElement pkg = ElementUtils.enclosingPackage(classElem);
+                if (pkg != null && pkg.isUnnamed()) {
+                    TypeMirror classType = ElementUtils.getType(classElem);
+                    if (classType != null) {
+                        return new ClassName(classType);
+                    }
                 }
             }
             return null;
