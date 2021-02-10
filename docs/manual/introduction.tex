@@ -1237,6 +1237,21 @@ and the optional Checker issues a warning if the client calls
 \<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
 
 
+\paragraphAndLabel{Permitting crashes in called methods}
+You can make a checker warn you about crashes in your own code, but ignore
+crashes that occur in library code.  This invalidates the checker's
+guarantee that your program will not crash.
+
+\begin{itemize}
+\item
+  The \<-AskipUses> command-line argument (Section~\ref{skipuses}) skips
+  checking all method calls to one or more classes.
+\item
+  A stub file (Section~\ref{stub}) can override the library's annotations,
+  for one or more methods.
+\end{itemize}
+
+
 \subsubsectionAndLabel{Methods that sometimes crash when passed certain values}{annotate-normal-behavior-sometimes-crash}
 
 %% TODO: This text should be revised when @NullableWhen or @NonNullWhen is implemented.
