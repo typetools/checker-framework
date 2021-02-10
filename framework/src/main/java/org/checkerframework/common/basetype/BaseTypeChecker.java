@@ -147,7 +147,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
     /**
      * The list of suppress warnings prefixes supported by this checker or any of its subcheckers
-     * (including indirect subcheckers).
+     * (including indirect subcheckers). Do not access this field directly; instead, use {@link
+     * #getSuppressWarningsPrefixesOfSubcheckers}.
      */
     private @MonotonicNonNull Collection<String> suppressWarningsPrefixesOfSubcheckers = null;
 
@@ -523,7 +524,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     /**
      * Like {@link SourceChecker#getSuppressWarningsPrefixes()}, but includes all prefixes supported
      * by this checker or any of its subcheckers. Does not guarantee that the result is in any
-     * particular order. The result is always immutable.
+     * particular order. The result is immutable.
      *
      * @return the suppress warnings prefixes supported by this checker or any of its subcheckers
      */
@@ -540,7 +541,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
     /**
      * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker
-     * that the user actually requested, i.e. the one with no parent.
+     * that the user actually requested, i.e. the one with no parent. The ultimate parent might be
+     * this checker itself.
      *
      * @return the first checker in the parent checker chain with no parent checker of its own, i.e.
      *     the ultimate parent checker

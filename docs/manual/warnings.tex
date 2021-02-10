@@ -103,8 +103,9 @@ the following forms:
 or
 \code{"\emph{messagekey}"}.
 
-The argument \emph{checkername} is
-in lower case and is derived from the way you invoke the checker.  For
+The argument \emph{checkername} is the checker name, without ``Checker''.
+It is lower case by default, though a checker can choose a different casing.
+For
 example, if you invoke a checker as
 \code{javac -processor MyNiftyChecker ...},
 then you would suppress its error messages with
@@ -366,7 +367,7 @@ type refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
 rules about what type refinement it performs.
 
-The value in parentheses is a lowercase checker name,
+The value in parentheses is a checker name (typically lowercase),
 exactly as in the \<@SuppressWarnings> annotation
 (Section~\ref{suppresswarnings-annotation-syntax}).
 Any subcheckers will also assume that the
