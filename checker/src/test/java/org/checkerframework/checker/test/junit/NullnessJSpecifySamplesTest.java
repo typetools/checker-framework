@@ -117,6 +117,7 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
                     case "nullness.on.outer":
                     case "nullness.on.primitive":
                     case "nullness.on.receiver":
+                    case "nullness.on.supertype":
                         return true;
                     default:
                         return false;
