@@ -534,9 +534,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
             for (BaseTypeChecker subchecker : getSubcheckers()) {
                 prefixes.addAll(subchecker.getSuppressWarningsPrefixes());
             }
-            this.suppressWarningsPrefixesOfSubcheckers = prefixes;
+            this.suppressWarningsPrefixesOfSubcheckers = ImmutableSet.copyOf(prefixes);
         }
-        return ImmutableSet.copyOf(this.suppressWarningsPrefixesOfSubcheckers);
+        return this.suppressWarningsPrefixesOfSubcheckers;
     }
 
     /**

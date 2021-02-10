@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -59,9 +58,11 @@ public class CFCFGBuilder extends CFGBuilder {
         if (factory instanceof GenericAnnotatedTypeFactory) {
             GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
                     (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
-            ControlFlowGraph sharedCFG = asGATF.getSharedCFGForTree(underlyingAST.getCode());
-            if (sharedCFG != null) {
-                return sharedCFG;
+            if (asGATF.hasOrIsSubchecker) {
+                ControlFlowGraph sharedCFG = asGATF.getSharedCFGForTree(underlyingAST.getCode());
+                if (sharedCFG != null) {
+                    return sharedCFG;
+                }
             }
         }
 
@@ -80,7 +81,9 @@ public class CFCFGBuilder extends CFGBuilder {
         if (factory instanceof GenericAnnotatedTypeFactory) {
             GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
                     (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
-            asGATF.addSharedCFGForTree(underlyingAST.getCode(), phase3result);
+            if (asGATF.hasOrIsSubchecker) {
+                asGATF.addSharedCFGForTree(underlyingAST.getCode(), phase3result);
+            }
         }
         return phase3result;
     }
@@ -150,9 +153,9 @@ public class CFCFGBuilder extends CFGBuilder {
         public void handleArtificialTree(Tree tree) {
             BaseTypeChecker ultimateParent = checker.getUltimateParentChecker();
             for (BaseTypeChecker subchecker : ultimateParent.getSubcheckers()) {
-                handleArtificialTreeImpl(subchecker.getTypeFactory(), tree, getCurrentPath());
+                handleArtificialTreeImpl(subchecker.getTypeFactory(), tree);
             }
-            handleArtificialTreeImpl(ultimateParent.getTypeFactory(), tree, getCurrentPath());
+            handleArtificialTreeImpl(ultimateParent.getTypeFactory(), tree);
         }
 
         /**
@@ -161,17 +164,16 @@ public class CFCFGBuilder extends CFGBuilder {
          *
          * @param factory the factory with which to register the tree
          * @param tree an artificial tree created on the current path
-         * @param currentPath the current path
          */
-        private static void handleArtificialTreeImpl(
-                GenericAnnotatedTypeFactory<?, ?, ?, ?> factory, Tree tree, TreePath currentPath) {
+        private void handleArtificialTreeImpl(
+                GenericAnnotatedTypeFactory<?, ?, ?, ?> factory, Tree tree) {
             // Record the method or class that encloses the newly created tree.
-            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(currentPath);
+            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
                 factory.setEnclosingElementForArtificialTree(tree, methodElement);
             } else {
-                ClassTree enclosingClass = TreePathUtil.enclosingClass(currentPath);
+                ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
                 if (enclosingClass != null) {
                     Element classElement = TreeUtils.elementFromDeclaration(enclosingClass);
                     factory.setEnclosingElementForArtificialTree(tree, classElement);

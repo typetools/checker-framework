@@ -238,6 +238,13 @@ public abstract class GenericAnnotatedTypeFactory<
     // Not final so that subclasses can set it.
     public boolean sideEffectsUnrefineAliases = false;
 
+    /**
+     * True if this checker either has one or more subcheckers, or if this checker is a subchecker.
+     * False otherwise. All uses of the methods {@link #addSharedCFGForTree(Tree, ControlFlowGraph)}
+     * and {@link #getSharedCFGForTree(Tree)} should be guarded by a check that this is true.
+     */
+    public final boolean hasOrIsSubchecker;
+
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -351,6 +358,10 @@ public abstract class GenericAnnotatedTypeFactory<
 
         contractsUtils = createContractsFromMethod();
 
+        hasOrIsSubchecker =
+                this.getChecker().getUltimateParentChecker() != this.getChecker()
+                        || !this.getChecker().getSubcheckers().isEmpty();
+
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
     }
@@ -439,7 +450,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private void clearSharedCFG(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (factory.shouldClearSubcheckerSharedCFGs) {
-            // This is the first subchecker running in a group that might share CFGs, so
+            // This is the first subchecker running in a group that share CFGs, so
             // it must clear its ultimate parent's shared CFG before adding a new
             // shared CFG.
             factory.shouldClearSubcheckerSharedCFGs = false;
@@ -2488,6 +2499,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * superchecker's GenericAnnotatedTypeFactory, if it exists. Duplicate keys must map to the same
      * CFG.
      *
+     * <p>Calls to this method should be guarded by checking {@link #hasOrIsSubchecker}; it is
+     * nonsensical to have a shared CFG when a checker is running alone.
+     *
      * @param tree the source code corresponding to cfg
      * @param cfg the control flow graph to use for tree
      * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
@@ -2523,6 +2537,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * Get the shared control flow graph used for {@code tree} by this checker's topmost
      * superchecker. Returns null if no information is available about the given tree, or if this
      * checker has a parent checker that does not have a GenericAnnotatedTypeFactory.
+     *
+     * <p>Calls to this method should be guarded by checking {@link #hasOrIsSubchecker}; it is
+     * nonsensical to have a shared CFG when a checker is running alone.
      *
      * @param tree the tree whose CFG should be looked up
      * @return the CFG stored by this checker's uppermost superchecker for tree, or null if it is
