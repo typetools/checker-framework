@@ -35,6 +35,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
@@ -431,6 +432,18 @@ public class JavaExpressionParseUtil {
                     return new ClassName(classType);
                 }
                 searchType = getTypeOfEnclosingClass((DeclaredType) searchType);
+            }
+            if (context.receiver.getType().getKind() == TypeKind.DECLARED) {
+                // Is identifier in the same package as this?
+                PackageSymbol packageSymbol =
+                        (PackageSymbol)
+                                ElementUtils.enclosingPackage(
+                                        ((DeclaredType) context.receiver.getType()).asElement());
+                ClassSymbol classSymbol =
+                        resolver.findClassInPackage(identifier, packageSymbol, annotatedConstruct);
+                if (classSymbol != null) {
+                    return new ClassName(classSymbol.asType());
+                }
             }
             // Is identifier a simple name for a class in java.lang?
             Symbol.PackageSymbol packageSymbol =
