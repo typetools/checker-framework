@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-@SuppressWarnings("initialization.fields.uninitialized")
+@SuppressWarnings("initialization.field.uninitialized")
 public class ScopingConstruct {
 
     // TODO: add nested classes within these two?
