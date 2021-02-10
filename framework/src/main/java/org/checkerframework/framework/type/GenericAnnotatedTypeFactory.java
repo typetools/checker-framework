@@ -359,8 +359,8 @@ public abstract class GenericAnnotatedTypeFactory<
         contractsUtils = createContractsFromMethod();
 
         hasOrIsSubchecker =
-                this.getChecker().getUltimateParentChecker() != this.getChecker()
-                        || !this.getChecker().getSubcheckers().isEmpty();
+                !this.getChecker().getSubcheckers().isEmpty()
+                        || this.getChecker().getParentChecker() != null;
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -2511,7 +2511,9 @@ public abstract class GenericAnnotatedTypeFactory<
             return false;
         }
         BaseTypeChecker parentChecker = this.checker.getUltimateParentChecker();
-        if (parentChecker == this.checker) {
+        @SuppressWarnings("interning") // Checking reference equality.
+        boolean parentIsThisChecker = parentChecker == this.checker;
+        if (parentIsThisChecker) {
             // This is the ultimate parent.
             if (this.subcheckerSharedCFG == null) {
                 this.subcheckerSharedCFG = new HashMap<>(getCacheSize());
@@ -2550,7 +2552,9 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
         BaseTypeChecker parentChecker = this.checker.getUltimateParentChecker();
-        if (parentChecker == this.checker) {
+        @SuppressWarnings("interning") // Checking reference equality.
+        boolean parentIsThisChecker = parentChecker == this.checker;
+        if (parentIsThisChecker) {
             // This is the ultimate parent;
             return this.subcheckerSharedCFG == null
                     ? null
