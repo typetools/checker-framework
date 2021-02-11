@@ -46,6 +46,10 @@ import org.checkerframework.javacutil.UserError;
 
 /** Holds information about types parsed from annotation files (stub files). */
 public class AnnotationFileElementTypes {
+
+    /** Debugging related to issue #3094. */
+    private static final boolean debug3094 = false;
+
     /** Annotations from annotation files (but not from annotated JDK files). */
     private final AnnotationFileAnnotations annotationFileAnnos;
 
@@ -295,7 +299,7 @@ public class AnnotationFileElementTypes {
         }
         parseEnclosingClass(e);
         AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
-        boolean logging = e.toString().contains("describeImages");
+        boolean logging = debug3094 && e.toString().contains("describeImages");
         if (logging) {
             Element enclosing = e.getEnclosingElement();
             System.out.printf(

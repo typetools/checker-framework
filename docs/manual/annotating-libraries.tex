@@ -514,13 +514,30 @@ since the value is known to be a key for all three maps.
 
 Sometimes, a method's return type is different in a subclass than in a
 superclass, even though the subtype does not define the method and just
-inherits the superclass's definition.  An example is when method \<m1>
-calls method \<m2>, and the subclass overrides \<m2> but not \<m1>.
+inherits the superclass's definition.
 
 You may write a ``fake override'' in a stub file.  This is a declaration of
 a method that is inherited.  The Java signature of the method must be
 identical to that in the superclass where it is actually defined, but you
 can change its annotations.
+
+As an example, consider a type system that tracks whether a value is
+cryptographically secure.  Its stub file would contain:
+
+\begin{Verbatim}
+package java.util;
+class Random {
+  @Insecure int nextInt();
+}
+
+package java.security;
+class SecureRandom extends Random {
+  @Secure int nextInt();
+}
+\end{Verbatim}
+
+\noindent
+\<SecureRandom> does not override \<nextInt> --- it only overrides the source of randomness.
 
 
 \subsectionAndLabel{Stub file format}{stub-format}

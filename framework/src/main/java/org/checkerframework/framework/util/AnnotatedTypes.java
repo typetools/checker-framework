@@ -60,6 +60,10 @@ import org.plumelib.util.StringsPlume;
  * Types}.
  */
 public class AnnotatedTypes {
+
+    /** Debugging related to issue #3094. */
+    private static final boolean debug3094 = false;
+
     // Class cannot be instantiated.
     private AnnotatedTypes() {
         throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
@@ -529,9 +533,11 @@ public class AnnotatedTypes {
         if (methodType == null) {
             methodType = (AnnotatedExecutableType) memberType;
         } else {
-            System.out.printf(
-                    "applied a fake override:%n  before:  %s%n  after : %s%n",
-                    memberType, methodType);
+            if (debug3094) {
+                System.out.printf(
+                        "applied a fake override:%n  before:  %s%n  after : %s%n",
+                        memberType, methodType);
+            }
         }
         return methodType;
     }

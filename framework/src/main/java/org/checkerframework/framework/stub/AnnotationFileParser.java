@@ -113,6 +113,9 @@ import org.checkerframework.javacutil.Pair;
  */
 public class AnnotationFileParser {
 
+    /** Debugging related to issue #3094. */
+    private static final boolean debug3094 = false;
+
     /**
      * Whether to print warnings about types/members that were not found. The warning states that a
      * class/field in the file is not found on the user's real classpath. Since the file may contain
@@ -244,8 +247,8 @@ public class AnnotationFileParser {
          * <p>This mapping never contains keys that are (for example) formal parameters, return
          * types, or type parameters.
          */
-        public final Map<Element, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
-                new HashMap<>();
+        public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>>
+                fakeOverrides = new HashMap<>();
     }
 
     /**
@@ -1717,12 +1720,14 @@ public class AnnotationFileParser {
      */
     private void processFakeOverride(
             ExecutableElement element, CallableDeclaration<?> decl, TypeElement fakeLocation) {
-        System.out.printf(
-                "Found a fake override:%n  real: %s%n    in %s%n  fake: %s%n    in %s%n",
-                element,
-                element.getEnclosingElement(),
-                decl.toString().trim().replaceAll("\\s+", " "),
-                fakeLocation);
+        if (debug3094) {
+            System.out.printf(
+                    "Found a fake override:%n  real: %s%n    in %s%n  fake: %s%n    in %s%n",
+                    element,
+                    element.getEnclosingElement(),
+                    decl.toString().trim().replaceAll("\\s+", " "),
+                    fakeLocation);
+        }
 
         // This is a fresh type, which this code may side-effect.
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);
