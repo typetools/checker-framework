@@ -613,7 +613,7 @@ public abstract class CFAbstractTransfer<
         // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
         AnnotationMirror standardized =
                 analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
-                        jeContext, path, annoFromContract, false, false);
+                        jeContext, null, annoFromContract, false);
         if (standardized != null) {
             // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
             // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().

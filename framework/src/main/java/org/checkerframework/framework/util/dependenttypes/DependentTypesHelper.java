@@ -30,6 +30,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -660,7 +661,7 @@ public class DependentTypesHelper {
      */
     private void standardizeUseLocalScope(
             JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
-        standardizeAtm(context, localScope, type, /*useLocalScope=*/ true);
+        standardizeAtm(context, localScope, type, /*useLocalScope=*/ true, false);
     }
 
     // TODO: Eliminate all uses of this.
@@ -696,31 +697,22 @@ public class DependentTypesHelper {
                 context, localScope, type, /*useLocalScope=*/ false, removeErroneousExpressions);
     }
 
-    private void standardizeAtm(
-            JavaExpressionContext context,
-            TreePath localScope,
-            AnnotatedTypeMirror type,
-            boolean useLocalScope) {
-        standardizeAtm(
-                context, localScope, type, useLocalScope, /*removeErroneousExpressions=*/ false);
-    }
-
     /**
+     * "Standardize" atm
+     *
+     * @param context JavaExpressionParseContext
+     * @param localPath if non-null, the expression is parsed as if it were written at this location
+     * @param type the type to "standardize"
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
      */
     private void standardizeAtm(
             JavaExpressionContext context,
-            TreePath localScope,
+            TreePath localPath,
             AnnotatedTypeMirror type,
             boolean useLocalScope,
             boolean removeErroneousExpressions) {
-        // localScope is null in dataflow when creating synthetic trees for enhanced for loops.
-        if (localScope == null) {
-            return;
-        }
-        this.standardizeTypeAnnotator.init(
-                context, localScope, useLocalScope, removeErroneousExpressions);
+        this.standardizeTypeAnnotator.init(context, localPath, removeErroneousExpressions);
         this.standardizeTypeAnnotator.visit(type);
     }
 
@@ -729,22 +721,16 @@ public class DependentTypesHelper {
      *
      * @param expression a Java expression
      * @param context the context
-     * @param localScope the local scope
-     * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
+     * @param localPath if non-null, the expression is parsed as if it were written at this location
      * @return the standardized version of the Java expression
      */
     protected String standardizeString(
-            String expression,
-            JavaExpressionContext context,
-            TreePath localScope,
-            boolean useLocalScope) {
+            String expression, JavaExpressionContext context, @Nullable TreePath localPath) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
         JavaExpression result;
         try {
-            // TODO: remove.
-            TreePath localPath = useLocalScope ? localScope : null;
             result = JavaExpressionParseUtil.parse(expression, context, localPath);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
@@ -769,39 +755,21 @@ public class DependentTypesHelper {
      * annotation, returns null.
      *
      * @param context information about any receiver and arguments
-     * @param localScope path to local scope to use
+     * @param localPath if non-null, the expression is parsed as if it were written at this location
      * @param anno the annotation to be standardized
-     * @param useLocalScope whether the local scope should be used to resolve identifiers
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
      * @return the standardized annotation, or null if no standardization is needed
      */
     public AnnotationMirror standardizeAnnotationIfDependentType(
             JavaExpressionContext context,
-            TreePath localScope,
+            @Nullable TreePath localPath,
             AnnotationMirror anno,
-            boolean useLocalScope,
             boolean removeErroneousExpressions) {
         if (!isExpressionAnno(anno)) {
             return null;
         }
-        return standardizeDependentTypeAnnotation(
-                context, localScope, anno, useLocalScope, removeErroneousExpressions);
-    }
 
-    /**
-     * Standardizes a dependent type annotation. Returns a new annotation.
-     *
-     * @param anno a dependent type annotation
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
-     */
-    private AnnotationMirror standardizeDependentTypeAnnotation(
-            JavaExpressionContext context,
-            TreePath localScope,
-            AnnotationMirror anno,
-            boolean useLocalScope,
-            boolean removeErroneousExpressions) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
@@ -811,8 +779,7 @@ public class DependentTypesHelper {
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
-                String standardized =
-                        standardizeString(expression, context, localScope, useLocalScope);
+                String standardized = standardizeString(expression, context, localPath);
                 if (removeErroneousExpressions
                         && DependentTypesError.isExpressionError(standardized)) {
                     // nothing to do
@@ -829,13 +796,9 @@ public class DependentTypesHelper {
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
         /** The context. */
         private JavaExpressionContext context;
-        /** The local scope. */
-        private TreePath localScope;
-        /**
-         * Whether or not the expression might contain a variable declared in local scope. Really,
-         * whether to use {@code localScope} to resolve identifiers.
-         */
-        private boolean useLocalScope;
+        /** If non-null, the expression is parsed as if it were written at this location. */
+        private @Nullable TreePath localPath;
+
         /**
          * If true, remove erroneous expressions. If false, replace them by an explanation of why
          * they are illegal.
@@ -848,8 +811,7 @@ public class DependentTypesHelper {
          */
         private StandardizeTypeAnnotator() {
             this.context = null;
-            this.localScope = null;
-            this.useLocalScope = false;
+            this.localPath = null;
             this.removeErroneousExpressions = false;
         }
 
@@ -857,19 +819,17 @@ public class DependentTypesHelper {
          * Initialize the scanner to standardize with respect to the given context.
          *
          * @param context JavaExpressionContext
-         * @param localScope tree path for local scope
-         * @param useLocalScope whether or not to use locals
+         * @param localPath if non-null, the expression is parsed as if it were written at this
+         *     location
          * @param removeErroneousExpressions removeErroneousExpressions if true, remove erroneous
          *     expressions rather than converting them into an explanation of why they are illegal
          */
         private void init(
                 JavaExpressionContext context,
-                TreePath localScope,
-                boolean useLocalScope,
+                @Nullable TreePath localPath,
                 boolean removeErroneousExpressions) {
             this.context = context;
-            this.localScope = localScope;
-            this.useLocalScope = useLocalScope;
+            this.localPath = localPath;
             this.removeErroneousExpressions = removeErroneousExpressions;
         }
 
@@ -903,11 +863,7 @@ public class DependentTypesHelper {
                     AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
                 AnnotationMirror newAnno =
                         standardizeAnnotationIfDependentType(
-                                context,
-                                localScope,
-                                anno,
-                                useLocalScope,
-                                removeErroneousExpressions);
+                                context, localPath, anno, removeErroneousExpressions);
                 if (newAnno != null) {
                     // Standardized annotations are written into bytecode along with explicitly
                     // written nonstandard annotations. (This is a bug.)

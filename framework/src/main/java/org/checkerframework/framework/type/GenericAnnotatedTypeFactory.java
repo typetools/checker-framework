@@ -2442,7 +2442,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         AnnotationMirror standardized =
                 dependentTypesHelper.standardizeAnnotationIfDependentType(
-                        jeContext, path, annoFromContract, false, false);
+                        jeContext, null, annoFromContract, false);
         if (standardized != null) {
             dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
             return standardized;
