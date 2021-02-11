@@ -179,8 +179,8 @@ public class DependentTypesHelper {
         JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
         JavaExpressionContext context = new JavaExpressionContext(r, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
-            standardizeDoNotUseLocalScope(context, bound.getUpperBound());
-            standardizeDoNotUseLocalScope(context, bound.getLowerBound());
+            viewpointAdaptToContext(context, bound.getUpperBound());
+            viewpointAdaptToContext(context, bound.getLowerBound());
         }
     }
 
@@ -257,7 +257,7 @@ public class DependentTypesHelper {
         // Then copy annotations from the viewpoint adapted type to methodType, if that annotation
         // is not on a type that was substituted for a type variable.
 
-        standardizeDoNotUseLocalScope(context, viewpointAdaptedType);
+        viewpointAdaptToContext(context, viewpointAdaptedType);
         this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
     }
 
@@ -359,15 +359,7 @@ public class DependentTypesHelper {
         }
 
         TreePath path = factory.getPath(tree);
-        Tree enclosingClass = TreePathUtil.enclosingClass(path);
-        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
-        JavaExpression r = JavaExpression.getPseudoReceiver(path, enclosingType);
-        JavaExpressionContext context =
-                new JavaExpressionContext(
-                        r,
-                        JavaExpression.getParametersOfEnclosingMethod(factory, path),
-                        factory.getChecker());
-        standardizeUseLocalScope(context, path, type);
+        viewpointAdaptToLocalPath(path, type);
     }
 
     /**
@@ -385,7 +377,7 @@ public class DependentTypesHelper {
         JavaExpression receiverJe = JavaExpression.getImplicitReceiver(classElt);
         JavaExpressionContext classignmentContext =
                 new JavaExpressionContext(receiverJe, factory.getChecker());
-        standardizeDoNotUseLocalScope(classignmentContext, type);
+        viewpointAdaptToContext(classignmentContext, type);
     }
 
     /**
@@ -409,7 +401,7 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, pathToMethodDecl, factory.getChecker());
-        standardizeDoNotUseLocalScope(context, atm);
+        viewpointAdaptToContext(context, atm);
     }
 
     /**
@@ -474,7 +466,7 @@ public class DependentTypesHelper {
                     JavaExpressionContext context =
                             JavaExpressionContext.buildContextForMethodDeclaration(
                                     methodDeclTree, pathTillEnclTree, factory.getChecker());
-                    standardizeDoNotUseLocalScope(context, type);
+                    viewpointAdaptToContext(context, type);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
@@ -482,7 +474,7 @@ public class DependentTypesHelper {
                                     lambdaTree, pathToVariableDecl, factory.getChecker());
                     // Lambdas can use local variables defined in the enclosing method, so allow
                     // identifiers to be locals in scope at the location of the lambda.
-                    standardizeUseLocalScope(
+                    viewpointAdaptToLocalPathAndContext(
                             parameterContext, pathToVariableDecl.getParentPath(), type);
                 }
                 break;
@@ -490,14 +482,7 @@ public class DependentTypesHelper {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
-                TypeMirror enclosingType = ElementUtils.enclosingTypeElement(variableElt).asType();
-                JavaExpression receiver =
-                        JavaExpression.getPseudoReceiver(pathToVariableDecl, enclosingType);
-                List<JavaExpression> params =
-                        JavaExpression.getParametersOfEnclosingMethod(factory, pathToVariableDecl);
-                JavaExpressionContext localContext =
-                        new JavaExpressionContext(receiver, params, factory.getChecker());
-                standardizeUseLocalScope(localContext, pathToVariableDecl, type);
+                viewpointAdaptToLocalPath(pathToVariableDecl, type);
                 break;
 
             case FIELD:
@@ -515,7 +500,7 @@ public class DependentTypesHelper {
                 }
                 JavaExpressionContext fieldContext =
                         new JavaExpressionContext(receiverJe, factory.getChecker());
-                standardizeDoNotUseLocalScope(fieldContext, type);
+                viewpointAdaptToContext(fieldContext, type);
                 break;
 
             default:
@@ -545,7 +530,7 @@ public class DependentTypesHelper {
 
         JavaExpression receiver = JavaExpression.fromTree(factory, node.getExpression());
         JavaExpressionContext context = new JavaExpressionContext(receiver, factory.getChecker());
-        standardizeDoNotUseLocalScope(context, type);
+        viewpointAdaptToContext(context, type);
     }
 
     /**
@@ -563,17 +548,7 @@ public class DependentTypesHelper {
         if (path == null) {
             return;
         }
-        Tree enclosingClass = TreePathUtil.enclosingClass(path);
-        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
-
-        JavaExpression receiver = JavaExpression.getPseudoReceiver(path, enclosingType);
-
-        JavaExpressionContext localContext =
-                new JavaExpressionContext(
-                        receiver,
-                        JavaExpression.getParametersOfEnclosingMethod(factory, path),
-                        factory.getChecker());
-        standardizeUseLocalScope(localContext, path, annotatedType);
+        viewpointAdaptToLocalPath(path, annotatedType);
     }
 
     /**
@@ -620,26 +595,48 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize a type, setting useLocalScope to true.
+     * Viewpont-adapt the dependent types in {@code type} as if they were written at {@code
+     * localPath}.
      *
-     * @param context the context
-     * @param localScope the local scope
-     * @param type the type to standardize; is side-effected by this method
+     * @param localPath the expression is parsed as if it were written at this location
+     * @param type the type to viewpoint-adapt; is side-effected by this method
      */
-    private void standardizeUseLocalScope(
-            JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
-        standardizeAtm(context, localScope, type, /*removeErroneousExpressions=*/ false);
+    private void viewpointAdaptToLocalPath(TreePath localPath, AnnotatedTypeMirror type) {
+        Tree enclosingClass = TreePathUtil.enclosingClass(localPath);
+        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
+
+        JavaExpression receiver = JavaExpression.getPseudoReceiver(localPath, enclosingType);
+
+        JavaExpressionContext localContext =
+                new JavaExpressionContext(
+                        receiver,
+                        JavaExpression.getParametersOfEnclosingMethod(factory, localPath),
+                        factory.getChecker());
+        standardizeAtm(localContext, localPath, type, /*removeErroneousExpressions=*/ false);
     }
 
     /**
-     * Standardize a type, setting useLocalScope to false.
+     * Viewpont-adapt the dependent types in {@code type} using the {@code context} provided.
      *
      * @param context the context
-     * @param type the type to standardize; is side-effected by this method
+     * @param type the type to viewpoint-adapt; is side-effected by this method
      */
-    private void standardizeDoNotUseLocalScope(
-            JavaExpressionContext context, AnnotatedTypeMirror type) {
+    private void viewpointAdaptToContext(JavaExpressionContext context, AnnotatedTypeMirror type) {
         standardizeAtm(context, null, type, /*removeErroneousExpressions=*/ false);
+    }
+
+    /**
+     * Viewpont-adapt the dependent types in {@code type} as if they were written at {@code
+     * localPath} and use the given context. The {@code context} should be different than the
+     * context of the {@code localPath}.
+     *
+     * @param context context to use
+     * @param localPath the expression is parsed as if it were written at this location
+     * @param type the type to viewpoint-adapt; is side-effected by this method
+     */
+    private void viewpointAdaptToLocalPathAndContext(
+            JavaExpressionContext context, TreePath localPath, AnnotatedTypeMirror type) {
+        standardizeAtm(context, localPath, type, /*removeErroneousExpressions=*/ false);
     }
 
     /**
@@ -980,7 +977,7 @@ public class DependentTypesHelper {
                         node, enclosingType, factory.getChecker());
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
-            standardizeDoNotUseLocalScope(context, atm);
+            viewpointAdaptToContext(context, atm);
             checkType(atm, node.getTypeParameters().get(i));
         }
     }

@@ -1046,8 +1046,9 @@ public class JavaExpressionParseUtil {
     ///
 
     /**
-     * Context used to parse a Java expression. When parsing expression E in annotation
-     * {@code @A(E)}, the context is the program element that is annotated by {@code @A(E)}.
+     * Context used to parsing and viewpoint-adapting a Java expression. It contains the
+     * JavaExpressions to which {@code this} and the parameter syntax, e.g. {@code #1}, should
+     * parse.
      */
     public static class JavaExpressionContext {
         /** The value of {@code this} in this context. */
