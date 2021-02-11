@@ -78,7 +78,6 @@ import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1233,34 +1232,6 @@ public class JavaExpressionParseUtil {
         } else {
             return type.getEnclosingType();
         }
-    }
-
-    /**
-     * Get a JavaExpression from a VariableTree.
-     *
-     * @param provider gives the context
-     * @param tree the VariableTree
-     * @return a JavaExpression for the given VariableTree
-     * @throws JavaExpressionParseException if the expression string cannot be parsed
-     */
-    public static JavaExpression fromVariableTree(AnnotatedTypeFactory provider, VariableTree tree)
-            throws JavaExpressionParseException {
-        Element elt = TreeUtils.elementFromDeclaration(tree);
-
-        if (elt.getKind() == ElementKind.LOCAL_VARIABLE
-                || elt.getKind() == ElementKind.RESOURCE_VARIABLE
-                || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
-                || elt.getKind() == ElementKind.PARAMETER) {
-            return new LocalVariable(elt);
-        }
-        JavaExpression receiverJe = JavaExpression.getImplicitReceiver(elt);
-        JavaExpressionContext context =
-                new JavaExpressionContext(receiverJe, /*arguments=*/ null, provider.getChecker());
-        return parse(
-                tree.getName().toString(),
-                context,
-                provider.getPath(tree),
-                /*useLocalScope=*/ false);
     }
 
     ///////////////////////////////////////////////////////////////////////////
