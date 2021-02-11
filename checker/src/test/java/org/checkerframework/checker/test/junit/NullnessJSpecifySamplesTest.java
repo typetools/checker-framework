@@ -12,7 +12,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * JUnit tests for the Nullness Checker -- test the Jspecify samples.
+ * JUnit tests for the Nullness Checker -- test the JSpecify samples.
  *
  * <p>Requirements:
  *
@@ -25,17 +25,17 @@ import org.junit.runners.Parameterized.Parameters;
  * To run this test:
  *
  * <pre>{@code
- * ./gradlew :checker:NullnessJspecifySamples
+ * ./gradlew :checker:NullnessJSpecifySamples
  * }</pre>
  */
-public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTest {
+public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTest {
 
     /**
-     * Create a NullnessJspecifySamplesTest.
+     * Create a NullnessJSpecifySamplesTest.
      *
      * @param testFiles the files containing test code, which will be type-checked
      */
-    public NullnessJspecifySamplesTest(List<File> testFiles) {
+    public NullnessJSpecifySamplesTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
@@ -53,7 +53,7 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
     public TypecheckResult adjustTypecheckResult(TypecheckResult testResult) {
         // The "all*" variables are a copy that contains everything.
         // This method removes from the non-all* variables.
-        // These are Jspecify diagnostics.
+        // These are JSpecify diagnostics.
         List<TestDiagnostic> missingDiagnostics = testResult.getMissingDiagnostics();
         List<TestDiagnostic> allMissingDiagnostics =
                 Collections.unmodifiableList(new ArrayList<>(missingDiagnostics));
@@ -62,9 +62,6 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
         List<TestDiagnostic> allUnexpectedDiagnostics =
                 Collections.unmodifiableList(new ArrayList<>(unexpectedDiagnostics));
 
-        unexpectedDiagnostics.removeIf(
-                unexpected ->
-                        unexpected.getMessage().equals("initialization.fields.uninitialized"));
         for (TestDiagnostic missing : allMissingDiagnostics) {
             unexpectedDiagnostics.removeIf(unexpected -> matches(missing, unexpected));
         }
@@ -86,14 +83,14 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
      * Returns true if {@code cfDiagnostic} being issued fulfils the expectation that {@code
      * jspecifyDiagnostic} should be issued.
      *
-     * @param jspecifyDiagnostic an expected Jspecify diagnostic
+     * @param jspecifyDiagnostic an expected JSpecify diagnostic
      * @param cfDiagnostic an actual javacdiagnostic
      * @return true if {@code actual} fulfills an expectation to see {@code expected}
      */
     private static boolean matches(TestDiagnostic jspecifyDiagnostic, TestDiagnostic cfDiagnostic) {
-        assert jspecifyDiagnostic.getKind() == DiagnosticKind.Jspecify
-                : "bad Jspecify diagnostic " + jspecifyDiagnostic;
-        assert cfDiagnostic.getKind() != DiagnosticKind.Jspecify
+        assert jspecifyDiagnostic.getKind() == DiagnosticKind.JSpecify
+                : "bad JSpecify diagnostic " + jspecifyDiagnostic;
+        assert cfDiagnostic.getKind() != DiagnosticKind.JSpecify
                 : "bad CF diagnostic " + cfDiagnostic;
 
         if (!(jspecifyDiagnostic.getFilename().equals(cfDiagnostic.getFilename())
@@ -101,7 +98,7 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
             return false;
         }
 
-        // The Jspecify diagnostics are documented at
+        // The JSpecify diagnostics are documented at
         // https://github.com/jspecify/jspecify/blob/main/samples/README.md#syntax .
         switch (jspecifyDiagnostic.getMessage()) {
             case "jspecify_conflicting_annotations":
@@ -112,8 +109,12 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
 
             case "jspecify_nullness_intrinsically_not_nullable":
                 switch (cfDiagnostic.getMessage()) {
+                    case "nullness.on.constructor":
+                    case "nullness.on.enum":
                     case "nullness.on.outer":
                     case "nullness.on.primitive":
+                    case "nullness.on.receiver":
+                    case "nullness.on.supertype":
                         return true;
                     default:
                         return false;
@@ -123,7 +124,10 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
             case "jspecify_nullness_not_enough_information":
                 switch (cfDiagnostic.getMessage()) {
                     case "argument.type.incompatible":
+                    case "assignment.type.incompatible":
+                    case "condition.nullable":
                     case "dereference.of.nullable":
+                    case "initialization.field.uninitialized":
                     case "locking.nullable":
                     case "override.param.invalid":
                     case "override.return.invalid":
@@ -137,7 +141,7 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
 
             default:
                 throw new BugInCF(
-                        "Unexpected Jspecify diagnostic: " + jspecifyDiagnostic.getMessage());
+                        "Unexpected JSpecify diagnostic: " + jspecifyDiagnostic.getMessage());
         }
     }
 }
