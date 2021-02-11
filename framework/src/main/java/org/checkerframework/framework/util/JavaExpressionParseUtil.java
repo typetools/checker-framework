@@ -402,8 +402,7 @@ public class JavaExpressionParseUtil {
          *
          * @param context JavaExpressionContext
          * @param identifier possible class name
-         * @return the {@code ClassName} for {@code identifier} or null if if it is not a class
-         *     name.
+         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name.
          */
         protected @Nullable ClassName getIdentifierAsClassName(
                 JavaExpressionContext context, String identifier) {
@@ -467,6 +466,7 @@ public class JavaExpressionParseUtil {
                     }
                 }
             }
+
             return null;
         }
 
@@ -477,7 +477,7 @@ public class JavaExpressionParseUtil {
          *
          * @param context {@link JavaExpressionContext}
          * @param identifier possibly a field name
-         * @return a field access or null if {@code identifier} is not a field
+         * @return a field access, or null if {@code identifier} is not a field
          */
         protected @Nullable FieldAccess getIdentifierAsField(
                 JavaExpressionContext context, String identifier) {
@@ -514,6 +514,7 @@ public class JavaExpressionParseUtil {
                 }
                 return fieldAccess;
             }
+
             return null;
         }
 
