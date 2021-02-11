@@ -963,9 +963,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             JavaExpression exprJe;
             try {
-                exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, jeContext, getCurrentPath(), false);
+                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
                 exprJe = null;
                 checker.report(methodTree, e.getDiagMessage());
@@ -1694,9 +1692,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             JavaExpression exprJe;
             try {
-                exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, jeContext, getCurrentPath(), false);
+                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());
@@ -4226,8 +4222,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // TODO: currently, these expressions are parsed many times.
                 // This could be optimized to store the result the first time.
                 // (same for other annotations)
-                JavaExpression exprJe =
-                        JavaExpressionParseUtil.parse(expressionString, jeContext, path, false);
+                JavaExpression exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
                 result.add(Pair.of(exprJe, annotation));
             } catch (JavaExpressionParseException e) {
                 // report errors here

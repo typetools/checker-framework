@@ -587,8 +587,7 @@ public abstract class CFAbstractTransfer<
                 // be optimized to store the result the first time.
                 // (same for other annotations)
                 JavaExpression exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, methodUseContext, methodDeclPath, false);
+                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
                 initialStore.insertValue(exprJe, annotation);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
@@ -1234,8 +1233,7 @@ public abstract class CFAbstractTransfer<
 
             try {
                 JavaExpression je =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, methodUseContext, pathToInvocation, false);
+                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call

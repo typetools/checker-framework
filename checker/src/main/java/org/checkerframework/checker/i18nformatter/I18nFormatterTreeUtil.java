@@ -293,7 +293,6 @@ public class I18nFormatterTreeUtil {
                 MethodInvocationNode node,
                 AnnotatedExecutableType methodAnno) {
             int paramIndex = -1;
-            JavaExpression paramArg = null;
             int i = 0;
             for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
                 if (paramType.getAnnotation(I18nFormatFor.class) != null) {
@@ -312,19 +311,13 @@ public class I18nFormatterTreeUtil {
                                     "value",
                                     String.class,
                                     false);
-                    if (jeContext != null) {
-                        try {
-                            paramArg =
-                                    JavaExpressionParseUtil.parse(
-                                            formatforArg,
-                                            jeContext,
-                                            atypeFactory.getPath(tree),
-                                            true);
-                            paramIndex = jeContext.arguments.indexOf(paramArg);
-                        } catch (JavaExpressionParseException e) {
-                            // report errors here
-                            checker.reportError(tree, "i18nformat.invalid.formatfor");
-                        }
+                    try {
+                        JavaExpression paramArg =
+                                JavaExpressionParseUtil.parse(formatforArg, jeContext);
+                        paramIndex = jeContext.arguments.indexOf(paramArg);
+                    } catch (JavaExpressionParseException e) {
+                        // report errors here
+                        checker.reportError(tree, "i18nformat.invalid.formatfor");
                     }
                     break;
                 }

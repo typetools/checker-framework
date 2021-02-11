@@ -120,6 +120,19 @@ public class JavaExpressionParseUtil {
     private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
 
     /**
+     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
+     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
+     *
+     * @param expression a Java expression to parse
+     * @param context information about any receiver and arguments
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(String expression, JavaExpressionContext context)
+            throws JavaExpressionParseException {
+        return parse(expression, context, null);
+    }
+    /**
      * Parse a string and viewpoint-adapt it to the given {@code context} and {@code localPath}.
      * Return its representation as a {@link JavaExpression}, or throw a {@link
      * JavaExpressionParseException}.
@@ -139,19 +152,12 @@ public class JavaExpressionParseUtil {
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
     public static JavaExpression parse(
-            String expression,
-            JavaExpressionContext context,
-            @Nullable TreePath localPath,
-            boolean useLocalScope)
+            String expression, JavaExpressionContext context, @Nullable TreePath localPath)
             throws JavaExpressionParseException {
         // The underlying javac API used to convert from Strings to Elements requires a tree path
         // even when the information could be deduced from elements alone.  So use the path to the
         // current CompilationUnit.
         TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
-        // TODO: REMOVE:
-        if (!useLocalScope) {
-            localPath = false;
-        }
         Expression expr;
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));

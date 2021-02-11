@@ -860,10 +860,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Produces the JavaExpression associated with expression on currentPath.
+     * Produces the JavaExpression as if {@code expression} were written at {@code currentPath}.
      *
      * @param expression a Java expression
-     * @param currentPath the path to an annotation containing {@code expression}
+     * @param currentPath the current path
      * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
@@ -878,7 +878,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
                         this.getChecker());
 
-        return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
+        return JavaExpressionParseUtil.parse(expression, context, currentPath);
     }
 
     /**

@@ -38,7 +38,9 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         }
         JavaExpression result;
         try {
-            result = JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
+            // TODO: remove.
+            TreePath localPath = useLocalScope ? localScope : null;
+            result = JavaExpressionParseUtil.parse(expression, context, localPath);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }

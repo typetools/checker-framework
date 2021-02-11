@@ -181,9 +181,10 @@ public class LockAnnotatedTypeFactory
                 }
 
                 try {
+                    // TODO: remove.
+                    TreePath localPath = useLocalScope ? localScope : null;
                     JavaExpression result =
-                            JavaExpressionParseUtil.parse(
-                                    expression, context, localScope, useLocalScope);
+                            JavaExpressionParseUtil.parse(expression, context, localPath);
                     if (result == null) {
                         return new DependentTypesError(expression, /*error message=*/ " ")
                                 .toString();

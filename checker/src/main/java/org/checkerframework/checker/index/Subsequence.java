@@ -52,7 +52,7 @@ public class Subsequence {
 
         Element element = TreeUtils.elementFromTree(varTree);
         AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
-        return createSubsequence(hasSub, null, null);
+        return createSubsequence(hasSub, null);
     }
 
     /**
@@ -60,7 +60,7 @@ public class Subsequence {
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
-            AnnotationMirror hasSub, TreePath currentPath, JavaExpressionContext context) {
+            AnnotationMirror hasSub, JavaExpressionContext context) {
         if (hasSub == null) {
             return null;
         }
@@ -68,10 +68,10 @@ public class Subsequence {
         String to = AnnotationUtils.getElementValue(hasSub, "to", String.class, false);
         String array = AnnotationUtils.getElementValue(hasSub, "subsequence", String.class, false);
 
-        if (context != null && currentPath != null) {
-            from = standardizeAndViewpointAdapt(from, currentPath, context);
-            to = standardizeAndViewpointAdapt(to, currentPath, context);
-            array = standardizeAndViewpointAdapt(array, currentPath, context);
+        if (context != null) {
+            from = standardizeAndViewpointAdapt(from, context);
+            to = standardizeAndViewpointAdapt(to, context);
+            array = standardizeAndViewpointAdapt(array, context);
         }
 
         return new Subsequence(array, from, to);
@@ -102,8 +102,7 @@ public class Subsequence {
         } else {
             return null;
         }
-        return createSubsequence(
-                factory.getDeclAnnotation(element, HasSubsequence.class), currentPath, context);
+        return createSubsequence(factory.getDeclAnnotation(element, HasSubsequence.class), context);
     }
 
     /*
@@ -111,10 +110,9 @@ public class Subsequence {
      * Wraps JavaExpressionParseUtil#parse. If a parse exception is encountered, this returns
      * its argument.
      */
-    private static String standardizeAndViewpointAdapt(
-            String s, TreePath currentPath, JavaExpressionContext context) {
+    private static String standardizeAndViewpointAdapt(String s, JavaExpressionContext context) {
         try {
-            return JavaExpressionParseUtil.parse(s, context, currentPath, false).toString();
+            return JavaExpressionParseUtil.parse(s, context).toString();
         } catch (JavaExpressionParseException e) {
             return s;
         }
@@ -154,9 +152,8 @@ public class Subsequence {
      * <p>The passed String is standardized and viewpoint adapted before this transformation is
      * applied.
      */
-    public static String negateString(
-            String s, TreePath currentPath, JavaExpressionContext context) {
-        String original = standardizeAndViewpointAdapt(s, currentPath, context);
+    public static String negateString(String s, JavaExpressionContext context) {
+        String original = standardizeAndViewpointAdapt(s, context);
         String result = "";
         if (!original.startsWith("-")) {
             result += '-';

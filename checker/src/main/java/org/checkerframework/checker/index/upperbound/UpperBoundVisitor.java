@@ -125,7 +125,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String s, JavaExpressionContext context, Tree tree) {
         JavaExpression je;
         try {
-            je = JavaExpressionParseUtil.parse(s, context, getCurrentPath(), false);
+            je = JavaExpressionParseUtil.parse(s, context);
         } catch (JavaExpressionParseException e) {
             checker.report(tree, e.getDiagMessage());
             return;
@@ -365,7 +365,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * JavaExpressions do not contain multiplication.
      */
     private String negateString(String s, JavaExpressionContext context) {
-        return Subsequence.negateString(s, getCurrentPath(), context);
+        return Subsequence.negateString(s, context);
     }
 
     /*
