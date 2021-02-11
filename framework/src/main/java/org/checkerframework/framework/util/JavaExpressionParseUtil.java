@@ -119,11 +119,11 @@ public class JavaExpressionParseUtil {
     private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
 
     /**
-     * Parse a string and view-point adapt it to the given {@code context} and {@code localPath}.
+     * Parse a string and viewpoint-adapt it to the given {@code context} and {@code localPath}.
      * Return its representation as a {@link JavaExpression}, or throw a {@link
      * JavaExpressionParseException}.
      *
-     * <p>If {@code localPath} is nonnull, then identifiers are parsed as if the identifier was
+     * <p>If {@code localPath} is non-null, then identifiers are parsed as if the identifier was
      * written at the location of {@code localPath}. This means identifiers will be parsed to local
      * variables in scope at {@code localPath} when possible. If {@code localPath} is null, then no
      * identifier can be parsed to a local variable. In either case, the parameter syntax, e.g. #1,
@@ -133,15 +133,15 @@ public class JavaExpressionParseUtil {
      *
      * @param expression a Java expression to parse
      * @param context information about any receiver and arguments
-     * @param localPath if non-null, the location at which to parse identifiers to local variables
+     * @param localPath if non-null, the expression is parsed as if it were written at this location
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
     public static JavaExpression parse(
             String expression, JavaExpressionContext context, @Nullable TreePath localPath)
             throws JavaExpressionParseException {
-        // A TreePath is required to use the underlying javac API to convert from Strings to
-        // Elements even when the information could be deduced from elements alone.  So use the the
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the
         // path to the current CompilationUnit.
         TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
         Expression expr;
