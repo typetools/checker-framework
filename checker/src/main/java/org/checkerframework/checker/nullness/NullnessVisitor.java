@@ -462,6 +462,13 @@ public class NullnessVisitor
 
     @Override
     public Void visitMethod(MethodTree node, Void p) {
+        if (TreeUtils.isConstructor(node)) {
+            List<? extends AnnotationTree> annoTrees = node.getModifiers().getAnnotations();
+            if (atypeFactory.containsNullnessAnnotation(annoTrees)) {
+                checker.reportError(node, "nullness.on.constructor");
+            }
+        }
+
         VariableTree receiver = node.getReceiverParameter();
         if (receiver != null) {
             List<? extends AnnotationTree> annoTrees = receiver.getModifiers().getAnnotations();
@@ -511,6 +518,15 @@ public class NullnessVisitor
 
     @Override
     public void processClassTree(ClassTree classTree) {
+
+        Tree extendsClause = classTree.getExtendsClause();
+        if (extendsClause != null) {
+            reportErrorIfSupertypeContainsNullnessAnnotation(extendsClause);
+        }
+        for (Tree implementsClause : classTree.getImplementsClause()) {
+            reportErrorIfSupertypeContainsNullnessAnnotation(implementsClause);
+        }
+
         if (classTree.getKind() == Tree.Kind.ENUM) {
             for (Tree member : classTree.getMembers()) {
                 if (member.getKind() == Tree.Kind.VARIABLE
@@ -528,6 +544,21 @@ public class NullnessVisitor
         }
 
         super.processClassTree(classTree);
+    }
+
+    /**
+     * Report "nullness.on.supertype" error if a supertype has a nullness annotation.
+     *
+     * @param typeTree a supertype tree, from an {@code extends} or {@code implements} clause
+     */
+    private void reportErrorIfSupertypeContainsNullnessAnnotation(Tree typeTree) {
+        if (typeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            List<? extends AnnotationTree> annoTrees =
+                    ((AnnotatedTypeTree) typeTree).getAnnotations();
+            if (atypeFactory.containsNullnessAnnotation(annoTrees)) {
+                checker.reportError(typeTree, "nullness.on.supertype");
+            }
+        }
     }
 
     // ///////////// Utility methods //////////////////////////////

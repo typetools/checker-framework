@@ -1,10 +1,10 @@
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
-// :: error: (initialization.static.fields.uninitialized)
 public class StaticInitializer {
 
     public static String a;
+    // :: error: (initialization.static.field.uninitialized)
     public static String b;
 
     static {
@@ -14,9 +14,10 @@ public class StaticInitializer {
     public StaticInitializer() {}
 }
 
-// :: error: (initialization.static.fields.uninitialized)
 class StaticInitializer2 {
+    // :: error: (initialization.static.field.uninitialized)
     public static String a;
+    // :: error: (initialization.static.field.uninitialized)
     public static String b;
 }
 

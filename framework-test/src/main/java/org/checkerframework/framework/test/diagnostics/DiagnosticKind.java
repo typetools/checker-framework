@@ -11,7 +11,7 @@ public enum DiagnosticKind {
     /** An error. */
     Error("error"),
     /** A JSpecify diagnostic. */
-    Jspecify("jspecify"),
+    JSpecify("jspecify"),
     /** Something else. */
     Other("other");
 

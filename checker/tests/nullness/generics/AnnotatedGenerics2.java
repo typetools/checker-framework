@@ -3,10 +3,11 @@ import org.checkerframework.checker.nullness.qual.*;
 public class AnnotatedGenerics2 {
     // Top-level class to ensure that both classes are processed.
 
-    // :: error: (initialization.fields.uninitialized)
     class AnnotatedGenerics2Nble<T extends @Nullable Object> {
+        // :: error: (initialization.field.uninitialized)
         @NonNull T myFieldNN;
         @Nullable T myFieldNble;
+        // :: error: (initialization.field.uninitialized)
         T myFieldT;
 
         /* TODO: This test case gets affected by flow inference.
@@ -68,10 +69,11 @@ public class AnnotatedGenerics2 {
         }
     }
 
-    // :: error: (initialization.fields.uninitialized)
     class AnnotatedGenerics2NN<T extends @NonNull Object> {
+        // :: error: (initialization.field.uninitialized)
         @NonNull T myFieldNN;
         @Nullable T myFieldNble;
+        // :: error: (initialization.field.uninitialized)
         T myFieldT;
 
         /* TODO: This test case gets affected by flow inference.
