@@ -512,7 +512,7 @@ public abstract class JavaExpression {
      * @param tree a variable tree
      * @return a JavaExpression for {@code tree}
      */
-    public static JavaExpression fromVariableTree(VariableTree tree) {
+    public static @Nullable JavaExpression fromVariableTree(VariableTree tree) {
         return fromVariableElement(TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree));
     }
 
