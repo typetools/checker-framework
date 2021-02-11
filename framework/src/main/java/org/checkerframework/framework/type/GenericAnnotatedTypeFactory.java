@@ -1918,7 +1918,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f, visitorState.getPath());
+        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f);
         return f;
     }
 

@@ -2,6 +2,7 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
@@ -29,17 +30,12 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
 
     @Override
     protected String standardizeString(
-            final String expression,
-            JavaExpressionContext context,
-            TreePath localScope,
-            boolean useLocalScope) {
+            final String expression, JavaExpressionContext context, @Nullable TreePath localPath) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
         JavaExpression result;
         try {
-            // TODO: remove.
-            TreePath localPath = useLocalScope ? localScope : null;
             result = JavaExpressionParseUtil.parse(expression, context, localPath);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();

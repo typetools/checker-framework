@@ -576,10 +576,7 @@ public abstract class CFAbstractTransfer<
                                 methodDeclTree, methodAst.getClassTree(), analysis.checker);
             }
 
-            TreePath methodDeclPath = analysis.atypeFactory.getPath(methodDeclTree);
-
-            annotation =
-                    standardizeAnnotationFromContract(annotation, methodUseContext, methodDeclPath);
+            annotation = standardizeAnnotationFromContract(annotation, methodUseContext);
 
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -600,11 +597,10 @@ public abstract class CFAbstractTransfer<
      *
      * @param annoFromContract a contract annotation that was written on a method declaration
      * @param jeContext the context to use for standardization
-     * @param path the program element that will be annotated by the returned annotation
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     private AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
+            AnnotationMirror annoFromContract, JavaExpressionContext jeContext) {
         if (!analysis.dependentTypesHelper.hasDependentAnnotations()) {
             return annoFromContract;
         }
@@ -1207,8 +1203,6 @@ public abstract class CFAbstractTransfer<
             S elseStore,
             Set<? extends Contract> postconditions) {
 
-        GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = analysis.getTypeFactory();
-
         // These lazily initialized variables are needed only if the method has any contracts.
         JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
@@ -1225,9 +1219,8 @@ public abstract class CFAbstractTransfer<
             }
 
             // Standardize with respect to the method use (the call site).
-            TreePath pathToInvocation = atypeFactory.getPath(invocationTree);
             AnnotationMirror standardizedUse =
-                    standardizeAnnotationFromContract(anno, methodUseContext, pathToInvocation);
+                    standardizeAnnotationFromContract(anno, methodUseContext);
 
             anno = standardizedUse;
 
