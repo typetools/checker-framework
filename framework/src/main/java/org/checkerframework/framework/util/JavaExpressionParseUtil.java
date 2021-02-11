@@ -141,8 +141,8 @@ public class JavaExpressionParseUtil {
             String expression, JavaExpressionContext context, @Nullable TreePath localPath)
             throws JavaExpressionParseException {
         // The underlying javac API used to convert from Strings to Elements requires a tree path
-        // even when the information could be deduced from elements alone.  So use the
-        // path to the current CompilationUnit.
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
         TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
         Expression expr;
         try {
