@@ -335,6 +335,10 @@ public class AnnotationFileElementTypes {
         return Collections.emptySet();
     }
 
+    ///
+    /// End of public methods, private helper methods follow
+    ///
+
     /**
      * Returns the most specific fake override for the given element, when used as a member of the
      * given type.
