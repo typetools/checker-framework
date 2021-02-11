@@ -442,7 +442,12 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, pathToMethodDecl, factory.getChecker());
-        standardizeAtm(context, pathToMethodDecl, atm, false, true);
+        standardizeAtm(
+                context,
+                pathToMethodDecl,
+                atm,
+                /*useLocalScope=*/ false, /*removeErroneousExpressions*/
+                true);
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
@@ -647,7 +652,12 @@ public class DependentTypesHelper {
      */
     private void standardizeDoNotUseLocalScope(
             JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
-        standardizeAtm(context, localScope, type, false, /*removeErroneousExpressions=*/ false);
+        standardizeAtm(
+                context,
+                localScope,
+                type,
+                /*useLocalScope=*/ false,
+                /*removeErroneousExpressions=*/ false);
     }
 
     private void standardizeAtm(
