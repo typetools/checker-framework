@@ -403,24 +403,7 @@ public class DependentTypesHelper {
      * @param methodDeclTree a method declaration
      * @param atm the method return type; is side-effected by this method
      */
-    public final void standardizeReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
-        standardizeReturnType(methodDeclTree, atm, /*removeErroneousExpressions=*/ false);
-    }
-
-    /**
-     * Standardizes the Java expressions in annotations for a method return type. {@code atm} might
-     * come from the method declaration or from the type of the expression in a {@code return}
-     * statement.
-     *
-     * @param methodDeclTree a method declaration
-     * @param atm the method return type; is side-effected by this method
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
-     */
-    public void standardizeReturnType(
-            MethodTree methodDeclTree,
-            AnnotatedTypeMirror atm,
-            boolean removeErroneousExpressions) {
+    public void standardizeReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
         if (!hasDependentType(atm)) {
             return;
         }
@@ -430,44 +413,37 @@ public class DependentTypesHelper {
             return;
         }
 
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
-
-        standardizeForMethodSignature(
-                methodDeclTree, pathToMethodDecl, methodElt, atm, removeErroneousExpressions);
+        JavaExpressionContext context =
+                JavaExpressionContext.buildContextForMethodDeclaration(
+                        methodDeclTree, pathToMethodDecl, factory.getChecker());
+        standardizeDoNotUseLocalScope(context, pathToMethodDecl, atm);
     }
 
     /**
-     * Standardizes the Java expressions in annotations for a method signature location, including:
+     * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
+     * methodDeclTree}.
      *
-     * <ul>
-     *   <li>type annotations on a return type, formal parameter type, or exception type, and
-     *   <li>declaration annotations on a method (such as a pre- or post-condition contract
-     *       annotation) or formal parameter.
-     * </ul>
-     *
-     * @param methodDeclTree a method declaration
-     * @param pathToMethodDecl the path to the method declaration
-     * @param elt the element for the method or a formal parameter; used for obtaining the enclosing
-     *     class
-     * @param atm a type that has a dependent type annotation; is side-effected by this method
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
+     * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
+     * @param atm type to viewpoint-adapt
      */
-    public void standardizeForMethodSignature(
-            MethodTree methodDeclTree,
-            TreePath pathToMethodDecl,
-            Element elt,
-            AnnotatedTypeMirror atm,
-            boolean removeErroneousExpressions) {
-        if (!hasDependentAnnotations()) {
+    public void delocalize(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+        if (!hasDependentType(atm)) {
             return;
         }
 
-        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(elt).asType();
+        TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
+        if (pathToMethodDecl == null) {
+            return;
+        }
+        // TODO: 1.) parameter names need to be covert to the # index syntax.
+        // TODO: 2.) If an annotation only has expressions that cannot be delocalized, then that
+        // annotation needs to be changed to top, rather an the dependent type annotation with no an
+        // empty array as a value element.
+
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodDeclTree, enclosingType, factory.getChecker());
-        standardizeDoNotUseLocalScope(context, pathToMethodDecl, atm, removeErroneousExpressions);
+                        methodDeclTree, pathToMethodDecl, factory.getChecker());
+        standardizeAtm(context, pathToMethodDecl, atm, false, true);
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
@@ -502,12 +478,10 @@ public class DependentTypesHelper {
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
-                    standardizeForMethodSignature(
-                            methodDeclTree,
-                            pathTillEnclTree,
-                            variableElt,
-                            type,
-                            /*removeErroneousExpressions=*/ false);
+                    JavaExpressionContext context =
+                            JavaExpressionContext.buildContextForMethodDeclaration(
+                                    methodDeclTree, pathTillEnclTree, factory.getChecker());
+                    standardizeDoNotUseLocalScope(context, pathTillEnclTree, type);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
@@ -674,27 +648,7 @@ public class DependentTypesHelper {
      */
     private void standardizeDoNotUseLocalScope(
             JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
-        standardizeDoNotUseLocalScope(
-                context, localScope, type, /*removeErroneousExpressions=*/ false);
-    }
-
-    // TODO: Eliminate all uses of this.
-    /**
-     * Standardize a type, setting useLocalScope to false.
-     *
-     * @param context the context
-     * @param localScope the local scope
-     * @param type the type to standardize; is side-effected by this method
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
-     */
-    private void standardizeDoNotUseLocalScope(
-            JavaExpressionContext context,
-            TreePath localScope,
-            AnnotatedTypeMirror type,
-            boolean removeErroneousExpressions) {
-        standardizeAtm(
-                context, localScope, type, /*useLocalScope=*/ false, removeErroneousExpressions);
+        standardizeAtm(context, localScope, type, false, /*removeErroneousExpressions=*/ false);
     }
 
     /**
