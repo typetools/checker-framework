@@ -5,8 +5,8 @@
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
-import org.checkerframework.checker.nullness.Opt;
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.util.Opt;
 
 public class Issue1345 {
 

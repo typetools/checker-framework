@@ -61,6 +61,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -94,7 +95,6 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
@@ -487,6 +487,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             wholeProgramInference = new WholeProgramInferenceScenes(this);
+            if (!checker.hasOption("warns")) {
+                // Without -Awarns, the inference output may be incomplete, because javac halts
+                // after issuing an error.
+                checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
+            }
         } else {
             wholeProgramInference = null;
         }
@@ -1061,13 +1066,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // No caching otherwise
         }
 
-        // For debugging
-        if (false) {
-            System.out.printf(
-                    "AnnotatedTypeFactory::getAnnotatedType(%s) => %s%n",
-                    TreeUtils.toStringTruncated(tree, 65), type);
-        }
-
         return type;
     }
 
@@ -1246,7 +1244,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * declared type of the functional interface and the executable type of its method.
      *
      * @param tree MethodTree or VariableTree
-     * @return AnnotatedTypeMirror with explicit annotations from {@code tree}.
+     * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
      */
     private final AnnotatedTypeMirror fromMember(Tree tree) {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
@@ -1422,7 +1420,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * A callback method for the AnnotatedTypeFactory subtypes to customize directSuperTypes().
+     * A callback method for the AnnotatedTypeFactory subtypes to customize directSupertypes().
      * Overriding methods should merely change the annotations on the supertypes, without adding or
      * removing new types.
      *
@@ -1561,7 +1559,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't found, null is
      * returned.
      *
-     * @param annoTrees trees to look
+     * @param annoTrees list of trees to search; the result is one of the list elements, or null
      * @return the AnnotationTree that is a use of one of the field invariant annotations, or null
      *     if one isn't found
      */
@@ -1750,9 +1748,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type of {@code this} at the location of {@code tree}. If {@code tree} is in a
-     * location where {@code this} has no meaning, such as the body of a static method, then {@code
-     * null} is returned.
+     * Returns the type of {@code this} at the location of {@code tree}. Returns {@code null} if
+     * {@code tree} is in a location where {@code this} has no meaning, such as the body of a static
+     * method.
      *
      * <p>The parameter is an arbitrary tree and does not have to mention "this", neither explicitly
      * nor implicitly. This method can be overridden for type-system specific behavior.
@@ -1782,24 +1780,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return null;
     }
 
-    /** A set of class, method, and annotation tree kinds. */
-    private final Set<Tree.Kind> classMethodAnnotationKinds =
+    /** A set containing class, method, and annotation tree kinds. */
+    private static final Set<Tree.Kind> classMethodAnnotationKinds =
             EnumSet.copyOf(TreeUtils.classTreeKinds());
 
-    {
+    static {
         classMethodAnnotationKinds.add(Kind.METHOD);
         classMethodAnnotationKinds.add(Kind.TYPE_ANNOTATION);
         classMethodAnnotationKinds.add(Kind.ANNOTATION);
     }
+
     /**
-     * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
+     * Returns the innermost enclosing method or class tree of {@code tree}. If {@code tree} is
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
      * is used to find the enclosing tree.
      *
      * <p>If the tree is inside an annotation, then {@code null} is returned.
      *
-     * @param tree tree to whose innermost enclosing method or class is returned
-     * @return the innermost enclosing method or class tree of {@code tree} or {@code null} if
+     * @param tree tree to whose innermost enclosing method or class to return
+     * @return the innermost enclosing method or class tree of {@code tree}, or {@code null} if
      *     {@code tree} is inside an annotation
      */
     protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
@@ -2247,7 +2246,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns the return type of the method {@code m}.
      *
-     * @param m a tree of method
+     * @param m tree of a method declaration
      * @return the return type of the method
      */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
@@ -2256,11 +2255,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return ret;
     }
 
-    /** Returns the return type of the method {@code m} at the return statement {@code r}. */
+    /**
+     * Returns the return type of the method {@code m} at the return statement {@code r}. This
+     * implementation just calls {@link #getMethodReturnType(MethodTree)}, but subclasses may
+     * override this method to change the type based on the return statement.
+     *
+     * @param m tree of a method declaration
+     * @param r a return statement within method {@code m}
+     * @return the return type of the method {@code m} at the return statement {@code r}
+     */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        AnnotatedExecutableType methodType = getAnnotatedType(m);
-        AnnotatedTypeMirror ret = methodType.getReturnType();
-        return ret;
+        return getMethodReturnType(m);
     }
 
     /**
@@ -3121,7 +3126,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // TODO: handle type parameter declarations?
         Tree fromElt;
         // Prevent calling declarationFor on elements we know we don't have
-        // the tree for
+        // the tree for.
 
         switch (elt.getKind()) {
             case CLASS:
@@ -3226,9 +3231,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * will be returned.
      *
      * @param node the {@link Tree} to get the path for
-     * @return the path for {@code node} under the current root
+     * @return the path for {@code node} under the current root. Returns null if {@code node} is not
+     *     within the current compilation unit.
      */
-    public final TreePath getPath(@FindDistinct Tree node) {
+    public final @Nullable TreePath getPath(@FindDistinct Tree node) {
         assert root != null
                 : "AnnotatedTypeFactory.getPath("
                         + node.getKind()
@@ -4012,7 +4018,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         final boolean intersectionType;
         final TypeMirror boundType;
         if (typeVar.getUpperBound().getKind() == TypeKind.INTERSECTION) {
-            boundType = typeVar.getUpperBound().directSuperTypes().get(0).getUnderlyingType();
+            boundType = typeVar.getUpperBound().directSupertypes().get(0).getUnderlyingType();
             intersectionType = true;
         } else {
             boundType = typeVar.getUnderlyingType().getUpperBound();
@@ -4205,7 +4211,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
                 if (castATM.getKind() == TypeKind.INTERSECTION) {
                     AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
-                    for (AnnotatedTypeMirror t : itype.directSuperTypes()) {
+                    for (AnnotatedTypeMirror t : itype.directSupertypes()) {
                         if (TypesUtils.isFunctionalInterface(
                                 t.getUnderlyingType(), getProcessingEnv())) {
                             return t;
@@ -4455,12 +4461,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return this.processingEnv;
     }
 
-    /** Accessor for the {@link CFContext}. */
-    public CFContext getContext() {
-        return checker;
-    }
-
+    /** Matches addition of a constant. */
     static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+    /** Matches subtraction of a constant. */
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
     /**

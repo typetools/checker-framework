@@ -1,8 +1,8 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-// Field f needs to be set, because the upper bound is @Initialized
-// :: error: (initialization.fields.uninitialized)
 class Param<T extends @NonNull Object> {
+    // Field f needs to be set, because the upper bound is @Initialized
+    // :: error: (initialization.field.uninitialized)
     T f;
 
     void foo() {

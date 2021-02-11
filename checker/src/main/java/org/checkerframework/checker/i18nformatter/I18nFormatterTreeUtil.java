@@ -30,6 +30,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nMakeFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
+import org.checkerframework.checker.i18nformatter.util.I18nFormatUtil;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -303,24 +304,23 @@ public class I18nFormatterTreeUtil {
                         // Invalid FormatFor invocation
                         return;
                     }
-                    JavaExpressionContext flowExprContext =
-                            JavaExpressionContext.buildContextForMethodUse(
-                                    node, checker.getContext());
+                    JavaExpressionContext jeContext =
+                            JavaExpressionContext.buildContextForMethodUse(node, checker);
                     String formatforArg =
                             AnnotationUtils.getElementValue(
                                     paramType.getAnnotation(I18nFormatFor.class),
                                     "value",
                                     String.class,
                                     false);
-                    if (flowExprContext != null) {
+                    if (jeContext != null) {
                         try {
                             paramArg =
                                     JavaExpressionParseUtil.parse(
                                             formatforArg,
-                                            flowExprContext,
+                                            jeContext,
                                             atypeFactory.getPath(tree),
                                             true);
-                            paramIndex = flowExprContext.arguments.indexOf(paramArg);
+                            paramIndex = jeContext.arguments.indexOf(paramArg);
                         } catch (JavaExpressionParseException e) {
                             // report errors here
                             checker.reportError(tree, "i18nformat.invalid.formatfor");

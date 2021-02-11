@@ -111,7 +111,7 @@ public class ValueTransfer extends CFTransfer {
      *
      * @param subNode some subnode of {@code p}
      * @param p TransferInput
-     * @return a range of possible lengths for {@code subNode}, as casted to a String.
+     * @return a range of possible lengths for {@code subNode}, as casted to a String
      */
     private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
@@ -403,7 +403,7 @@ public class ValueTransfer extends CFTransfer {
      *
      * @param subNode subNode of {@code p}
      * @param p TransferInput
-     * @return true if this subNode is annotated with {@code @IntRange}.
+     * @return true if this subNode is annotated with {@code @IntRange}
      */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
@@ -415,7 +415,7 @@ public class ValueTransfer extends CFTransfer {
      *
      * @param node a node
      * @param anno annotation mirror
-     * @return true if node is annotated with {@code @UnknownVal} and it is an integral type.
+     * @return true if node is annotated with {@code @UnknownVal} and it is an integral type
      */
     private boolean isIntegralUnknownVal(Node node, AnnotationMirror anno) {
         return AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.UNKNOWN_NAME)
@@ -668,7 +668,7 @@ public class ValueTransfer extends CFTransfer {
         List<String> rightValues = getStringValues(rightOperand, p);
 
         boolean nonNullStringConcat =
-                atypeFactory.getContext().getChecker().hasOption("nonNullStringsConcatenation");
+                atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
 
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results

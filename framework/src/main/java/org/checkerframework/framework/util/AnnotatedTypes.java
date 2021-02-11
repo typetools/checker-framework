@@ -71,7 +71,7 @@ public class AnnotatedTypes {
      * of {@code superType} have been substituted. How the annotations are copied depends on the
      * kinds of AnnotatedTypeMirrors given. Generally, if {@code type} and {@code superType} are
      * both declared types, asSuper is called recursively on the direct super types, see {@link
-     * AnnotatedTypeMirror#directSuperTypes()}, of {@code type} until {@code type}'s erased Java
+     * AnnotatedTypeMirror#directSupertypes()}, of {@code type} until {@code type}'s erased Java
      * type is the same as {@code superType}'s erased super type. Then {@code type is returned}. For
      * compound types, asSuper is called recursively on components.
      *
@@ -296,7 +296,7 @@ public class AnnotatedTypes {
             if (enclosingType == null) {
                 // TODO: https://github.com/typetools/checker-framework/issues/724
                 // testcase javacheck -processor nullness  src/java/util/AbstractMap.java
-                //                SourceChecker checker =  atypeFactory.getContext().getChecker();
+                //                SourceChecker checker =  atypeFactory.getChecker().getChecker();
                 //                String msg = (String.format("OuterAsSuper did not find outer
                 // class. type: %s superType: %s", type, superType));
                 //                checker.message(Kind.WARNING, msg);
@@ -619,7 +619,7 @@ public class AnnotatedTypes {
             // For each direct supertype of the current type, if it
             // hasn't already been visited, push it onto the stack and
             // add it to our supertypes set.
-            for (AnnotatedDeclaredType supertype : current.directSuperTypes()) {
+            for (AnnotatedDeclaredType supertype : current.directSupertypes()) {
                 if (!supertypes.contains(supertype)) {
                     stack.push(supertype);
                     supertypes.add(supertype);
@@ -662,7 +662,7 @@ public class AnnotatedTypes {
 
         for (AnnotatedDeclaredType supertype : supertypes) {
             @Nullable TypeElement superElement = (TypeElement) supertype.getUnderlyingType().asElement();
-            assert superElement != null; /*nninvariant*/
+            assert superElement != null;
             // For all method in the supertype, add it to the set if
             // it overrides the given method.
             for (ExecutableElement supermethod :
@@ -856,7 +856,7 @@ public class AnnotatedTypes {
 
     /**
      * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter
-     * type expected at the indexth position (unwrapping var args if necessary).
+     * type expected at the indexth position (unwrapping varargs if necessary).
      *
      * @param methodType AnnotatedExecutableType of method or constructor containing parameter to
      *     return

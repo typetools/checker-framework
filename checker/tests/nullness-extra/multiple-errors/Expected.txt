@@ -1,6 +1,6 @@
-C1.java:1: error: [initialization.fields.uninitialized] the constructor does not initialize fields: o
-public class C1 {
-       ^
+C1.java:2: error: [initialization.field.uninitialized] the default constructor does not initialize field o
+    Object o;
+           ^
 C2.java:2: error: [assignment.type.incompatible] incompatible types in assignment.
     Object o = null;
                ^

@@ -5,6 +5,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
@@ -20,6 +21,7 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.ClassTree;
@@ -65,14 +67,17 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.BinaryOperation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
@@ -136,13 +141,13 @@ public class JavaExpressionParseUtil {
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
         } catch (ParseProblemException e) {
-            throw constructFlowexprParseError(expression, "is an invalid expression");
+            throw constructJavaExpressionParseError(expression, "is an invalid expression");
         }
 
         JavaExpression result;
         try {
             context = context.copyAndSetUseLocalScope(useLocalScope);
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            ProcessingEnvironment env = context.checker.getProcessingEnvironment();
             result = expr.accept(new ExpressionToJavaExpressionVisitor(localScope, env), context);
         } catch (ParseRuntimeException e) {
             // Convert unchecked to checked exception. Visitor methods can't throw checked
@@ -155,7 +160,7 @@ public class JavaExpressionParseUtil {
                 // At a call site, "#1" may be transformed to "Something.class", so don't throw an
                 // exception in that case.
                 && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
-            throw constructFlowexprParseError(
+            throw constructJavaExpressionParseError(
                     expression,
                     String.format(
                             "a class name cannot terminate a Java expression string, where result=%s [%s]",
@@ -203,6 +208,9 @@ public class JavaExpressionParseUtil {
         /** The type utilities. */
         private final Types types;
 
+        /** The java.lang.String type. */
+        TypeMirror stringTypeMirror;
+
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
          *
@@ -213,6 +221,8 @@ public class JavaExpressionParseUtil {
             this.annotatedConstruct = annotatedConstruct;
             this.env = env;
             this.types = env.getTypeUtils();
+            this.stringTypeMirror =
+                    env.getElementUtils().getTypeElement("java.lang.String").asType();
         }
 
         /** Sets the {@code resolver} field if necessary. */
@@ -230,7 +240,8 @@ public class JavaExpressionParseUtil {
             if (context.parsingMember) {
                 message += " in a context with parsingMember=true";
             }
-            throw new ParseRuntimeException(constructFlowexprParseError(n.toString(), message));
+            throw new ParseRuntimeException(
+                    constructJavaExpressionParseError(n.toString(), message));
         }
 
         @Override
@@ -260,9 +271,7 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(StringLiteralExpr expr, JavaExpressionContext context) {
-            TypeMirror stringTM =
-                    TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
-            return new ValueLiteral(stringTM, expr.asString());
+            return new ValueLiteral(stringTypeMirror, expr.asString());
         }
 
         @Override
@@ -288,7 +297,7 @@ public class JavaExpressionParseUtil {
             TypeMirror superclass = TypesUtils.getSuperclass(context.receiver.getType(), types);
             if (superclass == null) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError("super", "super class not found"));
+                        constructJavaExpressionParseError("super", "super class not found"));
             }
             return new ThisReference(superclass);
         }
@@ -305,7 +314,7 @@ public class JavaExpressionParseUtil {
             TypeMirror arrayType = array.getType();
             if (arrayType.getKind() != TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(
+                        constructJavaExpressionParseError(
                                 expr.toString(),
                                 String.format(
                                         "expected an array, found %s of type %s [%s]",
@@ -332,26 +341,21 @@ public class JavaExpressionParseUtil {
                 return getParameterJavaExpression(s, context);
             }
 
-            // Local variable, parameter, or field.
+            // Local variable or parameter.
             if (!context.parsingMember && context.useLocalScope) {
                 // Attempt to match a local variable within the scope of the
                 // given path before attempting to match a field.
                 VariableElement varElem =
-                        resolver.findLocalVariableOrParameterOrField(s, annotatedConstruct);
+                        resolver.findLocalVariableOrParameter(s, annotatedConstruct);
                 if (varElem != null) {
-                    if (varElem.getKind() == ElementKind.FIELD) {
-                        boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                        return getFieldJavaExpression(varElem, context, isOriginalReceiver);
-                    } else {
-                        return new LocalVariable(varElem);
-                    }
+                    return new LocalVariable(varElem);
                 }
             }
 
             // Field access
             TypeMirror receiverType = context.receiver.getType();
-            // originalReceiver is true if receiverType has not been reassigned.
-            boolean originalReceiver = true;
+            // isOriginalReceiver is true if receiverType has not been reassigned.
+            boolean isOriginalReceiver = true;
             VariableElement fieldElem = null;
             if (s.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
                 fieldElem = resolver.findField(s, receiverType, annotatedConstruct);
@@ -364,19 +368,19 @@ public class JavaExpressionParseUtil {
                         break;
                     }
                     receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-                    originalReceiver = false;
+                    isOriginalReceiver = false;
                 }
             }
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
                 FieldAccess fieldAccess =
-                        (FieldAccess) getFieldJavaExpression(fieldElem, context, originalReceiver);
+                        getFieldJavaExpression(fieldElem, context, isOriginalReceiver);
                 TypeElement scopeClassElement =
                         TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
-                if (!originalReceiver
+                if (!isOriginalReceiver
                         && !ElementUtils.isStatic(fieldElem)
                         && ElementUtils.isStatic(scopeClassElement)) {
                     throw new ParseRuntimeException(
-                            constructFlowexprParseError(
+                            constructJavaExpressionParseError(
                                     s,
                                     "a non-static field can't be referenced from a static inner class or enum"));
                 }
@@ -397,7 +401,7 @@ public class JavaExpressionParseUtil {
                 for (int i = 0; i < params.size(); i++) {
                     if (params.get(i).getName().contentEquals(s)) {
                         throw new ParseRuntimeException(
-                                constructFlowexprParseError(
+                                constructJavaExpressionParseError(
                                         s,
                                         String.format(
                                                 DependentTypesError.FORMAL_PARAM_NAME_STRING,
@@ -407,32 +411,39 @@ public class JavaExpressionParseUtil {
                 }
             }
 
-            throw new ParseRuntimeException(constructFlowexprParseError(s, "identifier not found"));
+            throw new ParseRuntimeException(
+                    constructJavaExpressionParseError(s, "identifier not found"));
         }
 
         @Override
         public JavaExpression visit(MethodCallExpr expr, JavaExpressionContext context) {
             setResolverField();
 
-            /// TODO: ***** Should only the method name use the changed scope?  I don't see why
-            /// arguments should use a different parsing context, and this might be buggy if
-            /// arguments coincidentally had the same name as a formal parameter.  A Java expression
-            /// can be with respect to its local scope.
-
+            JavaExpressionContext methodContext = context;
             // `expr` is a method call.  If it has scope (a receiver expression), change the parsing
-            // context so that identifiers are resolved with respect to the receiver.
+            // context so that the method name is resolved with respect to the receiver.
+            JavaExpression receiver = null;
             if (expr.getScope().isPresent()) {
-                JavaExpression receiver = expr.getScope().get().accept(this, context);
-                context = context.copyChangeToParsingMemberOfReceiver(receiver);
+                receiver = expr.getScope().get().accept(this, context);
+                methodContext = context.copyChangeToParsingMemberOfReceiver(receiver);
                 expr = expr.removeScope();
             }
 
             String methodName = expr.getNameAsString();
 
+            // Length of string literal: convert it to an integer literal.
+            if (methodName.equals("length") && receiver instanceof ValueLiteral) {
+                Object value = ((ValueLiteral) receiver).getValue();
+                if (value instanceof String) {
+                    return new ValueLiteral(
+                            types.getPrimitiveType(TypeKind.INT), ((String) value).length());
+                }
+            }
+
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
             if (!expr.getArguments().isEmpty()) {
-                JavaExpressionContext argContext = context.copyNotParsingMember();
+                JavaExpressionContext argContext = context;
                 for (Expression argument : expr.getArguments()) {
                     arguments.add(argument.accept(this, argContext));
                 }
@@ -443,7 +454,7 @@ public class JavaExpressionParseUtil {
                 methodElement =
                         getMethodElement(
                                 methodName,
-                                context.receiver.getType(),
+                                methodContext.receiver.getType(),
                                 annotatedConstruct,
                                 arguments,
                                 resolver);
@@ -475,12 +486,12 @@ public class JavaExpressionParseUtil {
                     throw new BugInCF("no detail message in " + t.getClass(), t);
                 }
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(expr.toString(), t.getMessage()));
+                        constructJavaExpressionParseError(expr.toString(), t.getMessage()));
             }
 
             // TODO: reinstate this test, but issue a warning that the user
             // can override, rather than halting parsing which the user cannot override.
-            /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
+            /*if (!PurityUtils.isDeterministic(SOMEcontext.checker.getAnnotationProvider(),
                     methodElement)) {
                 throw new JavaExpressionParseException(new DiagMessage(ERROR,
                         "flowexpr.method.not.deterministic",
@@ -495,16 +506,16 @@ public class JavaExpressionParseUtil {
                         staticClassReceiver,
                         arguments);
             } else {
-                if (context.receiver instanceof ClassName) {
+                if (methodContext.receiver instanceof ClassName) {
                     throw new ParseRuntimeException(
-                            constructFlowexprParseError(
+                            constructJavaExpressionParseError(
                                     expr.toString(),
                                     "a non-static method call cannot have a class name as a receiver"));
                 }
                 TypeMirror methodType =
                         TypesUtils.substituteMethodReturnType(
-                                methodElement, context.receiver.getType(), env);
-                return new MethodCall(methodType, methodElement, context.receiver, arguments);
+                                methodElement, methodContext.receiver.getType(), env);
+                return new MethodCall(methodType, methodElement, methodContext.receiver, arguments);
             }
         }
 
@@ -548,10 +559,10 @@ public class JavaExpressionParseUtil {
             }
 
             if (element == null) {
-                throw constructFlowexprParseError(methodName, "no such method");
+                throw constructJavaExpressionParseError(methodName, "no such method");
             }
             if (element.getKind() != ElementKind.METHOD) {
-                throw constructFlowexprParseError(
+                throw constructJavaExpressionParseError(
                         methodName, "not a method, but a " + element.getKind());
             }
 
@@ -574,7 +585,7 @@ public class JavaExpressionParseUtil {
                     return new ClassName(classSymbol.asType());
                 }
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(
+                        constructJavaExpressionParseError(
                                 expr.toString(),
                                 "could not find class "
                                         + expr.getNameAsString()
@@ -596,7 +607,7 @@ public class JavaExpressionParseUtil {
             TypeMirror result = convertTypeToTypeMirror(expr.getType(), context);
             if (result == null) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(
+                        constructJavaExpressionParseError(
                                 expr.toString(), "is an unparsable class literal"));
             }
             return new ClassName(result);
@@ -622,13 +633,135 @@ public class JavaExpressionParseUtil {
             TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
             if (arrayType == null) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(
+                        constructJavaExpressionParseError(
                                 expr.getElementType().asString(), "type not parsable"));
             }
             for (int i = 0; i < dimensions.size(); i++) {
                 arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
             }
             return new ArrayCreation(arrayType, dimensions, initializers);
+        }
+
+        @Override
+        public JavaExpression visit(UnaryExpr expr, JavaExpressionContext context) {
+            Tree.Kind treeKind = javaParserUnaryOperatorToTreeKind(expr.getOperator());
+            // This performs constant-folding for + and -; it could also do so for other operations.
+            switch (treeKind) {
+                case UNARY_PLUS:
+                    return expr.getExpression().accept(this, context);
+                case UNARY_MINUS:
+                    JavaExpression negatedResult = expr.getExpression().accept(this, context);
+                    if (negatedResult instanceof ValueLiteral) {
+                        return ((ValueLiteral) negatedResult).negate();
+                    }
+                    return new UnaryOperation(negatedResult.getType(), treeKind, negatedResult);
+                default:
+                    JavaExpression operand = expr.getExpression().accept(this, context);
+                    return new UnaryOperation(operand.getType(), treeKind, operand);
+            }
+        }
+
+        /**
+         * Convert a JavaParser unary operator to a TreeKind.
+         *
+         * @param op a JavaParser unary operator
+         * @return a TreeKind for the unary operator
+         */
+        Tree.Kind javaParserUnaryOperatorToTreeKind(UnaryExpr.Operator op) {
+            switch (op) {
+                case BITWISE_COMPLEMENT:
+                    return Tree.Kind.BITWISE_COMPLEMENT;
+                case LOGICAL_COMPLEMENT:
+                    return Tree.Kind.LOGICAL_COMPLEMENT;
+                case MINUS:
+                    return Tree.Kind.UNARY_MINUS;
+                case PLUS:
+                    return Tree.Kind.UNARY_PLUS;
+                case POSTFIX_DECREMENT:
+                    return Tree.Kind.POSTFIX_DECREMENT;
+                case POSTFIX_INCREMENT:
+                    return Tree.Kind.POSTFIX_INCREMENT;
+                case PREFIX_DECREMENT:
+                    return Tree.Kind.PREFIX_DECREMENT;
+                case PREFIX_INCREMENT:
+                    return Tree.Kind.PREFIX_INCREMENT;
+                default:
+                    throw new Error("unhandled " + op);
+            }
+        }
+
+        @Override
+        public JavaExpression visit(BinaryExpr expr, JavaExpressionContext context) {
+            JavaExpression leftJe = expr.getLeft().accept(this, context);
+            JavaExpression rightJe = expr.getRight().accept(this, context);
+            TypeMirror leftType = leftJe.getType();
+            TypeMirror rightType = rightJe.getType();
+            TypeMirror type;
+            // isSubtype() first does the cheaper test isSameType()
+            if (types.isSubtype(leftType, rightType)) {
+                type = rightType;
+            } else if (types.isSubtype(rightType, leftType)) {
+                type = leftType;
+            } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
+                    && (types.isSameType(leftType, stringTypeMirror)
+                            || types.isSameType(rightType, stringTypeMirror))) {
+                type = stringTypeMirror;
+            } else {
+                throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
+            }
+            return new BinaryOperation(
+                    type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
+        }
+
+        /**
+         * Convert a JavaParser binary operator to a TreeKind.
+         *
+         * @param op a JavaParser binary operator
+         * @return a TreeKind for the binary operator
+         */
+        Tree.Kind javaParserBinaryOperatorToTreeKind(BinaryExpr.Operator op) {
+            switch (op) {
+                case AND:
+                    return Tree.Kind.CONDITIONAL_AND;
+                case BINARY_AND:
+                    return Tree.Kind.AND;
+                case BINARY_OR:
+                    return Tree.Kind.OR;
+                case DIVIDE:
+                    return Tree.Kind.DIVIDE;
+                case EQUALS:
+                    return Tree.Kind.EQUAL_TO;
+                case GREATER:
+                    return Tree.Kind.GREATER_THAN;
+                case GREATER_EQUALS:
+                    return Tree.Kind.GREATER_THAN_EQUAL;
+                case LEFT_SHIFT:
+                    return Tree.Kind.LEFT_SHIFT;
+                case LESS:
+                    return Tree.Kind.LESS_THAN;
+                case LESS_EQUALS:
+                    return Tree.Kind.LESS_THAN_EQUAL;
+                case MINUS:
+                    return Tree.Kind.MINUS;
+                case MULTIPLY:
+                    return Tree.Kind.MULTIPLY;
+                case NOT_EQUALS:
+                    return Tree.Kind.NOT_EQUAL_TO;
+                case OR:
+                    return Tree.Kind.CONDITIONAL_OR;
+                case PLUS:
+                    return Tree.Kind.PLUS;
+                case REMAINDER:
+                    return Tree.Kind.REMAINDER;
+                case SIGNED_RIGHT_SHIFT:
+                    return Tree.Kind.RIGHT_SHIFT;
+                case UNSIGNED_RIGHT_SHIFT:
+                    return Tree.Kind.UNSIGNED_RIGHT_SHIFT;
+                case XOR:
+                    return Tree.Kind.XOR;
+                default:
+                    throw new Error("unhandled " + op);
+            }
         }
 
         /**
@@ -678,13 +811,13 @@ public class JavaExpressionParseUtil {
          *
          * @param fieldElem the field
          * @param context the context
-         * @param originalReceiver whether the receiver is the original one
+         * @param isOriginalReceiver whether the receiver is the original one
          * @return a JavaExpression for the given name
          */
-        private static JavaExpression getFieldJavaExpression(
+        private static FieldAccess getFieldJavaExpression(
                 VariableElement fieldElem,
                 JavaExpressionContext context,
-                boolean originalReceiver) {
+                boolean isOriginalReceiver) {
             TypeMirror receiverType = context.receiver.getType();
 
             TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -694,17 +827,17 @@ public class JavaExpressionParseUtil {
                 return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
             }
             JavaExpression locationOfField;
-            if (originalReceiver) {
+            if (isOriginalReceiver) {
                 locationOfField = context.receiver;
             } else {
                 locationOfField =
                         JavaExpression.fromNode(
-                                context.checkerContext.getAnnotationProvider(),
+                                context.checker.getAnnotationProvider(),
                                 new ImplicitThisNode(receiverType));
             }
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(
+                        constructJavaExpressionParseError(
                                 fieldElem.getSimpleName().toString(),
                                 "a non-static field cannot have a class name as a receiver."));
             }
@@ -723,13 +856,13 @@ public class JavaExpressionParseUtil {
                 String s, JavaExpressionContext context) {
             if (context.arguments == null) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(s, "no parameters found"));
+                        constructJavaExpressionParseError(s, "no parameters found"));
             }
             int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
 
             if (idx == 0) {
                 throw new ParseRuntimeException(
-                        constructFlowexprParseError(
+                        constructJavaExpressionParseError(
                                 "#0",
                                 "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
@@ -778,10 +911,10 @@ public class JavaExpressionParseUtil {
          */
         public final List<JavaExpression> arguments;
 
-        /** The checker context. */
-        public final BaseContext checkerContext;
+        /** The checker. */
+        public final SourceChecker checker;
         /**
-         * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
+         * Whether or not the JavaExpressionParser is parsing the "member" part of a member select.
          * If so, certain constructs like "#2" and local variables cannot occur.
          */
         public final boolean parsingMember;
@@ -789,20 +922,15 @@ public class JavaExpressionParseUtil {
         public final boolean useLocalScope;
 
         /**
-         * Creates a context for parsing a Java expression.
+         * Creates a context for parsing a Java expression, with "null" for arguments.
          *
          * @param receiver used to replace "this" in a Java expression and used to resolve
          *     identifiers in any Java expression with an implicit "this"
-         * @param arguments used to replace parameter references, e.g. #1, in Java expressions, null
-         *     if no arguments
-         * @param checkerContext used to create {@link
+         * @param checker used to create {@link
          *     org.checkerframework.dataflow.expression.JavaExpression}s
          */
-        public JavaExpressionContext(
-                JavaExpression receiver,
-                List<JavaExpression> arguments,
-                BaseContext checkerContext) {
-            this(receiver, arguments, checkerContext, false, true);
+        public JavaExpressionContext(JavaExpression receiver, SourceChecker checker) {
+            this(receiver, null, checker);
         }
 
         /**
@@ -812,22 +940,37 @@ public class JavaExpressionParseUtil {
          *     identifiers in any Java expression with an implicit "this"
          * @param arguments used to replace parameter references, e.g. #1, in Java expressions, null
          *     if no arguments
-         * @param checkerContext used to create {@link
+         * @param checker used to create {@link
          *     org.checkerframework.dataflow.expression.JavaExpression}s
-         * @param parsingMember whether or not the FlowExpressionParser is parsing the "member" part
+         */
+        public JavaExpressionContext(
+                JavaExpression receiver, List<JavaExpression> arguments, SourceChecker checker) {
+            this(receiver, arguments, checker, false, true);
+        }
+
+        /**
+         * Creates a context for parsing a Java expression.
+         *
+         * @param receiver used to replace "this" in a Java expression and used to resolve
+         *     identifiers in any Java expression with an implicit "this"
+         * @param arguments used to replace parameter references, e.g. #1, in Java expressions, null
+         *     if no arguments
+         * @param checker used to create {@link
+         *     org.checkerframework.dataflow.expression.JavaExpression}s
+         * @param parsingMember whether or not the JavaExpressionParser is parsing the "member" part
          *     of a member select
          * @param useLocalScope whether the TreePath should be used to find identifiers
          */
         private JavaExpressionContext(
                 JavaExpression receiver,
                 List<JavaExpression> arguments,
-                BaseContext checkerContext,
+                SourceChecker checker,
                 boolean parsingMember,
                 boolean useLocalScope) {
-            assert checkerContext != null;
+            assert checker != null;
             this.receiver = receiver;
             this.arguments = arguments;
-            this.checkerContext = checkerContext;
+            this.checker = checker;
             this.parsingMember = parsingMember;
             this.useLocalScope = useLocalScope;
         }
@@ -839,13 +982,13 @@ public class JavaExpressionParseUtil {
          * @param methodDeclaration used to translate parameter numbers in a Java expression to
          *     formal parameters of the method
          * @param enclosingTree used to look up fields and as the type of "this" in Java expressions
-         * @param checkerContext used to build JavaExpression
+         * @param checker used to build JavaExpression
          * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, Tree enclosingTree, BaseContext checkerContext) {
+                MethodTree methodDeclaration, Tree enclosingTree, SourceChecker checker) {
             return buildContextForMethodDeclaration(
-                    methodDeclaration, TreeUtils.typeOf(enclosingTree), checkerContext);
+                    methodDeclaration, TreeUtils.typeOf(enclosingTree), checker);
         }
 
         /**
@@ -856,13 +999,13 @@ public class JavaExpressionParseUtil {
          *     formal parameters of the method
          * @param currentPath the path to the method. It is used to find the enclosing class, which
          *     is used to look up fields and as the type of "this" in Java expressions.
-         * @param checkerContext used to build JavaExpression
+         * @param checker used to build JavaExpression
          * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, TreePath currentPath, BaseContext checkerContext) {
+                MethodTree methodDeclaration, TreePath currentPath, SourceChecker checker) {
             Tree classTree = TreePathUtil.enclosingClass(currentPath);
-            return buildContextForMethodDeclaration(methodDeclaration, classTree, checkerContext);
+            return buildContextForMethodDeclaration(methodDeclaration, classTree, checker);
         }
 
         /**
@@ -872,13 +1015,11 @@ public class JavaExpressionParseUtil {
          * @param methodDeclaration used to translate parameter numbers in a Java expression to
          *     formal parameters of the method
          * @param enclosingType used to look up fields and as type of "this" in Java expressions
-         * @param checkerContext used to build JavaExpression
+         * @param checker used to build JavaExpression
          * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration,
-                TypeMirror enclosingType,
-                BaseContext checkerContext) {
+                MethodTree methodDeclaration, TypeMirror enclosingType, SourceChecker checker) {
 
             ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
 
@@ -890,12 +1031,12 @@ public class JavaExpressionParseUtil {
                 receiver = new ImplicitThisNode(enclosingType);
             }
             JavaExpression receiverJe =
-                    JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
+                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableElement param : methodElt.getParameters()) {
                 parametersJe.add(new LocalVariable(param));
             }
-            return new JavaExpressionContext(receiverJe, parametersJe, checkerContext);
+            return new JavaExpressionContext(receiverJe, parametersJe, checker);
         }
 
         /**
@@ -903,23 +1044,23 @@ public class JavaExpressionParseUtil {
          *
          * @param lambdaTree a lambda
          * @param path the path to the lambda
-         * @param checkerContext used to build JavaExpression
+         * @param checker used to build JavaExpression
          * @return context created for {@code lambdaTree}
          */
         public static JavaExpressionContext buildContextForLambda(
-                LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
+                LambdaExpressionTree lambdaTree, TreePath path, SourceChecker checker) {
             TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
             Node receiver = new ImplicitThisNode(enclosingType);
             JavaExpression receiverJe =
-                    JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
+                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableTree arg : lambdaTree.getParameters()) {
                 parametersJe.add(
                         JavaExpression.fromNode(
-                                checkerContext.getAnnotationProvider(),
+                                checker.getAnnotationProvider(),
                                 new LocalVariableNode(arg, receiver)));
             }
-            return new JavaExpressionContext(receiverJe, parametersJe, checkerContext);
+            return new JavaExpressionContext(receiverJe, parametersJe, checker);
         }
 
         /**
@@ -927,17 +1068,17 @@ public class JavaExpressionParseUtil {
          * class declaration.
          *
          * @param classTree a class
-         * @param checkerContext used to build JavaExpression
+         * @param checker used to build JavaExpression
          * @return a {@link JavaExpressionContext} for the class {@code classTree} as seen at the
          *     class declaration
          */
         public static JavaExpressionContext buildContextForClassDeclaration(
-                ClassTree classTree, BaseContext checkerContext) {
+                ClassTree classTree, SourceChecker checker) {
             Node receiver = new ImplicitThisNode(TreeUtils.typeOf(classTree));
 
             JavaExpression receiverJe =
-                    JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
-            return new JavaExpressionContext(receiverJe, Collections.emptyList(), checkerContext);
+                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            return new JavaExpressionContext(receiverJe, Collections.emptyList(), checker);
         }
 
         /**
@@ -945,20 +1086,19 @@ public class JavaExpressionParseUtil {
          * methodInvocation}, as seen at the method use (i.e., at the call site).
          *
          * @param methodInvocation a method invocation
-         * @param checkerContext the javac components to use
+         * @param checker the javac components to use
          * @return a {@link JavaExpressionContext} for the method {@code methodInvocation}
          */
         public static JavaExpressionContext buildContextForMethodUse(
-                MethodInvocationNode methodInvocation, BaseContext checkerContext) {
+                MethodInvocationNode methodInvocation, SourceChecker checker) {
             Node receiver = methodInvocation.getTarget().getReceiver();
             JavaExpression receiverJe =
-                    JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
+                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
             List<JavaExpression> argumentsJe = new ArrayList<>();
             for (Node arg : methodInvocation.getArguments()) {
-                argumentsJe.add(
-                        JavaExpression.fromNode(checkerContext.getAnnotationProvider(), arg));
+                argumentsJe.add(JavaExpression.fromNode(checker.getAnnotationProvider(), arg));
             }
-            return new JavaExpressionContext(receiverJe, argumentsJe, checkerContext);
+            return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
 
         /**
@@ -966,23 +1106,21 @@ public class JavaExpressionParseUtil {
          * methodInvocation}, as seen at the method use (i.e., at the call site).
          *
          * @param methodInvocation a method invocation
-         * @param checkerContext the javac components to use
+         * @param checker the javac components to use
          * @return a {@link JavaExpressionContext} for the method {@code methodInvocation}
          */
         public static JavaExpressionContext buildContextForMethodUse(
-                MethodInvocationTree methodInvocation, BaseContext checkerContext) {
+                MethodInvocationTree methodInvocation, SourceChecker checker) {
             JavaExpression receiverJe =
-                    JavaExpression.getReceiver(
-                            methodInvocation, checkerContext.getAnnotationProvider());
+                    JavaExpression.getReceiver(methodInvocation, checker.getAnnotationProvider());
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
             List<JavaExpression> argumentsJe = new ArrayList<>(args.size());
             for (ExpressionTree argTree : args) {
-                argumentsJe.add(
-                        JavaExpression.fromTree(checkerContext.getAnnotationProvider(), argTree));
+                argumentsJe.add(JavaExpression.fromTree(checker.getAnnotationProvider(), argTree));
             }
 
-            return new JavaExpressionContext(receiverJe, argumentsJe, checkerContext);
+            return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
 
         /**
@@ -990,25 +1128,23 @@ public class JavaExpressionParseUtil {
          * {@link Node} as seen at the constructor use (i.e., at a "new" expression).
          *
          * @param n an object creation node
-         * @param checkerContext the checker context
+         * @param checker the checker
          * @return a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
          *     {@link Node} as seen at the constructor use (i.e., at a "new" expression)
          */
         public static JavaExpressionContext buildContextForNewClassUse(
-                ObjectCreationNode n, BaseContext checkerContext) {
+                ObjectCreationNode n, SourceChecker checker) {
 
             // This returns an Unknown with the type set to the class in which the
             // constructor is declared
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checkerContext.getAnnotationProvider(), n);
+            JavaExpression receiverJe = JavaExpression.fromNode(checker.getAnnotationProvider(), n);
 
             List<JavaExpression> argumentsJe = new ArrayList<>();
             for (Node arg : n.getArguments()) {
-                argumentsJe.add(
-                        JavaExpression.fromNode(checkerContext.getAnnotationProvider(), arg));
+                argumentsJe.add(JavaExpression.fromNode(checker.getAnnotationProvider(), arg));
             }
 
-            return new JavaExpressionContext(receiverJe, argumentsJe, checkerContext);
+            return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
 
         /**
@@ -1020,7 +1156,7 @@ public class JavaExpressionParseUtil {
          */
         public JavaExpressionContext copyChangeToParsingMemberOfReceiver(JavaExpression receiver) {
             return new JavaExpressionContext(
-                    receiver, arguments, checkerContext, /*parsingMember=*/ true, useLocalScope);
+                    receiver, arguments, checker, /*parsingMember=*/ true, useLocalScope);
         }
 
         /**
@@ -1033,7 +1169,7 @@ public class JavaExpressionParseUtil {
                 return this;
             }
             return new JavaExpressionContext(
-                    receiver, arguments, checkerContext, /*parsingMember=*/ false, useLocalScope);
+                    receiver, arguments, checker, /*parsingMember=*/ false, useLocalScope);
         }
 
         /**
@@ -1045,7 +1181,7 @@ public class JavaExpressionParseUtil {
          */
         public JavaExpressionContext copyAndSetUseLocalScope(boolean useLocalScope) {
             return new JavaExpressionContext(
-                    receiver, arguments, checkerContext, parsingMember, useLocalScope);
+                    receiver, arguments, checker, parsingMember, useLocalScope);
         }
 
         /**
@@ -1058,8 +1194,8 @@ public class JavaExpressionParseUtil {
             sj.add("JavaExpressionContext:");
             sj.add("receiver=" + receiver.toStringDebug());
             sj.add("arguments=" + arguments);
-            sj.add("checkerContext=" + "...");
-            // sj.add("checkerContext="+ checkerContext);
+            sj.add("checker=" + "...");
+            // sj.add("checker="+ checker);
             sj.add("parsingMember=" + parsingMember);
             sj.add("useLocalScope=" + useLocalScope);
             return sj.toString();
@@ -1099,6 +1235,14 @@ public class JavaExpressionParseUtil {
         }
     }
 
+    /**
+     * Get a JavaExpression from a VariableTree.
+     *
+     * @param provider gives the context
+     * @param tree the VariableTree
+     * @return a JavaExpression for the given VariableTree
+     * @throws JavaExpressionParseException if the expression string cannot be parsed
+     */
     public static JavaExpression fromVariableTree(AnnotatedTypeFactory provider, VariableTree tree)
             throws JavaExpressionParseException {
         Element elt = TreeUtils.elementFromDeclaration(tree);
@@ -1111,7 +1255,7 @@ public class JavaExpressionParseUtil {
         }
         JavaExpression receiverJe = JavaExpression.getImplicitReceiver(elt);
         JavaExpressionContext context =
-                new JavaExpressionContext(receiverJe, /*arguments=*/ null, provider.getContext());
+                new JavaExpressionContext(receiverJe, /*arguments=*/ null, provider.getChecker());
         return parse(
                 tree.getName().toString(),
                 context,
@@ -1171,7 +1315,7 @@ public class JavaExpressionParseUtil {
      * @return a {@link JavaExpressionParseException} for the expression {@code expr} with
      *     explanation {@code explanation}.
      */
-    private static JavaExpressionParseException constructFlowexprParseError(
+    private static JavaExpressionParseException constructJavaExpressionParseError(
             String expr, String explanation) {
         if (expr == null) {
             throw new Error("Must have an expression.");

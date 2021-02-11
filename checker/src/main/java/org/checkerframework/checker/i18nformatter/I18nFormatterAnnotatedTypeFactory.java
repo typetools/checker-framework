@@ -18,6 +18,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatBottom;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat;
+import org.checkerframework.checker.i18nformatter.util.I18nFormatUtil;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;

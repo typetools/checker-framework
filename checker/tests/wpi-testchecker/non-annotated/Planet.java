@@ -50,7 +50,7 @@ public enum Planet {
     }
 
     void test2() {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         test(foo);
     }
 }
