@@ -123,29 +123,27 @@ public class JavaExpressionParseUtil {
      * Return its representation as a {@link JavaExpression}, or throw a {@link
      * JavaExpressionParseException}.
      *
-     * <p>A {@link TreePath}, {@code somePath}, is required to use the underlying javac API to
-     * convert from Strings to {@link Element}s even when the information could be deduced from
-     * elements alone.
-     *
-     * <p>If {@code localPath} is nonnull, then identifiers may be parsed to local variables in
-     * scope at {@code localPath}. In this case, it is as if the identifier was written at the
-     * location of {@code localPath}. If {@code localPath} is null, then no identifier can be parsed
-     * to a local variable.
+     * <p>If {@code localPath} is nonnull, then identifiers are parsed as if the identifier was
+     * written at the location of {@code localPath}. This means identifiers will be parsed to local
+     * variables in scope at {@code localPath} when possible. If {@code localPath} is null, then no
+     * identifier can be parsed to a local variable. In either case, the parameter syntax, e.g. #1,
+     * is always parsed to the arguments in {@code context}. This is because a parameter of a lambda
+     * can refer both to local variables in scope at its declaration and to a parameter of the
+     * lambda.
      *
      * @param expression a Java expression to parse
      * @param context information about any receiver and arguments
-     * @param somePath path to use javac API
      * @param localPath if non-null, the location at which to parse identifiers to local variables
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
     public static JavaExpression parse(
-            String expression,
-            JavaExpressionContext context,
-            TreePath somePath,
-            @Nullable TreePath localPath)
+            String expression, JavaExpressionContext context, @Nullable TreePath localPath)
             throws JavaExpressionParseException {
-
+        // A TreePath is required to use the underlying javac API to convert from Strings to
+        // Elements even when the information could be deduced from elements alone.  So use the the
+        // path to the current CompilationUnit.
+        TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
         Expression expr;
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
