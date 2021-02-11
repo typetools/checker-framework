@@ -512,7 +512,7 @@ public abstract class JavaExpression {
      * @param tree a variable tree
      * @return a JavaExpression for {@code tree}
      */
-    public static @Nullable JavaExpression fromVariableTree(VariableTree tree) {
+    public static JavaExpression fromVariableTree(VariableTree tree) {
         return fromVariableElement(TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree));
     }
 
@@ -523,15 +523,13 @@ public abstract class JavaExpression {
      * @param ele element whose JavaExpression is returned
      * @return the Java expression corresponding to the given variable element {@code ele}
      */
-    private static @Nullable JavaExpression fromVariableElement(TypeMirror typeOfEle, Element ele) {
-        JavaExpression result;
+    private static JavaExpression fromVariableElement(TypeMirror typeOfEle, Element ele) {
         switch (ele.getKind()) {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
             case PARAMETER:
-                result = new LocalVariable(ele);
-                break;
+                return new LocalVariable(ele);
             case FIELD:
                 // Implicit access expression, such as "this" or a class name
                 JavaExpression fieldAccessExpression;
@@ -542,12 +540,12 @@ public abstract class JavaExpression {
                 } else {
                     fieldAccessExpression = new ThisReference(enclosingTypeElement);
                 }
-                result = new FieldAccess(fieldAccessExpression, typeOfEle, (VariableElement) ele);
-                break;
+                return new FieldAccess(fieldAccessExpression, typeOfEle, (VariableElement) ele);
             default:
-                result = null;
+                throw new BugInCF(
+                        "Unexpected kind of VariableTree: kind: %s element: %s",
+                        ele.getKind(), ele);
         }
-        return result;
     }
 
     private static JavaExpression fromMemberSelect(
