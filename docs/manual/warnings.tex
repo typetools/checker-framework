@@ -409,11 +409,14 @@ information regardless of the \<-AassumeAssertionsAreEnabled> and
 \subsectionAndLabel{Suppressing warnings and defensive programming}{defensive-programming}
 
 This section explains the distinction between two different uses for
-assertions (and for related methods like JUnit's \<Assert.assertNotNull>).
+assertions:
+debugging a program (also known as defensive programming) versus specifying a program.
+The discussion also applies to methods like JUnit's \<Assert.assertNotNull>.
 
-Assertions are commonly used for two distinct purposes:  documenting how
-the program works and debugging the program when it does not work
-correctly.  By default, the Checker Framework assumes that each assertion
+The purpose of assertions is to aid debuging by throwing an exception
+when a program does not work correctly.  Sometimes, programmers use assertions for a
+different  purpose:  documenting how
+the program works.  By default, the Checker Framework assumes that each assertion
 is used for debugging:  the assertion might fail at run time, and the programmer
 wishes to be informed at compile time about such possible run-time errors.  On
 the other hand, if you write the \<@AssumeAssertion> string in the \<assert>
@@ -421,10 +424,7 @@ message, then the Checker Framework assumes that you have used some other
 technique to verify that the assertion can never fail at run time, so the
 checker assumes the assertion passes and does not issue a warning.
 
-Distinguishing the purpose of each assertion is important for precise
-type-checking.
-% In particular, the Checker Framework would miss many errors
-% if it assumed that every assertion succeeds at run time.
+% Here is an example of an assertion used for debugging.
 Suppose that a
 programmer encounters a failing test, adds an assertion to aid debugging, and fixes the
 test.  The programmer leaves the assertion in the program if the programmer
@@ -468,39 +468,48 @@ that the assertion always succeeds at run time.
 % \end{enumerate}
 
 
-Sometimes methods such as
-\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} are used
-instead of assertions.  Just as for assertions, you can treat them as
-debugging aids or as documentation.
+Methods such as
+\sunjavadoc{java.base/java/util/Objects.html\#requireNonNull-T-}{Objects.requireNonNull},
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-}, and
+Guava's \<verifyNotNull> and \<checkNotNull> are
+similar to assertions.  Just as for assertions, their intended use is as
+debugging aids, but some programmers may use them as documentation of facts
+that have been verified in some other manner.
 If you know that a particular codebase uses
 a nullness-checking method not for defensive programming but to indicate
-facts that are guaranteed to be true (that is, these assertions will never
+facts that are guaranteed to be true (that is, these assertions cannot
 fail at run time), then you can suppress
 warnings related to it.
-Annotate its definition just as
-\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is annotated (see the
-source code for the Checker Framework).
-% TODO:
-% For an assert statement, XXXXX.
-Also, be sure to document the intention in the method's Javadoc, so that
-programmers do not
-accidentally misuse it for defensive programming.
+\begin{itemize}
+\item
+  If the method is defined in your source code,
+  annotate its definition just as
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is annotated (see the
+  source code for the Checker Framework).
+  Also, be sure to document the intention in the method's Javadoc, so that
+  programmers do not
+  accidentally misuse it for defensive programming.
+\item
+  If the method is defined in an external library, write a stub file that
+  changes the method's annotations, or use \<-AskipUses> to make the
+  Checker Framework ignore all calls to an entire class.
+\end{itemize}
 
 
 If you are annotating a codebase that already contains precondition checks,
 such as:
 
 \begin{Verbatim}
-  public String get(String key, String def) {
+  public String myGet(String key, String def) {
     checkNotNull(key, "key"); // NOI18N
     ...
   }
 \end{Verbatim}
 
 \noindent
-then you should mark the appropriate parameter as \<@NonNull> (which is the
-default).  This will prevent the checker from issuing a warning about the
-\<checkNotNull> call.
+then you should mark the appropriate parameter of \<myGet> as \<@NonNull> (which is the
+default).  The checker will not issue a warning about the
+\<checkNotNull> call, but will issue a warning at incorrect calls to \<myGet>.
 
 
 
