@@ -263,14 +263,15 @@ public class Resolver {
     }
 
     /**
-     * Finds the class with {@code name} in a given type.
+     * Finds the nested class with {@code name} in a given type.
      *
      * @param name the name of the class
      * @param type the type
      * @param path the tree path
      * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
      */
-    public @Nullable ClassSymbol findClassInType(String name, TypeMirror type, TreePath path) {
+    public @Nullable ClassSymbol findNestedClassInType(
+            String name, TypeMirror type, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);

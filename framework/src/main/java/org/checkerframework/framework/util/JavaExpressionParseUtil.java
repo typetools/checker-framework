@@ -425,7 +425,7 @@ public class JavaExpressionParseUtil {
                     return new ClassName(searchType);
                 }
                 Element classElem =
-                        resolver.findClassInType(identifier, searchType, annotatedConstruct);
+                        resolver.findNestedClassInType(identifier, searchType, annotatedConstruct);
                 if (classElem != null) {
                     TypeMirror classType = ElementUtils.getType(classElem);
                     return new ClassName(classType);
