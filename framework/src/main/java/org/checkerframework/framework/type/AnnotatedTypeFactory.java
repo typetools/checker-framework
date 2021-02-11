@@ -1948,7 +1948,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private AnnotatedTypeMirror glbIntersection(AnnotatedIntersectionType i, Element elt) {
         TypeMirror definesElt = elt.getEnclosingElement().asType();
         AnnotatedTypeMirror result = null;
-        for (AnnotatedTypeMirror bound : i.directSuperTypes()) {
+        for (AnnotatedTypeMirror bound : i.directSupertypes()) {
             //  Only consider the bounds that have the element.
             TypeMirror boundTypeMirror = bound.getUnderlyingType();
             // Gross way to drop type arguments.  It would be better to do viewpoint-adaptation.
