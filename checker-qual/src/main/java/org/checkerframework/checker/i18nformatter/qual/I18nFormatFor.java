@@ -32,11 +32,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(I18nUnknownFormat.class)
 public @interface I18nFormatFor {
     /**
-     * Java expression that is an array that can be passed as the second argument to {@link
-     * java.text.MessageFormat#format(String, Object...)}, when the annotated String is the first
-     * argument.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+     * The value should be a {@code #} followed by the 1-based index of the arguments of the format
+     * method, e.g. {@code "#2"}.
      */
     String value();
 }
