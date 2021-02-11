@@ -323,6 +323,8 @@ public class I18nFormatterTreeUtil {
                     if (paramIndex == -1) {
                         // report errors here
                         checker.reportError(tree, "i18nformat.invalid.formatfor");
+                    } else {
+                        paramIndex--;
                     }
                     break;
                 }
