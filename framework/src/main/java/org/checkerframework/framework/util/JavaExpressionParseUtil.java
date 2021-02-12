@@ -893,6 +893,21 @@ public class JavaExpressionParseUtil {
         return result;
     }
 
+    /**
+     * Returns the 1-based index of the formal parameter that occurs in {@code s} or -1 if no formal
+     * parameter occurs.
+     *
+     * @param s a Java expression
+     * @return the 1-based indices of the formal parameter that occur in {@code s} or -1
+     */
+    public static int parameterIndex(String s) {
+        Matcher matcher = ANCHORED_PARAMETER_PATTERN.matcher(s);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return -1;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     /// Contexts
     ///
