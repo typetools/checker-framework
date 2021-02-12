@@ -49,7 +49,6 @@ import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
-import com.sun.tools.javac.code.Type.ClassType;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Target;
@@ -1671,15 +1670,17 @@ public class AnnotationFileParser {
                 return javaParserType.equals(PrimitiveType.shortType());
 
             case DECLARED:
+            case TYPEVAR:
                 if (!(javaParserType instanceof ClassOrInterfaceType)) {
                     return false;
                 }
-                ClassType javacClassType = (ClassType) javacType;
+                com.sun.tools.javac.code.Type javacTypeInternal =
+                        (com.sun.tools.javac.code.Type) javacType;
                 ClassOrInterfaceType javaParserClassType = (ClassOrInterfaceType) javaParserType;
 
                 // Use asString() because toString() includes annotations.
                 String javaParserString = javaParserClassType.asString();
-                Element javacElement = javacClassType.asElement();
+                Element javacElement = javacTypeInternal.asElement();
                 // Check both fully-qualified name and simple name.
                 return javacElement.toString().equals(javaParserString)
                         || javacElement.getSimpleName().contentEquals(javaParserString);
@@ -1689,15 +1690,6 @@ public class AnnotationFileParser {
                         && sameType(
                                 ((ArrayType) javacType).getComponentType(),
                                 javaParserType.asArrayType().getComponentType());
-
-            case TYPEVAR:
-                throw new BugInCF(
-                        "not yet implemented: %s [%s %s], %s [%s]",
-                        javacType,
-                        javacType.getKind(),
-                        javacType.getClass(),
-                        javaParserType,
-                        javaParserType.getClass());
 
             default:
                 throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
