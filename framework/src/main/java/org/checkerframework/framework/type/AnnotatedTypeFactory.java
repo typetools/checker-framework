@@ -151,6 +151,9 @@ import scenelib.annotations.el.AMethod;
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
+    /** Debugging related to issue #3094. */
+    private static final boolean debug3094 = false;
+
     /** Whether to print verbose debugging messages about stub files. */
     private final boolean debugStubParser;
 
@@ -1946,6 +1949,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
+        if (debug3094) {
+            System.out.printf(
+                    "methodFromUse(%s): methodElt=%s, enclosing=%s%n",
+                    tree, methodElt, methodElt.getEnclosingElement());
+        }
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
         if (receiverType == null && TreeUtils.isSuperConstructorCall(tree)) {
             // super() calls don't have a receiver, but they should be view-point adapted as if

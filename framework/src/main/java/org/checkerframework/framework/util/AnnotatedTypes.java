@@ -59,6 +59,11 @@ import org.plumelib.util.StringsPlume;
  * Types}.
  */
 public class AnnotatedTypes {
+
+    /** Debugging related to issue #3094. */
+    @SuppressWarnings("UnusedVariable")
+    private static final boolean debug3094 = false;
+
     // Class cannot be instantiated.
     private AnnotatedTypes() {
         throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
@@ -471,7 +476,12 @@ public class AnnotatedTypes {
                 }
                 return result;
             case UNION:
+                return substituteTypeVariables(
+                        types, atypeFactory, receiverType, member, memberType);
             case DECLARED:
+                System.out.printf(
+                        "About to call substituteTypeVariables(%s, %s, %s)%n",
+                        receiverType, member, memberType);
                 return substituteTypeVariables(
                         types, atypeFactory, receiverType, member, memberType);
             default:
