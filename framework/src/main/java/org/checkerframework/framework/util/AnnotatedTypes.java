@@ -497,16 +497,16 @@ public class AnnotatedTypes {
                 return substituteTypeVariables(
                         types, atypeFactory, receiverType, member, memberType);
             case DECLARED:
-                AnnotatedTypeMirror withOverrides =
+                AnnotatedTypeMirror memberTypeWithOverrides =
                         applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
                 System.out.printf(
                         "About to call substituteTypeVariables(%s, %s, %s)%n",
-                        receiverType, member, withOverrides);
-                AnnotatedTypeMirror result =
+                        receiverType, member, memberTypeWithOverrides);
+                AnnotatedTypeMirror declaredResult =
                         substituteTypeVariables(
-                                types, atypeFactory, receiverType, member, withOverrides);
-                System.out.printf("  substituteTypeVariables => %s%n", result);
-                return result;
+                                types, atypeFactory, receiverType, member, memberTypeWithOverrides);
+                System.out.printf("  substituteTypeVariables => %s%n", declaredResult);
+                return declaredResult;
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
         }
