@@ -63,7 +63,7 @@ public class AnnotatedTypes {
 
     /** Debugging related to issue #3094. */
     @SuppressWarnings("UnusedVariable")
-    private static final boolean debug3094 = false;
+    private static final boolean debug3094 = true;
 
     /** Class cannot be instantiated. */
     private AnnotatedTypes() {
@@ -497,10 +497,12 @@ public class AnnotatedTypes {
                 return substituteTypeVariables(
                         types, atypeFactory, receiverType, member, memberType);
             case DECLARED:
+                System.out.printf("memberType = %s%n", memberType);
                 AnnotatedTypeMirror memberTypeWithOverrides =
                         applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
+                System.out.printf("  memberTypeWithOverrides = %s%n", memberTypeWithOverrides);
                 System.out.printf(
-                        "About to call substituteTypeVariables():%n  %s%n  %s$n  %s%n",
+                        "About to call substituteTypeVariables():%n  receiverType = %s%n  %s%n  %s%n",
                         receiverType, member, memberTypeWithOverrides);
                 AnnotatedTypeMirror declaredResult =
                         substituteTypeVariables(
