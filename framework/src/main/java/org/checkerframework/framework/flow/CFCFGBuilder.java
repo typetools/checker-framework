@@ -116,11 +116,12 @@ public class CFCFGBuilder extends CFGBuilder {
     }
 
     /**
-     * A specialized phase-one CFG builder that is aware of Checker Framework annotated types. It is
-     * responsible for: 1) translating foreach loops in a way that is aware of CF annotated types,
-     * 2) registering the containing elements of artificial trees with the relevant type factories,
-     * and 3) generating appropriate assertion CFG structure in the presence of @AssumeAssertion
-     * assertion strings which mention the checker or its supercheckers.
+     * A specialized phase-one CFG builder, with a few modifications that make use of the type
+     * factory. It is responsible for: 1) translating foreach loops so that the declarations of
+     * their iteration variables have the right annotations, 2) registering the containing elements
+     * of artificial trees with the relevant type factories, and 3) generating appropriate assertion
+     * CFG structure in the presence of @AssumeAssertion assertion strings which mention the checker
+     * or its supercheckers.
      */
     protected static class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
         /** The associated checker. */
@@ -151,23 +152,6 @@ public class CFCFGBuilder extends CFGBuilder {
 
         @Override
         public void handleArtificialTree(Tree tree) {
-            BaseTypeChecker ultimateParent = checker.getUltimateParentChecker();
-            for (BaseTypeChecker subchecker : ultimateParent.getSubcheckers()) {
-                handleArtificialTreeImpl(subchecker.getTypeFactory(), tree);
-            }
-            handleArtificialTreeImpl(ultimateParent.getTypeFactory(), tree);
-        }
-
-        /**
-         * Adds a mapping from the artificial tree to its enclosing element, for the given type
-         * factory.
-         *
-         * @param factory the factory with which to register the tree
-         * @param tree an artificial tree created on the current path
-         */
-        private void handleArtificialTreeImpl(
-                GenericAnnotatedTypeFactory<?, ?, ?, ?> factory, Tree tree) {
-            // Record the method or class that encloses the newly created tree.
             MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);

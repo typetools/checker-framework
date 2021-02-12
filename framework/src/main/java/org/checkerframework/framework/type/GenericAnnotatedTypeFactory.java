@@ -277,7 +277,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Subcheckers share the same ControlFlowGraph for each analyzed code statement. This maps from
      * code statements to the shared control flow graphs. This map is null in all subcheckers (i.e.
-     * it is null exactly when {@code this.checker.parentChecker} is non-null, and vice-versa).
+     * any checker for which getParentChecker() returns non-null). This map is also unused (and
+     * therefore null) for a checker with no subcheckers with which it can share CFGs.
      *
      * <p>The initial capacity of the map is set by {@link #getCacheSize()}.
      */
@@ -427,7 +428,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
             if (this.checker.getParentChecker() == null) {
                 // This is an ultimate parent checker, so after it runs the shared CFG it is using
-                // will be dead.
+                // will no longer be needed, and can be cleared.
                 this.shouldClearSubcheckerSharedCFGs = true;
                 if (this.checker.getSubcheckers().isEmpty()) {
                     // If this checker has no subcheckers, then any maps that are currently
