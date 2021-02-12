@@ -482,8 +482,11 @@ public class AnnotatedTypes {
                 System.out.printf(
                         "About to call substituteTypeVariables(%s, %s, %s)%n",
                         receiverType, member, memberType);
-                return substituteTypeVariables(
-                        types, atypeFactory, receiverType, member, memberType);
+                AnnotatedTypeMirror result =
+                        substituteTypeVariables(
+                                types, atypeFactory, receiverType, member, memberType);
+                System.out.printf("  substituteTypeVariables => %s%n", result);
+                return result;
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
         }
