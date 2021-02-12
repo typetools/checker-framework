@@ -321,10 +321,6 @@ public class AnnotationFileElementTypes {
         return Collections.emptySet();
     }
 
-    ///
-    /// End of public methods, private helper methods follow
-    ///
-
     /**
      * Returns the most specific fake override for the given element, when used as a member of the
      * given type.
@@ -346,7 +342,6 @@ public class AnnotationFileElementTypes {
         ExecutableElement method = (ExecutableElement) elt;
 
         TypeMirror methodReceiverType = method.getReceiverType();
-        // PROBLEM: methodReceiverType should be non-null, but I am observing null at run time.
         if (methodReceiverType != null && methodReceiverType.getKind() == TypeKind.NONE) {
             return null;
         }

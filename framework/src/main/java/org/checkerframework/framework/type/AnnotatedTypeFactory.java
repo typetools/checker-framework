@@ -90,7 +90,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -1880,16 +1879,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
         if (receiver != null) {
             return getAnnotatedType(receiver);
-            // Experimentally commenting out.
-            // AnnotatedTypeMirror result = getAnnotatedType(receiver);
-            // // Some clients assume the receiver type is an AnnotatedExecutableType.
-            // // But, is this premature and the LUB should be performed later?
-            // if (result.getKind() == TypeKind.UNION) {
-            //     result =
-            //             lubUnion((AnnotatedUnionType) result,
-            // TreeUtils.elementFromUse(expression));
-            // }
-            // return result;
         }
 
         Element element = TreeUtils.elementFromUse(expression);
@@ -1901,79 +1890,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Given a union type, return the lub of its disjuncts.
-     *
-     * @param u a union type
-     * @param elt an element that the result should contain; may be null, in which case the method
-     *     fails if it is needed
-     * @return the lub of its disjucts
-     */
-    public AnnotatedDeclaredType lubUnion(AnnotatedUnionType u, Element elt) {
-        AnnotatedTypeMirror result = null;
-        for (AnnotatedDeclaredType adt : u.getAlternatives()) {
-            if (result == null) {
-                result = adt;
-            } else {
-                result = AnnotatedTypes.leastUpperBound(this, result, adt);
-            }
-        }
-        switch (result.getKind()) {
-            case DECLARED:
-                return (AnnotatedDeclaredType) result;
-            case INTERSECTION:
-                // Need to find the type(s) that have the desired member.
-
-                AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) result;
-                if (elt == null) {
-                    throw new BugInCF(
-                            "Intersection but don't know what element to look for. "
-                                    + intersection);
-                }
-                return (AnnotatedDeclaredType) glbIntersection(intersection, elt);
-            default:
-                throw new BugInCF("Unexpected (" + result.getKind() + "): " + result);
-        }
-    }
-
-    /**
-     * Given an intersection type, return the glb of its bounds.
-     *
-     * @param i an intersection type
-     * @param elt an element that the result should contain
-     * @return the glb of its bounds
-     */
-    private AnnotatedTypeMirror glbIntersection(AnnotatedIntersectionType i, Element elt) {
-        TypeMirror definesElt = elt.getEnclosingElement().asType();
-        AnnotatedTypeMirror result = null;
-        for (AnnotatedTypeMirror bound : i.directSupertypes()) {
-            //  Only consider the bounds that have the element.
-            TypeMirror boundTypeMirror = bound.getUnderlyingType();
-            // Gross way to drop type arguments.  It would be better to do viewpoint-adaptation.
-            if (bound.getKind() == TypeKind.DECLARED) {
-                boundTypeMirror = ((DeclaredType) boundTypeMirror).asElement().asType();
-            }
-            if (types.isSubtype(boundTypeMirror, definesElt)) {
-                if (result == null) {
-                    result = bound;
-                } else {
-                    // TODO: something like this?
-                    // result = AnnotatedTypes.greatestLowerBound(this, result, bound);
-
-                    throw new BugInCF(
-                            "two bounds match: glbIntersection(%s, %s, enclosing=%s)%n",
-                            i, elt, elt.getEnclosingElement());
-                }
-            }
-        }
-        if (result == null) {
-            throw new BugInCF(
-                    "null result: glbIntersection(%s, %s, enclosing=%s)%n",
-                    i, elt, elt.getEnclosingElement());
-        }
-        return result;
     }
 
     /** The type for an instantiated generic method or constructor. */

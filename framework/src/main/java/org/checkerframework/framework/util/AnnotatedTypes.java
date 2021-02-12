@@ -348,23 +348,6 @@ public class AnnotatedTypes {
             ExecutableElement elem,
             AnnotatedExecutableType type) {
         return (AnnotatedExecutableType) asMemberOf(types, atypeFactory, t, (Element) elem, type);
-        // AnnotatedTypeMirror result = asMemberOf(types, atypeFactory, t, (Element) elem, type);
-        // try {
-        //     // TODO: This may be a union, for example when calling a method within a catch block.
-        //     return (AnnotatedExecutableType) result;
-        // } catch (Throwable e) {
-        //     throw new Error(
-        //             String.format(
-        //                     "trying to cast %s in asMemberOf(%s, receiver=%s, elem=%s in %s,
-        // unsubstituted type=%s)",
-        //                     result,
-        //                     atypeFactory.getClass().getSimpleName(),
-        //                     t,
-        //                     elem,
-        //                     elem.getEnclosingElement(),
-        //                     type),
-        //             e);
-        // }
     }
 
     /**
@@ -493,7 +476,7 @@ public class AnnotatedTypes {
                         types, atypeFactory, receiverType, member, memberType);
             case DECLARED:
                 AnnotatedTypeMirror memberTypeWithOverrides =
-                        applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
+                        applyFakeOverrides(atypeFactory, receiverType, member, memberType);
                 return substituteTypeVariables(
                         types, atypeFactory, receiverType, member, memberTypeWithOverrides);
             default:
@@ -504,16 +487,13 @@ public class AnnotatedTypes {
     /**
      * Given a member and its type, returns the type with fake overrides applied to it.
      *
-     * @param types type utilities
      * @param atypeFactory the type factory
      * @param receiverType the type of the class that contains member (or a subtype of it)
      * @param member a type member, such as a method or field
      * @param memberType the type of {@code member}
      * @return {@code memberType}, adjusted according to fake overrides
      */
-    @SuppressWarnings("UnusedVariable") // TEMPORARY
     private static AnnotatedTypeMirror applyFakeOverrides(
-            Types types,
             AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror receiverType,
             Element member,
@@ -528,12 +508,6 @@ public class AnnotatedTypes {
                 (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
         if (methodType == null) {
             methodType = (AnnotatedExecutableType) memberType;
-        } else {
-            if (debug3094) {
-                System.out.printf(
-                        "applied a fake override:%n  before:  %s%n  after : %s%n",
-                        memberType, methodType);
-            }
         }
         return methodType;
     }

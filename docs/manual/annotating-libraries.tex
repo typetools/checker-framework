@@ -521,6 +521,9 @@ a method that is inherited.  The Java signature of the method must be
 identical to that in the superclass where it is actually defined, but you
 can change its annotations.
 
+This feature currently only works for return types.  In the future, it will
+be extended to formal parameters and fields.
+
 As an example, consider a type system that tracks whether a value is
 cryptographically secure.  Its stub file would contain:
 
