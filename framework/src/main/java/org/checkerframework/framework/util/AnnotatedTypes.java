@@ -63,7 +63,7 @@ public class AnnotatedTypes {
 
     /** Debugging related to issue #3094. */
     @SuppressWarnings("UnusedVariable")
-    private static final boolean debug3094 = true;
+    private static final boolean debug3094 = false;
 
     /** Class cannot be instantiated. */
     private AnnotatedTypes() {
