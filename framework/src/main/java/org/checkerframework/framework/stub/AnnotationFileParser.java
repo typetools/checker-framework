@@ -114,6 +114,7 @@ import org.checkerframework.javacutil.Pair;
 public class AnnotationFileParser {
 
     /** Debugging related to issue #3094. */
+    @SuppressWarnings("UnusedVariable")
     private static final boolean debug3094 = false;
 
     /**
