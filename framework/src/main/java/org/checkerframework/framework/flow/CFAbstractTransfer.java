@@ -601,21 +601,9 @@ public abstract class CFAbstractTransfer<
      */
     private AnnotationMirror standardizeAnnotationFromContract(
             AnnotationMirror annoFromContract, JavaExpressionContext jeContext) {
-        if (!analysis.dependentTypesHelper.hasDependentAnnotations()) {
-            return annoFromContract;
-        }
-
-        // TODO: common implementation with
-        // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
-        AnnotationMirror standardized =
-                analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
-                        jeContext, null, annoFromContract, false);
-        if (standardized != null) {
-            // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
-            // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
-            return standardized;
-        }
-        return annoFromContract;
+        // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
+        return analysis.dependentTypesHelper.viewpointAdaptQualifierFromContract(
+                annoFromContract, jeContext, /*errorTree=*/ null);
     }
 
     /**

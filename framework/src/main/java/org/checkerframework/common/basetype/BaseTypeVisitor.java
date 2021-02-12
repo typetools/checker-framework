@@ -958,8 +958,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotationMirror annotation = contract.annotation;
 
             annotation =
-                    atypeFactory.standardizeAnnotationFromContract(
-                            annotation, jeContext, getCurrentPath());
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
 
             JavaExpression exprJe;
             try {
@@ -1687,8 +1688,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotationMirror anno = p.annotation;
 
             anno =
-                    atypeFactory.standardizeAnnotationFromContract(
-                            anno, jeContext, getCurrentPath());
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .viewpointAdaptQualifierFromContract(anno, jeContext, tree);
 
             JavaExpression exprJe;
             try {
@@ -4207,7 +4209,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // where the contract was defined.  For example, methodTree might be an overriding
         // definition, and the contract might be for a superclass.
         MethodTree methodTree = visitorState.getMethodTree();
-        TreePath path = atypeFactory.getPath(methodTree);
         JavaExpressionContext jeContext =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodTree, methodType.getReceiverType().getUnderlyingType(), checker);
@@ -4216,7 +4217,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotationMirror annotation = p.annotation;
 
             annotation =
-                    atypeFactory.standardizeAnnotationFromContract(annotation, jeContext, path);
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
 
             try {
                 // TODO: currently, these expressions are parsed many times.

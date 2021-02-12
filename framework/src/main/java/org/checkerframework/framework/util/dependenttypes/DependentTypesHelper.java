@@ -405,6 +405,35 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Viewpoint-adapt a type qualifier obtained from a contract to {@code jeContext}.
+     *
+     * @param annoFromContract a qualifier that was written on a method declaration
+     * @param jeContext the context to use for standardization
+     * @param errorTree if non-null, report any errors that occur will parsing the dependent type
+     *     annotation
+     * @return the viewpoint-adapted annotation, or the argument if it is not a dependant type
+     *     annotation
+     */
+    public AnnotationMirror viewpointAdaptQualifierFromContract(
+            AnnotationMirror annoFromContract,
+            JavaExpressionContext jeContext,
+            @Nullable Tree errorTree) {
+        if (!hasDependentAnnotations()) {
+            return annoFromContract;
+        }
+
+        AnnotationMirror standardized =
+                standardizeAnnotationIfDependentType(jeContext, null, annoFromContract, false);
+        if (standardized == null) {
+            return annoFromContract;
+        }
+        if (errorTree != null) {
+            checkAnnotation(standardized, errorTree);
+        }
+        return standardized;
+    }
+
+    /**
      * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
      * methodDeclTree}. This changes occurrences of formal parameter names to "#2" syntax, and it
      * removes expressions that contain other local variables.
