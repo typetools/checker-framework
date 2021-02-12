@@ -39,9 +39,6 @@ import org.checkerframework.javacutil.SystemUtil;
 /** Holds information about types parsed from annotation files (stub files). */
 public class AnnotationFileElementTypes {
 
-    /** Debugging related to issue #3094. */
-    private static final boolean debug3094 = false;
-
     /** Annotations from annotation files (but not from annotated JDK files). */
     private final AnnotationFileAnnotations annotationFileAnnos;
 
@@ -291,20 +288,6 @@ public class AnnotationFileElementTypes {
         }
         parseEnclosingClass(e);
         AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
-        boolean logging = debug3094 && e.toString().contains("describeImages");
-        if (logging) {
-            Element enclosing = e.getEnclosingElement();
-            System.out.printf(
-                    "AFET.getAnnotatedTypeMirror(%s, enclosing=%s) => %s%n", e, enclosing, type);
-            System.out.printf("  enclosing's enclosed:%n");
-            for (Element enclosed : enclosing.getEnclosedElements()) {
-                if (enclosed.toString().contains("describeImages")) {
-                    System.out.printf(
-                            "    %s [%s] [enclosing=%s]%n",
-                            enclosed, enclosed.getClass(), enclosed.getEnclosingElement());
-                }
-            }
-        }
         return type == null ? null : type.deepCopy();
     }
 
