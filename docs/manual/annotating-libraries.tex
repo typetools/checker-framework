@@ -513,16 +513,19 @@ since the value is known to be a key for all three maps.
 \subsectionAndLabel{Stub methods in subclasses of the declaring class}{stub-fake-override}
 
 Sometimes, a method's return type is different in a subclass than in a
-superclass, even though the subtype does not define the method and just
+superclass, even though the subclass does not define the method and just
 inherits the superclass's definition.
 
 You may write a ``fake override'' in a stub file.  This is a declaration of
 a method that is inherited.  The Java signature of the method must be
 identical to that in the superclass where it is actually defined, but you
-can change its annotations.
+can change its annotations.  (The return type and the receiver type can be
+different.)
 
-This feature currently only works for return types.  In the future, it will
-be extended to formal parameters and fields.
+This feature currently only works for return types.  That is, return type
+annotations on fake overrides have an effect, but formal parameter type
+annotations on fake overrides have no effect.  Type annotations on fake
+overrides of fields also have no effect.
 
 As an example, consider a type system that tracks whether a value is
 cryptographically secure.  Although \<SecureRandom> does not override

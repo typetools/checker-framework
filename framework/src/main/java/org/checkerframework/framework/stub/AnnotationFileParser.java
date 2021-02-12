@@ -1529,6 +1529,7 @@ public class AnnotationFileParser {
             NodeWithRange<?> astNode) {
         if (member instanceof MethodDeclaration) {
             MethodDeclaration method = (MethodDeclaration) member;
+            // TODO: This issues a warning, but it should only do so if it is not a fake override.
             Element elt = findElement(typeElt, method);
             if (elt != null) {
                 putIfAbsent(elementsToDecl, elt, method);
@@ -1710,7 +1711,7 @@ public class AnnotationFileParser {
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);
 
         // TODO: Walk the type and the declaration, copying annotations from the declaration to the
-        // element.  I think PR #3799 has a visitor that does that, which I should use afte it is
+        // element.  I think PR #3977 has a visitor that does that, which I should use afte it is
         // merged.
 
         // Here is a hacky solution that does not use the visitor.  It just handles the return type.
