@@ -32,8 +32,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(I18nUnknownFormat.class)
 public @interface I18nFormatFor {
     /**
-     * The value should be a {@code #} followed by the 1-based index of the arguments of the format
-     * method, e.g. {@code "#2"}.
+     * The value should be {@code #} followed by the 1-based index of the arguments of the format
+     * method, e.g., {@code "#2"}.
      */
     String value();
 }

@@ -221,7 +221,7 @@ public class I18nFormatterTreeUtil {
     /**
      * Returns an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null.
      *
-     * @param tree method invocatin tree
+     * @param tree method invocation tree
      * @param atypeFactory type factory
      * @return an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null.
      */
@@ -256,10 +256,11 @@ public class I18nFormatterTreeUtil {
         /** Extra description for error messages. */
         private String invalidMessage;
 
+        /** The type of the format string formal parameter. */
         private AnnotatedTypeMirror formatAnno;
 
         /**
-         * Creates an {@code I18nFormatCall} for the give method invocation tree.
+         * Creates an {@code I18nFormatCall} for the given method invocation tree.
          *
          * @param tree method invocation tree
          * @param atypeFactory type factory
@@ -293,13 +294,14 @@ public class I18nFormatterTreeUtil {
          * to the correct parameter arguments. Otherwise, it will be still null.
          *
          * @param theargs arguments to the format method call
-         * @param method ExecutableElement of the format method
+         * @param method the ExecutableElement of the format method
          * @param methodAnno annotated type of {@code method}
          */
         private void initialCheck(
                 List<? extends ExpressionTree> theargs,
                 ExecutableElement method,
                 AnnotatedExecutableType methodAnno) {
+            // paramIndex is a 0-based index
             int paramIndex = -1;
             int i = 0;
             for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
