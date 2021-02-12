@@ -151,16 +151,6 @@ public class JavaExpressionParseUtil {
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
-    // TODO: Add a version of this method that creates the context using the localPath
-    //         TypeMirror enclosingClass = TreeUtils.typeOf(TreePathUtil.enclosingClass
-    //         (currentPath));
-    //
-    //        JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
-    //        JavaExpressionParseUtil.JavaExpressionContext context =
-    //                new JavaExpressionParseUtil.JavaExpressionContext(
-    //                        r,
-    //                        JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
-    //                        this.getChecker());
     public static JavaExpression parse(
             String expression, JavaExpressionContext context, @Nullable TreePath localPath)
             throws JavaExpressionParseException {
