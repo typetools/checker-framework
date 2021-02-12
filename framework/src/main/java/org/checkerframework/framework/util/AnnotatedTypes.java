@@ -65,7 +65,7 @@ public class AnnotatedTypes {
     @SuppressWarnings("UnusedVariable")
     private static final boolean debug3094 = false;
 
-    // Class cannot be instantiated.
+    /** Class cannot be instantiated. */
     private AnnotatedTypes() {
         throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
     }
