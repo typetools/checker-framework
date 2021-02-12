@@ -1277,6 +1277,13 @@ systems) \code{<self>}.
 \item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
   the Index Checker, for example.
 
+\item a class name expression within another expression, e.g., ``String''
+  in \<String.class> or ``pkg.MyClass'' in \<pkg.MyClass.staticField>.  The
+  class name must be fully-qualified unless it can be referenced by its
+  simple name without an \<import> statement at the location where the
+  annotation appears.  For example, an annotation in class \<C> can use the
+  simple name of a class in \<java.lang> or in the same package as \<C>.
+
 \end{itemize}
 
 % We want this in the future:
