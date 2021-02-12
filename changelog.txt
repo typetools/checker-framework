@@ -1,15 +1,11 @@
-Version ??
+Version 3.??.??, March 1, 2021
+
+**User-visible changes:**
 
 In a stub file for a class C, you may write a declaration for a method that is
 inherited by C but not defined by it.  Previously, such stub declarations were
 ignored.  For more information, see the manual's documentation of "fake
 overrides".
-
----------------------------------------------------------------------------
-
-Version 3.??.??, March 1, 2021
-
-**User-visible changes:**
 
 Nullness Checker error message key changes:
  * `known.nonnull` => `nulltest.redundant`
