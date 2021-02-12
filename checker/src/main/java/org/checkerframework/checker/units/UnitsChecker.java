@@ -18,13 +18,6 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
 @SupportedOptions({"units", "unitsDirs"})
 public class UnitsChecker extends BaseTypeChecker {
 
-    /*
-    @Override
-    public void initChecker() {
-        super.initChecker();
-    }
-    */
-
     @Override
     public SortedSet<String> getSuppressWarningsPrefixes() {
         return SubtypingChecker.getSuppressWarningsPrefixes(
