@@ -500,12 +500,12 @@ public class AnnotatedTypes {
                 AnnotatedTypeMirror memberTypeWithOverrides =
                         applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
                 System.out.printf(
-                        "About to call substituteTypeVariables(%s, %s, %s)%n",
+                        "About to call substituteTypeVariables():%n  %s%n  %s$n  %s%n",
                         receiverType, member, memberTypeWithOverrides);
                 AnnotatedTypeMirror declaredResult =
                         substituteTypeVariables(
                                 types, atypeFactory, receiverType, member, memberTypeWithOverrides);
-                System.out.printf("  substituteTypeVariables => %s%n", declaredResult);
+                System.out.printf(" substituteTypeVariables => %s%n", declaredResult);
                 return declaredResult;
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
