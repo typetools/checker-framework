@@ -46,7 +46,6 @@ import org.checkerframework.javacutil.UserError;
 
 /** Holds information about types parsed from annotation files (stub files). */
 public class AnnotationFileElementTypes {
-
     /** Annotations from annotation files (but not from annotated JDK files). */
     private final AnnotationFileAnnotations annotationFileAnnos;
 

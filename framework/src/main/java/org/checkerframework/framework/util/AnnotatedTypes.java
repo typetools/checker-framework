@@ -60,10 +60,6 @@ import org.plumelib.util.StringsPlume;
  * Types}.
  */
 public class AnnotatedTypes {
-
-    /** Debugging related to issue #3094. */
-    @SuppressWarnings("UnusedVariable")
-
     /** Class cannot be instantiated. */
     private AnnotatedTypes() {
         throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
