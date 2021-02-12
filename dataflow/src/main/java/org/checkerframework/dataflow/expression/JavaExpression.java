@@ -531,6 +531,7 @@ public abstract class JavaExpression {
             case PARAMETER:
                 return new LocalVariable(ele);
             case FIELD:
+            case ENUM_CONSTANT:
                 // Implicit access expression, such as "this" or a class name
                 JavaExpression fieldAccessExpression;
                 @SuppressWarnings("nullness:dereference.of.nullable") // a field has enclosing class
