@@ -67,13 +67,6 @@ public class NullnessChecker extends InitializationChecker {
     /** Default for {@link #LINT_PERMITCLEARPROPERTY}. */
     public static final boolean LINT_DEFAULT_PERMITCLEARPROPERTY = false;
 
-    /*
-    @Override
-    public void initChecker() {
-        super.initChecker();
-    }
-    */
-
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
