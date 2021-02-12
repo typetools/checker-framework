@@ -549,6 +549,13 @@ public abstract class JavaExpression {
         }
     }
 
+    /**
+     * Creates a JavaExpression from the {@code memberSelectTree}.
+     *
+     * @param provider annotation provider
+     * @param memberSelectTree tree
+     * @return a JavaExpression for {@code memberSelectTree}
+     */
     private static JavaExpression fromMemberSelect(
             AnnotationProvider provider, MemberSelectTree memberSelectTree) {
         TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
