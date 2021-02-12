@@ -20,5 +20,5 @@ class DescribeImagesRequest {
 
     @This DescribeImagesRequest withExecutableUsers(String... i);
 
-    @This DescribeImagesRequest withExecutable(Collection<String> f);
+    @This DescribeImagesRequest withExecutableUsers(Collection<String> f);
 }
