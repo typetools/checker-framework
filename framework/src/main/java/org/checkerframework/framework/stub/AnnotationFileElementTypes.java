@@ -313,6 +313,10 @@ public class AnnotationFileElementTypes {
         return Collections.emptySet();
     }
 
+    ///
+    /// End of public methods, private helper methods follow
+    ///
+
     /**
      * Parses the outermost enclosing class of {@code e} if there exists an annotation file for it
      * and it has not already been parsed.
