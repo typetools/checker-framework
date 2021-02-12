@@ -219,11 +219,13 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Returns an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null.
+     * Returns an I18nFormatCall instance, only if there is an {@code @I18nFormatFor} annotation.
+     * Otherwise, returns null.
      *
      * @param tree method invocation tree
      * @param atypeFactory type factory
-     * @return an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null.
+     * @return an I18nFormatCall instance, only if there is an {@code @I18nFormatFor} annotation.
+     *     Otherwise, returns null.
      */
     public @Nullable I18nFormatCall createFormatForCall(
             MethodInvocationTree tree, I18nFormatterAnnotatedTypeFactory atypeFactory) {
