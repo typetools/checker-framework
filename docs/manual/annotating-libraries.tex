@@ -525,7 +525,8 @@ This feature currently only works for return types.  In the future, it will
 be extended to formal parameters and fields.
 
 As an example, consider a type system that tracks whether a value is
-cryptographically secure.  Its stub file would contain:
+cryptographically secure.  Although \<SecureRandom> does not override
+\<Random.nextInt>, you are allowed to write the following stub file:
 
 \begin{Verbatim}
 package java.util;
@@ -538,9 +539,6 @@ class SecureRandom extends Random {
   @Secure int nextInt();
 }
 \end{Verbatim}
-
-\noindent
-\<SecureRandom> does not override \<nextInt> --- it only overrides the source of randomness.
 
 
 \subsectionAndLabel{Stub file format}{stub-format}

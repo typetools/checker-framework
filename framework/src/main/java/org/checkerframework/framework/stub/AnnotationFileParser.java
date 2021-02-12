@@ -238,11 +238,8 @@ public class AnnotationFileParser {
         public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>();
 
         /**
-         * Map from an element to all the fake overrides of it (including fake overrides of real
-         * overrides of it).
-         *
-         * <p>This mapping never contains keys that are (for example) formal parameters, return
-         * types, or type parameters.
+         * Map from a method element to all the fake overrides of it (including fake overrides of
+         * real overrides of it).
          */
         public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>>
                 fakeOverrides = new HashMap<>();
@@ -1586,7 +1583,7 @@ public class AnnotationFileParser {
      * Given a method declaration that does not correspond to an element, returns all the methods
      * that it would override. This includes transitively overridden methods.
      *
-     * <p>The parameter types must be exact matches; covariance is not permitted.
+     * <p>The parameter types must be exact matches; contravariance is not permitted.
      *
      * @param typeElt the type in which the method appears
      * @param methodDecl the method declaration that does not correspond to an element
@@ -1620,7 +1617,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns true if the two signatures are the same. No covariance is permitted.
+     * Returns true if the two signatures are the same. No contravariance is permitted.
      *
      * @param javacParams parameter list in javac form
      * @param javaParserParams parameter list in JavaParser form
@@ -1721,7 +1718,8 @@ public class AnnotationFileParser {
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);
 
         // TODO: Walk the type and the declaration, copying annotations from the declaration to the
-        // element.  I think Jason has a visitor that does that, which I should use.
+        // element.  I think PR #3799 has a visitor that does that, which I should use afte it is
+        // merged.
 
         // Here is a hacky solution that does not use the visitor.  It just handles the return type.
         // Return type
