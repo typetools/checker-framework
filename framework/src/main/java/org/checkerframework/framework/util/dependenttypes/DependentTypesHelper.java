@@ -406,10 +406,11 @@ public class DependentTypesHelper {
 
     /**
      * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
-     * methodDeclTree}.
+     * methodDeclTree}. This changes occurrences of formal parameter names to "#2" syntax, and it
+     * removes expressions that contain other local variables.
      *
      * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
-     * @param atm type to viewpoint-adapt
+     * @param atm type to viewpoint-adapt; is side-effected by this method
      */
     public void delocalize(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
         if (!hasDependentType(atm)) {
@@ -420,10 +421,10 @@ public class DependentTypesHelper {
         if (pathToMethodDecl == null) {
             return;
         }
-        // TODO: 1.) parameter names need to be covert to the # index syntax.
+        // TODO: 1.) parameter names need to be coverted to the # index syntax.
         // TODO: 2.) If an annotation only has expressions that cannot be delocalized, then that
-        // annotation needs to be changed to top, rather an the dependent type annotation with no an
-        // empty array as a value element.
+        // annotation needs to be changed to top, rather than the dependent type annotation with
+        // an empty array as a value element.
 
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
