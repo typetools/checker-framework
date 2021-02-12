@@ -498,6 +498,10 @@ public class AnnotatedTypes {
             case DECLARED:
                 AnnotatedTypeMirror withOverrides =
                         applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
+                System.out.printf(
+                        "About to call substituteTypeVariables(%s, %s, %s)%n",
+                        receiverType, member, memberType);
+                System.out.printf("  withOverrides = %s%n", withOverrides);
                 return substituteTypeVariables(
                         types, atypeFactory, receiverType, member, withOverrides);
             default:

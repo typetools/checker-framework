@@ -415,6 +415,7 @@ public class AnnotationFileElementTypes {
                 return (AnnotatedExecutableType) candidatePair.second;
             }
         }
+
         throw new BugInCF("No match for %s in %s", fakeReceiverType, applicable);
     }
 
