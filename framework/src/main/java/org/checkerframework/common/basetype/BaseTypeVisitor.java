@@ -176,9 +176,6 @@ import org.checkerframework.javacutil.TypesUtils;
 public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
         extends SourceVisitor<Void, Void> {
 
-    /** Debugging related to issue #3094. */
-    private static final boolean debug3094 = false;
-
     /** The {@link BaseTypeChecker} for error reporting. */
     protected final BaseTypeChecker checker;
 
@@ -1485,11 +1482,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         ExecutableElement method = invokedMethod.getElement();
-        if (debug3094) {
-            System.out.printf(
-                    "visitMethodInvocation(%s):%n  mType=%s%n  invokedMethod=%s%n  method (elt)=%s%n",
-                    node, mType, invokedMethod, method);
-        }
+
         CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
         try {
             checkTypeArguments(
@@ -2703,9 +2696,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
 
-        if (debug3094) {
-            System.out.printf("in commonAssignmentCheck%n");
-        }
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
         // Experimentally commenting out.
@@ -2743,9 +2733,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     valueTree,
                     errorKey,
                     SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
-        }
-        if (debug3094) {
-            System.out.printf("exiting commonAssignmentCheck%n");
         }
     }
 
@@ -3138,16 +3125,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
         if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)) {
-            if (debug3094) {
-                System.out.printf("entering checkMethodInvocability%n");
-            }
             commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, node);
             boolean success =
                     atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
             commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
-            if (debug3094) {
-                System.out.printf("exiting checkMethodInvocability%n");
-            }
             if (!success) {
                 reportMethodInvocabilityError(node, treeReceiver, methodReceiver);
             }
@@ -3239,11 +3220,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             List<? extends ExpressionTree> passedArgs,
             CharSequence executableName,
             List<?> paramNames) {
-        if (debug3094) {
-            System.out.printf(
-                    "checkArguments(%s)%n  required=%s%n  passed=%s%n",
-                    executableName, requiredArgs, passedArgs);
-        }
         int size = requiredArgs.size();
         assert size == passedArgs.size()
                 : "mismatch between required args ("
@@ -3269,11 +3245,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             for (int i = 0; i < size; ++i) {
                 visitorState.setAssignmentContext(
                         Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
-                if (debug3094) {
-                    System.out.printf(
-                            "checkArguments #%d:  required=%s, actual=%s%n",
-                            i, requiredArgs.get(i), passedArgs.get(i));
-                }
                 commonAssignmentCheck(
                         requiredArgs.get(i),
                         passedArgs.get(i),

@@ -113,10 +113,6 @@ import org.checkerframework.javacutil.Pair;
  */
 public class AnnotationFileParser {
 
-    /** Debugging related to issue #3094. */
-    @SuppressWarnings("UnusedVariable")
-    private static final boolean debug3094 = false;
-
     /**
      * Whether to print warnings about types/members that were not found. The warning states that a
      * class/field in the file is not found on the user's real classpath. Since the file may contain

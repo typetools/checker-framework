@@ -63,7 +63,6 @@ public class AnnotatedTypes {
 
     /** Debugging related to issue #3094. */
     @SuppressWarnings("UnusedVariable")
-    private static final boolean debug3094 = false;
 
     /** Class cannot be instantiated. */
     private AnnotatedTypes() {
@@ -497,24 +496,10 @@ public class AnnotatedTypes {
                 return substituteTypeVariables(
                         types, atypeFactory, receiverType, member, memberType);
             case DECLARED:
-                if (debug3094) {
-                    System.out.printf("memberType = %s%n", memberType);
-                }
                 AnnotatedTypeMirror memberTypeWithOverrides =
                         applyFakeOverrides(types, atypeFactory, receiverType, member, memberType);
-                if (debug3094) {
-                    System.out.printf("  memberTypeWithOverrides = %s%n", memberTypeWithOverrides);
-                    System.out.printf(
-                            "About to call substituteTypeVariables():%n  receiverType = %s%n  %s%n  %s%n",
-                            receiverType, member, memberTypeWithOverrides);
-                }
-                AnnotatedTypeMirror declaredResult =
-                        substituteTypeVariables(
-                                types, atypeFactory, receiverType, member, memberTypeWithOverrides);
-                if (debug3094) {
-                    System.out.printf(" substituteTypeVariables => %s%n", declaredResult);
-                }
-                return declaredResult;
+                return substituteTypeVariables(
+                        types, atypeFactory, receiverType, member, memberTypeWithOverrides);
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
         }
