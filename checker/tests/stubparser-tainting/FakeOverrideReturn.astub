@@ -1,9 +1,9 @@
+import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 class FakeOverrideRMid {
 
-    @Untainted int returnsTaintedIntWithFakeOverride();
+  public @Untainted int returnsTaintedIntWithFakeOverride();
 
-    @Tainted int returnsUntaintedIntWithFakeOverride();
-
+  public @Tainted int returnsUntaintedIntWithFakeOverride();
 }

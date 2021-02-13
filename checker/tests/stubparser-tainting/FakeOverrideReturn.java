@@ -1,36 +1,8 @@
 // The type qualifier hierarchy is: @Tainted :> @Untainted
-
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-// Define this class because it's the name of the file.
-public class FakeOverrideReturn {}
-
-@SuppressWarnings("tainting")
-class FakeOverrideRSuper {
-
-    @Tainted int returnsTaintedInt() {
-        return 0;
-    }
-
-    @Untainted int returnsUntaintedInt() {
-        return 0;
-    }
-
-    @Tainted int returnsTaintedIntWithFakeOverride() {
-        return 0;
-    }
-
-    @Untainted int returnsUntaintedIntWithFakeOverride() {
-        return 0;
-    }
-}
-
-class FakeOverrideRMid extends FakeOverrideRSuper {}
-
-class FakeOverrideRSub extends FakeOverrideRMid {}
-
-class FakeOverrideRClient {
+public class FakeOverrideReturn {
 
     @Tainted int tf;
 

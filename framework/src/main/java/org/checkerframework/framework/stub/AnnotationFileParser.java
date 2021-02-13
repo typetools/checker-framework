@@ -408,7 +408,7 @@ public class AnnotationFileParser {
                     if (importType == null && !importDecl.isStatic()) {
                         // Class or nested class (according to JSL), but we can't resolve
 
-                        stubWarnNotFound(importDecl, "type not found: " + imported);
+                        stubWarnNotFound(importDecl, "Imported type not found: " + imported);
                     } else if (importType == null) {
                         // static import of field or method.
 
@@ -665,7 +665,16 @@ public class AnnotationFileParser {
                     || (!hasNoAnnotationFileParserWarning(typeDecl.getAnnotations())
                             && !hasNoAnnotationFileParserWarning(packageAnnos)
                             && !warnIfNotFoundIgnoresClasses)) {
-                stubWarnNotFound(typeDecl, "Type not found: " + fqTypeName);
+                if (elements.getAllTypeElements(fqTypeName).isEmpty()) {
+                    stubWarnNotFound(typeDecl, "Type not found: " + fqTypeName);
+                } else {
+                    stubWarnNotFound(
+                            typeDecl,
+                            "Type not found uniquely: "
+                                    + fqTypeName
+                                    + " : "
+                                    + elements.getAllTypeElements(fqTypeName));
+                }
             }
             return;
         }
@@ -1531,14 +1540,13 @@ public class AnnotationFileParser {
             NodeWithRange<?> astNode) {
         if (member instanceof MethodDeclaration) {
             MethodDeclaration method = (MethodDeclaration) member;
-            // TODO: This issues a warning, but it should only do so if it is not a fake override.
             Element elt = findElement(typeElt, method, /*noWarn=*/ true);
             if (elt != null) {
                 putIfAbsent(elementsToDecl, elt, method);
             } else {
                 List<ExecutableElement> overriddenMethods = fakeOverriddenMethods(typeElt, method);
                 if (overriddenMethods.isEmpty()) {
-                    // Didn't find the element and it isn't a fake override.  Issue warnings.
+                    // Didn't find the element and it isn't a fake override.  Issue a warning.
                     findElement(typeElt, method, /*noWarn=*/ false);
                 } else {
                     for (ExecutableElement overriddenMethod : overriddenMethods) {
@@ -1590,7 +1598,8 @@ public class AnnotationFileParser {
      * Given a method declaration that does not correspond to an element, returns all the methods
      * that it would override. This includes transitively overridden methods.
      *
-     * <p>The parameter types must be exact matches; contravariance is not permitted.
+     * <p>As with regular overrides, the parameter types must be exact matches; contravariance is
+     * not permitted.
      *
      * @param typeElt the type in which the method appears
      * @param methodDecl the method declaration that does not correspond to an element
@@ -1615,7 +1624,7 @@ public class AnnotationFileParser {
                     continue;
                 }
                 List<? extends VariableElement> candidateParams = candidate.getParameters();
-                if (sameSignature(candidateParams, declParams)) {
+                if (sameTypes(candidateParams, declParams)) {
                     result.add(candidate);
                 }
             }
@@ -1624,13 +1633,14 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns true if the two signatures are the same. No contravariance is permitted.
+     * Returns true if the two signatures (represented as lists of formal parameters) are the same.
+     * No contravariance is permitted.
      *
      * @param javacParams parameter list in javac form
      * @param javaParserParams parameter list in JavaParser form
      * @return true if the two signatures are the same
      */
-    boolean sameSignature(
+    private boolean sameTypes(
             List<? extends VariableElement> javacParams, NodeList<Parameter> javaParserParams) {
         if (javacParams.size() != javaParserParams.size()) {
             return false;
@@ -1657,7 +1667,7 @@ public class AnnotationFileParser {
      * @param javaParserType type in JavaParser form
      * @return true if the two types are the same
      */
-    boolean sameType(TypeMirror javacType, Type javaParserType) {
+    private boolean sameType(TypeMirror javacType, Type javaParserType) {
 
         switch (javacType.getKind()) {
             case BOOLEAN:
@@ -1717,12 +1727,11 @@ public class AnnotationFileParser {
         // This is a fresh type, which this code may side-effect.
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);
 
+        // Here is a hacky solution that does not use the visitor.  It just handles the return type.
         // TODO: Walk the type and the declaration, copying annotations from the declaration to the
-        // element.  I think PR #3977 has a visitor that does that, which I should use afte it is
+        // element.  I think PR #3977 has a visitor that does that, which I should use after it is
         // merged.
 
-        // Here is a hacky solution that does not use the visitor.  It just handles the return type.
-        // Return type
         // The annotations on the method.  These include type annotations on the return type.
         NodeList<AnnotationExpr> annotations = decl.getAnnotations();
         annotate(
@@ -1851,9 +1860,9 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Looks for method element in the typeElt and returns it if the element has the same signature
-     * as provided method declaration. Returns null, and possibly issues a warning, if method
-     * element is not found.
+     * Looks for a method element in {@code typeElt} that has the same name and formal parameter
+     * types as {@code methodDecl}. Returns null, and possibly issues a warning, if no such method
+     * element is found.
      *
      * @param typeElt type element where method element should be looked for
      * @param methodDecl method declaration with signature that should be found among methods in the
@@ -1883,14 +1892,15 @@ public class AnnotationFileParser {
         if (!noWarn) {
             if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
                 // This might be a false positive warning.  The stub parser permits a stub file to
-                // omit
-                // the access specifier, but package-private methods aren't in the TypeElement.
+                // omit the access specifier, but package-private methods aren't in the TypeElement.
                 stubWarnNotFound(
                         methodDecl,
                         "Package-private method "
                                 + wantedMethodString
                                 + " not found in type "
-                                + typeElt);
+                                + typeElt
+                                + System.lineSeparator()
+                                + "If the method is not package-private, add an access specifier in the stub file to receive a more useful error message.");
             } else {
                 stubWarnNotFound(
                         methodDecl,
