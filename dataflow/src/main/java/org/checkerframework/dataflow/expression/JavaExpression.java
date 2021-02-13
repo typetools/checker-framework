@@ -39,7 +39,6 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
-import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -313,19 +312,18 @@ public abstract class JavaExpression {
             assert TreeUtils.isUseOfElement(t) : "@AssumeAssertion(nullness): tree kind";
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
-            if (PurityUtils.isDeterministic(provider, invokedMethod)) {
-                List<JavaExpression> parameters = new ArrayList<>();
-                for (Node p : mn.getArguments()) {
-                    parameters.add(fromNode(provider, p));
-                }
-                JavaExpression methodReceiver;
-                if (ElementUtils.isStatic(invokedMethod)) {
-                    methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
-                } else {
-                    methodReceiver = fromNode(provider, mn.getTarget().getReceiver());
-                }
-                result = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
+            // Note that the method might be nondeterministic.
+            List<JavaExpression> parameters = new ArrayList<>();
+            for (Node p : mn.getArguments()) {
+                parameters.add(fromNode(provider, p));
             }
+            JavaExpression methodReceiver;
+            if (ElementUtils.isStatic(invokedMethod)) {
+                methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
+            } else {
+                methodReceiver = fromNode(provider, mn.getTarget().getReceiver());
+            }
+            result = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
         }
 
         if (result == null) {
@@ -388,22 +386,20 @@ public abstract class JavaExpression {
                 MethodInvocationTree mn = (MethodInvocationTree) tree;
                 assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
-                if (PurityUtils.isDeterministic(provider, invokedMethod)) {
-                    List<JavaExpression> parameters = new ArrayList<>();
-                    for (ExpressionTree p : mn.getArguments()) {
-                        parameters.add(fromTree(provider, p));
-                    }
-                    JavaExpression methodReceiver;
-                    if (ElementUtils.isStatic(invokedMethod)) {
-                        methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
-                    } else {
-                        methodReceiver = getReceiver(mn, provider);
-                    }
-                    TypeMirror resultType = TreeUtils.typeOf(mn);
-                    result = new MethodCall(resultType, invokedMethod, methodReceiver, parameters);
-                } else {
-                    result = null;
+
+                // Note that the method might be nondeterministic.
+                List<JavaExpression> parameters = new ArrayList<>();
+                for (ExpressionTree p : mn.getArguments()) {
+                    parameters.add(fromTree(provider, p));
                 }
+                JavaExpression methodReceiver;
+                if (ElementUtils.isStatic(invokedMethod)) {
+                    methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
+                } else {
+                    methodReceiver = getReceiver(mn, provider);
+                }
+                TypeMirror resultType = TreeUtils.typeOf(mn);
+                result = new MethodCall(resultType, invokedMethod, methodReceiver, parameters);
                 break;
 
             case MEMBER_SELECT:
