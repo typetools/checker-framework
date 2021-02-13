@@ -113,7 +113,7 @@ public class Subsequence {
      * argument.
      *
      * @param s a Java expression string
-     * @param the parse context
+     * @param context the parse context
      * @return the argument, standardized and viewpoint-adapted
      */
     private static String standardizeAndViewpointAdapt(String s, JavaExpressionContext context) {
