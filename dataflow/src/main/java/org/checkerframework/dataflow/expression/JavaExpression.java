@@ -89,6 +89,27 @@ public abstract class JavaExpression {
     }
 
     /**
+     * Returns true if the expression is nondeterministic.
+     *
+     * @param provider an annotation provider (a type factory)
+     * @return true if this expression is nondeterministic
+     */
+    public abstract boolean isNondeterministic(AnnotationProvider provider);
+
+    /**
+     * Returns true if the given list contains a JavaExpression that is nondeterministic.
+     *
+     * @param list the list in which to search for a match
+     * @param provider an annotation provider (a type factory)
+     * @return true if if the list contains a JavaExpression that is nondeterministic
+     */
+    @SuppressWarnings("nullness:dereference.of.nullable") // flow within a lambda
+    public static boolean listContainsNondeterministic(
+            List<? extends @Nullable JavaExpression> list, AnnotationProvider provider) {
+        return list.stream().anyMatch(je -> je != null && je.isNondeterministic(provider));
+    }
+
+    /**
      * Returns true if and only if the value this expression stands for cannot be changed (with
      * respect to ==) by a method call. This is the case for local variables, the self reference,
      * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and operations
@@ -236,7 +257,9 @@ public abstract class JavaExpression {
      * We ignore operations such as widening and narrowing when computing the internal
      * representation.
      *
-     * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
+     * @param provider the AnnotationProvider (the type factory)
+     * @param receiverNode a node to convert to a JavaExpression
+     * @return the internal representation of the given node. Might contain {@link Unknown}.
      */
     public static JavaExpression fromNode(AnnotationProvider provider, Node receiverNode) {
         JavaExpression result = null;
