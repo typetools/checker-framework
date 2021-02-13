@@ -414,12 +414,16 @@ is run.
 
 \sectionAndLabel{Using stub classes}{stub}
 
-A ``stub class'' is Java source code that is allowed to omit certain parts,
-such as method bodies.  (See Section~\ref{stub-format} for details
-about the stub file format.)  You use a stub file to write annotations
+You use a ``stub file'' to write annotations
 for a library, when you cannot edit and recompile the library.  A
 checker uses the annotated signatures at compile time, instead of or in
 addition to annotations that appear in the library's \<.class> files.
+
+A stub file cannot override the types of a package-private class, method, or field.
+
+A stub class is Java source code that is allowed to omit certain parts,
+such as method bodies.  Section~\ref{stub-format} describes
+the stub file format.
 
 Section~\ref{annotating-jdk} explains how you should choose between
 creating stub classes or creating an annotated library.
