@@ -367,7 +367,7 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 new JavaExpressionContext(
                         r,
-                        JavaExpression.getParametersOfEnclosingMethod(factory, path),
+                        JavaExpression.getParametersOfEnclosingMethod(path),
                         factory.getChecker());
         standardizeUseLocalScope(context, path, type);
     }
@@ -506,7 +506,7 @@ public class DependentTypesHelper {
                 JavaExpression receiver =
                         JavaExpression.getPseudoReceiver(pathToVariableDecl, enclosingType);
                 List<JavaExpression> params =
-                        JavaExpression.getParametersOfEnclosingMethod(factory, pathToVariableDecl);
+                        JavaExpression.getParametersOfEnclosingMethod(pathToVariableDecl);
                 JavaExpressionContext localContext =
                         new JavaExpressionContext(receiver, params, factory.getChecker());
                 standardizeUseLocalScope(localContext, pathToVariableDecl, type);
@@ -583,7 +583,7 @@ public class DependentTypesHelper {
         JavaExpressionContext localContext =
                 new JavaExpressionContext(
                         receiver,
-                        JavaExpression.getParametersOfEnclosingMethod(factory, path),
+                        JavaExpression.getParametersOfEnclosingMethod(path),
                         factory.getChecker());
         standardizeUseLocalScope(localContext, path, annotatedType);
     }

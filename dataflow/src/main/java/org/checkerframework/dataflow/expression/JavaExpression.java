@@ -569,7 +569,6 @@ public abstract class JavaExpression {
     /**
      * Returns the formal parameters of the method in which path is enclosed.
      *
-     * @param annotationProvider annotationProvider
      * @param path TreePath that is enclosed by the method
      * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
      */
