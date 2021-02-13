@@ -298,7 +298,8 @@ public class FlowNullness {
 
     void testNullableCall() {
         if (returnNullable() != null) {
-            returnNullable().toString();
+            // :: error: (dereference.of.nullable)
+            returnNullable().toString(); // error
         }
     }
 

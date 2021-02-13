@@ -11,6 +11,7 @@ public class ReadyReadLine {
         }
 
         if (buf.readLine() != null) {
+            // :: error: (dereference.of.nullable)
             buf.readLine().toString();
         }
     }

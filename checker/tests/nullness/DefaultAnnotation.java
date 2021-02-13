@@ -88,7 +88,7 @@ public class DefaultAnnotation {
             // :: error: (assignment.type.incompatible)
             String s1 = d.<@Nullable String>getNull(null); // error
             String s2 = d.<String>getNonNull("foo"); // valid
-            // :: error: (type.argument.type.incompatible)
+            // :: error: (type.argument.type.incompatible) :: error: (assignment.type.incompatible)
             String s3 = d.<@Nullable String>getNonNull("foo"); // error
         }
     }
