@@ -572,6 +572,10 @@ public abstract class JavaExpression {
      * @param path TreePath that is enclosed by the method
      * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
      */
+    @SuppressWarnings(
+            "nullness:argument.type.incompatible" // null value OK to fromNode when 2nd arde is
+    // LocalVariableNode
+    )
     public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(TreePath path) {
         MethodTree methodTree = TreePathUtil.enclosingMethod(path);
         if (methodTree == null) {
