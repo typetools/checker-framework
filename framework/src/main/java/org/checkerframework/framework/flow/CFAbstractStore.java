@@ -604,11 +604,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Returns the current abstract value of a method call, or {@code null} if no information is
      * available.
      *
+     * @param n a method call
      * @return the current abstract value of a method call, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(MethodInvocationNode n) {
-        JavaExpression method = JavaExpression.fromNode(n, true);
+        JavaExpression method = JavaExpression.fromNode(n);
         if (method == null) {
             return null;
         }

@@ -39,6 +39,7 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -85,6 +86,27 @@ public abstract class JavaExpression {
 
     public boolean containsUnknown() {
         return containsOfClass(Unknown.class);
+    }
+
+    /**
+     * Returns true if the expression is nondeterministic.
+     *
+     * @param provider an annotation provider (a type factory)
+     * @return true if this expression is nondeterministic
+     */
+    public abstract boolean isNondeterministic(AnnotationProvider provider);
+
+    /**
+     * Returns true if the given list contains a JavaExpression that is nondeterministic.
+     *
+     * @param list the list in which to search for a match
+     * @param provider an annotation provider (a type factory)
+     * @return true if if the list contains a JavaExpression that is nondeterministic
+     */
+    @SuppressWarnings("nullness:dereference.of.nullable") // flow within a lambda
+    public static boolean listContainsNondeterministic(
+            List<? extends @Nullable JavaExpression> list, AnnotationProvider provider) {
+        return list.stream().anyMatch(je -> je != null && je.isNondeterministic(provider));
     }
 
     /**
@@ -234,19 +256,10 @@ public abstract class JavaExpression {
      * We ignore operations such as widening and narrowing when computing the internal
      * representation.
      *
-     * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
+     * @param receiverNode a node to convert to a JavaExpression
+     * @return the internal representation of the given node. Might contain {@link Unknown}.
      */
-    public static JavaExpression fromNode(Node node) {
-        return fromNode(node, false);
-    }
-
-    /**
-     * We ignore operations such as widening and narrowing when computing the internal
-     * representation.
-     *
-     * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
-     */
-    public static JavaExpression fromNode(Node receiverNode, boolean allowNonDeterministic) {
+    public static JavaExpression fromNode(Node receiverNode) {
         JavaExpression result = null;
         if (receiverNode instanceof FieldAccessNode) {
             FieldAccessNode fan = (FieldAccessNode) receiverNode;
@@ -287,13 +300,11 @@ public abstract class JavaExpression {
             return fromNode(((NarrowingConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof UnaryOperationNode) {
             UnaryOperationNode uopn = (UnaryOperationNode) receiverNode;
-            return new UnaryOperation(uopn, fromNode(uopn.getOperand(), allowNonDeterministic));
+            return new UnaryOperation(uopn, fromNode(uopn.getOperand()));
         } else if (receiverNode instanceof BinaryOperationNode) {
             BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
             return new BinaryOperation(
-                    bopn,
-                    fromNode(bopn.getLeftOperand(), allowNonDeterministic),
-                    fromNode(bopn.getRightOperand(), allowNonDeterministic));
+                    bopn, fromNode(bopn.getLeftOperand()), fromNode(bopn.getRightOperand()));
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             result = new ClassName(cn.getType());
@@ -304,11 +315,11 @@ public abstract class JavaExpression {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
             List<@Nullable JavaExpression> dimensions = new ArrayList<>();
             for (Node dimension : an.getDimensions()) {
-                dimensions.add(fromNode(dimension, allowNonDeterministic));
+                dimensions.add(fromNode(dimension));
             }
             List<JavaExpression> initializers = new ArrayList<>();
             for (Node initializer : an.getInitializers()) {
-                initializers.add(fromNode(initializer, allowNonDeterministic));
+                initializers.add(fromNode(initializer));
             }
             result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
@@ -320,7 +331,7 @@ public abstract class JavaExpression {
             assert TreeUtils.isUseOfElement(t) : "@AssumeAssertion(nullness): tree kind";
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
-            // NOTE: This might be a nondeterministic method.
+            // Note that the method might be nondeterministic.
             List<JavaExpression> parameters = new ArrayList<>();
             for (Node p : mn.getArguments()) {
                 parameters.add(fromNode(p));
@@ -344,24 +355,12 @@ public abstract class JavaExpression {
      * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
      * {@link Unknown}.
      *
+     * <p>We ignore operations such as widening and narrowing when computing the JavaExpression.
+     *
      * @param tree a javac tree
      * @return a JavaExpression for the given javac tree
      */
     public static JavaExpression fromTree(ExpressionTree tree) {
-        return fromTree(tree, true);
-    }
-    /**
-     * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
-     * {@link Unknown}.
-     *
-     * <p>We ignore operations such as widening and narrowing when computing the JavaExpression.
-     *
-     * @param tree a javac tree
-     * @param allowNonDeterministic if false, convert nondeterministic method calls to {@link
-     *     org.checkerframework.dataflow.expression.Unknown}
-     * @return a JavaExpression for the given javac tree
-     */
-    public static JavaExpression fromTree(ExpressionTree tree, boolean allowNonDeterministic) {
         JavaExpression result;
         switch (tree.getKind()) {
             case ARRAY_ACCESS:
@@ -388,13 +387,13 @@ public abstract class JavaExpression {
                 List<@Nullable JavaExpression> dimensions = new ArrayList<>();
                 if (newArrayTree.getDimensions() != null) {
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
-                        dimensions.add(fromTree(dimension, allowNonDeterministic));
+                        dimensions.add(fromTree(dimension));
                     }
                 }
                 List<JavaExpression> initializers = new ArrayList<>();
                 if (newArrayTree.getInitializers() != null) {
                     for (ExpressionTree initializer : newArrayTree.getInitializers()) {
-                        initializers.add(fromTree(initializer, allowNonDeterministic));
+                        initializers.add(fromTree(initializer));
                     }
                 }
 
@@ -406,7 +405,7 @@ public abstract class JavaExpression {
                 assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
 
-                // Note: the method call might be nondeterministic.
+                // Note that the method might be nondeterministic.
                 List<JavaExpression> parameters = new ArrayList<>();
                 for (ExpressionTree p : mn.getArguments()) {
                     parameters.add(fromTree(p));
@@ -444,7 +443,7 @@ public abstract class JavaExpression {
                 break;
 
             case UNARY_PLUS:
-                return fromTree(((UnaryTree) tree).getExpression(), allowNonDeterministic);
+                return fromTree(((UnaryTree) tree).getExpression());
             case BITWISE_COMPLEMENT:
             case LOGICAL_COMPLEMENT:
             case POSTFIX_DECREMENT:
@@ -452,8 +451,7 @@ public abstract class JavaExpression {
             case PREFIX_DECREMENT:
             case PREFIX_INCREMENT:
             case UNARY_MINUS:
-                JavaExpression operand =
-                        fromTree(((UnaryTree) tree).getExpression(), allowNonDeterministic);
+                JavaExpression operand = fromTree(((UnaryTree) tree).getExpression());
                 return new UnaryOperation(TreeUtils.typeOf(tree), tree.getKind(), operand);
 
             case CONDITIONAL_AND:
@@ -475,9 +473,8 @@ public abstract class JavaExpression {
             case UNSIGNED_RIGHT_SHIFT:
             case XOR:
                 BinaryTree binaryTree = (BinaryTree) tree;
-                JavaExpression left = fromTree(binaryTree.getLeftOperand(), allowNonDeterministic);
-                JavaExpression right =
-                        fromTree(binaryTree.getRightOperand(), allowNonDeterministic);
+                JavaExpression left = fromTree(binaryTree.getLeftOperand());
+                JavaExpression right = fromTree(binaryTree.getRightOperand());
                 return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
 
             default:
