@@ -830,10 +830,7 @@ public class JavaExpressionParseUtil {
             if (isOriginalReceiver) {
                 locationOfField = context.receiver;
             } else {
-                locationOfField =
-                        JavaExpression.fromNode(
-                                context.checker.getAnnotationProvider(),
-                                new ImplicitThisNode(receiverType));
+                locationOfField = JavaExpression.fromNode(new ImplicitThisNode(receiverType));
             }
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
@@ -1045,8 +1042,7 @@ public class JavaExpressionParseUtil {
             } else {
                 receiver = new ImplicitThisNode(enclosingType);
             }
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableElement param : methodElt.getParameters()) {
                 parametersJe.add(new LocalVariable(param));
@@ -1066,14 +1062,10 @@ public class JavaExpressionParseUtil {
                 LambdaExpressionTree lambdaTree, TreePath path, SourceChecker checker) {
             TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
             Node receiver = new ImplicitThisNode(enclosingType);
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableTree arg : lambdaTree.getParameters()) {
-                parametersJe.add(
-                        JavaExpression.fromNode(
-                                checker.getAnnotationProvider(),
-                                new LocalVariableNode(arg, receiver)));
+                parametersJe.add(JavaExpression.fromNode(new LocalVariableNode(arg, receiver)));
             }
             return new JavaExpressionContext(receiverJe, parametersJe, checker);
         }
@@ -1091,8 +1083,7 @@ public class JavaExpressionParseUtil {
                 ClassTree classTree, SourceChecker checker) {
             Node receiver = new ImplicitThisNode(TreeUtils.typeOf(classTree));
 
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             return new JavaExpressionContext(receiverJe, Collections.emptyList(), checker);
         }
 
@@ -1107,11 +1098,10 @@ public class JavaExpressionParseUtil {
         public static JavaExpressionContext buildContextForMethodUse(
                 MethodInvocationNode methodInvocation, SourceChecker checker) {
             Node receiver = methodInvocation.getTarget().getReceiver();
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             List<JavaExpression> argumentsJe = new ArrayList<>();
             for (Node arg : methodInvocation.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(checker.getAnnotationProvider(), arg));
+                argumentsJe.add(JavaExpression.fromNode(arg));
             }
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
@@ -1126,13 +1116,12 @@ public class JavaExpressionParseUtil {
          */
         public static JavaExpressionContext buildContextForMethodUse(
                 MethodInvocationTree methodInvocation, SourceChecker checker) {
-            JavaExpression receiverJe =
-                    JavaExpression.getReceiver(methodInvocation, checker.getAnnotationProvider());
+            JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocation);
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
             List<JavaExpression> argumentsJe = new ArrayList<>(args.size());
             for (ExpressionTree argTree : args) {
-                argumentsJe.add(JavaExpression.fromTree(checker.getAnnotationProvider(), argTree));
+                argumentsJe.add(JavaExpression.fromTree(argTree));
             }
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
@@ -1152,11 +1141,11 @@ public class JavaExpressionParseUtil {
 
             // This returns an Unknown with the type set to the class in which the
             // constructor is declared
-            JavaExpression receiverJe = JavaExpression.fromNode(checker.getAnnotationProvider(), n);
+            JavaExpression receiverJe = JavaExpression.fromNode(n);
 
             List<JavaExpression> argumentsJe = new ArrayList<>();
             for (Node arg : n.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(checker.getAnnotationProvider(), arg));
+                argumentsJe.add(JavaExpression.fromNode(arg));
             }
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
@@ -1250,6 +1239,8 @@ public class JavaExpressionParseUtil {
         }
     }
 
+    // This method is not used by JavaExpressionContext.  It is currently only used by the Index
+    // Checker.
     /**
      * Get a JavaExpression from a VariableTree.
      *

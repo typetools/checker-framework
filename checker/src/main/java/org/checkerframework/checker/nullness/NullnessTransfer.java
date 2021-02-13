@@ -111,7 +111,7 @@ public class NullnessTransfer
      * implement case 2.
      */
     protected void makeNonNull(NullnessStore store, Node node) {
-        JavaExpression internalRepr = JavaExpression.fromNode(nullnessTypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(node);
         store.insertValue(internalRepr, NONNULL);
     }
 
@@ -181,8 +181,7 @@ public class NullnessTransfer
 
             List<Node> secondParts = splitAssignments(secondNode);
             for (Node secondPart : secondParts) {
-                JavaExpression secondInternal =
-                        JavaExpression.fromNode(nullnessTypeFactory, secondPart);
+                JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
                 if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                     thenStore = thenStore == null ? res.getThenStore() : thenStore;
                     elseStore = elseStore == null ? res.getElseStore() : elseStore;
@@ -367,7 +366,7 @@ public class NullnessTransfer
         // Refine result to @NonNull if n is an invocation of Map.get, the argument is a key for
         // the map, and the map's value type is not @Nullable.
         if (keyForTypeFactory != null && keyForTypeFactory.isMapGet(n)) {
-            String mapName = JavaExpression.fromNode(nullnessTypeFactory, receiver).toString();
+            String mapName = JavaExpression.fromNode(receiver).toString();
             AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))

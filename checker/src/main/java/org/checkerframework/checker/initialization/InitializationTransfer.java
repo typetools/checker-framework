@@ -150,7 +150,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
-        JavaExpression expr = JavaExpression.fromNode(analysis.getTypeFactory(), n.getTarget());
+        JavaExpression expr = JavaExpression.fromNode(n.getTarget());
 
         // If this is an assignment to a field of 'this', then mark the field as
         // initialized.

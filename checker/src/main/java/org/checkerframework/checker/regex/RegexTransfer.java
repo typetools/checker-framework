@@ -85,9 +85,7 @@ public class RegexTransfer extends CFTransfer {
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-            JavaExpression firstParam =
-                    JavaExpression.fromNode(
-                            factory.getChecker().getAnnotationProvider(), n.getArgument(0));
+            JavaExpression firstParam = JavaExpression.fromNode(n.getArgument(0));
 
             // add annotation with correct group count (if possible,
             // regex annotation without count otherwise)
@@ -196,8 +194,7 @@ public class RegexTransfer extends CFTransfer {
         MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
         Node receiver = methodAccessNode.getReceiver();
 
-        JavaExpression matcherReceiver =
-                JavaExpression.fromNode(analysis.getTypeFactory(), receiver);
+        JavaExpression matcherReceiver = JavaExpression.fromNode(receiver);
 
         IntegerLiteralNode iln = (IntegerLiteralNode) possibleConstant;
         int groupCount;
