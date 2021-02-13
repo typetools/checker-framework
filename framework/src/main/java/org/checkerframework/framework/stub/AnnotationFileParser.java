@@ -1904,7 +1904,7 @@ public class AnnotationFileParser {
                                 + " not found in type "
                                 + typeElt
                                 + System.lineSeparator()
-                                + "If the method is not package-private, add an access specifier in the stub file to receive a more useful error message.");
+                                + "If the method is not package-private, add an access specifier in the stub file and use pass -AstubDebug to receive a more useful error message.");
             } else {
                 stubWarnNotFound(
                         methodDecl,
