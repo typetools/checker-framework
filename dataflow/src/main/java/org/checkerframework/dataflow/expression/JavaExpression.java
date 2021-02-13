@@ -111,7 +111,7 @@ public abstract class JavaExpression {
     /**
      * Returns true if and only if the two Java expressions are syntactically identical.
      *
-     * <p>This exists for use by {@link containsSyntacticEqualJavaExpression}.
+     * <p>This exists for use by {@link #containsSyntacticEqualJavaExpression}.
      *
      * @param je the other Java expression to compare to this one
      * @return true if and only if the two Java expressions are syntactically identical
@@ -440,32 +440,7 @@ public abstract class JavaExpression {
                     result = new ClassName(ele.asType());
                     break;
                 }
-                switch (ele.getKind()) {
-                    case LOCAL_VARIABLE:
-                    case RESOURCE_VARIABLE:
-                    case EXCEPTION_PARAMETER:
-                    case PARAMETER:
-                        result = new LocalVariable(ele);
-                        break;
-                    case FIELD:
-                        // Implicit access expression, such as "this" or a class name
-                        JavaExpression fieldAccessExpression;
-                        @SuppressWarnings(
-                                "nullness:dereference.of.nullable") // a field has enclosing class
-                        TypeMirror enclosingTypeElement =
-                                ElementUtils.enclosingTypeElement(ele).asType();
-                        if (ElementUtils.isStatic(ele)) {
-                            fieldAccessExpression = new ClassName(enclosingTypeElement);
-                        } else {
-                            fieldAccessExpression = new ThisReference(enclosingTypeElement);
-                        }
-                        result =
-                                new FieldAccess(
-                                        fieldAccessExpression, typeOfId, (VariableElement) ele);
-                        break;
-                    default:
-                        result = null;
-                }
+                result = fromVariableElement(typeOfId, ele);
                 break;
 
             case UNARY_PLUS:
@@ -515,6 +490,55 @@ public abstract class JavaExpression {
         return result;
     }
 
+    /**
+     * Returns the Java expression corresponding to the given variable tree {@code tree}.
+     *
+     * @param tree a variable tree
+     * @return a JavaExpression for {@code tree}
+     */
+    public static JavaExpression fromVariableTree(VariableTree tree) {
+        return fromVariableElement(TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree));
+    }
+
+    /**
+     * Returns the Java expression corresponding to the given variable element {@code ele}.
+     *
+     * @param typeOfEle the type of {@code ele}
+     * @param ele element whose JavaExpression is returned
+     * @return the Java expression corresponding to the given variable element {@code ele}
+     */
+    private static JavaExpression fromVariableElement(TypeMirror typeOfEle, Element ele) {
+        switch (ele.getKind()) {
+            case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
+            case EXCEPTION_PARAMETER:
+            case PARAMETER:
+                return new LocalVariable(ele);
+            case FIELD:
+            case ENUM_CONSTANT:
+                // Implicit access expression, such as "this" or a class name
+                JavaExpression fieldAccessExpression;
+                @SuppressWarnings("nullness:dereference.of.nullable") // a field has enclosing class
+                TypeMirror enclosingTypeElement = ElementUtils.enclosingTypeElement(ele).asType();
+                if (ElementUtils.isStatic(ele)) {
+                    fieldAccessExpression = new ClassName(enclosingTypeElement);
+                } else {
+                    fieldAccessExpression = new ThisReference(enclosingTypeElement);
+                }
+                return new FieldAccess(fieldAccessExpression, typeOfEle, (VariableElement) ele);
+            default:
+                throw new BugInCF(
+                        "Unexpected kind of VariableTree: kind: %s element: %s",
+                        ele.getKind(), ele);
+        }
+    }
+
+    /**
+     * Creates a JavaExpression from the {@code memberSelectTree}.
+     *
+     * @param memberSelectTree tree
+     * @return a JavaExpression for {@code memberSelectTree}
+     */
     private static JavaExpression fromMemberSelect(MemberSelectTree memberSelectTree) {
         TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
         if (TreeUtils.isClassLiteral(memberSelectTree)) {

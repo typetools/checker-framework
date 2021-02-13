@@ -36,7 +36,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -717,17 +716,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         for (VariableTree variableTree : paramTrees) {
             if (TreeUtils.typeOf(variableTree).getKind() == TypeKind.CHAR) {
-
-                JavaExpression je = null;
-                try {
-                    je = JavaExpressionParseUtil.fromVariableTree(aTypeFactory, variableTree);
-                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                    // do nothing
-                }
-
-                if (je != null) {
-                    info.insertValue(je, aTypeFactory.NN);
-                }
+                JavaExpression je = JavaExpression.fromVariableTree(variableTree);
+                info.insertValue(je, aTypeFactory.NN);
             }
         }
     }
