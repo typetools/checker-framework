@@ -1164,7 +1164,7 @@ public class JavaExpressionParseUtil {
 
         /**
          * Returns a copy of the context that differs in that it has a different receiver and
-         * parsingMember is set to true. The outer receiver remains unchanged.
+         * parsingMember is set to true. The arguments remain unchanged.
          *
          * @param receiver the receiver for the newly-returned context
          * @return a copy of the context, with the given receiver

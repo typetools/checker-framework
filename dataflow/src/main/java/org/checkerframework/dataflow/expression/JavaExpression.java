@@ -201,6 +201,13 @@ public abstract class JavaExpression {
     /// Static methods
     ///
 
+    // All these static methods require an AnnotationProvider (a type factory), which is threaded
+    // through calls.  Its only purpose is to be passed to PurityUtils.isDeterministic, where it is
+    // used only as the receiver for a call of `getDeclAnnotations`.  If a method call is not
+    // deterministic, the expression is parsed to Unknown, without an error message to the user.
+    // Would the code be cleaner if it checked determinism elsewhere, and informed the user of the
+    // problem?
+
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      * The result may contain {@link Unknown} as receiver.
@@ -566,15 +573,14 @@ public abstract class JavaExpression {
      * @param path TreePath that is enclosed by the method
      * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
      */
-    public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(
-            AnnotationProvider annotationProvider, TreePath path) {
+    public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(TreePath path) {
         MethodTree methodTree = TreePathUtil.enclosingMethod(path);
         if (methodTree == null) {
             return null;
         }
         List<JavaExpression> internalArguments = new ArrayList<>();
         for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(fromNode(annotationProvider, new LocalVariableNode(arg)));
+            internalArguments.add(fromNode(null, new LocalVariableNode(arg)));
         }
         return internalArguments;
     }
@@ -584,11 +590,11 @@ public abstract class JavaExpression {
     ///
 
     /**
-     * Returns the receiver of ele, whether explicit or implicit.
+     * Returns the receiver of the given invocation
      *
      * @param accessTree method or constructor invocation
      * @param provider an AnnotationProvider
-     * @return the receiver of ele, whether explicit or implicit
+     * @return the receiver of the given invocation
      */
     public static JavaExpression getReceiver(
             ExpressionTree accessTree, AnnotationProvider provider) {
