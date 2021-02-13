@@ -385,6 +385,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Expressions containing unknown expressions are not stored.
             return;
         }
+        if (expr.isNondeterministic(analysis.getTypeFactory())) {
+            // Nondeterministic expressions are not stored.
+            return;
+        }
+
         if (expr instanceof LocalVariable) {
             LocalVariable localVar = (LocalVariable) expr;
             V oldValue = localVariableValues.get(localVar);
