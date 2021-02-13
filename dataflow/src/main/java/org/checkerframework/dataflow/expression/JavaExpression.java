@@ -239,18 +239,7 @@ public abstract class JavaExpression {
      *
      * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
      */
-    public static JavaExpression fromNode(AnnotationProvider provider, Node node) {
-        return fromNode(provider, node, false);
-    }
-
-    /**
-     * We ignore operations such as widening and narrowing when computing the internal
-     * representation.
-     *
-     * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
-     */
-    public static JavaExpression fromNode(
-            AnnotationProvider provider, Node receiverNode, boolean allowNonDeterministic) {
+    public static JavaExpression fromNode(AnnotationProvider provider, Node receiverNode) {
         JavaExpression result = null;
         if (receiverNode instanceof FieldAccessNode) {
             FieldAccessNode fan = (FieldAccessNode) receiverNode;
@@ -291,14 +280,13 @@ public abstract class JavaExpression {
             return fromNode(provider, ((NarrowingConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof UnaryOperationNode) {
             UnaryOperationNode uopn = (UnaryOperationNode) receiverNode;
-            return new UnaryOperation(
-                    uopn, fromNode(provider, uopn.getOperand(), allowNonDeterministic));
+            return new UnaryOperation(uopn, fromNode(provider, uopn.getOperand()));
         } else if (receiverNode instanceof BinaryOperationNode) {
             BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
             return new BinaryOperation(
                     bopn,
-                    fromNode(provider, bopn.getLeftOperand(), allowNonDeterministic),
-                    fromNode(provider, bopn.getRightOperand(), allowNonDeterministic));
+                    fromNode(provider, bopn.getLeftOperand()),
+                    fromNode(provider, bopn.getRightOperand()));
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             result = new ClassName(cn.getType());
@@ -309,11 +297,11 @@ public abstract class JavaExpression {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
             List<@Nullable JavaExpression> dimensions = new ArrayList<>();
             for (Node dimension : an.getDimensions()) {
-                dimensions.add(fromNode(provider, dimension, allowNonDeterministic));
+                dimensions.add(fromNode(provider, dimension));
             }
             List<JavaExpression> initializers = new ArrayList<>();
             for (Node initializer : an.getInitializers()) {
-                initializers.add(fromNode(provider, initializer, allowNonDeterministic));
+                initializers.add(fromNode(provider, initializer));
             }
             result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
@@ -325,7 +313,7 @@ public abstract class JavaExpression {
             assert TreeUtils.isUseOfElement(t) : "@AssumeAssertion(nullness): tree kind";
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
-            if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
+            if (PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<JavaExpression> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(fromNode(provider, p));
@@ -350,27 +338,13 @@ public abstract class JavaExpression {
      * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
      * {@link Unknown}.
      *
+     * <p>We ignore operations such as widening and narrowing when computing the JavaExpression.
+     *
      * @param provider the annotation provider (for example, an {@code AnnotatedTypeFactory})
      * @param tree a javac tree
      * @return a JavaExpression for the given javac tree
      */
     public static JavaExpression fromTree(AnnotationProvider provider, ExpressionTree tree) {
-        return fromTree(provider, tree, true);
-    }
-    /**
-     * Converts a javac {@link ExpressionTree} to a CF JavaExpression. The result might contain
-     * {@link Unknown}.
-     *
-     * <p>We ignore operations such as widening and narrowing when computing the JavaExpression.
-     *
-     * @param provider the annotation provider (for example, an {@code AnnotatedTypeFactory})
-     * @param tree a javac tree
-     * @param allowNonDeterministic if false, convert nondeterministic method calls to {@link
-     *     org.checkerframework.dataflow.expression.Unknown}
-     * @return a JavaExpression for the given javac tree
-     */
-    public static JavaExpression fromTree(
-            AnnotationProvider provider, ExpressionTree tree, boolean allowNonDeterministic) {
         JavaExpression result;
         switch (tree.getKind()) {
             case ARRAY_ACCESS:
@@ -397,13 +371,13 @@ public abstract class JavaExpression {
                 List<@Nullable JavaExpression> dimensions = new ArrayList<>();
                 if (newArrayTree.getDimensions() != null) {
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
-                        dimensions.add(fromTree(provider, dimension, allowNonDeterministic));
+                        dimensions.add(fromTree(provider, dimension));
                     }
                 }
                 List<JavaExpression> initializers = new ArrayList<>();
                 if (newArrayTree.getInitializers() != null) {
                     for (ExpressionTree initializer : newArrayTree.getInitializers()) {
-                        initializers.add(fromTree(provider, initializer, allowNonDeterministic));
+                        initializers.add(fromTree(provider, initializer));
                     }
                 }
 
@@ -414,7 +388,7 @@ public abstract class JavaExpression {
                 MethodInvocationTree mn = (MethodInvocationTree) tree;
                 assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
-                if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic) {
+                if (PurityUtils.isDeterministic(provider, invokedMethod)) {
                     List<JavaExpression> parameters = new ArrayList<>();
                     for (ExpressionTree p : mn.getArguments()) {
                         parameters.add(fromTree(provider, p));
@@ -480,8 +454,7 @@ public abstract class JavaExpression {
                 break;
 
             case UNARY_PLUS:
-                return fromTree(
-                        provider, ((UnaryTree) tree).getExpression(), allowNonDeterministic);
+                return fromTree(provider, ((UnaryTree) tree).getExpression());
             case BITWISE_COMPLEMENT:
             case LOGICAL_COMPLEMENT:
             case POSTFIX_DECREMENT:
@@ -489,11 +462,7 @@ public abstract class JavaExpression {
             case PREFIX_DECREMENT:
             case PREFIX_INCREMENT:
             case UNARY_MINUS:
-                JavaExpression operand =
-                        fromTree(
-                                provider,
-                                ((UnaryTree) tree).getExpression(),
-                                allowNonDeterministic);
+                JavaExpression operand = fromTree(provider, ((UnaryTree) tree).getExpression());
                 return new UnaryOperation(TreeUtils.typeOf(tree), tree.getKind(), operand);
 
             case CONDITIONAL_AND:
@@ -515,10 +484,8 @@ public abstract class JavaExpression {
             case UNSIGNED_RIGHT_SHIFT:
             case XOR:
                 BinaryTree binaryTree = (BinaryTree) tree;
-                JavaExpression left =
-                        fromTree(provider, binaryTree.getLeftOperand(), allowNonDeterministic);
-                JavaExpression right =
-                        fromTree(provider, binaryTree.getRightOperand(), allowNonDeterministic);
+                JavaExpression left = fromTree(provider, binaryTree.getLeftOperand());
+                JavaExpression right = fromTree(provider, binaryTree.getRightOperand());
                 return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
 
             default:

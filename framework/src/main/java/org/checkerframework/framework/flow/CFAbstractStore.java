@@ -603,7 +603,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     available
      */
     public @Nullable V getValue(MethodInvocationNode n) {
-        JavaExpression method = JavaExpression.fromNode(analysis.getTypeFactory(), n, true);
+        JavaExpression method = JavaExpression.fromNode(analysis.getTypeFactory(), n);
         if (method == null) {
             return null;
         }
