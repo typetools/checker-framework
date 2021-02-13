@@ -1354,6 +1354,8 @@ public class AnnotationFileParser {
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
             } else {
+                // TODO: Maybe always warn here.  It's so easy to forget an import statement and
+                // have an annotation silently ignored.
                 stubWarnNotFound(astNode, "Unknown annotation " + annotation);
             }
         }
@@ -1386,6 +1388,8 @@ public class AnnotationFileParser {
                     annos.add(annoMirror);
                 }
             } else {
+                // TODO: Maybe always warn here.  It's so easy to forget an import statement and
+                // have an annotation silently ignored.
                 stubWarnNotFound(astNode, String.format("Unknown annotation %s", annotation));
             }
         }
