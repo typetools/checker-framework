@@ -2,6 +2,7 @@ package foo;
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 public class Foo {
 
@@ -15,6 +16,7 @@ public class Foo {
         return false;
     }
 
+    @Pure
     public @Nullable Object getTheObject() {
         return null;
     }
