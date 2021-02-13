@@ -55,8 +55,10 @@ class NoExplicitAnnotationsUse {
         nble = sub2.method2();
         nn = sub2.method2();
         nble = sub3.method3();
+        // :: error: (assignment.type.incompatible)
         nn = sub3.method3();
 
+        // :: error: (assignment.type.incompatible)
         nn = nble;
     }
 }
