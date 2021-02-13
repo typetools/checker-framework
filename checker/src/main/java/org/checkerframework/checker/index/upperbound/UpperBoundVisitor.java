@@ -150,7 +150,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      */
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
 
-        String arrName = JavaExpression.fromTree(this.atypeFactory, arrTree).toString();
+        String arrName = JavaExpression.fromTree(arrTree).toString();
         LessThanLengthOf lhsQual = (LessThanLengthOf) UBQualifier.createUBQualifier(arrName, "0");
         if (relaxedCommonAssignmentCheck(lhsQual, indexTree) || checkMinLen(indexTree, arrTree)) {
             return;

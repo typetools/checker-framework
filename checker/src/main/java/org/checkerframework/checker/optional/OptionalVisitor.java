@@ -210,8 +210,8 @@ public class OptionalVisitor
 
     /** Return true if the two trees represent the same expression. */
     private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
-        JavaExpression r1 = JavaExpression.fromTree(atypeFactory, tree1);
-        JavaExpression r2 = JavaExpression.fromTree(atypeFactory, tree1);
+        JavaExpression r1 = JavaExpression.fromTree(tree1);
+        JavaExpression r2 = JavaExpression.fromTree(tree1);
         if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
             return r1.equals(r2);
         } else {

@@ -867,8 +867,7 @@ public abstract class CFAbstractTransfer<
             if (!firstValue.equals(secondValue)) {
                 List<Node> secondParts = splitAssignments(secondNode);
                 for (Node secondPart : secondParts) {
-                    JavaExpression secondInternal =
-                            JavaExpression.fromNode(analysis.getTypeFactory(), secondPart);
+                    JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
                     if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                         S thenStore = res.getThenStore();
                         S elseStore = res.getElseStore();
@@ -1095,9 +1094,7 @@ public abstract class CFAbstractTransfer<
             if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
                     && !refType.getAnnotations().equals(expType.getAnnotations())
                     && !expType.getAnnotations().isEmpty()) {
-                JavaExpression expr =
-                        JavaExpression.fromTree(
-                                analysis.getTypeFactory(), node.getTree().getExpression());
+                JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
                 for (AnnotationMirror anno : refType.getAnnotations()) {
                     in.getRegularStore().insertOrRefine(expr, anno);
                 }
@@ -1279,9 +1276,7 @@ public abstract class CFAbstractTransfer<
 
         V caseValue = in.getValueOfSubNode(n.getCaseOperand());
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
-        V switchValue =
-                store.getValue(
-                        JavaExpression.fromNode(analysis.getTypeFactory(), assign.getTarget()));
+        V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
         result =
                 strengthenAnnotationOfEqualTo(
                         result,

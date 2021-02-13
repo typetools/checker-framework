@@ -428,7 +428,7 @@ public class OffsetEquation {
 
     private static void createOffsetFromNode(
             Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
-        JavaExpression je = JavaExpression.fromNode(factory, node);
+        JavaExpression je = JavaExpression.fromNode(node);
         if (je instanceof Unknown || je == null) {
             if (node instanceof NumericalAdditionNode) {
                 createOffsetFromNode(
