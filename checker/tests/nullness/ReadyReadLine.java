@@ -7,6 +7,7 @@ public class ReadyReadLine {
     void m(MyBufferedReader buf) throws Exception {
         if (buf.ready()) {
             String line = buf.readLine();
+            // :: error: (dereference.of.nullable)
             line.toString();
         }
 
@@ -17,7 +18,7 @@ public class ReadyReadLine {
     }
 }
 
-// this is a replication of the JDK BufferedReader (with only the relevant methods)
+// This is a replication of the JDK BufferedReader, with only the relevant methods.
 class MyBufferedReader {
     public @Nullable String readLine() throws Exception {
         return null;
