@@ -527,9 +527,16 @@ annotations on fake overrides have an effect, but formal parameter type
 annotations on fake overrides have no effect.  Type annotations on fake
 overrides of fields also have no effect.
 
+If a fake override has no annotations on a given type use, that type use is
+defaulted according to the usual defaulting rules.
+
+
+\paragraphAndLabel{Example}{stub-fake-override-example}
+
 As an example, consider a type system that tracks whether a value is
 cryptographically secure.  Although \<SecureRandom> does not override
-\<Random.nextInt>, you are allowed to write the following stub file:
+\<Random.nextInt> (it overrides the source of randomness instead), you are
+allowed to write the following stub file:
 
 \begin{Verbatim}
 package java.util;

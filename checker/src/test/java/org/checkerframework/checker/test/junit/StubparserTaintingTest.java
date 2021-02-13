@@ -20,6 +20,7 @@ public class StubparserTaintingTest extends CheckerFrameworkPerDirectoryTest {
                 "stubparser-tainting",
                 "-Anomsgtext",
                 "-AmergeStubsWithSource",
+                "-AstubWarnIfNotFound",
                 "-Astubs=tests/stubparser-tainting");
     }
 

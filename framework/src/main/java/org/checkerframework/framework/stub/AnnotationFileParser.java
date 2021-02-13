@@ -238,7 +238,8 @@ public class AnnotationFileParser {
 
         /**
          * Map from a method element to all the fake overrides of it (including fake overrides of
-         * real overrides of it).
+         * real overrides of it). Given a key {@code ee}, the fake overrides are always in subtypes
+         * of {@code ee.getEnclosingElement()}, which is the same as {@code ee.getReceiverType()}.
          */
         public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>>
                 fakeOverrides = new HashMap<>();
@@ -740,8 +741,8 @@ public class AnnotationFileParser {
         }
         for (Map.Entry<Element, List<BodyDeclaration<?>>> entry : members.second.entrySet()) {
             ExecutableElement fakeOverridden = (ExecutableElement) entry.getKey();
-            List<BodyDeclaration<?>> fakeOverrides = entry.getValue();
-            for (BodyDeclaration<?> bodyDecl : fakeOverrides) {
+            List<BodyDeclaration<?>> fakeOverrideDecls = entry.getValue();
+            for (BodyDeclaration<?> bodyDecl : fakeOverrideDecls) {
                 processFakeOverride(fakeOverridden, (CallableDeclaration<?>) bodyDecl, typeElt);
             }
         }
@@ -1158,12 +1159,12 @@ public class AnnotationFileParser {
         } else {
             primaryAnnotations = typeDef.getAnnotations();
         }
-
         if (atype.getKind() != TypeKind.WILDCARD) {
             // The primary annotation on a wildcard applies to the super or extends bound and
             // are added below.
             annotate(atype, primaryAnnotations, astNode);
         }
+
         switch (atype.getKind()) {
             case DECLARED:
                 ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
@@ -1171,6 +1172,7 @@ public class AnnotationFileParser {
                     break;
                 }
                 AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
+                // Process type arguments.
                 if (declType.getTypeArguments().isPresent()
                         && !declType.getTypeArguments().get().isEmpty()
                         && !adeclType.getTypeArguments().isEmpty()) {
@@ -1473,12 +1475,12 @@ public class AnnotationFileParser {
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
-        Map<Element, List<BodyDeclaration<?>>> fakeOverrides = new LinkedHashMap<>();
+        Map<Element, List<BodyDeclaration<?>>> fakeOverrideDecls = new LinkedHashMap<>();
 
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
             putNewElement(
                     elementsToDecl,
-                    fakeOverrides,
+                    fakeOverrideDecls,
                     typeElt,
                     member,
                     typeDecl.getNameAsString(),
@@ -1491,7 +1493,7 @@ public class AnnotationFileParser {
             for (BodyDeclaration<?> member : enumDecl.getEntries()) {
                 putNewElement(
                         elementsToDecl,
-                        fakeOverrides,
+                        fakeOverrideDecls,
                         typeElt,
                         member,
                         typeDecl.getNameAsString(),
@@ -1499,7 +1501,7 @@ public class AnnotationFileParser {
             }
         }
 
-        return Pair.of(elementsToDecl, fakeOverrides);
+        return Pair.of(elementsToDecl, fakeOverrideDecls);
     }
 
     // Used only by getMembers
@@ -1507,14 +1509,14 @@ public class AnnotationFileParser {
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
      *
-     * <p>Otherwise (if there is no element for {@code member}), adds to {@code fakeOverrides} zero
-     * or more mappings. Each mapping is from an element that {@code member} would override to
+     * <p>Otherwise (if there is no element for {@code member}), adds to {@code fakeOverrideDecls}
+     * zero or more mappings. Each mapping is from an element that {@code member} would override to
      * {@code member}.
      *
      * <p>This method does not read or write field {@link annotationFileAnnos}.
      *
      * @param elementsToDecl the mapping that is side-effected by this method
-     * @param fakeOverrides fake overrides, also side-effected by this method
+     * @param fakeOverrideDecls fake overrides, also side-effected by this method
      * @param typeElt the class in which {@code member} is declared
      * @param member the stub file declaration of a method
      * @param typeDeclName used only for debugging
@@ -1522,7 +1524,7 @@ public class AnnotationFileParser {
      */
     private void putNewElement(
             Map<Element, BodyDeclaration<?>> elementsToDecl,
-            Map<Element, List<BodyDeclaration<?>>> fakeOverrides,
+            Map<Element, List<BodyDeclaration<?>>> fakeOverrideDecls,
             TypeElement typeElt,
             BodyDeclaration<?> member,
             String typeDeclName,
@@ -1530,18 +1532,23 @@ public class AnnotationFileParser {
         if (member instanceof MethodDeclaration) {
             MethodDeclaration method = (MethodDeclaration) member;
             // TODO: This issues a warning, but it should only do so if it is not a fake override.
-            Element elt = findElement(typeElt, method);
+            Element elt = findElement(typeElt, method, /*noWarn=*/ true);
             if (elt != null) {
                 putIfAbsent(elementsToDecl, elt, method);
             } else {
                 List<ExecutableElement> overriddenMethods = fakeOverriddenMethods(typeElt, method);
-                for (ExecutableElement overriddenMethod : overriddenMethods) {
-                    List<BodyDeclaration<?>> l = fakeOverrides.get(overriddenMethod);
-                    if (l == null) {
-                        l = new ArrayList<>();
-                        fakeOverrides.put(overriddenMethod, l);
+                if (overriddenMethods.isEmpty()) {
+                    // Didn't find the element and it isn't a fake override.  Issue warnings.
+                    findElement(typeElt, method, /*noWarn=*/ false);
+                } else {
+                    for (ExecutableElement overriddenMethod : overriddenMethods) {
+                        List<BodyDeclaration<?>> l = fakeOverrideDecls.get(overriddenMethod);
+                        if (l == null) {
+                            l = new ArrayList<>();
+                            fakeOverrideDecls.put(overriddenMethod, l);
+                        }
+                        l.add(member);
                     }
-                    l.add(member);
                 }
             }
         } else if (member instanceof ConstructorDeclaration) {
@@ -1851,11 +1858,12 @@ public class AnnotationFileParser {
      * @param typeElt type element where method element should be looked for
      * @param methodDecl method declaration with signature that should be found among methods in the
      *     typeElt
+     * @param noWarn if true, don't issue a warning if the element is not found
      * @return method element in typeElt with the same signature as the provided method declaration
      *     or null if method element is not found
      */
     private @Nullable ExecutableElement findElement(
-            TypeElement typeElt, MethodDeclaration methodDecl) {
+            TypeElement typeElt, MethodDeclaration methodDecl, boolean noWarn) {
         if (isJdkAsStub && methodDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private methods of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
@@ -1872,23 +1880,27 @@ public class AnnotationFileParser {
                 return method;
             }
         }
-        if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
-            // This might be a false positive warning.  The stub parser permits a stub file to omit
-            // the access specifier, but package-private methods aren't in the TypeElement.
-            stubWarnNotFound(
-                    methodDecl,
-                    "Package-private method "
-                            + wantedMethodString
-                            + " not found in type "
-                            + typeElt);
-        } else {
-            stubWarnNotFound(
-                    methodDecl, "Method " + wantedMethodString + " not found in type " + typeElt);
-            if (debugAnnotationFileParser) {
-                stubDebug(String.format("  Here are the methods of %s:", typeElt));
-                for (ExecutableElement method :
-                        ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                    stubDebug(String.format("    %s", method));
+        if (!noWarn) {
+            if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
+                // This might be a false positive warning.  The stub parser permits a stub file to
+                // omit
+                // the access specifier, but package-private methods aren't in the TypeElement.
+                stubWarnNotFound(
+                        methodDecl,
+                        "Package-private method "
+                                + wantedMethodString
+                                + " not found in type "
+                                + typeElt);
+            } else {
+                stubWarnNotFound(
+                        methodDecl,
+                        "Method " + wantedMethodString + " not found in type " + typeElt);
+                if (debugAnnotationFileParser) {
+                    stubDebug(String.format("  Here are the methods of %s:", typeElt));
+                    for (ExecutableElement method :
+                            ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+                        stubDebug(String.format("    %s", method));
+                    }
                 }
             }
         }
@@ -2586,6 +2598,19 @@ public class AnnotationFileParser {
      * @param warning warning to print
      */
     private void stubWarnNotFound(NodeWithRange<?> astNode, String warning) {
+        stubWarnNotFound(astNode, warning, warnIfNotFound);
+    }
+
+    /**
+     * Issues the given warning about missing elements, only if it has not been previously issued
+     * and the {@code warnIfNotFound} formal parameter is true.
+     *
+     * @param astNode where to report errors
+     * @param warning warning to print
+     * @param warnIfNotFound whether to print warnings about types/members that were not found
+     */
+    private void stubWarnNotFound(
+            NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
         if ((!isJdkAsStub && warnIfNotFound) || debugAnnotationFileParser) {
             warn(astNode, warning);
         }

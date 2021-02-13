@@ -322,8 +322,8 @@ public class AnnotationFileElementTypes {
     }
 
     /**
-     * Returns the most specific fake override for the given element, when used as a member of the
-     * given type.
+     * Returns the method type of the most specific fake override for the given element, when used
+     * as a member of the given type.
      *
      * @param elt element for which annotations are returned
      * @param receiverType the type of the class that contains member (or a subtype of it)
