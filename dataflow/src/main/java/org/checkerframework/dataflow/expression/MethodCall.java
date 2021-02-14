@@ -86,8 +86,8 @@ public class MethodCall extends JavaExpression {
 
     @Override
     public boolean isDeterministic(AnnotationProvider provider) {
-        return !PurityUtils.isDeterministic(provider, method)
-                || listIsDeterministic(arguments, provider);
+        return PurityUtils.isDeterministic(provider, method)
+                && listIsDeterministic(arguments, provider);
     }
 
     @Override
