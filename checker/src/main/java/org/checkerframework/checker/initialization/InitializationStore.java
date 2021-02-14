@@ -50,13 +50,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
      * initialized.
      */
     @Override
-    public void insertValue(JavaExpression je, V value) {
-        if (value == null) {
-            // No need to insert a null abstract value because it represents
-            // top and top is also the default value.
-            return;
-        }
-
+    public void insertValueImpl(JavaExpression je, V value) {
         InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
                 (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
@@ -78,7 +72,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             }
         }
 
-        super.insertValue(je, value);
+        super.insertValueImpl(je, value);
 
         for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {

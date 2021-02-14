@@ -81,8 +81,8 @@ public class BinaryOperation extends JavaExpression {
     }
 
     @Override
-    public boolean isNondeterministic(AnnotationProvider provider) {
-        return left.isNondeterministic(provider) || right.isNondeterministic(provider);
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return left.isDeterministic(provider) && right.isDeterministic(provider);
     }
 
     @Override

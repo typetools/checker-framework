@@ -104,8 +104,8 @@ public class FieldAccess extends JavaExpression {
     }
 
     @Override
-    public boolean isNondeterministic(AnnotationProvider provider) {
-        return receiver.isNondeterministic(provider);
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return receiver.isDeterministic(provider);
     }
 
     @Override

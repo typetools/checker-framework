@@ -294,7 +294,7 @@ public class SameLenTransfer extends CFTransfer {
                                 Collections.singletonList(paramNames.get(index)));
                 JavaExpression otherParamRec =
                         JavaExpression.fromVariableTree(paramTrees.get(otherParamIndex));
-                info.insertValue(otherParamRec, newSameLen);
+                info.insertValuePermitNondeterministic(otherParamRec, newSameLen);
             }
         }
     }

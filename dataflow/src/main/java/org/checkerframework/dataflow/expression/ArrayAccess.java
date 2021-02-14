@@ -39,8 +39,8 @@ public class ArrayAccess extends JavaExpression {
     }
 
     @Override
-    public boolean isNondeterministic(AnnotationProvider provider) {
-        return array.isNondeterministic(provider) || index.isNondeterministic(provider);
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return array.isDeterministic(provider) && index.isDeterministic(provider);
     }
 
     /**

@@ -69,9 +69,9 @@ public class ArrayCreation extends JavaExpression {
     }
 
     @Override
-    public boolean isNondeterministic(AnnotationProvider provider) {
-        return listContainsNondeterministic(dimensions, provider)
-                || listContainsNondeterministic(initializers, provider);
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return listIsDeterministic(dimensions, provider)
+                && listIsDeterministic(initializers, provider);
     }
 
     @Override

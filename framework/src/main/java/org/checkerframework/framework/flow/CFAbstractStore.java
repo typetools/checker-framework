@@ -303,9 +303,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * new and old value are taken (according to the lattice). Note that this happens per hierarchy,
      * and if the store already contains information about a hierarchy other than {@code a}s
      * hierarchy, that information is preserved.
+     *
+     * @param expr an expression
+     * @param a an annotation for the expression
      */
     public void insertValue(JavaExpression expr, AnnotationMirror a) {
         insertValue(expr, analysis.createSingleAnnotationValue(a, expr.getType()));
+    }
+
+    /**
+     * Like {@link #insertValue(JavaExpression, AnnotationMirror)}, but permits nondeterministic
+     * expressions to be stored.
+     *
+     * @param expr an expression
+     * @param a an annotation for the expression
+     */
+    public void insertValuePermitNondeterministic(JavaExpression expr, AnnotationMirror a) {
+        insertValuePermitNondeterministic(
+                expr, analysis.createSingleAnnotationValue(a, expr.getType()));
     }
 
     /**
@@ -323,14 +338,50 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * <p>Note that this happens per hierarchy, and if the store already contains information about
      * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
+     *
+     * @param expr an expression
+     * @param newAnno the expression's annotation
      */
-    public void insertOrRefine(JavaExpression expr, AnnotationMirror newAnno) {
+    public final void insertOrRefine(JavaExpression expr, AnnotationMirror newAnno) {
+        insertOrRefine(expr, newAnno, false);
+    }
+
+    /**
+     * Like {@link #insertOrRefine(JavaExpression, AnnotationMirror)}, but permits nondeterministic
+     * expressions to be inserted.
+     *
+     * @param expr an expression
+     * @param newAnno the expression's annotation
+     */
+    public final void insertOrRefinePermitNondeterministic(
+            JavaExpression expr, AnnotationMirror newAnno) {
+        insertOrRefine(expr, newAnno, true);
+    }
+
+    /**
+     * Helper function for {@link #insertOrRefine(JavaExpression, AnnotationMirror)} and {@link
+     * #insertOrRefinePermitNondeterministic}.
+     *
+     * @param expr an expression
+     * @param newAnno the expression's annotation
+     * @param permitNondeterministic whether nondeterministic expressions may be inserted into the
+     *     store
+     */
+    public void insertOrRefine(
+            JavaExpression expr, AnnotationMirror newAnno, boolean permitNondeterministic) {
         if (!canInsertJavaExpression(expr)) {
             return;
         }
+        if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
+            return;
+        }
+
         V oldValue = getValue(expr);
         if (oldValue == null) {
-            insertValue(expr, analysis.createSingleAnnotationValue(newAnno, expr.getType()));
+            insertValue(
+                    expr,
+                    analysis.createSingleAnnotationValue(newAnno, expr.getType()),
+                    permitNondeterministic);
             return;
         }
         QualifierHierarchy qualifierHierarchy = analysis.getTypeFactory().getQualifierHierarchy();
@@ -338,7 +389,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         AnnotationMirror oldAnno =
                 qualifierHierarchy.findAnnotationInHierarchy(oldValue.annotations, top);
         if (oldAnno == null) {
-            insertValue(expr, analysis.createSingleAnnotationValue(newAnno, expr.getType()));
+            insertValue(
+                    expr,
+                    analysis.createSingleAnnotationValue(newAnno, expr.getType()),
+                    permitNondeterministic);
             return;
         }
 
@@ -347,7 +401,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             glb = newAnno;
         }
 
-        insertValue(expr, analysis.createSingleAnnotationValue(glb, expr.getType()));
+        insertValue(
+                expr,
+                analysis.createSingleAnnotationValue(glb, expr.getType()),
+                permitNondeterministic);
     }
 
     /** Returns true if {@code expr} can be stored in this store. */
@@ -374,8 +431,38 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * new and old value are taken (according to the lattice). Note that this happens per hierarchy,
      * and if the store already contains information about a hierarchy for which {@code value} does
      * not contain information, then that information is preserved.
+     *
+     * <p>This method does nothing if {@code expr} cannot be inserted into the store.
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
      */
-    public void insertValue(JavaExpression expr, @Nullable V value) {
+    public final void insertValue(JavaExpression expr, @Nullable V value) {
+        insertValue(expr, value, false);
+    }
+    /**
+     * Like {@link #insertValue(JavaExpression, CFAbstractValue)}, but updates the store even if
+     * {@code expr} is nondeterministic.
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
+     */
+    public final void insertValuePermitNondeterministic(JavaExpression expr, @Nullable V value) {
+        insertValue(expr, value, true);
+    }
+
+    /**
+     * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
+     * insertValuePermitNondeterministic}. Calls {@link #insertValueImpl} if the expression can be
+     * inserted into the store.
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
+     * @param permitNondeterministic if false, does nothing if {@code expr} is nondeterministic; if
+     *     true, permit nondeterministic expressions to be placed in the store
+     */
+    private final void insertValue(
+            JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
@@ -385,9 +472,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Expressions containing unknown expressions are not stored.
             return;
         }
-        // Nondeterministic expressions may be stored.
-        // (They are likely to be quickly evicted, as soon as a side-effecting method is called.)
+        if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
+            // Nondeterministic expressions may not be stored.
+            // (They are likely to be quickly evicted, as soon as a side-effecting method is
+            // called.)
+            return;
+        }
+        insertValueImpl(expr, value);
+    }
 
+    /**
+     * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
+     * insertValuePermitNondeterministic}. This implementation does the real work. The expression
+     * will definitely be inserted.
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
+     */
+    protected void insertValueImpl(JavaExpression expr, @Nullable V value) {
         if (expr instanceof LocalVariable) {
             LocalVariable localVar = (LocalVariable) expr;
             V oldValue = localVariableValues.get(localVar);
@@ -652,8 +754,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (!fieldAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
-            boolean isMonotonic = isMonotonicUpdate(fieldAccess, val);
-            if (sequentialSemantics || isMonotonic || fieldAccess.isUnassignableByOtherCode()) {
+            if (sequentialSemantics
+                    || isMonotonicUpdate(fieldAccess, val)
+                    || fieldAccess.isUnassignableByOtherCode()) {
                 fieldValues.put(fieldAccess, val);
             }
         }

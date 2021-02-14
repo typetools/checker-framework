@@ -52,7 +52,7 @@ public class SignatureTransfer extends CFTransfer {
                 ConditionalTransferResult<CFValue, CFStore> result =
                         new ConditionalTransferResult<>(
                                 superResult.getResultValue(), thenStore, elseStore);
-                // The refined expression is the receive of the method call.
+                // The refined expression is the receiver of the method call.
                 JavaExpression refinedExpr = JavaExpression.fromNode(receiver);
 
                 elseStore.insertValue(refinedExpr, aTypeFactory.CANONICAL_NAME);

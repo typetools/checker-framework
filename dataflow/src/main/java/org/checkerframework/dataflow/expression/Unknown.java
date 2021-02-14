@@ -40,8 +40,8 @@ public class Unknown extends JavaExpression {
     }
 
     @Override
-    public boolean isNondeterministic(AnnotationProvider provider) {
-        return true;
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return false;
     }
 
     @Override

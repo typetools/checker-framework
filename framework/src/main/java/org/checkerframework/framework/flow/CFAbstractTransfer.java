@@ -589,7 +589,7 @@ public abstract class CFAbstractTransfer<
                 JavaExpression exprJe =
                         JavaExpressionParseUtil.parse(
                                 expressionString, methodUseContext, methodDeclPath, false);
-                initialStore.insertValue(exprJe, annotation);
+                initialStore.insertValuePermitNondeterministic(exprJe, annotation);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
             }
@@ -868,6 +868,9 @@ public abstract class CFAbstractTransfer<
                 List<Node> secondParts = splitAssignments(secondNode);
                 for (Node secondPart : secondParts) {
                     JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
+                    if (!secondInternal.isDeterministic(analysis.atypeFactory)) {
+                        continue;
+                    }
                     if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                         S thenStore = res.getThenStore();
                         S elseStore = res.getElseStore();
@@ -1239,12 +1242,12 @@ public abstract class CFAbstractTransfer<
                 // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
                     if (((ConditionalPostcondition) p).resultValue) {
-                        thenStore.insertOrRefine(je, anno);
+                        thenStore.insertOrRefinePermitNondeterministic(je, anno);
                     } else {
-                        elseStore.insertOrRefine(je, anno);
+                        elseStore.insertOrRefinePermitNondeterministic(je, anno);
                     }
                 } else {
-                    thenStore.insertOrRefine(je, anno);
+                    thenStore.insertOrRefinePermitNondeterministic(je, anno);
                 }
             } catch (JavaExpressionParseException e) {
                 // report errors here

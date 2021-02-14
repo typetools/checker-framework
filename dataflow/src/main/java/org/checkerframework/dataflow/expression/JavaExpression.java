@@ -89,24 +89,24 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Returns true if the expression is nondeterministic.
+     * Returns true if the expression is deterministic.
      *
      * @param provider an annotation provider (a type factory)
-     * @return true if this expression is nondeterministic
+     * @return true if this expression is deterministic
      */
-    public abstract boolean isNondeterministic(AnnotationProvider provider);
+    public abstract boolean isDeterministic(AnnotationProvider provider);
 
     /**
-     * Returns true if the given list contains a JavaExpression that is nondeterministic.
+     * Returns true if all the expressions in the list are deterministic.
      *
      * @param list the list in which to search for a match
      * @param provider an annotation provider (a type factory)
-     * @return true if if the list contains a JavaExpression that is nondeterministic
+     * @return true if all the expressions in the list are deterministic
      */
     @SuppressWarnings("nullness:dereference.of.nullable") // flow within a lambda
-    public static boolean listContainsNondeterministic(
+    public static boolean listIsDeterministic(
             List<? extends @Nullable JavaExpression> list, AnnotationProvider provider) {
-        return list.stream().anyMatch(je -> je != null && je.isNondeterministic(provider));
+        return list.stream().allMatch(je -> je == null || je.isDeterministic(provider));
     }
 
     /**

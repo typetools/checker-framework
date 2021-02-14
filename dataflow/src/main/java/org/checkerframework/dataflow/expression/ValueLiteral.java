@@ -104,8 +104,8 @@ public class ValueLiteral extends JavaExpression {
     }
 
     @Override
-    public boolean isNondeterministic(AnnotationProvider provider) {
-        return false;
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
     }
 
     @Override
