@@ -7,7 +7,6 @@ public class ReadyReadLine {
     void m(MyBufferedReader buf) throws Exception {
         if (buf.ready()) {
             String line = buf.readLine();
-            // :: error: (dereference.of.nullable)
             line.toString();
         }
 
