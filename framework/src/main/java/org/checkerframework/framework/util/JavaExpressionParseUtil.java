@@ -881,7 +881,7 @@ public class JavaExpressionParseUtil {
                     return StaticJavaParser.parseExpression(type.asString())
                             .accept(this, context)
                             .getType();
-                } catch (Throwable t) {
+                } catch (ParseProblemException e) {
                     return null;
                 }
             } else if (type.isPrimitiveType()) {
