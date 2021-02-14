@@ -12,6 +12,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -28,7 +30,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.ExecUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.StringsPlume;
 
 /**
  * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
@@ -174,9 +176,15 @@ public class TypeVisualizer {
      * create a wrapper that performed referential equality on types and use a LinkedHashMap.
      */
     private static class Node {
-        private final AnnotatedTypeMirror type;
+        /** The delegate; that is, the wrapped value. */
+        private final @InternedDistinct AnnotatedTypeMirror type;
 
-        private Node(final AnnotatedTypeMirror type) {
+        /**
+         * Create a new Node that wraps the given type.
+         *
+         * @param type the type that the newly-constructed Node represents
+         */
+        private Node(final @FindDistinct AnnotatedTypeMirror type) {
             this.type = type;
         }
 
@@ -298,9 +306,9 @@ public class TypeVisualizer {
 
             @Override
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
-                final List<AnnotatedDeclaredType> superTypes = type.directSuperTypes();
-                for (int i = 0; i < superTypes.size(); i++) {
-                    lines.add(connect(type, superTypes.get(i)) + " " + makeLabel("&"));
+                final List<AnnotatedTypeMirror> bounds = type.getBounds();
+                for (int i = 0; i < bounds.size(); i++) {
+                    lines.add(connect(type, bounds.get(i)) + " " + makeLabel("&"));
                 }
                 return null;
             }
@@ -459,7 +467,7 @@ public class TypeVisualizer {
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
                 if (checkOrAdd(type)) {
                     addLabeledNode(type, getAnnoStr(type) + " Intersection", "shape=octagon");
-                    visitAll(type.directSuperTypes());
+                    visitAll(type.getBounds());
                 }
 
                 return null;
@@ -595,13 +603,13 @@ public class TypeVisualizer {
                 builder.append(methodElem.getReturnType().toString());
                 builder.append(" <");
 
-                builder.append(SystemUtil.join(", ", methodElem.getTypeParameters()));
+                builder.append(StringsPlume.join(", ", methodElem.getTypeParameters()));
                 builder.append("> ");
 
                 builder.append(methodElem.getSimpleName().toString());
 
                 builder.append("(");
-                builder.append(SystemUtil.join(",", methodElem.getParameters()));
+                builder.append(StringsPlume.join(",", methodElem.getParameters()));
                 builder.append(")");
                 return builder.toString();
             }

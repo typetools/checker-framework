@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue1630 {
+public class Issue1630 {
     static @Nullable String toString(Object o) {
         return null;
     }

@@ -4,7 +4,7 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 
 // @skip-test until we bring list support back
 
-class ListSupport {
+public class ListSupport {
 
     void indexOf(List<Integer> list) {
         int index = list.indexOf(0);

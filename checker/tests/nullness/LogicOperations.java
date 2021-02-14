@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class LogicOperations {
+public class LogicOperations {
     void andTrueClause(@Nullable Object a) {
         if (a != null && helper()) {
             a.toString();

@@ -2,13 +2,13 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
-class Explosion {
+public class JavaCopExplosion {
     public static class ExplosiveException extends Exception {}
 
     @NonNull Integer m_nni = 1;
     final String m_astring;
 
-    Explosion() {
+    JavaCopExplosion() {
         // m_nni = 1;\
         m_astring = "hi";
         try {
@@ -23,7 +23,7 @@ class Explosion {
         @NonNull String s = "Dan";
         String s2;
         s2 = null;
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (s2 != null || s != null) {
             // :: error: (assignment.type.incompatible)
             s = s2;
@@ -33,14 +33,14 @@ class Explosion {
         s2 = args[0];
         // :: error: (dereference.of.nullable)
         System.out.println("Possibly cause null pointer with this: " + s2.length());
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (s2 == null) {
             // do nothing
         } else {
             System.out.println("Can't cause null pointer here: " + s2.length());
             s = s2;
         }
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (s == null ? s2 != null : s2 != null) {
             s = s2;
         }

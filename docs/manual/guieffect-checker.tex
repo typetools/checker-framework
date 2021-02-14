@@ -97,17 +97,15 @@ The GUI Effect Checker's annotations fall into three categories:
 \sectionAndLabel{GUI effect annotations}{guieffect-annotations}
 
 There are two primary GUI effect annotations:
-\begin{itemize}
-\item
-  \refqualclass{checker/guieffect/qual}{SafeEffect}
+\begin{description}
+\item[\refqualclass{checker/guieffect/qual}{SafeEffect}]
   is a method annotation marking code that must not
   access UI objects.
-\item
-  \refqualclass{checker/guieffect/qual}{UIEffect}
+\item[\refqualclass{checker/guieffect/qual}{UIEffect}]
   is a method annotation marking code that may access
   UI objects.  Most UI object methods (e.g., methods of \<JPanel>) are
   annotated as \code{@UIEffect}.
-\end{itemize}
+\end{description}
 
 \code{@SafeEffect} is a sub-effect of \code{@UIEffect}, in that it is always safe to
 call a \code{@SafeEffect} method anywhere it is permitted to call a
@@ -172,22 +170,22 @@ at all.
 
 The GUI Effect Checker provides three primary ways to change the default method effect for a class
 or package:
-\begin{itemize}
-\item
-  \refqualclass{checker/guieffect/qual}{UIType}
-  is a class annotation that makes the effect for unannotated methods in that
-class default to
-\code{@UIEffect}.  (See also \code{@UI} in Section~\ref{guieffect-polymorphism-using}.)
-\item
-  \refqualclass{checker/guieffect/qual}{UIPackage}
+\begin{description}
+\item[\refqualclass{checker/guieffect/qual}{UIType}]
+  is a class annotation that makes the effect for unannotated methods in
+  that class default to \code{@UIEffect}.  (See also \code{@UI} in
+  Section~\ref{guieffect-polymorphism-using}.)
+\item[\refqualclass{checker/guieffect/qual}{UIPackage}]
   is a \emph{package} annotation, that makes the effect for unannotated
-methods in that package default to \code{@UIEffect}.  It is not transitive; a package nested inside
-a package marked \code{@UIPackage} does not inherit the changed default.
-\item
-  \refqualclass{checker/guieffect/qual}{SafeType} is a class annotation that makes the effect for unannotated methods in that
-class default to \code{@SafeEffect}.  Because \code{@SafeEffect} is already the default
-effect, \code{@SafeType} is only useful for class types inside a package marked \code{@UIPackage}.
-\end{itemize}
+  methods in that package default to \code{@UIEffect}.  It is not
+  transitive; a package nested inside a package marked \code{@UIPackage}
+  does not inherit the changed default.
+\item[\refqualclass{checker/guieffect/qual}{SafeType}]
+  is a class annotation that makes the effect for unannotated methods in
+  that class default to \code{@SafeEffect}.  Because \code{@SafeEffect} is
+  already the default effect, \code{@SafeType} is only useful for class
+  types inside a package marked \code{@UIPackage}.
+\end{description}
 
 There is one other place where the default annotation is not automatically \code{@SafeEffect}:
 anonymous inner classes.  Since anonymous inner classes exist primarily for brevity, it would be
@@ -249,23 +247,21 @@ argument will be used as the effect for the \<run> method.
 
 To instantiate an effect-polymorphic type, write one of these three type
 qualifiers before a use of the type:
-\begin{itemize}
-\item
-  \refqualclass{checker/guieffect/qual}{AlwaysSafe}
+\begin{description}
+\item[\refqualclass{checker/guieffect/qual}{AlwaysSafe}]
   instantiates the type's effect to \code{@SafeEffect}.
-\item
-  \refqualclass{checker/guieffect/qual}{UI}
+\item[\refqualclass{checker/guieffect/qual}{UI}]
   instantiates the type's effect to \code{@UIEffect}.
   \emph{Additionally}, it changes the
   default method effect for the class to \code{@UIEffect}.
-\item
-  \refqualclass{checker/guieffect/qual}{PolyUI} instantiates the type's
+\item[\refqualclass{checker/guieffect/qual}{PolyUI}]
+  instantiates the type's
   effect to \code{@PolyUIEffect} for the same instantiation as the current
   (containing) class.  For example, this is the qualifier of the receiver
   \code{this} inside a method of a \code{@PolyUIType} class, which is how
   one method of an effect-polymorphic class may call an effect-polymorphic
   method of the same class.
-\end{itemize}
+\end{description}
 
 As an example:
 
@@ -339,7 +335,7 @@ public @PolyUI Runnable id(@PolyUI Runnable r) \{
 
 \noindent
 This use of \code{@PolyUI} will be handled as is standard for polymorphic qualifiers in the Checker
-Framework (see Section \ref{qualifier-polymorphism}).
+Framework (see Section \ref{method-qualifier-polymorphism}).
 
 \code{@PolyUIEffect} methods should generally not use \code{@PolyUI} arguments: it is permitted by
 the framework, but its interaction with inheritance is subtle, and may not behave as you would
@@ -426,4 +422,4 @@ The ECOOP 2013 paper ``JavaUI: Effects for Controlling UI Object Access''
 %  LocalWords:  UIEffect syncExec Runnable UIType UIPackage SafeType SWT
 %  LocalWords:  PolyUIType PolyUIEffect PolyUI UIRunnable SafeRunnable Foo
 %  LocalWords:  JavaUI JPanel myDates AlwaysSafe toRun SafeDispatcher
-%%  LocalWords:  runOnBackgroundThread uitask
+%  LocalWords:  runOnBackgroundThread uitask guieffect

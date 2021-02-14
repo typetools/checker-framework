@@ -4,7 +4,7 @@
 
 import java.net.URL;
 
-class AnnotatedJdkEqualsTest {
+public class AnnotatedJdkEqualsTest {
     void foo(URL u) {
         // As of this writing, the annotated JDK does not contain a URL.java file
         // for the java.net.URL class.

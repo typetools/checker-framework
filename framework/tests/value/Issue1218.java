@@ -4,7 +4,7 @@
 import java.io.Serializable;
 import org.checkerframework.common.value.qual.*;
 
-class Issue1218 {
+public class Issue1218 {
 
     enum MyEnum {
         A,
@@ -68,6 +68,9 @@ class Issue1218 {
         ints((@IntVal(1) int[]) null);
     }
 
+    // Inferred enumval types are incompatible with <E extends Enum<E>>. Similar code
+    // works if the type is a specific enum; see the test file Enums.java for an example.
+    @SuppressWarnings("type.argument.type.incompatible")
     void testMethodCallTypeInferred() {
         // :: error: (varargs.type.incompatible)
         enums();

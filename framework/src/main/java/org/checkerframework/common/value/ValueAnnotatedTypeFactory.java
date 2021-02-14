@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -20,6 +21,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -27,19 +30,23 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.EnumVal;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.MatchesRegex;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -56,50 +63,53 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    /** Fully-qualified class name of {@link UnknownVal} */
+    /** Fully-qualified class name of {@link UnknownVal}. */
     public static final String UNKNOWN_NAME = "org.checkerframework.common.value.qual.UnknownVal";
-    /** Fully-qualified class name of {@link BottomVal} */
+    /** Fully-qualified class name of {@link BottomVal}. */
     public static final String BOTTOMVAL_NAME = "org.checkerframework.common.value.qual.BottomVal";
-    /** Fully-qualified class name of {@link PolyValue} */
+    /** Fully-qualified class name of {@link PolyValue}. */
     public static final String POLY_NAME = "org.checkerframework.common.value.qual.PolyValue";
-    /** Fully-qualified class name of {@link ArrayLen} */
+    /** Fully-qualified class name of {@link ArrayLen}. */
     public static final String ARRAYLEN_NAME = "org.checkerframework.common.value.qual.ArrayLen";
-    /** Fully-qualified class name of {@link BoolVal} */
+    /** Fully-qualified class name of {@link BoolVal}. */
     public static final String BOOLVAL_NAME = "org.checkerframework.common.value.qual.BoolVal";
-    /** Fully-qualified class name of {@link DoubleVal} */
+    /** Fully-qualified class name of {@link DoubleVal}. */
     public static final String DOUBLEVAL_NAME = "org.checkerframework.common.value.qual.DoubleVal";
-    /** Fully-qualified class name of {@link IntVal} */
+    /** Fully-qualified class name of {@link IntVal}. */
     public static final String INTVAL_NAME = "org.checkerframework.common.value.qual.IntVal";
-    /** Fully-qualified class name of {@link StringVal} */
+    /** Fully-qualified class name of {@link StringVal}. */
     public static final String STRINGVAL_NAME = "org.checkerframework.common.value.qual.StringVal";
-    /** Fully-qualified class name of {@link ArrayLenRange} */
+    /** Fully-qualified class name of {@link ArrayLenRange}. */
     public static final String ARRAYLENRANGE_NAME =
             "org.checkerframework.common.value.qual.ArrayLenRange";
-    /** Fully-qualified class name of {@link IntRange} */
+    /** Fully-qualified class name of {@link IntRange}. */
     public static final String INTRANGE_NAME = "org.checkerframework.common.value.qual.IntRange";
 
-    /** Fully-qualified class name of {@link IntRangeFromGTENegativeOne} */
+    /** Fully-qualified class name of {@link IntRangeFromGTENegativeOne}. */
     public static final String INTRANGE_FROMGTENEGONE_NAME =
             "org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne";
-    /** Fully-qualified class name of {@link IntRangeFromNonNegative} */
+    /** Fully-qualified class name of {@link IntRangeFromNonNegative}. */
     public static final String INTRANGE_FROMNONNEG_NAME =
             "org.checkerframework.common.value.qual.IntRangeFromNonNegative";
-    /** Fully-qualified class name of {@link IntRangeFromPositive} */
+    /** Fully-qualified class name of {@link IntRangeFromPositive}. */
     public static final String INTRANGE_FROMPOS_NAME =
             "org.checkerframework.common.value.qual.IntRangeFromPositive";
-    /** Fully-qualified class name of {@link MinLen} */
+    /** Fully-qualified class name of {@link MinLen}. */
     public static final String MINLEN_NAME = "org.checkerframework.common.value.qual.MinLen";
+    /** Fully-qualified class name of {@link MatchesRegex}. */
+    public static final String MATCHES_REGEX_NAME =
+            "org.checkerframework.common.value.qual.MatchesRegex";
 
     /** The maximum number of values allowed in an annotation's array. */
     protected static final int MAX_VALUES = 10;
@@ -115,6 +125,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link PolyValue} annotation. */
     public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
 
+    /** The canonical @{@link BoolVal}(true) annotation. */
+    public final AnnotationMirror BOOLEAN_TRUE =
+            createBooleanAnnotation(Collections.singletonList(true));
+
+    /** The canonical @{@link BoolVal}(false) annotation. */
+    public final AnnotationMirror BOOLEAN_FALSE =
+            createBooleanAnnotation(Collections.singletonList(false));
+
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
 
@@ -125,6 +143,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Helper class that holds references to special methods. */
     private final ValueMethodIdentifier methods;
 
+    @SuppressWarnings("StaticAssignmentInConstructor") // static Range.ignoreOverflow is gross
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -132,45 +151,48 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
-        addAliasedAnnotation("android.support.annotation.IntRange", IntRange.class, true);
+        addAliasedTypeAnnotation("android.support.annotation.IntRange", IntRange.class, true);
 
         // The actual ArrayLenRange is created by
         // {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
-        addAliasedAnnotation(MinLen.class, BOTTOMVAL);
+        addAliasedTypeAnnotation(MinLen.class, BOTTOMVAL);
 
         // @Positive is aliased here because @Positive provides useful
         // information about @MinLen annotations.
         // @NonNegative and @GTENegativeOne are aliased similarly so
         // that it's possible to overwrite a function annotated to return
         // @NonNegative with, for instance, a function that returns an @IntVal(0).
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.NonNegative",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.GTENegativeOne",
                 createIntRangeFromGTENegativeOne());
         // Must also alias any alias of three annotations above:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.LengthOf",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexFor",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexOrHigh",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexOrLow",
                 createIntRangeFromGTENegativeOne());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.SubstringIndexFor",
                 createIntRangeFromGTENegativeOne());
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
-        addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+        addAliasedTypeAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+
+        // EnumVal is treated as StringVal internally by the checker.
+        addAliasedTypeAnnotation(EnumVal.class, StringVal.class, true);
 
         methods = new ValueMethodIdentifier(processingEnv);
 
@@ -206,6 +228,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         IntRange.class,
                         BoolVal.class,
                         StringVal.class,
+                        MatchesRegex.class,
                         DoubleVal.class,
                         BottomVal.class,
                         UnknownVal.class,
@@ -222,8 +245,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new ValueQualifierHierarchy(factory, this);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new ValueQualifierHierarchy(this, this.getSupportedTypeQualifiers());
     }
 
     @Override
@@ -237,20 +260,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 checker.hasOption("invariantArrays")) {
             @Override
             public StructuralEqualityComparer createEqualityComparer() {
-                return new StructuralEqualityComparer(typeargVisitHistory) {
+                return new StructuralEqualityComparer(areEqualVisitHistory) {
                     @Override
                     protected boolean arePrimeAnnosEqual(
                             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
                         type1.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type1.getAnnotationInHierarchy(UNKNOWNVAL)));
+                                convertToUnknown(
+                                        convertSpecialIntRangeToStandardIntRange(
+                                                type1.getAnnotationInHierarchy(UNKNOWNVAL))));
                         type2.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type2.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type1.replaceAnnotation(
-                                convertToUnknown(type1.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type2.replaceAnnotation(
-                                convertToUnknown(type2.getAnnotationInHierarchy(UNKNOWNVAL)));
+                                convertToUnknown(
+                                        convertSpecialIntRangeToStandardIntRange(
+                                                type2.getAnnotationInHierarchy(UNKNOWNVAL))));
 
                         return super.arePrimeAnnosEqual(type1, type2);
                     }
@@ -321,7 +342,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code from} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation
      * @return either the from value from the passed int range annotation, or the minimum value of
      *     the domain of the underlying type (i.e. Integer.MIN_VALUE if the underlying type is int)
      */
@@ -340,7 +361,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code to} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation
      * @return either the to value from the passed int range annotation, or the maximum value of the
      *     domain of the underlying type (i.e. Integer.MAX_VALUE if the underlying type is int)
      */
@@ -362,8 +383,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return one of INT, SHORT, BYTE, CHAR, or LONG
      */
     private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
-        TypeKind typeKind = NumberUtils.unboxPrimitive(type);
-        if (NumberUtils.isPrimitiveIntegral(typeKind)) {
+        TypeKind typeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+        if (typeKind != null && TypeKindUtils.isIntegral(typeKind)) {
             return typeKind;
         }
         throw new BugInCF(type.toString() + " expected to be an integral type.");
@@ -526,7 +547,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 stringVals.add((String) o);
             }
             return createStringAnnotation(stringVals);
-        } else if (ValueCheckerUtils.getClassFromType(resultType) == char[].class) {
+        } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
             List<String> stringVals = new ArrayList<>(values.size());
             for (Object o : values) {
                 if (o instanceof char[]) {
@@ -743,6 +764,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
+            // TODO: This seems wasteful.  Why not create the 3 interesting AnnotationMirrors (with
+            // arguments {true}, {false}, and {true, false}, respectively) in advance and return one
+            // of them?  (Maybe an advantage of this implementation is that it is identical to
+            // some other implementations and therefore might be less error-prone.)
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
             builder.setValue("value", values);
             return builder.build();
@@ -776,7 +801,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** @param values must be a homogeneous list: every element of it has the same class. */
+    /**
+     * Returns an annotation that represents the given set of values.
+     *
+     * @param values a homogeneous list: every element of it has the same class
+     * @return an annotation that represents the given set of values
+     */
     public AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         if (values == null) {
             return UNKNOWNVAL;
@@ -898,7 +928,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
+    /**
+     * Creates an {@code MatchesRegex} annotation for the given regular expressions.
+     *
+     * @param regexes a list of Java regular expressions
+     * @return a MatchesRegex annotation with those values
+     */
+    private AnnotationMirror createMatchesRegexAnnotation(@Nullable List<@Regex String> regexes) {
+        if (regexes == null) {
+            return UNKNOWNVAL;
+        }
+        if (regexes.isEmpty()) {
+            return BOTTOMVAL;
+        }
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MatchesRegex.class);
+        builder.setValue("value", regexes.toArray(new String[0]));
+        return builder.build();
+    }
+
+    /**
+     * Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation.
+     *
+     * @param stringValAnno a StringVal annotation
+     * @return an ArrayLenRange annotation representing the possible lengths of the values of the
+     *     given StringVal annotation
+     */
     /* package-private */ AnnotationMirror convertStringValToArrayLenRange(
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
@@ -917,7 +971,29 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createArrayLenAnnotation(ValueCheckerUtils.getLengthsForStringValues(values));
     }
 
-    /** Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation. */
+    /**
+     * Converts an {@code StringVal} annotation to an {@code MatchesRegex} annotation that matches
+     * exactly the string values listed in the {@code StringVal}.
+     *
+     * @param stringValAnno a StringVal annotation
+     * @return an equivalent MatchesReges annotation
+     */
+    /* package-private */ AnnotationMirror convertStringValToMatchesRegex(
+            AnnotationMirror stringValAnno) {
+        List<String> values = getStringValues(stringValAnno);
+        List<@Regex String> valuesAsRegexes = new ArrayList<>();
+        for (String value : values) {
+            valuesAsRegexes.add(Pattern.quote(value));
+        }
+        return createMatchesRegexAnnotation(valuesAsRegexes);
+    }
+
+    /**
+     * Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation.
+     *
+     * @param arrayLenAnno an ArrayLen annotation
+     * @return an ArrayLenRange annotation representing the bounds of the given ArrayLen annotation
+     */
     public AnnotationMirror convertArrayLenToArrayLenRange(AnnotationMirror arrayLenAnno) {
         List<Integer> values = getArrayLength(arrayLenAnno);
         return createArrayLenRangeAnnotation(Collections.min(values), Collections.max(values));
@@ -1040,12 +1116,34 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
-     * empty list if no values are possible (for dead code). Returns null if any value is possible
-     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
-     * annotation so the argument is null.
+     * Returns the single possible boolean value, or null if there is not exactly one possible
+     * value.
+     *
+     * @see #getBooleanValues
+     * @param boolAnno a {@code @BoolVal} annotation, or null
+     * @return the single possible boolean value, on null if that is not the case
+     */
+    public static Boolean getBooleanValue(AnnotationMirror boolAnno) {
+        if (boolAnno == null) {
+            return null;
+        }
+        List<Boolean> boolValues =
+                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
+        Set<Boolean> boolSet = new TreeSet<>(boolValues);
+        if (boolSet.size() == 1) {
+            return boolSet.iterator().next();
+        }
+        return null;
+    }
+
+    /**
+     * Returns the set of possible boolean values as a sorted list with no duplicate values. Returns
+     * the empty list if no values are possible (for dead code). Returns null if any value is
+     * possible -- that is, if no estimate can be made -- and this includes when there is no
+     * constant-value annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
+     * @return a list of possible boolean values
      */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
@@ -1196,41 +1294,51 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns the minimum length of an array expression or 0 if the min length is unknown.
      *
-     * @param sequenceExpression flow expression
+     * @param sequenceExpression Java expression
      * @param tree expression tree or variable declaration
      * @param currentPath path to local scope
      * @return min length of sequenceExpression or 0
      */
     public int getMinLenFromString(String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror lengthAnno;
-        FlowExpressions.Receiver expressionObj;
+        JavaExpression expressionObj;
         try {
-            expressionObj = getReceiverFromJavaExpressionString(sequenceExpression, currentPath);
-        } catch (FlowExpressionParseException e) {
+            expressionObj = parseJavaExpressionString(sequenceExpression, currentPath);
+        } catch (JavaExpressionParseException e) {
             // ignore parse errors and return 0.
             return 0;
         }
 
-        if (expressionObj instanceof FlowExpressions.ValueLiteral) {
-            FlowExpressions.ValueLiteral sequenceLiteral =
-                    (FlowExpressions.ValueLiteral) expressionObj;
+        if (expressionObj instanceof ValueLiteral) {
+            ValueLiteral sequenceLiteral = (ValueLiteral) expressionObj;
             Object sequenceLiteralValue = sequenceLiteral.getValue();
             if (sequenceLiteralValue instanceof String) {
                 return ((String) sequenceLiteralValue).length();
             }
-        } else if (expressionObj instanceof FlowExpressions.ArrayCreation) {
-            FlowExpressions.ArrayCreation arrayCreation =
-                    (FlowExpressions.ArrayCreation) expressionObj;
+        } else if (expressionObj instanceof ArrayCreation) {
+            ArrayCreation arrayCreation = (ArrayCreation) expressionObj;
             // This is only expected to support array creations in varargs methods
             return arrayCreation.getInitializers().size();
+        } else if (expressionObj instanceof ArrayAccess) {
+            List<? extends AnnotationMirror> annoList =
+                    expressionObj.getType().getAnnotationMirrors();
+            for (AnnotationMirror anno : annoList) {
+                String ANNO_NAME = AnnotationUtils.annotationName(anno);
+                if (ANNO_NAME.equals(MINLEN_NAME)) {
+                    return getMinLenValue(canonicalAnnotation(anno));
+                } else if (ANNO_NAME.equals(ARRAYLEN_NAME)
+                        || ANNO_NAME.equals(ARRAYLENRANGE_NAME)) {
+                    return getMinLenValue(anno);
+                }
+            }
         }
 
-        lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLenRange.class);
+        lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, ArrayLenRange.class);
         if (lengthAnno == null) {
-            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLen.class);
+            lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, ArrayLen.class);
         }
         if (lengthAnno == null) {
-            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, StringVal.class);
+            lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, StringVal.class);
         }
 
         if (lengthAnno == null) {

@@ -1,1 +1,1 @@
-class NonN<T> {}
+public class NonN<T> {}

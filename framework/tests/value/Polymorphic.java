@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class Polymorphic {
+public class Polymorphic {
 
     // Identity functions
 

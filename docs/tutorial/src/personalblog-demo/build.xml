@@ -1,11 +1,11 @@
 <project name="personalblog-demo" default="check-tainting">
-<property environment="env"/>
+
+  <property environment="env"/>
 
   <property name="checker-framework" value="../../../.."/>
 
-  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
   <condition property="cfJavac" value="javac.bat" else="javac">
-      <os family="windows" />
+    <os family="windows" />
   </condition>
 
 

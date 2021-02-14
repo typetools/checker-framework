@@ -1,3 +1,3 @@
 import java.io.Serializable;
 
-class Test implements Serializable {}
+public class Test implements Serializable {}

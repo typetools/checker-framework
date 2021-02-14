@@ -7,7 +7,7 @@ import java.util.Map;
 public class CollectionUtils {
 
     /**
-     * A Utility method for creating LRU cache.
+     * Creates a LRU cache.
      *
      * @param size size of the cache
      * @return a new cache with the provided size

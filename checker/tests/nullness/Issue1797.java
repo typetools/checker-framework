@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue1797 {
+public class Issue1797 {
     void fooReturn(@Nullable Object o) {
         try {
             return;

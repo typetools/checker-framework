@@ -7,6 +7,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -16,20 +17,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicLong;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
+import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
+import org.plumelib.util.UniqueId;
 
-/** A control flow graph (CFG for short) of a single method. */
-public class ControlFlowGraph {
+/**
+ * A control flow graph (CFG for short) of a single method.
+ *
+ * <p>The graph is represented by the successors (methods {@link SingleSuccessorBlock#getSuccessor},
+ * {@link ConditionalBlock#getThenSuccessor}, {@link ConditionalBlock#getElseSuccessor}, {@link
+ * ExceptionBlock#getExceptionalSuccessors}, {@link RegularBlock#getRegularSuccessor}) and
+ * predecessors (method {@link Block#getPredecessors}) of the entry and exit blocks.
+ */
+public class ControlFlowGraph implements UniqueId {
 
     /** The entry block of the control flow graph. */
     protected final SpecialBlock entryBlock;
@@ -41,13 +56,31 @@ public class ControlFlowGraph {
     protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
-    protected final UnderlyingAST underlyingAST;
+    public final UnderlyingAST underlyingAST;
+
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
+    /** The unique ID of this object. */
+    final transient long uid = nextUid.getAndIncrement();
+
+    @Override
+    public long getUid(@UnknownInitialization ControlFlowGraph this) {
+        return uid;
+    }
 
     /**
-     * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-     * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-     * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
-     * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
+     * Maps from AST {@link Tree}s to sets of {@link Node}s.
+     *
+     * <ul>
+     *   <li>Most Trees that produce a value will have at least one corresponding Node.
+     *   <li>Trees that undergo conversions, such as boxing or unboxing, can map to two distinct
+     *       Nodes. The Node for the pre-conversion value is stored in {@link #treeLookup}, while
+     *       the Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
+     * </ul>
+     *
+     * Some of the mapped-to nodes (in both {@link #treeLookup} and {@link #convertedTreeLookup}) do
+     * not appear in {@link #getAllNodes} because their blocks are not reachable in the control flow
+     * graph. Dataflow will not compute abstract values for these nodes.
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
@@ -100,9 +133,12 @@ public class ControlFlowGraph {
     }
 
     /**
+     * Returns the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
+     * trees that don't produce a value.
+     *
      * @param t a tree
-     * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. Returns
-     *     null for trees that don't produce a value.
+     * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
+     *     trees that don't produce a value
      */
     public @Nullable Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
@@ -112,7 +148,11 @@ public class ControlFlowGraph {
         }
     }
 
-    /** @return the entry block of the control flow graph. */
+    /**
+     * Returns the entry block of the control flow graph.
+     *
+     * @return the entry block of the control flow graph
+     */
     public SpecialBlock getEntryBlock() {
         return entryBlock;
     }
@@ -129,13 +169,22 @@ public class ControlFlowGraph {
         return exceptionalExitBlock;
     }
 
-    /** @return the AST this CFG corresponds to. */
+    /**
+     * Returns the AST this CFG corresponds to.
+     *
+     * @return the AST this CFG corresponds to
+     */
     public UnderlyingAST getUnderlyingAST() {
         return underlyingAST;
     }
 
-    /** @return the set of all basic block in this control flow graph */
-    public Set<Block> getAllBlocks() {
+    /**
+     * Returns the set of all basic blocks in this control flow graph.
+     *
+     * @return the set of all basic blocks in this control flow graph
+     */
+    public Set<Block> getAllBlocks(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
@@ -147,7 +196,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Deque<Block> succs = getSuccessors(cur);
+            Collection<Block> succs = cur.getSuccessors();
 
             for (Block b : succs) {
                 if (!visited.contains(b)) {
@@ -163,9 +212,25 @@ public class ControlFlowGraph {
     }
 
     /**
+     * Returns all nodes in this control flow graph.
+     *
+     * @return all nodes in this control flow graph
+     */
+    public List<Node> getAllNodes(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
+        List<Node> result = new ArrayList<>();
+        for (Block b : getAllBlocks()) {
+            result.addAll(b.getNodes());
+        }
+        return result;
+    }
+
+    /**
+     * Returns all basic blocks in this control flow graph, in reversed depth-first postorder.
+     * Blocks may appear more than once in the sequence.
+     *
      * @return the list of all basic block in this control flow graph in reversed depth-first
-     *     postorder sequence.
-     *     <p>Blocks may appear more than once in the sequence.
+     *     postorder sequence
      */
     public List<Block> getDepthFirstOrderedBlocks() {
         List<Block> dfsOrderResult = new ArrayList<>();
@@ -179,7 +244,7 @@ public class ControlFlowGraph {
                 worklist.removeLast();
             } else {
                 visited.add(cur);
-                Deque<Block> successors = getSuccessors(cur);
+                Collection<Block> successors = cur.getSuccessors();
                 successors.removeAll(visited);
                 worklist.addAll(successors);
             }
@@ -190,39 +255,20 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Get a list of all successor Blocks for cur.
+     * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
+     * #getNodesCorrespondingToTree} uses that field.
      *
-     * @return a Deque of successor Blocks
+     * @return the copied tree-lookup map
      */
-    private Deque<Block> getSuccessors(Block cur) {
-        Deque<Block> succs = new ArrayDeque<>();
-        if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
-            ConditionalBlock ccur = ((ConditionalBlock) cur);
-            succs.add(ccur.getThenSuccessor());
-            succs.add(ccur.getElseSuccessor());
-        } else {
-            assert cur instanceof SingleSuccessorBlock;
-            Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-            if (b != null) {
-                succs.add(b);
-            }
-        }
-
-        if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
-            ExceptionBlock ecur = (ExceptionBlock) cur;
-            for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                succs.addAll(exceptionSuccSet);
-            }
-        }
-        return succs;
-    }
-
-    /** @return the copied tree-lookup map */
     public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
     }
 
-    /** @return the copied lookup-map of the assign node for unary operation */
+    /**
+     * Returns the copied lookup-map of the assign node for unary operation.
+     *
+     * @return the copied lookup-map of the assign node for unary operation
+     */
     public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
         return new IdentityHashMap<>(unaryAssignNodeLookup);
     }
@@ -273,9 +319,42 @@ public class ControlFlowGraph {
         Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
         viz.shutdown();
         if (res == null) {
-            return super.toString();
+            return "unvisualizable " + getClass().getCanonicalName();
         }
         String stringGraph = (String) res.get("stringGraph");
-        return stringGraph == null ? super.toString() : stringGraph;
+        return stringGraph == null
+                ? "unvisualizable " + getClass().getCanonicalName()
+                : stringGraph;
+    }
+
+    /**
+     * Returns a verbose string representation of this, useful for debugging.
+     *
+     * @return a string representation of this
+     */
+    public String toStringDebug() {
+        String className = this.getClass().getSimpleName();
+        if (className.equals("ControlFlowGraph") && this.getClass() != ControlFlowGraph.class) {
+            className = this.getClass().getCanonicalName();
+        }
+
+        StringJoiner result = new StringJoiner(String.format("%n  "));
+        result.add(className + "{");
+        result.add("entryBlock=" + entryBlock);
+        result.add("regularExitBlock=" + regularExitBlock);
+        result.add("exceptionalExitBlock=" + exceptionalExitBlock);
+        String astString = underlyingAST.toString().replaceAll("\\s", " ");
+        if (astString.length() > 65) {
+            astString = "\"" + astString.substring(0, 60) + "\"";
+        }
+        result.add("underlyingAST=" + underlyingAST);
+        result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
+        result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
+        result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
+        result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
+        result.add("declaredClasses=" + declaredClasses);
+        result.add("declaredLambdas=" + declaredLambdas);
+        result.add("}");
+        return result.toString();
     }
 }

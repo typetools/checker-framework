@@ -6,7 +6,6 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 
 /**
  * Default implementation of {@link AbstractQualifierPolymorphism}. The polymorphic qualifiers for a
@@ -35,47 +34,31 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
 
     @Override
     protected void replace(
-            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
-        for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
+            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
+        for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
             if (type.hasAnnotation(poly)) {
                 type.removeAnnotation(poly);
-                AnnotationMirrorSet quals = pqentry.getValue();
-                type.replaceAnnotations(quals);
+                AnnotationMirror qual;
+                if (polyInstantiationForQualifierParameter.containsKey(poly)) {
+                    qual = polyInstantiationForQualifierParameter.get(poly);
+                } else {
+                    qual = pqentry.getValue();
+                }
+                type.replaceAnnotation(qual);
             }
         }
     }
 
-    /**
-     * Returns the lub of the two sets.
-     *
-     * @param polyQual polymorphic qualifier for which {@code a1Annos} and {@code a2Annos} are
-     *     instantiations
-     * @param a1Annos a set that is an instantiation of {@code polyQual}, or null
-     * @param a2Annos a set that is an instantiation of {@code polyQual}, or null
-     * @return the lub of the two sets
-     */
+    /** Combines the two annotations using the least upper bound. */
     @Override
-    protected AnnotationMirrorSet combine(
-            AnnotationMirror polyQual, AnnotationMirrorSet a1Annos, AnnotationMirrorSet a2Annos) {
-        if (a1Annos == null) {
-            if (a2Annos == null) {
-                return new AnnotationMirrorSet();
-            }
-            return a2Annos;
-        } else if (a2Annos == null) {
-            return a1Annos;
+    protected AnnotationMirror combine(
+            AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
+        if (a1 == null) {
+            return a2;
+        } else if (a2 == null) {
+            return a1;
         }
-
-        AnnotationMirrorSet lubSet = new AnnotationMirrorSet();
-        for (AnnotationMirror top : topQuals) {
-            AnnotationMirror a1 = qualHierarchy.findAnnotationInHierarchy(a1Annos, top);
-            AnnotationMirror a2 = qualHierarchy.findAnnotationInHierarchy(a2Annos, top);
-            AnnotationMirror lub = qualHierarchy.leastUpperBoundTypeVariable(a1, a2);
-            if (lub != null) {
-                lubSet.add(lub);
-            }
-        }
-        return lubSet;
+        return qualHierarchy.leastUpperBound(a1, a2);
     }
 }

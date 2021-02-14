@@ -1,4 +1,4 @@
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /*
  * @test
@@ -37,7 +37,8 @@ public class Extends {
 
 class TestWrapper {
     public static String wrap(String... method) {
-        return PluginUtil.joinLines(
-                "class Test extends Super {", PluginUtil.joinLines(method), "}");
+        return String.join(
+                System.lineSeparator(),
+                SystemUtil.concatenate("class Test extends Super {", method, "}"));
     }
 }

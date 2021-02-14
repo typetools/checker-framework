@@ -1,8 +1,6 @@
 // Test case for Issue 904:
 // https://github.com/typetools/checker-framework/issues/904
 
-// @skip-test
-
 public class Issue904 {
     final Object mBar;
     final Runnable mRunnable =

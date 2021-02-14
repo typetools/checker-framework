@@ -22,10 +22,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -58,7 +61,7 @@ import org.plumelib.reflection.Signatures;
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
-    /** For issuing errors to the user */
+    /** For issuing errors to the user. */
     protected final BaseTypeChecker checker;
 
     // For loading from a source package directory
@@ -274,6 +277,7 @@ public class AnnotationClassLoader {
      * @param jar a jar file
      * @return true if the jar file contains the qual package, false otherwise
      */
+    @SuppressWarnings("JdkObsolete")
     private final boolean checkJarForPackage(final JarFile jar) {
         Enumeration<JarEntry> jarEntries = jar.entries();
 
@@ -490,16 +494,10 @@ public class AnnotationClassLoader {
      * Checker Framework.
      */
     private void loadBundledAnnotationClasses() {
-        // if there's no resourceURL, then there's nothing we can load
-        if (resourceURL == null) {
-            return;
-        }
-
         // retrieve the fully qualified class names of the annotations
         Set<@BinaryName String> annotationNames;
-
         // see whether the resource URL has a protocol of jar or file
-        if (resourceURL.getProtocol().contentEquals("jar")) {
+        if (resourceURL != null && resourceURL.getProtocol().contentEquals("jar")) {
             // if the checker class file is contained within a jar, then the
             // resource URL for the qual directory will have the protocol
             // "jar". This means the whole checker is loaded as a jar file.
@@ -531,7 +529,7 @@ public class AnnotationClassLoader {
                         "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
             }
 
-        } else if (resourceURL.getProtocol().contentEquals("file")) {
+        } else if (resourceURL != null && resourceURL.getProtocol().contentEquals("file")) {
             // if the checker class file is found within the file system itself
             // within some directory (usually development build directories),
             // then process the package as a file directory in the file system
@@ -544,7 +542,21 @@ public class AnnotationClassLoader {
             // We do not support a resource URL with any other protocols, so create an empty set.
             annotationNames = Collections.emptySet();
         }
-
+        if (annotationNames.isEmpty()) {
+            PackageElement pkgEle = checker.getElementUtils().getPackageElement(packageName);
+            if (pkgEle != null) {
+                for (Element e : pkgEle.getEnclosedElements()) {
+                    if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
+                        @SuppressWarnings(
+                                "signature:assignment.type.incompatible") // Elements needs to be
+                        // annotated.
+                        @BinaryName String annoBinName =
+                                checker.getElementUtils().getBinaryName((TypeElement) e).toString();
+                        annotationNames.add(annoBinName);
+                    }
+                }
+            }
+        }
         supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
     }
 
@@ -568,6 +580,7 @@ public class AnnotationClassLoader {
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
+    @SuppressWarnings("JdkObsolete")
     private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
         Set<@BinaryName String> annos = new LinkedHashSet<>();
 
@@ -681,13 +694,13 @@ public class AnnotationClassLoader {
                                     .replace(SLASH, DOT);
                 }
                 // Simple annotation name, which is the same as the file name (without directory)
-                // but with file extension removed
+                // but with file extension removed.
                 @BinaryName String annotationName = fileName;
                 if (fileName.lastIndexOf(DOT) != -1) {
                     annotationName = fileName.substring(0, fileName.lastIndexOf(DOT));
                 }
 
-                // Fully qualified annotation class name
+                // Fully qualified annotation class name (a @BinaryName, not a @FullyQualifiedName)
                 @BinaryName String fullyQualifiedAnnoName =
                         Signatures.addPackage(
                                 packageName, Signatures.addPackage(qualPackage, annotationName));
@@ -706,10 +719,10 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Loads the class indicated by the fullyQualifiedClassName, and checks to see if it is an
-     * annotation that is supported by a checker.
+     * Loads the class indicated by the name, and checks to see if it is an annotation that is
+     * supported by a checker.
      *
-     * @param fullyQualifiedClassName the fully qualified name of the class
+     * @param className the name of the class, in binary name format
      * @param issueError set to true to issue a warning when a loaded annotation is not a type
      *     annotation. It is useful to set this to true if a given annotation must be a well-defined
      *     type annotation (eg for annotation class names given as command line arguments). It
@@ -719,21 +732,21 @@ public class AnnotationClassLoader {
      *     annotation is not supported by a checker, null is returned.
      */
     protected final @Nullable Class<? extends Annotation> loadAnnotationClass(
-            final @ClassGetName String fullyQualifiedClassName, boolean issueError) {
+            final @BinaryName String className, boolean issueError) {
 
         // load the class
         Class<?> cls = null;
         try {
             if (classLoader != null) {
-                cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+                cls = Class.forName(className, true, classLoader);
             } else {
-                cls = Class.forName(fullyQualifiedClassName);
+                cls = Class.forName(className);
             }
         } catch (ClassNotFoundException e) {
             throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": could not load class for annotation: "
-                            + fullyQualifiedClassName
+                            + className
                             + ". Ensure that it is a type annotation"
                             + " and your classpath is correct.");
         }
@@ -777,22 +790,20 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Loads a set of annotations indicated by fullyQualifiedAnnoNames.
+     * Loads a set of annotations indicated by their names.
      *
-     * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
-     *     class's fully qualified name
+     * @param annoNames a set of binary names for annotation classes
      * @return a set of loaded annotation classes
      * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final @Nullable Set<@BinaryName String> fullyQualifiedAnnoNames) {
+            final @Nullable Set<@BinaryName String> annoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
-        if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {
+        if (annoNames != null && !annoNames.isEmpty()) {
             // loop through each class name & load the class
-            for (String fullyQualifiedAnnoName : fullyQualifiedAnnoNames) {
-                Class<? extends Annotation> annoClass =
-                        loadAnnotationClass(fullyQualifiedAnnoName, false);
+            for (String annoName : annoNames) {
+                Class<? extends Annotation> annoClass = loadAnnotationClass(annoName, false);
                 if (annoClass != null) {
                     loadedClasses.add(annoClass);
                 }

@@ -6,7 +6,7 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Other.java Test.java Test2.java
  */
 
-class Other {
+public class Other {
     void foo() {
         Test other = null;
         Test2 other2 = null;

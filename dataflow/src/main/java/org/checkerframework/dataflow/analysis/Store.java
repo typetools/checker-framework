@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.analysis;
 
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.expression.JavaExpression;
 
 /**
  * A store is used to keep track of the information that the org.checkerframework.dataflow analysis
@@ -25,15 +26,30 @@ public interface Store<S extends Store<S>> {
 
     /** A flow rule describes how stores flow along one edge between basic blocks. */
     public static enum FlowRule {
-        EACH_TO_EACH, // The normal case, then store flows to the then store
-        // and else store flows to the else store.
-        THEN_TO_BOTH, // Then store flows to both then and else of successor.
-        ELSE_TO_BOTH, // Else store flows to both then and else of successor.
-        THEN_TO_THEN, // Then store flows to the then of successor.  Else store is ignored.
-        ELSE_TO_ELSE, // Else store flows to the else of successor.  Then store is ignored.
+        /**
+         * The normal case: then store flows to the then store, and else store flows to the else
+         * store.
+         */
+        EACH_TO_EACH,
+        /** Then store flows to both then and else of successor. */
+        THEN_TO_BOTH,
+        /** Else store flows to both then and else of successor. */
+        ELSE_TO_BOTH,
+        /** Then store flows to the then of successor. Else store is ignored. */
+        THEN_TO_THEN,
+        /** Else store flows to the else of successor. Then store is ignored. */
+        ELSE_TO_ELSE,
+        /** Both stores flow to the then of successor. */
+        BOTH_TO_THEN,
+        /** Both stores flow to the else of successor. */
+        BOTH_TO_ELSE,
     }
 
-    /** @return an exact copy of this store. */
+    /**
+     * Returns an exact copy of this store.
+     *
+     * @return an exact copy of this store
+     */
     S copy();
 
     /**
@@ -79,7 +95,7 @@ public interface Store<S extends Store<S>> {
      * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,
      * returns {@code true} if not enough information is available to determine aliasing).
      */
-    boolean canAlias(FlowExpressions.Receiver a, FlowExpressions.Receiver b);
+    boolean canAlias(JavaExpression a, JavaExpression b);
 
     /**
      * Delegate visualization responsibility to a visualizer.

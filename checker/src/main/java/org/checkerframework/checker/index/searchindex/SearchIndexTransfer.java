@@ -6,9 +6,9 @@ import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -65,8 +65,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                 List<String> arrays =
                         ValueCheckerUtils.getValueOfAnnotationWithStringArgument(rightSI);
                 AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
-                store.insertValue(
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);
+                store.insertValue(JavaExpression.fromNode(analysis.getTypeFactory(), right), nif);
             }
         }
     }

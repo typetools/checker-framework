@@ -89,6 +89,12 @@ public class ExecUtil {
         }
     }
 
+    /**
+     * Close the given writer, ignoring exceptions.
+     *
+     * @param writer the writer to close
+     */
+    @SuppressWarnings("EmptyCatch") // the purpose of this method is to ignore exceptions
     public static void quietlyClose(final Writer writer) {
         try {
             writer.close();
@@ -96,6 +102,12 @@ public class ExecUtil {
         }
     }
 
+    /**
+     * Close the given reader, ignoring exceptions.
+     *
+     * @param reader the reader to close
+     */
+    @SuppressWarnings("EmptyCatch") // the purpose of this method is to ignore exceptions
     public static void quietlyClose(final Reader reader) {
         try {
             reader.close();

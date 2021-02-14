@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 
-class KeyForPostcondition {
+public class KeyForPostcondition {
 
     public static Map<String, Integer> m = new HashMap<>();
 

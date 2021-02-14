@@ -1,4 +1,4 @@
-import testlib.util.Critical;
+import org.checkerframework.framework.testchecker.util.Critical;
 
 /**
  * Tests the symantics for throwable exception.

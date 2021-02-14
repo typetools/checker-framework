@@ -18,9 +18,15 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public final class ListTypeAnnotator extends TypeAnnotator {
 
-    protected final List<TypeAnnotator> annotators;
+    /**
+     * The annotators that will be executed for each type scanned by this TypeAnnotator. They are
+     * executed in order.
+     */
+    final List<TypeAnnotator> annotators;
 
     /**
+     * Create a new ListTypeAnnotator.
+     *
      * @param annotators the annotators that will be executed for each type scanned by this
      *     TypeAnnotator. They are executed in the order passed in.
      */

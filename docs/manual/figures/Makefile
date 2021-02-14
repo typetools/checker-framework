@@ -9,7 +9,9 @@ RSVG_CONVERT_VERSION := $(shell rsvg-convert --version 2>/dev/null)
 all: ${PDFFILES} clean-obsolete-files svg-copy
 
 svg-copy:
+	-chmod -f +w ../*.svg
 	cp -pf *.svg ..
+	chmod -f -w ../*.svg
 
 %.pdf : %.svg
 ifdef RSVG_CONVERT_VERSION

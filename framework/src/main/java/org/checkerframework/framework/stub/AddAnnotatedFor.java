@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.Annotations;
 import scenelib.annotations.el.ABlock;
@@ -49,9 +50,12 @@ public class AddAnnotatedFor {
                 Annotations.createValueAnnotation(
                         Annotations.adTarget,
                         Arrays.asList("TYPE", "METHOD", "CONSTRUCTOR", "PACKAGE")));
+        @SuppressWarnings(
+                "signature") // TODO bug: AnnotationDef requires @BinaryName, gets CanonicalName
+        @BinaryName String name = annotatedFor.getCanonicalName();
         adAnnotatedFor =
                 new AnnotationDef(
-                        annotatedFor.getCanonicalName(),
+                        name,
                         annotatedForMetaAnnotations,
                         Collections.singletonMap(
                                 "value", new ArrayAFT(BasicAFT.forType(String.class))),

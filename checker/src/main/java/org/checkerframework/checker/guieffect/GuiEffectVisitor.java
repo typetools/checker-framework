@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
@@ -31,10 +32,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -126,24 +130,36 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 checker.reportError(
                         overriderTree,
                         "override.receiver.invalid",
-                        overriderMeth,
-                        overriderTyp,
-                        overriddenMeth,
-                        overriddenTyp,
                         overrider.getReceiverType(),
-                        overridden.getReceiverType());
+                        overridden.getReceiverType(),
+                        overrider,
+                        overriderType,
+                        overridden,
+                        overriddenType);
                 return false;
             }
             return true;
         }
 
+        /**
+         * Create a GuiEffectOverrideChecker.
+         *
+         * @param overriderTree the AST node of the overriding method or method reference
+         * @param overrider the type of the overriding method
+         * @param overridingType the type enclosing the overrider method, usually an
+         *     AnnotatedDeclaredType; for Method References may be something else
+         * @param overridingReturnType the return type of the overriding method
+         * @param overridden the type of the overridden method
+         * @param overriddenType the declared type enclosing the overridden method
+         * @param overriddenReturnType the return type of the overridden method
+         */
         public GuiEffectOverrideChecker(
                 Tree overriderTree,
-                AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+                AnnotatedExecutableType overrider,
                 AnnotatedTypeMirror overridingType,
                 AnnotatedTypeMirror overridingReturnType,
                 AnnotatedExecutableType overridden,
-                AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+                AnnotatedDeclaredType overriddenType,
                 AnnotatedTypeMirror overriddenReturnType) {
             super(
                     overriderTree,
@@ -210,6 +226,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // comparing AST nodes
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
         Void v = super.visitLambdaExpression(node, p);
         // If this is a lambda inferred to be @UI, scan up the path and re-check any assignments
@@ -250,7 +267,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             System.err.println("methodElt found");
         }
 
-        Tree callerTree = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
+        Tree callerTree = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
         if (callerTree == null) {
             // Static initializer; let's assume this is safe to have the UI effect
             if (debugSpew) {
@@ -369,8 +386,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
         if (debugSpew) {
-            System.err.println();
-            System.err.println("Visiting method " + methElt);
+            System.err.println(
+                    "Visiting method " + methElt + " of " + methElt.getEnclosingElement());
         }
 
         // Check for conflicting (multiple) annotations
@@ -435,6 +452,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // comparing AST nodes
     public Void visitNewClass(NewClassTree node, Void p) {
         Void v = super.visitNewClass(node, p);
         // If this is an anonymous inner class inferred to be @UI, scan up the path and re-check any
@@ -453,11 +471,13 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     /**
      * This method is called to traverse the path back up from any anonymous inner class or lambda
-     * which has been inferred to be UI affecting and re-run {@link #commonAssignmentCheck(Tree,
-     * ExpressionTree, String)} as needed on places where the class declaration or lambda expression
-     * are being assigned to a variable, passed as a parameter or returned from a method. This is
-     * necessary because the normal visitor traversal only checks assignments on the way down the
-     * AST, before inference has had a chance to run.
+     * which has been inferred to be UI affecting and re-run {@code commonAssignmentCheck} as needed
+     * on places where the class declaration or lambda expression are being assigned to a variable,
+     * passed as a parameter or returned from a method. This is necessary because the normal visitor
+     * traversal only checks assignments on the way down the AST, before inference has had a chance
+     * to run.
+     *
+     * @param path the path to traverse up from a UI-affecting class
      */
     private void scanUp(TreePath path) {
         Tree tree = path.getLeaf();
@@ -483,6 +503,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 List<? extends ExpressionTree> args = invocationTree.getArguments();
                 ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
                 AnnotatedExecutableType invokedMethod = mType.executableType;
+                ExecutableElement method = invokedMethod.getElement();
+                CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
+                List<? extends VariableElement> methodParams = method.getParameters();
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(
                                 atypeFactory, invokedMethod, invocationTree.getArguments());
@@ -493,7 +516,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                                 argsTypes.get(i),
                                 atypeFactory.getAnnotatedType(args.get(i)),
                                 args.get(i),
-                                "argument.type.incompatible");
+                                "argument.type.incompatible",
+                                methodParams.get(i),
+                                methodName);
                     }
                 }
                 break;
@@ -501,7 +526,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 ReturnTree returnTree = (ReturnTree) tree;
                 if (returnTree.getExpression().getKind() == Tree.Kind.NEW_CLASS
                         || returnTree.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-                    Tree enclosing = TreeUtils.enclosingMethodOrLambda(path);
+                    Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
                     AnnotatedTypeMirror ret = null;
                     if (enclosing.getKind() == Tree.Kind.METHOD) {
                         MethodTree enclosingMethod = (MethodTree) enclosing;
@@ -517,7 +542,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     }
 
                     if (ret != null) {
-                        Pair<Tree, AnnotatedTypeMirror> preAssCtxt =
+                        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                                 visitorState.getAssignmentContext();
                         try {
                             visitorState.setAssignmentContext(Pair.of((Tree) returnTree, ret));
@@ -527,7 +552,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                                     returnTree.getExpression(),
                                     "return.type.incompatible");
                         } finally {
-                            visitorState.setAssignmentContext(preAssCtxt);
+                            visitorState.setAssignmentContext(preAssignmentContext);
                         }
                     }
                 }

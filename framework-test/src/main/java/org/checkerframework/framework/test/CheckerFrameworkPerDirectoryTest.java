@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.processing.AbstractProcessor;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,7 +32,7 @@ import org.junit.runner.RunWith;
  *
  * <pre><code>
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
- *   /** @param testFiles the files containing test code, which will be type-checked *{@literal /}
+ *   /** {@literal @}param testFiles the files containing test code, which will be type-checked *{@literal /}
  *   public MyTest(List{@literal <}File{@literal >} testFiles) {
  *     super(testFiles, MyChecker.class, "", "Anomsgtext");
  *   }
@@ -48,14 +49,17 @@ public abstract class CheckerFrameworkPerDirectoryTest {
     /** The files containing test code, which will be type-checked. */
     protected final List<File> testFiles;
 
-    /** The fully-qualified class name of the checker to use for tests. */
-    protected final String checkerName;
+    /** The binary names of the checkers to run. */
+    protected final List<@BinaryName String> checkerNames;
 
     /** The path, relative to currentDir/test to the directory containing test inputs. */
     protected final String testDir;
 
     /** Extra options to pass to javac when running the checker. */
     protected final List<String> checkerOptions;
+
+    /** Extra entries for the classpath. */
+    protected final List<String> classpathExtra;
 
     /**
      * Creates a new checker test.
@@ -68,14 +72,66 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
      */
-    public CheckerFrameworkPerDirectoryTest(
+    protected CheckerFrameworkPerDirectoryTest(
             List<File> testFiles,
             Class<? extends AbstractProcessor> checker,
             String testDir,
             String... checkerOptions) {
+        this(testFiles, checker, testDir, Collections.emptyList(), checkerOptions);
+    }
+
+    /**
+     * Creates a new checker test.
+     *
+     * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
+     * Iterable, Iterable, List, boolean)} adds additional checker options.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     * @param checker the class for the checker to use
+     * @param testDir the path to the directory of test inputs
+     * @param classpathExtra extra entries for the classpath
+     * @param checkerOptions options to pass to the compiler when running tests
+     */
+    @SuppressWarnings(
+            "signature:argument.type.incompatible" // for non-array non-primitive class, getName():
+    // @BinaryName
+    )
+    protected CheckerFrameworkPerDirectoryTest(
+            List<File> testFiles,
+            Class<? extends AbstractProcessor> checker,
+            String testDir,
+            List<String> classpathExtra,
+            String... checkerOptions) {
+        this(
+                testFiles,
+                Collections.singletonList(checker.getName()),
+                testDir,
+                classpathExtra,
+                checkerOptions);
+    }
+
+    /**
+     * Creates a new checker test.
+     *
+     * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
+     * Iterable, Iterable, List, boolean)} adds additional checker options.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     * @param checkerNames the binary names of the checkers to run
+     * @param testDir the path to the directory of test inputs
+     * @param classpathExtra extra entries for the classpath
+     * @param checkerOptions options to pass to the compiler when running tests
+     */
+    protected CheckerFrameworkPerDirectoryTest(
+            List<File> testFiles,
+            List<@BinaryName String> checkerNames,
+            String testDir,
+            List<String> classpathExtra,
+            String... checkerOptions) {
         this.testFiles = testFiles;
-        this.checkerName = checker.getName();
+        this.checkerNames = checkerNames;
         this.testDir = "tests" + File.separator + testDir;
+        this.classpathExtra = classpathExtra;
         this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
     }
 
@@ -88,11 +144,24 @@ public abstract class CheckerFrameworkPerDirectoryTest {
                 TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir,
                         testFiles,
-                        Collections.singleton(checkerName),
+                        classpathExtra,
+                        checkerNames,
                         customizedOptions,
                         shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
-        TestUtilities.assertResultsAreValid(testResult);
+        TypecheckResult adjustedTestResult = adjustTypecheckResult(testResult);
+        TestUtilities.assertTestDidNotFail(adjustedTestResult);
+    }
+
+    /**
+     * This method is called before issuing assertions about a TypecheckResult. Subclasses can
+     * override it to customize behavior.
+     *
+     * @param testResult a test result to possibly change
+     * @return a TypecheckResult to use instead, which may be the unmodified argument
+     */
+    public TypecheckResult adjustTypecheckResult(TypecheckResult testResult) {
+        return testResult;
     }
 
     /**

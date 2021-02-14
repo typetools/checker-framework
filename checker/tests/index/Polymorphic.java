@@ -8,7 +8,7 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 
-class Polymorphic {
+public class Polymorphic {
 
     // Identity functions
 

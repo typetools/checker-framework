@@ -15,6 +15,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors. See AtmCombo, it
  * enumerates all possible combinations and provides an "accept" method used to call AtmComboVisitor
  * visit methods.
+ *
+ * @param <RETURN_TYPE> the type returned by each visit method
+ * @param <PARAM> the type of a single value that is passed to every visit method. It can act as
+ *     global state.
  */
 public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
 

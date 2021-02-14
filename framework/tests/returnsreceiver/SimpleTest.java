@@ -1,7 +1,7 @@
 import org.checkerframework.common.returnsreceiver.qual.*;
 
 // Test basic subtyping relationships for the Returns Receiver Checker.
-class SimpleTest {
+public class SimpleTest {
 
     @This SimpleTest retNull() {
         // :: error: return.type.incompatible
@@ -50,7 +50,7 @@ class SimpleTest {
     // can write @This on receiver
     void thisOnReceiver(@This SimpleTest this) {}
 
-    // :: error: type.invalid.this.location
+    // :: error: type.invalid.this.location :: error: invalid.polymorphic.qualifier.use
     @This Object f;
 
     interface I {

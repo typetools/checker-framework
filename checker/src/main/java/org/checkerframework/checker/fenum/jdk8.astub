@@ -1,3 +1,5 @@
+// This file is for classes that appear in JDK 8 but not in JDK 11.
+
 import org.checkerframework.checker.fenum.qual.*;
 
 package javax.swing;

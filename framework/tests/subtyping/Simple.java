@@ -1,6 +1,6 @@
 import java.util.LinkedList;
 import java.util.List;
-import testlib.util.Encrypted;
+import org.checkerframework.framework.testchecker.util.Encrypted;
 
 abstract class BasicFunctionality {
 

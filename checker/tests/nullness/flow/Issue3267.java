@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue3267 {
+public class Issue3267 {
     void m1(@Nullable Object obj) {
         if (true) {
             // :: error: (dereference.of.nullable)

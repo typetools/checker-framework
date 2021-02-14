@@ -2,7 +2,7 @@ import org.checkerframework.common.value.qual.*;
 
 // @skip-test
 
-class MinLenVarargs {
+public class MinLenVarargs {
     static void check(String @MinLen(3) ... var) {
         System.out.println(var[0] + " " + var[1]);
     }

@@ -1,0 +1,40 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+final isSnapshot = version.contains('SNAPSHOT')
+// https://github.com/johnrengelman/shadow/issues/586#issuecomment-708375599
+components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+    skip()
+}
+publishing {
+    repositories {
+        maven {
+            url = (isSnapshot
+                    ? project.properties.getOrDefault('SNAPSHOT_REPOSITORY_URL', 'https://oss.sonatype.org/content/repositories/snapshots/')
+                    : project.properties.getOrDefault('RELEASE_REPOSITORY_URL', 'https://oss.sonatype.org/service/local/staging/deploy/maven2/')
+            )
+            credentials {
+                username = project.properties.get('SONATYPE_NEXUS_USERNAME')
+                password = project.properties.get('SONATYPE_NEXUS_PASSWORD')
+            }
+        }
+    }
+}
+
+signing {
+
+    // Use external gpg cmd.  This makes it easy to use gpg-agent,
+    // to avoid being prompted for a password once per artifact.
+    useGpgCmd()
+
+    // If anything about signing is misconfigured, fail loudly rather than quietly continuing with
+    // unsigned artifacts.
+    required = true
+}
+
+// Only sign releases; snapshots are unsigned.
+tasks.withType(Sign).configureEach {
+    onlyIf {
+        release
+    }
+}

@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-class NNOEMoreTests {
+public class NNOEMoreTests {
     class NNOEMain {
         protected @Nullable String nullable = null;
         @Nullable String otherNullable = null;

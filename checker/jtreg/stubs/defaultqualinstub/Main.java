@@ -5,4 +5,4 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=defaults.astub pck/Defaults.java -AstubWarnIfNotFound -Werror
  */
 
-class Main {}
+public class Main {}

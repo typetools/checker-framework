@@ -1,38 +1,51 @@
+ext {
+    annotatedJdkHome = '../../jdk'
+}
 sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs = ['src/main/java']
-            exclude '**/*.java'
+            srcDirs += ['src/main/java', "${buildDir}/generated/resources"]
         }
     }
     testannotations
-    test {
-        java {
-            // Tests that fail by design.
-            exclude 'tests/SubtypingStringPatternsPartialTest.java'
-        }
-    }
+}
+
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 def versions = [
-        autoValue       : "1.7.2",
-        lombok          : "1.18.12",
+        autoValue       : "1.7.4",
+        lombok          : "1.18.18",
 ]
 
 
 dependencies {
-    implementation project(':dataflow')
     implementation project(':javacutil')
+    implementation project(':dataflow')
     implementation files("${stubparserJar}")
-    implementation files("${afuJar}")
+    // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
+        exclude group: 'com.google.errorprone', module: 'javac'
+    }
     implementation project(':checker-qual')
-    // As of 2019/12/16, the version of reflection-util in the Annotation
-    // File Utilities takes priority over this version, in the fat jar
-    // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:0.2.2'
+    implementation 'org.plumelib:plume-util:1.4.1'
+    implementation 'org.plumelib:reflection-util:1.0.3'
 
-    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
+    // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
+    // dependencies" section of https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
+    // (It isn't at https://mvnrepository.com/artifact/org.checkerframework.annotatedlib/guava/28.2-jre, which is the bug.)
+    implementation 'com.google.errorprone:error_prone_annotations:2.5.1'
+    implementation ('org.checkerframework.annotatedlib:guava:30.0-jre') {
+        // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
+        exclude group: 'org.checkerframework'
+    }
+
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
@@ -44,14 +57,74 @@ dependencies {
     testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 
+task cloneTypetoolsJdk() {
+    description 'Obtain or update the annotated JDK.'
+    doLast {
+        if (file(annotatedJdkHome).exists()) {
+            exec {
+                workingDir annotatedJdkHome
+                executable 'git'
+                args = ['pull', '-q']
+                ignoreExitValue = true
+            }
+        } else {
+            println 'Cloning annotated JDK repository.'
+            exec {
+                workingDir "${annotatedJdkHome}/../"
+                executable 'git'
+                args = ['clone', '-q', '--depth', '1', 'https://github.com/typetools/jdk.git', 'jdk']
+            }
+        }
+    }
+}
+
+
+task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
+    dependsOn ':framework:compileJava'
+    def inputDir = "${annotatedJdkHome}/src"
+    def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
+
+    description "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
+
+    inputs.dir file(inputDir)
+    outputs.dir file(outputDir)
+
+    doLast {
+        FileTree tree = fileTree(dir: inputDir)
+        SortedSet<String> annotatedForFiles = new TreeSet<>();
+        tree.visit { FileVisitDetails fvd ->
+            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")
+                    && !fvd.file.path.contains("org/checkerframework")) {
+                fvd.getFile().readLines().any { line ->
+                    if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
+                        annotatedForFiles.add(fvd.file.absolutePath)
+                        return true;
+                    }
+                }
+            }
+        }
+        String absolutejdkHome = file(annotatedJdkHome).absolutePath
+        int jdkDirStringSize = absolutejdkHome.size()
+        copy {
+            from(annotatedJdkHome)
+            into(outputDir)
+            for (String filename : annotatedForFiles) {
+                include filename.substring(jdkDirStringSize)
+            }
+        }
+        javaexec {
+            classpath = sourceSets.main.runtimeClasspath
+
+            main = 'org.checkerframework.framework.stub.JavaStubifier'
+            args outputDir
+        }
+    }
+}
+
+processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
+
 task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {
     doLast {
-        if (!file(afuJar).exists()) {
-            if (!file(stubparserJar).exists()) {
-                throw new GradleException("${afuJar} and ${stubparserJar} do not exist. Try running './gradlew cloneAndBuildDependencies'")
-            }
-            throw new GradleException("${afuJar} does not exist. Try running './gradlew cloneAndBuildDependencies'")
-        }
         if (!file(stubparserJar).exists()) {
             throw new GradleException("${stubparserJar} does not exist. Try running './gradlew cloneAndBuildDependencies'")
         }
@@ -88,168 +161,12 @@ shadowJar {
     }
 }
 
-createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")
+createCheckTypeTask(project.name, "CompilerMessages",
+    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
 checkCompilerMessages {
     options.compilerArgs += [
             '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
     ]
-}
-
-test {
-    useJUnit {
-        // These are run in task wholeProgramInferenceTests.
-        excludeCategories 'tests.wpirunners.WholeProgramInferenceJaifsTest'
-        excludeCategories 'tests.wpirunners.WholeProgramInferenceStubsTest'
-    }
-}
-
-task testWPIStubs(type: Test) {
-    description 'Internal task to run the whole-program-inference tests with -Ainfer=stubs to generate stub files'
-
-    dependsOn(compileTestJava)
-    doFirst {
-        delete("tests/whole-program-inference/annotated")
-    }
-    outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceStubsTest.class'
-    testLogging {
-        // Always run the tests
-        outputs.upToDateWhen { false }
-
-        // Show the found unexpected diagnostics and the expected diagnostics not found.
-        exceptionFormat "full"
-        events "passed", "skipped", "failed"
-    }
-
-    doLast {
-        commonWPIlogic()
-        // The stub file format doesn't support annotations on anonymous inner classes, so
-        // this test also expects errors on UsesAnonymous.java.
-        delete('tests/whole-program-inference/annotated/UsesAnonymous.java')
-        copy {
-            from file('tests/whole-program-inference/non-annotated/UsesAnonymous.java')
-            into file('tests/whole-program-inference/annotated')
-        }
-    }
-}
-
-task testWPIStubsValidate(type: Test) {
-    description 'Internal task to re-run the whole-program-inference tests using the stub files generated by testWPIStubs'
-
-    dependsOn(testWPIStubs)
-    outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceStubsValidationTest.class'
-    testLogging {
-        // Always run the tests
-        outputs.upToDateWhen { false }
-
-        // Show the found unexpected diagnostics and the expected diagnostics not found.
-        exceptionFormat "full"
-        events "passed", "skipped", "failed"
-    }
-}
-
-// Common logic for copying and deleting whole-program inference tests.
-void commonWPIlogic() {
-    // Copying all test files to another directory, removing all expected errors that should not
-    // occur after inserting inferred annotations from .jaif files.
-    copy {
-        from files('tests/whole-program-inference/non-annotated')
-        into file('tests/whole-program-inference/annotated')
-        filter { String line ->
-            line.contains('// :: error:') ? null : line
-        }
-    }
-    // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
-    delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
-    copy {
-        from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')
-        into file('tests/whole-program-inference/annotated')
-    }
-}
-
-// This task is similar to the wholeProgramInferenceTests task below, but it doesn't
-// run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
-// and the -AmergeStubsWithSource feature to do WPI using stub files.
-task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
-    description 'Run tests for whole-program inference using stub files'
-    dependsOn(testWPIStubsValidate)
-    outputs.upToDateWhen { false }
-}
-
-task testWPIJaifs(type: Test) {
-    description 'Internal task to run the whole-program-inference tests with -Ainfer=jaifs to generate .jaif files'
-
-    dependsOn(compileTestJava)
-    doFirst {
-        delete("tests/whole-program-inference/annotated")
-    }
-    outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceJaifsTest.class'
-    testLogging {
-        // Always run the tests
-        outputs.upToDateWhen { false }
-
-        // Show the found unexpected diagnostics and expected diagnostics not found.
-        exceptionFormat "full"
-        events "passed", "skipped", "failed"
-    }
-
-    doLast {
-        commonWPIlogic()
-
-        // JAIF-based WPI fails these tests, which was added for stub-based WPI.
-        // See issue here: https://github.com/typetools/checker-framework/issues/3009
-        delete('tests/whole-program-inference/annotated/ConflictingAnnotationsTest.java')
-        delete('tests/whole-program-inference/annotated/MultiDimensionalArrays.java')
-
-        // Inserting annotations from .jaif files in-place.
-        List<File> jaifs = fileTree("${buildDir}/whole-program-inference/").matching {
-            include '*.jaif'
-        }.asList()
-        List<File> javas = fileTree("tests/whole-program-inference/annotated/").matching {
-            include '*.java'
-        }.asList()
-        exec {
-            executable "${afu}/scripts/insert-annotations-to-source"
-            args = ['-i']
-            for (File jaif : jaifs) {
-                args += [jaif.toString()]
-            }
-            for (File javaFile : javas) {
-                args += [javaFile.toString()]
-            }
-        }
-    }
-}
-
-task testWPIJaifsValidate(type: Test) {
-    description 'Internal task to re-run the whole-program-inference tests using the .jaif files generated by testWPIJaifs'
-
-    dependsOn(testWPIJaifs)
-    outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceJaifsValidationTest.class'
-    testLogging {
-        // Always run the tests
-        outputs.upToDateWhen { false }
-
-        // Show the found unexpected diagnostics and expected diagnostics not found.
-        exceptionFormat "full"
-        events "passed", "skipped", "failed"
-    }
-}
-
-task wholeProgramInferenceJaifTests(dependsOn: 'shadowJar', group: 'Verification') {
-    description 'Run tests for whole-program inference using .jaif files'
-    dependsOn(testWPIJaifsValidate)
-    outputs.upToDateWhen { false }
-}
-
-// empty task that just runs both the jaif and stub WPI tests
-task wholeProgramInferenceTests() {
-    description "Run tests for all whole program inference modes."
-    dependsOn('wholeProgramInferenceJaifTests')
-    dependsOn('wholeProgramInferenceStubTests')
 }
 
 task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
@@ -267,8 +184,8 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
 }
 
 clean {
-    delete("tests/whole-program-inference/annotated")
     delete("tests/returnsreceiverdelomboked")
+    delete('dist')
 }
 
 
@@ -281,10 +198,15 @@ task delombok {
     inputs.files file(srcJava)
     outputs.dir file(srcDelomboked)
 
+    // This dependency is required to ensure the checker-qual jar exists,
+    // to prevent lombok from emitting "cannot find symbol" errors for @This
+    // annotations in the test input code.
+    dependsOn project(':checker-qual').tasks.jar
+
     doLast {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-                classpath: configurations.testCompileClasspath.asPath)
+                classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
     }
 }

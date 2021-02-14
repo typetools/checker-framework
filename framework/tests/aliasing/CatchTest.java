@@ -1,6 +1,6 @@
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class CatchTest {
+public class CatchTest {
 
     void foo() {
         @Unique Exception exVar = new Exception();

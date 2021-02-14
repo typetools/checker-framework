@@ -89,13 +89,8 @@ Sharing your annotations is useful even if the library is only partially
 annotated.
 However, as noted in Sections~\ref{get-started-with-legacy-code} and~\ref{library-tips-fully-annotate}, you
 should annotate an entire class at a time.
-You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
+You may find type inference tools (\chapterpageref{type-inference}) helpful
 when getting started, but you should always examine their results.
-%% This text does not feel so relevant.
-% You can determine the correct annotations for a library either
-% automatically by running an inference tool, or manually by reading the
-% documentation.  Presently, automated type inference tools are available for the
-% Nullness (Section~\ref{nullness-inference}) type system.
 
 
 \sectionAndLabel{Tips for annotating a library}{library-tips}
@@ -189,9 +184,29 @@ annotated.
 
 Whenever you annotate any part of a file, fully annotate the file!  That
 is, write annotations for all the methods and fields, based on their
-documentation.  If you don't annotate the whole file, then users may be
-surprised that calls to some methods type-check as expected whereas other
-methods do not (because they have not been annotated).
+documentation.  Here are reasons for this rule:
+
+\begin{itemize}
+\item
+  If you annotate just part of the file, then users may be surprised that
+  calls to some methods type-check as expected whereas other methods do not
+  (because they have not been annotated).
+\item
+  Annotating one method or field at a time may lead to inconsistencies
+  between different parts of the file.  Different people may make different
+  assumptions, might write annotations in a way that is locally convenient
+  but globally inconsistent, or might not read all the documentation of the
+  class to understand how it works.
+\item
+  It is not much more effort to annotate an entire class versus one method
+  or field.  In either case it is usually necessary to understand the entire
+  class's design and implementation.  Once you have done that, you might as
+  well annotate the whole thing.
+\item
+  If you fully annotate the file, it is possible to type-check the library to
+  verify the annotations.  (Even if you do not do this right now, it eases
+  the task in the future.)
+\end{itemize}
 
 
 \subsectionAndLabel{Verify your annotations}{library-tips-verify}
@@ -244,7 +259,8 @@ This section describes how to create an annotated library.
     made.
 
   Adjust the library's
-  build process, such as an Ant, Gradle, or Maven buildfile.
+  build process, such as an Ant, Gradle, or Maven buildfile (for guidance,
+  see \chapterpageref{external-tools}).
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
@@ -321,22 +337,9 @@ This section describes how to create an annotated library.
 
 When you create a new checker, you need to also supply annotations for
 parts of the JDK\@.  You can do so either as stub files or in a copy of the
-JDK source code.  This
-section describes the latter approach.
-It assumes that you have already followed the instructions for building the
-Checker Framework from source (Section~\ref{build-source}).
-(Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
-JDK annotations for an existing type system.)
-
-Edit files in repository \url{https://github.com/typetools/jdk}.  Add
-an \<@AnnotatedFor()> annotation to each file you annotate.
-
-Whenever you add a file, fully annotate it, as described in
-Section~\ref{library-tips}.
-
-If you are only annotating fields and method signatures (but not
-ensuring that method bodies type-check), then you don't need to suppress
-warnings, because the JDK is not type-checked.
+JDK source code, as described in Section~\ref{creating-a-checker-annotated-jdk}.
+Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
+JDK annotations for an existing type system.
 
 
 \sectionAndLabel{Compiling partially-annotated libraries}{compiling-libraries}
@@ -380,7 +383,7 @@ the checker to behave normally for classes with a relevant \<@AnnotatedFor>
 annotation.  For classes without \<@AnnotatedFor>, the checker uses
 conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
-user-written annotation, and the checker issues no warnings.
+user-written annotation, \emph{and} the checker issues no warnings.
 \end{sloppypar}
 
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
@@ -436,7 +439,8 @@ original library classes.  For example:
 
 \begin{myxsmall}
 \begin{Verbatim}
-  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
+  javac -processor org.checkerframework.checker.interning.InterningChecker \
+    -Astubs=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
@@ -449,6 +453,9 @@ equivalent to specifying every file in it whose name ends with
 A checker automatically reads some of its own stub files, even without a
 \<-Astubs> command-line argument; see
 Section~\ref{creating-a-checker-annotated-jdk}.
+
+User-supplied stub files override a checker's built-in stub files and the
+annotated JDK\@.
 
 
 \subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
@@ -482,15 +489,12 @@ If a method appears in more than one stub file (or twice in the same
 stub file), then, for each type hierarchy, the last annotation read is used.
 
 The annotated JDK is read as a stub file.
+You can override JDK annotations by providing your own stub file.
 
 The command-line option \<-AmergeStubsWithSource> tells the checker to use
 both source files and stub files.  The checker permits only values that are
 permitted by \emph{both} the source and stub annotations.  (This is called
 the greatest lower bound, or GLB, of the types.)
-% Note for maintainers:
-% The choice of GLB is made for the convenience of whole-program inference.
-Do not use \<-AmergeStubsWithSource> if the default qualifier
-is other than top (e.g., the Nullness Checker).
 
 As an example of GLB, suppose the source annotation says the value is in
 the range [1..20] and the stub file says the value is in the range
@@ -566,14 +570,11 @@ following ways:
 
 \subsectionAndLabel{Creating a stub file}{stub-creating}
 
-Stub files are generally stored together with the checker implementation,
-in the same directory as the checker's \<.java> source code.
-
 
 \subsubsectionAndLabel{If you have access to the Java source code}{stub-creating-with-source}
 
 Every Java file is a stub file.  If you have access to the Java file,
-rename file \<A.java> to \<A.astub>.  You can add
+copy file \<A.java> to \<A.astub>.  You can add
 annotations to the signatures, leaving the method bodies unchanged.
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the \<import> statement.
@@ -638,7 +639,8 @@ and then annotate it.  The rest of this section describes this approach.
 
 \begin{Verbatim}
   cd nullness-stub
-  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+    org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to
@@ -674,6 +676,51 @@ if an entry could not be found.
 \end{enumerate}
 
 
+\subsectionAndLabel{Distributing stub files}{stub-distributing}
+
+If you are writing stub files but are not writing a checker, you can place
+the stub files anywhere that is convenient.  However, please consider
+providing your stub files to the checker author, so that other users can
+also benefit from the stub files you wrote.
+
+If you are distributing stub files with a checker implementation, you must
+configure your build system to copy the stub files into the distributed jar for
+your checker.  Here are instructions if you are using the Checker Framework
+Gradle plugin:
+\begin{itemize}
+\item
+  If the stub files appear in the same directory as the checker class, which is
+  a subtype of \<BaseTypeChecker>, use the following build configuration:
+\begin{Verbatim}
+  sourceSets {
+    main {
+        resources {
+            srcDirs += ['src/main/java']
+        }
+    }
+  }
+\end{Verbatim}
+\item
+  If the stub files appear under the \<src/main/resources/>
+  directory in a sub-directory matching the package of your checker class,
+  the default Gradle build configuration is sufficient.
+\end{itemize}
+In either case, recall that a \refqualclass{framework/qual}{StubFiles}
+annotation on the checker class lists stub files that are always used.  For
+stub files whose use is optional (for example, because the behavior is
+unsound, or unsound except in certain circumstances), users must supply the
+\<-Astubs=...> command-line option.
+
+
+If a stub file contains annotations that are used by the framework rather
+than by any specific checker (such as purity annotations), and you wish to
+distribute it with the Checker Framework, put the stub file in directory
+\<checker/resources/>.  You can also do this if the stub file has
+annotations for multiple checkers.  To use a stub file in directory
+\<checker/resources/>, users must supply the
+\<-Astubs=checker.jar/stub-file-name.astub> command-line option.
+
+
 \subsectionAndLabel{Troubleshooting stub libraries}{stub-troubleshooting}
 
 
@@ -707,7 +754,7 @@ Some command-line options make the stub parser issue more warnings:
 Finally,
 use command-line option {\bf\<-AstubDebug>} to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
-annotations.  This overrides the \<@NoStubParserWarning> annotation.
+annotations.  This overrides the \<@NoAnnotationFileParserWarning> annotation.
 
 
 
@@ -719,7 +766,7 @@ exist.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method isLLowerCase(char) not found in type java.lang.Character
+AnnotationFileParser: Method isLLowerCase(char) not found in type java.lang.Character
 \end{Verbatim}
 
 \noindent
@@ -727,7 +774,7 @@ by removing the extra ``L'' in the method name.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
+AnnotationFileParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
 
@@ -754,21 +801,25 @@ read whether the library's annotations are parsed.
   reading and writing.
 \end{description}
 
+A syntax error in a stub file or the annotated JDK can lead to the file
+being silently ignored.  A typo in an annotation name, or a missing
+\<import> statement, can lead to annotations being silently ignored.
 
-% LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
-% LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
-% LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
-%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
-%  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
-%%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
-%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
-%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
-%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
-%%  LocalWords:  TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
-%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
-%  LocalWords:  AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
-%%  LocalWords:  Makefile PuseLocalJdk jdkShaHash AonlyDefs
-%%  LocalWords:  AuseConservativeDefaultsForUncheckedCodesource
-%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses
+
+% LocalWords: plugin utils util dist RuntimeException NonNull TODO AFU enum
+% LocalWords: sourcepath Nullness javac classpath src quals pathSeparator JDKs
+% LocalWords: jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
+% LocalWords: CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
+% LocalWords: Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
+% LocalWords: Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
+% LocalWords: enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
+% LocalWords: NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
+% LocalWords: AuseConservativeDefaultsForUnannotatedCode buildfile qual
+% LocalWords: AprintUnannotatedMethods checkername AskipDefs bcel mkdir
+% LocalWords: AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
+% LocalWords: TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
+% LocalWords: mychecker DIRS README TypeSystem un debugJSR org boolean
+% LocalWords: AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
+% LocalWords: Makefile PuseLocalJdk jdkShaHash AonlyDefs
+% LocalWords: AuseConservativeDefaultsForUncheckedCodesource
+% LocalWords: AstubWarnIfNotFoundIgnoresClasses

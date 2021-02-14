@@ -4,7 +4,7 @@
 import java.util.Arrays;
 import java.util.List;
 
-class Issue808 {
+public class Issue808 {
     void f() {
         Arrays.asList(0, 0, "", Arrays.asList(new Object[0]));
         foo(new Object(), bar());

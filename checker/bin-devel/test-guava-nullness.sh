@@ -12,7 +12,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/build.sh
 
 
-/tmp/$USER/plume-scripts/git-clone-related typetools guava
+"$SCRIPTDIR/.plume-scripts/git-clone-related" typetools guava
 cd ../guava
 
 ./typecheck.sh nullness

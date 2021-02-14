@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.common.value.qual.*;
 
-class PolyLengthTest {
+public class PolyLengthTest {
     int @PolyLength [] id(int @PolyLength [] a) {
         return a;
     }

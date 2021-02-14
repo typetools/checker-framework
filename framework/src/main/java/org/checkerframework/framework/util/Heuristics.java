@@ -11,6 +11,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -76,6 +77,12 @@ public class Heuristics {
             return visit(node.getExpression(), p);
         }
 
+        /**
+         * Returns true if the given path matches this Matcher.
+         *
+         * @param path the path to test
+         * @return true if the given path matches this Matcher
+         */
         public boolean match(TreePath path) {
             return visit(path.getLeaf(), null);
         }
@@ -88,9 +95,10 @@ public class Heuristics {
             this.matcher = matcher;
         }
 
+        @SuppressWarnings("interning:not.interned")
         @Override
         public boolean match(TreePath path) {
-            StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
+            StatementTree stmt = TreePathUtil.enclosingOfClass(path, StatementTree.class);
             if (stmt == null) {
                 return false;
             }
@@ -126,6 +134,9 @@ public class Heuristics {
      * the leaf of a path, ignoring all other parts of it.
      */
     public static class Within extends Matcher {
+        /**
+         * The matcher that {@code Within.match} will try, on every parent of the path it is given.
+         */
         private final Matcher matcher;
 
         /**
@@ -164,6 +175,7 @@ public class Heuristics {
             this.matcher = conditionMatcher;
         }
 
+        @SuppressWarnings("interning:not.interned")
         @Override
         public boolean match(TreePath path) {
             TreePath prev = path, p = path.getParentPath();

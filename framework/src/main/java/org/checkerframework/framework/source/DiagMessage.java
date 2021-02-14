@@ -9,6 +9,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * A {@code DiagMessage} is a kind, a message key, and arguments. The message key will be expanded
@@ -16,6 +17,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *
  * <p>By contrast, {@code javax.tools.Diagnostic} has just a string message.
  */
+@AnnotatedFor("nullness")
 public class DiagMessage {
     /** The kind of message. */
     private final Kind kind;
@@ -31,6 +33,10 @@ public class DiagMessage {
      * @param messageKey the message key
      * @param args the arguments that will be interpolated into the localized message
      */
+    @SuppressWarnings({
+        "nullness:assignment.type.incompatible", // this call to Arrays.copyOf is polymorphic
+        "nullness:argument.type.incompatible" // https://tinyurl.com/cfissue/3448
+    })
     public DiagMessage(Kind kind, @CompilerMessageKey String messageKey, Object... args) {
         this.kind = kind;
         this.messageKey = messageKey;
@@ -41,17 +47,29 @@ public class DiagMessage {
         }
     }
 
-    /** @return the kind of this DiagMessage */
+    /**
+     * Returns the kind of this DiagMessage.
+     *
+     * @return the kind of this DiagMessage
+     */
     public Kind getKind() {
         return this.kind;
     }
 
-    /** @return the message key of this DiagMessage */
+    /**
+     * Returns the message key of this DiagMessage.
+     *
+     * @return the message key of this DiagMessage
+     */
     public @CompilerMessageKey String getMessageKey() {
         return this.messageKey;
     }
 
-    /** @return the customized optional arguments for the message */
+    /**
+     * Returns the customized optional arguments for the message.
+     *
+     * @return the customized optional arguments for the message
+     */
     public Object[] getArgs() {
         return this.args;
     }

@@ -9,7 +9,6 @@ public class Issue2031 {
     abstract static class OperatorSection<C extends InterfaceA<C> & InterfaceB<C>> {
         C makeExpression(Map<String, C> expressions) {
             @Nullable C e = expressions.get("");
-            // :: warning: (known.nonnull)
             if (e != null) {
                 return e;
             } else {
@@ -32,7 +31,6 @@ public class Issue2031 {
             @Override
             EXPRESSION makeExpression(Map<String, EXPRESSION> expressions) {
                 @Nullable EXPRESSION e = expressions.get("");
-                // :: warning: (known.nonnull)
                 if (e != null) {
                     return e;
                 } else {

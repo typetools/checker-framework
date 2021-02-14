@@ -1,4 +1,4 @@
-class Issue3055 {
+public class Issue3055 {
 
     class C1<T extends C1<T>.Bound> {
         class Bound {}

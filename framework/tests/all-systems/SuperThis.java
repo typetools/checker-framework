@@ -1,5 +1,5 @@
 @SuppressWarnings("all")
-class SuperThis {
+public class SuperThis {
     class Super {}
 
     // Test super() and this()

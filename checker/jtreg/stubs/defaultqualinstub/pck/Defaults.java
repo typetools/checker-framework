@@ -1,6 +1,6 @@
 package pck;
 
-class Defaults {
+public class Defaults {
     Object o;
 
     void test() {

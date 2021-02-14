@@ -4,7 +4,7 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-class Issue1628<V extends Comparable<? super V>> implements Issue1628R<V> {
+public class Issue1628<V extends Comparable<? super V>> implements Issue1628R<V> {
 
     public boolean isEmpty() {
         return false;

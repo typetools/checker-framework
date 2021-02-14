@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
-class Issue2432b {
+public class Issue2432b {
     void objectAsTypeArg() {
         List<Object> objs = new ArrayList<>();
         // no error

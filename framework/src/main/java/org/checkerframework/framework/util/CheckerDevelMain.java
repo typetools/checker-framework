@@ -13,20 +13,34 @@ import org.checkerframework.javacutil.SystemUtil;
  */
 public class CheckerDevelMain extends CheckerMain {
 
+    /** Common prefix for option names. */
     private static final String PROP_PREFIX = "CheckerDevelMain";
+
+    /** Option name for specifying the binary directory. */
     private static final String BINARY_PROP = PROP_PREFIX + ".binary";
+
+    /** Option name for specifying the classpath. */
     private static final String CP_PROP = PROP_PREFIX + ".cp";
+
+    /** Option name for specifying the processor classpath. */
     private static final String PP_PROP = PROP_PREFIX + ".pp";
-    private static final String COMPILE_BCP_PROP = PROP_PREFIX + ".compile.bcp";
+
+    /** Option name for specifying the runtime classpath. */
     private static final String RUNTIME_CP_PROP = PROP_PREFIX + ".runtime.cp";
+
+    /** Option name for specifying whether to use verbose output. */
     private static final String VERBOSE_PROP = PROP_PREFIX + ".verbose";
 
+    /**
+     * The main method.
+     *
+     * @param args command-line arguments
+     */
     public static void main(final String[] args) {
 
         final String cp = System.getProperty(CP_PROP);
         final String pp = System.getProperty(PP_PROP);
         final String runtimeCp = System.getProperty(RUNTIME_CP_PROP);
-        final String compileBcp = System.getProperty(COMPILE_BCP_PROP);
         final String binDir = System.getProperty(BINARY_PROP);
         final boolean verbose = SystemUtil.getBooleanSystemProperty(VERBOSE_PROP);
 
@@ -34,7 +48,6 @@ public class CheckerDevelMain extends CheckerMain {
             System.out.println("CheckerDevelMain:");
             System.out.println("Prepended to classpath:     " + cp);
             System.out.println("Prepended to processor classpath:   " + pp);
-            System.out.println("Prepended to compile bootclasspath: " + compileBcp);
             System.out.println("Prepended to runtime classpath:     " + runtimeCp);
             System.out.println("Binary Dir:                 " + binDir);
         }
@@ -51,9 +64,6 @@ public class CheckerDevelMain extends CheckerMain {
         assert (runtimeCp != null)
                 : RUNTIME_CP_PROP
                         + " must specify a path entry to prepend to the Java classpath when running javac"; // TODO: Fix the assert messages
-        assert (compileBcp != null)
-                : COMPILE_BCP_PROP
-                        + " must specify a path entry to prepend to the compiler bootclasspath";
 
         // The location that checker.jar would be in if we have built it
         final File checkersLoc = new File(binDir, "checker.jar");
@@ -79,11 +89,6 @@ public class CheckerDevelMain extends CheckerMain {
     @Override
     protected List<String> createRuntimeClasspath(final List<String> argsList) {
         return prependPathOpts(RUNTIME_CP_PROP, new ArrayList<>());
-    }
-
-    @Override
-    protected List<String> createCompilationBootclasspath(final List<String> argsList) {
-        return prependPathOpts(COMPILE_BCP_PROP, super.createCompilationBootclasspath(argsList));
     }
 
     @Override

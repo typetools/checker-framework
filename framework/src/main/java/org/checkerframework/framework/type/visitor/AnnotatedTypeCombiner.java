@@ -7,10 +7,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
-/**
- * Combines all the annotations in the parameter with the annotations from the visited type, taking
- * the greatest lower bound at each point.
- */
+/** Changes each parameter type to be the GLB of the parameter type and visited type. */
 public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
 
     /**
@@ -20,6 +17,7 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
      * @param to the annotated type mirror into which annotations should be combined
      * @param hierarchy the top type of the hierarchy whose annotations should be combined
      */
+    @SuppressWarnings("interning:not.interned") // assertion
     public static void combine(
             final AnnotatedTypeMirror from,
             final AnnotatedTypeMirror to,
@@ -43,6 +41,7 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // assertion
     protected Void compare(AnnotatedTypeMirror one, AnnotatedTypeMirror two) {
         assert one != two;
         if (one != null && two != null) {

@@ -10,7 +10,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @SuppressWarnings("all") // ensure no crash
-class Issue1948<K, V, E extends Issue1948.MyEntry<K, V, E>, S extends Issue1948.MyClass<K, V, E, S>>
+public class Issue1948<
+                K, V, E extends Issue1948.MyEntry<K, V, E>, S extends Issue1948.MyClass<K, V, E, S>>
         implements ConcurrentMap<K, V> {
 
     private Issue1948(MapMaker builder, InternalEntryHelper<K, V, E, S> entryHelper) {}
@@ -102,7 +103,7 @@ class Issue1948<K, V, E extends Issue1948.MyEntry<K, V, E>, S extends Issue1948.
     }
 
     @Override
-    public Set<Entry<K, V>> entrySet() {
+    public Set<Map.Entry<K, V>> entrySet() {
         return null;
     }
 

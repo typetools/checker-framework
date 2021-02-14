@@ -1,6 +1,6 @@
 import org.checkerframework.common.util.report.qual.*;
 
-class Inherit {
+public class Inherit {
     @ReportInherit
     interface A {}
 

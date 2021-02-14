@@ -110,7 +110,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *
      * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
      * @param tree the method invocation tree that has to be resolved
-     * @param origResult the original result from {@code factory.methodFromUse}.
+     * @param origResult the original result from {@code factory.methodFromUse}
+     * @return the resolved type of the call
      */
     private ParameterizedExecutableType resolveMethodCall(
             AnnotatedTypeFactory factory,
@@ -132,7 +133,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         // and parameter types
         for (MethodInvocationTree resolvedTree : possibleMethods) {
             debugReflection("Resolved method invocation: " + resolvedTree);
-            if (!checkMethodAgruments(resolvedTree)) {
+            if (!checkMethodArguments(resolvedTree)) {
                 debugReflection(
                         "Spoofed tree's arguments did not match declaration" + resolvedTree);
                 // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
@@ -206,18 +207,40 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return origResult;
     }
 
-    private boolean checkMethodAgruments(MethodInvocationTree resolvedTree) {
+    /**
+     * Checks that arguments of a method invocation are consistent with their corresponding
+     * parameters.
+     *
+     * @param resolvedTree a method invocation
+     * @return true if arguments are consistent with parameters
+     */
+    private boolean checkMethodArguments(MethodInvocationTree resolvedTree) {
         // type.getKind() == actualType.getKind()
         ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
-        return checkAgruments(methodDecl.getParameters(), resolvedTree.getArguments());
+        return checkArguments(methodDecl.getParameters(), resolvedTree.getArguments());
     }
 
+    /**
+     * Checks that arguments of a constructor invocation are consistent with their corresponding
+     * parameters.
+     *
+     * @param resolvedTree a constructor invocation
+     * @return true if arguments are consistent with parameters
+     */
     private boolean checkNewClassArguments(NewClassTree resolvedTree) {
         ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
-        return checkAgruments(methodDecl.getParameters(), resolvedTree.getArguments());
+        return checkArguments(methodDecl.getParameters(), resolvedTree.getArguments());
     }
 
-    private boolean checkAgruments(
+    /**
+     * Checks that argument are consistent with their corresponding parameter types. Common code
+     * used by {@link #checkMethodArguments} and {@link #checkNewClassArguments}.
+     *
+     * @param parameters formal parameters
+     * @param arguments actual arguments
+     * @return true if argument are consistent with their corresponding parameter types
+     */
+    private boolean checkArguments(
             List<? extends VariableElement> parameters, List<? extends ExpressionTree> arguments) {
         if (parameters.size() != arguments.size()) {
             return false;
@@ -242,7 +265,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
      * @param tree the method invocation tree (representing a constructor call) that has to be
      *     resolved
-     * @param origResult the original result from {@code factory.methodFromUse}.
+     * @param origResult the original result from {@code factory.methodFromUse}
+     * @return the resolved type of the call
      */
     private ParameterizedExecutableType resolveConstructorCall(
             AnnotatedTypeFactory factory,
@@ -344,15 +368,15 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 AnnotationUtils.getElementValueArray(estimate, "className", String.class, true);
         List<String> listMethodNames =
                 AnnotationUtils.getElementValueArray(estimate, "methodName", String.class, true);
-        List<Integer> listParamLenghts =
+        List<Integer> listParamLengths =
                 AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, true);
 
         assert listClassNames.size() == listMethodNames.size()
-                && listClassNames.size() == listParamLenghts.size();
+                && listClassNames.size() == listParamLengths.size();
         for (int i = 0; i < listClassNames.size(); ++i) {
             String className = listClassNames.get(i);
             String methodName = listMethodNames.get(i);
-            int paramLength = listParamLenghts.get(i);
+            int paramLength = listParamLengths.get(i);
 
             // Get receiver, which is always the first argument of the invoke
             // method
@@ -443,13 +467,13 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<String> listClassNames =
                 AnnotationUtils.getElementValueArray(estimate, "className", String.class, true);
-        List<Integer> listParamLenghts =
+        List<Integer> listParamLengths =
                 AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, true);
 
-        assert listClassNames.size() == listParamLenghts.size();
+        assert listClassNames.size() == listParamLengths.size();
         for (int i = 0; i < listClassNames.size(); ++i) {
             String className = listClassNames.get(i);
-            int paramLength = listParamLenghts.get(i);
+            int paramLength = listParamLengths.get(i);
 
             // Resolve the Symbol for the current constructor
             for (Symbol symbol : getConstructorSymbolsfor(className, paramLength, env)) {
@@ -478,6 +502,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Get set of MethodSymbols based on class name, method name, and parameter length.
      *
+     * @param className the class that contains the method
+     * @param methodName the method's name
+     * @param paramLength the number of parameters
+     * @param env the environment
      * @return the (potentially empty) set of corresponding method Symbol(s)
      */
     private List<Symbol> getMethodSymbolsfor(

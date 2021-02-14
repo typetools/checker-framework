@@ -4,7 +4,7 @@
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-class Issue2781 {
+public class Issue2781 {
     class Wrapper<T> {
         Wrapper(T t) {}
     }

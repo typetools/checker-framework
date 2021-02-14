@@ -1,17 +1,17 @@
 package org.checkerframework.framework.type;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.Types;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** TypeVariableSusbtitutor replaces type variables from a declaration with arguments to its use. */
 public class TypeVariableSubstitutor {
@@ -56,66 +56,71 @@ public class TypeVariableSubstitutor {
         return substitute;
     }
 
+    /**
+     * Visitor that makes the substitution. This is an inner class so that its methods cannot be
+     * called by clients of {@link TypeVariableSubstitutor}.
+     */
     protected class Visitor extends AnnotatedTypeCopier {
+
+        /**
+         * A mapping from {@link TypeParameterElement} to the {@link AnnotatedTypeMirror} that
+         * should replace its uses.
+         */
         private final Map<TypeParameterElement, AnnotatedTypeMirror> elementToArgMap;
 
+        /**
+         * A list of type variables that should be replaced by the type mirror at the same index in
+         * {@code typeMirrors}
+         */
+        private final List<TypeVariable> typeVars;
+
+        /**
+         * A list of TypeMirrors that should replace the type variable at the same index in {@code
+         * typeVars}
+         */
+        private final List<TypeMirror> typeMirrors;
+
+        /**
+         * Creates the Visitor.
+         *
+         * @param typeParamToArg mapping from TypeVariable to the AnnotatedTypeMirror that will
+         *     replace it
+         */
         public Visitor(final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg) {
             elementToArgMap = new HashMap<>();
+            typeVars = new ArrayList<>();
+            typeMirrors = new ArrayList<>();
 
-            for (Entry<TypeVariable, AnnotatedTypeMirror> paramToArg : typeParamToArg.entrySet()) {
+            for (Map.Entry<TypeVariable, AnnotatedTypeMirror> paramToArg :
+                    typeParamToArg.entrySet()) {
                 elementToArgMap.put(
                         (TypeParameterElement) paramToArg.getKey().asElement(),
                         paramToArg.getValue());
+                typeVars.add(paramToArg.getKey());
+                typeMirrors.add(paramToArg.getValue().getUnderlyingType());
             }
         }
 
         @Override
-        public AnnotatedTypeMirror visitArray(
-                AnnotatedArrayType original,
-                IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-            if (originalToCopy.containsKey(original)) {
-                return originalToCopy.get(original);
+        protected <T extends AnnotatedTypeMirror> T makeCopy(T original) {
+            if (original.getKind() == TypeKind.TYPEVAR) {
+                return super.makeCopy(original);
             }
+            TypeMirror s =
+                    TypesUtils.substitute(
+                            original.getUnderlyingType(),
+                            typeVars,
+                            typeMirrors,
+                            original.atypeFactory.processingEnv);
 
-            final AnnotatedArrayType copy =
-                    (AnnotatedArrayType)
+            @SuppressWarnings("unchecked")
+            T copy =
+                    (T)
                             AnnotatedTypeMirror.createType(
-                                    original.getUnderlyingType(),
-                                    original.atypeFactory,
-                                    original.isDeclaration());
+                                    s, original.atypeFactory, original.isDeclaration());
             maybeCopyPrimaryAnnotations(original, copy);
-            originalToCopy.put(original, copy);
 
-            // Substitution (along with any other operation that changes the component types of an
-            // AnnotatedTypeMirror) may change the underlying Java type of components without
-            // updating the underlying Java type of the parent type.  We use the underlying type for
-            // various purposes (including equals/hashcode) so this can lead to unpredictable
-            // behavior.  Currently, we update the underlying type when substituting on arrays in
-            // order to avoid an error in LubTypeVariableAnnotator.
-            // TODO: Presumably there are more cases in which we want to do this
-            final AnnotatedTypeMirror componentType =
-                    visit(original.getComponentType(), originalToCopy);
-            final Types types = componentType.atypeFactory.types;
-
-            final AnnotatedArrayType correctedCopy;
-            if (!types.isSameType(componentType.getUnderlyingType(), copy.getUnderlyingType())
-                    && componentType.getKind()
-                            != TypeKind.WILDCARD) { // TODO: THIS SHOULD BE CAPTURE CONVERTED
-                final TypeMirror underlyingType =
-                        types.getArrayType(componentType.getUnderlyingType());
-                correctedCopy =
-                        (AnnotatedArrayType)
-                                AnnotatedTypeMirror.createType(
-                                        underlyingType, copy.atypeFactory, false);
-                correctedCopy.addAnnotations(copy.getAnnotations());
-
-            } else {
-                correctedCopy = copy;
-            }
-
-            correctedCopy.setComponentType(componentType);
-
-            return correctedCopy;
+            return copy;
         }
 
         @Override

@@ -1,4 +1,4 @@
-class TypeVars {
+public class TypeVars {
 
     class Test1<T> {
         void m() {

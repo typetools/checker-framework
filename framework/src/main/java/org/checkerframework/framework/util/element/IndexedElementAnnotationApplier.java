@@ -14,7 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotationApplier {
 
-    public IndexedElementAnnotationApplier(AnnotatedTypeMirror type, Element element) {
+    protected IndexedElementAnnotationApplier(AnnotatedTypeMirror type, Element element) {
         super(type, element);
     }
 

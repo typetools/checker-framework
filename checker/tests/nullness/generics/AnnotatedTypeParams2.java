@@ -6,7 +6,7 @@ class SomeClass<@Nullable T> {
     }
 }
 
-class AnnotatedTypeParams {
+public class AnnotatedTypeParams2 {
 
     void testPositive() {
         SomeClass<@Nullable String> l = new SomeClass<>();

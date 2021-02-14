@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -165,6 +166,16 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedDeclaredType castedLub = castLub(type1, lub);
 
         lubPrimaryAnnotations(type1, type2, lub);
+
+        if (lub.getKind() == TypeKind.DECLARED) {
+            AnnotatedDeclaredType enclosingLub = ((AnnotatedDeclaredType) lub).getEnclosingType();
+            AnnotatedDeclaredType enclosing1 = type1.getEnclosingType();
+            AnnotatedDeclaredType enclosing2 = type2.getEnclosingType();
+            if (enclosingLub != null && enclosing1 != null && enclosing2 != null) {
+                visitDeclared_Declared(enclosing1, enclosing2, enclosingLub);
+            }
+        }
+
         List<AnnotatedTypeMirror> lubTypArgs = new ArrayList<>();
         for (int i = 0; i < type1.getTypeArguments().size(); i++) {
             AnnotatedTypeMirror type1TypeArg = type1.getTypeArguments().get(i);
@@ -244,13 +255,12 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         visit(type1LowerBound, type2LowerBound, lubLowerBound);
 
         for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-            AnnotationMirror glb =
-                    qualifierHierarchy.greatestLowerBound(
-                            type1LowerBound,
-                            type2LowerBound,
-                            type1LowerBound.getAnnotationInHierarchy(top),
-                            type2LowerBound.getAnnotationInHierarchy(top));
-            if (glb != null) {
+            AnnotationMirror anno1 = type1LowerBound.getAnnotationInHierarchy(top);
+            AnnotationMirror anno2 = type2LowerBound.getAnnotationInHierarchy(top);
+
+            AnnotationMirror glb = null;
+            if (anno1 != null && anno2 != null) {
+                glb = qualifierHierarchy.greatestLowerBound(anno1, anno2);
                 lubLowerBound.replaceAnnotation(glb);
             }
         }
@@ -337,9 +347,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedIntersectionType castedLub = castLub(type1, lub);
         lubPrimaryAnnotations(type1, type2, lub);
 
-        for (int i = 0; i < lub.directSuperTypes().size(); i++) {
-            AnnotatedDeclaredType lubST = castedLub.directSuperTypes().get(i);
-            visit(type1.directSuperTypes().get(i), type2.directSuperTypes().get(i), lubST);
+        for (int i = 0; i < castedLub.getBounds().size(); i++) {
+            AnnotatedTypeMirror lubST = castedLub.getBounds().get(i);
+            visit(type1.getBounds().get(i), type2.getBounds().get(i), lubST);
         }
 
         return null;
@@ -371,8 +381,11 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
      * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it is
      * added to the list of visited AnnotatedTypeMirrors. This prevents infinite recursion on
      * recursive types.
+     *
+     * @param atm the type that might have been visited
+     * @return true if the given type has been visited
      */
-    private boolean visited(AnnotatedTypeMirror atm) {
+    private boolean visited(@FindDistinct AnnotatedTypeMirror atm) {
         for (AnnotatedTypeMirror atmVisit : visited) {
             // Use reference equality rather than equals because the visitor may visit two types
             // that are structurally equal, but not actually the same.  For example, the

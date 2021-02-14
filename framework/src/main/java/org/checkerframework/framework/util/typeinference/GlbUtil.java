@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -41,7 +40,7 @@ public class GlbUtil {
 
         // dtermine the greatest lower bounds for the primary annotations
         AnnotationMirrorMap<AnnotationMirror> glbPrimaries = new AnnotationMirrorMap<>();
-        for (Entry<AnnotatedTypeMirror, AnnotationMirrorSet> tmEntry : typeMirrors.entrySet()) {
+        for (Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> tmEntry : typeMirrors.entrySet()) {
             final AnnotationMirrorSet typeAnnoHierarchies = tmEntry.getValue();
             final AnnotatedTypeMirror type = tmEntry.getKey();
 
@@ -106,7 +105,7 @@ public class GlbUtil {
                     && (!TypesUtils.isErasedSubtype(
                                     glbType.getUnderlyingType(),
                                     type.getUnderlyingType(),
-                                    typeFactory.getContext().getTypeUtils())
+                                    typeFactory.getChecker().getTypeUtils())
                             || !typeHierarchy.isSubtype(glbType, type))) {
                 incomparable = true;
             }

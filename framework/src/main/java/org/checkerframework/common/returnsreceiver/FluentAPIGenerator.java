@@ -5,6 +5,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -94,9 +95,11 @@ public class FluentAPIGenerator {
              *
              * @return {@code "com.google.auto.value.AutoValue.Builder"}
              */
-            private String getAutoValueBuilderCanonicalName() {
+            private @CanonicalName String getAutoValueBuilderCanonicalName() {
                 String com = "com";
-                return com + "." + "google.auto.value.AutoValue.Builder";
+                @SuppressWarnings("signature:assignment.type.incompatible") // string concatenation
+                @CanonicalName String result = com + "." + "google.auto.value.AutoValue.Builder";
+                return result;
             }
         },
         /** <a href="https://projectlombok.org/features/Builder">Project Lombok</a>. */
@@ -126,6 +129,9 @@ public class FluentAPIGenerator {
         };
 
         /**
+         * Returns {@code true} if the method was created by this generator and returns {@code
+         * this}.
+         *
          * @param t the annotated type of the method signature
          * @return {@code true} if the method was created by this generator and returns {@code this}
          */

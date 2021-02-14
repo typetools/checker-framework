@@ -1,0 +1,8 @@
+This directory contains tests for the Nullness Checker, with the -Alint=permitClearProperty flag.
+
+To add a new file to the test suite, just add it to this directory.
+For more details, see
+  ../README
+
+To run the tests, do this:
+  (cd $CHECKERFRAMEWORK && ./gradlew PermitClearPropertyTest)

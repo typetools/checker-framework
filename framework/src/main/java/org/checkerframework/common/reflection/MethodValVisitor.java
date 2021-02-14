@@ -8,7 +8,7 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class MethodValVisitor extends BaseTypeVisitor<MethodValAnnotatedTypeFactory> {
@@ -38,7 +38,7 @@ class MethodNameValidator extends BaseTypeValidator {
     }
 
     @Override
-    public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
+    public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
         AnnotationMirror methodVal = type.getAnnotation(MethodVal.class);
         if (methodVal != null) {
             List<String> classNames =
@@ -59,7 +59,7 @@ class MethodNameValidator extends BaseTypeValidator {
                 }
             }
         }
-        return super.isValid(type, tree);
+        return super.visitDeclared(type, tree);
     }
 
     private boolean legalMethodName(String methodName) {

@@ -13,9 +13,9 @@ How to run all the tests for the Checker Framework
 
 Other Gradle tasks also exist to run a subset of the tests; for example,
   # Run from the checker-framework directory:
-  ./gradlew :checker:NullnessFbcTest
+  ./gradlew :checker:NullnessTest
   # Run from the checker directory:
-  ../gradlew NullnessFbcTest
+  ../gradlew NullnessTest
   # To see all tasks
   ./gradlew tasks
 
@@ -23,19 +23,26 @@ Other Gradle tasks also exist to run a subset of the tests; for example,
 How to run just one test for the Checker Framework
 ==================================================
 
-To run an individual test (check one source code file),
+To run a subset of the JUnit tests, use Gradle's --tests command-line
+argument, from a project directory such as checker/, dataflow/, or
+framework/:
+
+  cd $CHECKERFRAMEWORK/checker
+  ../gradlew test --tests '*ParseAllJdkTest'
+
+To check one source code file,
 do something like the following, assuming that the source code
 file to be checked is AssertNonNullTest.java in directory
 $CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
 org.checkerframework.checker.nullness.NullnessChecker.
 
-  cd $CHECKERFRAMEWORK/checker/tests/nullness
-  (cd $CHECKERFRAMEWORK && ./gradlew compileJava) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+  cd $CHECKERFRAMEWORK
+  ./gradlew compileJava && checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 
 or (to build distribution files)
 
-  cd $CHECKERFRAMEWORK/checker/tests/nullness
-  (cd $CHECKERFRAMEWORK && ./gradlew assemble) && $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+  cd $CHECKERFRAMEWORK
+  ./gradlew assemble && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
@@ -85,7 +92,7 @@ error messages.
 Suppose that you want to test the Nullness Checker's behavior when
 type-checking the following Java class:
 
-class MyNullnessTest {
+public class MyNullnessTest {
   void method() {
     Object nullable = null;
     nullable.toString();   // should emit error
@@ -104,7 +111,7 @@ directly preceding the expected error line.
 If a warning rather than an error is expected, insert the line
   // :: warning: (<warning-message-key>)
 If a stub parser warning is expected, insert the line
-  //warning: StubParser: <stub parser warning>
+  //warning: AnnotationFileParser: <stub parser warning>
 If multiple errors are expected on a single line, duplicate everthing
 except the "//" comment characters, as in
   // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
@@ -115,7 +122,7 @@ a line, to indicate a warning on the line immediately after the "{".
 
 So the final test case would be:
 
-class MyNullnessTest {
+public class MyNullnessTest {
   void method() {
     Object nullable = null;
     // :: error: (dereference.of.nullable)
@@ -133,7 +140,7 @@ checker-framework/checker/tests/regex/, etc.
 You can indicate an expected warning (as opposed to error) by using
 "warning:" instead of "error:", as in
 
-  // :: warning: (known.nonnull)
+  // :: warning: (nulltest.redundant)
   assert val != null;
 
 Multiple expected messages can be given on the same line using the
@@ -162,7 +169,7 @@ Writing tests for a new checker or with different command-line arguments
 To create tests for a new checker, mimic some existing checker's tests:
  * create a top-level test directory, such as
    checker-framework/checker/tests/regex for the test cases
- * create a top-level JUnit test in checker-framework/checker/src/test/tests,
+ * create a top-level JUnit test in checker-framework/checker/src/test/java/tests,
    such as: RegexTest.java
    It is a subclass of CheckerFrameworkPerDirectoryTest, and its list of checker
    options must include "-Anomsgtext".  (See the API documentation for
@@ -194,7 +201,7 @@ need runtime support or depends on Java 9 APIs.
 Tests that only exercise the static type annotation API do not need
 this marker.
 
-To disable all tests for a given type system, annotated the Junit test class
+To disable all tests for a given type system, annotate the JUnit test class
 with @Ignore.
 
 

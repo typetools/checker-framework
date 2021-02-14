@@ -5,14 +5,22 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.units.qual.MixedUnits;
 import org.checkerframework.checker.units.qual.Prefix;
@@ -21,21 +29,25 @@ import org.checkerframework.checker.units.qual.UnitsMultiple;
 import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotationClassLoader;
+import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
@@ -64,9 +76,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
      * to prevent instantiating the UnitsRelations multiple times.
      */
-    private Map<String, UnitsRelations> unitsRel;
+    private Map<@CanonicalName String, UnitsRelations> unitsRel;
 
-    private static final Map<String, Class<? extends Annotation>> externalQualsMap =
+    /** Map from canonical name of external qualifiers, to their Class. */
+    private static final Map<@CanonicalName String, Class<? extends Annotation>> externalQualsMap =
             new HashMap<>();
 
     private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
@@ -91,7 +104,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
         // Get the name of the aliased annotation
-        String aname = anno.getAnnotationType().toString();
+        String aname = AnnotationUtils.annotationName(anno);
 
         // See if we already have a map from this aliased annotation to its corresponding base unit
         // annotation
@@ -144,8 +157,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return super.canonicalAnnotation(anno);
     }
 
-    /** Return a map from canonical class name to the corresponding UnitsRelations instance. */
-    protected Map<String, UnitsRelations> getUnitsRel() {
+    /**
+     * Returns a map from canonical class name to the corresponding UnitsRelations instance.
+     *
+     * @return a map from canonical class name to the corresponding UnitsRelations instance
+     */
+    protected Map<@CanonicalName String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
             unitsRel = new HashMap<>();
             // Always add the default units relations, for the standard units.
@@ -237,7 +254,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // if it is an aliased annotation
         else {
             // ensure it has a base unit
-            @DotSeparatedIdentifiers Name baseUnitClass = getBaseUnitAnno(mirror);
+            @CanonicalName Name baseUnitClass = getBaseUnitAnno(mirror);
             if (baseUnitClass != null) {
                 // if the base unit isn't already added, add that first
                 @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
@@ -284,7 +301,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno the annotation to examine
      * @return the annotation's name, if it is meta-annotated with UnitsMultiple; otherwise null
      */
-    private @Nullable @DotSeparatedIdentifiers Name getBaseUnitAnno(AnnotationMirror anno) {
+    private @Nullable @CanonicalName Name getBaseUnitAnno(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :
                 anno.getAnnotationType().asElement().getAnnotationMirrors()) {
@@ -533,86 +550,145 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Set the Bottom qualifier as the bottom of the hierarchy. */
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new UnitsQualifierHierarchy(
-                factory, AnnotationBuilder.fromClass(elements, UnitsBottom.class));
+    public QualifierHierarchy createQualifierHierarchy() {
+        return new UnitsQualifierHierarchy();
     }
 
     /** Qualifier Hierarchy for the Units Checker. */
-    protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
-
+    @AnnotatedFor("nullness")
+    protected class UnitsQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
         /** Constructor. */
-        public UnitsQualifierHierarchy(MultiGraphFactory mgf, AnnotationMirror unitsBottom) {
-            super(mgf, unitsBottom);
+        public UnitsQualifierHierarchy() {
+            super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByName(superAnno, subAnno)) {
-                return AnnotationUtils.sameElementValues(superAnno, subAnno);
-            }
-            superAnno = removePrefix(superAnno);
-            subAnno = removePrefix(subAnno);
-
-            return super.isSubtype(subAnno, superAnno);
+        protected QualifierKindHierarchy createQualifierKindHierarchy(
+                @UnderInitialization UnitsQualifierHierarchy this,
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            return new UnitsQualifierKindHierarchy(qualifierClasses, elements);
         }
 
-        // Overriding leastUpperBound due to the fact that alias annotations are
-        // not placed in the Supported Type Qualifiers set, instead, their base
-        // SI units are in the set.
-        // Whenever an alias annotation or prefix-multiple of a base SI unit is
-        // used in ternary statements or through mismatched PolyUnit method
-        // parameters, we handle the LUB resolution here so that these units can
-        // correctly resolve to an LUB Unit.
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            AnnotationMirror result;
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            return AnnotationUtils.areSame(subAnno, superAnno);
+        }
 
-            // if the prefix is Prefix.one, automatically strip it for LUB checking
-            if (UnitsRelationsTools.getPrefix(a1) == Prefix.one) {
-                a1 = removePrefix(a1);
-            }
-            if (UnitsRelationsTools.getPrefix(a2) == Prefix.one) {
-                a2 = removePrefix(a2);
-            }
-
-            // if the two units have the same base SI unit
-            // TODO: it is possible to rewrite these two lines to use UnitsRelationsTools, will it
-            // have worse performance?
-            if (AnnotationUtils.areSameByName(a1, a2)) {
-                // and if they have the same Prefix, it means it is the same unit
-                if (AnnotationUtils.sameElementValues(a1, a2)) {
-                    // return the unit
-                    result = a1;
+        @Override
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
+            if (qualifierKind1.isBottom()) {
+                return a2;
+            } else if (qualifierKind2.isBottom()) {
+                return a1;
+            } else if (qualifierKind1 == qualifierKind2) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    @SuppressWarnings({
+                        "nullness:assignment.type.incompatible" // Every qualifier kind is a
+                        // key in directSuperQualifierMap.
+                    })
+                    @NonNull AnnotationMirror lub =
+                            ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
+                                    .directSuperQualifierMap.get(qualifierKind1);
+                    return lub;
                 }
-
-                // if they don't have the same Prefix, find the LUB
-                else {
-                    // check if a1 is a prefixed multiple of a base unit
-                    boolean a1Prefixed = !UnitsRelationsTools.hasNoPrefix(a1);
-                    // check if a2 is a prefixed multiple of a base unit
-                    boolean a2Prefixed = !UnitsRelationsTools.hasNoPrefix(a2);
-
-                    // when calling findLub(), the left AnnoMirror has to be a type within the
-                    // supertypes Map this means it has to be one of the base SI units, so always
-                    // strip the left unit or ensure it has no prefix
-                    if (a1Prefixed && a2Prefixed) {
-                        // if both are prefixed, strip the left and find LUB
-                        result = this.findLub(removePrefix(a1), a2);
-                    } else if (a1Prefixed && !a2Prefixed) {
-                        // if only the left is prefixed, swap order and find LUB
-                        result = this.findLub(a2, a1);
-                    } else {
-                        // else (only right is prefixed), just find the LUB
-                        result = this.findLub(a1, a2);
-                    }
-                }
-            } else {
-                // if they don't have the same base SI unit, let super find it
-                result = super.leastUpperBound(a1, a2);
             }
+            throw new BugInCF("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
+        }
 
-            return result;
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
+            return UnitsAnnotatedTypeFactory.this.BOTTOM;
+        }
+    }
+
+    /** UnitsQualifierKindHierarchy. */
+    @AnnotatedFor("nullness")
+    protected static class UnitsQualifierKindHierarchy extends DefaultQualifierKindHierarchy {
+
+        /**
+         * Mapping from QualifierKind to an AnnotationMirror that represents its direct super
+         * qualifier. Every qualifier kind maps to a nonnull AnnotationMirror.
+         */
+        private final Map<QualifierKind, AnnotationMirror> directSuperQualifierMap;
+
+        /**
+         * Creates a UnitsQualifierKindHierarchy.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
+         */
+        public UnitsQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, UnitsBottom.class);
+            directSuperQualifierMap = createDirectSuperQualifierMap(elements);
+        }
+
+        /**
+         * Creates the direct super qualifier map.
+         *
+         * @param elements element utils
+         * @return the map
+         */
+        @RequiresNonNull("this.qualifierKinds")
+        private Map<QualifierKind, AnnotationMirror> createDirectSuperQualifierMap(
+                @UnderInitialization UnitsQualifierKindHierarchy this, Elements elements) {
+            Map<QualifierKind, AnnotationMirror> directSuperType = new TreeMap<>();
+            for (QualifierKind qualifierKind : qualifierKinds) {
+                QualifierKind directSuperTypeKind = getDirectSuperQualifierKind(qualifierKind);
+                AnnotationMirror directSuperTypeAnno;
+                try {
+                    directSuperTypeAnno =
+                            AnnotationBuilder.fromName(elements, directSuperTypeKind.getName());
+                } catch (BugInCF ex) {
+                    throw new TypeSystemError(
+                            "Unit annotations must have a default for all elements.");
+                }
+                if (directSuperTypeAnno == null) {
+                    throw new TypeSystemError(
+                            "Could not create AnnotationMirror: %s", directSuperTypeAnno);
+                }
+                directSuperType.put(qualifierKind, directSuperTypeAnno);
+            }
+            return directSuperType;
+        }
+
+        /**
+         * Get the direct super qualifier for the given qualifier kind.
+         *
+         * @param qualifierKind qualifier kind
+         * @return direct super qualifier kind
+         */
+        private QualifierKind getDirectSuperQualifierKind(
+                @UnderInitialization UnitsQualifierKindHierarchy this,
+                QualifierKind qualifierKind) {
+            if (qualifierKind.isTop()) {
+                return qualifierKind;
+            }
+            Set<QualifierKind> superQuals = new TreeSet<>(qualifierKind.getStrictSuperTypes());
+            while (superQuals.size() > 0) {
+                Set<QualifierKind> lowest = findLowestQualifiers(superQuals);
+                if (lowest.size() == 1) {
+                    return lowest.iterator().next();
+                }
+                superQuals.removeAll(lowest);
+            }
+            throw new BugInCF("No direct super qualifier found for %s", qualifierKind);
         }
     }
 

@@ -1,16 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static org.checkerframework.framework.util.AtmKind.ARRAY;
-import static org.checkerframework.framework.util.AtmKind.DECLARED;
-import static org.checkerframework.framework.util.AtmKind.EXECUTABLE;
-import static org.checkerframework.framework.util.AtmKind.INTERSECTION;
-import static org.checkerframework.framework.util.AtmKind.NONE;
-import static org.checkerframework.framework.util.AtmKind.NULL;
-import static org.checkerframework.framework.util.AtmKind.PRIMITIVE;
-import static org.checkerframework.framework.util.AtmKind.TYPEVAR;
-import static org.checkerframework.framework.util.AtmKind.UNION;
-import static org.checkerframework.framework.util.AtmKind.WILDCARD;
-
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -51,7 +40,11 @@ enum AtmKind {
         this.atmClass = atmClass;
     }
 
-    /** @return the AtmKind corresponding to the class of atm */
+    /**
+     * Returns the AtmKind corresponding to the class of atm.
+     *
+     * @return the AtmKind corresponding to the class of atm
+     */
     public static AtmKind valueOf(final AnnotatedTypeMirror atm) {
         final Class<?> argClass = atm.getClass();
 
@@ -87,119 +80,127 @@ enum AtmKind {
  * @see AtmCombo#accept
  */
 public enum AtmCombo {
-    ARRAY_ARRAY(ARRAY, ARRAY),
-    ARRAY_DECLARED(ARRAY, DECLARED),
-    ARRAY_EXECUTABLE(ARRAY, EXECUTABLE),
-    ARRAY_INTERSECTION(ARRAY, INTERSECTION),
-    ARRAY_NONE(ARRAY, NONE),
-    ARRAY_NULL(ARRAY, NULL),
-    ARRAY_PRIMITIVE(ARRAY, PRIMITIVE),
-    ARRAY_UNION(ARRAY, UNION),
-    ARRAY_TYPEVAR(ARRAY, TYPEVAR),
-    ARRAY_WILDCARD(ARRAY, WILDCARD),
+    ARRAY_ARRAY(AtmKind.ARRAY, AtmKind.ARRAY),
+    ARRAY_DECLARED(AtmKind.ARRAY, AtmKind.DECLARED),
+    ARRAY_EXECUTABLE(AtmKind.ARRAY, AtmKind.EXECUTABLE),
+    ARRAY_INTERSECTION(AtmKind.ARRAY, AtmKind.INTERSECTION),
+    ARRAY_NONE(AtmKind.ARRAY, AtmKind.NONE),
+    ARRAY_NULL(AtmKind.ARRAY, AtmKind.NULL),
+    ARRAY_PRIMITIVE(AtmKind.ARRAY, AtmKind.PRIMITIVE),
+    ARRAY_UNION(AtmKind.ARRAY, AtmKind.UNION),
+    ARRAY_TYPEVAR(AtmKind.ARRAY, AtmKind.TYPEVAR),
+    ARRAY_WILDCARD(AtmKind.ARRAY, AtmKind.WILDCARD),
 
-    DECLARED_ARRAY(DECLARED, ARRAY),
-    DECLARED_DECLARED(DECLARED, DECLARED),
-    DECLARED_EXECUTABLE(DECLARED, EXECUTABLE),
-    DECLARED_INTERSECTION(DECLARED, INTERSECTION),
-    DECLARED_NONE(DECLARED, NONE),
-    DECLARED_NULL(DECLARED, NULL),
-    DECLARED_PRIMITIVE(DECLARED, PRIMITIVE),
-    DECLARED_TYPEVAR(DECLARED, TYPEVAR),
-    DECLARED_UNION(DECLARED, UNION),
-    DECLARED_WILDCARD(DECLARED, WILDCARD),
+    DECLARED_ARRAY(AtmKind.DECLARED, AtmKind.ARRAY),
+    DECLARED_DECLARED(AtmKind.DECLARED, AtmKind.DECLARED),
+    DECLARED_EXECUTABLE(AtmKind.DECLARED, AtmKind.EXECUTABLE),
+    DECLARED_INTERSECTION(AtmKind.DECLARED, AtmKind.INTERSECTION),
+    DECLARED_NONE(AtmKind.DECLARED, AtmKind.NONE),
+    DECLARED_NULL(AtmKind.DECLARED, AtmKind.NULL),
+    DECLARED_PRIMITIVE(AtmKind.DECLARED, AtmKind.PRIMITIVE),
+    DECLARED_TYPEVAR(AtmKind.DECLARED, AtmKind.TYPEVAR),
+    DECLARED_UNION(AtmKind.DECLARED, AtmKind.UNION),
+    DECLARED_WILDCARD(AtmKind.DECLARED, AtmKind.WILDCARD),
 
-    EXECUTABLE_ARRAY(EXECUTABLE, ARRAY),
-    EXECUTABLE_DECLARED(EXECUTABLE, DECLARED),
-    EXECUTABLE_EXECUTABLE(EXECUTABLE, EXECUTABLE),
-    EXECUTABLE_INTERSECTION(EXECUTABLE, INTERSECTION),
-    EXECUTABLE_NONE(EXECUTABLE, NONE),
-    EXECUTABLE_NULL(EXECUTABLE, NULL),
-    EXECUTABLE_PRIMITIVE(EXECUTABLE, PRIMITIVE),
-    EXECUTABLE_TYPEVAR(EXECUTABLE, TYPEVAR),
-    EXECUTABLE_UNION(EXECUTABLE, UNION),
-    EXECUTABLE_WILDCARD(EXECUTABLE, WILDCARD),
+    EXECUTABLE_ARRAY(AtmKind.EXECUTABLE, AtmKind.ARRAY),
+    EXECUTABLE_DECLARED(AtmKind.EXECUTABLE, AtmKind.DECLARED),
+    EXECUTABLE_EXECUTABLE(AtmKind.EXECUTABLE, AtmKind.EXECUTABLE),
+    EXECUTABLE_INTERSECTION(AtmKind.EXECUTABLE, AtmKind.INTERSECTION),
+    EXECUTABLE_NONE(AtmKind.EXECUTABLE, AtmKind.NONE),
+    EXECUTABLE_NULL(AtmKind.EXECUTABLE, AtmKind.NULL),
+    EXECUTABLE_PRIMITIVE(AtmKind.EXECUTABLE, AtmKind.PRIMITIVE),
+    EXECUTABLE_TYPEVAR(AtmKind.EXECUTABLE, AtmKind.TYPEVAR),
+    EXECUTABLE_UNION(AtmKind.EXECUTABLE, AtmKind.UNION),
+    EXECUTABLE_WILDCARD(AtmKind.EXECUTABLE, AtmKind.WILDCARD),
 
-    INTERSECTION_ARRAY(INTERSECTION, ARRAY),
-    INTERSECTION_DECLARED(INTERSECTION, DECLARED),
-    INTERSECTION_EXECUTABLE(INTERSECTION, EXECUTABLE),
-    INTERSECTION_INTERSECTION(INTERSECTION, INTERSECTION),
-    INTERSECTION_NONE(INTERSECTION, NONE),
-    INTERSECTION_NULL(INTERSECTION, NULL),
-    INTERSECTION_PRIMITIVE(INTERSECTION, PRIMITIVE),
-    INTERSECTION_TYPEVAR(INTERSECTION, TYPEVAR),
-    INTERSECTION_UNION(INTERSECTION, UNION),
-    INTERSECTION_WILDCARD(INTERSECTION, WILDCARD),
+    INTERSECTION_ARRAY(AtmKind.INTERSECTION, AtmKind.ARRAY),
+    INTERSECTION_DECLARED(AtmKind.INTERSECTION, AtmKind.DECLARED),
+    INTERSECTION_EXECUTABLE(AtmKind.INTERSECTION, AtmKind.EXECUTABLE),
+    INTERSECTION_INTERSECTION(AtmKind.INTERSECTION, AtmKind.INTERSECTION),
+    INTERSECTION_NONE(AtmKind.INTERSECTION, AtmKind.NONE),
+    INTERSECTION_NULL(AtmKind.INTERSECTION, AtmKind.NULL),
+    INTERSECTION_PRIMITIVE(AtmKind.INTERSECTION, AtmKind.PRIMITIVE),
+    INTERSECTION_TYPEVAR(AtmKind.INTERSECTION, AtmKind.TYPEVAR),
+    INTERSECTION_UNION(AtmKind.INTERSECTION, AtmKind.UNION),
+    INTERSECTION_WILDCARD(AtmKind.INTERSECTION, AtmKind.WILDCARD),
 
-    NONE_ARRAY(NONE, ARRAY),
-    NONE_DECLARED(NONE, DECLARED),
-    NONE_EXECUTABLE(NONE, EXECUTABLE),
-    NONE_INTERSECTION(NONE, INTERSECTION),
-    NONE_NONE(NONE, NONE),
-    NONE_NULL(NONE, NULL),
-    NONE_PRIMITIVE(NONE, PRIMITIVE),
-    NONE_TYPEVAR(NONE, TYPEVAR),
-    NONE_UNION(NONE, UNION),
-    NONE_WILDCARD(NONE, WILDCARD),
+    NONE_ARRAY(AtmKind.NONE, AtmKind.ARRAY),
+    NONE_DECLARED(AtmKind.NONE, AtmKind.DECLARED),
+    NONE_EXECUTABLE(AtmKind.NONE, AtmKind.EXECUTABLE),
+    NONE_INTERSECTION(AtmKind.NONE, AtmKind.INTERSECTION),
+    NONE_NONE(AtmKind.NONE, AtmKind.NONE),
+    NONE_NULL(AtmKind.NONE, AtmKind.NULL),
+    NONE_PRIMITIVE(AtmKind.NONE, AtmKind.PRIMITIVE),
+    NONE_TYPEVAR(AtmKind.NONE, AtmKind.TYPEVAR),
+    NONE_UNION(AtmKind.NONE, AtmKind.UNION),
+    NONE_WILDCARD(AtmKind.NONE, AtmKind.WILDCARD),
 
-    NULL_ARRAY(NULL, ARRAY),
-    NULL_DECLARED(NULL, DECLARED),
-    NULL_EXECUTABLE(NULL, EXECUTABLE),
-    NULL_INTERSECTION(NULL, INTERSECTION),
-    NULL_NONE(NULL, NONE),
-    NULL_NULL(NULL, NULL),
-    NULL_PRIMITIVE(NULL, PRIMITIVE),
-    NULL_TYPEVAR(NULL, TYPEVAR),
-    NULL_UNION(NULL, UNION),
-    NULL_WILDCARD(NULL, WILDCARD),
+    NULL_ARRAY(AtmKind.NULL, AtmKind.ARRAY),
+    NULL_DECLARED(AtmKind.NULL, AtmKind.DECLARED),
+    NULL_EXECUTABLE(AtmKind.NULL, AtmKind.EXECUTABLE),
+    NULL_INTERSECTION(AtmKind.NULL, AtmKind.INTERSECTION),
+    NULL_NONE(AtmKind.NULL, AtmKind.NONE),
+    NULL_NULL(AtmKind.NULL, AtmKind.NULL),
+    NULL_PRIMITIVE(AtmKind.NULL, AtmKind.PRIMITIVE),
+    NULL_TYPEVAR(AtmKind.NULL, AtmKind.TYPEVAR),
+    NULL_UNION(AtmKind.NULL, AtmKind.UNION),
+    NULL_WILDCARD(AtmKind.NULL, AtmKind.WILDCARD),
 
-    PRIMITIVE_ARRAY(PRIMITIVE, ARRAY),
-    PRIMITIVE_DECLARED(PRIMITIVE, DECLARED),
-    PRIMITIVE_EXECUTABLE(PRIMITIVE, EXECUTABLE),
-    PRIMITIVE_INTERSECTION(PRIMITIVE, INTERSECTION),
-    PRIMITIVE_NONE(PRIMITIVE, NONE),
-    PRIMITIVE_NULL(PRIMITIVE, NULL),
-    PRIMITIVE_PRIMITIVE(PRIMITIVE, PRIMITIVE),
-    PRIMITIVE_TYPEVAR(PRIMITIVE, TYPEVAR),
-    PRIMITIVE_UNION(PRIMITIVE, UNION),
-    PRIMITIVE_WILDCARD(PRIMITIVE, WILDCARD),
+    PRIMITIVE_ARRAY(AtmKind.PRIMITIVE, AtmKind.ARRAY),
+    PRIMITIVE_DECLARED(AtmKind.PRIMITIVE, AtmKind.DECLARED),
+    PRIMITIVE_EXECUTABLE(AtmKind.PRIMITIVE, AtmKind.EXECUTABLE),
+    PRIMITIVE_INTERSECTION(AtmKind.PRIMITIVE, AtmKind.INTERSECTION),
+    PRIMITIVE_NONE(AtmKind.PRIMITIVE, AtmKind.NONE),
+    PRIMITIVE_NULL(AtmKind.PRIMITIVE, AtmKind.NULL),
+    PRIMITIVE_PRIMITIVE(AtmKind.PRIMITIVE, AtmKind.PRIMITIVE),
+    PRIMITIVE_TYPEVAR(AtmKind.PRIMITIVE, AtmKind.TYPEVAR),
+    PRIMITIVE_UNION(AtmKind.PRIMITIVE, AtmKind.UNION),
+    PRIMITIVE_WILDCARD(AtmKind.PRIMITIVE, AtmKind.WILDCARD),
 
-    TYPEVAR_ARRAY(TYPEVAR, ARRAY),
-    TYPEVAR_DECLARED(TYPEVAR, DECLARED),
-    TYPEVAR_EXECUTABLE(TYPEVAR, EXECUTABLE),
-    TYPEVAR_INTERSECTION(TYPEVAR, INTERSECTION),
-    TYPEVAR_NONE(TYPEVAR, NONE),
-    TYPEVAR_NULL(TYPEVAR, NULL),
-    TYPEVAR_PRIMITIVE(TYPEVAR, PRIMITIVE),
-    TYPEVAR_TYPEVAR(TYPEVAR, TYPEVAR),
-    TYPEVAR_UNION(TYPEVAR, UNION),
-    TYPEVAR_WILDCARD(TYPEVAR, WILDCARD),
+    TYPEVAR_ARRAY(AtmKind.TYPEVAR, AtmKind.ARRAY),
+    TYPEVAR_DECLARED(AtmKind.TYPEVAR, AtmKind.DECLARED),
+    TYPEVAR_EXECUTABLE(AtmKind.TYPEVAR, AtmKind.EXECUTABLE),
+    TYPEVAR_INTERSECTION(AtmKind.TYPEVAR, AtmKind.INTERSECTION),
+    TYPEVAR_NONE(AtmKind.TYPEVAR, AtmKind.NONE),
+    TYPEVAR_NULL(AtmKind.TYPEVAR, AtmKind.NULL),
+    TYPEVAR_PRIMITIVE(AtmKind.TYPEVAR, AtmKind.PRIMITIVE),
+    TYPEVAR_TYPEVAR(AtmKind.TYPEVAR, AtmKind.TYPEVAR),
+    TYPEVAR_UNION(AtmKind.TYPEVAR, AtmKind.UNION),
+    TYPEVAR_WILDCARD(AtmKind.TYPEVAR, AtmKind.WILDCARD),
 
-    UNION_ARRAY(UNION, ARRAY),
-    UNION_DECLARED(UNION, DECLARED),
-    UNION_EXECUTABLE(UNION, EXECUTABLE),
-    UNION_INTERSECTION(UNION, INTERSECTION),
-    UNION_NONE(UNION, NONE),
-    UNION_NULL(UNION, NULL),
-    UNION_PRIMITIVE(UNION, PRIMITIVE),
-    UNION_TYPEVAR(UNION, TYPEVAR),
-    UNION_UNION(UNION, UNION),
-    UNION_WILDCARD(UNION, WILDCARD),
+    UNION_ARRAY(AtmKind.UNION, AtmKind.ARRAY),
+    UNION_DECLARED(AtmKind.UNION, AtmKind.DECLARED),
+    UNION_EXECUTABLE(AtmKind.UNION, AtmKind.EXECUTABLE),
+    UNION_INTERSECTION(AtmKind.UNION, AtmKind.INTERSECTION),
+    UNION_NONE(AtmKind.UNION, AtmKind.NONE),
+    UNION_NULL(AtmKind.UNION, AtmKind.NULL),
+    UNION_PRIMITIVE(AtmKind.UNION, AtmKind.PRIMITIVE),
+    UNION_TYPEVAR(AtmKind.UNION, AtmKind.TYPEVAR),
+    UNION_UNION(AtmKind.UNION, AtmKind.UNION),
+    UNION_WILDCARD(AtmKind.UNION, AtmKind.WILDCARD),
 
-    WILDCARD_ARRAY(WILDCARD, ARRAY),
-    WILDCARD_DECLARED(WILDCARD, DECLARED),
-    WILDCARD_EXECUTABLE(WILDCARD, EXECUTABLE),
-    WILDCARD_INTERSECTION(WILDCARD, INTERSECTION),
-    WILDCARD_NONE(WILDCARD, NONE),
-    WILDCARD_NULL(WILDCARD, NULL),
-    WILDCARD_PRIMITIVE(WILDCARD, PRIMITIVE),
-    WILDCARD_TYPEVAR(WILDCARD, TYPEVAR),
-    WILDCARD_UNION(WILDCARD, UNION),
-    WILDCARD_WILDCARD(WILDCARD, WILDCARD);
+    WILDCARD_ARRAY(AtmKind.WILDCARD, AtmKind.ARRAY),
+    WILDCARD_DECLARED(AtmKind.WILDCARD, AtmKind.DECLARED),
+    WILDCARD_EXECUTABLE(AtmKind.WILDCARD, AtmKind.EXECUTABLE),
+    WILDCARD_INTERSECTION(AtmKind.WILDCARD, AtmKind.INTERSECTION),
+    WILDCARD_NONE(AtmKind.WILDCARD, AtmKind.NONE),
+    WILDCARD_NULL(AtmKind.WILDCARD, AtmKind.NULL),
+    WILDCARD_PRIMITIVE(AtmKind.WILDCARD, AtmKind.PRIMITIVE),
+    WILDCARD_TYPEVAR(AtmKind.WILDCARD, AtmKind.TYPEVAR),
+    WILDCARD_UNION(AtmKind.WILDCARD, AtmKind.UNION),
+    WILDCARD_WILDCARD(AtmKind.WILDCARD, AtmKind.WILDCARD);
 
+    /** First AtmKind. */
     public final AtmKind type1Kind;
+    /** Second AtmKind. */
     public final AtmKind type2Kind;
 
+    /**
+     * Creates an AtmCombo.
+     *
+     * @param type1Kind first kind
+     * @param type2Kind second kind
+     */
     AtmCombo(final AtmKind type1Kind, AtmKind type2Kind) {
         this.type1Kind = type1Kind;
         this.type2Kind = type2Kind;
@@ -219,6 +220,9 @@ public enum AtmCombo {
     }
 
     /**
+     * Returns the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g.
+     * {@literal (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}.
+     *
      * @return the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g.
      *     {@literal (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}
      */
@@ -227,9 +231,12 @@ public enum AtmCombo {
     }
 
     /**
+     * Returns the AtmCombo corresponding to the pair of the classes for the given
+     * AnnotatedTypeMirrors. e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
+     * AtmCombo.PRIMITIVE_DECLARED}
+     *
      * @return the AtmCombo corresponding to the pair of the classes for the given
-     *     AnnotatedTypeMirrors. e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
-     *     AtmCombo.PRIMITIVE_DECLARED}
+     *     AnnotatedTypeMirrors
      */
     public static AtmCombo valueOf(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
@@ -239,7 +246,7 @@ public enum AtmCombo {
     /**
      * Call the visit method that corresponds to the AtmCombo that represents the classes of type1
      * and type2. That is, get the combo for type1 and type 2, use it to identify the correct
-     * visitor method, and call that method with type1, type2 and initial param as arguments to the
+     * visitor method, and call that method with type1, type2, and initialParam as arguments to the
      * visit method.
      *
      * @param type1 first argument to the called visit method

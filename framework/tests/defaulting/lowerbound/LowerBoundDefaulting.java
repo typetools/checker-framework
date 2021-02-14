@@ -3,7 +3,7 @@ package defaulting.lowerbound;
 // This test's sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as
 // expected.
 
-import testlib.defaulting.LowerBoundQual.*;
+import org.checkerframework.framework.testchecker.defaulting.LowerBoundQual.*;
 
 class MyArrayList<MAL extends String> {}
 

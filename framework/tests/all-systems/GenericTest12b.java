@@ -1,5 +1,5 @@
 @SuppressWarnings("nullness") // Don't want to depend on @Nullable
-class GenericTest12b {
+public class GenericTest12b {
     class Cell<T1 extends Object> {}
 
     class Node<CONTENT extends Object> {

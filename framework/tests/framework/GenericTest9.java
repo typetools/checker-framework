@@ -1,20 +1,20 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 // Test case for Issue 140:
 // https://github.com/typetools/checker-framework/issues/140
-class GenericTest9 {
+public class GenericTest9 {
     // Make sure that substitutions on classes work correctly
 
     class C<X, Y extends X> {}
 
-    C<Object, Entry<String>> f = new C<>();
+    C<Object, MyEntry<String>> f = new C<>();
 
-    interface Entry<S> {}
+    interface MyEntry<S> {}
 
     <V> void testclass() {
         // :: error: (type.argument.type.incompatible)
-        C<@Odd Object, Entry<V>> c1 = new C<>();
-        C<@Odd Object, @Odd Entry<V>> c2 = new C<>();
+        C<@Odd Object, MyEntry<V>> c1 = new C<>();
+        C<@Odd Object, @Odd MyEntry<V>> c2 = new C<>();
     }
 
     // Make sure that substitutions on method type variables work correctly
@@ -23,33 +23,33 @@ class GenericTest9 {
         <U extends T> U sort(U iterable);
     }
 
-    <V> void test(Ordering1<Entry<?>> o, Entry<V> e) {
-        Entry<V> e1 = o.sort(e);
-        Entry<V> e2 = o.<Entry<V>>sort(e);
+    <V> void test(Ordering1<MyEntry<?>> o, MyEntry<V> e) {
+        MyEntry<V> e1 = o.sort(e);
+        MyEntry<V> e2 = o.<MyEntry<V>>sort(e);
     }
 
     interface Ordering2<T extends @Odd Object> {
         <U extends T> U sort(U iterable);
     }
 
-    <V> void test(Ordering2<@Odd Entry<?>> ord, Entry<V> e, @Odd Entry<V> o) {
+    <V> void test(Ordering2<@Odd MyEntry<?>> ord, MyEntry<V> e, @Odd MyEntry<V> o) {
         // :: error: (type.argument.type.incompatible)
-        Entry<V> e1 = ord.sort(e);
+        MyEntry<V> e1 = ord.sort(e);
         // :: error: (type.argument.type.incompatible)
-        Entry<V> e2 = ord.<Entry<V>>sort(e);
-        Entry<V> e3 = ord.sort(o);
-        Entry<V> e4 = ord.<@Odd Entry<V>>sort(o);
+        MyEntry<V> e2 = ord.<MyEntry<V>>sort(e);
+        MyEntry<V> e3 = ord.sort(o);
+        MyEntry<V> e4 = ord.<@Odd MyEntry<V>>sort(o);
     }
 
     interface Ordering3<@Odd T> {
         <U extends T> U sort(U iterable);
     }
 
-    <V> void test(Ordering3<@Odd Entry<?>> o, @Odd Entry<V> e) {
-        Entry<V> e1 = o.sort(e);
-        Entry<V> e2 = o.<@Odd Entry<V>>sort(e);
+    <V> void test(Ordering3<@Odd MyEntry<?>> o, @Odd MyEntry<V> e) {
+        MyEntry<V> e1 = o.sort(e);
+        MyEntry<V> e2 = o.<@Odd MyEntry<V>>sort(e);
         // :: error: (type.argument.type.incompatible) :: error: (argument.type.incompatible)
-        Entry<V> e3 = o.<@Even Entry<V>>sort(e);
+        MyEntry<V> e3 = o.<@Even MyEntry<V>>sort(e);
     }
 
     interface Comparator4<T> {}

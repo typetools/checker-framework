@@ -32,7 +32,7 @@ class MyReentrantLock {
     }
 }
 
-class ThisPostCondition {
+public class ThisPostCondition {
     final MyReentrantLock myLock = new MyReentrantLock();
 
     @GuardedBy("myLock") Bar bar = new Bar();

@@ -6,7 +6,7 @@ import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.StringVal;
 
-class MethodValInferenceTest {
+public class MethodValInferenceTest {
     boolean flag = true;
 
     public void testGetMethodParamLen(

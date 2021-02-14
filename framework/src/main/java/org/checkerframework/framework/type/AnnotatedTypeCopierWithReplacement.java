@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import java.util.IdentityHashMap;
-import java.util.Map;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /** Duplicates annotated types and replaces components according to a replacement map. */
@@ -11,20 +10,20 @@ public class AnnotatedTypeCopierWithReplacement {
      * Return a copy of type after making the specified replacements.
      *
      * @param type the type that will be copied with replaced components
-     * @param replacementMap a mapping of {@literal referenceToReplace &rArr;
-     *     referenceOfReplacement}
+     * @param replacementMap a mapping of {@literal referenceToReplace => referenceOfReplacement}
      * @return a duplicate of type in which every reference that was a key in replacementMap has
      *     been replaced by its corresponding value
      */
     public static AnnotatedTypeMirror replace(
             AnnotatedTypeMirror type,
-            Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> replacementMap) {
+            IdentityHashMap<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror>
+                    replacementMap) {
         return new Visitor(replacementMap).visit(type);
     }
 
     /**
-     * AnnotatedTypeCopier maintains a mapping of {@literal typeVisited &rArr; copyOfTypeVisited}
-     * When a reference, typeVisited, is encountered again, it will use the recorded reference,
+     * AnnotatedTypeCopier maintains a mapping of {@literal typeVisited => copyOfTypeVisited} When a
+     * reference, typeVisited, is encountered again, it will use the recorded reference,
      * copyOfTypeVisited, instead of generating a new copy of typeVisited. Visitor pre-populates
      * this mapping so that references are replaced not by their copies but by those in the
      * replacementMap provided in the constructor.
@@ -37,7 +36,8 @@ public class AnnotatedTypeCopierWithReplacement {
                 originalMappings;
 
         public Visitor(
-                final Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> mappings) {
+                final IdentityHashMap<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror>
+                        mappings) {
             originalMappings = new IdentityHashMap<>(mappings);
         }
 

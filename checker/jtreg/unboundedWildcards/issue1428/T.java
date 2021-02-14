@@ -10,7 +10,7 @@
 import java.util.Collections;
 import java.util.List;
 
-class T {
+public class T {
     public List<L<?>> f(B b) {
         return true ? Collections.<L<?>>emptyList() : b.getItems();
     }

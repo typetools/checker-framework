@@ -1,6 +1,6 @@
 // Test case for issue #243: https://github.com/typetools/checker-framework/issues/243
 
-class TestValOf<T extends Enum<T>> {
+public class TestValOf<T extends Enum<T>> {
 
     private final Class<T> enumClass;
 

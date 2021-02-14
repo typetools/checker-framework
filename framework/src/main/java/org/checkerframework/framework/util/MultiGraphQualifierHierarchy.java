@@ -1,34 +1,167 @@
 package org.checkerframework.framework.util;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
+import org.checkerframework.framework.type.NoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Represents the type qualifier hierarchy of a type system that supports multiple separate subtype
  * hierarchies.
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
+ *
+ * @deprecated Use {@link ElementQualifierHierarchy}, {@link MostlyNoElementQualifierHierarchy}, or
+ *     {@link NoElementQualifierHierarchy} instead. This class will be removed in a future release.
+ *     <p>Here are instructions on how to convert from a subclass of MultiGraphQualifierHierarchy to
+ *     the new implementations:
+ *     <p>If the subclass implements isSubtype and calls super when annotations do not have
+ *     elements, then use the following instructions to convert to {@link
+ *     MostlyNoElementQualifierHierarchy}.
+ *     <ol>
+ *       <li>Change {@code extends MultiGraphQualifierHierarchy} to {@code extends
+ *           MostlyNoElementQualifierHierarchy}.
+ *       <li>Create a constructor matching super.
+ *       <li>Implement isSubtypeWithElements, leastUpperBoundWithElements, and
+ *           greatestLowerBoundWithElements. You may be able to reuse parts of your current
+ *           implementation of isSubtype, leastUpperBound, and greatestLowerBound.
+ *     </ol>
+ *     <p>If the subclass implements isSubtype and does not call super in that implementation, then
+ *     use the following instructions to convert to a subclass of {@link ElementQualifierHierarchy}.
+ *     <ol>
+ *       <li>Change {@code extends MultiGraphQualifierHierarchy} to {@code extends
+ *           ElementQualifierHierarchy}.
+ *       <li>Create a constructor matching super.
+ *       <li>Implement {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)} and {@link
+ *           #greatestLowerBound(AnnotationMirror, AnnotationMirror)} if missing. (In the past, it
+ *           was very easy to forget to implement these, now they are abstract methods.)
+ *     </ol>
+ *     If you wish to continue to use a subclass of {@link MultiGraphQualifierHierarchy} or {@link
+ *     GraphQualifierHierarchy}, you may do so by adding the following to AnnotatedTypeFactory.
+ *     (It's better to convert to one of the new classes because MultiGraphQualifierHierarchy and
+ *     GraphQualifierHierarchy are buggy and no longer supported.)
+ *     <p>If any qualifier has an annotation element without a default value, you will need to
+ *     convert to one of the new subclasses. If you do not, then MultiGraphQualifierHierarchy will
+ *     throw an exception with a message like "AnnotationBuilder.fromName: no value for element
+ *     value() of checkers.inference.qual.VarAnnot".
+ *     <pre>
+ * {@code @Override}
+ * {@code @SuppressWarnings("deprecation")}
+ * <code> public QualifierHierarchy createQualifierHierarchy() {
+ *      return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
+ *              .createMultiGraphQualifierHierarchy(this);
+ *   }
+ * </code>
+ * {@code @Override}
+ * {@code @SuppressWarnings("deprecation")}
+ * <code> public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+ *          org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+ *                  factory) {
+ *      return new YourSubclassQualifierHierarchy(factory);
+ *  }
+ * </code></pre>
  */
-public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
+@SuppressWarnings("interning") // Class is deprecated.
+@Deprecated
+public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
+
+    /**
+     * Creates the QualifierHierarchy using {@link
+     * org.checkerframework.framework.util.MultiGraphQualifierHierarchy}
+     *
+     * @param annotatedTypeFactory annotated type factory
+     * @return qualifier hierarchy
+     * @deprecated Use {@link ElementQualifierHierarchy} instead.
+     */
+    @Deprecated
+    public static QualifierHierarchy createMultiGraphQualifierHierarchy(
+            AnnotatedTypeFactory annotatedTypeFactory) {
+        Set<Class<? extends Annotation>> supportedTypeQualifiers =
+                annotatedTypeFactory.getSupportedTypeQualifiers();
+        MultiGraphFactory factory = new MultiGraphFactory(annotatedTypeFactory);
+        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
+            AnnotationMirror typeQualifierAnno =
+                    AnnotationBuilder.fromClass(
+                            annotatedTypeFactory.getElementUtils(), typeQualifier);
+            factory.addQualifier(typeQualifierAnno);
+            // Polymorphic qualifiers can't declare their supertypes.
+            // An error is raised if one is present.
+            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
+                    // This is currently not supported. At some point we might add
+                    // polymorphic qualifiers with upper and lower bounds.
+                    throw new TypeSystemError(
+                            "AnnotatedTypeFactory: "
+                                    + typeQualifier
+                                    + " is polymorphic and specifies super qualifiers. "
+                                    + "Remove the @org.checkerframework.framework.qual.SubtypeOf or @org.checkerframework.framework.qual.PolymorphicQualifier annotation from it.");
+                }
+                continue;
+            }
+            if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
+                throw new TypeSystemError(
+                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
+                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
+                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
+                        typeQualifier);
+            }
+            Class<? extends Annotation>[] superQualifiers =
+                    typeQualifier.getAnnotation(SubtypeOf.class).value();
+            for (Class<? extends Annotation> superQualifier : superQualifiers) {
+                if (!supportedTypeQualifiers.contains(superQualifier)) {
+                    throw new TypeSystemError(
+                            "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
+                }
+                if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                    // This is currently not supported. No qualifier can have a polymorphic
+                    // qualifier as super qualifier.
+                    throw new TypeSystemError(
+                            "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
+                }
+                AnnotationMirror superAnno =
+                        AnnotationBuilder.fromClass(
+                                annotatedTypeFactory.getElementUtils(), superQualifier);
+                factory.addSubtype(typeQualifierAnno, superAnno);
+            }
+        }
+
+        QualifierHierarchy hierarchy = factory.build();
+
+        if (!hierarchy.isValid()) {
+            throw new TypeSystemError(
+                    "AnnotatedTypeFactory: invalid qualifier hierarchy: "
+                            + hierarchy.getClass()
+                            + " "
+                            + hierarchy);
+        }
+
+        return hierarchy;
+    }
 
     /**
      * Factory used to create an instance of {@link GraphQualifierHierarchy}. A factory can be used
@@ -51,7 +184,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * <p>Clients build the hierarchy using {@link #addQualifier(AnnotationMirror)} and {@link
      * #addSubtype(AnnotationMirror, AnnotationMirror)}, then get the instance with calling {@link
      * #build()}
+     *
+     * @deprecated Use {@link ElementQualifierHierarchy} instead.
      */
+    @Deprecated
     public static class MultiGraphFactory {
         /**
          * Map from qualifiers to the direct supertypes of the qualifier. Only the subtype relations
@@ -67,7 +203,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          * <ul>
          *   <li>the argument to @PolymorphicQualifier (typically the top qualifier in the
          *       hierarchy), or
-         *   <li>"PolymorphicQualifier" if @PolymorphicQualifier is used without an argument, or
+         *   <li>"Annotation" if @PolymorphicQualifier is used without an argument, or
          * </ul>
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
@@ -92,15 +228,73 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return;
             }
 
-            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierElement(qual);
+            @CanonicalName Name pqtopclass = getPolymorphicQualifierElement(qual);
             if (pqtopclass != null) {
-                AnnotationMirror pqtop =
-                        AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
-                // use given top (which might be PolymorphicQualifier) as key
+                AnnotationMirror pqtop;
+                if (pqtopclass.contentEquals(Annotation.class.getName())) {
+                    // A @PolymorphicQualifier with no value defaults to Annotation.class.
+                    // That means there is only one top in the hierarchy. The top qualifier
+                    // may not be known at this point, so use the qualifier itself.
+                    // This is changed to top in MultiGraphQualifierHierarchy.addPolyRelations
+                    pqtop = qual;
+                } else {
+                    pqtop = AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
+                }
+                // use given top (which might be Annotation) as key
                 this.polyQualifiers.put(pqtop, qual);
             } else {
                 supertypesDirect.put(qual, AnnotationUtils.createAnnotationSet());
             }
+        }
+
+        /**
+         * Returns the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
+         * otherwise return null.
+         *
+         * @param qual qualifier
+         * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
+         *     otherwise return null
+         */
+        private static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
+            if (qual == null) {
+                return null;
+            }
+            Element qualElt = qual.getAnnotationType().asElement();
+            for (AnnotationMirror am : qualElt.getAnnotationMirrors()) {
+                if (AnnotationUtils.areSameByClass(am, PolymorphicQualifier.class)) {
+                    return am;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * If {@code qual} is a polymorphic qualifier, return the class specified by the {@link
+         * PolymorphicQualifier} meta-annotation on the polymorphic qualifier is returned.
+         * Otherwise, return null.
+         *
+         * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier
+         * belongs. By convention, it is the top qualifier of the hierarchy. Use of {@code
+         * Annotation.class} is discouraged, because it can lead to ambiguity if used for multiple
+         * type systems.
+         *
+         * @param qual an annotation
+         * @return the name of the class specified by the {@link PolymorphicQualifier}
+         *     meta-annotation on {@code qual}, if {@code qual} is a polymorphic qualifier;
+         *     otherwise, null.
+         * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
+         */
+        private static @Nullable @CanonicalName Name getPolymorphicQualifierElement(
+                AnnotationMirror qual) {
+            AnnotationMirror poly = getPolymorphicQualifier(qual);
+
+            // System.out.println("poly: " + poly + " pq: " +
+            //     PolymorphicQualifier.class.getCanonicalName());
+            if (poly == null) {
+                return null;
+            }
+            Name ret = AnnotationUtils.getElementValueClassName(poly, "value", true);
+            return ret;
         }
 
         /**
@@ -128,8 +322,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return result;
         }
 
+        /**
+         * Create {@link QualifierHierarchy}
+         *
+         * @return QualifierHierarchy
+         */
         protected QualifierHierarchy createQualifierHierarchy() {
-            return atypeFactory.createQualifierHierarchy(this);
+            return atypeFactory.createQualifierHierarchyWithMultiGraphFactory(this);
         }
 
         /** True if the factory has already been built. */
@@ -161,13 +360,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     protected final Set<AnnotationMirror> bottoms;
 
     /**
-     * Reference to the special qualifier org.checkerframework.framework.qual.PolymorphicQualifier.
-     * It is used as a key in polyQualifiers, if the qualifier hierarchy consists of a single top
-     * and no specific qualifier was specified.
+     * See {@link MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers}.
+     *
+     * @see MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers
      */
-    protected final AnnotationMirror polymorphicQualifier;
-
-    /** @see MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers */
     protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
     /** All qualifiers, including polymorphic qualifiers. */
@@ -192,9 +388,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         Set<AnnotationMirror> newtops = findTops(supertypesTransitive);
         Set<AnnotationMirror> newbottoms = findBottoms(supertypesTransitive);
 
-        this.polymorphicQualifier =
-                AnnotationBuilder.fromClass(
-                        f.atypeFactory.getElementUtils(), PolymorphicQualifier.class);
         this.polyQualifiers = f.polyQualifiers;
 
         addPolyRelations(this, supertypesTransitive, this.polyQualifiers, newtops, newbottoms);
@@ -210,6 +403,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         typeQualifiers.addAll(supertypesTransitive.keySet());
         this.typeQualifiers = Collections.unmodifiableSet(typeQualifiers);
         // System.out.println("MGH: " + this);
+    }
+
+    @Override
+    public boolean isValid() {
+        return !typeQualifiers.isEmpty();
     }
 
     /**
@@ -230,13 +428,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         StringJoiner sj = new StringJoiner(System.lineSeparator());
         sj.add("Supertypes Graph: ");
 
-        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesDirect.entrySet()) {
+        for (Map.Entry<AnnotationMirror, Set<AnnotationMirror>> qual :
+                supertypesDirect.entrySet()) {
             sj.add("\t" + qual.getKey() + " = " + qual.getValue());
         }
 
         sj.add("Supertypes Map: ");
 
-        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual :
+        for (Map.Entry<AnnotationMirror, Set<AnnotationMirror>> qual :
                 supertypesTransitive.entrySet()) {
             String keyOpen = "\t" + qual.getKey() + " = [";
 
@@ -306,9 +505,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         AnnotationMirror top = getTopAnnotation(start);
         for (AnnotationMirror key : polyQualifiers.keySet()) {
-            if (key != null
-                    && (AnnotationUtils.areSame(key, top)
-                            || AnnotationUtils.areSame(key, polymorphicQualifier))) {
+            if (key != null && AnnotationUtils.areSame(key, top)) {
                 return polyQualifiers.get(key);
             }
         }
@@ -346,27 +543,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return lhs.size() == valid;
     }
 
-    @Override
-    public boolean isSubtypeTypeVariable(
-            Collection<? extends AnnotationMirror> subAnnos,
-            Collection<? extends AnnotationMirror> superAnnos) {
-        for (AnnotationMirror top : getTopAnnotations()) {
-            AnnotationMirror rhsForTop = findAnnotationInHierarchy(subAnnos, top);
-            AnnotationMirror lhsForTop = findAnnotationInHierarchy(superAnnos, top);
-            if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    @Deprecated
-    public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return typeQualifiers;
-    }
-
-    // For caching results of lubs
+    /** For caching results of lubs * */
     private Map<AnnotationPair, AnnotationMirror> lubs = null;
 
     @Override
@@ -387,15 +564,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return lubs.get(pair);
     }
 
-    @Override
-    public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 == null || a2 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return null;
-        }
-        return leastUpperBound(a1, a2);
-    }
-
     /** A cache of the results of glb computations. Maps from a pair of annotations to their glb. */
     private Map<AnnotationPair, AnnotationMirror> glbs = null;
 
@@ -409,20 +577,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
         AnnotationPair pair = new AnnotationPair(a1, a2);
         return glbs.get(pair);
-    }
-
-    @Override
-    public AnnotationMirror greatestLowerBoundTypeVariable(
-            AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return a2;
-        }
-        if (a2 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return a1;
-        }
-        return greatestLowerBound(a1, a2);
     }
 
     /**
@@ -457,19 +611,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return AnnotationUtils.containsSame(supermap1, superAnno);
     }
 
-    @Override
-    public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-        if (superAnno == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return true;
-        }
-        if (subAnno == null) {
-            // [] is a subtype of no qualifier (only [])
-            return false;
-        }
-        return isSubtype(subAnno, superAnno);
-    }
-
+    /**
+     * Throw a {@link BugInCF} if {@code a} is not in the {@link #supertypesTransitive} or {@link
+     * #polyQualifiers}.
+     *
+     * @param a qualifier
+     */
     private final void checkAnnoInGraph(AnnotationMirror a) {
         if (AnnotationUtils.containsSame(supertypesTransitive.keySet(), a)
                 || AnnotationUtils.containsSame(polyQualifiers.values(), a)) {
@@ -561,77 +708,80 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return;
         }
 
+        // Handle the case where @PolymorphicQualifier uses the default value Annotation.class.
+        if (polyQualifiers.size() == 1 && tops.size() == 1) {
+            Map.Entry<AnnotationMirror, AnnotationMirror> entry =
+                    polyQualifiers.entrySet().iterator().next();
+            AnnotationMirror poly = entry.getKey();
+            AnnotationMirror maybeTop = entry.getValue();
+            if (AnnotationUtils.areSameByName(poly, maybeTop)) {
+                // If the value of @PolymorphicQualifier is the default value, Annotation.class,
+                // then map is set to polyQual -> polyQual in
+                // MultiGraphQualifierHierarchy.MultiGraphFactory.addQualifier,
+                // because the top is unknown there.
+                // Reset it to top here.
+                polyQualifiers.put(tops.iterator().next(), poly);
+                polyQualifiers.remove(poly);
+            }
+        }
+
         for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQualifiers.entrySet()) {
             AnnotationMirror declTop = kv.getKey();
             AnnotationMirror polyQualifier = kv.getValue();
-            if (AnnotationUtils.areSame(declTop, polymorphicQualifier)) {
-                if (tops.size() == 1) { // un-ambigous single top
-                    AnnotationUtils.updateMappingToImmutableSet(fullMap, polyQualifier, tops);
-                    for (AnnotationMirror bottom : bottoms) {
-                        // Add the polyqualifier as a supertype
-                        // Need to copy over the set as it is unmodifiable.
-                        AnnotationUtils.updateMappingToImmutableSet(
-                                fullMap, bottom, Collections.singleton(polyQualifier));
-                    }
-                } else {
-                    throw new BugInCF(
-                            "MultiGraphQualifierHierarchy.addPolyRelations: "
-                                    + "incorrect or missing top qualifier given in polymorphic qualifier "
-                                    + polyQualifier
-                                    + "; declTop = "
-                                    + declTop
-                                    + "; possible top qualifiers: "
-                                    + tops);
-                }
+            // Ensure that it's really the top of the hierarchy
+            Set<AnnotationMirror> declSupers = fullMap.get(declTop);
+            AnnotationMirror polyTop = null;
+            if (declSupers.isEmpty()) {
+                polyTop = declTop;
             } else {
-                // Ensure that it's really the top of the hierarchy
-                Set<AnnotationMirror> declSupers = fullMap.get(declTop);
-                AnnotationMirror polyTop = null;
-                if (declSupers.isEmpty()) {
-                    polyTop = declTop;
-                } else {
-                    for (AnnotationMirror ds : declSupers) {
-                        if (AnnotationUtils.containsSameByName(tops, ds)) {
-                            polyTop = ds;
-                        }
+                for (AnnotationMirror ds : declSupers) {
+                    if (AnnotationUtils.containsSameByName(tops, ds)) {
+                        polyTop = ds;
                     }
                 }
-                boolean found = (polyTop != null);
-                if (found) {
-                    AnnotationUtils.updateMappingToImmutableSet(
-                            fullMap, polyQualifier, Collections.singleton(polyTop));
-                } else {
-                    throw new BugInCF(
-                            "MultiGraphQualifierHierarchy.addPolyRelations: "
-                                    + "incorrect top qualifier given in polymorphic qualifier: "
-                                    + polyQualifier
-                                    + " could not find: "
-                                    + polyTop);
-                }
+            }
+            boolean found = (polyTop != null);
+            if (found) {
+                AnnotationUtils.updateMappingToImmutableSet(
+                        fullMap, polyQualifier, Collections.singleton(polyTop));
+            } else if (AnnotationUtils.areSameByName(polyQualifier, declTop)) {
+                throw new BugInCF(
+                        "MultiGraphQualifierHierarchy.addPolyRelations: "
+                                + "incorrect or missing top qualifier given in polymorphic qualifier "
+                                + polyQualifier
+                                + "; possible top qualifiers: "
+                                + tops);
+            } else {
+                throw new BugInCF(
+                        "MultiGraphQualifierHierarchy.addPolyRelations: "
+                                + "incorrect top qualifier given in polymorphic qualifier: "
+                                + polyQualifier
+                                + " could not find: "
+                                + polyTop);
+            }
 
-                found = false;
-                AnnotationMirror bottom = null;
-                outer:
-                for (AnnotationMirror btm : bottoms) {
-                    for (AnnotationMirror btmsuper : fullMap.get(btm)) {
-                        if (AnnotationUtils.areSameByName(btmsuper, polyTop)) {
-                            found = true;
-                            bottom = btm;
-                            break outer;
-                        }
+            found = false;
+            AnnotationMirror bottom = null;
+            outer:
+            for (AnnotationMirror btm : bottoms) {
+                for (AnnotationMirror btmsuper : fullMap.get(btm)) {
+                    if (AnnotationUtils.areSameByName(btmsuper, polyTop)) {
+                        found = true;
+                        bottom = btm;
+                        break outer;
                     }
                 }
-                if (found) {
-                    AnnotationUtils.updateMappingToImmutableSet(
-                            fullMap, bottom, Collections.singleton(polyQualifier));
-                } else {
-                    // TODO: in a type system with a single qualifier this check will fail.
-                    // throw new BugInCF("MultiGraphQualifierHierarchy.addPolyRelations:
-                    // " +
-                    //        "incorrect top qualifier given in polymorphic qualifier: "
-                    //
-                    //        + polyQualifier + " could not find bottom for: " + polyTop);
-                }
+            }
+            if (found) {
+                AnnotationUtils.updateMappingToImmutableSet(
+                        fullMap, bottom, Collections.singleton(polyQualifier));
+            } else {
+                // TODO: in a type system with a single qualifier this check will fail.
+                // throw new BugInCF("MultiGraphQualifierHierarchy.addPolyRelations:
+                // " +
+                //        "incorrect top qualifier given in polymorphic qualifier: "
+                //
+                //        + polyQualifier + " could not find bottom for: " + polyTop);
             }
         }
     }
@@ -720,8 +870,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return getTopAnnotation(poly);
     }
 
-    /** Sees if a particular annotation mirror is a polymorphic qualifier. */
-    private boolean isPolymorphicQualifier(AnnotationMirror qual) {
+    @Override
+    public boolean isPolymorphicQualifier(AnnotationMirror qual) {
         return AnnotationUtils.containsSame(polyQualifiers.values(), qual);
     }
 
@@ -731,13 +881,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         outset.addAll(inset);
 
         for (AnnotationMirror a1 : inset) {
-            Iterator<AnnotationMirror> outit = outset.iterator();
-            while (outit.hasNext()) {
-                AnnotationMirror a2 = outit.next();
-                if (a1 != a2 && isSubtype(a1, a2)) {
-                    outit.remove();
-                }
-            }
+            outset.removeIf(a2 -> a1 != a2 && isSubtype(a1, a2));
         }
         return outset;
     }

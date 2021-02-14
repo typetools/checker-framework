@@ -20,7 +20,7 @@ public abstract class BinaryOperationNode extends Node {
     protected final Node left;
     protected final Node right;
 
-    public BinaryOperationNode(BinaryTree tree, Node left, Node right) {
+    protected BinaryOperationNode(BinaryTree tree, Node left, Node right) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.left = left;

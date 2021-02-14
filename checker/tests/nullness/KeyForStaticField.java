@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
-class KeyForStaticField {
+public class KeyForStaticField {
     @SuppressWarnings("keyfor")
     public static final @KeyFor("this.map") String STATIC_KEY = "some text";
 
@@ -14,7 +14,7 @@ class KeyForStaticField {
 
     public KeyForStaticField() {
         map = new HashMap<>();
-        put(STATIC_KEY, 0);
+        map.put(STATIC_KEY, 0);
     }
 
     /** Returns the value for the given key, which must be present in the map. */

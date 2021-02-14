@@ -3,6 +3,7 @@ package org.checkerframework.checker.i18nformatter;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
@@ -13,9 +14,10 @@ import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Whenever a method with {@link I18nFormatFor} annotation is invoked, it will perform the format
@@ -31,10 +33,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-        MethodInvocationNode nodeNode =
-                atypeFactory.getFirstNodeOfKindForTree(tree, MethodInvocationNode.class);
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
-        I18nFormatCall fc = tu.createFormatForCall(tree, nodeNode, atypeFactory);
+        I18nFormatCall fc = tu.createFormatForCall(tree, atypeFactory);
         if (fc != null) {
             checkInvocationFormatFor(fc);
             return p;
@@ -47,8 +47,6 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
         Result<FormatType> type = fc.getFormatType();
 
-        Result<InvocationType> invc;
-        I18nConversionCategory[] formatCats;
         switch (type.value()) {
             case I18NINVALID:
                 tu.failure(type, "i18nformat.string.invalid", fc.getInvalidError());
@@ -60,8 +58,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                 }
                 break;
             case I18NFORMAT:
-                invc = fc.getInvocationType();
-                formatCats = fc.getFormatCategories();
+                Result<InvocationType> invc = fc.getInvocationType();
+                I18nConversionCategory[] formatCats = fc.getFormatCategories();
                 switch (invc.value()) {
                     case VARARG:
                         Result<TypeMirror>[] paramTypes = fc.getParamTypes();
@@ -89,9 +87,15 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                                     break;
                                 default:
                                     if (!fc.isValidParameter(formatCat, paramType)) {
+                                        ExecutableElement method =
+                                                TreeUtils.elementFromUse(fc.getTree());
+                                        CharSequence methodName =
+                                                ElementUtils.getSimpleNameOrDescription(method);
                                         tu.failure(
                                                 param,
                                                 "argument.type.incompatible",
+                                                "", // parameter name is not useful
+                                                methodName,
                                                 paramType,
                                                 formatCat);
                                     }
@@ -122,7 +126,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
 
@@ -131,8 +136,10 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // For method calls, they are issued in checkInvocationFormatFor.
         if (rhs != null
                 && lhs != null
-                && AnnotationUtils.areSameByName(rhs, atypeFactory.I18NFORMAT)
-                && AnnotationUtils.areSameByName(lhs, atypeFactory.I18NFORMAT)) {
+                && AnnotationUtils.areSameByName(
+                        rhs, I18nFormatterAnnotatedTypeFactory.I18NFORMAT_NAME)
+                && AnnotationUtils.areSameByName(
+                        lhs, I18nFormatterAnnotatedTypeFactory.I18NFORMAT_NAME)) {
             I18nConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
             I18nConversionCategory[] lhsArgTypes =
@@ -163,6 +170,6 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // issued for a given line of code will take precedence over the
         // assignment.type.incompatible
         // issued by super.commonAssignmentCheck.
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 }

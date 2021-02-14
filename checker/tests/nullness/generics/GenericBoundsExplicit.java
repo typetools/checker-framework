@@ -2,9 +2,9 @@ package nullness.generics;
 
 import org.checkerframework.checker.nullness.qual.*;
 
-@SuppressWarnings("initialization.fields.uninitialized")
-class GenericBoundsExplicit<@NonNull T extends @Nullable Object> {
+public class GenericBoundsExplicit<@NonNull T extends @Nullable Object> {
 
+    @SuppressWarnings("initialization.field.uninitialized")
     T t;
 
     public void method() {
@@ -19,10 +19,11 @@ class GenericBoundsExplicit<@NonNull T extends @Nullable Object> {
     }
 }
 
-@SuppressWarnings("initialization.fields.uninitialized")
 class GenericBoundsExplicit2<@NonNull TT extends @Nullable Object> {
     @Nullable TT tt1;
+    // :: error: (initialization.field.uninitialized)
     @NonNull TT tt2;
+    // :: error: (initialization.field.uninitialized)
     TT tt3;
 
     public void context() {
@@ -36,7 +37,7 @@ class GenericBoundsExplicit2<@NonNull TT extends @Nullable Object> {
     }
 }
 
-@SuppressWarnings("initialization.fields.uninitialized")
+@SuppressWarnings("initialization.field.uninitialized")
 class GenericBoundsExplicit3<@NonNull TTT extends @NonNull Object> {
     @Nullable TTT ttt1;
     @NonNull TTT ttt2;

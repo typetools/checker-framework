@@ -36,4 +36,10 @@ public class UnneededSuppressionsTest {
 
     @SuppressWarnings("purity")
     void method6() {}
+
+    @SuppressWarnings("index:foo.bar.baz")
+    void method7() {}
+
+    @SuppressWarnings("allcheckers:purity.not.deterministic.call")
+    void method8() {}
 }

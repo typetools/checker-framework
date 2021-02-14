@@ -1,4 +1,4 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 class ListOuter<T> {}
 
@@ -30,6 +30,4 @@ public class InnerGenerics {
         // :: error: (assignment.type.incompatible)
         ListInner<@Odd String> i = new ListInner<String>();
     }
-
-    // more examples
 }

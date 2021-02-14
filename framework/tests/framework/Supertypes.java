@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 public class Supertypes {
     static interface Inter<E> {}

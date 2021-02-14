@@ -3,11 +3,15 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.UniqueId;
 
 /**
  * A node in the abstract representation used for Java code inside a basic block.
@@ -16,9 +20,7 @@ import org.checkerframework.dataflow.qual.Pure;
  *
  * <pre>
  * block == null || block instanceof RegularBlock || block instanceof ExceptionBlock
- * block instanceof RegularBlock &rArr; block.getContents().contains(this)
- * block instanceof ExceptionBlock &rArr; block.getNode() == this
- * block == null &hArr; "This object represents a parameter of the method."
+ * block != null &hArr; block.getNodes().contains(this)
  * </pre>
  *
  * <pre>
@@ -32,9 +34,12 @@ import org.checkerframework.dataflow.qual.Pure;
  *
  * @see org.checkerframework.dataflow.util.IdentityMostlySingleton
  */
-public abstract class Node {
+public abstract class Node implements UniqueId {
 
-    /** The basic block this node belongs to (see invariant about this field above). */
+    /**
+     * The basic block this node belongs to. If null, this object represents a method formal
+     * parameter.
+     */
     protected @Nullable Block block;
 
     /** Is this node an l-value? */
@@ -55,14 +60,36 @@ public abstract class Node {
      */
     protected final TypeMirror type;
 
-    public Node(TypeMirror type) {
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
+    /** The unique ID of this object. */
+    final long uid = nextUid.getAndIncrement();
+    /**
+     * Returns the unique ID of this object.
+     *
+     * @return the unique ID of this object
+     */
+    @Override
+    public long getUid(@UnknownInitialization Node this) {
+        return uid;
+    }
+
+    /**
+     * Creates a new Node.
+     *
+     * @param type the type of the node
+     */
+    protected Node(TypeMirror type) {
         assert type != null;
         this.type = type;
     }
 
     /**
+     * Returns the basic block this node belongs to (or {@code null} if it represents the parameter
+     * of a method).
+     *
      * @return the basic block this node belongs to (or {@code null} if it represents the parameter
-     *     of a method).
+     *     of a method)
      */
     public @Nullable Block getBlock() {
         return block;
@@ -75,15 +102,15 @@ public abstract class Node {
 
     /**
      * Returns the {@link Tree} in the abstract syntax tree, or {@code null} if no corresponding
-     * tree exists. For instance, this is the case for an {@link ImplicitThisLiteralNode}.
+     * tree exists. For instance, this is the case for an {@link ImplicitThisNode}.
      *
-     * @return the corresponding {@link Tree} or {@code null}.
+     * @return the corresponding {@link Tree} or {@code null}
      */
     @Pure
     public abstract @Nullable Tree getTree();
 
     /**
-     * Returns a {@link TypeMirror} representing the type of a {@link Node} A {@link Node} will
+     * Returns a {@link TypeMirror} representing the type of a {@link Node}. A {@link Node} will
      * always have a type even when it has no {@link Tree}.
      *
      * @return a {@link TypeMirror} representing the type of this {@link Node}
@@ -130,10 +157,17 @@ public abstract class Node {
         this.assignmentContext = assignmentContext;
     }
 
-    /** @return a collection containing all of the operand {@link Node}s of this {@link Node}. */
+    /**
+     * Returns a collection containing all of the operand {@link Node}s of this {@link Node}.
+     *
+     * @return a collection containing all of the operand {@link Node}s of this {@link Node}
+     */
     public abstract Collection<Node> getOperands();
 
     /**
+     * Returns a collection containing all of the operand {@link Node}s of this {@link Node}, as
+     * well as (transitively) the operands of its operands.
+     *
      * @return a collection containing all of the operand {@link Node}s of this {@link Node}, as
      *     well as (transitively) the operands of its operands
      */
@@ -146,5 +180,28 @@ public abstract class Node {
             transitiveOperands.add(next);
         }
         return transitiveOperands;
+    }
+
+    /**
+     * Returns a verbose string representation of this, useful for debugging.
+     *
+     * @return a printed representation of this
+     */
+    public String toStringDebug() {
+        return String.format("%s [%s]", this, this.getClassAndUid());
+    }
+
+    /**
+     * Returns a verbose string representation of a collection of nodes, useful for debugging..
+     *
+     * @param nodes a collection of nodes to format
+     * @return a printed representation of the given collection
+     */
+    public static String nodeCollectionToString(Collection<? extends Node> nodes) {
+        StringJoiner result = new StringJoiner(", ", "[", "]");
+        for (Node n : nodes) {
+            result.add(n.toStringDebug());
+        }
+        return result.toString();
     }
 }

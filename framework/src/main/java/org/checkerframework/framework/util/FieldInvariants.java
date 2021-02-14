@@ -1,11 +1,10 @@
 package org.checkerframework.framework.util;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -98,12 +97,18 @@ public class FieldInvariants {
         return list;
     }
 
-    /** @return true if there is a qualifier for each field in {@code fields} */
+    /**
+     * Returns true if there is a qualifier for each field in {@code fields}.
+     *
+     * @return true if there is a qualifier for each field in {@code fields}
+     */
     public boolean isWellFormed() {
         return qualifiers.size() == fields.size();
     }
 
     /**
+     * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
+     *
      * @param superInvar the value to check for being a super invariant
      * @param factory the type factory
      * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
@@ -114,7 +119,7 @@ public class FieldInvariants {
             List<String> missingFields = new ArrayList<>(superInvar.fields);
             missingFields.removeAll(fields);
             return new DiagMessage(
-                    ERROR,
+                    Kind.ERROR,
                     "field.invariant.not.found.superclass",
                     String.join(", ", missingFields));
         }
@@ -127,7 +132,11 @@ public class FieldInvariants {
                         qualifierHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
                 if (sub == null || !qualifierHierarchy.isSubtype(sub, superA)) {
                     return new DiagMessage(
-                            ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
+                            Kind.ERROR,
+                            "field.invariant.not.subtype.superclass",
+                            field,
+                            sub,
+                            superA);
                 }
             }
         }

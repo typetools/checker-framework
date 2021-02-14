@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class FlowCompound {
+public class FlowCompound {
 
     @org.checkerframework.dataflow.qual.Pure
     public boolean equals(@Nullable Object o) {

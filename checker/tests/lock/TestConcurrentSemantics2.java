@@ -1,8 +1,6 @@
-package chapter;
-
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
-class TestConcurrentSemantics2 {
+public class TestConcurrentSemantics2 {
     final Object a = new Object();
     final Object b = new Object();
 

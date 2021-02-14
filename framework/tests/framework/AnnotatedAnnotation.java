@@ -1,6 +1,6 @@
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @interface OddInt {
@@ -17,10 +17,10 @@ import testlib.util.*;
 }
 
 class Const {
-    @SuppressWarnings("test")
+    @SuppressWarnings("evenodd")
     public static final @Odd int ok1 = 5;
 
-    @SuppressWarnings("test")
+    @SuppressWarnings("evenodd")
     public static final @Odd int ok2 = 5;
 
     public static final int notodd = 4;

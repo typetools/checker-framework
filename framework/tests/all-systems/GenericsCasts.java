@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-class GenericsCasts {
+public class GenericsCasts {
     // Cast from a raw type to a generic type
     // :: warning: [unchecked] unchecked cast
     List<Object>[] o = (List<Object>[]) new List[] {new ArrayList()};

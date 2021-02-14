@@ -12,17 +12,22 @@ import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
+import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseOne;
+import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseThree;
+import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseTwo;
+import org.checkerframework.dataflow.cfg.builder.PhaseOneResult;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -72,10 +77,10 @@ public class CFCFGBuilder extends CFGBuilder {
         ExpressionTree detail = tree.getDetail();
         if (detail != null) {
             String msg = detail.toString();
-            Collection<String> warningKeys = checker.getSuppressWarningsKeys();
-            for (String warningKey : warningKeys) {
-                String key = "@AssumeAssertion(" + warningKey + ")";
-                if (msg.contains(key)) {
+            Collection<String> prefixes = checker.getSuppressWarningsPrefixes();
+            for (String prefix : prefixes) {
+                String assumeAssert = "@AssumeAssertion(" + prefix + ")";
+                if (msg.contains(assumeAssert)) {
                     return true;
                 }
             }
@@ -114,12 +119,12 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         public void handleArtificialTree(Tree tree) {
             // Record the method or class that encloses the newly created tree.
-            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
                 factory.setEnclosingElementForArtificialTree(tree, methodElement);
             } else {
-                ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+                ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
                 if (enclosingClass != null) {
                     Element classElement = TreeUtils.elementFromDeclaration(enclosingClass);
                     factory.setEnclosingElementForArtificialTree(tree, classElement);
@@ -130,15 +135,9 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopIteratorVariable(
                 MethodInvocationTree iteratorCall, VariableElement variableElement) {
-            // We do not want to cache flow-insensitive types
-            // retrieved during CFG building.
-            boolean oldShouldCache = factory.shouldCache;
-            factory.shouldCache = false;
-            AnnotatedTypeMirror annotatedIteratorType = factory.getAnnotatedType(iteratorCall);
-            factory.shouldCache = oldShouldCache;
-
             Tree annotatedIteratorTypeTree =
-                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(annotatedIteratorType);
+                    ((CFTreeBuilder) treeBuilder)
+                            .buildAnnotatedType(TreeUtils.typeOf(iteratorCall));
             handleArtificialTree(annotatedIteratorTypeTree);
 
             // Declare and initialize a new, unique iterator variable
@@ -154,27 +153,31 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         protected VariableTree createEnhancedForLoopArrayVariable(
                 ExpressionTree expression, VariableElement variableElement) {
-            // We do not want to cache flow-insensitive types
-            // retrieved during CFG building.
-            boolean oldShouldCache = factory.shouldCache;
-            factory.shouldCache = false;
-            AnnotatedTypeMirror annotatedArrayType = factory.getAnnotatedType(expression);
-            factory.shouldCache = oldShouldCache;
-            if (annotatedArrayType.getKind() == TypeKind.WILDCARD
-                    && ((AnnotatedWildcardType) annotatedArrayType).isUninferredTypeArgument()) {
-                TypeMirror type = TreeUtils.typeOf(expression);
-                AnnotatedArrayType newArrayType =
-                        (AnnotatedArrayType) AnnotatedTypeMirror.createType(type, factory, false);
-                newArrayType.setComponentType(annotatedArrayType);
-                newArrayType.addAnnotations(annotatedArrayType.getEffectiveAnnotations());
-                annotatedArrayType = newArrayType;
+
+            TypeMirror type = null;
+            if (TreeUtils.isLocalVariable(expression)) {
+                // It is necessary to get the elt because just getting the type of expression
+                // directly (via TreeUtils.typeOf) doesn't include annotations on the declarations
+                // of local variables, for some reason.
+                Element elt = TreeUtils.elementFromTree(expression);
+                if (elt != null) {
+                    type = ElementUtils.getType(elt);
+                }
             }
 
-            assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType)
-                    : "ArrayType must be represented by AnnotatedArrayType";
+            // In all other cases cases, instead get the type of the expression. This case is
+            // also triggered when the type from the element is not an array, which can occur
+            // if the declaration of the local is a generic, such as in
+            // framework/tests/all-systems/java8inference/Issue1775.java.
+            // Getting the type from the expression itself guarantees the result will be an array.
+            if (type == null || type.getKind() != TypeKind.ARRAY) {
+                TypeMirror expressionType = TreeUtils.typeOf(expression);
+                type = expressionType;
+            }
 
-            Tree annotatedArrayTypeTree =
-                    ((CFTreeBuilder) treeBuilder).buildAnnotatedType(annotatedArrayType);
+            assert (type instanceof ArrayType) : "array types must be represented by ArrayType";
+
+            Tree annotatedArrayTypeTree = ((CFTreeBuilder) treeBuilder).buildAnnotatedType(type);
             handleArtificialTree(annotatedArrayTypeTree);
 
             // Declare and initialize a temporary array variable

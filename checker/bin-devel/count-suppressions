@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This command counts the approximate frequency of each distinct reason for
-# warning suppressions.
+# warning suppressions, in all files under the current directory.
 # To invoke it, pass a type system name; for example:
 #   count-suppressions nullness
 
@@ -15,6 +15,7 @@
 # to count the total number of warning suppressions (for example, to report
 # in a paper), because this script gives only an approximate count.
 
+# To debug, pass --debug as the first command-line argument.
 debug=0
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -23,6 +24,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
     SED="sed"
     GREP="grep"
+fi
+
+if [ "$1" == "--debug" ] ; then
+    debug=1
+    shift
 fi
 
 if [ "$#" -ne 1 ]; then
@@ -40,30 +46,49 @@ if [ "$regex" = "index" ]; then
     regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
 fi
 
-# Implementation notes:
-# These are the two types of matching lines:
-# Matching lines:
-#  * "KEY"  (for @SuppressWarnings, but don't match "@SuppressWarnings"
-#    because that might be on the previous line)
-#  * @AssumeAssertion(key)
-
-echo "regex=${regex}"
+# Diagnostics
+# echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
+countedreasons=$(mktemp /tmp/count-suppressions.XXXXXX)
+
+# These are the two types of matching lines:
+#  * "checkername" or "chekername:..."
+#    This matches occurrences within @SuppressWarnings.  The regex does not
+#    include "@SuppressWarnings" because it might appear on the previous line.
+#  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
-${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > "${greplines}"
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", and "true positive".
+${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" \
+    | grep -v "@AnnotatedFor" | grep -v "/tests/" \
+    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" > "${greplines}"
+
+total=$(wc -l < "${greplines}")
 ## Don't output a total, to avoid people using this approximate count.
-# echo -n "Total: "
-# cat ${greplines} | wc -l
+# echo "Total: $total"
 # shellcheck disable=SC2002
 cat "${greplines}" \
     | ${SED} 's/.*\/\/ //g' \
     | ${SED} "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \
     | ${SED} 's/\([^0-9]\): [^:].*/\1/' \
     | ${SED} 's/ \+$//' \
-    | sort | uniq -c | sort -rg
+    | sort | uniq -c | sort -rg > "${countedreasons}"
+
+# Add leading percentages to `uniq -c` output.  Note that it rounds down to the nearest integer.
+# (Digits afert the decimal don't make a practical difference.)
+while read -r line; do
+    count=$(echo "$line" | cut -f1 -d " ");
+    content=$(echo "$line" | cut -f2- -d " ");
+    percent=$(echo "scale=0; (100*$count/$total);" | bc);
+    if [ "$debug" -eq "0" ]; then
+        printf "%d%%\t%s\n" "$percent" "$content";
+    else
+        printf "%d%%\t%s\t%s\n" "$percent" "$count" "$content";
+    fi;
+done < "${countedreasons}";
+
 if [ "$debug" -eq "0" ]; then
-  rm -f "${greplines}"
+  rm -f "${greplines}" "${countedreasons}"
 else
-  echo Output is in: "${greplines}"
+  echo "Total is $total, Intermediate output is in: ${greplines} ${countedreasons}"
 fi

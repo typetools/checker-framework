@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class GenericsBounds5 {
+public class GenericsBounds5 {
     class Collection1<E extends @Nullable Object> {
         public void add(E elt) {
             // This call is forbidden, because elt might be null.

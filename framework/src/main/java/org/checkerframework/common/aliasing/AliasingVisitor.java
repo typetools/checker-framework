@@ -10,6 +10,9 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -22,6 +25,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -150,8 +155,11 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     // this isn't called for pseudo-assignments.
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
         if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
             // If an assignment occurs inside a constructor with
             // result type @Unique, it will invalidate the @Unique property
@@ -167,8 +175,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
         // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.
@@ -263,7 +272,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
     /**
      * Returns true if {@code exp} has type {@code @Unique} and is not a method invocation nor a new
-     * class expression.
+     * class expression. It checks whether the tree expression is unique by either checking for an
+     * explicit annotation or checking whether the class of the tree expression {@code exp} has type
+     * {@code @Unique}
      *
      * @param exp the Tree to check
      */
@@ -271,11 +282,41 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
+        boolean isUniqueType = isUniqueClass(type) || type.hasExplicitAnnotation(Unique.class);
+        return isUniqueType && !isMethodInvocation && !isNewClass;
     }
 
+    /**
+     * Return true if the class declaration for annotated type {@code type} has annotation
+     * {@code @Unique}.
+     *
+     * @param type the annotated type whose class must be checked
+     * @return boolean true if class is unique and false otherwise
+     */
+    private boolean isUniqueClass(AnnotatedTypeMirror type) {
+        Element el = types.asElement(type.getUnderlyingType());
+        if (el == null) {
+            return false;
+        }
+        Set<AnnotationMirror> annoMirrors = atypeFactory.getDeclAnnotations(el);
+        if (annoMirrors == null) {
+            return false;
+        }
+        if (AnnotationUtils.containsSameByClass(annoMirrors, Unique.class)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the enclosing method is a constructor whose return type is annotated as
+     * {@code @Unique}.
+     *
+     * @return true if the enclosing method is a constructor whose return type is annotated as
+     *     {@code @Unique}
+     */
     private boolean isInUniqueConstructor() {
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
         if (enclosingMethod == null) {
             return false; // No enclosing method.
         }

@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -34,7 +35,9 @@ public class UnitsRelationsTools {
      *     constructed
      */
     public static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
-            final ProcessingEnvironment env, final CharSequence annoClass, final Prefix p) {
+            final ProcessingEnvironment env,
+            final @FullyQualifiedName CharSequence annoClass,
+            final Prefix p) {
         AnnotationBuilder builder = new AnnotationBuilder(env, annoClass);
         builder.setValue("value", p);
         return builder.build();
@@ -50,7 +53,7 @@ public class UnitsRelationsTools {
      * @return an AnnotationMirror of the Unit with no prefix, or null if it cannot be constructed
      */
     public static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
-            final ProcessingEnvironment env, final CharSequence annoClass) {
+            final ProcessingEnvironment env, final @FullyQualifiedName CharSequence annoClass) {
         return AnnotationBuilder.fromName(env.getElementUtils(), annoClass);
     }
 
@@ -176,12 +179,12 @@ public class UnitsRelationsTools {
             // Optimization, though the else case would also work.
             return unitsAnnotation;
         } else {
+            String unitsAnnoName = AnnotationUtils.annotationName(unitsAnnotation);
             // In the Units Checker, the only annotation value is the prefix value.  Therefore,
             // fromName (which creates an annotation with no values) is acceptable.
             // TODO: refine sensitivity of removal for extension units, in case extension
             // Annotations have more than just Prefix in its values.
-            return AnnotationBuilder.fromName(
-                    elements, unitsAnnotation.getAnnotationType().toString());
+            return AnnotationBuilder.fromName(elements, unitsAnnoName);
         }
     }
 
@@ -278,7 +281,7 @@ public class UnitsRelationsTools {
             final ProcessingEnvironment env,
             final Class<? extends Annotation> annoClass,
             final Prefix p) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, annoClass.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(env, annoClass);
         builder.setValue("value", p);
         return builder.build();
     }
@@ -304,7 +307,7 @@ public class UnitsRelationsTools {
      * Creates an AnnotationMirror representing a unit defined by annoClass, with no prefix.
      *
      * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
-     * {@link #buildAnnoMirrorWithNoPrefix(ProcessingEnvironment, CharSequence, Prefix)}
+     * {@link #buildAnnoMirrorWithNoPrefix(ProcessingEnvironment, CharSequence)}.
      *
      * @param env checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation

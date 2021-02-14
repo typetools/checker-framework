@@ -1,7 +1,7 @@
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
-class OverrideANNA2 {
+public class OverrideANNA2 {
     static class Super {
         Object f;
 

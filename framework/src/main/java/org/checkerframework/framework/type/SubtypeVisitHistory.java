@@ -11,9 +11,10 @@ import org.checkerframework.javacutil.Pair;
  * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
  * StructuralEqualityComparer ONLY.
  *
- * <p>VisitHistory keeps track of all visits and allows clients of this class to check whether or
- * not they have visited an equivalent pair of AnnotatedTypeMirrors already. This is necessary in
- * order to halt visiting on recursive bounds.
+ * <p>VisitHistory tracks triples of (type1, type2, top), where type1 is a subtype of type2. It does
+ * not track when type1 is not a subtype of type2; such entries are missing from the history.
+ * Clients of this class can check whether or not they have visited an equivalent pair of
+ * AnnotatedTypeMirrors already. This is necessary in order to halt visiting on recursive bounds.
  *
  * <p>This class is primarily used to implement isSubtype(ATM, ATM). The pair of types corresponds
  * to the subtype and the supertype being checked. A single subtype may be visited more than once,
@@ -35,14 +36,24 @@ public class SubtypeVisitHistory {
         this.visited = new HashMap<>();
     }
 
-    /** Add a visit for type1 and type2. */
-    public void add(
+    /**
+     * Put a visit for {@code type1}, {@code type2}, and {@code top} in the history. Has no effect
+     * if isSubtype is false.
+     *
+     * @param type1 the first type
+     * @param type2 the second type
+     * @param currentTop the top of the relevant type hierarchy; only annotations from that
+     *     hierarchy are considered
+     * @param isSubtype whether {@code type1} is a subtype of {@code type2}; if false, this method
+     *     does nothing
+     */
+    public void put(
             final AnnotatedTypeMirror type1,
             final AnnotatedTypeMirror type2,
             AnnotationMirror currentTop,
-            Boolean b) {
-        if (!b) {
-            // We only store information about subtype relations that hold.
+            boolean isSubtype) {
+        if (!isSubtype) {
+            // Only store information about subtype relations that hold.
             return;
         }
         Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
@@ -73,7 +84,7 @@ public class SubtypeVisitHistory {
     }
 
     /**
-     * Returns true if type1 and type2 (or an equivalent pair) have been passed to the add method
+     * Returns true if type1 and type2 (or an equivalent pair) have been passed to the put method
      * previously.
      *
      * @return true if an equivalent pair has already been added to the history

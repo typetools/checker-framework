@@ -18,7 +18,7 @@ public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
 
     protected final AnnotatedTypeFactory typeFactory;
 
-    public TypeAnnotator(AnnotatedTypeFactory typeFactory) {
+    protected TypeAnnotator(AnnotatedTypeFactory typeFactory) {
         this.typeFactory = typeFactory;
     }
 

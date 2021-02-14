@@ -15,15 +15,15 @@ class Issue1102Decl extends Issue1102Base {
     }
 }
 
-// Don't bother initializing the fields properly
-@SuppressWarnings("initialization.fields.uninitialized")
 class Issue1102Use<U extends Issue1102Base & Issue1102Itf> {
+    @SuppressWarnings("initialization.field.uninitialized")
     U f;
-    @Nullable U g;
+
+    @Nullable U g = null;
 
     void bar() {
         Issue1102Decl d = Issue1102Decl.newInstance(f);
-        // :: error: (argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         d = Issue1102Decl.newInstance(g);
     }
 }

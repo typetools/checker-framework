@@ -1,5 +1,7 @@
 package org.checkerframework.javacutil;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Exception type indicating a mistake by an end user in using the Checker Framework, such as
  * incorrect command-line arguments.
@@ -25,7 +27,7 @@ public class UserError extends RuntimeException {
      * @param fmt the format string
      * @param args the arguments for the format string
      */
-    public UserError(String fmt, Object... args) {
+    public UserError(String fmt, @Nullable Object... args) {
         this(String.format(fmt, args));
     }
 }

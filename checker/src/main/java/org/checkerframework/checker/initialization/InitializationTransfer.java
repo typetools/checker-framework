@@ -13,10 +13,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -24,12 +20,15 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -44,9 +43,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *       can safely be considered initialized.
  *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
  *       can safely be considered initialized (this is done in {@link
- *       InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *       InitializationStore#insertValue(JavaExpression, CFAbstractValue)}).
  *   <li>All non-null fields with an initializer can be considered initialized (this is done in
- *       {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *       {@link InitializationStore#insertValue(JavaExpression, CFAbstractValue)}).
  *   <li>After the call to a super constructor ("super()" call), all non-null fields of the super
  *       class can safely be considered initialized.
  * </ol>
@@ -76,7 +75,8 @@ public class InitializationTransfer<
         final AnnotatedDeclaredType receiverType =
                 analysis.getTypeFactory().getAnnotatedType(methodTree).getReceiverType();
         if (receiverType != null) {
-            return atypeFactory.isUnclassified(receiverType) || atypeFactory.isFree(receiverType);
+            return atypeFactory.isUnknownInitialization(receiverType)
+                    || atypeFactory.isUnderInitialization(receiverType);
         } else {
             // There is no receiver e.g. in static methods.
             return false;
@@ -86,9 +86,11 @@ public class InitializationTransfer<
     /**
      * Returns the fields that can safely be considered initialized after the method call {@code
      * node}.
+     *
+     * @param node a method call
+     * @return the fields that are initialized after the method call
      */
-    protected List<VariableElement> initializedFieldsAfterCall(
-            MethodInvocationNode node, ConditionalTransferResult<V, S> transferResult) {
+    protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
         List<VariableElement> result = new ArrayList<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
@@ -98,16 +100,16 @@ public class InitializationTransfer<
 
         // Case 1: After a call to the constructor of the same class, all
         // invariant fields are guaranteed to be initialized.
-        if (isConstructor && receiver instanceof ThisLiteralNode && methodString.equals("this")) {
-            ClassTree clazz = TreeUtils.enclosingClass(analysis.getTypeFactory().getPath(tree));
+        if (isConstructor && receiver instanceof ThisNode && methodString.equals("this")) {
+            ClassTree clazz = TreePathUtil.enclosingClass(analysis.getTypeFactory().getPath(tree));
             TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
             markInvariantFieldsAsInitialized(result, clazzElem);
         }
 
         // Case 4: After a call to the constructor of the super class, all
         // invariant fields of any super class are guaranteed to be initialized.
-        if (isConstructor && receiver instanceof ThisLiteralNode && methodString.equals("super")) {
-            ClassTree clazz = TreeUtils.enclosingClass(analysis.getTypeFactory().getPath(tree));
+        if (isConstructor && receiver instanceof ThisNode && methodString.equals("super")) {
+            ClassTree clazz = TreePathUtil.enclosingClass(analysis.getTypeFactory().getPath(tree));
             TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
             TypeMirror superClass = clazzElem.getSuperclass();
 
@@ -138,7 +140,7 @@ public class InitializationTransfer<
                 continue;
             }
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);
-            if (atypeFactory.hasFieldInvariantAnnotation(fieldType)) {
+            if (atypeFactory.hasFieldInvariantAnnotation(fieldType, field)) {
                 result.add(field);
             }
         }
@@ -148,7 +150,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
-        Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n.getTarget());
+        JavaExpression expr = JavaExpression.fromNode(analysis.getTypeFactory(), n.getTarget());
 
         // If this is an assignment to a field of 'this', then mark the field as
         // initialized.
@@ -171,8 +173,7 @@ public class InitializationTransfer<
         TransferResult<V, S> result = super.visitFieldAccess(n, p);
         assert !result.containsTwoStores();
         S store = result.getRegularStore();
-        if (store.isFieldInitialized(n.getElement())
-                && n.getReceiver() instanceof ThisLiteralNode) {
+        if (store.isFieldInitialized(n.getElement()) && n.getReceiver() instanceof ThisNode) {
             AnnotatedTypeMirror fieldAnno =
                     analysis.getTypeFactory().getAnnotatedType(n.getElement());
             // Only if the field has the type system's invariant annotation,
@@ -194,9 +195,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
-        assert result instanceof ConditionalTransferResult;
-        List<VariableElement> newlyInitializedFields =
-                initializedFieldsAfterCall(n, (ConditionalTransferResult<V, S>) result);
+        List<VariableElement> newlyInitializedFields = initializedFieldsAfterCall(n);
         if (!newlyInitializedFields.isEmpty()) {
             for (VariableElement f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);

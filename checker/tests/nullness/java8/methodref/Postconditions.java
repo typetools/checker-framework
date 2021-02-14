@@ -15,7 +15,7 @@ interface AssertFunc2 {
     boolean testParam(final @Nullable Object param);
 }
 
-class AssertionTest {
+public class AssertionTest {
     @EnsuresNonNullIf(result = true, expression = "#1")
     static boolean override(final @Nullable Object param) {
         return param != null;

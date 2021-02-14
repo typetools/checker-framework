@@ -52,6 +52,14 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM>
         throw new BugInCF(defaultErrorMessage(type1, type2, param));
     }
 
+    /**
+     * Dispatches to a more specific {@code visit*} method.
+     *
+     * @param type1 the first type to visit
+     * @param type2 the second type to visit
+     * @param param a value passed to every visit method
+     * @return the result of calling the more specific {@code visit*} method
+     */
     public RETURN_TYPE visit(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, PARAM param) {
         return AtmCombo.accept(type1, type2, param, this);

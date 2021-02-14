@@ -1,4 +1,4 @@
-class CompoundAssignments {
+public class CompoundAssignments {
     static final int SIZE = 4;
 
     // There used to be a bug creating the LeftShiftAssignmentNode
@@ -10,7 +10,7 @@ class CompoundAssignments {
         }
     }
 
-    // There used to be a bug computing the Receiver for a widening
+    // There used to be a bug computing the JavaExpression for a widening
     // conversion, such as widening sum to a double below.
     static int sum_with_widening() {
         double[] freq = new double[SIZE];

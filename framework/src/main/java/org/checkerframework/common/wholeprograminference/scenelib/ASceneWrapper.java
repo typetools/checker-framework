@@ -7,21 +7,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.AnnotationConverter;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -89,7 +94,7 @@ public class ASceneWrapper {
      */
     private void removeAnnosFromATypeElement(
             ATypeElement typeElt, TypeUseLocation loc, AnnotationsInContexts annosToRemove) {
-        String annosToRemoveKey = typeElt.description.toString() + typeElt.tlAnnotationsHere;
+        String annosToRemoveKey = WholeProgramInferenceScenesStorage.aTypeElementToString(typeElt);
         Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
         if (annosToRemoveForLocation != null) {
             Set<Annotation> annosToRemoveHere = new HashSet<>();
@@ -138,14 +143,34 @@ public class ASceneWrapper {
                 throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
         new File(filepath).delete();
+        // Only write non-empty scenes into files.
         if (!scene.isEmpty()) {
-            // Only write non-empty scenes into files.
             try {
                 switch (outputFormat) {
                     case STUB:
-                        SceneToStubWriter.write(this, filepath);
+                        // For stub files, pass in the checker to compute contracts on the fly;
+                        // precomputing yields incorrect annotations, most likely due to nested
+                        // classes.
+                        SceneToStubWriter.write(this, filepath, checker);
                         break;
                     case JAIF:
+                        // For .jaif files, precompute contracts because the Annotation File
+                        // Utilities knows nothing about (and cannot depend on) the Checker
+                        // Framework.
+                        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+                            AClass aClass = classEntry.getValue();
+                            for (Map.Entry<String, AMethod> methodEntry :
+                                    aClass.getMethods().entrySet()) {
+                                AMethod aMethod = methodEntry.getValue();
+                                List<AnnotationMirror> contractAnnotationMirrors =
+                                        checker.getTypeFactory().getContractAnnotations(aMethod);
+                                List<Annotation> contractAnnotations =
+                                        CollectionsPlume.mapList(
+                                                AnnotationConverter::annotationMirrorToAnnotation,
+                                                contractAnnotationMirrors);
+                                aMethod.contracts = contractAnnotations;
+                            }
+                        }
                         IndexFileWriter.write(scene, new FileWriter(filepath));
                         break;
                     default:
@@ -162,7 +187,7 @@ public class ASceneWrapper {
     /**
      * Updates the symbol information stored in AClass for the given class. May be called multiple
      * times (and needs to be if the second parameter was null the first time it was called; only
-     * some calls provide the symbol inforamtion).
+     * some calls provide the symbol information).
      *
      * @param aClass the class representation in which the symbol information is to be updated
      * @param classSymbol the source of the symbol information; may be null, in which case this
@@ -209,7 +234,7 @@ public class ASceneWrapper {
             if (element == null || element.getKind() == ElementKind.PACKAGE) {
                 break;
             }
-            TypeElement t = ElementUtils.enclosingClass(element);
+            TypeElement t = ElementUtils.enclosingTypeElement(element);
             previous = outerClass;
             outerClass = (ClassSymbol) t;
             // It is necessary to check that previous isn't equal to outer class because

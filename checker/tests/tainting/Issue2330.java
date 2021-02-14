@@ -1,5 +1,6 @@
-import java.util.*;
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.PolyTainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class Issue2330<T extends @Tainted Object> {
     // Checker can't verify that this creates an untainted Issue2330

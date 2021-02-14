@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -32,16 +32,23 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Finds the direct supertypes of an input AnnotatedTypeMirror. See
- * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2
+ * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2">JLS section
+ * 4.10.2</a>.
  *
  * @see Types#directSupertypes(TypeMirror)
  */
 class SupertypeFinder {
 
     // Version of method below for declared types
-    /** @see Types#directSupertypes(TypeMirror) */
-    public static List<AnnotatedDeclaredType> directSuperTypes(AnnotatedDeclaredType type) {
+    /**
+     * See {@link Types#directSupertypes(TypeMirror)}.
+     *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
+     * @see Types#directSupertypes(TypeMirror)
+     */
+    public static List<AnnotatedDeclaredType> directSupertypes(AnnotatedDeclaredType type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
         List<AnnotatedDeclaredType> supertypes = supertypeFindingVisitor.visitDeclared(type, null);
@@ -50,8 +57,14 @@ class SupertypeFinder {
     }
 
     // Version of method above for all types
-    /** @see Types#directSupertypes(TypeMirror) */
-    public static final List<? extends AnnotatedTypeMirror> directSuperTypes(
+    /**
+     * See {@link Types#directSupertypes(TypeMirror)}.
+     *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
+     * @see Types#directSupertypes(TypeMirror)
+     */
+    public static final List<? extends AnnotatedTypeMirror> directSupertypes(
             AnnotatedTypeMirror type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
@@ -272,8 +285,9 @@ class SupertypeFinder {
                                 AnnotatedTypeMirror.createType(
                                         element.asType(), atypeFactory, false);
                         // TODO: After #979 is fixed, calculate the correct type using inference.
-                        atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);
-                        args.add(arg);
+                        args.add(
+                                atypeFactory.getUninferredWildcardType(
+                                        (AnnotatedTypeVariable) arg));
                     }
                     adt.setTypeArguments(args);
                 }
@@ -340,23 +354,21 @@ class SupertypeFinder {
         public List<AnnotatedTypeMirror> visitArray(AnnotatedArrayType type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
             Set<AnnotationMirror> annotations = type.getAnnotations();
-            Elements elements = atypeFactory.elements;
-            final AnnotatedTypeMirror objectType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Object"));
+            final AnnotatedTypeMirror objectType = atypeFactory.getAnnotatedType(Object.class);
             objectType.addAnnotations(annotations);
             superTypes.add(objectType);
 
             final AnnotatedTypeMirror cloneableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Cloneable"));
+                    atypeFactory.getAnnotatedType(Cloneable.class);
             cloneableType.addAnnotations(annotations);
             superTypes.add(cloneableType);
 
             final AnnotatedTypeMirror serializableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.io.Serializable"));
+                    atypeFactory.getAnnotatedType(Serializable.class);
             serializableType.addAnnotations(annotations);
             superTypes.add(serializableType);
 
-            for (AnnotatedTypeMirror sup : type.getComponentType().directSuperTypes()) {
+            for (AnnotatedTypeMirror sup : type.getComponentType().directSupertypes()) {
                 ArrayType arrType = atypeFactory.types.getArrayType(sup.getUnderlyingType());
                 AnnotatedArrayType aarrType =
                         (AnnotatedArrayType) atypeFactory.toAnnotatedType(arrType, false);

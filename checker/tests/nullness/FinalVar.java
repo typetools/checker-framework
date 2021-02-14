@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class FinalVar {
+public class FinalVar {
 
     public Object pptIterator() {
         // Only test with (effectively) final variables; Java only permits final or

@@ -2,7 +2,7 @@ import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 
-class SpecialTransfersForEquality {
+public class SpecialTransfersForEquality {
 
     void gteN1Test(@GTENegativeOne int y) {
         int[] arr = new int[10];

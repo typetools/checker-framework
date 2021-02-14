@@ -26,7 +26,7 @@ public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>
 
     @Override
     public CFStore createCopiedStore(CFStore s) {
-        return new CFStore(this, s);
+        return new CFStore(s);
     }
 
     @Override

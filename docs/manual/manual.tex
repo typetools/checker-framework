@@ -4,12 +4,13 @@
 
 \title{The Checker Framework Manual: \\ Custom pluggable types for Java}
 \author{\url{https://checkerframework.org/}}
-\newcommand{\ReleaseVersion}{3.4.0}
-\newcommand{\ReleaseInfo}{3.4.0 (3 May 2020)}
+\newcommand{\ReleaseVersion}{3.10.0}
+\newcommand{\ReleaseInfo}{3.10.0 (1 Feb 2021)}
 \date{Version \ReleaseInfo{}}
 
 \begin{document}
 
+%%% TODO: This file no longer exists on buffalo; must find a new file to test.
 %% Releases are made on buffalo, so this macro is really saying
 %% "released version of the CF" as opposed to a development version.
 \newif\ifonbuffalo
@@ -44,6 +45,7 @@ describes how to \textbf{install and use} pluggable type-checkers.
 \input{introduction.tex}
 
 %% Checkers
+% If you add a new checker, also update the list at the beginning of introduction.tex .
 
 \input{nullness-checker.tex}
 \input{map-key-checker.tex}
@@ -51,6 +53,7 @@ describes how to \textbf{install and use} pluggable type-checkers.
 \input{interning-checker.tex}
 \input{lock-checker.tex}
 \input{index-checker.tex}
+\input{called-methods-checker}
 \input{fenum-checker.tex}
 \input{tainting-checker.tex}
 
@@ -68,11 +71,12 @@ describes how to \textbf{install and use} pluggable type-checkers.
 
 % Checkers that tend to be used as components of other checkers rather
 % than used for their own sake:
-\input{aliasing-checker.tex}
 \input{purity-checker.tex}
 \input{constant-value-checker.tex}
 \input{returns-receiver-checker.tex}
 \input{reflection-checker.tex}
+\input{initialized-fields-checker.tex}
+\input{aliasing-checker.tex}
 
 % Special subtyping checker and external checkers:
 \input{subtyping-checker.tex}
@@ -86,6 +90,7 @@ describes how to \textbf{install and use} pluggable type-checkers.
 \input{inference.tex}
 \input{annotating-libraries.tex}
 \input{creating-a-checker.tex}
+\input{accumulation-checker.tex}
 \input{external-tools.tex}
 \input{faq.tex}
 \input{troubleshooting.tex}

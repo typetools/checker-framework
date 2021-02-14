@@ -9,6 +9,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
@@ -31,13 +33,12 @@ import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -46,14 +47,14 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -132,7 +133,7 @@ public class LockAnnotatedTypeFactory
     /**
      * Returns the value of Class.forName, or null if Class.forName would throw an exception.
      *
-     * @param annotationClassName an annotation's fully-qualified name
+     * @param annotationClassName an annotation's name, in ClassGetName format
      * @return an annotation class or null
      */
     @SuppressWarnings("unchecked") // cast to generic type
@@ -167,7 +168,7 @@ public class LockAnnotatedTypeFactory
             @Override
             protected String standardizeString(
                     String expression,
-                    FlowExpressionContext context,
+                    JavaExpressionContext context,
                     TreePath localScope,
                     boolean useLocalScope) {
                 if (DependentTypesError.isExpressionError(expression)) {
@@ -180,11 +181,12 @@ public class LockAnnotatedTypeFactory
                 }
 
                 try {
-                    FlowExpressions.Receiver result =
-                            FlowExpressionParseUtil.parse(
+                    JavaExpression result =
+                            JavaExpressionParseUtil.parse(
                                     expression, context, localScope, useLocalScope);
                     if (result == null) {
-                        return new DependentTypesError(expression, " ").toString();
+                        return new DependentTypesError(expression, /*error message=*/ " ")
+                                .toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
@@ -193,7 +195,7 @@ public class LockAnnotatedTypeFactory
                                 .toString();
                     }
                     return result.toString();
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                     return new DependentTypesError(expression, e).toString();
                 }
             }
@@ -218,18 +220,18 @@ public class LockAnnotatedTypeFactory
      * @param expr expression
      * @return whether or not the expression is effectively final
      */
-    boolean isExpressionEffectivelyFinal(Receiver expr) {
+    boolean isExpressionEffectivelyFinal(JavaExpression expr) {
         if (expr instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) expr;
-            Receiver recv = fieldAccess.getReceiver();
+            JavaExpression receiver = fieldAccess.getReceiver();
             // Don't call fieldAccess
-            return fieldAccess.isFinal() && isExpressionEffectivelyFinal(recv);
+            return fieldAccess.isFinal() && isExpressionEffectivelyFinal(receiver);
         } else if (expr instanceof LocalVariable) {
             return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
         } else if (expr instanceof MethodCall) {
             MethodCall methodCall = (MethodCall) expr;
-            for (Receiver param : methodCall.getParameters()) {
-                if (!isExpressionEffectivelyFinal(param)) {
+            for (JavaExpression arg : methodCall.getArguments()) {
+                if (!isExpressionEffectivelyFinal(arg)) {
                     return false;
                 }
             }
@@ -257,8 +259,8 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new LockQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new LockQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
     @Override
@@ -272,137 +274,114 @@ public class LockAnnotatedTypeFactory
         return new LockTransfer((LockAnalysis) analysis, (LockChecker) this.checker);
     }
 
-    class LockQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    /** LockQualifierHierarchy. */
+    class LockQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
-        public LockQualifierHierarchy(MultiGraphFactory f) {
-            super(f, LOCKHELD);
-        }
+        /** Qualifier kind for the @{@link GuardedBy} annotation. */
+        private final QualifierKind GUARDEDBY_KIND;
+        /** Qualifier kind for the @{@link GuardSatisfied} annotation. */
+        private final QualifierKind GUARDSATISFIED_KIND;
+        /** Qualifier kind for the @{@link GuardedByBottom} annotation. */
+        private final QualifierKind GUARDEDBYBOTTOM_KIND;
+        /** Qualifier kind for the @{@link GuardedByUnknown} annotation. */
+        private final QualifierKind GUARDEDBYUNKNOWN_KIND;
 
-        boolean isGuardedBy(AnnotationMirror am) {
-            return AnnotationUtils.areSameByName(am, GUARDEDBY);
-        }
-
-        boolean isGuardSatisfied(AnnotationMirror am) {
-            return AnnotationUtils.areSameByName(am, GUARDSATISFIED);
+        /**
+         * Creates a LockQualifierHierarchy.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
+         */
+        public LockQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
+            GUARDEDBY_KIND = getQualifierKind(GUARDEDBY);
+            GUARDSATISFIED_KIND = getQualifierKind(GUARDSATISFIED);
+            GUARDEDBYBOTTOM_KIND = getQualifierKind(GUARDEDBYBOTTOM);
+            GUARDEDBYUNKNOWN_KIND = getQualifierKind(GUARDEDBYUNKNOWN);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-
-            boolean lhsIsGuardedBy = isGuardedBy(superAnno);
-            boolean rhsIsGuardedBy = isGuardedBy(subAnno);
-
-            if (lhsIsGuardedBy && rhsIsGuardedBy) {
-                // Two @GuardedBy annotations are considered subtypes of each other if and only if
-                // their values match exactly.
-
-                List<String> lhsValues =
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (subKind == GUARDEDBY_KIND && superKind == GUARDEDBY_KIND) {
+                List<String> subLocks =
                         AnnotationUtils.getElementValueArray(
                                 superAnno, "value", String.class, true);
-                List<String> rhsValues =
+                List<String> superLocks =
                         AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
-
-                return rhsValues.containsAll(lhsValues) && lhsValues.containsAll(rhsValues);
-            }
-
-            boolean lhsIsGuardSatisfied = isGuardSatisfied(superAnno);
-            boolean rhsIsGuardSatisfied = isGuardSatisfied(subAnno);
-
-            if (lhsIsGuardSatisfied && rhsIsGuardSatisfied) {
-                // There are cases in which two expressions with identical @GuardSatisfied(...)
-                // annotations are not
-                // assignable. Those are handled elsewhere.
-
-                // Two expressions with @GuardSatisfied annotations (without an index) are sometimes
-                // not assignable.
-                // For example, two method actual parameters with @GuardSatisfied annotations are
-                // assumed to refer to different guards.
-
-                // This is largely handled in methodFromUse and in
-                // LockVisitor.visitMethodInvocation.
-                // Related behavior is handled in LockVisitor.visitMethod (issuing an error if a
-                // non-constructor method definition has a return type of @GuardSatisfied without an
-                // index).
-
-                // Two expressions with @GuardSatisfied() annotations are assignable when comparing
-                // a formal receiver to an actual receiver (see
-                // LockVisitor.skipReceiverSubtypeCheck) or a formal parameter to an actual
-                // parameter (see LockVisitor.commonAssignmentCheck for the details on this rule).
-
+                return subLocks.containsAll(superLocks) && superLocks.containsAll(subLocks);
+            } else if (subKind == GUARDSATISFIED_KIND && superKind == GUARDSATISFIED_KIND) {
                 return AnnotationUtils.areSame(superAnno, subAnno);
             }
-
-            // Remove values from @GuardedBy annotations for further subtype checking. Remove
-            // indices from @GuardSatisfied annotations.
-
-            if (lhsIsGuardedBy) {
-                superAnno = GUARDEDBY;
-            } else if (lhsIsGuardSatisfied) {
-                superAnno = GUARDSATISFIED;
-            }
-
-            if (rhsIsGuardedBy) {
-                subAnno = GUARDEDBY;
-            } else if (rhsIsGuardSatisfied) {
-                subAnno = GUARDSATISFIED;
-            }
-
-            return super.isSubtype(subAnno, superAnno);
+            throw new RuntimeException("Unexpected");
         }
 
         @Override
-        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            AnnotationMirror a1top = getTopAnnotation(a1);
-            AnnotationMirror a2top = getTopAnnotation(a2);
-
-            if (AnnotationUtils.areSame(a1top, LOCKPOSSIBLYHELD)
-                    && AnnotationUtils.areSame(a2top, LOCKPOSSIBLYHELD)) {
-                return greatestLowerBoundInLockPossiblyHeldHierarchy(a1, a2);
-            } else if (AnnotationUtils.areSame(a1top, GUARDEDBYUNKNOWN)
-                    && AnnotationUtils.areSame(a2top, GUARDEDBYUNKNOWN)) {
-                return greatestLowerBoundInGuardedByUnknownHierarchy(a1, a2);
-            }
-
-            return null;
-        }
-
-        private AnnotationMirror greatestLowerBoundInGuardedByUnknownHierarchy(
-                AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, GUARDEDBYUNKNOWN)) {
-                return a2;
-            }
-
-            if (AnnotationUtils.areSame(a2, GUARDEDBYUNKNOWN)) {
-                return a1;
-            }
-
-            if ((isGuardedBy(a1) && isGuardedBy(a2))
-                    || (isGuardSatisfied(a1) && isGuardSatisfied(a2))) {
-                // isSubtype(a1, a2) is symmetrical to isSubtype(a2, a1) since two
-                // @GuardedBy annotations are considered subtypes of each other
-                // if and only if their values match exactly, and two @GuardSatisfied
-                // annotations are considered subtypes of each other if and only if
-                // their indices match exactly.
-
-                if (isSubtype(a1, a2)) {
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
+            if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
+                List<String> locks1 =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> locks2 =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
                     return a1;
+                } else {
+                    return GUARDEDBYUNKNOWN;
                 }
-            }
-
-            return GUARDEDBYBOTTOM;
-        }
-
-        private AnnotationMirror greatestLowerBoundInLockPossiblyHeldHierarchy(
-                AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, LOCKPOSSIBLYHELD)) {
+            } else if (qualifierKind1 == GUARDSATISFIED_KIND
+                    && qualifierKind2 == GUARDSATISFIED_KIND) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return GUARDEDBYUNKNOWN;
+                }
+            } else if (qualifierKind1 == GUARDEDBYBOTTOM_KIND) {
                 return a2;
-            }
-
-            if (AnnotationUtils.areSame(a2, LOCKPOSSIBLYHELD)) {
+            } else if (qualifierKind2 == GUARDEDBYBOTTOM_KIND) {
                 return a1;
             }
+            throw new RuntimeException("Unexpected");
+        }
 
-            return LOCKHELD;
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
+            if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
+                List<String> locks1 =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> locks2 =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
+                    return a1;
+                } else {
+                    return GUARDEDBYBOTTOM;
+                }
+            } else if (qualifierKind1 == GUARDSATISFIED_KIND
+                    && qualifierKind2 == GUARDSATISFIED_KIND) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return GUARDEDBYBOTTOM;
+                }
+            } else if (qualifierKind1 == GUARDEDBYUNKNOWN_KIND) {
+                return a2;
+            } else if (qualifierKind2 == GUARDEDBYUNKNOWN_KIND) {
+                return a1;
+            }
+            throw new RuntimeException("Unexpected");
         }
     }
 
@@ -648,7 +627,7 @@ public class LockAnnotatedTypeFactory
      * If {@code atm} is not null and contains a {@code @GuardSatisfied} annotation, and if the
      * index of this {@code @GuardSatisfied} annotation matches {@code matchingGuardSatisfiedIndex},
      * then {@code methodReturnAtm} will have its annotation in the {@code @GuardedBy} hierarchy
-     * replaced with that in {@code atmWithAnnotationInGuardedByHierarchy}.
+     * replaced with that in {@code annotationInGuardedByHierarchy}.
      *
      * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will
      *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced.

@@ -1,4 +1,5 @@
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 
 // Test Java 8 unsigned utils
 public class UtilsJava8 {
@@ -16,9 +17,9 @@ public class UtilsJava8 {
         long resLong;
 
         // :: error: (argument.type.incompatible)
-        resString = Long.toUnsignedString(slong, sint);
+        resString = Long.toUnsignedString(slong, 10);
 
-        resString = Long.toUnsignedString(ulong, sint);
+        resString = Long.toUnsignedString(ulong, 10);
 
         // :: error: (argument.type.incompatible)
         resString = Long.toUnsignedString(slong);
@@ -26,9 +27,9 @@ public class UtilsJava8 {
         resString = Long.toUnsignedString(ulong);
 
         // :: error: (assignment.type.incompatible)
-        slong = Long.parseUnsignedLong(s, sint);
+        slong = Long.parseUnsignedLong(s, 10);
 
-        ulong = Long.parseUnsignedLong(s, sint);
+        ulong = Long.parseUnsignedLong(s, 10);
 
         // :: error: (assignment.type.incompatible)
         slong = Long.parseUnsignedLong(s);
@@ -75,9 +76,9 @@ public class UtilsJava8 {
         ulong = Long.remainderUnsigned(ulong, ulong);
 
         // :: error: (argument.type.incompatible)
-        resString = Integer.toUnsignedString(sint, sint);
+        resString = Integer.toUnsignedString(sint, 10);
 
-        resString = Integer.toUnsignedString(uint, sint);
+        resString = Integer.toUnsignedString(uint, 10);
 
         // :: error: (argument.type.incompatible)
         resString = Integer.toUnsignedString(sint);
@@ -85,9 +86,9 @@ public class UtilsJava8 {
         resString = Integer.toUnsignedString(uint);
 
         // :: error: (assignment.type.incompatible)
-        sint = Integer.parseUnsignedInt(s, sint);
+        sint = Integer.parseUnsignedInt(s, 10);
 
-        uint = Integer.parseUnsignedInt(s, sint);
+        uint = Integer.parseUnsignedInt(s, 10);
 
         // :: error: (assignment.type.incompatible)
         sint = Integer.parseUnsignedInt(s);

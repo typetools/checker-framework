@@ -103,9 +103,9 @@ public interface NodeVisitor<R, P> {
 
     R visitArrayAccess(ArrayAccessNode n, P p);
 
-    R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
+    R visitImplicitThis(ImplicitThisNode n, P p);
 
-    R visitExplicitThisLiteral(ExplicitThisLiteralNode n, P p);
+    R visitExplicitThis(ExplicitThisNode n, P p);
 
     R visitSuper(SuperNode n, P p);
 
@@ -115,9 +115,9 @@ public interface NodeVisitor<R, P> {
 
     R visitStringConversion(StringConversionNode n, P p);
 
-    R visitNarrowingConversion(NarrowingConversionNode n, P p);
-
     R visitWideningConversion(WideningConversionNode n, P p);
+
+    R visitNarrowingConversion(NarrowingConversionNode n, P p);
 
     R visitInstanceOf(InstanceOfNode n, P p);
 

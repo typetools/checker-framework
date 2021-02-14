@@ -1,5 +1,5 @@
-import testlib.util.Even;
-import testlib.util.Odd;
+import org.checkerframework.framework.testchecker.util.Even;
+import org.checkerframework.framework.testchecker.util.Odd;
 
 abstract class C<T extends @Odd Object> {
     abstract T id(T x);

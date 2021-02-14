@@ -18,6 +18,7 @@ public class InvariantTypes {
     }
 
     // Type for array creation is propagated from LHS
+    @SuppressWarnings("invalid.polymorphic.qualifier.use")
     @PolyNull Object[] po = new Object[5];
 
     void testDecl(@MonotonicNonNull Object[] p) {}

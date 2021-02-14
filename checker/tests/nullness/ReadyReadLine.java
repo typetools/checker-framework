@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-class ReadyReadLine {
+public class ReadyReadLine {
 
     void m(MyBufferedReader buf) throws Exception {
         if (buf.ready()) {
@@ -17,7 +17,7 @@ class ReadyReadLine {
     }
 }
 
-// this is a replication of the JDK BufferedReader (with only the relevant methods)
+// This is a replication of the JDK BufferedReader, with only the relevant methods.
 class MyBufferedReader {
     public @Nullable String readLine() throws Exception {
         return null;

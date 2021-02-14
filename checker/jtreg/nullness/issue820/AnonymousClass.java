@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class AnonymousClass {
+public class AnonymousClass {
     @NonNull Object error = null;
 
     void method() {

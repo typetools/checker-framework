@@ -36,19 +36,15 @@ public class CastedShifts {
         byteRes = (@Signed byte) (signed >> 0);
 
         // Cast to char.
-        @UnknownSignedness char charRes;
+        char charRes;
 
         // Shifting right by 23, the introduced bits are cast away
         charRes = (@Unsigned char) (unsigned >>> 23);
         charRes = (@Unsigned char) (unsigned >> 23);
-        charRes = (@Signed char) (signed >>> 23);
-        charRes = (@Signed char) (signed >> 23);
 
         // Shifting right by 24, the introduced bits are still cast away.
         charRes = (@Unsigned char) (unsigned >>> 24);
         charRes = (@Unsigned char) (unsigned >> 24);
-        charRes = (@Signed char) (signed >>> 24);
-        charRes = (@Signed char) (signed >> 24);
 
         // Shifting right by 25, now the MSB matters.
         charRes = (@Unsigned char) (unsigned >>> 25);
@@ -56,15 +52,9 @@ public class CastedShifts {
         // :: error: (shift.signed)
         charRes = (@Unsigned char) (unsigned >> 25);
 
-        // :: error: (shift.unsigned)
-        charRes = (@Signed char) (signed >>> 25);
-        charRes = (@Signed char) (signed >> 25);
-
         // Shifting right by zero should behave as assignment
         charRes = (@Unsigned char) (unsigned >>> 0);
         charRes = (@Unsigned char) (unsigned >> 0);
-        charRes = (@Signed char) (signed >>> 0);
-        charRes = (@Signed char) (signed >> 0);
 
         // Cast to short.
         @UnknownSignedness short shortRes;
@@ -235,19 +225,15 @@ public class CastedShifts {
         byteRes = (@Signed byte) (signed >> 0);
 
         // Cast to char.
-        @UnknownSignedness char charRes;
+        char charRes;
 
         // Shifting right by 55, the introduced bits are cast away
         charRes = (@Unsigned char) (unsigned >>> 55);
         charRes = (@Unsigned char) (unsigned >> 55);
-        charRes = (@Signed char) (signed >>> 55);
-        charRes = (@Signed char) (signed >> 55);
 
         // Shifting right by 56, the introduced bits are still cast away.
         charRes = (@Unsigned char) (unsigned >>> 56);
         charRes = (@Unsigned char) (unsigned >> 56);
-        charRes = (@Signed char) (signed >>> 56);
-        charRes = (@Signed char) (signed >> 56);
 
         // Shifting right by 57, now the MSB matters.
         charRes = (@Unsigned char) (unsigned >>> 57);
@@ -255,15 +241,9 @@ public class CastedShifts {
         // :: error: (shift.signed)
         charRes = (@Unsigned char) (unsigned >> 57);
 
-        // :: error: (shift.unsigned)
-        charRes = (@Signed char) (signed >>> 57);
-        charRes = (@Signed char) (signed >> 57);
-
         // Shifting right by zero should behave as assignment
         charRes = (@Unsigned char) (unsigned >>> 0);
         charRes = (@Unsigned char) (unsigned >> 0);
-        charRes = (@Signed char) (signed >>> 0);
-        charRes = (@Signed char) (signed >> 0);
 
         // Cast to short.
         @UnknownSignedness short shortRes;

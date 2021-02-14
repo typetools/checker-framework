@@ -13,7 +13,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * A Utility class for parsing Java expression snippets, and converting them to proper Javac AST
+ * A utility class for parsing Java expression snippets, and converting them to proper Javac AST
  * nodes.
  *
  * <p>This is useful for parsing {@code EnsuresNonNull*}, and {@code KeyFor} values.
@@ -88,16 +88,16 @@ public class TreeParser {
             return maker.Ident(names.fromString(token));
         }
 
-        Object value = null;
+        Object value;
         try {
             value = Integer.valueOf(token);
         } catch (Exception e2) {
             try {
                 value = Double.valueOf(token);
             } catch (Exception ef) {
+                throw new Error("Can't parse as integer or double: " + token);
             }
         }
-        assert value != null;
         return maker.Literal(value);
     }
 

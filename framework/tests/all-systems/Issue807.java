@@ -3,7 +3,7 @@
 
 import java.util.function.Consumer;
 
-class Issue807 {
+public class Issue807 {
 
     class MyEntry<K, V> {
         MyEntry(MyEntry<? extends K, ? extends V> e) {}

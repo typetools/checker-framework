@@ -1,7 +1,7 @@
 import org.checkerframework.framework.test.*;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
-class ArrayFlow {
+public class ArrayFlow {
 
     // array accesses
     void t1(@Odd String a1[], String a2[], @Odd String odd) {

@@ -23,20 +23,27 @@ including people who wish to edit its source code or make pull requests.
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
     <ul>
-      <li><a href="#Directory_structure">Directory structure</a></li>
+      <li><a href="#Directory_structure">Directory structure</a>
+        <ul>
+          <li><a href="#Related_repositories">Related repositories</a></li>
+        </ul></li>
       <li><a href="#Build_tasks">Build tasks</a></li>
-      <li><a href="#tests">Testing the Checker Framework</a></li>
+      <li><a href="#tests">Testing the Checker Framework</a>
+        <ul>
+          <li><a href="#testing-optimizations">Testing optimizations</a></li>
+        </ul></li>
       <li><a href="#Code_style">Code style</a></li>
       <li><a href="#IDE_configuration">IDE configuration</a></li>
       <li><a href="#pull-requests">Pull requests</a>
         <ul>
+          <li><a href="#pull-requests-branches">Branches</a></li>
           <li><a href="#pull-requests-maintainers">Pull request and commit notes for maintainers</a></li>
         </ul></li>
+      <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
           <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
         </ul></li>
-      <li><a href="#testing-optimizations">Testing optimizations</a></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
@@ -71,10 +78,39 @@ The repository also contains the following directories:
 <dl>
   <dt><code>docs</code></dt>
   <dd>documentation: manual, tutorial, examples, developer docs</dd>
-
-  <dt><code>maven-artifacts</code></dt>
-  <dd>artifacts to be uploaded to Maven Central</dd>
 </dl>
+
+
+<h3 id="Related_repositories">Related repositories</h3>
+
+<p>
+  The <a href="https://github.com/typetools/checker-framework"><code>checker-framework</code></a> project
+  depends on
+  the <a href="https://github.com/typetools/jdk"><code>typetools/jdk</code></a> project,
+  the <a href="https://github.com/typetools/annotation-tools"><code>annotation-tools</code></a> project,
+  and the <a href="https://github.com/typetools/stubparser"><code>stubparser</code></a> project.
+When making changes to one of these projects, you may also need to make changes to one or more of the others.
+</p>
+
+<p>
+If you make related changes in the <code>checker-framework</code> and <code>jdk</code>
+repositories, use the <em>same
+branch name</em> for each.  The continuous integration framework will find
+and use that branch when running tests.
+For example, when continuous integration runs for branch <em>B</em> of fork <em>F</em> of <code>checker-framework</code>, it will use branch <em>B</em> of fork <em>F</em> of the other repositories (if they exist).
+The same is true for the other projects.
+</p>
+
+<p>
+If a change spans multiple projects, make pull requests for all of them.  Each pull request description's should link to all the others.
+</p>
+
+<p>
+Furthermore, whenever you make a pull request from
+a <code>checker-framework</code> branch A into branch B, if B has a
+corresponding <code>jdk</code>
+branch, then A also needs one (even if identical to B's version).
+</p>
 
 
 <h2 id="Build_tasks">Build tasks</h2>
@@ -102,7 +138,7 @@ Frequently-used tasks:
   <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
   <li> <code>allTests</code>: runs all tests.
   <li> <code>reformat</code>: reformats Java files.
-  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessFbcTest</code>.
+  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
   <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
 </ul>
 
@@ -121,6 +157,21 @@ main directory or any subproject runs the <code>allTests</code> task only in the
 
 <p>
 For writing new test cases, see file <a href="https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README"><code>checker/tests/README</code></a>.
+</p>
+
+
+<h3 id="testing-optimizations">Testing optimizations</h3>
+
+<p>
+To test an optimization that should speed up type-checking, see
+the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
+of the Azure Pipelines CI job.  Compare the run time of this stage (or of
+the entire <code>daikon_jdk8</code> job) between the master branch and a
+branch with your improvements.
+</p>
+
+<p>
+You can also compare run times of the Checker Framework test suite.
 </p>
 
 
@@ -159,10 +210,16 @@ version control system, such as by running <code>git annotate <em>filename</em><
 
 <h2 id="IDE_configuration">IDE configuration</h2>
 
-After <a href="../manual/manual.html">cloning and building all projects from their sources</a>,
-import them as gradle projects.
+<p>
+First clone and build all projects from their sources, from the command line,
+using the instructions
+at <a href="https://checkerframework.org/manual/#build-source">https://checkerframework.org/manual/#build-source</a>.
+After that succeeds, import the projects into your IDE as Gradle projects.
+</p>
 
+<p>
 If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 11.
+</p>
 
 
 <h2 id="pull-requests">Pull requests</h2>
@@ -202,22 +259,31 @@ Framework and ensure that it passes before you open a pull request.
 </p>
 
 <p>
-  It is good style to create a branch (in your fork of the Checker
-  Framework GitHub repository) for each independent change.  Do not make
-  changes to your <code>master</code> branch.
-</p>
-
-<p>
-If you make related changes in the <code>checker-framework</code>
-and <code>checker-framework-inference</code> repositories, use the <em>same
-branch name</em> for each.  The continuous integration framework will find
-and use that branch when running tests.
-</p>
-
-<p>
 Also
 see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
 Ernst's advice about creating GitHub pull requests</a>.
+</p>
+
+
+<h3 id="pull-requests-branches">Branches</h3>
+
+<p>
+  It is good style to create a branch (in your fork of the Checker
+  Framework GitHub repository) for each independent change.
+  Do not make changes to your <code>master</code> branch.
+  Do not make changes to a branch of the upstream (<code>typetools</code>) repository.
+  Such a branch competes for CI resources with all pull requests.
+  Make changes on a branch of your own fork, so that both you and others get faster CI feedback.
+</p>
+
+<p>
+Azure Pipelines has a bug:  whenever two CI jobs would run code with the same
+commit hash, it re-uses a previous execution result.  This is a bug because the
+CI job's behavior may depend on the branch name and other factors that are
+independent of the commit hash.  This means that you may see spurious successes
+or failures when your branch of (say) the <code>jdk</code> repository has the
+identical commit hash to some other branch that Azure Pipelines previous ran a
+job for.
 </p>
 
 
@@ -244,6 +310,32 @@ too busy to do so, you should recognize that and move on.
 </p>
 
 
+<h2 id="github-configuration">GitHub configuration</h2>
+
+<p>
+When you installed Git, you should have set your name and email address.  If you have not yet done so, do it now:
+</p>
+<pre>
+git config --global user.name "<em>FIRST_NAME LAST_NAME</em>"
+git config --global user.email "<em>USERNAME</em>@<em>SOMEDOMAIN.COM</em>"
+</pre>
+
+<p>
+Before you make any commits (even to your own fork),
+update your GitHub account profile so it contains your complete name.
+This is necessary to include you in
+the <a href="https://checkerframework.org/manual/#credits">list of
+contributors</a>.
+</p>
+
+<p>
+You will want your own GitHub fork of any project you plan to modify.  We
+recommend that, for each fork, you configure GitHub
+to <a href="https://help.github.com/en/github/administering-a-repository/managing-the-automatic-deletion-of-branches">delete
+branches after they are merged</a>.
+</p>
+
+
 <h2 id="ci">Continuous Integration</h2>
 
 <p>
@@ -260,7 +352,7 @@ We recommend Azure Pipelines.
 <ul>
   <li>Browse to <a href="https://dev.azure.com/">dev.azure.com</a>.
       (You might need to create a (free) account.)</li>
-  <li>Click "Create a project to get started"</li>
+  <li>Click "Create a project to get started" and enter an appropriate name</li>
   <li>Click "public".</li>
   <li>Click "create project"</li>
   <li>At the left, click the blue rocket labeled "pipelines"</li>
@@ -270,6 +362,8 @@ We recommend Azure Pipelines.
   <li>Click "Select a repository"</li>
   <li>Choose <em>MYUSERID</em>/checker-framework</li>
   <li>Choose the default radio button, "only selected repositories".  <b>Do not</b> choose "all repositories".</li>
+  <li>Choose "Existing Azure Pipelines YAML file"</li>
+  <li>Select "/azure-pipelines.yml" in the dropdown menu</li>
   <li>Approve and install.</li>
   <li>Click "run".</li>
 </ul>
@@ -299,28 +393,13 @@ from the CI configuration file (such as <code>azure-pipelines.yml</code>).
 </p>
 
 
-<h2 id="testing-optimizations">Testing optimizations</h2>
-
-<p>
-To test an optimization that should speed up type-checking, see
-the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
-of the Azure Pipelines CI job.  Compare the run time of this stage (or of
-the entire <code>daikon_jdk8</code> job) between the master branch and a
-branch with your improvements.
-</p>
-
-<p>
-You can also compare run times of the Checker Framework test suite.
-</p>
-
-
 <h2 id="Documenting_refactoring_ideas">Documenting refactoring ideas</h2>
 
 <p>
-If you have an idea for a code improvement (such as a refactoring), please
-document it.  If it can be described concisely and is low priority, a TODO
-comment in the code is more appropriate than an enhancement request in the
-issue tracker.  The code comment is more likely to be noticed by someone
+Don't open issues for code improvement ideas (such as potential refactorings).
+If it can be described concisely and is unlikely to be rediscovered by other
+people, write a TODO comment in the code.  The code comment is more likely to be
+noticed by someone
 working with the code, and it is equally easy to search for.  Furthermore,
 it doesn't clutter the issue tracker.  Clutter in the issue tracker reduces
 morale, makes it harder to search, and makes the project appear
@@ -369,5 +448,5 @@ See a separate document about the
 
 <!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn
  -->
-<!--  LocalWords:  subproject personalblog changelog
+<!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML
  -->

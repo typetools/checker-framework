@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering $(cd "$(dirname "$0")" && pwd -P)/$(basename "$0") in $(pwd)"
+echo "Entering $(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"
 
 
 # Fail the whole script if any command fails
@@ -29,20 +29,16 @@ fi
 ### Build the Checker Framework
 ###
 
-if [ -d "/tmp/plume-scripts" ] ; then
-  (cd /tmp/plume-scripts && git pull -q)
-else
-  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-fi
-# For debugging
-/tmp/plume-scripts/ci-info typetools
-eval $(/tmp/plume-scripts/ci-info typetools)
-
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPTDIR=$ROOTDIR/checker/bin-devel/
+
+# For debugging
+(cd "$CHECKERFRAMEWORK" && ./gradlew getPlumeScripts -q)
+"${SCRIPTDIR}/plume-scripts/ci-info" typetools
+eval $("${SCRIPTDIR}/plume-scripts/ci-info" typetools)
 
 source "$SCRIPTDIR/build.sh"
 
@@ -60,7 +56,6 @@ case  $GROUP  in
         "$SCRIPTDIR/test-cftests-junit.sh"
         "$SCRIPTDIR/test-cftests-nonjunit.sh"
         "$SCRIPTDIR/test-misc.sh"
-        "$SCRIPTDIR/test-cf-inference.sh"
         "$SCRIPTDIR/test-plume-lib.sh"
         "$SCRIPTDIR/test-daikon.sh"
         "$SCRIPTDIR/test-guava.sh"
@@ -71,4 +66,4 @@ case  $GROUP  in
 esac
 
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0") in $(pwd)"
+echo Exiting "$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"

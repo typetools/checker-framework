@@ -27,7 +27,12 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
         ElementKind.LOCAL_VARIABLE, ElementKind.RESOURCE_VARIABLE, ElementKind.EXCEPTION_PARAMETER
     };
 
-    /** @return true if this is a variable declaration including fields an enum constants */
+    /**
+     * Returns true if this is a variable declaration including fields an enum constants.
+     *
+     * @param typeMirror ignored
+     * @return true if this is a variable declaration including fields an enum constants
+     */
     public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
         return ElementAnnotationUtil.contains(element.getKind(), acceptedKinds)
                 || element.getKind().isField();

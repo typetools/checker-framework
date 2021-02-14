@@ -1,4 +1,4 @@
-class InLambda {
+public class InLambda {
     static class Mine<T> {
         @SuppressWarnings("nullness") // just a utility
         static <S> Mine<S> some() {

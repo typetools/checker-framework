@@ -1,8 +1,8 @@
 import java.lang.reflect.Method;
-import testlib.reflection.qual.ReflectBottom;
-import testlib.reflection.qual.Sibling1;
-import testlib.reflection.qual.Sibling2;
-import testlib.reflection.qual.Top;
+import org.checkerframework.framework.testchecker.reflection.qual.ReflectBottom;
+import org.checkerframework.framework.testchecker.reflection.qual.Sibling1;
+import org.checkerframework.framework.testchecker.reflection.qual.Sibling2;
+import org.checkerframework.framework.testchecker.reflection.qual.Top;
 
 public class AnonymousClassTest {
     /**

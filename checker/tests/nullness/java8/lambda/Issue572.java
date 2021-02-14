@@ -4,7 +4,7 @@ import java.util.function.BiFunction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class ParenthesizedLambda {
+public class Issue572 {
     static <A, B, C> C biApply(BiFunction<A, B, C> f, A a, B b) {
         return f.apply(a, b);
     }

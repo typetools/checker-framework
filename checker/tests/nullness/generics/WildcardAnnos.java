@@ -1,7 +1,7 @@
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
-class WildcardAnnos {
+public class WildcardAnnos {
     // :: error: (bound.type.incompatible)
     @Nullable List<@Nullable ? extends @NonNull Object> l1 = null;
     @Nullable List<@NonNull ? extends @Nullable Object> l2 = null;

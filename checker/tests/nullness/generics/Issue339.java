@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue339<S> {
+public class Issue339<S> {
     static <T> @NonNull T checkNotNull(T p) {
         throw new RuntimeException();
     }

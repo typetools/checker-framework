@@ -32,8 +32,8 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -61,10 +61,10 @@ public class ElementAnnotationUtil {
             throw new BugInCF(
                     "Number of types and elements don't match. "
                             + "types ( "
-                            + SystemUtil.join(", ", types)
+                            + StringsPlume.join(", ", types)
                             + " ) "
                             + "element ( "
-                            + SystemUtil.join(", ", elements)
+                            + StringsPlume.join(", ", elements)
                             + " ) ");
         }
 
@@ -84,6 +84,7 @@ public class ElementAnnotationUtil {
      * @param type the type to annotate
      * @param annotations the annotations to add
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     static void addDeclarationAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         // The code here should be similar to
@@ -289,7 +290,7 @@ public class ElementAnnotationUtil {
     static void annotateViaTypeAnnoPosition(
             final AnnotatedTypeMirror type, final Collection<TypeCompound> annos)
             throws UnexpectedAnnotationLocationException {
-        final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
+        final IdentityHashMap<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
             AnnotatedTypeMirror target =
@@ -446,13 +447,14 @@ public class ElementAnnotationUtil {
      *     of some array type
      * @return the type specified by location
      */
+    @SuppressWarnings("JdkObsolete") // error is issued on every operation, must suppress here
     private static AnnotatedTypeMirror getLocationTypeADT(
             AnnotatedDeclaredType type,
             List<TypeAnnotationPosition.TypePathEntry> location,
             TypeCompound anno,
             boolean isComponentTypeOfArray)
             throws UnexpectedAnnotationLocationException {
-        // List order by outer most type to inner most type.
+        // List order by outermost type to innermost type.
         ArrayDeque<AnnotatedDeclaredType> outerToInner = new ArrayDeque<>();
         AnnotatedDeclaredType enclosing = type;
         while (enclosing != null) {
@@ -478,7 +480,7 @@ public class ElementAnnotationUtil {
         }
 
         // Create a linked list of the location, so removing the first element is easier.
-        // Also, the `tail` operation wouldn't work with a Deque.
+        // Also, the tail() operation wouldn't work with a Deque.
         @SuppressWarnings("JdkObsolete")
         LinkedList<TypePathEntry> tailOfLocations = new LinkedList<>(location);
         boolean error = false;
@@ -557,7 +559,7 @@ public class ElementAnnotationUtil {
 
     /**
      * When we have an (e.g. @Odd int @NonNull []) the type-annotation position of the array
-     * annotation (@NonNull) is really the outer most type in the TypeAnnotationPosition and will
+     * annotation (@NonNull) is really the outermost type in the TypeAnnotationPosition and it will
      * NOT have TypePathEntryKind.ARRAY at the end of its position. The position of the component
      * type (@Odd) is considered deeper in the type and therefore has the TypePathEntryKind.ARRAY in
      * its position.
@@ -599,8 +601,8 @@ public class ElementAnnotationUtil {
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
                 && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
-            AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
-            return getTypeAtLocation(supertype, tail(location));
+            AnnotatedTypeMirror bound = type.getBounds().get(location.get(0).arg);
+            return getTypeAtLocation(bound, tail(location));
         } else {
             throw new UnexpectedAnnotationLocationException(
                     "ElementAnnotationUtil.getLocatonTypeAIT: invalid location %s for type: %s ",

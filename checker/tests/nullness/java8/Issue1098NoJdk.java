@@ -12,7 +12,7 @@ class Issue1098NoJdk {
     <T> void cls2(Class<T> p1, T p2) {}
 
     void use2(MyObject ths) {
-        // TODO: false positive, because type agrument inference does not account for @Covariant.
+        // TODO: false positive, because type argument inference does not account for @Covariant.
         // See https://github.com/typetools/checker-framework/issues/979.
         // :: error: (argument.type.incompatible)
         cls2(ths.getMyClass(), null);

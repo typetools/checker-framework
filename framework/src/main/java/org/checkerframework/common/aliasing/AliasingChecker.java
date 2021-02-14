@@ -9,8 +9,4 @@ import org.checkerframework.framework.qual.StubFiles;
  * @checker_framework.manual #aliasing-checker Aliasing Checker
  */
 @StubFiles({"android.astub"})
-public class AliasingChecker extends BaseTypeChecker {
-    //    @Override
-    //    public void report(Result r, Object src) {
-    //    }
-}
+public class AliasingChecker extends BaseTypeChecker {}

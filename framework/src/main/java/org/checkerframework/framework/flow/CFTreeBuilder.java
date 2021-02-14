@@ -3,17 +3,26 @@ package org.checkerframework.framework.flow;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
-import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
@@ -24,35 +33,49 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class CFTreeBuilder extends TreeBuilder {
 
+    /**
+     * To avoid infinite recursions, record each wildcard that has been converted to a tree. This
+     * set is cleared each time {@link #buildAnnotatedType(TypeMirror)} is called.
+     */
+    private final Set<WildcardType> visitedWildcards = new HashSet<>();
+
+    /**
+     * Creates a {@code CFTreeBuilder}.
+     *
+     * @param env environment
+     */
     public CFTreeBuilder(ProcessingEnvironment env) {
         super(env);
     }
 
     /**
-     * Builds an AST Tree representing an AnnotatedTypeMirror.
+     * Builds an AST Tree representing a type, including AnnotationTrees for its annotations.
      *
-     * @param annotatedType the annotated type
-     * @return a Tree representing the annotated type
+     * @param type the type
+     * @return a Tree representing the type
      */
-    public Tree buildAnnotatedType(AnnotatedTypeMirror annotatedType) {
-        return createAnnotatedType(annotatedType);
+    public Tree buildAnnotatedType(TypeMirror type) {
+        visitedWildcards.clear();
+        return createAnnotatedType(type);
     }
 
-    private Tree createAnnotatedType(AnnotatedTypeMirror annotatedType) {
-        // Implementation based on com.sun.tools.javac.tree.TreeMaker.Type
-
-        // Convert the annotations from a set of AnnotationMirrors
-        // to a list of AnnotationTrees.
-        Set<AnnotationMirror> annotations = annotatedType.getAnnotations();
-        List<JCTree.JCAnnotation> annotationTrees = List.nil();
+    /**
+     * Converts a list of AnnotationMirrors to the a corresponding list of new AnnotationTrees.
+     *
+     * @param annotations the annotations
+     * @return new annotation trees representing the annotations
+     */
+    private List<JCAnnotation> convertAnnotationMirrorsToAnnotationTrees(
+            Collection<? extends AnnotationMirror> annotations) {
+        List<JCAnnotation> annotationTrees = List.nil();
 
         for (AnnotationMirror am : annotations) {
             // TODO: what TypeAnnotationPosition should be used?
             Attribute.TypeCompound typeCompound =
                     TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(
                             am, TypeAnnotationUtils.unknownTAPosition(), env);
-            JCTree.JCAnnotation annotationTree = maker.Annotation(typeCompound);
-            JCTree.JCAnnotation typeAnnotationTree =
+            JCAnnotation annotationTree = maker.Annotation(typeCompound);
+            JCAnnotation typeAnnotationTree =
                     maker.TypeAnnotation(
                             annotationTree.getAnnotationType(), annotationTree.getArguments());
 
@@ -60,136 +83,129 @@ public class CFTreeBuilder extends TreeBuilder {
 
             annotationTrees = annotationTrees.append(typeAnnotationTree);
         }
+        return annotationTrees;
+    }
+
+    /**
+     * Builds an AST Tree representing a type, including AnnotationTrees for its annotations. This
+     * internal method differs from the public {@link #buildAnnotatedType(TypeMirror)} only in that
+     * it does not reset the list of visited wildcards.
+     *
+     * @param type the type for which to create a tree
+     * @return a Tree representing the type
+     */
+    private Tree createAnnotatedType(TypeMirror type) {
+        // Implementation based on com.sun.tools.javac.tree.TreeMaker.Type
+
+        // Convert the annotations from a set of AnnotationMirrors
+        // to a list of AnnotationTrees.
+        java.util.List<? extends AnnotationMirror> annotations = type.getAnnotationMirrors();
+        List<JCAnnotation> annotationTrees = convertAnnotationMirrorsToAnnotationTrees(annotations);
 
         // Convert the underlying type from a TypeMirror to an
         // ExpressionTree and combine with the AnnotationTrees
         // to form a ClassTree of kind ANNOTATION_TYPE.
-        Tree underlyingTypeTree;
-        switch (annotatedType.getKind()) {
+        JCExpression typeTree;
+        switch (type.getKind()) {
             case BYTE:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.BYTE);
+                typeTree = maker.TypeIdent(TypeTag.BYTE);
                 break;
             case CHAR:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.CHAR);
+                typeTree = maker.TypeIdent(TypeTag.CHAR);
                 break;
             case SHORT:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.SHORT);
+                typeTree = maker.TypeIdent(TypeTag.SHORT);
                 break;
             case INT:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.INT);
+                typeTree = maker.TypeIdent(TypeTag.INT);
                 break;
             case LONG:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.LONG);
+                typeTree = maker.TypeIdent(TypeTag.LONG);
                 break;
             case FLOAT:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.FLOAT);
+                typeTree = maker.TypeIdent(TypeTag.FLOAT);
                 break;
             case DOUBLE:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.DOUBLE);
+                typeTree = maker.TypeIdent(TypeTag.DOUBLE);
                 break;
             case BOOLEAN:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.BOOLEAN);
+                typeTree = maker.TypeIdent(TypeTag.BOOLEAN);
                 break;
             case VOID:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.VOID);
+                typeTree = maker.TypeIdent(TypeTag.VOID);
                 break;
             case TYPEVAR:
-                {
-                    // No recursive annotations.
-                    AnnotatedTypeMirror.AnnotatedTypeVariable variable =
-                            (AnnotatedTypeMirror.AnnotatedTypeVariable) annotatedType;
-                    TypeVariable underlyingTypeVar = variable.getUnderlyingType();
-                    underlyingTypeTree =
-                            maker.Ident((Symbol.TypeSymbol) underlyingTypeVar.asElement());
-                    break;
-                }
+                // No recursive annotations.
+                TypeVariable underlyingTypeVar = (TypeVariable) type;
+                typeTree = maker.Ident((TypeSymbol) underlyingTypeVar.asElement());
+                break;
             case WILDCARD:
-                {
-                    AnnotatedTypeMirror.AnnotatedWildcardType wildcard =
-                            (AnnotatedTypeMirror.AnnotatedWildcardType) annotatedType;
-                    WildcardType wildcardType = wildcard.getUnderlyingType();
-                    if (wildcardType.getExtendsBound() != null) {
-                        Tree annotatedExtendsBound =
-                                createAnnotatedType(wildcard.getExtendsBound());
-                        underlyingTypeTree =
-                                maker.Wildcard(
-                                        maker.TypeBoundKind(BoundKind.EXTENDS),
-                                        (JCTree) annotatedExtendsBound);
-                    } else if (wildcardType.getSuperBound() != null) {
-                        Tree annotatedSuperBound = createAnnotatedType(wildcard.getSuperBound());
-                        underlyingTypeTree =
-                                maker.Wildcard(
-                                        maker.TypeBoundKind(BoundKind.SUPER),
-                                        (JCTree) annotatedSuperBound);
-                    } else {
-                        underlyingTypeTree =
-                                maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-                    }
-                    break;
+                WildcardType wildcardType = (WildcardType) type;
+                boolean visitedBefore = visitedWildcards.contains(wildcardType);
+                visitedWildcards.add(wildcardType);
+                if (!visitedBefore && wildcardType.getExtendsBound() != null) {
+                    Tree annotatedExtendsBound =
+                            createAnnotatedType(wildcardType.getExtendsBound());
+                    typeTree =
+                            maker.Wildcard(
+                                    maker.TypeBoundKind(BoundKind.EXTENDS),
+                                    (JCTree) annotatedExtendsBound);
+                } else if (!visitedBefore && wildcardType.getSuperBound() != null) {
+                    Tree annotatedSuperBound = createAnnotatedType(wildcardType.getSuperBound());
+                    typeTree =
+                            maker.Wildcard(
+                                    maker.TypeBoundKind(BoundKind.SUPER),
+                                    (JCTree) annotatedSuperBound);
+                } else {
+                    typeTree = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
                 }
+                break;
             case INTERSECTION:
-                {
-                    AnnotatedTypeMirror.AnnotatedIntersectionType intersectionType =
-                            (AnnotatedTypeMirror.AnnotatedIntersectionType) annotatedType;
-                    List<JCTree.JCExpression> components = List.nil();
-                    for (AnnotatedTypeMirror.AnnotatedDeclaredType adt :
-                            intersectionType.directSuperTypes()) {
-                        components =
-                                components.append((JCTree.JCExpression) createAnnotatedType(adt));
-                    }
-                    underlyingTypeTree = maker.TypeIntersection(components);
-                    break;
+                IntersectionType intersectionType = (IntersectionType) type;
+                List<JCExpression> components = List.nil();
+                for (TypeMirror bound : intersectionType.getBounds()) {
+                    components = components.append((JCExpression) createAnnotatedType(bound));
                 }
+                typeTree = maker.TypeIntersection(components);
+                break;
+                // case UNION:
                 // TODO: case UNION similar to INTERSECTION, but write test first.
             case DECLARED:
-                {
-                    underlyingTypeTree = maker.Type((Type) annotatedType.getUnderlyingType());
+                typeTree = maker.Type((Type) type);
 
-                    if (underlyingTypeTree instanceof JCTree.JCTypeApply) {
-                        // Replace the type parameters with annotated versions.
-                        AnnotatedTypeMirror.AnnotatedDeclaredType annotatedDeclaredType =
-                                (AnnotatedTypeMirror.AnnotatedDeclaredType) annotatedType;
-                        List<JCTree.JCExpression> typeArgTrees = List.nil();
-                        for (AnnotatedTypeMirror arg : annotatedDeclaredType.getTypeArguments()) {
-                            typeArgTrees =
-                                    typeArgTrees.append(
-                                            (JCTree.JCExpression) createAnnotatedType(arg));
-                        }
-                        JCTree.JCExpression clazz =
-                                (JCTree.JCExpression)
-                                        ((JCTree.JCTypeApply) underlyingTypeTree).getType();
-                        underlyingTypeTree = maker.TypeApply(clazz, typeArgTrees);
+                if (typeTree instanceof JCTypeApply) {
+                    // Replace the type parameters with annotated versions.
+                    DeclaredType annotatedDeclaredType = (DeclaredType) type;
+                    List<JCExpression> typeArgTrees = List.nil();
+                    for (TypeMirror arg : annotatedDeclaredType.getTypeArguments()) {
+                        typeArgTrees = typeArgTrees.append((JCExpression) createAnnotatedType(arg));
                     }
-                    break;
+                    JCExpression clazz = (JCExpression) ((JCTypeApply) typeTree).getType();
+                    typeTree = maker.TypeApply(clazz, typeArgTrees);
                 }
+                break;
             case ARRAY:
-                {
-                    AnnotatedTypeMirror.AnnotatedArrayType annotatedArrayType =
-                            (AnnotatedTypeMirror.AnnotatedArrayType) annotatedType;
-                    Tree annotatedComponentTree =
-                            createAnnotatedType(annotatedArrayType.getComponentType());
-                    underlyingTypeTree =
-                            maker.TypeArray((JCTree.JCExpression) annotatedComponentTree);
-                    break;
-                }
+                ArrayType arrayType = (ArrayType) type;
+                Tree componentTree = createAnnotatedType(arrayType.getComponentType());
+                typeTree = maker.TypeArray((JCExpression) componentTree);
+                break;
             case ERROR:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.ERROR);
+                typeTree = maker.TypeIdent(TypeTag.ERROR);
                 break;
             default:
-                assert false : "unexpected type: " + annotatedType;
-                underlyingTypeTree = null;
+                assert false : "unexpected type: " + type;
+                typeTree = null;
                 break;
         }
 
-        ((JCTree) underlyingTypeTree).setType((Type) annotatedType.getUnderlyingType());
+        typeTree.setType((Type) type);
 
         if (annotationTrees.isEmpty()) {
-            return underlyingTypeTree;
+            return typeTree;
         }
 
-        JCTree.JCAnnotatedType annotatedTypeTree =
-                maker.AnnotatedType(annotationTrees, (JCTree.JCExpression) underlyingTypeTree);
-        annotatedTypeTree.setType((Type) annotatedType.getUnderlyingType());
+        JCAnnotatedType annotatedTypeTree = maker.AnnotatedType(annotationTrees, typeTree);
+        annotatedTypeTree.setType((Type) type);
 
         return annotatedTypeTree;
     }

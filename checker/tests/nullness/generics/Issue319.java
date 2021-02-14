@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue319 {
+public class Issue319 {
     class Foo<T> {
         Foo(@Nullable T t) {}
     }

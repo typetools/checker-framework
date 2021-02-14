@@ -1,9 +1,25 @@
 package org.checkerframework.common.value;
 
-import com.sun.source.tree.*;
-import java.util.*;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -17,6 +33,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -80,7 +97,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             handleInitializers(initializers, (AnnotatedTypeMirror.AnnotatedArrayType) type);
 
             AnnotationMirror newQual;
-            Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
+            Class<?> clazz = TypesUtils.getClassFromType(type.getUnderlyingType());
             String stringVal = null;
             if (clazz == char[].class) {
                 stringVal = getCharArrayStringVal(initializers);
@@ -262,7 +279,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             } else if (atypeFactory.isIntRange(oldAnno)
                     && (range = ValueAnnotatedTypeFactory.getRange(oldAnno))
                             .isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
+                Class<?> newClass = TypesUtils.getClassFromType(newType);
                 if (newClass == String.class) {
                     newAnno = atypeFactory.UNKNOWNVAL;
                 } else if (newClass == Boolean.class || newClass == boolean.class) {
@@ -352,6 +369,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
 
     /**
+     * Returns the Range of the Math.min or Math.max method, or null if the argument is none of
+     * these methods or their arguments are not annotated in ValueChecker hierarchy.
+     *
      * @return the Range of the Math.min or Math.max method, or null if the argument is none of
      *     these methods or their arguments are not annotated in ValueChecker hierarchy
      */
@@ -395,6 +415,22 @@ class ValueTreeAnnotator extends TreeAnnotator {
             }
         }
 
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isArraysCopyOfInvocation(tree, atypeFactory.getProcessingEnv())) {
+            List<? extends ExpressionTree> args = tree.getArguments();
+            if (args.size() != 2) {
+                throw new BugInCF(
+                        "Arrays.copyOf() should have 2 arguments. This point should not have reached");
+            }
+            Range range =
+                    ValueCheckerUtils.getPossibleValues(
+                            atypeFactory.getAnnotatedType(args.get(1)), atypeFactory);
+            if (range != null) {
+                type.replaceAnnotation(atypeFactory.createArrayLenRangeAnnotation(range));
+            }
+        }
+
         if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
                 || !handledByValueChecker(type)) {
             return null;
@@ -406,6 +442,18 @@ class ValueTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
             AnnotationMirror resultAnno =
                     atypeFactory.createArrayLengthResultAnnotation(receiverType);
+            if (resultAnno != null) {
+                type.replaceAnnotation(resultAnno);
+            }
+            return null;
+        }
+
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isArrayGetLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
+            List<? extends ExpressionTree> args = tree.getArguments();
+            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(args.get(0));
+            AnnotationMirror resultAnno = atypeFactory.createArrayLengthResultAnnotation(argType);
             if (resultAnno != null) {
                 type.replaceAnnotation(resultAnno);
             }
@@ -498,40 +546,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-        if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
-            return null;
-        }
-
-        VariableElement elem = (VariableElement) TreeUtils.elementFromTree(tree);
-        Object value = elem.getConstantValue();
-        if (value != null) {
-            // The field is a compile time constant.
-            type.replaceAnnotation(
-                    atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
-            return null;
-        }
-        if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
-            // The field is static and final.
-            Element e = TreeUtils.elementFromTree(tree.getExpression());
-            if (e != null) {
-                @SuppressWarnings("signature") // TODO: this looks like a bug in
-                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
-                // but this passes a @FullyQualifiedName
-                @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
-                @SuppressWarnings(
-                        "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
-                @Identifier String fieldName = tree.getIdentifier().toString();
-                value =
-                        atypeFactory.evaluator.evaluateStaticFieldAccess(
-                                classname, fieldName, tree);
-                if (value != null) {
-                    type.replaceAnnotation(
-                            atypeFactory.createResultingAnnotation(
-                                    type.getUnderlyingType(), value));
-                }
-                return null;
-            }
-        }
+        visitFieldAccess(tree, type);
+        visitEnumConstant(tree, type);
 
         if (TreeUtils.isArrayLengthAccess(tree)) {
             // The field access is to the length field, as in "someArrayExpression.length"
@@ -545,6 +561,54 @@ class ValueTreeAnnotator extends TreeAnnotator {
             }
         }
         return null;
+    }
+
+    /**
+     * Visit a tree that might be a field access.
+     *
+     * @param tree a tree that might be a field access. It is either a MemberSelectTree or an
+     *     IdentifierTree (if the programmer omitted the leading `this.`).
+     * @param type its type
+     */
+    private void visitFieldAccess(ExpressionTree tree, AnnotatedTypeMirror type) {
+        if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
+            return;
+        }
+
+        VariableElement fieldElement = (VariableElement) TreeUtils.elementFromTree(tree);
+        Object value = fieldElement.getConstantValue();
+        if (value != null) {
+            // The field is a compile-time constant.
+            type.replaceAnnotation(
+                    atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
+            return;
+        }
+        if (ElementUtils.isStatic(fieldElement) && ElementUtils.isFinal(fieldElement)) {
+            // The field is static and final, but its declaration does not initialize it to a
+            // compile-time constant.  Obtain its value reflectively.
+            Element classElement = fieldElement.getEnclosingElement();
+            if (classElement != null) {
+                @SuppressWarnings("signature" // TODO: bug in ValueAnnotatedTypeFactory.
+                // evaluateStaticFieldAccess requires a @ClassGetName but this passes a
+                // @FullyQualifiedName.  They differ for inner classes.
+                )
+                @BinaryName String classname = ElementUtils.getQualifiedClassName(classElement).toString();
+                @SuppressWarnings(
+                        "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
+                @Identifier String fieldName = fieldElement.getSimpleName().toString();
+                value =
+                        atypeFactory.evaluator.evaluateStaticFieldAccess(
+                                classname, fieldName, tree);
+                if (value != null) {
+                    type.replaceAnnotation(
+                            atypeFactory.createResultingAnnotation(
+                                    type.getUnderlyingType(), value));
+                }
+                return;
+            }
+        }
+
+        return;
     }
 
     /** Returns true iff the given type is in the domain of the Constant Value Checker. */
@@ -565,5 +629,44 @@ class ValueTreeAnnotator extends TreeAnnotator {
         // Work around for https://github.com/typetools/checker-framework/issues/602.
         annotatedTypeMirror.replaceAnnotation(atypeFactory.UNKNOWNVAL);
         return null;
+    }
+
+    // An IdentifierTree can be a local variable (including formals, exception parameters, etc.) or
+    // an implicit field access (where `this.` is omitted).
+    // A field access is always an IdentifierTree or MemberSelectTree.
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+        visitFieldAccess(tree, type);
+        visitEnumConstant(tree, type);
+        return null;
+    }
+
+    /**
+     * Default the type of an enum constant {@code E.V} to {@code @StringVal("V")}. Does nothing if
+     * the argument is not an enum constant.
+     *
+     * @param tree an Identifier or MemberSelect tree that might be an enum
+     * @param type the type of that tree
+     */
+    private void visitEnumConstant(ExpressionTree tree, AnnotatedTypeMirror type) {
+        Element decl = TreeUtils.elementFromTree(tree);
+        if (decl.getKind() != ElementKind.ENUM_CONSTANT) {
+            return;
+        }
+
+        Name id;
+        switch (tree.getKind()) {
+            case MEMBER_SELECT:
+                id = ((MemberSelectTree) tree).getIdentifier();
+                break;
+            case IDENTIFIER:
+                id = ((IdentifierTree) tree).getName();
+                break;
+            default:
+                throw new BugInCF("unexpected kind of enum constant use tree: " + tree.getKind());
+        }
+        AnnotationMirror stringVal =
+                atypeFactory.createStringAnnotation(Collections.singletonList(id.toString()));
+        type.replaceAnnotation(stringVal);
     }
 }

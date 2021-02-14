@@ -32,17 +32,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-# Ubuntu 18.04 has Maven 3.6.0, but 3.6.1 apparently has better retry
-# behavior to work around network problems.
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& VER=3.6.3 \
-&& mkdir -p $HOME/bin/install \
-&& cd $HOME/bin/install \
-&& wget http://apache.mirrors.pair.com/maven/maven-3/${VER}/binaries/apache-maven-${VER}-bin.tar.gz \
-&& tar xzf apache-maven-${VER}-bin.tar.gz \
-&& (cd /usr/local/bin && ln -sf $HOME/bin/install/apache-maven-${VER}/bin/* .) \
-&& hash -r
-
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
@@ -51,6 +40,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   imagemagick \
   latexmk \
   librsvg2-bin \
+  pdf2svg \
   rsync \
   texlive-font-utils \
   texlive-fonts-recommended \

@@ -4,8 +4,9 @@
 This chapter describes support for Java generics (also known as
 ``parametric polymorphism'') and polymorphism over type qualifiers.
 
-Section~\ref{qualifier-polymorphism} describes support for polymorphism over
-type qualifiers.
+Section~\ref{method-qualifier-polymorphism} describes support for polymorphism over
+type qualifiers for methods. Section~\ref{class-qualifier-polymorphism} describes
+support for polymorphism over type qualifiers for classes.
 
 
 \sectionAndLabel{Generics (parametric polymorphism or type polymorphism)}{generics}
@@ -132,7 +133,7 @@ It is an error if the lower bound is not a subtype of the upper bound.
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a supertype of @NonNull
+  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a subtype of @NonNull
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -444,16 +445,17 @@ type system.)  For the same reason, type parameter annotations are treated
 invariantly.  For example, \code{List<@Nullable String>} is not a subtype
 of \code{List<String>}.
 
-When a type parameter is used in a read-only way --- that is, when values
-of that type are read but are never assigned --- then it is safe for the
+When a type parameter is used in a read-only way --- that is, when clients
+read values of that type from the class but never pass values of that type
+to the class --- then it is safe for the
 type to be \emph{covariant} in the type parameter.  Use the
 \refqualclass{framework/qual}{Covariant} annotation to indicate this.
 When a type parameter is covariant, two instantiations of the class with
 different type arguments have the same subtyping relationship as the type
 arguments do.
 
-For example, consider \<Iterator>.  Its elements can be read but not
-written, so \code{Iterator<@Nullable String>} can be a subtype of
+For example, consider \<Iterator>.  A client can read elements but not
+write them, so \code{Iterator<@Nullable String>} can be a subtype of
 \code{Iterator<String>} without introducing a hole in the type system.
 Therefore, its type parameter is annotated with
 \refqualclass{framework/qual}{Covariant}.
@@ -463,7 +465,7 @@ Another example would be the type parameter of a hypothetical class
 
 The \<@Covariant> annotation is trusted but not checked.
 If you incorrectly specify as covariant a type parameter that can be
-written (say, the class performs a
+written (say, the class supports a
 \<set> operation or some other mutation on an object of that type), then
 you have created an unsoundness in the type system.
 For example, it would be incorrect to annotate the type parameter of
@@ -501,7 +503,7 @@ public static void addNumbers(List<? super @SignednessBottom Integer> list) { ..
 \end{Verbatim}
 
 
-\sectionAndLabel{Qualifier polymorphism}{qualifier-polymorphism}
+\sectionAndLabel{Qualifier polymorphism for methods\label{qualifier-polymorphism}}{method-qualifier-polymorphism}
 
 The Checker Framework supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
@@ -509,13 +511,7 @@ type signatures.  This is similar to Java's generics, but is used in
 situations where you cannot use Java generics.  If you can use generics,
 you typically do not need to use a polymorphic qualifier such as \<@PolyNull>.
 
-To \emph{use} a polymorphic qualifier, just write it on a type.
-For example, you can write \<@PolyNull> anywhere in a method that you would write
-\<@NonNull> or \<@Nullable>.
-A polymorphic qualifier can be used in a method signature or body.
-It may not be used on a class or field.
-
-A method written using a polymorphic qualifier conceptually has multiple
+A method whose signature has a polymorphic qualifier conceptually has multiple
 versions, somewhat like the generics feature of Java or a template in C++.
 In each version, each instance of the polymorphic qualifier has been
 replaced by the same other qualifier from the hierarchy.  See the examples
@@ -526,6 +522,13 @@ type-correct if it type-checks under any one of the signatures.  If a call
 matches multiple signatures, then the compiler uses the most specific
 matching signature for the purpose of type-checking.  This is the same as
 Java's rule for resolving overloaded methods.
+
+Polymorphic qualifiers are most often used in method signatures.
+They may not be used on a class declaration.
+They may be used on a field declaration, but it has a different meaning;
+see Section~\ref{class-qualifier-polymorphism}.
+Also, if it is written on a method in a class with
+a qualifier parameter, then it has a slightly different meaning, see Section~\ref{class-qual-param-method}.
 
 To \emph{define} a polymorphic qualifier, mark the definition with
 \refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
@@ -594,7 +597,7 @@ then the unification (lub) is \<@Nullable>, and so is the return type.
 
 
 
-\subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorhism-vs-subtyping}
+\subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorphism-vs-subtyping}
 
 Qualifier polymorphism has the same purpose and plays the same role as
 Java's generics.  You use them in the same cases, such as:
@@ -850,6 +853,210 @@ type-check) than writing just
   void m(@Nullable Object obj)
 \end{Verbatim}
 
+\sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
+
+Class qualifier parameters permit you to supply a type qualifier (only,
+without a Java basetype) to any class (generic or not).
+
+When a generic class represents a collection, a user can write a type
+qualifier on the type argument, as in \code{List<@Tainted Character>}
+versus \code{List<@Untainted Character>}.  When a non-generic class
+represents a collection with a hard-coded type (as \<StringBuffer>
+hard-codes \<Character>), you can use a class qualifier parameter to
+distinguish \<StringBuffer>s that contain different types of characters.
+% (For a discussion of tainting, see \chapterpageref{tainting-checker}.)
+
+To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}
+and write the class of the top qualifier as its element.
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+class StringBuffer { ... }
+\end{Verbatim}
+
+A qualifier on a use of \<StringBuffer> is treated as
+appearing both on the \<StringBuffer> and on its conceptual type argument.  That
+is:\\
+\begin{tt}
+  @Tainted StringBuffer $\approx$ @Tainted Collection<@Tainted Character>\\
+  @Untainted StringBuffer $\approx$ @Untainted Collection<@Untainted Character>
+\end{tt}
+
+If two types have different qualifier arguments, they have no subtyping
+relationship.  (This is ``invariant subtyping'', also used by Java for
+generic classes.)  In particular, \<@Untainted StringBuffer> is not a
+subtype of \<@Tainted StringBuffer>; an attempt to cast between them, in
+either direction, will yield an \<invariant.cast.unsafe> error.
+
+If a subclass extends a \<@HasQualifierParameter> class (or implements a
+\<@HasQualifierParameter> interface), then the subclass must also be marked
+\<@HasQualifierParameter>.
+
+%% TODO: Inheritance of classes with a qualifier parameter below.
+
+Within a class with a qualifier parameter,
+the default qualifier for uses of that class is the polymorphic qualifier.
+
+
+\subsectionAndLabel{Resolving polymorphism when the receiver type has a polymorphic qualifier}{class-qual-param-method}
+
+Qualifier polymorphism changes the rules for instantiating polymorphic
+qualifiers (Section~\ref{method-qualifier-polymorphism}).
+If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
+then at a call site all polymorphic annotations are instantiated to
+the same qualifier as the type of the receiver expression of the method call.
+Otherwise, use the rules of Section~\ref{method-qualifier-polymorphism}
+
+For example, consider
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+class Buffer {
+  void append(@PolyTainted Buffer this, @PolyTainted String s) { ... }
+}
+\end{Verbatim}
+
+\noindent
+Because \<@PolyTainted> applies to a type (\<Buffer>) with a qualifier parameter, all
+uses of \<@PolyTainted> are instantiated to the qualifiers on the type of
+the receiver expression at call sites to \<append>. For example,
+
+\begin{Verbatim}
+@Untainted Buffer untaintedBuffer = ...;
+@Tainted String taintedString = ...;
+untaintedBuffer.append(taintedString); // error: argument.type.incompatible
+\end{Verbatim}
+The above \<append> call is illegal because the \<@PolyTainted> is instantiated to \<@Untainted> and
+the type of the argument is \<@Tainted> which is a supertype of \<@Untainted>.  If the type of
+\<untaintedBuffer> were \<@Tainted> then the call would be legal.
+
+\subsectionAndLabel{Using class qualifier parameters in the type of a field}{class-qual-param-field}
+
+To express that the type of a field
+should have the same qualifier as the class qualifier parameter,
+annotate the field type with the polymorphic qualifier for the type system.
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+class Buffer {
+  @PolyTainted String field;
+}
+\end{Verbatim}
+
+At a field access where the declared type of the field has a polymorphic
+qualifier, that polymorphic qualifier is instantiated to the qualifier on the
+type of the receiver of the field access (or in the case of type variables, the
+qualifier on the upper bound).  That is, the qualifier on \<myBuffer.field>
+is that same as that on \<myBuffer>.
+
+\subsectionAndLabel{Local variable defaults for types with qualifier parameters}{local-vars-qual-param-defaults}
+
+Local variables default to the top type (see
+Section~\ref{climb-to-top}). Type refinement determines if a variable can be
+treated as a suitable subtype, and annotations on local variables are rarely
+needed as a result. However, since qualifier parameters add invariant subtyping,
+type refinement is no longer valid. For example, suppose in the following code
+that \<StringBuffer> is annotated with \<@HasQualifierParameter(Tainted.class)>.
+
+\begin{Verbatim}
+    void method(@Untainted StringBuffer buffer) {
+        StringBuffer local = buffer;
+        executeSql(local.toString());
+    }
+
+    void executeSql(@Untainted String code) {
+        // ...
+    }
+\end{Verbatim}
+
+Normally, the framework would determine that \<local> has type \<@Untainted
+StringBuffer> and the call to \<executeSql> would be valid. However, since by
+default \<local> has type \<@Tainted StringBuffer>, and
+\<@Untainted StringBuffer> is not a subtype, no type refinement would be
+performed, leading to an error. Fixing this would require manually annotating
+\<local> as an \<@Untainted StringBuffer>, increasing the annotation burden on
+programmers.
+
+For this reason, local variables with types that have a qualifier parameter use
+different defaulting rules. When a local variable has an initializer, the type
+of that initializer is used as the default type of that variable if no other
+annotations are written. For example, in the above code, the type of \<local>
+would be \<@Untainted StringBuffer>. This eliminates the need for type
+refinement.
+
+\subsectionAndLabel{Qualifier parameters by default}{default-has-qualifier-parameter}
+
+If many classes in a project should have \<@HasQualifierParameter>, it's
+possible to enable it on all classes in a package by default. Writing
+\<@HasQualifierParameter> on a package is equivalent to writing
+\<@HasQualifierParameter> on each class in that package and all subpackages with
+the same arguments.
+
+For example, writing this annotation enables \<@HasQualifierParameter>
+for all classes in \code{mypackage}.
+
+\begin{Verbatim}
+@HasQualifierParameter(Tainted.class)
+package mypackage;
+\end{Verbatim}
+
+When using \<@HasQualifierParameter> on a package, it's possible to disable it
+for a specific class using \refqualclass{framework/qual}{NoQualifierParameter}.
+Writing this on a class indicates it has no class qualifier parameter and
+\<@HasQualifierParameter> will not be enabled by default. Like
+\<@HasQualifierParameter>, it takes one or more top annotations. It is illegal
+to explicitly write both \<@HasQualifierParameter> and \<@NoQualifierParameter>
+on the same class for the same hierarchy.
+
+%% TODO: implement this.
+%% https://github.com/typetools/checker-framework/issues/3400
+%\subsectionAndLabel{Inheritance of classes with a qualifier parameter}{class-qual-param-inheritance}
+%
+%If a class extends a \<@HasQualifierParameter> class (or implements a
+%\<@HasQualifierParameter> interface), then that class must also be marked
+%\<@HasQualifierParameter>. A particular subclass can specify which qualifier
+%parameter should be used for the super class.  (This is similar to \<class
+%StringList implements List<String> \{...\}>.) For example,
+%
+%\begin{Verbatim}
+%  @HasQualifierParameter(Tainted.class)
+%  class Buffer {
+%  void append(@PolyTainted Buffer this, @PolyTainted String s) { ... }
+%  }
+%  @HasQualifierParameter(Tainted.class)
+%  @Tainted class TaintedBuffer extends @Tainted Buffer {
+%  @Override
+%  void append(@Tainted TaintedBuffer this, @Tainted String s) { ... } // legal override
+%  }
+%\end{Verbatim}
+%
+% \<@Untainted TaintedBuffer> is an invalid type.
+
+\subsectionAndLabel{Types with qualifier parameters as type arguments}{class-qual-param-type-arg}
+
+Types with qualifier parameters are only allowed as type arguments to type parameters whose upper bound
+have a qualifier parameter. If they were allowed for as type arguments for any type parameter, then
+unsound casts would be permitted. For example:
+
+\begin{Verbatim}
+    @HasQualifierParameter(Tainted.class)
+    interface Buffer {
+        void append(@PolyTainted String s);
+    }
+
+    public class ClassQPTypeVarTest {
+        <T> @Tainted T cast(T param) {
+            return param;
+        }
+
+        void bug(@Untainted Buffer b, @Tainted String s) {
+            cast(b).append(s);  // error
+        }
+    }
+
+
+\end{Verbatim}
+
 % LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
 % LocalWords:  PolymorphicQualifier PolyNull java lub invariantly supertype's
@@ -861,4 +1068,7 @@ type-check) than writing just
 % LocalWords:  arg param MethodTaintingParam Util meth value1 h2 TopType
 % LocalWords:  nestedHolder nestedHolder2 extendsHolder PolyTainted Poly
 %%  LocalWords:  BottomType CharSequence SomeType OtherType MyList1a
-%%  LocalWords:  MyList2a
+%%  LocalWords:  MyList2a polymorphism'' bound'' LowerBound UpperBound
+% LocalWords:  JavaUpperBound JavaLowerBound MyTypeAnnotation myBuffer
+% LocalWords:  HasQualifierParameter myUntaintedBuffer myTaintedString
+% LocalWords:  myTaintedBuffer myUntaintedString

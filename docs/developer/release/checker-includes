@@ -8,6 +8,7 @@ docs/manual/manual.html
 docs/manual/manual.pdf
 docs/manual/*.svg
 docs/manual/manual001.png
+docs/manual/manual001.svg
 docs/examples/InterningExample.java
 docs/examples/InterningExampleWithWarnings.java
 docs/examples/NullnessExample.java
@@ -24,7 +25,4 @@ docs/examples/units-extension/README
 docs/examples/MavenExample/pom.xml
 docs/examples/MavenExample/README
 docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java
-docs/examples/MavenExampleJDK11/pom.xml
-docs/examples/MavenExampleJDK11/README
-docs/examples/MavenExampleJDK11/src/main/java/org/checkerframework/example/MavenExample.java
 docs/tutorial/**

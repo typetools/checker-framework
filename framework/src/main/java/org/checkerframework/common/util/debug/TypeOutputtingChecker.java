@@ -14,6 +14,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -21,8 +22,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -72,7 +71,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             currentClass = element.getSimpleName().toString();
 
             AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
-            System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSuperTypes());
+            System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSupertypes());
 
             super.processClassTree(node);
         }
@@ -100,11 +99,22 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         }
     }
 
+    /**
+     * Main entry point.
+     *
+     * @param args command-line arguments
+     */
+    @SuppressWarnings("signature:argument.type.incompatible") // user-supplied input, uncheckable
     public static void main(String[] args) {
         new TypeOutputtingChecker().run(args);
     }
 
-    public void run(String[] args) {
+    /**
+     * Run the test.
+     *
+     * @param args command-line arguments
+     */
+    public void run(@CanonicalName String[] args) {
         ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
         Elements elements = env.getElementUtils();
 
@@ -127,7 +137,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         String simpleName = typeElt.getSimpleName().toString();
         // Output class info
         AnnotatedDeclaredType type = atypeFactory.fromElement(typeElt);
-        System.out.println(simpleName + "\t" + type + "\t" + type.directSuperTypes());
+        System.out.println(simpleName + "\t" + type + "\t" + type.directSupertypes());
 
         // output fields and methods
         for (Element enclosedElt : typeElt.getEnclosedElements()) {
@@ -171,19 +181,15 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         }
 
         @Override
-        public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-            return new GeneralQualifierHierarchy(factory);
+        protected QualifierHierarchy createQualifierHierarchy() {
+            return new GeneralQualifierHierarchy();
         }
 
         /**
          * A very limited QualifierHierarchy that is used for access to qualifiers from different
          * type systems.
          */
-        static class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
-
-            public GeneralQualifierHierarchy(MultiGraphFactory factory) {
-                super(factory);
-            }
+        static class GeneralQualifierHierarchy implements QualifierHierarchy {
 
             // Always return true
             @Override
@@ -230,24 +236,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
             // Not needed - raises error.
             @Override
-            @Deprecated
-            public Set<? extends AnnotationMirror> getTypeQualifiers() {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.getTypeQualifiers() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
             public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
                 throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
-            public boolean isSubtypeTypeVariable(
-                    AnnotationMirror subAnno, AnnotationMirror superAnno) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -260,26 +250,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
             // Not needed - raises error.
             @Override
-            public boolean isSubtypeTypeVariable(
-                    Collection<? extends AnnotationMirror> subAnnos,
-                    Collection<? extends AnnotationMirror> superAnnos) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
             public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
                 throw new BugInCF(
                         "GeneralQualifierHierarchy.leastUpperBound() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
-            public AnnotationMirror leastUpperBoundTypeVariable(
-                    AnnotationMirror a1, AnnotationMirror a2) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.leastUpperBoundTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -289,18 +262,15 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
                         "GeneralQualifierHierarchy.greatestLowerBound() shouldn't be called.");
             }
 
-            // Not needed - raises error.
-            @Override
-            public AnnotationMirror greatestLowerBoundTypeVariable(
-                    AnnotationMirror a1, AnnotationMirror a2) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() shouldn't be called.");
-            }
-
             @Override
             public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
                 throw new BugInCF(
                         "GeneralQualifierHierarchy.getPolymorphicAnnotation() shouldn't be called.");
+            }
+
+            @Override
+            public boolean isPolymorphicQualifier(AnnotationMirror qualifier) {
+                return false;
             }
         }
     }

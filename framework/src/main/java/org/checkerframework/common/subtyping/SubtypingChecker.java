@@ -1,8 +1,8 @@
 package org.checkerframework.common.subtyping;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -16,7 +16,7 @@ import org.checkerframework.framework.source.SourceVisitor;
  *
  * <ul>
  *   <li>{@code -Aquals}: specifies the annotations in the qualifier hierarchy (as a comma-separated
- *       list of fully-qualified annotation names with no spaces in between). Only the annotation
+ *       list of fully-qualified annotation names with no spaces in between). Only the annotations
  *       for one qualified subtype hierarchy can be passed.
  * </ul>
  *
@@ -26,23 +26,23 @@ import org.checkerframework.framework.source.SourceVisitor;
 public final class SubtypingChecker extends BaseTypeChecker {
 
     /**
-     * Compute getSuppressWarningsKeys, based on the names of all the qualifiers.
+     * Compute SuppressWarnings prefixes, based on the names of all the qualifiers.
      *
-     * <p>Provided for the convenience of checkers that do not subclass Subtyping Checker (because
-     * it is final). Clients should call it like:
+     * <p>Provided for the convenience of checkers that do not subclass {@code SubtypingChecker}
+     * (because it is final). Clients should call it like:
      *
      * <pre>{@code
-     * SubtypingChecker.getSuppressWarningsKeys(this.visitor, super.getSuppressWarningsKeys());
+     * SubtypingChecker.getSuppressWarningsPrefixes(this.visitor, super.getSuppressWarningsPrefixes());
      * }</pre>
      *
      * @param visitor the visitor
-     * @param superSupportedTypeQualifiers the result of super.getSuppressWarningsKeys(), as
+     * @param superSupportedTypeQualifiers the result of super.getSuppressWarningsPrefixes(), as
      *     executed by checker
+     * @return SuppressWarnings prefixes, based on the names of all the qualifiers
      */
-    public static Collection<String> getSuppressWarningsKeys(
-            SourceVisitor<?, ?> visitor, Collection<String> superSupportedTypeQualifiers) {
+    public static SortedSet<String> getSuppressWarningsPrefixes(
+            SourceVisitor<?, ?> visitor, SortedSet<String> superSupportedTypeQualifiers) {
         TreeSet<String> result = new TreeSet<>(superSupportedTypeQualifiers);
-        result.add(SUPPRESS_ALL_KEY); // Is this always already in superSupportedTypeQualifiers?
 
         Set<Class<? extends Annotation>> annos =
                 ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
@@ -54,7 +54,7 @@ public final class SubtypingChecker extends BaseTypeChecker {
     }
 
     @Override
-    public Collection<String> getSuppressWarningsKeys() {
-        return getSuppressWarningsKeys(this.visitor, super.getSuppressWarningsKeys());
+    public SortedSet<String> getSuppressWarningsPrefixes() {
+        return getSuppressWarningsPrefixes(this.visitor, super.getSuppressWarningsPrefixes());
     }
 }

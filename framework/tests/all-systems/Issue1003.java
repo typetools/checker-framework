@@ -3,7 +3,7 @@
 
 // The fact that M extends Issue1003 is unimportant,
 // I'm just doing this to wrap it up into a single class example:
-class Issue1003<M extends Issue1003> {
+public class Issue1003<M extends Issue1003> {
     public int field = 0;
 
     public M getFoo() {

@@ -49,6 +49,7 @@ import org.checkerframework.checker.i18n.qual.*;
 }
 
 // Testing Rule 2 (Issue type cast warning if constuctor declaration type <: invocation type)
+@SuppressWarnings("anno.on.irrelevant")
 class Issue2163FinalAAClient {
     void test() {
         new @UnknownLocalizableKey Issue2163FinalAA();
@@ -60,6 +61,7 @@ class Issue2163FinalAAClient {
 }
 
 // Testing Default
+@SuppressWarnings("anno.on.irrelevant")
 class Issue2163FinalBCClient {
     @LocalizableKeyBottom Issue2163FinalBC obj = new Issue2163FinalBC();
 }

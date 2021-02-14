@@ -7,7 +7,7 @@ class EntryReader {
     public EntryReader() throws IOException {}
 }
 
-class TryCatch {
+public class TryCatch {
     void constructorException() throws IOException {
         List<Exception> file_errors = new ArrayList<>();
         try {
@@ -22,8 +22,20 @@ class TryCatch {
         t.toString();
         try {
         } catch (Throwable e) {
+            // Note that this code is dead.
             // :: error: (dereference.of.nullable)
             t.toString();
+        }
+    }
+
+    void noClassDefFoundError(@Nullable Object x) {
+        try {
+            Class cls = EntryReader.class;
+        } catch (NoClassDefFoundError e) {
+            if (x != null) {
+                // OK
+                x.toString();
+            }
         }
     }
 }

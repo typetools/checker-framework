@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class FinalVar2 {
+public class FinalVar2 {
 
     static Object method1(@Nullable Object arg) {
         final Object tmp = arg;

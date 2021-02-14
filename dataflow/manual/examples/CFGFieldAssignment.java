@@ -1,7 +1,7 @@
 class Test {
-    int f;
+  int f;
 
-    void test(Test x) {
-        x.f = 1;
-    }
+  void test(Test x) {
+    x.f = 1;
+  }
 }

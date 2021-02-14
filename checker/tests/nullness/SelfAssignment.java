@@ -3,7 +3,7 @@
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class SelfAssignment {
+public class SelfAssignment {
 
     void test(@Nullable String s) {
         assertNonNull(s);

@@ -4,15 +4,33 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
+import org.checkerframework.checker.signature.qual.BinaryNameWithoutPackage;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiersOrPrimitiveType;
+import org.checkerframework.checker.signature.qual.FieldDescriptor;
+import org.checkerframework.checker.signature.qual.FieldDescriptorForPrimitive;
+import org.checkerframework.checker.signature.qual.FieldDescriptorWithoutPackage;
+import org.checkerframework.checker.signature.qual.FqBinaryName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.Identifier;
+import org.checkerframework.checker.signature.qual.IdentifierOrPrimitiveType;
 import org.checkerframework.checker.signature.qual.InternalForm;
+import org.checkerframework.checker.signature.qual.PrimitiveType;
 import org.checkerframework.checker.signature.qual.SignatureBottom;
 import org.checkerframework.checker.signature.qual.SignatureUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -20,9 +38,11 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.reflection.SignatureRegexes;
 
 // TODO: Does not yet handle method signature annotations, such as
 // @MethodDescriptor.
@@ -42,22 +62,37 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@literal @}{@link DotSeparatedIdentifiers} annotation. */
     protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS =
             AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
+    /** The {@literal @}{@link CanonicalName} annotation. */
+    protected final AnnotationMirror CANONICAL_NAME =
+            AnnotationBuilder.fromClass(elements, CanonicalName.class);
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar =
             TreeUtils.getMethod(
-                    java.lang.String.class.getName(), "replace", processingEnv, "char", "char");
+                    java.lang.String.class.getCanonicalName(),
+                    "replace",
+                    processingEnv,
+                    "char",
+                    "char");
 
     /** The {@link String#replace(CharSequence, CharSequence)} method. */
     private final ExecutableElement replaceCharSequenceCharSequence =
             TreeUtils.getMethod(
-                    java.lang.String.class.getName(),
+                    java.lang.String.class.getCanonicalName(),
                     "replace",
                     processingEnv,
                     "java.lang.CharSequence",
                     "java.lang.CharSequence");
 
-    /** Creates a SignatureAnnotatedTypeFactory. */
+    /** The {@link Class#getName()} method. */
+    private final ExecutableElement classGetName =
+            TreeUtils.getMethod(java.lang.Class.class.getCanonicalName(), "getName", processingEnv);
+
+    /**
+     * Creates a SignatureAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker assocated with this type factory
+     */
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -71,7 +106,83 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(new SignatureTreeAnnotator(this), super.createTreeAnnotator());
+        // It is slightly inefficient that super also adds a LiteralTreeAnnotator, but it seems
+        // better than hard-coding the behavior of super here.
+        return new ListTreeAnnotator(
+                signatureLiteralTreeAnnotator(this),
+                new SignatureTreeAnnotator(this),
+                super.createTreeAnnotator());
+    }
+
+    /**
+     * Create a LiteralTreeAnnotator for the Signature Checker.
+     *
+     * @param atypeFactory the type factory
+     * @return a LiteralTreeAnnotator for the Signature Checker
+     */
+    private LiteralTreeAnnotator signatureLiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+        LiteralTreeAnnotator result = new LiteralTreeAnnotator(atypeFactory);
+        result.addStandardLiteralQualifiers();
+
+        // The below code achieves the same effect as writing a meta-annotation
+        //     @QualifierForLiterals(stringPatterns = "...")
+        // on each type qualifier definition.  Annotation elements cannot be computations (not even
+        // string concatenations of literal strings) and cannot be not references to compile-time
+        // constants such as effectively-final fields.  So every `stringPatterns = "..."` would have
+        // to be a literal string, which would be verbose ard hard to maintain.
+        result.addStringPattern(
+                SignatureRegexes.ArrayWithoutPackageRegex,
+                AnnotationBuilder.fromClass(elements, ArrayWithoutPackage.class));
+        result.addStringPattern(
+                SignatureRegexes.BinaryNameRegex,
+                AnnotationBuilder.fromClass(elements, BinaryName.class));
+        result.addStringPattern(
+                SignatureRegexes.BinaryNameOrPrimitiveTypeRegex,
+                AnnotationBuilder.fromClass(elements, BinaryNameOrPrimitiveType.class));
+        result.addStringPattern(
+                SignatureRegexes.BinaryNameWithoutPackageRegex,
+                AnnotationBuilder.fromClass(elements, BinaryNameWithoutPackage.class));
+        result.addStringPattern(
+                SignatureRegexes.ClassGetNameRegex,
+                AnnotationBuilder.fromClass(elements, ClassGetName.class));
+        result.addStringPattern(
+                SignatureRegexes.ClassGetSimpleNameRegex,
+                AnnotationBuilder.fromClass(elements, ClassGetSimpleName.class));
+        result.addStringPattern(
+                SignatureRegexes.DotSeparatedIdentifiersRegex,
+                AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class));
+        result.addStringPattern(
+                SignatureRegexes.DotSeparatedIdentifiersOrPrimitiveTypeRegex,
+                AnnotationBuilder.fromClass(
+                        elements, DotSeparatedIdentifiersOrPrimitiveType.class));
+        result.addStringPattern(
+                SignatureRegexes.FieldDescriptorRegex,
+                AnnotationBuilder.fromClass(elements, FieldDescriptor.class));
+        result.addStringPattern(
+                SignatureRegexes.FieldDescriptorForPrimitiveRegex,
+                AnnotationBuilder.fromClass(elements, FieldDescriptorForPrimitive.class));
+        result.addStringPattern(
+                SignatureRegexes.FieldDescriptorWithoutPackageRegex,
+                AnnotationBuilder.fromClass(elements, FieldDescriptorWithoutPackage.class));
+        result.addStringPattern(
+                SignatureRegexes.FqBinaryNameRegex,
+                AnnotationBuilder.fromClass(elements, FqBinaryName.class));
+        result.addStringPattern(
+                SignatureRegexes.FullyQualifiedNameRegex,
+                AnnotationBuilder.fromClass(elements, FullyQualifiedName.class));
+        result.addStringPattern(
+                SignatureRegexes.IdentifierRegex,
+                AnnotationBuilder.fromClass(elements, Identifier.class));
+        result.addStringPattern(
+                SignatureRegexes.IdentifierOrPrimitiveTypeRegex,
+                AnnotationBuilder.fromClass(elements, IdentifierOrPrimitiveType.class));
+        result.addStringPattern(
+                SignatureRegexes.InternalFormRegex,
+                AnnotationBuilder.fromClass(elements, InternalForm.class));
+        result.addStringPattern(
+                SignatureRegexes.PrimitiveTypeRegex,
+                AnnotationBuilder.fromClass(elements, PrimitiveType.class));
+        return result;
     }
 
     private class SignatureTreeAnnotator extends TreeAnnotator {
@@ -102,11 +213,18 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * String.replace, when called with specific constant arguments, converts between internal
-         * form and binary name.
+         * form and binary name:
          *
          * <pre><code>
          * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');
          * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
+         * </code></pre>
+         *
+         * Class.getName sometimes returns a binary name (which is more specific than its
+         * annotation, which is ClassGetName:
+         *
+         * <pre><code>
+         * {@literal @}BinaryName String binaryName = MyClass.class.getName();
          * </code></pre>
          */
         @Override
@@ -147,6 +265,20 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(BINARY_NAME);
                 }
             }
+
+            if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)) {
+                ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+                if (TreeUtils.isClassLiteral(receiver)) {
+                    ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
+                    if (classExpr.getKind() == Tree.Kind.IDENTIFIER
+                            || (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE
+                                    && ((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
+                                            != TypeKind.VOID)) {
+                        type.replaceAnnotation(BINARY_NAME);
+                    }
+                }
+            }
+
             return super.visitMethodInvocation(tree, type);
         }
     }
