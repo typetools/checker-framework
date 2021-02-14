@@ -1,4 +1,3 @@
-import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
 public class Equal {
