@@ -57,8 +57,10 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
             AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
             if (factory.isMapContainsKey(node)) {
+                // method is Map.containsKey
                 result.getThenStore().insertValue(keyExpr, am);
-            } else { // method is Map.put
+            } else {
+                // method is Map.put
                 result.getThenStore().insertValue(keyExpr, am);
                 result.getElseStore().insertValue(keyExpr, am);
             }
