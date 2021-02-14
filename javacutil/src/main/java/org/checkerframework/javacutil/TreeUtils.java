@@ -315,6 +315,7 @@ public final class TreeUtils {
      * @param node a method call
      * @return the ExecutableElement for the called method
      */
+    @Pure
     public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
@@ -332,6 +333,7 @@ public final class TreeUtils {
      * @return the ExecutableElement for the called constructor
      * @see #constructor(NewClassTree)
      */
+    @Pure
     public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
