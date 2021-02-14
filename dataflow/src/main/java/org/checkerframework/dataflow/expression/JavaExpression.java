@@ -99,7 +99,7 @@ public abstract class JavaExpression {
     /**
      * Returns true if all the expressions in the list are deterministic.
      *
-     * @param list the list in which to search for a match
+     * @param list the list whose elements to test
      * @param provider an annotation provider (a type factory)
      * @return true if all the expressions in the list are deterministic
      */
@@ -588,10 +588,10 @@ public abstract class JavaExpression {
     ///
 
     /**
-     * Returns the receiver of ele, whether explicit or implicit.
+     * Returns the receiver of the given invocation
      *
      * @param accessTree method or constructor invocation
-     * @return the receiver of ele, whether explicit or implicit
+     * @return the receiver of the given invocation
      */
     public static JavaExpression getReceiver(ExpressionTree accessTree) {
         // TODO: Handle field accesses too?
