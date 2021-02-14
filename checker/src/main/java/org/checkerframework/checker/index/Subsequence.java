@@ -59,6 +59,7 @@ public class Subsequence {
      * Factory method to create a represontation of a subsequence.
      *
      * @param hasSub {@link HasSubsequence} annotation or null
+     * @param context the parsing context
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
