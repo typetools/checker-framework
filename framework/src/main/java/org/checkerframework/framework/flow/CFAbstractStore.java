@@ -315,6 +315,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Like {@link #insertValue(JavaExpression, AnnotationMirror)}, but permits nondeterministic
      * expressions to be stored.
      *
+     * <p>For an explanation of when to permit nondeterministic expressions, see {@link
+     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue}}.
+     *
      * @param expr an expression
      * @param a an annotation for the expression
      */
@@ -349,6 +352,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Like {@link #insertOrRefine(JavaExpression, AnnotationMirror)}, but permits nondeterministic
      * expressions to be inserted.
+     *
+     * <p>For an explanation of when to permit nondeterministic expressions, see {@link
+     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue}}.
      *
      * @param expr an expression
      * @param newAnno the expression's annotation
@@ -443,6 +449,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Like {@link #insertValue(JavaExpression, CFAbstractValue)}, but updates the store even if
      * {@code expr} is nondeterministic.
+     *
+     * <p>Usually, nondeterministic JavaExpressions should not be stored in a Store. For example, in
+     * the body of {@code if (nondet() == 3) {...}}, the store should not record that the value of
+     * {@code nondet()} is 3, because it might not be 3 the next time {@code nondet()} is executed.
+     *
+     * <p>However, contracts can mention a nondeterministic JavaExpression. For example, a contract
+     * might have a postcondition that{@code nondet()} is odd. This means that the next call
+     * to{@code nondet()} will return odd. Such a postcondition may be evicted from the store by
+     * calling a side-effecting method.
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
