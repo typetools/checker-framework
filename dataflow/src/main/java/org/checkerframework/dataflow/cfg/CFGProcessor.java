@@ -170,13 +170,21 @@ public class CFGProcessor extends BasicTypeProcessor {
             return isSuccess;
         }
 
-        /** Get the generated control flow graph. */
+        /**
+         * Returns the generated control flow graph.
+         *
+         * @return the generated control flow graph
+         */
         @Pure
         public @Nullable ControlFlowGraph getCFG() {
             return controlFlowGraph;
         }
 
-        /** Get the error message. */
+        /**
+         * Returns the error message.
+         *
+         * @return the error message
+         */
         @Pure
         public @Nullable String getErrMsg() {
             return errMsg;
