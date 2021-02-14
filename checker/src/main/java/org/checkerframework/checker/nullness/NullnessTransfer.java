@@ -109,6 +109,9 @@ public class NullnessTransfer
     /**
      * Sets a given {@link Node} to non-null in the given {@code store}. Calls to this method
      * implement case 2.
+     *
+     * @param store the store to update
+     * @param node the node that should be non-null
      */
     protected void makeNonNull(NullnessStore store, Node node) {
         JavaExpression internalRepr = JavaExpression.fromNode(node);

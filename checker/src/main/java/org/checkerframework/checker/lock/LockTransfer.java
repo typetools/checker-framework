@@ -40,13 +40,23 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
         this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
-    /** Sets a given {@link Node} to @LockHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockHeld in the given {@code store}.
+     *
+     * @param store the store to update
+     * @param node the node that should be @LockHeld
+     */
     protected void makeLockHeld(LockStore store, Node node) {
         JavaExpression internalRepr = JavaExpression.fromNode(node);
         store.insertValue(internalRepr, atypeFactory.LOCKHELD);
     }
 
-    /** Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}.
+     *
+     * @param store the store to update
+     * @param node the node that should be @LockPossiblyHeld
+     */
     protected void makeLockPossiblyHeld(LockStore store, Node node) {
         JavaExpression internalRepr = JavaExpression.fromNode(node);
 

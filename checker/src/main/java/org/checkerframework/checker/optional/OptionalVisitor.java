@@ -208,7 +208,13 @@ public class OptionalVisitor
         }
     }
 
-    /** Return true if the two trees represent the same expression. */
+    /**
+     * Returns true if the two trees represent the same expression.
+     *
+     * @param tree1 the first tree
+     * @param tree2 the second tree
+     * @return true if the two trees represent the same expression
+     */
     private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
         JavaExpression r1 = JavaExpression.fromTree(tree1);
         JavaExpression r2 = JavaExpression.fromTree(tree1);

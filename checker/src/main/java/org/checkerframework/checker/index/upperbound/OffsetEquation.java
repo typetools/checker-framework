@@ -426,6 +426,15 @@ public class OffsetEquation {
         return eq;
     }
 
+    /**
+     * Updates an offset equation from a Node.
+     *
+     * @param node the Node from which to create an offset equation
+     * @param factory an AnnotationTypeFactory
+     * @param eq an OffsetEquation to update
+     * @param op '+' or '-'
+     * @return an offset equation from the Node
+     */
     private static void createOffsetFromNode(
             Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
         JavaExpression je = JavaExpression.fromNode(node);

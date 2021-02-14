@@ -541,6 +541,11 @@ public class ValueTransfer extends CFTransfer {
     /**
      * Transform @IntVal or @IntRange annotations of a array or string length into an @ArrayLen
      * or @ArrayLenRange annotation for the array or string.
+     *
+     * @param lengthNode an invocation of method {@code length} or an access of the {@code length}
+     *     field
+     * @param receiverNode the receiver of {@code lengthNode}
+     * @param store the store to update
      */
     private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
         JavaExpression lengthExpr = JavaExpression.fromNode(lengthNode);

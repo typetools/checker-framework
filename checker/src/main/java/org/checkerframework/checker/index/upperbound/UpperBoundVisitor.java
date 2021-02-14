@@ -147,6 +147,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * Checks if this array access is legal. Uses the common assignment check and a simple MinLen
      * check of its own. The MinLen check is needed because the common assignment check always
      * returns false when the upper bound qualifier is @UpperBoundUnknown.
+     *
+     * @param indexTree the array index
+     * @param arrTree the array
      */
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
 

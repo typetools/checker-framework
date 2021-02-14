@@ -316,7 +316,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * expressions to be stored.
      *
      * <p>For an explanation of when to permit nondeterministic expressions, see {@link
-     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue}}.
+     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue)}.
      *
      * @param expr an expression
      * @param a an annotation for the expression
@@ -354,7 +354,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * expressions to be inserted.
      *
      * <p>For an explanation of when to permit nondeterministic expressions, see {@link
-     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue}}.
+     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue)}.
      *
      * @param expr an expression
      * @param newAnno the expression's annotation
@@ -695,6 +695,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
+     * @param n the node whose abstract value to return
      * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
@@ -735,6 +736,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
+     * @param n the node whose abstract value to return
      * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
@@ -743,7 +745,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return arrayValues.get(arrayAccess);
     }
 
-    /** Update the information in the store by considering an assignment with target {@code n}. */
+    /**
+     * Update the information in the store by considering an assignment with target {@code n}.
+     *
+     * @param n the left-hand side of an assignment
+     * @param val the right-hand value of an assignment
+     */
     public void updateForAssignment(Node n, @Nullable V val) {
         JavaExpression je = JavaExpression.fromNode(n);
         if (je instanceof ArrayAccess) {

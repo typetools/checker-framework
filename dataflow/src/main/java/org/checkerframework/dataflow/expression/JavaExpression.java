@@ -225,6 +225,7 @@ public abstract class JavaExpression {
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      * The result may contain {@link Unknown} as receiver.
      *
+     * @param node the FieldAccessNode to convert to a JavaExpression
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
@@ -243,6 +244,7 @@ public abstract class JavaExpression {
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      * The result may contain {@link Unknown} as receiver.
      *
+     * @param node the ArrayAccessNode to convert to a JavaExpression
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
