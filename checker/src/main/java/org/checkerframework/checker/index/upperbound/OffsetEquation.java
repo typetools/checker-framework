@@ -433,7 +433,6 @@ public class OffsetEquation {
      * @param factory an AnnotationTypeFactory
      * @param eq an OffsetEquation to update
      * @param op '+' or '-'
-     * @return an offset equation from the Node
      */
     private static void createOffsetFromNode(
             Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
