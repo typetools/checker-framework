@@ -12,6 +12,9 @@ Nullness Checker error message key changes:
 
 **Implementation details:**
 
+You can make a variable's default type depend on the variable's name.
+`@DefaultFor` has new elements `variableNames` and `variableNamesExceptions`.
+
 Changes to protected fields in `OverrideChecker`:
  * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
  * Renamed `methodReference` => `isMethodReference`
@@ -580,12 +583,6 @@ Removed the @PolyAll annotation.
 **Closed issues:**
 #1169, #1654, #2081, #2703, #2739, #2749, #2779, #2781, #2798, #2820, #2824,
 #2829, #2842, #2845, #2848.
-
----------------------------------------------------------------------------
-
-Version 3.0, November 1, 2019
-
-@DefaultFor has new elements variableNames and variableNamesExceptions.
 
 ---------------------------------------------------------------------------
 

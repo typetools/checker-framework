@@ -50,12 +50,19 @@ public @interface DefaultFor {
     Class<?>[] types() default {};
 
     /**
-     * @return regular expressions matching variables to whose type an annotation should be applied.
-     *     A variable uses this default if it matches at least one of these regular expressions, and
-     *     it matches none of the exceptions in {@link #variableNamesExceptions}.
+     * Returns regular expressions matching variables to whose type an annotation should be applied.
+     * A variable uses this default if it matches at least one of these regular expressions, and it
+     * matches none of the exceptions in {@link #variableNamesExceptions}.
+     *
+     * @return regular expressions matching variables to whose type an annotation should be applied
      */
     String[] variableNames() default {};
 
-    /** @return exceptions to regular exception rules. See {@link #variableNames}. */
+    /**
+     * Returns exceptions to regular exception rules.
+     *
+     * @return exceptions to regular exception rules
+     * @see #variableNames
+     */
     String[] variableNamesExceptions() default {};
 }
