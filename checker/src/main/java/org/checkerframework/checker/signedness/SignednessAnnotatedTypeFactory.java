@@ -255,6 +255,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
+         *
+         * @param type a type to change the annotation of, if it is boolean
          */
         private void annotateBooleanAsUnknownSignedness(AnnotatedTypeMirror type) {
             switch (type.getKind()) {
