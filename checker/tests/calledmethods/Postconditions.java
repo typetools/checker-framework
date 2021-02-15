@@ -93,6 +93,7 @@ public class Postconditions {
         try {
             p.a();
             throw new java.io.IOException();
-        } catch (java.io.IOException e) { }
+        } catch (java.io.IOException e) {
+        }
     }
 }

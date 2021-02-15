@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -335,6 +336,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     /** The Throwable type. */
     final TypeMirror throwableType;
 
+    /** Types to capture unchecked exceptions. */
+    final Set<TypeMirror> uncheckedExceptionTypes;
+
     /**
      * @param treeBuilder builder for new AST nodes
      * @param annotationProvider extracts annotations from AST nodes
@@ -391,6 +395,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         noClassDefFoundErrorType = getTypeMirror(NoClassDefFoundError.class);
         stringType = getTypeMirror(String.class);
         throwableType = getTypeMirror(Throwable.class);
+        uncheckedExceptionTypes = new LinkedHashSet<>();
+        uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
+        uncheckedExceptionTypes.add(getTypeMirror(Error.class));
     }
 
     /**
@@ -743,8 +750,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             boxed.setInSource(false);
             // Add Throwable to account for unchecked exceptions
             addToConvertedLookupMap(node.getTree(), boxed);
-            insertNodeWithExceptionsAfter(
-                    boxed, Collections.singleton(throwableType), valueOfAccess);
+            insertNodeWithExceptionsAfter(boxed, uncheckedExceptionTypes, valueOfAccess);
             return boxed;
         } else {
             return node;
@@ -782,8 +788,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
             // Add Throwable to account for unchecked exceptions
             addToConvertedLookupMap(node.getTree(), unboxed);
-            insertNodeWithExceptionsAfter(
-                    unboxed, Collections.singleton(throwableType), primValueAccess);
+            insertNodeWithExceptionsAfter(unboxed, uncheckedExceptionTypes, primValueAccess);
             return unboxed;
         } else {
             return node;
@@ -1344,8 +1349,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         // Add exceptions explicitly mentioned in the throws clause.
         List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
         thrownSet.addAll(thrownTypes);
-        // Add Throwable to account for unchecked exceptions
-        thrownSet.add(throwableType);
+        // Add types to account for unchecked exceptions
+        thrownSet.addAll(uncheckedExceptionTypes);
 
         ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
@@ -2946,8 +2951,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         // Add exceptions explicitly mentioned in the throws clause.
         List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
         thrownSet.addAll(thrownTypes);
-        // Add Throwable to account for unchecked exceptions
-        thrownSet.add(throwableType);
+        // Add types to account for unchecked exceptions
+        thrownSet.addAll(uncheckedExceptionTypes);
 
         extendWithNodeWithExceptions(node, thrownSet);
 
