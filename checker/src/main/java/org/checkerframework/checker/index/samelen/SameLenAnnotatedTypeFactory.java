@@ -35,7 +35,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -118,27 +117,17 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (tree.getKind() == Tree.Kind.VARIABLE) {
             AnnotationMirror anm = atm.getAnnotation(SameLen.class);
             if (anm != null) {
+                JavaExpression je = JavaExpression.fromVariableTree((VariableTree) tree);
+                String varName = je.toString();
 
-                JavaExpression je;
-                try {
-                    je = JavaExpressionParseUtil.fromVariableTree(this, (VariableTree) tree);
-                } catch (JavaExpressionParseException ex) {
-                    je = null;
+                List<String> exprs = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
+                if (exprs.contains(varName)) {
+                    exprs.remove(varName);
                 }
-
-                if (je != null) {
-                    String varName = je.toString();
-
-                    List<String> exprs =
-                            ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
-                    if (exprs.contains(varName)) {
-                        exprs.remove(varName);
-                    }
-                    if (exprs.isEmpty()) {
-                        atm.replaceAnnotation(UNKNOWN);
-                    } else {
-                        atm.replaceAnnotation(createSameLen(exprs));
-                    }
+                if (exprs.isEmpty()) {
+                    atm.replaceAnnotation(UNKNOWN);
+                } else {
+                    atm.replaceAnnotation(createSameLen(exprs));
                 }
             }
         }

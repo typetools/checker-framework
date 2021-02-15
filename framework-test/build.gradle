@@ -6,7 +6,7 @@ sourceSets {
 }
 
 dependencies {
-    implementation  group: 'junit', name: 'junit', version: '4.13.1'
+    implementation  group: 'junit', name: 'junit', version: '4.13.2'
     implementation project(':javacutil')
     implementation project(':checker-qual')
 

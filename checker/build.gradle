@@ -46,7 +46,7 @@ dependencies {
     // The AWS SDK is used for testing the Called Methods Checker.
     testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
 
-    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
@@ -292,9 +292,9 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 }
 
 // JSpecify tests are excluded by default.  To run them:
-// ./gradlew NullnessJspecifySamplesTest
+// ./gradlew NullnessJSpecifySamplesTest
 test {
-    exclude '**/org/checkerframework/checker/test/junit/NullnessJspecifySamplesTest.class'
+    exclude '**/org/checkerframework/checker/test/junit/NullnessJSpecifySamplesTest.class'
 }
 
 task delombok {

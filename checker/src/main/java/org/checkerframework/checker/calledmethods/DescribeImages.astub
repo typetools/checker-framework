@@ -18,9 +18,17 @@ class AmazonEC2Client {
     DescribeImagesRequest request);
 }
 
-// Another alternate implementation
+// Async interface
+class AmazonEC2Async {
+    DescribeImagesResult describeImagesAsync(
+    // The receiver must have its owner, imageId, or executable user set, either via the "wither" or "setter" methods.
+    @CalledMethodsPredicate("(withOwners || setOwners) || (withImageIds || setImageIds) || (withExecutableUsers || setExecutableUsers)")
+    DescribeImagesRequest request);
+}
+
+// The main async implementation class
 class AmazonEC2AsyncClient {
-    DescribeImagesResult describeImages(
+    DescribeImagesResult describeImagesAsync(
     // any combination of withX/setX has to be permitted if an owner has been set or an imageId has been set
     @CalledMethodsPredicate("(withOwners || setOwners) || (withImageIds || setImageIds) || (withExecutableUsers || setExecutableUsers)")
     DescribeImagesRequest request);

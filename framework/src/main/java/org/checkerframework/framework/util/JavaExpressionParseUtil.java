@@ -35,6 +35,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -78,7 +80,6 @@ import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -353,45 +354,14 @@ public class JavaExpressionParseUtil {
             }
 
             // Field access
-            TypeMirror receiverType = context.receiver.getType();
-            // isOriginalReceiver is true if receiverType has not been reassigned.
-            boolean isOriginalReceiver = true;
-            VariableElement fieldElem = null;
-            if (s.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
-                fieldElem = resolver.findField(s, receiverType, annotatedConstruct);
-            }
-            if (fieldElem == null) {
-                // Search for field in each enclosing class.
-                while (receiverType.getKind() == TypeKind.DECLARED) {
-                    fieldElem = resolver.findField(s, receiverType, annotatedConstruct);
-                    if (fieldElem != null) {
-                        break;
-                    }
-                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-                    isOriginalReceiver = false;
-                }
-            }
-            if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
-                FieldAccess fieldAccess =
-                        getFieldJavaExpression(fieldElem, context, isOriginalReceiver);
-                TypeElement scopeClassElement =
-                        TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
-                if (!isOriginalReceiver
-                        && !ElementUtils.isStatic(fieldElem)
-                        && ElementUtils.isStatic(scopeClassElement)) {
-                    throw new ParseRuntimeException(
-                            constructJavaExpressionParseError(
-                                    s,
-                                    "a non-static field can't be referenced from a static inner class or enum"));
-                }
+            FieldAccess fieldAccess = getIdentifierAsField(context, s);
+            if (fieldAccess != null) {
                 return fieldAccess;
             }
 
-            // Class name
-            Element classElem = resolver.findClass(s, annotatedConstruct);
-            TypeMirror classType = ElementUtils.getType(classElem);
+            ClassName classType = getIdentifierAsClassName(context, s);
             if (classType != null) {
-                return new ClassName(classType);
+                return classType;
             }
 
             // Err if a formal parameter name is used, instead of the "#2" syntax.
@@ -413,6 +383,138 @@ public class JavaExpressionParseUtil {
 
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(s, "identifier not found"));
+        }
+
+        /**
+         * If {@code identifier} is a unqualified class name, return the {@link ClassName}. If not,
+         * return null.
+         *
+         * <p>If {@code context.useLocalScope} is false, then the only classes that may be used
+         * without qualification are:
+         *
+         * <ol>
+         *   <li>the type of "this" in this context
+         *   <li>a type declared in "this" or in an enclosing type of "this"
+         *   <li>a type in the java.lang package
+         *   <li>a type in the unnamed package
+         * </ol>
+         *
+         * @param context JavaExpressionContext
+         * @param identifier possible class name
+         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name.
+         */
+        protected @Nullable ClassName getIdentifierAsClassName(
+                JavaExpressionContext context, String identifier) {
+            if (!context.parsingMember && context.useLocalScope) {
+                Element classElem = resolver.findClass(identifier, annotatedConstruct);
+                TypeMirror classType = ElementUtils.getType(classElem);
+                if (classType != null) {
+                    return new ClassName(classType);
+                }
+            }
+
+            // Is identifier an inner class of this or of any enclosing class of this?
+            TypeMirror searchType = context.receiver.getType();
+            while (searchType.getKind() == TypeKind.DECLARED) {
+                // Is identifier the simple name of this?
+                if (((DeclaredType) searchType)
+                        .asElement()
+                        .getSimpleName()
+                        .contentEquals(identifier)) {
+                    return new ClassName(searchType);
+                }
+                Element classElem =
+                        resolver.findNestedClassInType(identifier, searchType, annotatedConstruct);
+                if (classElem != null) {
+                    TypeMirror classType = ElementUtils.getType(classElem);
+                    return new ClassName(classType);
+                }
+                searchType = getTypeOfEnclosingClass((DeclaredType) searchType);
+            }
+            if (context.receiver.getType().getKind() == TypeKind.DECLARED) {
+                // Is identifier in the same package as this?
+                PackageSymbol packageSymbol =
+                        (PackageSymbol)
+                                ElementUtils.enclosingPackage(
+                                        ((DeclaredType) context.receiver.getType()).asElement());
+                ClassSymbol classSymbol =
+                        resolver.findClassInPackage(identifier, packageSymbol, annotatedConstruct);
+                if (classSymbol != null) {
+                    return new ClassName(classSymbol.asType());
+                }
+            }
+            // Is identifier a simple name for a class in java.lang?
+            Symbol.PackageSymbol packageSymbol =
+                    resolver.findPackage("java.lang", annotatedConstruct);
+            if (packageSymbol != null) {
+                ClassSymbol classSymbol =
+                        resolver.findClassInPackage(identifier, packageSymbol, annotatedConstruct);
+                if (classSymbol != null) {
+                    return new ClassName(classSymbol.asType());
+                }
+            }
+
+            // Is identifier a class in the unnamed package?
+            Element classElem = resolver.findClass(identifier, annotatedConstruct);
+            if (classElem != null) {
+                PackageElement pkg = ElementUtils.enclosingPackage(classElem);
+                if (pkg != null && pkg.isUnnamed()) {
+                    TypeMirror classType = ElementUtils.getType(classElem);
+                    if (classType != null) {
+                        return new ClassName(classType);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * If {@code identifier} is a field name, then return the {@link FieldAccess} corresponding
+         * to using that field at the given {@code context}. If {@code identifier} is not a field
+         * name, this method returns null.
+         *
+         * @param context {@link JavaExpressionContext}
+         * @param identifier possibly a field name
+         * @return a field access, or null if {@code identifier} is not a field
+         */
+        protected @Nullable FieldAccess getIdentifierAsField(
+                JavaExpressionContext context, String identifier) {
+            TypeMirror receiverType = context.receiver.getType();
+            // isOriginalReceiver is true if receiverType has not been reassigned.
+            boolean isOriginalReceiver = true;
+            VariableElement fieldElem = null;
+            if (identifier.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
+                fieldElem = resolver.findField(identifier, receiverType, annotatedConstruct);
+            }
+            if (fieldElem == null) {
+                // Search for field in each enclosing class.
+                while (receiverType.getKind() == TypeKind.DECLARED) {
+                    fieldElem = resolver.findField(identifier, receiverType, annotatedConstruct);
+                    if (fieldElem != null) {
+                        break;
+                    }
+                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                    isOriginalReceiver = false;
+                }
+            }
+            if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
+                FieldAccess fieldAccess =
+                        getFieldJavaExpression(fieldElem, context, isOriginalReceiver);
+                TypeElement scopeClassElement =
+                        TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
+                if (!isOriginalReceiver
+                        && !ElementUtils.isStatic(fieldElem)
+                        && ElementUtils.isStatic(scopeClassElement)) {
+                    throw new ParseRuntimeException(
+                            constructJavaExpressionParseError(
+                                    identifier,
+                                    "a non-static field can't be referenced from a static inner class or enum"));
+                }
+                return fieldAccess;
+            }
+
+            return null;
         }
 
         @Override
@@ -894,6 +996,21 @@ public class JavaExpressionParseUtil {
         return result;
     }
 
+    /**
+     * Returns the 1-based index of the formal parameter that occurs in {@code s} or -1 if no formal
+     * parameter occurs.
+     *
+     * @param s a Java expression
+     * @return the 1-based indices of the formal parameter that occur in {@code s} or -1
+     */
+    public static int parameterIndex(String s) {
+        Matcher matcher = ANCHORED_PARAMETER_PATTERN.matcher(s);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return -1;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     /// Contexts
     ///
@@ -1233,34 +1350,6 @@ public class JavaExpressionParseUtil {
         } else {
             return type.getEnclosingType();
         }
-    }
-
-    /**
-     * Get a JavaExpression from a VariableTree.
-     *
-     * @param provider gives the context
-     * @param tree the VariableTree
-     * @return a JavaExpression for the given VariableTree
-     * @throws JavaExpressionParseException if the expression string cannot be parsed
-     */
-    public static JavaExpression fromVariableTree(AnnotatedTypeFactory provider, VariableTree tree)
-            throws JavaExpressionParseException {
-        Element elt = TreeUtils.elementFromDeclaration(tree);
-
-        if (elt.getKind() == ElementKind.LOCAL_VARIABLE
-                || elt.getKind() == ElementKind.RESOURCE_VARIABLE
-                || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
-                || elt.getKind() == ElementKind.PARAMETER) {
-            return new LocalVariable(elt);
-        }
-        JavaExpression receiverJe = JavaExpression.getImplicitReceiver(elt);
-        JavaExpressionContext context =
-                new JavaExpressionContext(receiverJe, /*arguments=*/ null, provider.getChecker());
-        return parse(
-                tree.getName().toString(),
-                context,
-                provider.getPath(tree),
-                /*useLocalScope=*/ false);
     }
 
     ///////////////////////////////////////////////////////////////////////////

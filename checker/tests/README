@@ -23,7 +23,14 @@ Other Gradle tasks also exist to run a subset of the tests; for example,
 How to run just one test for the Checker Framework
 ==================================================
 
-To run an individual test (check one source code file),
+To run a subset of the JUnit tests, use Gradle's --tests command-line
+argument, from a project directory such as checker/, dataflow/, or
+framework/:
+
+  cd $CHECKERFRAMEWORK/checker
+  ../gradlew test --tests '*ParseAllJdkTest'
+
+To check one source code file,
 do something like the following, assuming that the source code
 file to be checked is AssertNonNullTest.java in directory
 $CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
