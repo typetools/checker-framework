@@ -2343,10 +2343,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     /**
      * Cast {@code javaParserNode} to type {@code type} and return it.
      *
+     * @param <T> the type of {@code type}
      * @param type the type to cast to
      * @param javaParserNode the object to cast
      * @param javacTree the javac tree that corresponds to {@code javaParserNode}; used only for
      *     error reporting
+     * @return javaParserNode, casted to {@code type}
      */
     public <T> T castNode(Class<T> type, Node javaParserNode, Tree javacTree) {
         if (type.isInstance(javaParserNode)) {
