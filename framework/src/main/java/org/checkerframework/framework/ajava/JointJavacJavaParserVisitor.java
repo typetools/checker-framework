@@ -213,11 +213,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ArrayAccessExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ArrayAccessExpr.class);
-        }
-
-        ArrayAccessExpr node = (ArrayAccessExpr) javaParserNode;
+        ArrayAccessExpr node = castNode(ArrayAccessExpr.class, javaParserNode, javacTree);
         processArrayAccess(javacTree, node);
         javacTree.getExpression().accept(this, node.getName());
         javacTree.getIndex().accept(this, node.getIndex());
@@ -2342,6 +2338,22 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         for (Tree tree : javacTrees) {
             tree.accept(this, nodeIter.next());
         }
+    }
+
+    /**
+     * Cast {@code javaParserNode} to type {@code type} and return it.
+     *
+     * @param type the type to cast to
+     * @param javaParserNode the object to cast
+     * @param javacTree the javac tree that corresponds to {@code javaParserNode}; used only for
+     *     error reporting
+     */
+    public <T> T castNode(Class<T> type, Node javaParserNode, Tree javacTree) {
+        if (type.isInstance(javaParserNode)) {
+            return type.cast(javaParserNode);
+        }
+        throwUnexpectedNodeType(javacTree, javaParserNode, type);
+        throw new BugInCF("unreachable");
     }
 
     /**
