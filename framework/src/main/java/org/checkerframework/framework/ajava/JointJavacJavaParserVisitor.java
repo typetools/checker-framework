@@ -146,6 +146,7 @@ import com.sun.source.tree.WildcardTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -245,11 +246,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         AssertStmt node = (AssertStmt) javaParserNode;
         processAssert(javacTree, node);
         javacTree.getCondition().accept(this, node.getCheck());
-        ExpressionTree detail = javacTree.getDetail();
-        assert (detail != null) == node.getMessage().isPresent();
-        if (detail != null) {
-            detail.accept(this, node.getMessage().get());
-        }
+        visitOptional(javacTree.getDetail(), node.getMessage());
 
         return null;
     }
@@ -2341,6 +2338,19 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         Iterator<? extends Node> nodeIter = javaParserNodes.iterator();
         for (Tree tree : javacTrees) {
             tree.accept(this, nodeIter.next());
+        }
+    }
+
+    /**
+     * Visit an optional syntax construct.
+     *
+     * @param javacTree a javac tree or null
+     * @param javaParserNode an optional JavaParser node, which might not be present
+     */
+    private void visitOptional(Tree javacTree, Optional<? extends Node> javaParserNode) {
+        assert javacTree != null == javaParserNode.isPresent();
+        if (javacTree != null) {
+            javacTree.accept(this, javaParserNode.get());
         }
     }
 
