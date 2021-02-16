@@ -278,26 +278,35 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && receiverType.getAnnotation(InternalForm.class) != null) {
                     type.replaceAnnotation(BINARY_NAME);
                 }
-            } else if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)
-                    || TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv)) {
-                ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-                if (TreeUtils.isClassLiteral(receiver)) {
-                    ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
-                    if (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                        if (((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
-                                == TypeKind.VOID) {
-                            // do nothing
+            } else {
+                boolean isClassGetName =
+                        TreeUtils.isMethodInvocation(tree, classGetName, processingEnv);
+                boolean isClassGetCanonicalName =
+                        TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv);
+                if (isClassGetName || isClassGetCanonicalName) {
+                    ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+                    if (TreeUtils.isClassLiteral(receiver)) {
+                        ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
+                        if (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                            if (((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
+                                    == TypeKind.VOID) {
+                                // do nothing
+                            } else {
+                                type.replaceAnnotation(PRIMITIVE_TYPE);
+                            }
                         } else {
-                            type.replaceAnnotation(PRIMITIVE_TYPE);
-                        }
-                    } else {
-                        // Binary name if non-array, non-primitive, non-nested.
-                        TypeMirror literalType = TreeUtils.typeOf(classExpr);
-                        if (literalType.getKind() == TypeKind.DECLARED) {
-                            TypeElement typeElt = TypesUtils.getTypeElement(literalType);
-                            Element enclosing = typeElt.getEnclosingElement();
-                            if (enclosing == null || enclosing.getKind() == ElementKind.PACKAGE) {
-                                type.replaceAnnotation(BINARY_NAME);
+                            // Binary name if non-array, non-primitive, non-nested.
+                            TypeMirror literalType = TreeUtils.typeOf(classExpr);
+                            if (literalType.getKind() == TypeKind.DECLARED) {
+                                TypeElement typeElt = TypesUtils.getTypeElement(literalType);
+                                Element enclosing = typeElt.getEnclosingElement();
+                                if (enclosing == null
+                                        || enclosing.getKind() == ElementKind.PACKAGE) {
+                                    type.replaceAnnotation(
+                                            isClassGetName
+                                                    ? BINARY_NAME
+                                                    : DOT_SEPARATED_IDENTIFIERS);
+                                }
                             }
                         }
                     }
