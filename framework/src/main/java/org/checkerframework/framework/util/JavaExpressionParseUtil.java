@@ -124,7 +124,8 @@ public class JavaExpressionParseUtil {
      * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
      *
      * @param expression a Java expression to parse
-     * @param context information about any receiver and arguments
+     * @param context information about any receiver and arguments; also has a reference to the
+     *     checker
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
@@ -133,8 +134,8 @@ public class JavaExpressionParseUtil {
         return parse(expression, context, null);
     }
     /**
-     * Parse a string and viewpoint-adapt it to the given {@code context} and {@code localPath}.
-     * Return its representation as a {@link JavaExpression}, or throw a {@link
+     * Parse a string with respect to {@code localPath} and viewpoint-adapt it to the given {@code
+     * context}. Return its representation as a {@link JavaExpression}, or throw a {@link
      * JavaExpressionParseException}.
      *
      * <p>If {@code localPath} is non-null, then identifiers are parsed as if the expression was
@@ -146,7 +147,8 @@ public class JavaExpressionParseUtil {
      * lambda.
      *
      * @param expression a Java expression to parse
-     * @param context information about any receiver and arguments
+     * @param context information about any receiver and arguments; also has a reference to the
+     *     checker
      * @param localPath if non-null, the expression is parsed as if it were written at this location
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
@@ -225,9 +227,9 @@ public class JavaExpressionParseUtil {
          * even when the information could be deduced from elements alone. So use the path to the
          * current CompilationUnit.
          */
-        private final TreePath somePath;
+        private final TreePath pathToCompilationUnit;
         /** If non-null, the expression is parsed as if it were written at this location. */
-        private final @Nullable TreePath localPath;
+        private final @Nullable TreePath localVarPath;
         /** The processing environment. */
         private final ProcessingEnvironment env;
         /** The resolver. Computed from the environment, but lazily initialized. */
@@ -241,15 +243,17 @@ public class JavaExpressionParseUtil {
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
          *
-         * @param somePath required to use the underlying Javac API
-         * @param localPath if non-null, the expression is parsed as if it were written at this
+         * @param pathToCompilationUnit required to use the underlying Javac API
+         * @param localVarPath if non-null, the expression is parsed as if it were written at this
          *     location
          * @param env the processing environment
          */
         ExpressionToJavaExpressionVisitor(
-                TreePath somePath, @Nullable TreePath localPath, ProcessingEnvironment env) {
-            this.somePath = somePath;
-            this.localPath = localPath;
+                TreePath pathToCompilationUnit,
+                @Nullable TreePath localVarPath,
+                ProcessingEnvironment env) {
+            this.pathToCompilationUnit = pathToCompilationUnit;
+            this.localVarPath = localVarPath;
             this.env = env;
             this.types = env.getTypeUtils();
             this.stringTypeMirror =
@@ -372,10 +376,10 @@ public class JavaExpressionParseUtil {
             }
 
             // Local variable or parameter.
-            if (!context.parsingMember && localPath != null) {
+            if (!context.parsingMember && localVarPath != null) {
                 // Attempt to match a local variable within the scope of the
                 // given path before attempting to match a field.
-                VariableElement varElem = resolver.findLocalVariableOrParameter(s, localPath);
+                VariableElement varElem = resolver.findLocalVariableOrParameter(s, localVarPath);
                 if (varElem != null) {
                     return new LocalVariable(varElem);
                 }
@@ -435,8 +439,8 @@ public class JavaExpressionParseUtil {
          */
         protected @Nullable ClassName getIdentifierAsClassName(
                 JavaExpressionContext context, String identifier) {
-            if (!context.parsingMember && localPath != null) {
-                Element classElem = resolver.findClass(identifier, localPath);
+            if (!context.parsingMember && localVarPath != null) {
+                Element classElem = resolver.findClass(identifier, localVarPath);
                 TypeMirror classType = ElementUtils.getType(classElem);
                 if (classType != null) {
                     return new ClassName(classType);
@@ -454,7 +458,8 @@ public class JavaExpressionParseUtil {
                     return new ClassName(searchType);
                 }
                 Element classElem =
-                        resolver.findNestedClassInType(identifier, searchType, somePath);
+                        resolver.findNestedClassInType(
+                                identifier, searchType, pathToCompilationUnit);
                 if (classElem != null) {
                     TypeMirror classType = ElementUtils.getType(classElem);
                     return new ClassName(classType);
@@ -468,23 +473,26 @@ public class JavaExpressionParseUtil {
                                 ElementUtils.enclosingPackage(
                                         ((DeclaredType) context.receiver.getType()).asElement());
                 ClassSymbol classSymbol =
-                        resolver.findClassInPackage(identifier, packageSymbol, somePath);
+                        resolver.findClassInPackage(
+                                identifier, packageSymbol, pathToCompilationUnit);
                 if (classSymbol != null) {
                     return new ClassName(classSymbol.asType());
                 }
             }
             // Is identifier a simple name for a class in java.lang?
-            Symbol.PackageSymbol packageSymbol = resolver.findPackage("java.lang", somePath);
+            Symbol.PackageSymbol packageSymbol =
+                    resolver.findPackage("java.lang", pathToCompilationUnit);
             if (packageSymbol != null) {
                 ClassSymbol classSymbol =
-                        resolver.findClassInPackage(identifier, packageSymbol, somePath);
+                        resolver.findClassInPackage(
+                                identifier, packageSymbol, pathToCompilationUnit);
                 if (classSymbol != null) {
                     return new ClassName(classSymbol.asType());
                 }
             }
 
             // Is identifier a class in the unnamed package?
-            Element classElem = resolver.findClass(identifier, somePath);
+            Element classElem = resolver.findClass(identifier, pathToCompilationUnit);
             if (classElem != null) {
                 PackageElement pkg = ElementUtils.enclosingPackage(classElem);
                 if (pkg != null && pkg.isUnnamed()) {
@@ -514,12 +522,12 @@ public class JavaExpressionParseUtil {
             boolean isOriginalReceiver = true;
             VariableElement fieldElem = null;
             if (identifier.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
-                fieldElem = resolver.findField(identifier, receiverType, somePath);
+                fieldElem = resolver.findField(identifier, receiverType, pathToCompilationUnit);
             }
             if (fieldElem == null) {
                 // Search for field in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
-                    fieldElem = resolver.findField(identifier, receiverType, somePath);
+                    fieldElem = resolver.findField(identifier, receiverType, pathToCompilationUnit);
                     if (fieldElem != null) {
                         break;
                     }
@@ -586,7 +594,7 @@ public class JavaExpressionParseUtil {
                         getMethodElement(
                                 methodName,
                                 methodContext.receiver.getType(),
-                                somePath,
+                                pathToCompilationUnit,
                                 arguments,
                                 resolver);
 
@@ -620,14 +628,6 @@ public class JavaExpressionParseUtil {
                         constructJavaExpressionParseError(expr.toString(), t.getMessage()));
             }
 
-            // TODO: reinstate this test, but issue a warning that the user
-            // can override, rather than halting parsing which the user cannot override.
-            /*if (!PurityUtils.isDeterministic(SOMEcontext.checker.getAnnotationProvider(),
-                    methodElement)) {
-                throw new JavaExpressionParseException(new DiagMessage(ERROR,
-                        "flowexpr.method.not.deterministic",
-                        methodElement.getSimpleName()));
-            }*/
             if (ElementUtils.isStatic(methodElement)) {
                 Element classElem = methodElement.getEnclosingElement();
                 JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
@@ -707,11 +707,11 @@ public class JavaExpressionParseUtil {
             setResolverField();
 
             Symbol.PackageSymbol packageSymbol =
-                    resolver.findPackage(expr.getScope().toString(), somePath);
+                    resolver.findPackage(expr.getScope().toString(), pathToCompilationUnit);
             if (packageSymbol != null) {
                 ClassSymbol classSymbol =
                         resolver.findClassInPackage(
-                                expr.getNameAsString(), packageSymbol, somePath);
+                                expr.getNameAsString(), packageSymbol, pathToCompilationUnit);
                 if (classSymbol != null) {
                     return new ClassName(classSymbol.asType());
                 }

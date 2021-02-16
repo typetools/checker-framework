@@ -30,13 +30,15 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
 
     @Override
     protected String standardizeString(
-            final String expression, JavaExpressionContext context, @Nullable TreePath localPath) {
+            final String expression,
+            JavaExpressionContext context,
+            @Nullable TreePath localVarPath) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
         JavaExpression result;
         try {
-            result = JavaExpressionParseUtil.parse(expression, context, localPath);
+            result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
