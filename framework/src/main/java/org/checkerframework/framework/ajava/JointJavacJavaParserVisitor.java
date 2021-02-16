@@ -1057,8 +1057,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         // Unlike other constructs, the javac list is non-null even if no type parameters are
         // present.
         visitLists(javacTree.getTypeParameters(), javaParserNode.getTypeParameters());
-
-        visitOptional(javacTree.getReceiverParameter(), javaParserNode.getReceiverParameter());
+        // JavaParser sometimes inserts a receiver parameter that is not present in the source code.
+        // (Example: on an explicitly-written toString for an enum class.)
+        if (javacTree.getReceiverParameter() != null
+                && javaParserNode.getReceiverParameter().isPresent()) {
+            javacTree
+                    .getReceiverParameter()
+                    .accept(this, javaParserNode.getReceiverParameter().get());
+        }
 
         visitLists(javacTree.getParameters(), javaParserNode.getParameters());
 
@@ -2311,7 +2317,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      * @param javaParserNode an optional JavaParser node, which might not be present
      */
     private void visitOptional(Tree javacTree, Optional<? extends Node> javaParserNode) {
-        assert javacTree != null == javaParserNode.isPresent();
+        assert javacTree != null == javaParserNode.isPresent()
+                : String.format("visitOptional(%s, %s)", javacTree, javaParserNode);
         if (javacTree != null) {
             javacTree.accept(this, javaParserNode.get());
         }
