@@ -19,6 +19,11 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
     /** The subsequence() element/field of a @HasSubsequence annotation. */
     protected final ExecutableElement hasSubsequenceSubsequenceElement;
 
+    /**
+     * Creates a new BaseAnnotatedTypeFactoryForIndexChecker.
+     *
+     * @param checker the checker
+     */
     public BaseAnnotatedTypeFactoryForIndexChecker(BaseTypeChecker checker) {
         super(checker);
         hasSubsequenceFromElement =
@@ -30,17 +35,32 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
                         HasSubsequence.class.getName(), "subsequence", 0, processingEnv);
     }
 
-    /** Gets the from() element/field out of a HasSubsequence annotation. */
+    /**
+     * Gets the from() element/field out of a HasSubsequence annotation.
+     *
+     * @param anno a HasSubsequence annotation
+     * @return its from() element/field
+     */
     public String hasSubsequenceFromValue(AnnotationMirror anno) {
         return (String) anno.getElementValues().get(hasSubsequenceFromElement).getValue();
     }
 
-    /** Gets the to() element/field out of a HasSubsequence annotation. */
+    /**
+     * Gets the to() element/field out of a HasSubsequence annotation.
+     *
+     * @param anno a HasSubsequence annotation
+     * @return its to() element/field
+     */
     public String hasSubsequenceToValue(AnnotationMirror anno) {
         return (String) anno.getElementValues().get(hasSubsequenceToElement).getValue();
     }
 
-    /** Gets the from() element/field out of a HasSubsequence annotation. */
+    /**
+     * Gets the subsequence() element/field out of a HasSubsequence annotation.
+     *
+     * @param anno a HasSubsequence annotation
+     * @return its subsequence() element/field
+     */
     public String hasSubsequenceSubsequenceValue(AnnotationMirror anno) {
         return (String) anno.getElementValues().get(hasSubsequenceSubsequenceElement).getValue();
     }

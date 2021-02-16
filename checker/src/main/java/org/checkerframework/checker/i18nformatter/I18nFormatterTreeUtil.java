@@ -54,7 +54,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
 public class I18nFormatterTreeUtil {
+    /** The checker. */
     public final BaseTypeChecker checker;
+    /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
 
     /** The value() element/field of an @I18nInvalidFormat annotation. */
@@ -63,6 +65,11 @@ public class I18nFormatterTreeUtil {
     /** The value() element/field of an @I18nFormatFor annotation. */
     protected final ExecutableElement i18nFormatForValueElement;
 
+    /**
+     * Creates a new I18nFormatterTreeUtil.
+     *
+     * @param checker the checker
+     */
     public I18nFormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
@@ -101,12 +108,22 @@ public class I18nFormatterTreeUtil {
         return builder.build();
     }
 
-    /** Gets the value() element/field out of an I18nInvalidFormat annotation. */
+    /**
+     * Gets the value() element/field out of an I18nInvalidFormat annotation.
+     *
+     * @param anno an I18nInvalidFormat annotation
+     * @return its value() element/field
+     */
     /*package-visible*/ String getI18nInvalidFormatValue(AnnotationMirror anno) {
         return (String) anno.getElementValues().get(i18nInvalidFormatValueElement).getValue();
     }
 
-    /** Gets the value() element/field out of an I18NFormatFor annotation. */
+    /**
+     * Gets the value() element/field out of an I18NFormatFor annotation.
+     *
+     * @param anno an I18NFormatFor annotation
+     * @return its value() element/field
+     */
     /*package-visible*/ String getI18nFormatForValue(AnnotationMirror anno) {
         return (String) anno.getElementValues().get(i18nFormatForValueElement).getValue();
     }
@@ -114,6 +131,9 @@ public class I18nFormatterTreeUtil {
     /**
      * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation, and
      * returns its value.
+     *
+     * @param anno an I18nInvalidFormat annotation
+     * @return its value() element/field, within double-quotes
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
         return "\"" + getI18nInvalidFormatValue(anno) + "\"";

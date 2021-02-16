@@ -39,7 +39,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * something to do with Formatters.
  */
 public class FormatterTreeUtil {
+    /** The checker. */
     public final BaseTypeChecker checker;
+    /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
 
     /** The value() element/field of an @InvalidFormat annotation. */
@@ -415,7 +417,12 @@ public class FormatterTreeUtil {
         return builder.build();
     }
 
-    /** Gets the value() element/field out of an InvalidFormat annotation. */
+    /**
+     * Gets the value() element/field out of an InvalidFormat annotation.
+     *
+     * @param anno an InvalidFormat annotation
+     * @return its value() element/field
+     */
     private String getInvalidFormatValue(AnnotationMirror anno) {
         return (String) anno.getElementValues().get(invalidFormatValueElement).getValue();
     }
@@ -423,6 +430,9 @@ public class FormatterTreeUtil {
     /**
      * Takes a syntax tree element that represents a {@link InvalidFormat} annotation, and returns
      * its value.
+     *
+     * @param anno an InvalidFormat annotation
+     * @return its value() element/field
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
         return "\"" + getInvalidFormatValue(anno) + "\"";

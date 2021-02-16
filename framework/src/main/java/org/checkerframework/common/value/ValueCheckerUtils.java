@@ -45,10 +45,11 @@ public class ValueCheckerUtils {
      *
      * @param anno the annotation that contains values
      * @param castTo the type that is casted to
+     * @param atypeFactory the type factory
      * @return a list of values after the casting
      */
     public static List<?> getValuesCastedToType(
-            AnnotationMirror anno, TypeMirror castTo, ValueAnnotatedTypeFactory atypefactory) {
+            AnnotationMirror anno, TypeMirror castTo, ValueAnnotatedTypeFactory atypeFactory) {
         Class<?> castType = TypesUtils.getClassFromType(castTo);
         List<?> values;
         switch (AnnotationUtils.annotationName(anno)) {
@@ -60,7 +61,7 @@ public class ValueCheckerUtils {
                 values = convertIntVal(longs, castType, castTo);
                 break;
             case ValueAnnotatedTypeFactory.INTRANGE_NAME:
-                Range range = atypefactory.getRange(anno);
+                Range range = atypeFactory.getRange(anno);
                 List<Long> rangeValues = getValuesFromRange(range, Long.class);
                 values = convertIntVal(rangeValues, castType, castTo);
                 break;

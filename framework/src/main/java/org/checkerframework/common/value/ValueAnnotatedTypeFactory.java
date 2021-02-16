@@ -380,32 +380,53 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Gets the from() element/field out of an IntRange annotation. The from() element/field must
      * exist. Clients should call {@link * #getFromValueFromIntRange} if it might not exist.
+     *
+     * @param anno an IntRange annotation
+     * @return its from() element/field
      */
     private long getIntRangeFromValue(AnnotationMirror anno) {
         return (long) anno.getElementValues().get(intRangeFromElement).getValue();
     }
 
     /**
-     * Gets the from() element/field out of an IntRange annotation. The from() element/field must
-     * exist. Clients should call {@link #getToValueFromIntRange} if it might not exist.
+     * Gets the to() element/field out of an IntRange annotation. The to() element/field must exist.
+     * Clients should call {@link #getToValueFromIntRange} if it might not exist.
+     *
+     * @param anno an IntRange annotation
+     * @return its to() element/field
      */
     private long getIntRangeToValue(AnnotationMirror anno) {
         return (long) anno.getElementValues().get(intRangeToElement).getValue();
     }
 
-    /** Gets the from() element/field out of an ArrayLenRange annotation. */
+    /**
+     * Gets the from() element/field out of an ArrayLenRange annotation.
+     *
+     * @param anno an ArrayLenRange annotation
+     * @return its from() element/field
+     */
     @SuppressWarnings("UnusedMethod")
     private int getArrayLenRangeFromValue(AnnotationMirror anno) {
         return (int) anno.getElementValues().get(arrayLenRangeFromElement).getValue();
     }
 
-    /** Gets the from() element/field out of an ArrayLenRange annotation. */
+    /**
+     * Gets the to() element/field out of an ArrayLenRange annotation.
+     *
+     * @param anno an ArrayLenRange annotation
+     * @return its to() element/field
+     */
     @SuppressWarnings("UnusedMethod")
     private int getArrayLenRangeToValue(AnnotationMirror anno) {
         return (int) anno.getElementValues().get(arrayLenRangeToElement).getValue();
     }
 
-    /** Gets the value() element/field out of a MinLen annotation. */
+    /**
+     * Gets the value() element/field out of a MinLen annotation.
+     *
+     * @param anno a MinLen annotation
+     * @return its value() element/field
+     */
     @SuppressWarnings("UnusedMethod")
     private int getMinLenValueValue(AnnotationMirror anno) {
         return (int) anno.getElementValues().get(minLenValueElement).getValue();
@@ -1060,10 +1081,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a {@code Range} bounded by the values specified in the given {@code @Range}
+     * Returns a {@link Range} bounded by the values specified in the given {@code @Range}
      * annotation. Also returns an appropriate range if an {@code @IntVal} annotation is passed.
      * Returns {@code null} if the annotation is null or if the annotation is not an {@code
      * IntRange}, {@code IntRangeFromPositive}, {@code IntVal}, or {@code ArrayLenRange}.
+     *
+     * @param rangeAnno a {@code @Range} annotation
+     * @return the {@link Range} that the annotation represents
      */
     public Range getRange(AnnotationMirror rangeAnno) {
         if (rangeAnno == null) {
