@@ -105,6 +105,28 @@ public class ElementUtils {
     }
 
     /**
+     * Returns the top-level class that contains {@code element}.
+     *
+     * @param element the element whose enclosing class to find
+     * @return an element for a class containing {@code element} that isn't contained in another
+     *     class
+     */
+    public static TypeElement toplevelEnclosingClass(Element element) {
+        TypeElement result = ElementUtils.enclosingTypeElement(element);
+        if (result == null) {
+            return (TypeElement) element;
+        }
+
+        TypeElement enclosing = ElementUtils.strictEnclosingTypeElement(result);
+        while (enclosing != null) {
+            result = enclosing;
+            enclosing = ElementUtils.strictEnclosingTypeElement(enclosing);
+        }
+
+        return result;
+    }
+
+    /**
      * Returns the binary name of the class enclosing {@code executableElement}.
      *
      * @param executableElement the ExecutableElement
