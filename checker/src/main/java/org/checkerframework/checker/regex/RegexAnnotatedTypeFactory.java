@@ -95,7 +95,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The method that returns the value element of a {@code @Regex} annotation. */
     protected final ExecutableElement regexValueElement =
             TreeUtils.getMethod(
-                    "org.checkerframework.checker.regex.qual.Regex", "value", 0, processingEnv);
+                    org.checkerframework.checker.regex.qual.Regex.class.getCanonicalName(),
+                    "value",
+                    0,
+                    processingEnv);
 
     /**
      * The value method of the PartialRegex qualifier.
@@ -104,7 +107,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ExecutableElement partialRegexValue =
             TreeUtils.getMethod(
-                    "org.checkerframework.checker.regex.qual.PartialRegex",
+                    org.checkerframework.checker.regex.qual.PartialRegex.class.getCanonicalName(),
                     "value",
                     0,
                     processingEnv);
@@ -115,7 +118,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @see java.util.regex.Pattern#compile(String)
      */
     private final ExecutableElement patternCompile =
-            TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
+            TreeUtils.getMethod(
+                    java.util.regex.Pattern.class.getCanonicalName(), "compile", 1, processingEnv);
 
     public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

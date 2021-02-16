@@ -232,7 +232,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType =
                 atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
-        targetValueElement = TreeUtils.getMethod("java.lang.annotation.Target", "value", 0, env);
+        targetValueElement =
+                TreeUtils.getMethod(
+                        java.lang.annotation.Target.class.getCanonicalName(), "value", 0, env);
     }
 
     /**

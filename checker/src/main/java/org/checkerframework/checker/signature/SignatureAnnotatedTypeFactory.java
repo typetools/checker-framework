@@ -68,12 +68,17 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar =
-            TreeUtils.getMethod("java.lang.String", "replace", processingEnv, "char", "char");
+            TreeUtils.getMethod(
+                    java.lang.String.class.getCanonicalName(),
+                    "replace",
+                    processingEnv,
+                    "char",
+                    "char");
 
     /** The {@link String#replace(CharSequence, CharSequence)} method. */
     private final ExecutableElement replaceCharSequenceCharSequence =
             TreeUtils.getMethod(
-                    "java.lang.String",
+                    java.lang.String.class.getCanonicalName(),
                     "replace",
                     processingEnv,
                     "java.lang.CharSequence",
@@ -81,7 +86,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@link Class#getName()} method. */
     private final ExecutableElement classGetName =
-            TreeUtils.getMethod("java.lang.Class", "getName", processingEnv);
+            TreeUtils.getMethod(java.lang.Class.class.getCanonicalName(), "getName", processingEnv);
 
     /**
      * Creates a SignatureAnnotatedTypeFactory.
