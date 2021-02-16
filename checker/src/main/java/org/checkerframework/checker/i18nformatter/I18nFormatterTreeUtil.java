@@ -75,9 +75,17 @@ public class I18nFormatterTreeUtil {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
         i18nInvalidFormatValueElement =
-                TreeUtils.getMethod(I18nInvalidFormat.class.getName(), "value", 0, processingEnv);
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat",
+                        "value",
+                        0,
+                        processingEnv);
         i18nFormatForValueElement =
-                TreeUtils.getMethod(I18nFormatFor.class.getName(), "value", 0, processingEnv);
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.i18nformatter.qual.I18nFormatFor",
+                        "value",
+                        0,
+                        processingEnv);
     }
 
     /** Describe the format annotation type. */

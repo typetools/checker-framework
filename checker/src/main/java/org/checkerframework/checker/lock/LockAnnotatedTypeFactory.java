@@ -105,7 +105,11 @@ public class LockAnnotatedTypeFactory
 
     /** The value() element/field of a @GuardSatisfied annotation. */
     protected final ExecutableElement guardSatisfiedValueElement =
-            TreeUtils.getMethod(GuardSatisfied.class.getName(), "value", 0, processingEnv);
+            TreeUtils.getMethod(
+                    "org.checkerframework.checker.lock.qual.GuardSatisfied",
+                    "value",
+                    0,
+                    processingEnv);
 
     /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;

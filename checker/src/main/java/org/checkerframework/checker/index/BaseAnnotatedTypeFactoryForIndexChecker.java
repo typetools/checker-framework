@@ -2,7 +2,6 @@ package org.checkerframework.checker.index;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.TreeUtils;
@@ -27,12 +26,23 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
     public BaseAnnotatedTypeFactoryForIndexChecker(BaseTypeChecker checker) {
         super(checker);
         hasSubsequenceFromElement =
-                TreeUtils.getMethod(HasSubsequence.class.getName(), "from", 0, processingEnv);
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.index.qual.HasSubsequence",
+                        "from",
+                        0,
+                        processingEnv);
         hasSubsequenceToElement =
-                TreeUtils.getMethod(HasSubsequence.class.getName(), "to", 0, processingEnv);
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.index.qual.HasSubsequence",
+                        "to",
+                        0,
+                        processingEnv);
         hasSubsequenceSubsequenceElement =
                 TreeUtils.getMethod(
-                        HasSubsequence.class.getName(), "subsequence", 0, processingEnv);
+                        "org.checkerframework.checker.index.qual.HasSubsequence",
+                        "subsequence",
+                        0,
+                        processingEnv);
     }
 
     /**
