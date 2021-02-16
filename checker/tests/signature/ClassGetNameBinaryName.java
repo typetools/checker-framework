@@ -1,4 +1,5 @@
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.PrimitiveType;
 
 public class ClassGetNameBinaryName {
@@ -64,37 +65,37 @@ public class ClassGetNameBinaryName {
 
     class TestGetCanonicalName {
 
-        @BinaryName String s1 = ClassGetNameBinaryName.class.getCanonicalName();
+        @DotSeparatedIdentifiers String s1 = ClassGetNameBinaryName.class.getCanonicalName();
 
-        @BinaryName String s2a = Integer.class.getCanonicalName();
+        @DotSeparatedIdentifiers String s2a = Integer.class.getCanonicalName();
 
-        @BinaryName String s2b = java.lang.Integer.class.getCanonicalName();
+        @DotSeparatedIdentifiers String s2b = java.lang.Integer.class.getCanonicalName();
 
-        @BinaryName String s4a = Boolean.class.getCanonicalName();
+        @DotSeparatedIdentifiers String s4a = Boolean.class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
         @PrimitiveType String s4b = Boolean.class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String s12 = Nested.class.getCanonicalName();
+        @DotSeparatedIdentifiers String s12 = Nested.class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String s13 = Inner.class.getName();
+        @DotSeparatedIdentifiers String s13 = Inner.class.getName();
 
         /// Primitive types
 
         @PrimitiveType String prim1 = int.class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String prim2 = int.class.getCanonicalName();
+        @DotSeparatedIdentifiers String prim2 = int.class.getCanonicalName();
 
         @PrimitiveType String prim3 = boolean.class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String prim4 = boolean.class.getCanonicalName();
+        @DotSeparatedIdentifiers String prim4 = boolean.class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String prim5 = void.class.getCanonicalName();
+        @DotSeparatedIdentifiers String prim5 = void.class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
         @PrimitiveType String prim6 = void.class.getCanonicalName();
@@ -102,18 +103,18 @@ public class ClassGetNameBinaryName {
         /// Arrays
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String s6 = int[].class.getCanonicalName();
+        @DotSeparatedIdentifiers String s6 = int[].class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String s7 = int[][].class.getCanonicalName();
+        @DotSeparatedIdentifiers String s7 = int[][].class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String s8 = boolean[].class.getCanonicalName();
+        @DotSeparatedIdentifiers String s8 = boolean[].class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String s9 = Integer[].class.getCanonicalName();
+        @DotSeparatedIdentifiers String s9 = Integer[].class.getCanonicalName();
 
         // :: error: (assignment.type.incompatible)
-        @BinaryName String s10 = Boolean[].class.getCanonicalName();
+        @DotSeparatedIdentifiers String s10 = Boolean[].class.getCanonicalName();
     }
 }
