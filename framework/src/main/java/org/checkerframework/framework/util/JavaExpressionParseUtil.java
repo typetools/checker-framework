@@ -876,9 +876,13 @@ public class JavaExpressionParseUtil {
         private @Nullable TypeMirror convertTypeToTypeMirror(
                 Type type, JavaExpressionContext context) {
             if (type.isClassOrInterfaceType()) {
-                return StaticJavaParser.parseExpression(type.asString())
-                        .accept(this, context)
-                        .getType();
+                try {
+                    return StaticJavaParser.parseExpression(type.asString())
+                            .accept(this, context)
+                            .getType();
+                } catch (ParseProblemException e) {
+                    return null;
+                }
             } else if (type.isPrimitiveType()) {
                 switch (type.asPrimitiveType().getType()) {
                     case BOOLEAN:
