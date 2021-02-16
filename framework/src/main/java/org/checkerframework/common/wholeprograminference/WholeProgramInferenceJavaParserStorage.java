@@ -758,32 +758,34 @@ public class WholeProgramInferenceJavaParserStorage
          * Inferred annotations for the return type, if the declaration represents a method.
          * Initialized on first usage.
          */
-        private @MonotonicNonNull AnnotatedTypeMirror returnType;
+        private @MonotonicNonNull AnnotatedTypeMirror returnType = null;
         /**
          * Inferred annotations for the receiver type, if the declaration represents a method.
          * Initialized on first usage.
          */
-        private @MonotonicNonNull AnnotatedTypeMirror receiverType;
+        private @MonotonicNonNull AnnotatedTypeMirror receiverType = null;
         /**
          * Inferred annotations for parameter types. Initialized the first time any parameter is
          * accessed and each parameter is initialized the first time it's accessed.
          */
-        public @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes;
+        public @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
         /** Annotations on the callable declaration. */
-        public @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations;
+        public @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
         /**
          * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
          * inferred preconditions on that field.
          */
-        public @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions;
+        public @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions =
+                null;
         /**
          * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
          * inferred postconditions on that field.
          */
-        public @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions;
+        public @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions =
+                null;
         // /** Inferred contracts for the callable declaration. */
-        // private @MonotonicNonNull List<AnnotationMirror> contracts;
+        // private @MonotonicNonNull List<AnnotationMirror> contracts = null;
 
         /**
          * Creates a wrapper for the given method or constructor declaration.
