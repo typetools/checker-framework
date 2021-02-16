@@ -11,8 +11,12 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
@@ -42,6 +46,7 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.SignatureRegexes;
 
 // TODO: Does not yet handle method signature annotations, such as
@@ -65,6 +70,9 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@literal @}{@link CanonicalName} annotation. */
     protected final AnnotationMirror CANONICAL_NAME =
             AnnotationBuilder.fromClass(elements, CanonicalName.class);
+    /** The {@literal @}{@link PrimitiveType} annotation. */
+    protected final AnnotationMirror PRIMITIVE_TYPE =
+            AnnotationBuilder.fromClass(elements, PrimitiveType.class);
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar =
@@ -264,17 +272,27 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && receiverType.getAnnotation(InternalForm.class) != null) {
                     type.replaceAnnotation(BINARY_NAME);
                 }
-            }
-
-            if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)) {
+            } else if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)) {
                 ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
                 if (TreeUtils.isClassLiteral(receiver)) {
                     ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
-                    if (classExpr.getKind() == Tree.Kind.IDENTIFIER
-                            || (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE
-                                    && ((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
-                                            != TypeKind.VOID)) {
-                        type.replaceAnnotation(BINARY_NAME);
+                    if (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                        if (((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
+                                == TypeKind.VOID) {
+                            // do nothing
+                        } else {
+                            type.replaceAnnotation(PRIMITIVE_TYPE);
+                        }
+                    } else {
+                        // Binary name if non-array, non-primitive, non-nested.
+                        TypeMirror literalType = TreeUtils.typeOf(classExpr);
+                        if (literalType.getKind() == TypeKind.DECLARED) {
+                            TypeElement typeElt = TypesUtils.getTypeElement(literalType);
+                            Element enclosing = typeElt.getEnclosingElement();
+                            if (enclosing == null || enclosing.getKind() == ElementKind.PACKAGE) {
+                                type.replaceAnnotation(BINARY_NAME);
+                            }
+                        }
                     }
                 }
             }
