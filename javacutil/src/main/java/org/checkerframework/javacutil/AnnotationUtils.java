@@ -684,9 +684,13 @@ public class AnnotationUtils {
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
      * is expected to have type {@code expectedType}.
      *
-     * <p>For elements of array type, use {@code getElementValueArray} instead.
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
      *
-     * <p>For elements of enum type, use {@code getElementValueEnum} instead.
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * <p>If possible, it is more efficient to use {@code
+     * anno.getElementValues().get(someElement).getValue();} rather than this which iterates through
+     * a map.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access

@@ -103,6 +103,10 @@ public class LockAnnotatedTypeFactory
     protected final AnnotationMirror GUARDSATISFIED =
             AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
+    /** The value() element/field of a @GuardSatisfied annotation. */
+    protected final ExecutableElement guardSatisfiedValueElement =
+            TreeUtils.getMethod(GuardSatisfied.class.getName(), "value", 0, processingEnv);
+
     /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;
 
@@ -550,7 +554,11 @@ public class LockAnnotatedTypeFactory
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
-        return AnnotationUtils.getElementValue(am, "value", Integer.class, true);
+        try {
+            return (int) am.getElementValues().get(guardSatisfiedValueElement).getValue();
+        } catch (Throwable e) {
+            throw new RuntimeException("No value() element?: " + am, e);
+        }
     }
 
     @Override

@@ -261,7 +261,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 return true;
             } else if ((subKind == I18NINVALIDFORMAT_KIND && superKind == I18NINVALIDFORMAT_KIND)
                     || (subKind == I18NFORMATFOR_KIND && superKind == I18NFORMATFOR_KIND)) {
-                return AnnotationUtils.sameElementValues(subAnno, superAnno);
+                return treeUtil.getI18nInvalidFormatValue(subAnno)
+                        .equals(treeUtil.getI18nInvalidFormatValue(superAnno));
             }
             throw new BugInCF("Unexpected QualifierKinds: %s %s", subKind, superKind);
         }

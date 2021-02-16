@@ -42,11 +42,20 @@ public class FormatterTreeUtil {
     public final BaseTypeChecker checker;
     public final ProcessingEnvironment processingEnv;
 
+    /** The value() element/field of an @InvalidFormat annotation. */
+    protected final ExecutableElement invalidFormatValueElement;
+
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        invalidFormatValueElement =
+                TreeUtils.getMethod(
+                        org.checkerframework.checker.formatter.qual.InvalidFormat.class.getName(),
+                        "value",
+                        0,
+                        processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
@@ -406,12 +415,17 @@ public class FormatterTreeUtil {
         return builder.build();
     }
 
+    /** Gets the value() element/field out of an InvalidFormat annotation. */
+    private String getInvalidFormatValue(AnnotationMirror anno) {
+        return (String) anno.getElementValues().get(invalidFormatValueElement).getValue();
+    }
+
     /**
      * Takes a syntax tree element that represents a {@link InvalidFormat} annotation, and returns
      * its value.
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
-        return "\"" + AnnotationUtils.getElementValue(anno, "value", String.class, true) + "\"";
+        return "\"" + getInvalidFormatValue(anno) + "\"";
     }
 
     /**
