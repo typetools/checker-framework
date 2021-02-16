@@ -64,7 +64,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *       upper bounds of this element's written type in the source code.
  *   <li>The annotation annotates a {@code null} literal, except when doing inference for the
  *       NullnessChecker. (The rationale for this is that {@code null} is a frequently-used default
- *       value, and it would be undesirable infer the bottom type if {@code null} were the only
+ *       value, and it would be undesirable to infer the bottom type if {@code null} were the only
  *       value passed as an argument.)
  * </ol>
  *
@@ -178,8 +178,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 // TODO: Handle variable-length list as parameter.
                 // An ArrayCreationNode with a null tree is created when the
                 // parameter is a variable-length list. We are ignoring it for now.
-                // See Issue 682
-                // https://github.com/typetools/checker-framework/issues/682
+                // See Issue 682: https://github.com/typetools/checker-framework/issues/682
                 continue;
             }
 
@@ -260,7 +259,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *
      * @param v a value to convert to an AnnotatedTypeMirror
      * @param fieldType an {@code AnnotatedTypeMirror} with the same underlying type as {@code v}
-     *     that is copied, then updated to use {@code v}'s annotations
+     *     that is copied, then the copy is updated to use {@code v}'s annotations
      * @return a copy of {@code fieldType} with {@code v}'s annotations
      */
     private AnnotatedTypeMirror convertCFAbstractValueToAnnotatedTypeMirror(
@@ -317,8 +316,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             // TODO: Handle variable-length list as parameter.
             // An ArrayCreationNode with a null tree is created when the
             // parameter is a variable-length list. We are ignoring it for now.
-            // See Issue 682
-            // https://github.com/typetools/checker-framework/issues/682
+            // See Issue 682: https://github.com/typetools/checker-framework/issues/682
             return;
         }
 
@@ -418,23 +416,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         return false;
     }
 
-    /**
-     * Updates the return type of the method methodDeclTree in the Scene of the class with symbol
-     * classSymbol. Also updates the return types of methods that this method overrides, if they are
-     * available as source.
-     *
-     * <p>If the Scene does not contain an annotated return type for the method methodDeclTree, then
-     * the type of the value passed to the return expression will be added to the return type of
-     * that method in the Scene. If the Scene previously contained an annotated return type for the
-     * method methodDeclTree, its new type will be the LUB between the previous type and the type of
-     * the value passed to the return expression.
-     *
-     * @param retNode the node that contains the expression returned
-     * @param classSymbol the symbol of the class that contains the method
-     * @param methodDeclTree the declaration of the method whose return type may be updated
-     * @param overriddenMethods the methods that the given method return overrides, each indexed by
-     *     the annotated type of the class that defines it
-     */
     @Override
     public void updateFromReturn(
             ReturnNode retNode,
@@ -644,10 +625,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                         ((AnnotatedArrayType) ajavaATM).getComponentType());
                 break;
                 // case DECLARED:
-                // inferring annotations on type arguments is not supported, so no need to recur on
+                // Inferring annotations on type arguments is not supported, so no need to recur on
                 // generic types. If this was ever implemented, this method would need a
-                // VisitHistory
-                // object to prevent infinite recursion on types such as T extends List<T>.
+                // VisitHistory object to prevent infinite recursion on types such as T extends
+                // List<T>.
             default:
                 // ATM only has primary annotations
                 break;
@@ -657,8 +638,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         Set<AnnotationMirror> annosToReplace = new HashSet<>();
         for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
             AnnotationMirror amAjava = ajavaATM.getAnnotationInHierarchy(amSource);
-            // amAjava only contains  annotations from the ajava file, so it might be missing
-            // an annotation in the hierarchy
+            // amAjava only contains annotations from the ajava file, so it might be missing
+            // an annotation in the hierarchy.
             if (amAjava != null) {
                 amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
             }
