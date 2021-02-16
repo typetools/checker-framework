@@ -409,8 +409,8 @@ public class DependentTypesHelper {
      *
      * @param annoFromContract a qualifier that was written on a method declaration
      * @param jeContext the context to use for standardization
-     * @param errorTree if non-null, report any errors that occur will parsing the dependent type
-     *     annotation
+     * @param errorTree if non-null, where to report any errors that occur will parsing the
+     *     dependent type annotation; if null, report no errors
      * @return the viewpoint-adapted annotation, or the argument if it is not a dependant type
      *     annotation
      */

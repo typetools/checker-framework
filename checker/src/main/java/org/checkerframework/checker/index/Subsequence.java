@@ -56,7 +56,10 @@ public class Subsequence {
     }
 
     /**
+     * Factory method to create a represontation of a subsequence.
+     *
      * @param hasSub {@link HasSubsequence} annotation or null
+     * @param context the parsing context
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
@@ -105,10 +108,14 @@ public class Subsequence {
         return createSubsequence(factory.getDeclAnnotation(element, HasSubsequence.class), context);
     }
 
-    /*
-     * Helper function to standardize and viewpoint adapt a String given a path and a context.
-     * Wraps JavaExpressionParseUtil#parse. If a parse exception is encountered, this returns
-     * its argument.
+    /**
+     * Helper function to standardize and viewpoint-adapt a String given a context. Wraps {@link
+     * JavaExpressionParseUtil#parse}. If a parse exception is encountered, this returns its
+     * argument.
+     *
+     * @param s a Java expression string
+     * @param context the parse context
+     * @return the argument, standardized and viewpoint-adapted
      */
     private static String standardizeAndViewpointAdapt(String s, JavaExpressionContext context) {
         try {
@@ -149,8 +156,12 @@ public class Subsequence {
      * that the JavaExpression parser cannot parse multiplication, so it naively just changes '-' to
      * '+' and vice-versa.
      *
-     * <p>The passed String is standardized and viewpoint adapted before this transformation is
+     * <p>The passed String is standardized and viewpoint-adapted before this transformation is
      * applied.
+     *
+     * @param s a Java expression string
+     * @param context the parse context
+     * @return the string, standardized and viewpoint-adapted
      */
     public static String negateString(String s, JavaExpressionContext context) {
         String original = standardizeAndViewpointAdapt(s, context);

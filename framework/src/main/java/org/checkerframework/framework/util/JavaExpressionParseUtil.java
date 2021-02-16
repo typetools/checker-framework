@@ -137,7 +137,7 @@ public class JavaExpressionParseUtil {
      * Return its representation as a {@link JavaExpression}, or throw a {@link
      * JavaExpressionParseException}.
      *
-     * <p>If {@code localPath} is non-null, then identifiers are parsed as if the identifier was
+     * <p>If {@code localPath} is non-null, then identifiers are parsed as if the expression was
      * written at the location of {@code localPath}. This means identifiers will be parsed to local
      * variables in scope at {@code localPath} when possible. If {@code localPath} is null, then no
      * identifier can be parsed to a local variable. In either case, the parameter syntax, e.g. #1,
@@ -416,7 +416,7 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * If {@code identifier} is a unqualified class name, return the {@link ClassName}. If not,
+         * If {@code identifier} is an unqualified class name, return the {@link ClassName}. If not,
          * return null.
          *
          * <p>If {@code context.useLocalScope} is false, then the only classes that may be used
@@ -431,7 +431,7 @@ public class JavaExpressionParseUtil {
          *
          * @param context JavaExpressionContext
          * @param identifier possible class name
-         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name.
+         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name
          */
         protected @Nullable ClassName getIdentifierAsClassName(
                 JavaExpressionContext context, String identifier) {
@@ -1049,9 +1049,8 @@ public class JavaExpressionParseUtil {
     ///
 
     /**
-     * Context used to parsing and viewpoint-adapting a Java expression. It contains the
-     * JavaExpressions to which {@code this} and the parameter syntax, e.g. {@code #1}, should
-     * parse.
+     * Context used to parse and viewpoint-adapt a Java expression. It contains the JavaExpressions
+     * to which {@code this} and the parameter syntax, e.g. {@code #1}, should parse.
      */
     public static class JavaExpressionContext {
         /** The value of {@code this} in this context. */
