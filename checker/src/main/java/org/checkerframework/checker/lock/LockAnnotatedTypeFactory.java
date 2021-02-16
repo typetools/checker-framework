@@ -554,10 +554,11 @@ public class LockAnnotatedTypeFactory
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
-        try {
-            return (int) am.getElementValues().get(guardSatisfiedValueElement).getValue();
-        } catch (Throwable e) {
-            throw new RuntimeException("No value() element?: " + am, e);
+        AnnotationValue av = am.getElementValues().get(guardSatisfiedValueElement);
+        if (av == null) {
+            return -1;
+        } else {
+            return (int) av.getValue();
         }
     }
 

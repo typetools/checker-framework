@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import javax.lang.model.element.AnnotationMirror;
@@ -261,8 +262,9 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 return true;
             } else if ((subKind == I18NINVALIDFORMAT_KIND && superKind == I18NINVALIDFORMAT_KIND)
                     || (subKind == I18NFORMATFOR_KIND && superKind == I18NFORMATFOR_KIND)) {
-                return treeUtil.getI18nInvalidFormatValue(subAnno)
-                        .equals(treeUtil.getI18nInvalidFormatValue(superAnno));
+                return Objects.equals(
+                        treeUtil.getI18nInvalidFormatValue(subAnno),
+                        treeUtil.getI18nInvalidFormatValue(superAnno));
             }
             throw new BugInCF("Unexpected QualifierKinds: %s %s", subKind, superKind);
         }

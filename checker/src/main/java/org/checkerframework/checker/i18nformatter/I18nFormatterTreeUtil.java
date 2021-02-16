@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -114,8 +115,14 @@ public class I18nFormatterTreeUtil {
      * @param anno an I18nInvalidFormat annotation
      * @return its value() element/field
      */
-    /*package-visible*/ String getI18nInvalidFormatValue(AnnotationMirror anno) {
-        return (String) anno.getElementValues().get(i18nInvalidFormatValueElement).getValue();
+    /*package-visible*/
+    @Nullable String getI18nInvalidFormatValue(AnnotationMirror anno) {
+        AnnotationValue av = anno.getElementValues().get(i18nInvalidFormatValueElement);
+        if (av == null) {
+            return null;
+        } else {
+            return (String) av.getValue();
+        }
     }
 
     /**
