@@ -48,4 +48,12 @@ public class FakeOverrideReturn {
         // :: error: (assignment.type.incompatible)
         uf = sub.returnsUntaintedIntWithFakeOverride();
     }
+
+    void poly() {
+        FakeOverrideRSuper sup = new FakeOverrideRSuper();
+        FakeOverrideRMid mid = new FakeOverrideRMid();
+
+        @Untainted int j = mid.returnsUntaintedIntWithFakeOverride2();
+        @Untainted int k = sup.returnsPolyTaintedIntWithFakeOverride();
+    }
 }
