@@ -468,8 +468,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
-     * insertValuePermitNondeterministic}. Calls {@link #insertValueImpl} if the expression can be
-     * inserted into the store.
+     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue)}. Calls {@link
+     * #insertValueImpl} if the expression can be inserted into the store.
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
