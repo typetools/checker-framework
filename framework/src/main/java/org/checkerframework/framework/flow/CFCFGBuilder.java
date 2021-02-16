@@ -1,9 +1,11 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
@@ -25,6 +27,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -145,6 +148,21 @@ public class CFCFGBuilder extends CFGBuilder {
                 return true;
             }
             return super.assumeAssertionsEnabledFor(tree);
+        }
+
+        @Override
+        public void handleArtificialTree(Tree tree) {
+            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+            if (enclosingMethod != null) {
+                Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
+                factory.setEnclosingElementForArtificialTree(tree, methodElement);
+            } else {
+                ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+                if (enclosingClass != null) {
+                    Element classElement = TreeUtils.elementFromDeclaration(enclosingClass);
+                    factory.setEnclosingElementForArtificialTree(tree, classElement);
+                }
+            }
         }
 
         @Override
