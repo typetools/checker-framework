@@ -54,14 +54,11 @@ public class FormatterTreeUtil {
         this.processingEnv = checker.getProcessingEnvironment();
         invalidFormatValueElement =
                 TreeUtils.getMethod(
-                        "org.checkerframework.checker.formatter.qual.InvalidFormat",
-                        "value",
-                        0,
-                        processingEnv);
+                        InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        "org.checkerframework.checker.formatter.qual.Format",
+                        Format.class.getCanonicalName(),
                         "value",
                         0,
                         processingEnv);
