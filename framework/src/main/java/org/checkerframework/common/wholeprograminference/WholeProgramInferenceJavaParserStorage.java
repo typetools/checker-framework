@@ -1015,7 +1015,7 @@ public class WholeProgramInferenceJavaParserStorage
         /** Wrapped field declaration. */
         public VariableDeclarator declaration;
         /** Inferred type for field, initialized the first time it's accessed. */
-        private @MonotonicNonNull AnnotatedTypeMirror type;
+        private @MonotonicNonNull AnnotatedTypeMirror type = null;
 
         /**
          * Creates a wrapper for the given field declaration.
@@ -1024,7 +1024,6 @@ public class WholeProgramInferenceJavaParserStorage
          */
         public FieldAnnos(VariableDeclarator declaration) {
             this.declaration = declaration;
-            type = null;
         }
 
         /**
