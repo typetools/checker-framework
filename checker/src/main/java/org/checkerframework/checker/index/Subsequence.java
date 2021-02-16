@@ -55,6 +55,9 @@ public class Subsequence {
     }
 
     /**
+     * @param currentPath the current path
+     * @param context the JavaExpressionContext
+     * @param factory the type factory
      * @param hasSub {@link HasSubsequence} annotation or null
      * @return a new Subsequence object representing {@code hasSub} or null
      */

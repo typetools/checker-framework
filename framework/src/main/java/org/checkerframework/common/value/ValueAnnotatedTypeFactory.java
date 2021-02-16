@@ -379,7 +379,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Gets the from() element/field out of an IntRange annotation. The from() element/field must
-     * exist. Clients should call {@link * #getFromValueFromIntRange} if it might not exist.
+     * exist. Clients should call {@link #getFromValueFromIntRange} if it might not exist.
      *
      * @param anno an IntRange annotation
      * @return its from() element/field
