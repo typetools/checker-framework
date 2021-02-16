@@ -71,9 +71,6 @@ import scenelib.annotations.util.JVMNames;
 public class WholeProgramInferenceJavaParserStorage
         implements WholeProgramInferenceStorage<AnnotatedTypeMirror> {
 
-    /** The type factory associated with this. */
-    protected final AnnotatedTypeFactory atypeFactory;
-
     /**
      * Directory where .ajava files will be written to and read from. This directory is relative to
      * where the javac command is executed.
@@ -81,20 +78,23 @@ public class WholeProgramInferenceJavaParserStorage
     public static final String AJAVA_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
+    /** The type factory associated with this. */
+    protected final AnnotatedTypeFactory atypeFactory;
+
     /**
      * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
      * source files containing an Element for which an annotation has been inferred.
      */
-    private Map<@BinaryName String, ClassOrInterfaceAnnos> classToAnnos;
+    private Map<@BinaryName String, ClassOrInterfaceAnnos> classToAnnos = new HashMap<>();
 
     /**
      * Files containing classes for which an annotation has been inferred since the last time files
      * were written to disk.
      */
-    private Set<String> modifiedFiles;
+    private Set<String> modifiedFiles = new HashSet<>();
 
     /** Mapping from source file to the wrapper for the compilation unit parsed from that file. */
-    private Map<String, CompilationUnitAnnos> sourceToAnnos;
+    private Map<String, CompilationUnitAnnos> sourceToAnnos = new HashMap<>();
 
     /**
      * Constructs a new {@code WholeProgramInferenceJavaParser} that has not yet inferred any
@@ -104,9 +104,6 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public WholeProgramInferenceJavaParserStorage(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
-        classToAnnos = new HashMap<>();
-        modifiedFiles = new HashSet<>();
-        sourceToAnnos = new HashMap<>();
     }
 
     @Override
@@ -336,7 +333,7 @@ public class WholeProgramInferenceJavaParserStorage
             return;
         }
 
-        TypeElement toplevelClass = toplevelEnclosingClass(element);
+        TypeElement toplevelClass = ElementUtils.toplevelEnclosingClass(element);
         String path = ElementUtils.getSourceFilePath(toplevelClass);
         addSourceFile(path);
         CompilationUnitAnnos sourceAnnos = sourceToAnnos.get(path);
@@ -358,19 +355,21 @@ public class WholeProgramInferenceJavaParserStorage
             return;
         }
 
+        CompilationUnit root;
         try {
-            CompilationUnit root = StaticJavaParser.parse(new File(path));
-            JavaParserUtils.concatenateAddedStringLiterals(root);
-            CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
-            sourceToAnnos.put(path, sourceAnnos);
+            root = StaticJavaParser.parse(new File(path));
         } catch (FileNotFoundException e) {
-            throw new BugInCF("Failed to read java file: " + path, e);
+            throw new BugInCF("Failed to read Java file " + path, e);
         }
+        JavaParserUtils.concatenateAddedStringLiterals(root);
+        CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
+        sourceToAnnos.put(path, sourceAnnos);
     }
 
     /**
-     * Given a javac tree and JavaParser node representing the same class, creates wrappers around
-     * all the classes, fields, and methods in that class.
+     * The first two arugments are a javac tree and a JavaParser node representing the same class.
+     * This method creates wrappers around all the classes, fields, and methods in that class, and
+     * stores those wrappers in {@code sourceAnnos}.
      *
      * @param javacClass javac tree for class
      * @param javaParserClass JavaParser node corresponding to the same class as {@code javacClass}
@@ -402,7 +401,8 @@ public class WholeProgramInferenceJavaParserStorage
                     }
 
                     /**
-                     * Creates a wrapper around the class for {@code tree} and stores it.
+                     * Creates a wrapper around the class for {@code tree} and stores it in {@code
+                     * sourceAnnos}.
                      *
                      * @param tree tree to add
                      */
@@ -431,7 +431,7 @@ public class WholeProgramInferenceJavaParserStorage
 
                     /**
                      * Creates a wrapper around {@code javacTree} with the corresponding declaration
-                     * {@code javaParserNode} and stores it.
+                     * {@code javaParserNode} and stores it in {@code sourceAnnos}.
                      *
                      * @param javacTree javac tree for declaration to add
                      * @param javaParserNode JavaParser node for the same class as {@code javacTree}
@@ -441,10 +441,11 @@ public class WholeProgramInferenceJavaParserStorage
                         ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
                         String className = ElementUtils.getEnclosingClassName(elt);
                         ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
-                        String executableName = JVMNames.getJVMMethodSignature(javacTree);
-                        if (!enclosingClass.callableDeclarations.containsKey(executableName)) {
+                        String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
+                        if (!enclosingClass.callableDeclarations.containsKey(executableSignature)) {
                             enclosingClass.callableDeclarations.put(
-                                    executableName, new CallableDeclarationAnnos(javaParserNode));
+                                    executableSignature,
+                                    new CallableDeclarationAnnos(javaParserNode));
                         }
                     }
 
@@ -463,8 +464,8 @@ public class WholeProgramInferenceJavaParserStorage
                             return;
                         }
 
-                        String className = ElementUtils.getEnclosingClassName(elt);
-                        ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
+                        String enclosingClassName = ElementUtils.getEnclosingClassName(elt);
+                        ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(enclosingClassName);
                         String fieldName = javacTree.getName().toString();
                         if (!enclosingClass.fields.containsKey(fieldName)) {
                             enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode));
@@ -477,15 +478,15 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Calls {@link #addSourceFile(String)} for the file containing the given element.
      *
-     * @param element element for the source file to add
+     * @param element the element for the source file to add
      * @return path of the file containing {@code element}
      */
     private String addClassesForElement(Element element) {
         if (!ElementUtils.isElementFromSourceCode(element)) {
-            throw new BugInCF("Adding source file for non-source element: " + element);
+            throw new BugInCF("Called addClassesForElement for non-source element: " + element);
         }
 
-        TypeElement toplevelClass = toplevelEnclosingClass(element);
+        TypeElement toplevelClass = ElementUtils.toplevelEnclosingClass(element);
         String path = ElementUtils.getSourceFilePath(toplevelClass);
         if (classToAnnos.containsKey(ElementUtils.getBinaryName(toplevelClass))) {
             return path;
@@ -500,28 +501,6 @@ public class WholeProgramInferenceJavaParserStorage
                         toplevelClass.getSimpleName().toString());
         createWrappersForClass(toplevelClassTree, javaParserNode, sourceAnnos);
         return path;
-    }
-
-    /**
-     * Returns the top-level class that contains {@code element}.
-     *
-     * @param element the element whose enclosing class to find
-     * @return an element for a class containing {@code element} that isn't contained in another
-     *     class
-     */
-    private static TypeElement toplevelEnclosingClass(Element element) {
-        TypeElement result = ElementUtils.enclosingTypeElement(element);
-        if (result == null) {
-            return (TypeElement) element;
-        }
-
-        TypeElement enclosing = ElementUtils.strictEnclosingTypeElement(result);
-        while (enclosing != null) {
-            result = enclosing;
-            enclosing = ElementUtils.strictEnclosingTypeElement(enclosing);
-        }
-
-        return result;
     }
 
     ///
@@ -618,7 +597,7 @@ public class WholeProgramInferenceJavaParserStorage
                 writer.write(prettyPrinter.print(root.declaration));
                 writer.close();
             } catch (IOException e) {
-                throw new BugInCF("Error while writing ajava file", e);
+                throw new BugInCF("Error while writing ajava file " + outputPath, e);
             }
         }
 
@@ -671,7 +650,7 @@ public class WholeProgramInferenceJavaParserStorage
      * annotatedType} is null.
      *
      * @param annotatedType type to transfer annotations from
-     * @param target the JavaParser type to transfer annotation to, must represent the same type as
+     * @param target the JavaParser type to transfer annotation to; must represent the same type as
      *     {@code annotatedType}
      */
     private static void transferAnnotations(
@@ -698,7 +677,7 @@ public class WholeProgramInferenceJavaParserStorage
         public List<ClassOrInterfaceAnnos> types;
 
         /**
-         * Constructs a wrapper around the given declaration.
+         * Constructs a wrapper around the given compilation unit.
          *
          * @param declaration compilation unit to wrap
          */
@@ -719,10 +698,10 @@ public class WholeProgramInferenceJavaParserStorage
         }
 
         /**
-         * Returns the top level type declaration in the compilation unit with {@code name}.
+         * Returns the top-level type declaration named {@code name} in the compilation unit.
          *
          * @param name name of type declaration
-         * @return the type declaration with {@code name} in the wrapped compilation unit
+         * @return the type declaration named {@code name} in the wrapped compilation unit
          */
         public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
             return JavaParserUtils.getTypeDeclarationByName(declaration, name);
@@ -737,15 +716,9 @@ public class WholeProgramInferenceJavaParserStorage
          * Mapping from JVM method signatures to the wrapper containing the corresponding
          * executable.
          */
-        public Map<String, CallableDeclarationAnnos> callableDeclarations;
+        public Map<String, CallableDeclarationAnnos> callableDeclarations = new HashMap<>();
         /** Mapping from field names to wrappers for those fields. */
-        public Map<String, FieldAnnos> fields;
-
-        /** Creates an empty class or interface wrapper. */
-        public ClassOrInterfaceAnnos() {
-            callableDeclarations = new HashMap<>();
-            fields = new HashMap<>();
-        }
+        public Map<String, FieldAnnos> fields = new HashMap<>();
 
         /**
          * Transfers all annotations inferred by whole program inference for the methods and fields

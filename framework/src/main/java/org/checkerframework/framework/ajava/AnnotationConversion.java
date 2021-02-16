@@ -108,7 +108,7 @@ public class AnnotationConversion {
     }
 
     /**
-     * A visitor that converts annotation values from an {@code AnnotationMirror} to a JavaParser
+     * A visitor that converts an annotation value from an {@code AnnotationMirror} to a JavaParser
      * node that can appear in an {@code AnnotationExpr}.
      */
     private static class AnnotationValueConverterVisitor
@@ -141,8 +141,7 @@ public class AnnotationConversion {
         @Override
         public Expression visitByte(byte value, Void p) {
             // Annotation byte values are automatically cast to the correct type, so using an
-            // integer
-            // literal here works.
+            // integer literal here works.
             return toIntegerLiteralExpr(value);
         }
 
@@ -192,8 +191,7 @@ public class AnnotationConversion {
         @Override
         public Expression visitShort(short value, Void p) {
             // Annotation short values are automatically cast to the correct type, so using an
-            // integer
-            // literal here works.
+            // integer literal here works.
             return toIntegerLiteralExpr(value);
         }
 
