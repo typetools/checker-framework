@@ -96,6 +96,11 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final ExecutableElement classGetName =
             TreeUtils.getMethod(java.lang.Class.class.getCanonicalName(), "getName", processingEnv);
 
+    /** The {@link Class#getCanonicalName()} method. */
+    private final ExecutableElement classGetCanonicalName =
+            TreeUtils.getMethod(
+                    java.lang.Class.class.getCanonicalName(), "getCanonicalName", processingEnv);
+
     /**
      * Creates a SignatureAnnotatedTypeFactory.
      *
@@ -228,8 +233,9 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
          * </code></pre>
          *
-         * Class.getName sometimes returns a binary name (which is more specific than its
-         * annotation, which is ClassGetName:
+         * Class.getName and Class.getCanonicalName() sometimes return a binary name (which is more
+         * specific than their annotations, which are ClassGetName and FullyQualifiedName,
+         * respectively):
          *
          * <pre><code>
          * {@literal @}BinaryName String binaryName = MyClass.class.getName();
@@ -272,7 +278,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && receiverType.getAnnotation(InternalForm.class) != null) {
                     type.replaceAnnotation(BINARY_NAME);
                 }
-            } else if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)) {
+            } else if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)
+                    || TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv)) {
                 ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
                 if (TreeUtils.isClassLiteral(receiver)) {
                     ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
