@@ -336,7 +336,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     /** The Throwable type. */
     final TypeMirror throwableType;
 
-    /** Types to capture unchecked exceptions. */
+    /**
+     * Supertypes of all unchecked exceptions. The contents are {@code RuntimeException} and {@code
+     * Error}.
+     */
     final Set<TypeMirror> uncheckedExceptionTypes;
 
     /**
