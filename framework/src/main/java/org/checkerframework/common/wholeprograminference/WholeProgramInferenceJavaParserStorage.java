@@ -42,6 +42,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -784,32 +785,32 @@ public class WholeProgramInferenceJavaParserStorage
          * Inferred annotations for the return type, if the declaration represents a method.
          * Initialized on first usage.
          */
-        public @Nullable AnnotatedTypeMirror returnType;
+        private @MonotonicNonNull AnnotatedTypeMirror returnType;
         /**
          * Inferred annotations for the receiver type, if the declaration represents a method.
          * Initialized on first usage.
          */
-        public @Nullable AnnotatedTypeMirror receiverType;
+        private @MonotonicNonNull AnnotatedTypeMirror receiverType;
         /**
          * Inferred annotations for parameter types. Initialized the first time any parameter is
          * accessed and each parameter is initialized the first time it's accessed.
          */
-        public @Nullable List<@Nullable AnnotatedTypeMirror> parameterTypes;
+        public @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes;
         /** Annotations on the callable declaration. */
-        public @Nullable Set<AnnotationMirror> declarationAnnotations;
+        public @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations;
 
         /**
          * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
          * inferred preconditions on that field.
          */
-        public @Nullable Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions;
+        public @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions;
         /**
          * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
          * inferred postconditions on that field.
          */
-        public @Nullable Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions;
-        /** Inferred contracts for the callable declaration. */
-        public @Nullable List<AnnotationMirror> contracts;
+        public @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions;
+        // /** Inferred contracts for the callable declaration. */
+        // private @MonotonicNonNull List<AnnotationMirror> contracts;
 
         /**
          * Creates a wrapper for the given method or constructor declaration.
@@ -818,13 +819,6 @@ public class WholeProgramInferenceJavaParserStorage
          */
         public CallableDeclarationAnnos(CallableDeclaration<?> declaration) {
             this.declaration = declaration;
-            this.returnType = null;
-            this.receiverType = null;
-            this.parameterTypes = null;
-            this.declarationAnnotations = null;
-            this.fieldToPreconditions = null;
-            this.fieldToPostconditions = null;
-            this.contracts = null;
         }
 
         /**
@@ -859,9 +853,9 @@ public class WholeProgramInferenceJavaParserStorage
         }
 
         /**
-         * If this wrapper holds a method, returns the inferred type of the receiver type. If
-         * necessary, initializes the {@code AnnotatedTypeMirror} for that location using {@code
-         * type} and {@code atf} to a wrapper around the base type for the receiver type.
+         * If this wrapper holds a method, returns the inferred type of the receiver. If necessary,
+         * initializes the {@code AnnotatedTypeMirror} for that location using {@code type} and
+         * {@code atf} to a wrapper around the base type for the receiver type.
          *
          * @param type base type for the receiver type, used for initializing the returned {@code
          *     AnnotatedTypeMirror} the first time it's accessed
@@ -902,7 +896,6 @@ public class WholeProgramInferenceJavaParserStorage
 
         /**
          * Returns an AnnotatedTypeMirror containing the preconditions for the given field.
-         * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
          *
          * @param field VariableElement for a field in the enclosing class for this method
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
@@ -928,7 +921,6 @@ public class WholeProgramInferenceJavaParserStorage
 
         /**
          * Returns an AnnotatedTypeMirror containing the postconditions for the given field.
-         * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
          *
          * @param field VariableElement for a field in the enclosing class for this method
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
@@ -1023,7 +1015,7 @@ public class WholeProgramInferenceJavaParserStorage
         /** Wrapped field declaration. */
         public VariableDeclarator declaration;
         /** Inferred type for field, initialized the first time it's accessed. */
-        public @Nullable AnnotatedTypeMirror type;
+        private @MonotonicNonNull AnnotatedTypeMirror type;
 
         /**
          * Creates a wrapper for the given field declaration.
