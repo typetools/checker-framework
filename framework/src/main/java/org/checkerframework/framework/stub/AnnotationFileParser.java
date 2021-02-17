@@ -106,8 +106,8 @@ import org.checkerframework.javacutil.TreeUtils;
 // ajava file), notably its annotated types and its declaration annotations.
 // From a client perspective, it has static methods as described below in the Javadoc.
 /**
- * This class has two static methods. Each method parses an annotation file and adds annotations to
- * the {@link AnnotationFileAnnotations} passed as an argument.
+ * This class has three static methods. Each method parses an annotation file and adds annotations
+ * to the {@link AnnotationFileAnnotations} passed as an argument.
  *
  * <p>The first main entry point is {@link AnnotationFileParser#parseStubFile(String, InputStream,
  * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
@@ -116,7 +116,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
  * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
- * This behaves the same as {@code parse}, but takes an ajava file instead.
+ * This behaves the same as {@link AnnotationFileParser#parseStubFile(String, InputStream,
+ * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, but takes an ajava file
+ * instead.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
@@ -127,7 +129,7 @@ public class AnnotationFileParser {
 
     /**
      * If parsing an ajava file, represents the javac tree for the compilation root of the file
-     * being parse.
+     * being parsed.
      */
     private CompilationUnitTree root;
 
@@ -510,7 +512,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * The main entry point when parsing an ajava file. Parse an ajava file and side-effects the
+     * The main entry point when parsing an ajava file. Parses an ajava file and side-effects the
      * last two arguments.
      *
      * @param filename name of ajava file, used only for diagnostic messages
@@ -699,7 +701,7 @@ public class AnnotationFileParser {
      * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
      * processing an ajava file, where traversal is handled externaly by a visitor, these type
      * variables must be removed after processing the type's members. Otherwise, this method removes
-     * them automatically
+     * them.
      *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
@@ -727,8 +729,8 @@ public class AnnotationFileParser {
             typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
             fqTypeName = typeBeingParsed.toString();
         } else {
-            innerName =
-                    (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
+            String packagePrefix = outertypeName == null ? "" : outertypeName + ".";
+            innerName = packagePrefix + typeDecl.getNameAsString();
             typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
             fqTypeName = typeBeingParsed.toString();
             typeElt = elements.getTypeElement(fqTypeName);

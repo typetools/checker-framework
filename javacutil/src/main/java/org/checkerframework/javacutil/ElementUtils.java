@@ -65,7 +65,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element.
+     * Returns the innermost type element that is, or encloses, the given element.
      *
      * <p>Note that in this code:
      *
@@ -78,7 +78,8 @@ public class ElementUtils {
      * {@code Inner} has no enclosing type, but this method returns {@code Outer}.
      *
      * @param elem the enclosed element of a class
-     * @return the innermost type element, or null if no type element encloses {@code elem}
+     * @return the innermost type element (possibly the argument itself), or null if {@code elem} is
+     *     not, and is not enclosed by, a type element
      */
     public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
         Element result = elem;
@@ -89,8 +90,9 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element different from the element.
-     * See {@link #enclosingTypeElement}.
+     * Returns the innermost type element enclosing the given element, that is different from the
+     * element itself. By contrast, {@link #enclosingTypeElement} returns its argument if the
+     * argument is a type element.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
