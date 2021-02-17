@@ -718,12 +718,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public void setRoot(@Nullable CompilationUnitTree root, boolean shouldCheckVisitor) {
         if (root != null && wholeProgramInference != null) {
             for (Tree typeDecl : root.getTypeDecls()) {
-                if (typeDecl.getKind() != Kind.CLASS) {
-                    continue;
+                if (typeDecl.getKind() == Kind.CLASS) {
+                    ClassTree classTree = (ClassTree) typeDecl;
+                    wholeProgramInference.preprocessClassTree(classTree);
                 }
-
-                ClassTree classTree = (ClassTree) typeDecl;
-                wholeProgramInference.preprocessClassTree(classTree);
             }
         }
 
@@ -786,29 +784,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // a.b would be in a subdirectory a/b. The filename is
             // ClassName-checker.qualified.name.ajava. If such a file exists, read its detailed
             // annotation data, including annotations on private elements.
-            String qualifiedName =
+
+            String packagePrefix =
                     root.getPackageName() != null
-                            ? TreeUtils.nameExpressionToString(root.getPackageName())
+                            ? TreeUtils.nameExpressionToString(root.getPackageName()) + "."
                             : "";
-            // The method getName returns a path, extract the basename.
+
+            // The method getName() returns a path.
             String className = root.getSourceFile().getName();
+            // Extract the basename.
             int lastSeparator = className.lastIndexOf(File.separator);
             if (lastSeparator != -1) {
                 className = className.substring(lastSeparator + 1);
             }
-
-            qualifiedName += "." + className;
-            // Strip .java extension.
-            if (qualifiedName.endsWith(".java")) {
-                qualifiedName =
-                        qualifiedName.substring(0, qualifiedName.length() - ".java".length());
+            // Drop the ".java" extension.
+            if (className.endsWith(".java")) {
+                className = className.substring(0, className.length() - ".java".length());
             }
+
+            String qualifiedName = packagePrefix + className;
 
             String ajavaPath =
                     checker.getOption("ajava")
                             + File.separator
-                            + qualifiedName.replaceAll("\\.", "/");
-            ajavaPath += "-" + checker.getClass().getCanonicalName() + ".ajava";
+                            + qualifiedName.replaceAll("\\.", "/")
+                            + "-"
+                            + checker.getClass().getCanonicalName()
+                            + ".ajava";
             File ajavaFile = new File(ajavaPath);
             if (ajavaFile.exists()) {
                 currentFileAjavaTypes = new AnnotationFileElementTypes(this);
@@ -1352,8 +1354,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 System.out.printf(" => %s%n", type);
             }
         }
-        // Caching is disabled if stub files are being parsed, because calls to this
-        // method before the stub files are fully read can return incorrect results.
+        // Caching is disabled if annotation files are being parsed, because calls to this
+        // method before the annotation files are fully read can return incorrect results.
         if (shouldCache
                 && !stubTypes.isParsing()
                 && !ajavaTypes.isParsing()
