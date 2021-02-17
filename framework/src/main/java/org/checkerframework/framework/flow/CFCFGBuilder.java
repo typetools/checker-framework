@@ -23,9 +23,9 @@ import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseOne;
 import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseThree;
 import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseTwo;
 import org.checkerframework.dataflow.cfg.builder.PhaseOneResult;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -53,6 +53,19 @@ public class CFCFGBuilder extends CFGBuilder {
                     "Assertions cannot be assumed to be enabled and disabled at the same time.");
         }
 
+        // Subcheckers with dataflow share control-flow graph structure to
+        // allow a super-checker to query the stores of a subchecker.
+        if (factory instanceof GenericAnnotatedTypeFactory) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
+                    (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
+            if (asGATF.hasOrIsSubchecker) {
+                ControlFlowGraph sharedCFG = asGATF.getSharedCFGForTree(underlyingAST.getCode());
+                if (sharedCFG != null) {
+                    return sharedCFG;
+                }
+            }
+        }
+
         CFTreeBuilder builder = new CFTreeBuilder(env);
         PhaseOneResult phase1result =
                 new CFCFGTranslationPhaseOne(
@@ -65,19 +78,32 @@ public class CFCFGBuilder extends CFGBuilder {
                         .process(root, underlyingAST);
         ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
+        if (factory instanceof GenericAnnotatedTypeFactory) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
+                    (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
+            if (asGATF.hasOrIsSubchecker) {
+                asGATF.addSharedCFGForTree(underlyingAST.getCode(), phase3result);
+            }
+        }
         return phase3result;
     }
 
-    /*
-     * Given a SourceChecker and an AssertTree, returns whether the AssertTree
-     * uses an @AssumeAssertion string that is relevant to the SourceChecker.
+    /**
+     * Given a SourceChecker and an AssertTree, returns whether the AssertTree uses
+     * an @AssumeAssertion string that is relevant to the SourceChecker.
+     *
+     * @param checker the checker
+     * @param tree an assert tree
+     * @return true if the assert tree contains an @AssumeAssertion(checker) message string for any
+     *     subchecker of the given checker's ultimate parent checker
      */
     public static boolean assumeAssertionsActivatedForAssertTree(
-            SourceChecker checker, AssertTree tree) {
+            BaseTypeChecker checker, AssertTree tree) {
         ExpressionTree detail = tree.getDetail();
         if (detail != null) {
             String msg = detail.toString();
-            Collection<String> prefixes = checker.getSuppressWarningsPrefixes();
+            BaseTypeChecker ultimateParent = checker.getUltimateParentChecker();
+            Collection<String> prefixes = ultimateParent.getSuppressWarningsPrefixesOfSubcheckers();
             for (String prefix : prefixes) {
                 String assumeAssert = "@AssumeAssertion(" + prefix + ")";
                 if (msg.contains(assumeAssert)) {
@@ -89,6 +115,14 @@ public class CFCFGBuilder extends CFGBuilder {
         return false;
     }
 
+    /**
+     * A specialized phase-one CFG builder, with a few modifications that make use of the type
+     * factory. It is responsible for: 1) translating foreach loops so that the declarations of
+     * their iteration variables have the right annotations, 2) registering the containing elements
+     * of artificial trees with the relevant type factories, and 3) generating appropriate assertion
+     * CFG structure in the presence of @AssumeAssertion assertion strings which mention the checker
+     * or its supercheckers.
+     */
     protected static class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
         /** The associated checker. */
         protected final BaseTypeChecker checker;
@@ -118,7 +152,6 @@ public class CFCFGBuilder extends CFGBuilder {
 
         @Override
         public void handleArtificialTree(Tree tree) {
-            // Record the method or class that encloses the newly created tree.
             MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
