@@ -24,7 +24,7 @@ Changes to JavaExpression parsing:
     * `DependentTypesHelper#standardizeString`
  * These methods moved:
     * `GenericAnnotatedTypeFactory#standardizeAnnotationFromContract` => `DependentTypesHelper`
-    * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`.
+    * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`
 
 **Closed issues:**
 
