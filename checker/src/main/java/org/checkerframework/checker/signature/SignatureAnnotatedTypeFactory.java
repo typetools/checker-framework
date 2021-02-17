@@ -308,7 +308,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                         || enclosing.getKind() == ElementKind.PACKAGE) {
                                     type.replaceAnnotation(
                                             isClassGetName
-                                                    ? BINARY_NAME
+                                                    ? DOT_SEPARATED_IDENTIFIERS
                                                     : CANONICAL_NAME_AND_BINARY_NAME);
                                 }
                             }
