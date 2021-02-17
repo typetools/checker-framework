@@ -68,18 +68,18 @@ import scenelib.annotations.util.JVMNames;
 public class WholeProgramInferenceScenesStorage
         implements WholeProgramInferenceStorage<ATypeElement> {
 
-    /** The type factory associated with this WholeProgramInferenceScenesStorage. */
-    protected final AnnotatedTypeFactory atypeFactory;
-
-    /** Annotations that should not be output to a .jaif or stub file. */
-    private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
-
     /**
      * Directory where .jaif files will be written to and read from. This directory is relative to
      * where the CF's javac command is executed.
      */
     public static final String JAIF_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
+
+    /** The type factory associated with this WholeProgramInferenceScenesStorage. */
+    protected final AnnotatedTypeFactory atypeFactory;
+
+    /** Annotations that should not be output to a .jaif or stub file. */
+    private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
     /**
      * If true, assignments where the rhs is null are be ignored.

@@ -240,6 +240,13 @@ public abstract class GenericAnnotatedTypeFactory<
     // Not final so that subclasses can set it.
     public boolean sideEffectsUnrefineAliases = false;
 
+    /**
+     * True if this checker either has one or more subcheckers, or if this checker is a subchecker.
+     * False otherwise. All uses of the methods {@link #addSharedCFGForTree(Tree, ControlFlowGraph)}
+     * and {@link #getSharedCFGForTree(Tree)} should be guarded by a check that this is true.
+     */
+    public final boolean hasOrIsSubchecker;
+
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -270,8 +277,32 @@ public abstract class GenericAnnotatedTypeFactory<
             flowResultAnalysisCaches;
 
     /**
-     * Creates a type factory for checking the given compilation unit with respect to the given
-     * annotation.
+     * Subcheckers share the same ControlFlowGraph for each analyzed code statement. This maps from
+     * code statements to the shared control flow graphs. This map is null in all subcheckers (i.e.
+     * any checker for which getParentChecker() returns non-null). This map is also unused (and
+     * therefore null) for a checker with no subcheckers with which it can share CFGs.
+     *
+     * <p>The initial capacity of the map is set by {@link #getCacheSize()}.
+     */
+    protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
+
+    /**
+     * If true, {@link #setRoot(CompilationUnitTree)} should clear the {@link #subcheckerSharedCFG}
+     * map, freeing memory.
+     *
+     * <p>For each compilation unit, all the subcheckers run first and finally the ultimate parent
+     * checker runs. The ultimate parent checker's {@link #setRoot(CompilationUnitTree)} (the last
+     * to run) sets this field to true.
+     *
+     * <p>In first subchecker to run for the next compilation unit, {@link
+     * #setRoot(CompilationUnitTree)} observes the true value, clears the {@link
+     * #subcheckerSharedCFG} map, and sets this field back to false. That first subchecker will
+     * create a CFG and re-populate the map, and subsequent subcheckers will use the map.
+     */
+    protected boolean shouldClearSubcheckerSharedCFGs = true;
+
+    /**
+     * Creates a type factory. Its compilation unit is not yet set.
      *
      * @param checker the checker to which this type factory belongs
      * @param useFlow whether flow analysis should be performed
@@ -330,6 +361,10 @@ public abstract class GenericAnnotatedTypeFactory<
 
         contractsUtils = createContractsFromMethod();
 
+        hasOrIsSubchecker =
+                !this.getChecker().getSubcheckers().isEmpty()
+                        || this.getChecker().getParentChecker() != null;
+
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
     }
@@ -368,8 +403,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates a type factory for checking the given compilation unit with respect to the given
-     * annotation.
+     * Creates a type factory. Its compilation unit is not yet set.
      *
      * @param checker the checker to which this type factory belongs
      */
@@ -393,6 +427,41 @@ public abstract class GenericAnnotatedTypeFactory<
             this.flowResultAnalysisCaches.clear();
             this.initializerCache.clear();
             this.defaultQualifierForUseTypeAnnotator.clearCache();
+
+            if (this.checker.getParentChecker() == null) {
+                // This is an ultimate parent checker, so after it runs the shared CFG it is using
+                // will no longer be needed, and can be cleared.
+                this.shouldClearSubcheckerSharedCFGs = true;
+                if (this.checker.getSubcheckers().isEmpty()) {
+                    // If this checker has no subcheckers, then any maps that are currently
+                    // being maintained should be cleared right away.
+                    clearSharedCFG(this);
+                }
+            } else {
+                GenericAnnotatedTypeFactory<?, ?, ?, ?> ultimateParentATF =
+                        this.checker.getUltimateParentChecker().getTypeFactory();
+                clearSharedCFG(ultimateParentATF);
+            }
+        }
+    }
+
+    /**
+     * Clears the caches associated with the shared CFG for the given type factory, if it is safe to
+     * do so.
+     *
+     * @param factory a type factory
+     */
+    private void clearSharedCFG(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
+        if (factory.shouldClearSubcheckerSharedCFGs) {
+            // This is the first subchecker running in a group that share CFGs, so
+            // it must clear its ultimate parent's shared CFG before adding a new
+            // shared CFG.
+            factory.shouldClearSubcheckerSharedCFGs = false;
+            if (factory.subcheckerSharedCFG != null) {
+                factory.subcheckerSharedCFG.clear();
+            }
+            // The same applies to this map.
+            factory.artificialTreeToEnclosingElementMap.clear();
         }
     }
 
@@ -2499,6 +2568,82 @@ public abstract class GenericAnnotatedTypeFactory<
         builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
         builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
         return builder.build();
+    }
+
+    /**
+     * Add a new entry to the shared CFG. If this is a subchecker, this method delegates to the
+     * superchecker's GenericAnnotatedTypeFactory, if it exists. Duplicate keys must map to the same
+     * CFG.
+     *
+     * <p>Calls to this method should be guarded by checking {@link #hasOrIsSubchecker}; it is
+     * nonsensical to have a shared CFG when a checker is running alone.
+     *
+     * @param tree the source code corresponding to cfg
+     * @param cfg the control flow graph to use for tree
+     * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
+     */
+    public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
+        if (!shouldCache) {
+            return false;
+        }
+        BaseTypeChecker parentChecker = this.checker.getUltimateParentChecker();
+        @SuppressWarnings("interning") // Checking reference equality.
+        boolean parentIsThisChecker = parentChecker == this.checker;
+        if (parentIsThisChecker) {
+            // This is the ultimate parent.
+            if (this.subcheckerSharedCFG == null) {
+                this.subcheckerSharedCFG = new HashMap<>(getCacheSize());
+            }
+            if (!this.subcheckerSharedCFG.containsKey(tree)) {
+                this.subcheckerSharedCFG.put(tree, cfg);
+            } else {
+                assert this.subcheckerSharedCFG.get(tree).equals(cfg);
+            }
+            return true;
+        }
+
+        // This is a subchecker.
+        if (parentChecker != null) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf = parentChecker.getTypeFactory();
+            return parentAtf.addSharedCFGForTree(tree, cfg);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get the shared control flow graph used for {@code tree} by this checker's topmost
+     * superchecker. Returns null if no information is available about the given tree, or if this
+     * checker has a parent checker that does not have a GenericAnnotatedTypeFactory.
+     *
+     * <p>Calls to this method should be guarded by checking {@link #hasOrIsSubchecker}; it is
+     * nonsensical to have a shared CFG when a checker is running alone.
+     *
+     * @param tree the tree whose CFG should be looked up
+     * @return the CFG stored by this checker's uppermost superchecker for tree, or null if it is
+     *     not available
+     */
+    public @Nullable ControlFlowGraph getSharedCFGForTree(Tree tree) {
+        if (!shouldCache) {
+            return null;
+        }
+        BaseTypeChecker parentChecker = this.checker.getUltimateParentChecker();
+        @SuppressWarnings("interning") // Checking reference equality.
+        boolean parentIsThisChecker = parentChecker == this.checker;
+        if (parentIsThisChecker) {
+            // This is the ultimate parent;
+            return this.subcheckerSharedCFG == null
+                    ? null
+                    : this.subcheckerSharedCFG.getOrDefault(tree, null);
+        }
+
+        // This is a subchecker.
+        if (parentChecker != null) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf = parentChecker.getTypeFactory();
+            return parentAtf.getSharedCFGForTree(tree);
+        } else {
+            return null;
+        }
     }
 
     /**
