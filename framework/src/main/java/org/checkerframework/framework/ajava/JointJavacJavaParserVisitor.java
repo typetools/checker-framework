@@ -191,7 +191,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             for (ExpressionTree arg : javacTree.getArguments()) {
                 assert arg instanceof AssignmentTree;
                 AssignmentTree assignment = (AssignmentTree) arg;
-                assignment.getExpression().accept(this, argIter.next().getValue());
+                IdentifierTree memberName = (IdentifierTree) assignment.getVariable();
+                MemberValuePair javaParserArg = argIter.next();
+                assert memberName.getName().contentEquals(javaParserArg.getNameAsString());
+                assignment.getExpression().accept(this, javaParserArg.getValue());
             }
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
@@ -308,64 +311,56 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     private void processStatements(
             Iterable<? extends StatementTree> javacStatements,
             Iterable<Statement> javaParserStatements) {
-        Iterator<? extends StatementTree> javacIter = javacStatements.iterator();
-        boolean hasNextJavac = javacIter.hasNext();
-        StatementTree javacStatement = hasNextJavac ? javacIter.next() : null;
+        LookaheadIterator<StatementTree> javacIter = new LookaheadIterator<>(javacStatements);
 
-        Iterator<Statement> javaParserIter = javaParserStatements.iterator();
-        boolean hasNextJavaParser = javaParserIter.hasNext();
-        Statement javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
+        LookaheadIterator<Statement> javaParserIter = new LookaheadIterator<>(javaParserStatements);
 
-        while (hasNextJavac || hasNextJavaParser) {
+        while (!javacIter.isDone() || !javaParserIter.isDone()) {
             // Skip synthetic javac super() calls by checking if the JavaParser statement matches.
-            if (hasNextJavac
-                    && isDefaultSuperConstructorCall(javacStatement)
-                    && (!hasNextJavaParser
-                            || !isDefaultSuperConstructorCall(javaParserStatement))) {
-                hasNextJavac = javacIter.hasNext();
-                javacStatement = hasNextJavac ? javacIter.next() : null;
+            if (!javacIter.isDone()
+                    && isDefaultSuperConstructorCall(javacIter.current())
+                    && (javaParserIter.isDone()
+                            || !isDefaultSuperConstructorCall(javaParserIter.current()))) {
+                javacIter.advance();
                 continue;
             }
 
             // In javac, a line like "int i = 0, j = 0" is expanded as two sibling VariableTree
             // instances. In javaParser this is one VariableDeclarationExpr with two nested
             // VariableDeclarators. Match the declarators with the VariableTrees.
-            if (hasNextJavaParser
-                    && javaParserStatement.isExpressionStmt()
-                    && javaParserStatement
+            if (!javaParserIter.isDone()
+                    && javaParserIter.current().isExpressionStmt()
+                    && javaParserIter
+                            .current()
                             .asExpressionStmt()
                             .getExpression()
                             .isVariableDeclarationExpr()) {
                 for (VariableDeclarator decl :
-                        javaParserStatement
+                        javaParserIter
+                                .current()
                                 .asExpressionStmt()
                                 .getExpression()
                                 .asVariableDeclarationExpr()
                                 .getVariables()) {
-                    assert hasNextJavac;
-                    assert javacStatement.getKind() == Kind.VARIABLE;
-                    javacStatement.accept(this, decl);
-                    hasNextJavac = javacIter.hasNext();
-                    javacStatement = hasNextJavac ? javacIter.next() : null;
+                    assert !javacIter.isDone();
+                    assert javacIter.current().getKind() == Kind.VARIABLE;
+                    javacIter.current().accept(this, decl);
+                    javacIter.advance();
                 }
 
-                hasNextJavaParser = javaParserIter.hasNext();
-                javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
+                javaParserIter.advance();
                 continue;
             }
 
-            assert hasNextJavac;
-            assert hasNextJavaParser;
-            javacStatement.accept(this, javaParserStatement);
-            hasNextJavac = javacIter.hasNext();
-            javacStatement = hasNextJavac ? javacIter.next() : null;
-
-            hasNextJavaParser = javaParserIter.hasNext();
-            javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
+            assert !javacIter.isDone();
+            assert !javaParserIter.isDone();
+            javacIter.current().accept(this, javaParserIter.current());
+            javacIter.advance();
+            javaParserIter.advance();
         }
 
-        assert !hasNextJavac;
-        assert !hasNextJavaParser;
+        assert javacIter.isDone();
+        assert javaParserIter.isDone();
     }
 
     /**
@@ -402,8 +397,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      * Returns whether a JavaParser statement represents a method call {@code super()}.
      *
      * @param statement the JavaParser statement to check
-     * @return true if statement is an explicit super constructor invocation with no arguments,
-     *     false otherwise
+     * @return true if statement is an explicit super constructor invocation with no arguments
      */
     private boolean isDefaultSuperConstructorCall(Statement statement) {
         if (!statement.isExplicitConstructorInvocationStmt()) {
@@ -527,58 +521,49 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      *
      * @param javacMembers a list of trees forming the members of a javac {@code ClassTree}
      * @param javaParserMembers a list of nodes forming the members of a JavaParser {@code
-     *     ClassOrInterfaceDeclaration} or a {@code ObjectCreationExpr} with an anonymous class body
-     *     that corresponds to {@code javacMembers}
+     *     ClassOrInterfaceDeclaration} or an {@code ObjectCreationExpr} with an anonymous class
+     *     body that corresponds to {@code javacMembers}
      */
     private void visitClassMembers(
             List<? extends Tree> javacMembers, List<BodyDeclaration<?>> javaParserMembers) {
-        Iterator<? extends Tree> javacIter = javacMembers.iterator();
-        boolean hasNextJavac = javacIter.hasNext();
-        Tree javacMember = hasNextJavac ? javacIter.next() : null;
-        Iterator<BodyDeclaration<?>> javaParserIter = javaParserMembers.iterator();
-        boolean hasNextJavaParser = javaParserIter.hasNext();
-        BodyDeclaration<?> javaParserMember = hasNextJavaParser ? javaParserIter.next() : null;
-        while (hasNextJavac || hasNextJavaParser) {
+        LookaheadIterator<Tree> javacIter = new LookaheadIterator<>(javacMembers);
+        LookaheadIterator<BodyDeclaration<?>> javaParserIter =
+                new LookaheadIterator<>(javaParserMembers);
+        while (!javacIter.isDone() || !javaParserIter.isDone()) {
             // Skip javac's synthetic no-argument constructors.
-            if (hasNextJavac
-                    && isNoArgumentConstructor(javacMember)
-                    && (!hasNextJavaParser || !isNoArgumentConstructor(javaParserMember))) {
-                hasNextJavac = javacIter.hasNext();
-                javacMember = hasNextJavac ? javacIter.next() : null;
+            if (!javacIter.isDone()
+                    && isNoArgumentConstructor(javacIter.current())
+                    && (javaParserIter.isDone()
+                            || !isNoArgumentConstructor(javaParserIter.current()))) {
+                javacIter.advance();
                 continue;
             }
 
             // In javac, a line like int i = 0, j = 0 is expanded as two sibling VariableTree
             // instances. In JavaParser this is one FieldDeclaration with two nested
             // VariableDeclarators. Match the declarators with the VariableTrees.
-            if (hasNextJavaParser && javaParserMember.isFieldDeclaration()) {
+            if (!javaParserIter.isDone() && javaParserIter.current().isFieldDeclaration()) {
                 for (VariableDeclarator decl :
-                        javaParserMember.asFieldDeclaration().getVariables()) {
-                    assert hasNextJavac;
-                    assert javacMember.getKind() == Kind.VARIABLE;
-                    javacMember.accept(this, decl);
-                    hasNextJavac = javacIter.hasNext();
-                    javacMember = hasNextJavac ? javacIter.next() : null;
+                        javaParserIter.current().asFieldDeclaration().getVariables()) {
+                    assert !javacIter.isDone();
+                    assert javacIter.current().getKind() == Kind.VARIABLE;
+                    javacIter.current().accept(this, decl);
+                    javacIter.advance();
                 }
 
-                hasNextJavaParser = javaParserIter.hasNext();
-                javaParserMember = hasNextJavaParser ? javaParserIter.next() : null;
+                javaParserIter.advance();
                 continue;
             }
 
-            assert hasNextJavac;
-            assert hasNextJavaParser;
-            javacMember.accept(this, javaParserMember);
-
-            hasNextJavac = javacIter.hasNext();
-            javacMember = hasNextJavac ? javacIter.next() : null;
-
-            hasNextJavaParser = javaParserIter.hasNext();
-            javaParserMember = hasNextJavaParser ? javaParserIter.next() : null;
+            assert !javacIter.isDone();
+            assert !javaParserIter.isDone();
+            javacIter.current().accept(this, javaParserIter.current());
+            javacIter.advance();
+            javaParserIter.advance();
         }
 
-        assert !hasNextJavac;
-        assert !hasNextJavaParser;
+        assert javacIter.isDone();
+        assert javaParserIter.isDone();
     }
 
     /**
@@ -656,9 +641,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         CompilationUnit node = (CompilationUnit) javaParserNode;
         processCompilationUnit(javacTree, node);
-        // TODO: A CompilationUnitTree could also be a package-info.java file. Currently skipping
-        // descending into these specific constructs such as getPackageAnnotations, because they
-        // probably won't be useful and TreeScanner also skips them. Should we process them?
         assert (javacTree.getPackage() != null) == node.getPackageDeclaration().isPresent();
         if (javacTree.getPackage() != null) {
             javacTree.getPackage().accept(this, node.getPackageDeclaration().get());
@@ -1504,9 +1486,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitVariable(VariableTree javacTree, Node javaParserNode) {
+        // Javac uses the class VariableTree to represent multiple syntactic concepts such as
+        // variable declarations, parameters, and fields.
         if (javaParserNode instanceof VariableDeclarator) {
+            // JavaParser uses VariableDeclarator as parts of other declaration types like
+            // VariableDeclarationExpr when multiple variables may be declared.
             VariableDeclarator node = (VariableDeclarator) javaParserNode;
             processVariable(javacTree, node);
+            // Don't process the variable type when it's the Java keyword "var".
             if (!node.getType().isVarType()
                     && (!node.getType().isClassOrInterfaceType()
                             || !node.getType()
@@ -2380,5 +2367,68 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 javaParserNode,
                 javaParserNode.getClass(),
                 expectedType);
+    }
+
+    /**
+     * An alternate type of iterator that points to a "current item" until it reaches the end of the
+     * collection and enters the "done" state. The current item may be queried as many times as
+     * desired before advancing the iterator to the next item. This contrasts with Java's {@code
+     * Iterator} interface where querying the next item advances the iterator.
+     */
+    private static class LookaheadIterator<T> {
+        /** Java iterator for the iterated collection. */
+        private Iterator<? extends T> wrappedIterator;
+        /**
+         * True if this iterator currently points to an item and false if the iterator has been
+         * advanced past the last element of the collection.
+         */
+        private boolean isDone;
+        /** Item the iterator currently points to. */
+        private T currentItem;
+
+        /**
+         * Constructs a LookahedIterator for the given iterable. The iterator will point toward the
+         * first element of {@code iterable}, unless there are no elements, in which case it will be
+         * in the "done" state.
+         *
+         * @param iterable collection to iterate over
+         */
+        public LookaheadIterator(Iterable<? extends T> iterable) {
+            this.wrappedIterator = iterable.iterator();
+            isDone = false;
+            currentItem = null;
+            advance();
+        }
+
+        /**
+         * Returns whether the iterator has reached the end of the collection
+         *
+         * @return true if the iterator has been advanced past the last element of the collection
+         */
+        public boolean isDone() {
+            return isDone;
+        }
+
+        /**
+         * Returns the current item.
+         *
+         * @return the item the iterator currently points to, or null if the iterator is done.
+         */
+        public T current() {
+            return currentItem;
+        }
+
+        /**
+         * Advances the iterator to point to the next element of the collection if it exists, or
+         * enters the "done" state if there are no more elements.
+         */
+        public void advance() {
+            if (isDone) {
+                throw new IllegalStateException("Iterator advanced past end");
+            }
+
+            isDone = !wrappedIterator.hasNext();
+            currentItem = isDone ? null : wrappedIterator.next();
+        }
     }
 }
