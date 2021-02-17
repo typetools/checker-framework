@@ -43,7 +43,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.checkerframework.javacutil.UserError;
 
 /** Holds information about types parsed from annotation files (stub files). */
 public class AnnotationFileElementTypes {
@@ -329,8 +328,7 @@ public class AnnotationFileElementTypes {
      * @param elt element for which annotations are returned
      * @param receiverType the type of the class that contains member (or a subtype of it)
      * @return the most specific AnnotatedTypeMirror for {@code elt} that is a fake override, or
-     *     null if no overrides, or throws a UserError if there are multiple most specific fake
-     *     overrides
+     *     null if there are no fake overrides
      */
     public @Nullable AnnotatedTypeMirror getFakeOverride(
             Element elt, AnnotatedTypeMirror receiverType) {
@@ -386,7 +384,7 @@ public class AnnotationFileElementTypes {
             for (TypeMirror candidate : applicable) {
                 message.add("  candidate: " + candidate);
             }
-            throw new UserError(message.toString());
+            throw new BugInCF(message.toString());
         }
 
         for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
