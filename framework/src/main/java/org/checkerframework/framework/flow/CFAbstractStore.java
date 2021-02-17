@@ -648,8 +648,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (!fieldAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
-            boolean isMonotonic = isMonotonicUpdate(fieldAccess, val);
-            if (sequentialSemantics || isMonotonic || fieldAccess.isUnassignableByOtherCode()) {
+            if (sequentialSemantics
+                    || isMonotonicUpdate(fieldAccess, val)
+                    || fieldAccess.isUnassignableByOtherCode()) {
                 fieldValues.put(fieldAccess, val);
             }
         }

@@ -296,17 +296,9 @@ public class SameLenTransfer extends CFTransfer {
                 AnnotationMirror newSameLen =
                         aTypeFactory.createSameLen(
                                 Collections.singletonList(paramNames.get(index)));
-                JavaExpression otherParamRec = null;
-                try {
-                    otherParamRec =
-                            JavaExpressionParseUtil.fromVariableTree(
-                                    aTypeFactory, paramTrees.get(otherParamIndex));
-                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                    // do nothing
-                }
-                if (otherParamRec != null) {
-                    info.insertValue(otherParamRec, newSameLen);
-                }
+                JavaExpression otherParamRec =
+                        JavaExpression.fromVariableTree(paramTrees.get(otherParamIndex));
+                info.insertValue(otherParamRec, newSameLen);
             }
         }
     }

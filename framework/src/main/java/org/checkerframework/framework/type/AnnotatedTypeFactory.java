@@ -387,7 +387,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from a Tree to its TreePath. Shared between all instances. */
     private final TreePathCacher treePathCache;
 
-    /** Mapping from CFG generated trees to their enclosing elements. */
+    /** Mapping from CFG-generated trees to their enclosing elements. */
     protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
     /**
@@ -673,7 +673,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         // Do not clear here. Only the primary checker should clear this cache.
         // treePathCache.clear();
-        artificialTreeToEnclosingElementMap.clear();
+
+        // setRoot in a GenericAnnotatedTypeFactory will clear this;
+        // if this isn't a GenericATF, then it must clear it itself.
+        if (!(this instanceof GenericAnnotatedTypeFactory)) {
+            artificialTreeToEnclosingElementMap.clear();
+        }
 
         if (shouldCache) {
             // Clear the caches with trees because once the compilation unit changes,
@@ -3327,7 +3332,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Handle an artificial tree by mapping it to the enclosing element.
+     * Adds the given mapping from a synthetic (generated) tree to its enclosing element.
      *
      * <p>See {@code
      * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
@@ -3337,11 +3342,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final void setEnclosingElementForArtificialTree(Tree tree, Element enclosing) {
         artificialTreeToEnclosingElementMap.put(tree, enclosing);
-        for (BaseTypeChecker checker : checker.getSubcheckers()) {
-            AnnotatedTypeFactory subFactory = checker.getTypeFactory();
-            subFactory.artificialTreeToEnclosingElementMap.putAll(
-                    artificialTreeToEnclosingElementMap);
-        }
     }
 
     /**
