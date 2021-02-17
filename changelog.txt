@@ -10,6 +10,10 @@ Nullness Checker error message key changes:
    `initialization.fields.uninitialized` on the class, if there is no
    explicitly-written constructor.
 
+Signature Checker supports two new type qualifiers:
+ * `@CanonicalNameAndBinaryName`
+ * `@CanonicalNameOrPrimitiveType`
+
 **Implementation details:**
 
 Changes to protected fields in `OverrideChecker`:
