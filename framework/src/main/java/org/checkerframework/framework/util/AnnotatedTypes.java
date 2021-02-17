@@ -36,7 +36,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.framework.stub.AnnotationFileElementTypes;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -472,44 +471,12 @@ public class AnnotatedTypes {
                 }
                 return result;
             case UNION:
+            case DECLARED:
                 return substituteTypeVariables(
                         types, atypeFactory, receiverType, member, memberType);
-            case DECLARED:
-                AnnotatedTypeMirror memberTypeWithOverrides =
-                        applyFakeOverrides(atypeFactory, receiverType, member, memberType);
-                return substituteTypeVariables(
-                        types, atypeFactory, receiverType, member, memberTypeWithOverrides);
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
         }
-    }
-
-    /**
-     * Given a member and its type, returns the type with fake overrides applied to it.
-     *
-     * @param atypeFactory the type factory
-     * @param receiverType the type of the class that contains member (or a subtype of it)
-     * @param member a type member, such as a method or field
-     * @param memberType the type of {@code member}
-     * @return {@code memberType}, adjusted according to fake overrides
-     */
-    private static AnnotatedTypeMirror applyFakeOverrides(
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror receiverType,
-            Element member,
-            AnnotatedTypeMirror memberType) {
-        // Currently, handle only methods, not fields.  TODO: Handle fields.
-        if (memberType.getKind() != TypeKind.EXECUTABLE) {
-            return memberType;
-        }
-
-        AnnotationFileElementTypes afet = atypeFactory.stubTypes;
-        AnnotatedExecutableType methodType =
-                (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
-        if (methodType == null) {
-            methodType = (AnnotatedExecutableType) memberType;
-        }
-        return methodType;
     }
 
     /**
