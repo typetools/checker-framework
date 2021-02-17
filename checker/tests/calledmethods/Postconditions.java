@@ -87,4 +87,13 @@ public class Postconditions {
             p.build();
         }
     }
+
+    @EnsuresCalledMethods(value = "#1", methods = "a")
+    static void callWithException(Postconditions p) {
+        try {
+            p.a();
+            throw new java.io.IOException();
+        } catch (java.io.IOException e) {
+        }
+    }
 }
