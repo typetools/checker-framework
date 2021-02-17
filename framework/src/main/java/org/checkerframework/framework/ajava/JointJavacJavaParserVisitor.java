@@ -205,10 +205,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof NodeWithAnnotations)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, NodeWithAnnotations.class);
-        }
-
+        castNode(NodeWithAnnotations.class, javaParserNode, javacTree);
         processAnnotatedType(javacTree, javaParserNode);
         javacTree.getUnderlyingType().accept(this, javaParserNode);
         return null;
@@ -216,11 +213,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ArrayAccessExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ArrayAccessExpr.class);
-        }
-
-        ArrayAccessExpr node = (ArrayAccessExpr) javaParserNode;
+        ArrayAccessExpr node = castNode(ArrayAccessExpr.class, javaParserNode, javacTree);
         processArrayAccess(javacTree, node);
         javacTree.getExpression().accept(this, node.getName());
         javacTree.getIndex().accept(this, node.getIndex());
@@ -229,11 +222,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitArrayType(ArrayTypeTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ArrayType)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ArrayType.class);
-        }
-
-        ArrayType node = (ArrayType) javaParserNode;
+        ArrayType node = castNode(ArrayType.class, javaParserNode, javacTree);
         processArrayType(javacTree, node);
         javacTree.getType().accept(this, node.getComponentType());
         return null;
@@ -241,11 +230,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitAssert(AssertTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof AssertStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, AssertStmt.class);
-        }
-
-        AssertStmt node = (AssertStmt) javaParserNode;
+        AssertStmt node = castNode(AssertStmt.class, javaParserNode, javacTree);
         processAssert(javacTree, node);
         javacTree.getCondition().accept(this, node.getCheck());
         ExpressionTree detail = javacTree.getDetail();
@@ -259,11 +244,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitAssignment(AssignmentTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof AssignExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, AssignExpr.class);
-        }
-
-        AssignExpr node = (AssignExpr) javaParserNode;
+        AssignExpr node = castNode(AssignExpr.class, javaParserNode, javacTree);
         processAssignment(javacTree, node);
         javacTree.getVariable().accept(this, node.getTarget());
         javacTree.getExpression().accept(this, node.getValue());
@@ -272,11 +253,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitBinary(BinaryTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof BinaryExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, BinaryExpr.class);
-        }
-
-        BinaryExpr node = (BinaryExpr) javaParserNode;
+        BinaryExpr node = castNode(BinaryExpr.class, javaParserNode, javacTree);
         processBinary(javacTree, node);
         javacTree.getLeftOperand().accept(this, node.getLeft());
         javacTree.getRightOperand().accept(this, node.getRight());
@@ -289,11 +266,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             return javacTree.accept(this, ((InitializerDeclaration) javaParserNode).getBody());
         }
 
-        if (!(javaParserNode instanceof BlockStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, BlockStmt.class);
-        }
-
-        BlockStmt node = (BlockStmt) javaParserNode;
+        BlockStmt node = castNode(BlockStmt.class, javaParserNode, javacTree);
         processBlock(javacTree, node);
         processStatements(javacTree.getStatements(), node.getStatements());
         return null;
@@ -412,21 +385,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitBreak(BreakTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof BreakStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, BreakStmt.class);
-        }
-
-        processBreak(javacTree, (BreakStmt) javaParserNode);
+        BreakStmt node = castNode(BreakStmt.class, javaParserNode, javacTree);
+        processBreak(javacTree, node);
         return null;
     }
 
     @Override
     public Void visitCase(CaseTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof SwitchEntry)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, SwitchEntry.class);
-        }
-
-        SwitchEntry node = (SwitchEntry) javaParserNode;
+        SwitchEntry node = castNode(SwitchEntry.class, javaParserNode, javacTree);
         processCase(javacTree, node);
         // The expression is null if and only if the case is the default case.
         // Java 12 introduced multiple label cases, but expressions should contain at most one
@@ -445,11 +411,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitCatch(CatchTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof CatchClause)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, CatchClause.class);
-        }
-
-        CatchClause node = (CatchClause) javaParserNode;
+        CatchClause node = castNode(CatchClause.class, javaParserNode, javacTree);
         processCatch(javacTree, node);
         javacTree.getParameter().accept(this, node.getParameter());
         javacTree.getBlock().accept(this, node.getBody());
@@ -635,11 +597,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitCompilationUnit(CompilationUnitTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof CompilationUnit)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, CompilationUnit.class);
-        }
-
-        CompilationUnit node = (CompilationUnit) javaParserNode;
+        CompilationUnit node = castNode(CompilationUnit.class, javaParserNode, javacTree);
         processCompilationUnit(javacTree, node);
         assert (javacTree.getPackage() != null) == node.getPackageDeclaration().isPresent();
         if (javacTree.getPackage() != null) {
@@ -653,11 +611,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof AssignExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, AssignExpr.class);
-        }
-
-        AssignExpr node = (AssignExpr) javaParserNode;
+        AssignExpr node = castNode(AssignExpr.class, javaParserNode, javacTree);
         processCompoundAssignment(javacTree, node);
         javacTree.getVariable().accept(this, node.getTarget());
         javacTree.getExpression().accept(this, node.getValue());
@@ -667,11 +621,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     @Override
     public Void visitConditionalExpression(
             ConditionalExpressionTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ConditionalExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ConditionalExpr.class);
-        }
-
-        ConditionalExpr node = (ConditionalExpr) javaParserNode;
+        ConditionalExpr node = castNode(ConditionalExpr.class, javaParserNode, javacTree);
         processConditionalExpression(javacTree, node);
         javacTree.getCondition().accept(this, node.getCondition());
         javacTree.getTrueExpression().accept(this, node.getThenExpr());
@@ -681,21 +631,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitContinue(ContinueTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ContinueStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ContinueStmt.class);
-        }
-
-        processContinue(javacTree, (ContinueStmt) javaParserNode);
+        ContinueStmt node = castNode(ContinueStmt.class, javaParserNode, javacTree);
+        processContinue(javacTree, node);
         return null;
     }
 
     @Override
     public Void visitDoWhileLoop(DoWhileLoopTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof DoStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, DoStmt.class);
-        }
-
-        DoStmt node = (DoStmt) javaParserNode;
+        DoStmt node = castNode(DoStmt.class, javaParserNode, javacTree);
         processDoWhileLoop(javacTree, node);
         // In javac the condition is parenthesized but not in JavaParser.
         ExpressionTree condition = ((ParenthesizedTree) javacTree.getCondition()).getExpression();
@@ -706,21 +649,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitEmptyStatement(EmptyStatementTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof EmptyStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, EmptyStmt.class);
-        }
-
-        processEmptyStatement(javacTree, (EmptyStmt) javaParserNode);
+        EmptyStmt node = castNode(EmptyStmt.class, javaParserNode, javacTree);
+        processEmptyStatement(javacTree, node);
         return null;
     }
 
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ForEachStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ForEachStmt.class);
-        }
-
-        ForEachStmt node = (ForEachStmt) javaParserNode;
+        ForEachStmt node = castNode(ForEachStmt.class, javaParserNode, javacTree);
         processEnhancedForLoop(javacTree, node);
         javacTree.getVariable().accept(this, node.getVariableDeclarator());
         javacTree.getExpression().accept(this, node.getIterable());
@@ -736,11 +672,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitExports(ExportsTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ModuleExportsDirective)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ModuleExportsDirective.class);
-        }
-
-        ModuleExportsDirective node = (ModuleExportsDirective) javaParserNode;
+        ModuleExportsDirective node =
+                castNode(ModuleExportsDirective.class, javaParserNode, javacTree);
         processExports(javacTree, node);
         visitLists(javacTree.getModuleNames(), node.getModuleNames());
         javacTree.getPackageName().accept(this, node.getName());
@@ -767,11 +700,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitForLoop(ForLoopTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ForStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ForStmt.class);
-        }
-
-        ForStmt node = (ForStmt) javaParserNode;
+        ForStmt node = castNode(ForStmt.class, javaParserNode, javacTree);
         processForLoop(javacTree, node);
         Iterator<? extends StatementTree> javacInitializers = javacTree.getInitializer().iterator();
         for (Expression initializer : node.getInitialization()) {
@@ -837,11 +766,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitIf(IfTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof IfStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, IfStmt.class);
-        }
-
-        IfStmt node = (IfStmt) javaParserNode;
+        IfStmt node = castNode(IfStmt.class, javaParserNode, javacTree);
         processIf(javacTree, node);
         assert javacTree.getCondition().getKind() == Kind.PARENTHESIZED;
         ExpressionTree condition = ((ParenthesizedTree) javacTree.getCondition()).getExpression();
@@ -857,11 +782,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitImport(ImportTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ImportDeclaration)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ImportDeclaration.class);
-        }
-
-        ImportDeclaration node = (ImportDeclaration) javaParserNode;
+        ImportDeclaration node = castNode(ImportDeclaration.class, javaParserNode, javacTree);
         processImport(javacTree, node);
         // In javac trees, a name like "a.*" is stored as a member select, but JavaParser just
         // stores "a" and records that the name ends in an asterisk.
@@ -878,11 +799,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitInstanceOf(InstanceOfTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof InstanceOfExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, InstanceOfExpr.class);
-        }
-
-        InstanceOfExpr node = (InstanceOfExpr) javaParserNode;
+        InstanceOfExpr node = castNode(InstanceOfExpr.class, javaParserNode, javacTree);
         processInstanceOf(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
         javacTree.getType().accept(this, node.getType());
@@ -891,11 +808,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitIntersectionType(IntersectionTypeTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof IntersectionType)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, IntersectionType.class);
-        }
-
-        IntersectionType node = (IntersectionType) javaParserNode;
+        IntersectionType node = castNode(IntersectionType.class, javaParserNode, javacTree);
         processIntersectionType(javacTree, node);
         visitLists(javacTree.getBounds(), node.getElements());
         return null;
@@ -903,11 +816,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitLabeledStatement(LabeledStatementTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof LabeledStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, LabeledStmt.class);
-        }
-
-        LabeledStmt node = (LabeledStmt) javaParserNode;
+        LabeledStmt node = castNode(LabeledStmt.class, javaParserNode, javacTree);
         processLabeledStatement(javacTree, node);
         javacTree.getStatement().accept(this, node.getStatement());
         return null;
@@ -915,11 +824,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof LambdaExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, LambdaExpr.class);
-        }
-
-        LambdaExpr node = (LambdaExpr) javaParserNode;
+        LambdaExpr node = castNode(LambdaExpr.class, javaParserNode, javacTree);
         processLambdaExpression(javacTree, node);
         visitLists(javacTree.getParameters(), node.getParameters());
         switch (javacTree.getBodyKind()) {
@@ -956,11 +861,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitMemberReference(MemberReferenceTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof MethodReferenceExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, MethodReferenceExpr.class);
-        }
-
-        MethodReferenceExpr node = (MethodReferenceExpr) javaParserNode;
+        MethodReferenceExpr node = castNode(MethodReferenceExpr.class, javaParserNode, javacTree);
         processMemberReference(javacTree, node);
         if (node.getScope().isTypeExpr()) {
             javacTree.getQualifierExpression().accept(this, node.getScope().asTypeExpr().getType());
@@ -1162,11 +1063,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitModule(ModuleTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ModuleDeclaration)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ModuleDeclaration.class);
-        }
-
-        ModuleDeclaration node = (ModuleDeclaration) javaParserNode;
+        ModuleDeclaration node = castNode(ModuleDeclaration.class, javaParserNode, javacTree);
         processModule(javacTree, node);
         javacTree.getName().accept(this, node.getName());
         return null;
@@ -1193,11 +1090,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitNewClass(NewClassTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ObjectCreationExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ObjectCreationExpr.class);
-        }
-
-        ObjectCreationExpr node = (ObjectCreationExpr) javaParserNode;
+        ObjectCreationExpr node = castNode(ObjectCreationExpr.class, javaParserNode, javacTree);
         processNewClass(javacTree, node);
         // When using Java 11 javac, an expression like this.new MyInnerClass() would store "this"
         // as the enclosing expression. In Java 8 javac, this would be stored as new
@@ -1234,11 +1127,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitOpens(OpensTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ModuleOpensDirective)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ModuleOpensDirective.class);
-        }
-
-        ModuleOpensDirective node = (ModuleOpensDirective) javaParserNode;
+        ModuleOpensDirective node = castNode(ModuleOpensDirective.class, javaParserNode, javacTree);
         processOpens(javacTree, node);
         javacTree.getPackageName().accept(this, node.getName());
         visitLists(javacTree.getModuleNames(), node.getModuleNames());
@@ -1253,11 +1142,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitPackage(PackageTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof PackageDeclaration)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, PackageDeclaration.class);
-        }
-
-        PackageDeclaration node = (PackageDeclaration) javaParserNode;
+        PackageDeclaration node = castNode(PackageDeclaration.class, javaParserNode, javacTree);
         processPackage(javacTree, node);
         // visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getPackageName().accept(this, node.getName());
@@ -1266,11 +1151,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitParameterizedType(ParameterizedTypeTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ClassOrInterfaceType)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ClassOrInterfaceType.class);
-        }
-
-        ClassOrInterfaceType node = (ClassOrInterfaceType) javaParserNode;
+        ClassOrInterfaceType node = castNode(ClassOrInterfaceType.class, javaParserNode, javacTree);
         processParameterizedType(javacTree, node);
         javacTree.getType().accept(this, node);
         // TODO: In a parameterized type, will the first branch ever run?
@@ -1285,11 +1166,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitParenthesized(ParenthesizedTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof EnclosedExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, EnclosedExpr.class);
-        }
-
-        EnclosedExpr node = (EnclosedExpr) javaParserNode;
+        EnclosedExpr node = castNode(EnclosedExpr.class, javaParserNode, javacTree);
         processParenthesized(javacTree, node);
         javacTree.getExpression().accept(this, node.getInner());
         return null;
@@ -1310,11 +1187,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitProvides(ProvidesTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ModuleProvidesDirective)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ModuleProvidesDirective.class);
-        }
-
-        ModuleProvidesDirective node = (ModuleProvidesDirective) javaParserNode;
+        ModuleProvidesDirective node =
+                castNode(ModuleProvidesDirective.class, javaParserNode, javacTree);
         processProvides(javacTree, node);
         javacTree.getServiceName().accept(this, node.getName());
         visitLists(javacTree.getImplementationNames(), node.getWith());
@@ -1323,11 +1197,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitRequires(RequiresTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ModuleRequiresDirective)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ModuleRequiresDirective.class);
-        }
-
-        ModuleRequiresDirective node = (ModuleRequiresDirective) javaParserNode;
+        ModuleRequiresDirective node =
+                castNode(ModuleRequiresDirective.class, javaParserNode, javacTree);
         processRequires(javacTree, node);
         javacTree.getModuleName().accept(this, node.getName());
         return null;
@@ -1335,11 +1206,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitReturn(ReturnTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ReturnStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ReturnStmt.class);
-        }
-
-        ReturnStmt node = (ReturnStmt) javaParserNode;
+        ReturnStmt node = castNode(ReturnStmt.class, javaParserNode, javacTree);
         processReturn(javacTree, node);
         assert (javacTree.getExpression() != null) == node.getExpression().isPresent();
         if (javacTree.getExpression() != null) {
@@ -1351,11 +1218,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitSwitch(SwitchTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof SwitchStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, SwitchStmt.class);
-        }
-
-        SwitchStmt node = (SwitchStmt) javaParserNode;
+        SwitchStmt node = castNode(SwitchStmt.class, javaParserNode, javacTree);
         processSwitch(javacTree, node);
         // Switch expressions are always parenthesized in javac but never in JavaParser.
         ExpressionTree expression = ((ParenthesizedTree) javacTree.getExpression()).getExpression();
@@ -1366,11 +1229,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitSynchronized(SynchronizedTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof SynchronizedStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, SynchronizedStmt.class);
-        }
-
-        SynchronizedStmt node = (SynchronizedStmt) javaParserNode;
+        SynchronizedStmt node = castNode(SynchronizedStmt.class, javaParserNode, javacTree);
         processSynchronized(javacTree, node);
         ((ParenthesizedTree) javacTree.getExpression())
                 .getExpression()
@@ -1381,11 +1240,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitThrow(ThrowTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ThrowStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ThrowStmt.class);
-        }
-
-        ThrowStmt node = (ThrowStmt) javaParserNode;
+        ThrowStmt node = castNode(ThrowStmt.class, javaParserNode, javacTree);
         processThrow(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
         return null;
@@ -1393,11 +1248,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitTry(TryTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof TryStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, TryStmt.class);
-        }
-
-        TryStmt node = (TryStmt) javaParserNode;
+        TryStmt node = castNode(TryStmt.class, javaParserNode, javacTree);
         processTry(javacTree, node);
         Iterator<? extends Tree> javacResources = javacTree.getResources().iterator();
         for (Expression resource : node.getResources()) {
@@ -1425,11 +1276,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitTypeCast(TypeCastTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof CastExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, CastExpr.class);
-        }
-
-        CastExpr node = (CastExpr) javaParserNode;
+        CastExpr node = castNode(CastExpr.class, javaParserNode, javacTree);
         processTypeCast(javacTree, node);
         javacTree.getType().accept(this, node.getType());
         javacTree.getExpression().accept(this, node.getExpression());
@@ -1438,11 +1285,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitTypeParameter(TypeParameterTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof TypeParameter)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, TypeParameter.class);
-        }
-
-        TypeParameter node = (TypeParameter) javaParserNode;
+        TypeParameter node = castNode(TypeParameter.class, javaParserNode, javacTree);
         processTypeParameter(javacTree, node);
         visitLists(javacTree.getBounds(), node.getTypeBound());
         return null;
@@ -1450,11 +1293,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitUnary(UnaryTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof UnaryExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, UnaryExpr.class);
-        }
-
-        UnaryExpr node = (UnaryExpr) javaParserNode;
+        UnaryExpr node = castNode(UnaryExpr.class, javaParserNode, javacTree);
         processUnary(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
         return null;
@@ -1462,11 +1301,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitUnionType(UnionTypeTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof UnionType)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, UnionType.class);
-        }
-
-        UnionType node = (UnionType) javaParserNode;
+        UnionType node = castNode(UnionType.class, javaParserNode, javacTree);
         processUnionType(javacTree, node);
         visitLists(javacTree.getTypeAlternatives(), node.getElements());
         return null;
@@ -1474,11 +1309,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitUses(UsesTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ModuleUsesDirective)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, ModuleUsesDirective.class);
-        }
-
-        ModuleUsesDirective node = (ModuleUsesDirective) javaParserNode;
+        ModuleUsesDirective node = castNode(ModuleUsesDirective.class, javaParserNode, javacTree);
         processUses(javacTree, node);
         javacTree.getServiceName().accept(this, node.getName());
         return null;
@@ -1578,11 +1409,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitWhileLoop(WhileLoopTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof WhileStmt)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, WhileStmt.class);
-        }
-
-        WhileStmt node = (WhileStmt) javaParserNode;
+        WhileStmt node = castNode(WhileStmt.class, javaParserNode, javacTree);
         processWhileLoop(javacTree, node);
         // While loop conditions are always parenthesized in javac but never in JavaParser.
         assert javacTree.getCondition().getKind() == Kind.PARENTHESIZED;
@@ -1594,11 +1421,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitWildcard(WildcardTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof WildcardType)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, WildcardType.class);
-        }
-
-        WildcardType node = (WildcardType) javaParserNode;
+        WildcardType node = castNode(WildcardType.class, javaParserNode, javacTree);
         processWildcard(javacTree, node);
         // In javac, whether the bound is an extends or super clause depends on the kind of the
         // tree.
@@ -2327,6 +2150,24 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         for (Tree tree : javacTrees) {
             tree.accept(this, nodeIter.next());
         }
+    }
+
+    /**
+     * Cast {@code javaParserNode} to type {@code type} and return it.
+     *
+     * @param <T> the type of {@code type}
+     * @param type the type to cast to
+     * @param javaParserNode the object to cast
+     * @param javacTree the javac tree that corresponds to {@code javaParserNode}; used only for
+     *     error reporting
+     * @return javaParserNode, casted to {@code type}
+     */
+    public <T> T castNode(Class<T> type, Node javaParserNode, Tree javacTree) {
+        if (type.isInstance(javaParserNode)) {
+            return type.cast(javaParserNode);
+        }
+        throwUnexpectedNodeType(javacTree, javaParserNode, type);
+        throw new BugInCF("unreachable");
     }
 
     /**
