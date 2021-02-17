@@ -397,8 +397,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      * Returns whether a JavaParser statement represents a method call {@code super()}.
      *
      * @param statement the JavaParser statement to check
-     * @return true if statement is an explicit super constructor invocation with no arguments,
-     *     false otherwise
+     * @return true if statement is an explicit super constructor invocation with no arguments
      */
     private boolean isDefaultSuperConstructorCall(Statement statement) {
         if (!statement.isExplicitConstructorInvocationStmt()) {
@@ -522,8 +521,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      *
      * @param javacMembers a list of trees forming the members of a javac {@code ClassTree}
      * @param javaParserMembers a list of nodes forming the members of a JavaParser {@code
-     *     ClassOrInterfaceDeclaration} or a {@code ObjectCreationExpr} with an anonymous class body
-     *     that corresponds to {@code javacMembers}
+     *     ClassOrInterfaceDeclaration} or an {@code ObjectCreationExpr} with an anonymous class
+     *     body that corresponds to {@code javacMembers}
      */
     private void visitClassMembers(
             List<? extends Tree> javacMembers, List<BodyDeclaration<?>> javaParserMembers) {
@@ -2404,8 +2403,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         /**
          * Returns whether the iterator has reached the end of the collection
          *
-         * @return true if the iterator has been advanced past the last element of the collection,
-         *     false otherwise
+         * @return true if the iterator has been advanced past the last element of the collection
          */
         public boolean isDone() {
             return isDone;

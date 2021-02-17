@@ -105,22 +105,21 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the top-level class that contains {@code element}.
+     * Returns the top-level type element that contains {@code element}.
      *
-     * @param element the element whose enclosing class to find
-     * @return an element for a class containing {@code element} that isn't contained in another
-     *     class
+     * @param element the element whose enclosing tye element to find
+     * @return a type element containing {@code element} that isn't contained in another class
      */
-    public static TypeElement toplevelEnclosingClass(Element element) {
-        TypeElement result = ElementUtils.enclosingTypeElement(element);
+    public static TypeElement toplevelEnclosingTypeElement(Element element) {
+        TypeElement result = enclosingTypeElement(element);
         if (result == null) {
             return (TypeElement) element;
         }
 
-        TypeElement enclosing = ElementUtils.strictEnclosingTypeElement(result);
+        TypeElement enclosing = strictEnclosingTypeElement(result);
         while (enclosing != null) {
             result = enclosing;
-            enclosing = ElementUtils.strictEnclosingTypeElement(enclosing);
+            enclosing = strictEnclosingTypeElement(enclosing);
         }
 
         return result;
