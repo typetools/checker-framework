@@ -405,7 +405,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno an ArrayLenRange annotation
      * @return its from() element/field
      */
-    @SuppressWarnings("UnusedMethod")
     private int getArrayLenRangeFromValue(AnnotationMirror anno) {
         return (int) anno.getElementValues().get(arrayLenRangeFromElement).getValue();
     }
@@ -416,7 +415,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno an ArrayLenRange annotation
      * @return its to() element/field
      */
-    @SuppressWarnings("UnusedMethod")
     private int getArrayLenRangeToValue(AnnotationMirror anno) {
         return (int) anno.getElementValues().get(arrayLenRangeToElement).getValue();
     }
@@ -427,7 +425,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno a MinLen annotation
      * @return its value() element/field
      */
-    @SuppressWarnings("UnusedMethod")
     private int getMinLenValueValue(AnnotationMirror anno) {
         return (int) anno.getElementValues().get(minLenValueElement).getValue();
     }
@@ -1104,13 +1101,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return ValueCheckerUtils.getRangeFromValues(getIntValues(rangeAnno));
             case INTRANGE_NAME:
                 // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
-                return Range.create(
-                        AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
-                        AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
+                return Range.create(getIntRangeFromValue(rangeAnno), getIntRangeToValue(rangeAnno));
             case ARRAYLENRANGE_NAME:
                 return Range.create(
-                        AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
-                        AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
+                        getArrayLenRangeFromValue(rangeAnno), getArrayLenRangeToValue(rangeAnno));
             default:
                 return null;
         }
@@ -1319,7 +1313,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         switch (AnnotationUtils.annotationName(annotation)) {
             case MINLEN_NAME:
-                return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
+                return getMinLenValueValue(annotation);
             case ARRAYLENRANGE_NAME:
                 return Long.valueOf(getRange(annotation).from).intValue();
             case ARRAYLEN_NAME:
