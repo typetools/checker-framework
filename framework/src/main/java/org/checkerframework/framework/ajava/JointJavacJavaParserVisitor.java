@@ -191,7 +191,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             for (ExpressionTree arg : javacTree.getArguments()) {
                 assert arg instanceof AssignmentTree;
                 AssignmentTree assignment = (AssignmentTree) arg;
-                assignment.getExpression().accept(this, argIter.next().getValue());
+                IdentifierTree memberName = (IdentifierTree) assignment.getVariable();
+                MemberValuePair javaParserArg = argIter.next();
+                assert memberName.getName().contentEquals(javaParserArg.getNameAsString());
+                assignment.getExpression().accept(this, javaParserArg.getValue());
             }
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
