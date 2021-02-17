@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class ClassNotFound {
+public class ClassNotFound {
 
     @StaticallyExecutable
     @Pure

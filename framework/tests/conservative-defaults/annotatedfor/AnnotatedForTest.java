@@ -2,7 +2,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.testchecker.util.SubQual;
 import org.checkerframework.framework.testchecker.util.SuperQual;
 
-class AnnotatedForTest {
+public class AnnotatedForTest {
     /*
          Test a mix of @SuppressWarnings with @AnnotatedFor. @SuppressWarnings should win, but only within the kinds of warnings it promises to suppress. It should win because
          it is a specific intent of suppressing warnings, whereas NOT suppressing warnings using AnnotatedFor is a default behavior, and SW is a user-specified behavior.

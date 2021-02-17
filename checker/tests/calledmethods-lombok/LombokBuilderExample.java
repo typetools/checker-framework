@@ -3,7 +3,7 @@
 import lombok.Builder;
 
 @Builder
-class LombokBuilderExample {
+public class LombokBuilderExample {
     @lombok.NonNull Object foo;
     @lombok.NonNull Object bar;
 

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
-class UnparseablePredicate {
+public class UnparseablePredicate {
 
     // :: error: predicate.invalid
     void unclosedOpen(@CalledMethodsPredicate("(foo && bar") Object x) {}

@@ -1,6 +1,6 @@
 // Test case for Issue 2199.
 @SuppressWarnings("unchecked")
-class Issue2199 {
+public class Issue2199 {
     static class StrangeConstructorTypeArgs<K, V> {
         public StrangeConstructorTypeArgs(Abstract<String, byte[]> abs) {}
     }

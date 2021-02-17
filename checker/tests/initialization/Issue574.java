@@ -5,12 +5,12 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 @SuppressWarnings({
     // A warning is issued that fields are not initialized in the constructor.
     // That is expected and it is not what is being verified in this test.
-    "initialization.fields.uninitialized",
+    "initialization.field.uninitialized",
     // Normally @UnknownInitialization is the only initialization annotation allowed on fields.
     // However, for the purposes of this test, fields must be annotated with @UnderInitialization.
     "initialization.invalid.field.type"
 })
-class Issue574 {
+public class Issue574 {
     @UnderInitialization(Object.class) Object o1;
 
     @UnderInitialization(String.class) Object o2;

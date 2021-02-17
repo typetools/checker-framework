@@ -1,7 +1,7 @@
 import org.checkerframework.common.returnsreceiver.qual.*;
 
 // Test basic subtyping relationships for the Returns Receiver Checker.
-class SimpleTest {
+public class SimpleTest {
 
     @This SimpleTest retNull() {
         // :: error: return.type.incompatible

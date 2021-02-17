@@ -3,7 +3,7 @@ import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
 // various tests for @TerminatesExecution
-class Termination {
+public class Termination {
 
     @TerminatesExecution
     void exit() {}

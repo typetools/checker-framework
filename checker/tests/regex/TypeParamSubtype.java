@@ -1,7 +1,7 @@
 import java.util.Collection;
 import org.checkerframework.checker.regex.qual.Regex;
 
-class TypeParamSubtype {
+public class TypeParamSubtype {
     // These are legal because null has type @Regex String
     // <T extends @Regex String> void nullRegexSubtype(Collection<T> col) {
     //     // :: error: (argument.type.incompatible)

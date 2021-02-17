@@ -1,6 +1,6 @@
 import lib.Lib;
 
-class Issue348 {
+public class Issue348 {
 
     void test() {
         Lib lib = new Lib();

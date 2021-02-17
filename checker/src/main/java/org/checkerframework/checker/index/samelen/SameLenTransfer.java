@@ -21,15 +21,14 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
 
 /**
  * The transfer function for the SameLen checker. Contains three cases:
@@ -91,12 +90,10 @@ public class SameLenTransfer extends CFTransfer {
                     // "lengthNodeReceiver.length()"
 
                     // targetRec is the receiver for the left hand side of the assignment.
-                    Receiver targetRec =
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getTarget());
-                    Receiver otherRec =
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), lengthNodeReceiver);
+                    JavaExpression targetRec =
+                            JavaExpression.fromNode(analysis.getTypeFactory(), node.getTarget());
+                    JavaExpression otherRec =
+                            JavaExpression.fromNode(analysis.getTypeFactory(), lengthNodeReceiver);
 
                     AnnotationMirror lengthNodeAnnotation =
                             aTypeFactory
@@ -124,11 +121,11 @@ public class SameLenTransfer extends CFTransfer {
         // If the left side of the assignment is an array or a string, then have both the right and
         // left side be SameLen of each other.
 
-        Receiver targetRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
+        JavaExpression targetRec =
+                JavaExpression.fromNode(analysis.getTypeFactory(), node.getTarget());
 
-        Receiver exprRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
+        JavaExpression exprRec =
+                JavaExpression.fromNode(analysis.getTypeFactory(), node.getExpression());
 
         if (IndexUtil.isSequenceType(node.getTarget().getType())
                 || (rightAnno != null && aTypeFactory.areSameByClass(rightAnno, SameLen.class))) {
@@ -161,15 +158,16 @@ public class SameLenTransfer extends CFTransfer {
         if (currentPath == null) {
             return;
         }
-        for (String expr : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno)) {
-            Receiver recS;
+        for (String exprString :
+                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno)) {
+            JavaExpression je;
             try {
-                recS = aTypeFactory.getReceiverFromJavaExpressionString(expr, currentPath);
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                je = aTypeFactory.parseJavaExpressionString(exprString, currentPath);
+            } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                 continue;
             }
-            store.clearValue(recS);
-            store.insertValue(recS, sameLenAnno);
+            store.clearValue(je);
+            store.insertValue(je, sameLenAnno);
         }
     }
 
@@ -185,18 +183,18 @@ public class SameLenTransfer extends CFTransfer {
      * evaluates to true. The method gives a and b SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
-        List<Receiver> receivers = new ArrayList<>();
+        List<JavaExpression> exprs = new ArrayList<>();
         List<AnnotationMirror> annos = new ArrayList<>();
         for (Node internal : splitAssignments(left)) {
-            receivers.add(FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpression.fromNode(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
         }
         for (Node internal : splitAssignments(right)) {
-            receivers.add(FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpression.fromNode(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
         }
 
-        AnnotationMirror combinedSameLen = aTypeFactory.createCombinedSameLen(receivers, annos);
+        AnnotationMirror combinedSameLen = aTypeFactory.createCombinedSameLen(exprs, annos);
 
         propagateCombinedSameLen(combinedSameLen, left, store);
     }
@@ -298,17 +296,9 @@ public class SameLenTransfer extends CFTransfer {
                 AnnotationMirror newSameLen =
                         aTypeFactory.createSameLen(
                                 Collections.singletonList(paramNames.get(index)));
-                Receiver otherParamRec = null;
-                try {
-                    otherParamRec =
-                            FlowExpressionParseUtil.internalReprOfVariable(
-                                    aTypeFactory, paramTrees.get(otherParamIndex));
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    // do nothing
-                }
-                if (otherParamRec != null) {
-                    info.insertValue(otherParamRec, newSameLen);
-                }
+                JavaExpression otherParamRec =
+                        JavaExpression.fromVariableTree(paramTrees.get(otherParamIndex));
+                info.insertValue(otherParamRec, newSameLen);
             }
         }
     }

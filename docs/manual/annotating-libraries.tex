@@ -89,7 +89,7 @@ Sharing your annotations is useful even if the library is only partially
 annotated.
 However, as noted in Sections~\ref{get-started-with-legacy-code} and~\ref{library-tips-fully-annotate}, you
 should annotate an entire class at a time.
-You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
+You may find type inference tools (\chapterpageref{type-inference}) helpful
 when getting started, but you should always examine their results.
 
 
@@ -439,7 +439,8 @@ original library classes.  For example:
 
 \begin{myxsmall}
 \begin{Verbatim}
-  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
+  javac -processor org.checkerframework.checker.interning.InterningChecker \
+    -Astubs=path/to/String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
@@ -452,6 +453,9 @@ equivalent to specifying every file in it whose name ends with
 A checker automatically reads some of its own stub files, even without a
 \<-Astubs> command-line argument; see
 Section~\ref{creating-a-checker-annotated-jdk}.
+
+User-supplied stub files override a checker's built-in stub files and the
+annotated JDK\@.
 
 
 \subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
@@ -485,15 +489,12 @@ If a method appears in more than one stub file (or twice in the same
 stub file), then, for each type hierarchy, the last annotation read is used.
 
 The annotated JDK is read as a stub file.
+You can override JDK annotations by providing your own stub file.
 
 The command-line option \<-AmergeStubsWithSource> tells the checker to use
 both source files and stub files.  The checker permits only values that are
 permitted by \emph{both} the source and stub annotations.  (This is called
 the greatest lower bound, or GLB, of the types.)
-% Note for maintainers:
-% The choice of GLB is made for the convenience of whole-program inference.
-Do not use \<-AmergeStubsWithSource> if the default qualifier
-is other than top (e.g., the Nullness Checker).
 
 As an example of GLB, suppose the source annotation says the value is in
 the range [1..20] and the stub file says the value is in the range
@@ -800,21 +801,25 @@ read whether the library's annotations are parsed.
   reading and writing.
 \end{description}
 
+A syntax error in a stub file or the annotated JDK can lead to the file
+being silently ignored.  A typo in an annotation name, or a missing
+\<import> statement, can lead to annotations being silently ignored.
 
-% LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
-% LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
-% LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
-%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
-%  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
-%%  LocalWords:  NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
-%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
-%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
-%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
-%%  LocalWords:  TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
-%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
-%  LocalWords:  AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
-%%  LocalWords:  Makefile PuseLocalJdk jdkShaHash AonlyDefs
-%%  LocalWords:  AuseConservativeDefaultsForUncheckedCodesource
-%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses
+
+% LocalWords: plugin utils util dist RuntimeException NonNull TODO AFU enum
+% LocalWords: sourcepath Nullness javac classpath src quals pathSeparator JDKs
+% LocalWords: jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
+% LocalWords: CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
+% LocalWords: Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
+% LocalWords: Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
+% LocalWords: enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
+% LocalWords: NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
+% LocalWords: AuseConservativeDefaultsForUnannotatedCode buildfile qual
+% LocalWords: AprintUnannotatedMethods checkername AskipDefs bcel mkdir
+% LocalWords: AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
+% LocalWords: TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
+% LocalWords: mychecker DIRS README TypeSystem un debugJSR org boolean
+% LocalWords: AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
+% LocalWords: Makefile PuseLocalJdk jdkShaHash AonlyDefs
+% LocalWords: AuseConservativeDefaultsForUncheckedCodesource
+% LocalWords: AstubWarnIfNotFoundIgnoresClasses

@@ -30,7 +30,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -42,9 +41,6 @@ import org.checkerframework.javacutil.TypeKindUtils;
  * declared types (class and interface types), array types, type variables, and the null type. Also
  * represented are wildcard type arguments, the signature and return types of executables, and
  * pseudo-types corresponding to packages and to the keyword {@code void}.
- *
- * <p>Types should be compared using the utility methods in {@link AnnotatedTypes}. There is no
- * guarantee that any particular type will always be represented by the same object.
  *
  * <p>To implement operations based on the class of an {@code AnnotatedTypeMirror} object, either
  * use a visitor or use the result of the {@link #getKind()} method.
@@ -252,6 +248,9 @@ public abstract class AnnotatedTypeMirror {
      * <p>It doesn't account for annotations in deep types (type arguments, array components, etc).
      *
      * <p>If there is only one hierarchy, you can use {@link #getAnnotation()} instead.
+     *
+     * <p>May return null if the receiver is a type variable or a wildcard without a primary
+     * annotation, or if the receiver is not yet fully annotated.
      *
      * @param p the qualifier hierarchy to check for
      * @return an annotation from the same hierarchy as p if present
@@ -636,19 +635,11 @@ public abstract class AnnotatedTypeMirror {
      * @return true if the annotation was removed, false if the type's annotations were unchanged
      */
     public boolean removeAnnotation(AnnotationMirror a) {
-        // Going from the AnnotationMirror to its name and then calling
-        // getAnnotation ensures that we get the canonical AnnotationMirror that can be
-        // removed.
-        // TODO: however, this also means that if we are annotated with "@I(1)" and
-        // remove "@I(2)" it will be removed. Is this what we want?
-        // It's currently necessary for the Lock Checker.
-        AnnotationMirror anno =
-                AnnotationUtils.getAnnotationByName(annotations, AnnotationUtils.annotationName(a));
+        AnnotationMirror anno = AnnotationUtils.getSame(annotations, a);
         if (anno != null) {
             return annotations.remove(anno);
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -657,13 +648,12 @@ public abstract class AnnotatedTypeMirror {
      * @param a the class of the annotation to remove
      * @return true if the annotation was removed, false if the type's annotations were unchanged
      */
-    public boolean removeAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
-        if (!atypeFactory.isSupportedQualifier(anno)) {
-            throw new BugInCF(
-                    "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
+    public boolean removeAnnotationByClass(Class<? extends Annotation> a) {
+        AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(annotations, a);
+        if (anno != null) {
+            return annotations.remove(anno);
         }
-        return removeAnnotation(anno);
+        return false;
     }
 
     /**
@@ -840,9 +830,10 @@ public abstract class AnnotatedTypeMirror {
          */
         private boolean wasRaw;
 
-        /** The enclosing Type. */
-        protected AnnotatedDeclaredType enclosingType;
+        /** The enclosing type. May be null. */
+        protected @Nullable AnnotatedDeclaredType enclosingType;
 
+        /** True if this represents a declaration, rather than a use, of a type. */
         private boolean declaration;
 
         /**
@@ -862,7 +853,9 @@ public abstract class AnnotatedTypeMirror {
             if (encl.getKind() == TypeKind.DECLARED) {
                 this.enclosingType =
                         (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
-            } else if (encl.getKind() != TypeKind.NONE) {
+            } else if (encl.getKind() == TypeKind.NONE) {
+                this.enclosingType = null;
+            } else {
                 throw new BugInCF(
                         "AnnotatedDeclaredType: unsupported enclosing type: "
                                 + type.getEnclosingType()
@@ -941,18 +934,6 @@ public abstract class AnnotatedTypeMirror {
             } else if (wasRaw()) {
                 // Initialize the type arguments with uninferred wildcards.
                 BoundsInitializer.initializeTypeArgs(this);
-
-                // Copy annotations from the declaration to the wildcards.
-                AnnotatedDeclaredType declaration =
-                        atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
-                for (int i = 0; i < typeArgs.size(); i++) {
-                    AnnotatedTypeVariable typeParam =
-                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
-                    AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    wct.getExtendsBound().replaceAnnotations(typeParam.getUpperBound().annotations);
-                    wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
-                    wct.replaceAnnotations(typeParam.annotations);
-                }
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
                 typeArgs = Collections.emptyList();
@@ -988,8 +969,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public List<AnnotatedDeclaredType> directSuperTypes() {
-            return Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
+        public List<AnnotatedDeclaredType> directSupertypes() {
+            return Collections.unmodifiableList(SupertypeFinder.directSupertypes(this));
         }
 
         @Override
@@ -1017,48 +998,40 @@ public abstract class AnnotatedTypeMirror {
          */
         @Override
         public AnnotatedDeclaredType getErased() {
-            // 1. |G<T_1, ..., T_n>| = |G|
-            // 2. |T.C| = |T|.C
-            if (!getTypeArguments().isEmpty()) {
-                // Handle case 1.
-                AnnotatedDeclaredType rType =
-                        (AnnotatedDeclaredType)
-                                AnnotatedTypeMirror.createType(
-                                        atypeFactory.types.erasure(underlyingType),
-                                        atypeFactory,
-                                        declaration);
-                rType.addAnnotations(annotations);
-                rType.setTypeArguments(Collections.emptyList());
-                return rType.getErased();
-
-            } else if ((getEnclosingType() != null)
-                    && (getEnclosingType().getKind() != TypeKind.NONE)) {
-                // Handle case 2
-                // Shallow copy provides a fresh type when there are no type arguments
-                // and we set the enclosing type
-                // Therefore, we do not need to use deepCopy
-                AnnotatedDeclaredType rType = shallowCopy();
-                AnnotatedDeclaredType et = getEnclosingType();
-                rType.setEnclosingType(et.getErased());
-                return rType;
-
-            } else {
-
-                return this.deepCopy();
+            AnnotatedDeclaredType erased =
+                    (AnnotatedDeclaredType)
+                            AnnotatedTypeMirror.createType(
+                                    atypeFactory.types.erasure(underlyingType),
+                                    atypeFactory,
+                                    declaration);
+            erased.addAnnotations(this.getAnnotations());
+            AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
+            AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();
+            while (erasedEnclosing != null) {
+                erasedEnclosing.addAnnotations(thisEnclosing.getAnnotations());
+                erasedEnclosing = erasedEnclosing.getEnclosingType();
+                thisEnclosing = thisEnclosing.getEnclosingType();
             }
+            return erased;
         }
 
-        /** Sets the enclosing type. */
-        /*default-visibility*/ void setEnclosingType(AnnotatedDeclaredType enclosingType) {
+        /**
+         * Sets the enclosing type.
+         *
+         * @param enclosingType the new enclosing type
+         */
+        /*default-visibility*/ void setEnclosingType(
+                @Nullable AnnotatedDeclaredType enclosingType) {
             this.enclosingType = enclosingType;
         }
 
         /**
-         * Returns the enclosing type, as in the type of {@code A} in the type {@code A.B}.
+         * Returns the enclosing type, as in the type of {@code A} in the type {@code A.B}. May
+         * return null.
          *
-         * @return enclosingType the enclosing type
+         * @return enclosingType the enclosing type, or null if this is a top-level type
          */
-        public AnnotatedDeclaredType getEnclosingType() {
+        public @Nullable AnnotatedDeclaredType getEnclosingType() {
             return enclosingType;
         }
     }
@@ -1195,32 +1168,12 @@ public abstract class AnnotatedTypeMirror {
          *     constructors of top-level classes
          */
         public @Nullable AnnotatedDeclaredType getReceiverType() {
-            if (receiverType == null
-                    // Static methods don't have a receiver
-                    && !ElementUtils.isStatic(getElement())
-                    // Array constructors should also not have a receiver. Array members have a
-                    // getEnclosingElement().getEnclosingElement() of NONE
-                    && !(getElement().getKind() == ElementKind.CONSTRUCTOR
-                            && getElement()
-                                    .getEnclosingElement()
-                                    .getSimpleName()
-                                    .toString()
-                                    .equals("Array")
-                            && getElement()
-                                            .getEnclosingElement()
-                                            .getEnclosingElement()
-                                            .asType()
-                                            .getKind()
-                                    == TypeKind.NONE)
-                    // Top-level constructors don't have a receiver
-                    && (getElement().getKind() != ElementKind.CONSTRUCTOR
-                            || getElement().getEnclosingElement().getEnclosingElement().getKind()
-                                    != ElementKind.PACKAGE)) {
+            if (receiverType == null && ElementUtils.hasReceiver(getElement())) {
 
-                TypeElement encl = ElementUtils.enclosingClass(getElement());
+                TypeElement encl = ElementUtils.enclosingTypeElement(getElement());
                 if (getElement().getKind() == ElementKind.CONSTRUCTOR) {
                     // Can only reach this branch if we're the constructor of a nested class
-                    encl = ElementUtils.enclosingClass(encl.getEnclosingElement());
+                    encl = ElementUtils.enclosingTypeElement(encl.getEnclosingElement());
                 }
                 AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory, false);
                 assert type instanceof AnnotatedDeclaredType;
@@ -2139,7 +2092,7 @@ public abstract class AnnotatedTypeMirror {
          * @return the direct super types of this
          */
         @Override
-        public List<? extends AnnotatedTypeMirror> directSuperTypes() {
+        public List<? extends AnnotatedTypeMirror> directSupertypes() {
             return getBounds();
         }
 
@@ -2148,7 +2101,7 @@ public abstract class AnnotatedTypeMirror {
          * in an explicitly written intersections, during capture conversion, intersections with
          * other kinds of types are created.
          *
-         * <p>This returns the same types as {@link #directSuperTypes()}.
+         * <p>This returns the same types as {@link #directSupertypes()}.
          *
          * @return the bounds of this, which are also the direct super types of this
          */
@@ -2265,9 +2218,10 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * This method returns a list of AnnotatedTypeMirrors where the Java type of each ATM is an
-     * immediate supertype (class or interface) of the Java type of this. If the directSuperType has
-     * type arguments, then the annotations on those type arguments are taken with proper
-     * translation from the declaration of the Java type of this.
+     * immediate supertype (class or interface) of the Java type of this. The interface types, if
+     * any, appear at the end of the list. If the directSuperType has type arguments, then the
+     * annotations on those type arguments are taken with proper translation from the declaration of
+     * the Java type of this.
      *
      * <p>For example,
      *
@@ -2301,9 +2255,10 @@ public abstract class AnnotatedTypeMirror {
      * The direct supertypes of the ATM {@code @Nullable A} are {@code @Nullable B <@NonNull
      * String>} and {@code @Nullable List<@NonNull Integer>}.
      *
+     * @return the immediate supertypes of this
      * @see Types#directSupertypes(TypeMirror)
      */
-    public List<? extends AnnotatedTypeMirror> directSuperTypes() {
-        return SupertypeFinder.directSuperTypes(this);
+    public List<? extends AnnotatedTypeMirror> directSupertypes() {
+        return SupertypeFinder.directSupertypes(this);
     }
 }

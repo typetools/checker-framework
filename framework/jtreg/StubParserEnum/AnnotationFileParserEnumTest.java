@@ -12,7 +12,7 @@ import static java.util.concurrent.TimeUnit.*;
 import java.util.concurrent.TimeUnit;
 import org.checkerframework.common.util.report.qual.*;
 
-class AnnotationFileParserEnumTest {
+public class AnnotationFileParserEnumTest {
 
     @SuppressWarnings("report")
     enum MyTimeUnit {

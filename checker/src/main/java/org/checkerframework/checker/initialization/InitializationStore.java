@@ -13,7 +13,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -21,7 +21,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ToStringComparator;
+import org.plumelib.util.ToStringComparator;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
@@ -50,7 +50,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
      * initialized.
      */
     @Override
-    public void insertValue(Receiver r, V value) {
+    public void insertValue(JavaExpression je, V value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
@@ -63,27 +63,27 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
         // Remember fields that have the 'invariant' annotation in the store.
-        if (r instanceof FieldAccess) {
-            FieldAccess fieldAccess = (FieldAccess) r;
-            if (!fieldValues.containsKey(r)) {
+        if (je instanceof FieldAccess) {
+            FieldAccess fieldAccess = (FieldAccess) je;
+            if (!fieldValues.containsKey(je)) {
                 Set<AnnotationMirror> declaredAnnos =
                         atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
                 if (AnnotationUtils.containsSame(declaredAnnos, invariantAnno)) {
                     if (!invariantFields.containsKey(fieldAccess)) {
                         invariantFields.put(
                                 fieldAccess,
-                                analysis.createSingleAnnotationValue(invariantAnno, r.getType()));
+                                analysis.createSingleAnnotationValue(invariantAnno, je.getType()));
                     }
                 }
             }
         }
 
-        super.insertValue(r, value);
+        super.insertValue(je, value);
 
         for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
-                if (r instanceof FieldAccess) {
-                    FieldAccess fa = (FieldAccess) r;
+                if (je instanceof FieldAccess) {
+                    FieldAccess fa = (FieldAccess) je;
                     if (fa.getReceiver() instanceof ThisReference
                             || fa.getReceiver() instanceof ClassName) {
                         addInitializedField(fa.getField());

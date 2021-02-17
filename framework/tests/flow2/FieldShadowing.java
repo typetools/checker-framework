@@ -4,7 +4,7 @@ import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
 // various tests for the precondition mechanism
-class FieldShadowing {
+public class FieldShadowing {
 
     String f;
 

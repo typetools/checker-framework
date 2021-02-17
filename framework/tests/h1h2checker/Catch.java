@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class Catch {
+public class Catch {
     void defaultUnionType() throws Throwable {
         try {
             throw new Throwable();

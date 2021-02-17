@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
  * we can be sure that all elements are non-null.
  * TODO: support for (i=0; i < a.length.... and change component type to non-null.
  */
-class ArrayLazyNN {
+public class ArrayLazyNN {
     void test1() {
         @MonotonicNonNull Object[] o1 = new @MonotonicNonNull Object[10];
         o1[0] = new Object();

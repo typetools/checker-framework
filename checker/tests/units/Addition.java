@@ -1,5 +1,32 @@
-import org.checkerframework.checker.units.UnitsTools;
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.units.qual.Acceleration;
+import org.checkerframework.checker.units.qual.Area;
+import org.checkerframework.checker.units.qual.C;
+import org.checkerframework.checker.units.qual.Current;
+import org.checkerframework.checker.units.qual.K;
+import org.checkerframework.checker.units.qual.Length;
+import org.checkerframework.checker.units.qual.Luminance;
+import org.checkerframework.checker.units.qual.Mass;
+import org.checkerframework.checker.units.qual.Substance;
+import org.checkerframework.checker.units.qual.Temperature;
+import org.checkerframework.checker.units.qual.Time;
+import org.checkerframework.checker.units.qual.cd;
+import org.checkerframework.checker.units.qual.g;
+import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kg;
+import org.checkerframework.checker.units.qual.km;
+import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.kmPERh;
+import org.checkerframework.checker.units.qual.m;
+import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.mPERs;
+import org.checkerframework.checker.units.qual.mPERs2;
+import org.checkerframework.checker.units.qual.min;
+import org.checkerframework.checker.units.qual.mm;
+import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mol;
+import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.util.UnitsTools;
 
 public class Addition {
     // Addition is legal when the operands have the same units.

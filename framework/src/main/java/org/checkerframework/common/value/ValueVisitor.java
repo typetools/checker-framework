@@ -406,7 +406,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             // If the method is static, issue no warning.  This is incorrect in the case of a
             // constructor or a static method in an inner class.
             if (!ElementUtils.isStatic(method)) {
-                receiverType = ElementUtils.getType(ElementUtils.enclosingClass(method));
+                receiverType = ElementUtils.getType(ElementUtils.enclosingTypeElement(method));
             }
             if (receiverType != null
                     && receiverType.getKind() != TypeKind.NONE

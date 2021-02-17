@@ -5,7 +5,7 @@ import org.checkerframework.checker.index.qual.*;
 // This test ensures that the checker functions on primitive wrappers in
 // addition to literal primitives. Primarily it focuses on Integer/int.
 
-class PrimitiveWrappers {
+public class PrimitiveWrappers {
 
     void int_Integer_access_equivalent(@IndexFor("#3") Integer i, @IndexFor("#3") int j, int[] a) {
         a[i] = a[j];

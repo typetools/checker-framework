@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-@SuppressWarnings("initialization.fields.uninitialized")
-class ScopingConstruct {
+@SuppressWarnings("initialization.field.uninitialized")
+public class ScopingConstruct {
 
     // TODO: add nested classes within these two?
     static class StaticNested implements AutoCloseable {

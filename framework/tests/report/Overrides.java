@@ -1,6 +1,6 @@
 import org.checkerframework.common.util.report.qual.*;
 
-class Overrides {
+public class Overrides {
     class A {
         void m() {}
     }

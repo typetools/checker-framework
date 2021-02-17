@@ -13,7 +13,7 @@ class Upper {
     }
 }
 
-class FinalFields {
+public class FinalFields {
     public void foo(Upper u) {
         // Error, because final field in different class is not refined
         // :: error: (dereference.of.nullable)

@@ -10,19 +10,12 @@ pr:
 
 
 jobs:
-# The remainder of jobs are run only if the canary_jobs pass.
-- job: canary_jobs
+- job: junit_tests_jdk8
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
    - typecheck_jdk11
-  steps:
-  - checkout: none
-  - bash: true
-- job: junit_tests_jdk8
-  dependsOn:
-   - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -42,7 +35,10 @@ jobs:
     displayName: test-cftests-junit.sh
 - job: nonjunit_tests_jdk8
   dependsOn:
-   - canary_jobs
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -62,7 +58,10 @@ jobs:
     displayName: test-cftests-nonjunit.sh
 - job: misc_jdk8
   dependsOn:
-   - canary_jobs
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
@@ -82,7 +81,10 @@ jobs:
     displayName: test-misc.sh
 - job: typecheck_jdk8
   dependsOn:
-   - canary_jobs
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
@@ -125,9 +127,12 @@ jobs:
 #     displayName: test-cf-inference.sh
 - job: daikon_jdk8
   dependsOn:
-   - canary_jobs
-## Reduce latency due to the "daikon_jdk11 -> daikon_jdk8" critical path.
-#   - daikon_jdk11
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
+   ## Reduce latency due to the "daikon_jdk11 -> daikon_jdk8" critical path.
+   # - daikon_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -147,7 +152,10 @@ jobs:
     displayName: test-daikon.sh
 - job: guava_jdk8
   dependsOn:
-   - canary_jobs
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
    - guava_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -170,7 +178,10 @@ jobs:
     displayName: test-guava.sh
 - job: plume_lib_jdk8
   dependsOn:
-   - canary_jobs
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
    - plume_lib_jdk11
   pool:
     vmImage: 'ubuntu-latest'

@@ -1,6 +1,6 @@
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class LoaderTest {
+public class LoaderTest {
     void foo() {
         @Unique Object o = new Object();
         // :: error: (unique.leaked)

@@ -1,4 +1,4 @@
-class TestStub {
+public class TestStub {
     void demo() {
         try {
             // :: error: (methodcall)

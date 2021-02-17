@@ -19,7 +19,7 @@ import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
@@ -77,7 +77,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        return UtilPlume.joinLines(
+        return StringsPlume.joinLines(
                 "AnnotatedTypeMirrors aren't structurally equal.",
                 "  type1 = " + type1.getClass().getSimpleName() + "( " + type1 + " )",
                 "  type2 = " + type2.getClass().getSimpleName() + "( " + type2 + " )",
@@ -147,9 +147,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         if (types1.size() != types2.size()) {
             throw new BugInCF(
                     "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
-                    UtilPlume.join("; ", types1),
+                    StringsPlume.join("; ", types1),
                     types1.size(),
-                    UtilPlume.join("; ", types2),
+                    StringsPlume.join("; ", types2),
                     types2.size());
         }
 

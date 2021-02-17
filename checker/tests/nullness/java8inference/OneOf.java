@@ -4,7 +4,7 @@
 import java.util.List;
 
 @SuppressWarnings("nullness") // don't bother with implementations
-class OneOf {
+public class OneOf {
     static List<String> alist;
 
     static <V> V oneof(V v1, V v2) {

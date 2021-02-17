@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
-class Initializer {
+public class Initializer {
 
     public String a;
     public String b = "abc";

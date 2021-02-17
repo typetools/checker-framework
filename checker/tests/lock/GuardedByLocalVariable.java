@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.lock.qual.*;
 
-class GuardedByLocalVariable {
+public class GuardedByLocalVariable {
 
     public static void localVariableShadowing() {
         // :: error: (expression.unparsable.type.invalid)

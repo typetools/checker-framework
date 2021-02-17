@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-class BasicSubsequence {
+public class BasicSubsequence {
     // :: error: not.final
     @HasSubsequence(subsequence = "this", from = "this.x", to = "this.y")
     int[] b;

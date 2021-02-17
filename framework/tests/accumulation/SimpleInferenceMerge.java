@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class SimpleInferenceMerge {
+public class SimpleInferenceMerge {
     void build(@TestAccumulation({"a", "b"}) SimpleInferenceMerge this) {}
 
     void a() {}

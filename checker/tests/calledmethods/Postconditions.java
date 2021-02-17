@@ -1,7 +1,7 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
 /** Test for postcondition support via @EnsureCalledMethods. */
-class Postconditions {
+public class Postconditions {
     void build(@CalledMethods({"a", "b", "c"}) Postconditions this) {}
 
     void a() {}
@@ -85,6 +85,15 @@ class Postconditions {
         } else {
             // :: error: finalizer.invocation.invalid
             p.build();
+        }
+    }
+
+    @EnsuresCalledMethods(value = "#1", methods = "a")
+    static void callWithException(Postconditions p) {
+        try {
+            p.a();
+            throw new java.io.IOException();
+        } catch (java.io.IOException e) {
         }
     }
 }

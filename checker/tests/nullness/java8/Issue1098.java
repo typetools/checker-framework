@@ -3,7 +3,7 @@
 
 import java.util.Optional;
 
-class Issue1098 {
+public class Issue1098 {
     <T> void opt(Optional<T> p1, T p2) {}
 
     <T> void cls(Class<T> p1, T p2) {}

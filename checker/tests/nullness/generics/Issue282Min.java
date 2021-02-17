@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue282Min {
+public class Issue282Min {
     static <M> Set<M> copyOf(Comparator<? super M> comparator, Collection<? extends M> elements) {
         // :: error: (return.type.incompatible)
         return null;

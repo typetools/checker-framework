@@ -15,8 +15,7 @@ import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -30,7 +29,7 @@ public class RegexTransfer extends CFTransfer {
 
     // isRegex and asRegex are tested as signatures (string name plus formal parameters), not
     // ExecutableElement, because they exist in two packages:
-    // org.checkerframework.checker.regex.RegexUtil.isRegex(String,int)
+    // org.checkerframework.checker.regex.util.RegexUtil.isRegex(String,int)
     // org.plumelib.util.RegexUtil.isRegex(String,int)
     // and org.plumelib.util might not be on the classpath.
     private static final String IS_REGEX_METHOD_NAME = "isRegex";
@@ -86,9 +85,9 @@ public class RegexTransfer extends CFTransfer {
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-            Receiver firstParam =
-                    FlowExpressions.internalReprOf(
-                            factory.getContext().getAnnotationProvider(), n.getArgument(0));
+            JavaExpression firstParam =
+                    JavaExpression.fromNode(
+                            factory.getChecker().getAnnotationProvider(), n.getArgument(0));
 
             // add annotation with correct group count (if possible,
             // regex annotation without count otherwise)
@@ -197,8 +196,8 @@ public class RegexTransfer extends CFTransfer {
         MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
         Node receiver = methodAccessNode.getReceiver();
 
-        Receiver matcherReceiver =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
+        JavaExpression matcherReceiver =
+                JavaExpression.fromNode(analysis.getTypeFactory(), receiver);
 
         IntegerLiteralNode iln = (IntegerLiteralNode) possibleConstant;
         int groupCount;
@@ -222,8 +221,11 @@ public class RegexTransfer extends CFTransfer {
 
     /**
      * Returns true if the given receiver is a class named "RegexUtil". Examples of such classes are
-     * org.checkerframework.checker.regex.RegexUtil and org.plumelib.util.RegexUtil, and the user
-     * might copy one into their own project.
+     * org.checkerframework.checker.regex.util.RegexUtil and org.plumelib.util.RegexUtil, and the
+     * user might copy one into their own project.
+     *
+     * @param receiver some string
+     * @return true if the given receiver is a class named "RegexUtil"
      */
     private boolean isRegexUtil(String receiver) {
         return receiver.equals("RegexUtil") || receiver.endsWith(".RegexUtil");

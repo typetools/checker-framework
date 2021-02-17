@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue266 {
+public class Issue266 {
 
     abstract static class Inner {
         abstract String getThing();

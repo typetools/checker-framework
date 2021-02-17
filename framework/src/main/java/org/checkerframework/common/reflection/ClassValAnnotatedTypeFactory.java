@@ -37,6 +37,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -67,16 +68,26 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         ClassValBottom.class));
     }
 
+    /**
+     * Create a {@code @ClassVal} annotation with the given values.
+     *
+     * @param values the "value" field of the resulting {@code @ClassVal} annotation
+     * @return a {@code @ClassVal} annotation with the given values
+     */
     private AnnotationMirror createClassVal(List<String> values) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, ClassVal.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ClassVal.class);
         builder.setValue("value", values);
         return builder.build();
     }
 
+    /**
+     * Create a {@code @ClassBound} annotation with the given values.
+     *
+     * @param values the "value" field of the resulting {@code @ClassBound} annotation
+     * @return a {@code @ClassBound} annotation with the given values
+     */
     private AnnotationMirror createClassBound(List<String> values) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, ClassBound.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ClassBound.class);
         builder.setValue("value", values);
         return builder.build();
     }
@@ -254,7 +265,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (TreeUtils.getReceiverTree(tree) != null) {
                     clType = (Type) TreeUtils.typeOf(TreeUtils.getReceiverTree(tree));
                 } else { // receiver is null, so it is implicitly "this"
-                    ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
+                    ClassTree classTree = TreePathUtil.enclosingClass(getPath(tree));
                     clType = (Type) TreeUtils.typeOf(classTree);
                 }
                 String className = getClassNameFromType(clType);

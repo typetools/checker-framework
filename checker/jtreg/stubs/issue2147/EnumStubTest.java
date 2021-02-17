@@ -10,7 +10,7 @@
 
 import org.checkerframework.checker.tainting.qual.*;
 
-class EnumStubTest {
+public class EnumStubTest {
     void test() {
         requireEnum(SampleEnum.FIRST);
         requireEnum(SampleEnum.SECOND);

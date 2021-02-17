@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.ExecUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
@@ -603,13 +603,13 @@ public class TypeVisualizer {
                 builder.append(methodElem.getReturnType().toString());
                 builder.append(" <");
 
-                builder.append(UtilPlume.join(", ", methodElem.getTypeParameters()));
+                builder.append(StringsPlume.join(", ", methodElem.getTypeParameters()));
                 builder.append("> ");
 
                 builder.append(methodElem.getSimpleName().toString());
 
                 builder.append("(");
-                builder.append(UtilPlume.join(",", methodElem.getParameters()));
+                builder.append(StringsPlume.join(",", methodElem.getParameters()));
                 builder.append(")");
                 return builder.toString();
             }

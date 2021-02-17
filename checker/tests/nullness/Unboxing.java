@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class Unboxing {
+public class Unboxing {
 
     @Nullable Integer f;
 

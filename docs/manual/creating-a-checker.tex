@@ -14,10 +14,10 @@ the checker verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
-There is also a
-\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{developer
-  manual} for people who wish to edit the Checker Framework source code or
-make pull requests.
+People who wish to edit the Checker Framework source code or
+make pull requests should read the
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker
+  Framework Developer Manual}.
 
 
 Writing a simple checker is easy!  For example, here is a complete, useful
@@ -196,7 +196,7 @@ the rules differ from the built in framework rules
 
 \item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
-  type qualifier inference (also known as local variable type inference).
+  type qualifier inference (also sometimes called ``local variable type inference'').
 \end{description}
 
 
@@ -813,12 +813,12 @@ enables the checker to create an dependent type annotation that refers to
 it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
-\refclass{dataflow/expression}{Receiver} object by calling
-\refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{internalReprOf(AnnotationProvider,
+\refclass{dataflow/expression}{JavaExpression} object by calling
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{fromTree(AnnotationProvider,
 ExpressionTree)} or
-\refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
 Node)}.
-Then, call \<toString()> on the \<Receiver> object.
+Then, call \<toString()> on the \<JavaExpression> object.
 
 
 \subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
@@ -1263,8 +1263,7 @@ which is the Checker Framework's representation of an annotated type.
 
 \sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
 
-By default, every checker performs flow-sensitive type refinement, also known as
-local type inference, as described
+By default, every checker performs flow-sensitive type refinement, as described
 in Section~\ref{type-refinement}.
 
 This section of the manual explains how to enhance the Checker Framework's
@@ -1287,7 +1286,7 @@ The steps to customizing type refinement are:
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
-\refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-}
+\refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-}
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
@@ -1894,9 +1893,9 @@ output if it cannot parse it.)
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by
+pseudo-assignment check (\<commonAssignmentCheck>) performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
-Section~\ref{creating-extending-visitor}).
+Section~\ref{creating-extending-visitor}.
 
 \item \code{-AshowInferenceSteps}: print debugging information
 about intermediate steps in method type argument inference
@@ -1910,11 +1909,16 @@ about intermediate steps in method type argument inference
 
 \item \code{-AoutputArgsToFile}:
   This saves the final command-line parameters as passed to the compiler in a file.
-  This file can be used as a script (if the file is marked as executable on Unix, or
-  if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
-  Note that this argument cannot be included in a file containing command-line arguments
-  passed to the compiler using the @argfile syntax.
+  The file can be used as a script to re-execute the same compilation command.
+  (The script file must be marked as executable on Unix, or
+  must have a \code{.bat} extension on Windows.)
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
+
+  The \code{-AoutputArgsToFile} command-line argument is processed by
+  CheckerMain, not by the annotation processor.  That means that it can be
+  supplied only when you use the Checker Framework compiler (the ``Checker
+  Framework javac wrapper''), and it cannot be written in a file containing
+  command-line arguments passed to the compiler using the @argfile syntax.
 
 \end{itemize}
 
@@ -1931,7 +1935,7 @@ for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
 \noindent
-where the first command creates file \<someDirectory/myClass.dot> that
+where the first command creates file \<someDirectory/MyClass.dot> that
 represents the CFG, and the last command draws the CFG in a PDF file.
 The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 
@@ -2289,7 +2293,7 @@ fields.  \<Element> represents elements found in both source
 code and bytecode.
 
 There is an \code{Element} interface to represent each construct, e.g.,
-\code{TypeElement} for class/interfaces, \code{ExecutableElement} for
+\code{TypeElement} for classes/interfaces, \code{ExecutableElement} for
 methods/constructors, and \code{VariableElement} for local variables and
 method parameters.
 
@@ -2307,7 +2311,7 @@ modifiers (e.g., \code{strictfp}, \code{synchronized})
 \subsubsectionAndLabel{Trees --- Compiler Tree API}{creating-javac-trees}
 
 A \refTreeclass{tree}{Tree} represents a syntactic unit in the source code,
-like a method declaration, statement, block, \<for> loop, etc. Trees only
+such as a method declaration, statement, block, \<for> loop, etc. Trees only
 represent source code to be compiled (or found in \code{-sourcepath});
 no tree is available for classes read from bytecode.
 
@@ -2327,12 +2331,14 @@ The three APIs use some common idioms and conventions; knowing them will
 help you to create your checker.
 
 \emph{Type-checking}:
-Do not use \code{instanceof} to determine the class of the object,
+Do not use \code{instanceof} to determine the class of a \<TypeMirror> or \<Element>,
 because you cannot necessarily predict the run-time type of the object that
-implements an interface.  Instead, use the \code{getKind()} method.  The
-method returns \refModelclass{type}{TypeKind},
-\refModelclass{element}{ElementKind}, and \refTreeclass{tree}{Tree.Kind}
-for the three interfaces, respectively.
+implements an interface.  Instead, use the
+\sunjavadoc{java.compiler/javax/lang/model/type/TypeMirror.html\#getKind()}{TypeMirror.getKind()}
+or
+\sunjavadoc{java.compiler/javax/lang/model/element/Element.html\#getKind()}{Element.getKind()}
+method.
+For \<Tree>s, you can use either \<Tree.getKind()> or \<instanceof>.
 
 \emph{Visitors and Scanners}:
 The compiler and the Checker Framework use the visitor pattern
@@ -2355,10 +2361,14 @@ notable exception: \refclass{framework/util}{AnnotatedTypes}.
 \subsubsectionAndLabel{Equality for annotations}{equality-for-annotations}
 
 \<AnnotationMirror> is an interface that is implemented both by javac and
-the Checker Framework. Using \<equals> with one object created by the
-Checker Framework and one by javac will always return false even if they
-represent the same annotation. Therefore, never use any method that
-compares \<AnnotationMirror>s using equals. \refclass{javacutil}{AnnotationUtils} has various
+the Checker Framework. The documentation of
+\refModelclass{element}{AnnotationMirror} says, ``Annotations should be
+compared using the equals method. There is no guarantee that any particular
+annotation will always be represented by the same object.''  The second
+sentence is true, but the first sentence is wrong.  You should never
+compare \<AnnotationMirror>s using \<equals()>, which (for some
+implementations) is reference equality.
+\refclass{javacutil}{AnnotationUtils} has various
 methods that should be used instead. Also,
 \refclass{framework/util}{AnnotationMirrorMap} and
 \refclass{framework/util}{AnnotationMirrorSet} can be used.
@@ -2476,8 +2486,8 @@ without warnings or errors.
 %%  LocalWords:  MyChecker's subchecker plugins ElementType myClass myflag
 %%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
 %%  LocalWords:  addCheckedCodeDefaults RelevantJavaTypes TargetLocations
-%%  LocalWords:  TypeUseLocation createExpressionAnnoHelper internalReprOf
-%%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer LSP
+%%  LocalWords:  TypeUseLocation createExpressionAnnoHelper fromNode
+%%  LocalWords:  ExpressionAnnotationHelper JavaExpressions CFTransfer LSP
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
 %%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init apis

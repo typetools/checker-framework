@@ -12,7 +12,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * A node for method invocation.
@@ -30,8 +30,8 @@ public class MethodInvocationNode extends Node {
     protected final @Nullable MethodInvocationTree tree;
 
     /**
-     * The target of the method invocation -- that is, the receiver. For a static method, may be a
-     * class name.
+     * The MethodAccessNode for the method being invoked. Includes the receiver if any. For a static
+     * method, the receiver may be a class name.
      */
     protected final MethodAccessNode target;
 
@@ -52,8 +52,7 @@ public class MethodInvocationNode extends Node {
      * Create a MethodInvocationNode.
      *
      * @param tree for the method invocation
-     * @param target of the method invocation -- that is, the receiver. For a static method, may be
-     *     a class name.
+     * @param target the MethodAccessNode for the method being invoked
      * @param arguments arguments of the method invocation
      * @param treePath path to the method invocation
      */
@@ -130,7 +129,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public String toString() {
-        return target + "(" + UtilPlume.join(", ", arguments) + ")";
+        return target + "(" + StringsPlume.join(", ", arguments) + ")";
     }
 
     @Override

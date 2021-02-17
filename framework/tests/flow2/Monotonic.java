@@ -1,7 +1,7 @@
 import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
-class Monotonic {
+public class Monotonic {
 
     String f1;
     @MonotonicOdd String f2;

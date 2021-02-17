@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class Refinement2 {
+public class Refinement2 {
 
     void eq_test(int x, @IntVal({1, 5, 6}) int w) {
         if (x == 1) {

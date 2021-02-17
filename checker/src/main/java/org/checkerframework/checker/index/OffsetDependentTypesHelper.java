@@ -2,14 +2,17 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
-import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -27,53 +30,40 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     @Override
     protected String standardizeString(
             final String expression,
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             boolean useLocalScope) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
-        if (expression.indexOf('-') == -1 && expression.indexOf('+') == -1) {
-            // The expression contains no "-" or "+", so it can be standardized directly.
-            Receiver result;
-            try {
-                result =
-                        FlowExpressionParseUtil.parse(
-                                expression, context, localScope, useLocalScope);
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                return new DependentTypesError(expression, e).toString();
-            }
-            if (result == null) {
-                return new DependentTypesError(expression, " ").toString();
-            }
-            if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
-                Object constant = ((FieldAccess) result).getField().getConstantValue();
-                if (constant != null && !(constant instanceof String)) {
-                    return constant.toString();
-                }
-            }
-            return result.toString();
-        }
-
-        // The expression is a sum of several terms. This expression is standardized by splitting it
-        // into individual terms in an OffsetEquation and standardizing each term.
-        OffsetEquation equation = OffsetEquation.createOffsetFromJavaExpression(expression);
-        if (equation.hasError()) {
-            return equation.getError();
-        }
+        JavaExpression result;
         try {
-            // Standardize individual terms of the expression.
-            equation.standardizeAndViewpointAdaptExpressions(
-                    context, localScope, useLocalScope, factory);
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            result = JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
+        if (result == null) {
+            return new DependentTypesError(expression, /*error message=*/ " ").toString();
+        }
+        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
+            Object constant = ((FieldAccess) result).getField().getConstantValue();
+            if (constant != null && !(constant instanceof String)) {
+                return constant.toString();
+            }
+        }
+        // TODO: Maybe move this into the superclass standardizeString, then remove this class.
+        ValueAnnotatedTypeFactory vatf =
+                ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
+                        .getTypeFactoryOfSubchecker(ValueChecker.class);
+        if (vatf != null) {
+            result = ValueCheckerUtils.optimize(result, vatf);
+        }
 
-        return equation.toString();
+        return result.toString();
     }
 
     @Override
-    public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
+    public TreeAnnotator createDependentTypesTreeAnnotator() {
         return new DependentTypesTreeAnnotator(factory, this) {
             @Override
             public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {

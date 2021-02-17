@@ -1,4 +1,4 @@
-// The test cases GenericNull, FieldAccess, and InferTypeArgs often fail together.
+// The test cases GenericNull, FieldAccessTest, and InferTypeArgs often fail together.
 // Here are some things that might be wrong if they are failing.
 //  * If you have overridden AnnotatedTypeFactory.createTreeAnnotator(), the body should return a
 //    list that contains the result of running the overridden implementation, as in:
@@ -16,7 +16,7 @@
 //    consider if this is desirable.
 //
 
-class GenericNull {
+public class GenericNull {
     /**
      * In most type systems, null's type is bottom and therefore the generic return type T is a
      * supertype of null's type.

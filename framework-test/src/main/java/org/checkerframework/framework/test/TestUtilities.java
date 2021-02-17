@@ -30,7 +30,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /** Utilities for testing. */
 public class TestUtilities {
@@ -349,19 +349,19 @@ public class TestUtilities {
             pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
             pw.println("Expected:");
-            pw.println(UtilPlume.joinLines(expected));
+            pw.println(StringsPlume.joinLines(expected));
             pw.println();
 
             pw.println("Actual:");
-            pw.println(UtilPlume.joinLines(actual));
+            pw.println(StringsPlume.joinLines(actual));
             pw.println();
 
             pw.println("Missing:");
-            pw.println(UtilPlume.joinLines(missing));
+            pw.println(StringsPlume.joinLines(missing));
             pw.println();
 
             pw.println("Unexpected:");
-            pw.println(UtilPlume.joinLines(unexpected));
+            pw.println(StringsPlume.joinLines(unexpected));
             pw.println();
 
             pw.println();
@@ -433,6 +433,9 @@ public class TestUtilities {
                 System.out.println("---------------- start of javac ouput ----------------");
                 System.out.println(testResult.getCompilationResult().getJavacOutput());
                 System.out.println("---------------- end of javac ouput ----------------");
+            } else {
+                System.out.println(
+                        "To see the javac command line and output, run with: -Pemit.test.debug");
             }
             Assert.fail(testResult.summarize());
         }

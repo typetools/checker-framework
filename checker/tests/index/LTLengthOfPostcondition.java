@@ -4,7 +4,7 @@ import org.checkerframework.checker.index.qual.EnsuresLTLengthOfIf;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 
-class LTLengthOfPostcondition {
+public class LTLengthOfPostcondition {
 
     Object[] array;
 

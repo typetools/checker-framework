@@ -1,7 +1,7 @@
 import javax.swing.plaf.BorderUIResource;
 import org.checkerframework.common.value.qual.*;
 
-class Fields {
+public class Fields {
 
     static final int field = 1;
 

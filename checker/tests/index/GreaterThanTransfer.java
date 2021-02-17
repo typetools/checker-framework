@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.MinLen;
 
-class GreaterThanTransfer {
+public class GreaterThanTransfer {
     void gt_check(int[] a) {
         if (a.length > 0) {
             int @MinLen(1) [] b = a;

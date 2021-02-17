@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class NullableArrays {
+public class NullableArrays {
     private byte @Nullable [] padding;
 
     public NullableArrays(byte @Nullable [] padding) {

@@ -8,8 +8,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -39,9 +38,9 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         if (factory.isMapContainsKey(node) || factory.isMapPut(node)) {
 
             Node receiver = node.getTarget().getReceiver();
-            Receiver internalReceiver = FlowExpressions.internalReprOf(factory, receiver);
-            String mapName = internalReceiver.toString();
-            Receiver keyReceiver = FlowExpressions.internalReprOf(factory, node.getArgument(0));
+            JavaExpression receiverJe = JavaExpression.fromNode(factory, receiver);
+            String mapName = receiverJe.toString();
+            JavaExpression keyExpr = JavaExpression.fromNode(factory, node.getArgument(0));
 
             LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
             keyForMaps.add(mapName);
@@ -58,10 +57,12 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
             AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
             if (factory.isMapContainsKey(node)) {
-                result.getThenStore().insertValue(keyReceiver, am);
-            } else { // method is Map.put
-                result.getThenStore().insertValue(keyReceiver, am);
-                result.getElseStore().insertValue(keyReceiver, am);
+                // method is Map.containsKey
+                result.getThenStore().insertValue(keyExpr, am);
+            } else {
+                // method is Map.put
+                result.getThenStore().insertValue(keyExpr, am);
+                result.getElseStore().insertValue(keyExpr, am);
             }
         }
 

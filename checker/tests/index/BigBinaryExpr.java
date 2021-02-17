@@ -1,4 +1,4 @@
-class BigBinaryExpr {
+public class BigBinaryExpr {
     void test() {
         int i0 = 163;
         int i1 = 153;

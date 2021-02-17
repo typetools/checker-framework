@@ -2,7 +2,7 @@
 
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class SimplePolymorphic {
+public class SimplePolymorphic {
     @PolyTestAccumulation Object id(@PolyTestAccumulation Object obj) {
         return obj;
     }

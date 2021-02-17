@@ -1,2 +1,2 @@
-- compiler.warn.proc.messager: AnnotationFileParser: Unknown annotation: @Nullable
+- compiler.warn.proc.messager: AnnoNotFound.astub:(line 8,col 3): Unknown annotation @Nullable
 1 warning

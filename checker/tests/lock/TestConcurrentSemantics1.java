@@ -1,10 +1,8 @@
-package chapter;
-
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 
-class TestConcurrentSemantics1 {
+public class TestConcurrentSemantics1 {
     /* This class tests the following critical scenario.
      *
      * Suppose the following lines from method1 are executed on thread A.

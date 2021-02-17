@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 
-class CheckAgainstNegativeOne {
+public class CheckAgainstNegativeOne {
 
     public static String replaceString(String target, String oldStr, String newStr) {
         if (oldStr.equals("")) {

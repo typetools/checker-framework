@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.common.value.qual.*;
 
-class Issue2420 {
+public class Issue2420 {
     static void str(String argStr) {
         if (argStr.isEmpty()) {
             return;

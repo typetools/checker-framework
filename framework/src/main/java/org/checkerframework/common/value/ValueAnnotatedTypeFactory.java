@@ -45,7 +45,7 @@ import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -63,7 +63,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -151,48 +151,48 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
-        addAliasedAnnotation("android.support.annotation.IntRange", IntRange.class, true);
+        addAliasedTypeAnnotation("android.support.annotation.IntRange", IntRange.class, true);
 
         // The actual ArrayLenRange is created by
         // {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
-        addAliasedAnnotation(MinLen.class, BOTTOMVAL);
+        addAliasedTypeAnnotation(MinLen.class, BOTTOMVAL);
 
         // @Positive is aliased here because @Positive provides useful
         // information about @MinLen annotations.
         // @NonNegative and @GTENegativeOne are aliased similarly so
         // that it's possible to overwrite a function annotated to return
         // @NonNegative with, for instance, a function that returns an @IntVal(0).
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.NonNegative",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.GTENegativeOne",
                 createIntRangeFromGTENegativeOne());
         // Must also alias any alias of three annotations above:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.LengthOf",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexFor",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexOrHigh",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexOrLow",
                 createIntRangeFromGTENegativeOne());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.SubstringIndexFor",
                 createIntRangeFromGTENegativeOne());
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
-        addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+        addAliasedTypeAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
 
         // EnumVal is treated as StringVal internally by the checker.
-        addAliasedAnnotation(EnumVal.class, StringVal.class, true);
+        addAliasedTypeAnnotation(EnumVal.class, StringVal.class, true);
 
         methods = new ValueMethodIdentifier(processingEnv);
 
@@ -342,7 +342,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code from} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation
      * @return either the from value from the passed int range annotation, or the minimum value of
      *     the domain of the underlying type (i.e. Integer.MIN_VALUE if the underlying type is int)
      */
@@ -361,7 +361,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code to} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation
      * @return either the to value from the passed int range annotation, or the maximum value of the
      *     domain of the underlying type (i.e. Integer.MAX_VALUE if the underlying type is int)
      */
@@ -547,7 +547,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 stringVals.add((String) o);
             }
             return createStringAnnotation(stringVals);
-        } else if (ValueCheckerUtils.getClassFromType(resultType) == char[].class) {
+        } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
             List<String> stringVals = new ArrayList<>(values.size());
             for (Object o : values) {
                 if (o instanceof char[]) {
@@ -1294,17 +1294,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns the minimum length of an array expression or 0 if the min length is unknown.
      *
-     * @param sequenceExpression flow expression
+     * @param sequenceExpression Java expression
      * @param tree expression tree or variable declaration
      * @param currentPath path to local scope
      * @return min length of sequenceExpression or 0
      */
     public int getMinLenFromString(String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror lengthAnno;
-        Receiver expressionObj;
+        JavaExpression expressionObj;
         try {
-            expressionObj = getReceiverFromJavaExpressionString(sequenceExpression, currentPath);
-        } catch (FlowExpressionParseException e) {
+            expressionObj = parseJavaExpressionString(sequenceExpression, currentPath);
+        } catch (JavaExpressionParseException e) {
             // ignore parse errors and return 0.
             return 0;
         }
@@ -1333,12 +1333,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLenRange.class);
+        lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, ArrayLenRange.class);
         if (lengthAnno == null) {
-            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLen.class);
+            lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, ArrayLen.class);
         }
         if (lengthAnno == null) {
-            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, StringVal.class);
+            lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, StringVal.class);
         }
 
         if (lengthAnno == null) {

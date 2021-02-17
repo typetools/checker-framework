@@ -1,4 +1,4 @@
-class Unboxing {
+public class Unboxing {
     boolean b = Boolean.TRUE;
 
     <T> T foo(Class<T> expectedType) {

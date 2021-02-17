@@ -78,7 +78,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param analysisCaches {@link #analysisCaches}
      */
     protected AnalysisResult(
-            Map<Node, V> nodeValues,
+            IdentityHashMap<Node, V> nodeValues,
             IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
@@ -103,7 +103,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param finalLocalValues {@link #finalLocalValues}
      */
     public AnalysisResult(
-            Map<Node, V> nodeValues,
+            IdentityHashMap<Node, V> nodeValues,
             IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
@@ -398,8 +398,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * is returned.
      *
      * @param node the node to analyze
-     * @param preOrPost indicates which store to return: the store immediately before {@code node}
-     *     or the store after {@code node}
+     * @param preOrPost which store to return: the store immediately before {@code node} or the
+     *     store after {@code node}
      * @return the store before or after {@code node} (depends on the value of {@code before}) after
      *     running the analysis
      */
@@ -426,8 +426,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param <V> the abstract value type to be tracked by the analysis
      * @param <S> the store type used in the analysis
      * @param node the node to analyze
-     * @param preOrPost indicates which store to return: the store immediately before {@code node}
-     *     or the store after {@code node}
+     * @param preOrPost which store to return: the store immediately before {@code node} or the
+     *     store after {@code node}
      * @param transferInput a transfer input
      * @param nodeValues {@link #nodeValues}
      * @param analysisCaches {@link #analysisCaches}

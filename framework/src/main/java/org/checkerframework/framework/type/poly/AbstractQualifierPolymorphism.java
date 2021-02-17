@@ -523,7 +523,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 if (TypesUtils.isErasedSubtype(
                         type1Arg.getUnderlyingType(),
                         type2Arg.getUnderlyingType(),
-                        atypeFactory.getContext().getTypeUtils())) {
+                        atypeFactory.getChecker().getTypeUtils())) {
                     result = reduce(result, visit(type1Arg, type2Arg));
                 } // else an unchecked warning was issued by Java, ignore this part of the type.
             }

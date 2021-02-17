@@ -21,6 +21,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.time.Instant;
@@ -63,7 +66,6 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
@@ -72,9 +74,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
 
 /**
@@ -375,10 +379,9 @@ import org.plumelib.util.UtilPlume;
     "resourceStats",
 
     // Parse all JDK files at startup rather than as needed.
-    "parseAllJdk"
+    "parseAllJdk",
 })
-public abstract class SourceChecker extends AbstractTypeProcessor
-        implements CFContext, OptionConfiguration {
+public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -518,10 +521,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     @Override
     public final synchronized void init(ProcessingEnvironment env) {
-        super.init(env);
-        // The processingEnvironment field will also be set by the superclass' init method.
+        ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
+        super.init(unwrappedEnv);
+        // The processingEnvironment field will be set by the superclass's init method.
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
-        setProcessingEnvironment(env);
+        setProcessingEnvironment(unwrappedEnv);
 
         // Keep in sync with check in checker-framework/build.gradle and text in installation
         // section of manual.
@@ -575,7 +579,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @return the {@link ProcessingEnvironment} that was supplied to this checker
      */
-    @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -634,40 +637,46 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Returns the {@link CFContext} used by this checker.
+     * Returns the OptionConfiguration associated with this.
      *
-     * @return the {@link CFContext} used by this checker
+     * @return the OptionConfiguration associated with this
      */
-    public CFContext getContext() {
-        return this;
-    }
-
-    @Override
-    public SourceChecker getChecker() {
-        return this;
-    }
-
-    @Override
     public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
-    @Override
+    /**
+     * Returns the element utilities associated with this.
+     *
+     * @return the element utilities associated with this
+     */
     public Elements getElementUtils() {
         return getProcessingEnvironment().getElementUtils();
     }
 
-    @Override
+    /**
+     * Returns the type utilities associated with this.
+     *
+     * @return the type utilities associated with this
+     */
     public Types getTypeUtils() {
         return getProcessingEnvironment().getTypeUtils();
     }
 
-    @Override
+    /**
+     * Returns the tree utilities associated with this.
+     *
+     * @return the tree utilities associated with this
+     */
     public Trees getTreeUtils() {
         return Trees.instance(getProcessingEnvironment());
     }
 
-    @Override
+    /**
+     * Returns the SourceVisitor associated with this.
+     *
+     * @return the SourceVisitor associated with this
+     */
     public SourceVisitor<?, ?> getVisitor() {
         return this.visitor;
     }
@@ -679,7 +688,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
 
-    @Override
+    /**
+     * Returns the AnnotationProvider (the type factory) associated with this.
+     *
+     * @return the AnnotationProvider (the type factory) associated with this
+     */
     public AnnotationProvider getAnnotationProvider() {
         throw new UnsupportedOperationException(
                 "getAnnotationProvider is not implemented for this class.");
@@ -854,7 +867,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
         @Nullable Trees trees = Trees.instance(processingEnv);
-        assert trees != null; /*nninvariant*/
+        assert trees != null;
         this.trees = trees;
 
         this.messager = processingEnv.getMessager();
@@ -871,6 +884,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
+    /** Output the warning about memory at most once. */
+    private boolean warnedAboutGarbageCollection = false;
+
     /**
      * The number of errors at the last exit of the type processor. At entry to the type processor
      * we check whether the current error count is higher and then don't process the file, as it
@@ -886,7 +902,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
-        // Cannot use BugInCF here because it is outside of the try/catch for BugInCf
+        // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
             messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
             return;
@@ -895,6 +911,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             messager.printMessage(
                     Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
             return;
+        }
+        if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
+            messager.printMessage(
+                    Kind.WARNING,
+                    String.format(
+                            "Memory constraints are impeding performance; please increase max heap size (max memory = %d, total memory = %d, free memory = %d)",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
+            warnedAboutGarbageCollection = true;
         }
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
@@ -1535,7 +1561,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         @Nullable String @Nullable [] slValue = sl.value();
-        assert slValue != null; /*nninvariant*/
+        assert slValue != null;
 
         @Nullable String[] lintArray = slValue;
         Set<String> lintSet = new HashSet<>(lintArray.length);
@@ -1989,12 +2015,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // trees.getPath might be slow, but this is only used in error reporting
         @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
 
-        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
+        @Nullable VariableTree var = TreePathUtil.enclosingVariable(path);
         if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
             return true;
         }
 
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
+        @Nullable MethodTree method = TreePathUtil.enclosingMethod(path);
         if (method != null) {
             @Nullable Element elt = TreeUtils.elementFromTree(method);
 
@@ -2010,7 +2036,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
+        @Nullable ClassTree cls = TreePathUtil.enclosingClass(path);
         if (cls != null) {
             @Nullable Element elt = TreeUtils.elementFromTree(cls);
 
@@ -2159,7 +2185,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * See {@link #shouldSuppress(String[], String)}
+     * Helper method for {@link #shouldSuppress(String[], String)}.
      *
      * @param prefixes the SuppressWarnings prefixes used by this checker
      * @param suppressWarningsStrings the SuppressWarnings strings that are in effect. May be null,
@@ -2281,7 +2307,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 this.getClass().getAnnotation(SuppressWarningsPrefix.class);
         if (prefixMetaAnno != null) {
             for (String prefix : prefixMetaAnno.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }
@@ -2291,7 +2317,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {
             for (String prefix : annotation.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }
@@ -2332,7 +2358,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (element == null) {
             return false;
         }
-        TypeElement typeElement = ElementUtils.enclosingClass(element);
+        TypeElement typeElement = ElementUtils.enclosingTypeElement(element);
+        if (typeElement == null) {
+            throw new BugInCF(
+                    "enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
+        }
         @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
         // @FullyQualifiedName
         )
@@ -2447,65 +2477,75 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void logBugInCF(BugInCF ce) {
         StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
-        msg.add(ce.getMessage());
-        boolean noPrintErrorStack =
-                (processingEnv != null
-                        && processingEnv.getOptions() != null
-                        && processingEnv.getOptions().containsKey("noPrintErrorStack"));
-
-        msg.add("; The Checker Framework crashed.  Please report the crash.");
-        if (noPrintErrorStack) {
+        if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
             msg.add(
-                    " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+                    "The JVM ran out of memory.  Run with a larger max heap size (currently "
+                            + Runtime.getRuntime().maxMemory()
+                            + " bytes).");
         } else {
-            if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
-                msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
-            }
 
-            if (this.visitor != null) {
-                DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-                if (pos != null) {
-                    DiagnosticSource source =
-                            new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-                    int linenr = source.getLineNumber(pos.getStartPosition());
-                    int col = source.getColumnNumber(pos.getStartPosition(), true);
-                    String line = source.getLine(pos.getStartPosition());
+            msg.add(ce.getMessage());
+            boolean noPrintErrorStack =
+                    (processingEnv != null
+                            && processingEnv.getOptions() != null
+                            && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
-                    msg.add("Last visited tree at line " + linenr + " column " + col + ":");
-                    msg.add(line);
-                }
-            }
-
-            msg.add(
-                    "Exception: "
-                            + ce.getCause()
-                            + "; "
-                            + UtilPlume.stackTraceToString(ce.getCause()));
-            boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-            Throwable cause = ce.getCause().getCause();
-            while (cause != null) {
+            msg.add("; The Checker Framework crashed.  Please report the crash.");
+            if (noPrintErrorStack) {
                 msg.add(
-                        "Underlying Exception: "
-                                + cause
-                                + "; "
-                                + UtilPlume.stackTraceToString(cause));
-                printClasspath |= cause instanceof NoClassDefFoundError;
-                cause = cause.getCause();
-            }
+                        " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+            } else {
+                if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
+                    msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
+                }
 
-            if (printClasspath) {
-                ClassLoader cl = ClassLoader.getSystemClassLoader();
+                if (this.visitor != null) {
+                    DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
+                    if (pos != null) {
+                        DiagnosticSource source =
+                                new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+                        int linenr = source.getLineNumber(pos.getStartPosition());
+                        int col = source.getColumnNumber(pos.getStartPosition(), true);
+                        String line = source.getLine(pos.getStartPosition());
 
-                if (cl instanceof URLClassLoader) {
-                    msg.add("Classpath:");
-                    URL[] urls = ((URLClassLoader) cl).getURLs();
-                    for (URL url : urls) {
-                        msg.add(url.getFile());
+                        msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+                        msg.add(line);
                     }
-                } else {
-                    // TODO: Java 9+ use an internal classloader that doesn't support getting URLs,
-                    // so we will need an alternative approach to retrieve the classpath on Java 9+.
-                    msg.add("Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                }
+
+                msg.add(
+                        "Exception: "
+                                + ce.getCause()
+                                + "; "
+                                + UtilPlume.stackTraceToString(ce.getCause()));
+                boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
+                Throwable cause = ce.getCause().getCause();
+                while (cause != null) {
+                    msg.add(
+                            "Underlying Exception: "
+                                    + cause
+                                    + "; "
+                                    + UtilPlume.stackTraceToString(cause));
+                    printClasspath |= cause instanceof NoClassDefFoundError;
+                    cause = cause.getCause();
+                }
+
+                if (printClasspath) {
+                    ClassLoader cl = ClassLoader.getSystemClassLoader();
+
+                    if (cl instanceof URLClassLoader) {
+                        msg.add("Classpath:");
+                        URL[] urls = ((URLClassLoader) cl).getURLs();
+                        for (URL url : urls) {
+                            msg.add(url.getFile());
+                        }
+                    } else {
+                        // TODO: Java 9+ use an internal classloader that doesn't support getting
+                        // URLs, so we will need an alternative approach to retrieve the classpath
+                        // on Java 9+.
+                        msg.add(
+                                "Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                    }
                 }
             }
         }
@@ -2640,5 +2680,87 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return version;
         }
         throw new BugInCF("Could not find the version in git.properties");
+    }
+
+    /**
+     * Gradle and IntelliJ wrap the processing environment to gather information about modifications
+     * done by annotation processor during incremental compilation. But the Checker Framework calls
+     * methods from javac that require the processing environment to be {@code
+     * com.sun.tools.javac.processing.JavacProcessingEnvironment}. They fail if given a proxy. This
+     * method unwraps a proxy if one is used.
+     *
+     * @param env a processing environment
+     * @return unwrapped environment if the argument is a proxy created by IntelliJ or Gradle;
+     *     original value (the argument) if the argument is a javac processing environment
+     * @throws BugInCF if method fails to retrieve {@code
+     *     com.sun.tools.javac.processing.JavacProcessingEnvironment}
+     */
+    private static ProcessingEnvironment unwrapProcessingEnvironment(ProcessingEnvironment env) {
+        if (env.getClass().getName()
+                == "com.sun.tools.javac.processing.JavacProcessingEnvironment") { // interned
+            return env;
+        }
+        // IntelliJ >2020.3 wraps the processing environment in a dynamic proxy.
+        ProcessingEnvironment unwrappedIntelliJ = unwrapIntelliJ(env);
+        if (unwrappedIntelliJ != null) {
+            return unwrapProcessingEnvironment(unwrappedIntelliJ);
+        }
+        // Gradle incremental build also wraps the processing environment.
+        for (Class<?> envClass = env.getClass();
+                envClass != null;
+                envClass = envClass.getSuperclass()) {
+            ProcessingEnvironment unwrappedGradle = unwrapGradle(envClass, env);
+            if (unwrappedGradle != null) {
+                return unwrapProcessingEnvironment(unwrappedGradle);
+            }
+        }
+        throw new BugInCF("Unexpected processing environment: %s %s", env, env.getClass());
+    }
+
+    /**
+     * Tries to unwrap ProcessingEnvironment from proxy in IntelliJ 2020.3 or later.
+     *
+     * @param env possibly a dynamic proxy wrapping processing environment
+     * @return unwrapped processing environment, null if not successful
+     */
+    private static @Nullable ProcessingEnvironment unwrapIntelliJ(ProcessingEnvironment env) {
+        if (!Proxy.isProxyClass(env.getClass())) {
+            return null;
+        }
+        InvocationHandler handler = Proxy.getInvocationHandler(env);
+        try {
+            Field field = handler.getClass().getDeclaredField("val$delegateTo");
+            field.setAccessible(true);
+            Object o = field.get(handler);
+            if (o instanceof ProcessingEnvironment) {
+                return (ProcessingEnvironment) o;
+            }
+            return null;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Tries to unwrap processing environment in Gradle incremental processing. Inspired by project
+     * Lombok.
+     *
+     * @param delegateClass a class in which to find a {@code delegate} field
+     * @param env a processing environment wrapper
+     * @return unwrapped processing environment, null if not successful
+     */
+    private static @Nullable ProcessingEnvironment unwrapGradle(
+            Class<?> delegateClass, ProcessingEnvironment env) {
+        try {
+            Field field = delegateClass.getDeclaredField("delegate");
+            field.setAccessible(true);
+            Object o = field.get(env);
+            if (o instanceof ProcessingEnvironment) {
+                return (ProcessingEnvironment) o;
+            }
+            return null;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
     }
 }

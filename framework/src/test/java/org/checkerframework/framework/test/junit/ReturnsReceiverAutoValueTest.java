@@ -5,7 +5,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
-import org.checkerframework.framework.test.*;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** tests the returns receiver checker's AutoValue integration. */

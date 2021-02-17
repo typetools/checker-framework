@@ -2,7 +2,7 @@
 
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class SmallPredicate {
+public class SmallPredicate {
     void a() {}
 
     void b() {}

@@ -4,7 +4,7 @@
 import java.util.Vector;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue1522 {
+public class Issue1522 {
     void copyInto(String p) {}
 
     void bar() {

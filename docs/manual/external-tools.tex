@@ -118,7 +118,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.8.0'
+    ext.checkerFrameworkVersion = '3.10.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -191,7 +191,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.8.0'
+    ext.checkerFrameworkVersion = '3.10.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -325,7 +325,7 @@ You can learn more about Buck and annotation processors at these URLs:
 
 In order to use Checker Framework with Buck on JDK 8, you first need
 to place the Error Prone JDK 9 compiler in Buck's bootclasspath
-(further explanation in Section~\ref{java8-install}).  To do so,
+(further explanation in Section~\ref{javac-jdk8}).  To do so,
 follow the instructions on this page:
 
 {\codesize\url{https://github.com/uber/okbuck/wiki/Using-Error-Prone-with-Buck-and-OkBuck#using-error-prone-javac-on-jdk-8}}
@@ -339,13 +339,13 @@ file showing how to enable Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.8.0.jar',
+    binary_jar = 'checker-3.10.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.8.0.jar',
+    binary_jar = 'checker-qual-3.10.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -377,21 +377,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.8.0/>.
+other than \<\${HOME}/checker-framework-3.10.0/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.8.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.10.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.8.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.10.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -412,7 +412,7 @@ other than \<\${HOME}/checker-framework-3.8.0/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.8.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.10.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -434,11 +434,11 @@ other than \<\${HOME}/checker-framework-3.8.0/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.8.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.10.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.8.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.10.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -517,12 +517,13 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://search.maven.org/artifact/org.checkerframework/checker-qual/3.8.0/jar}
-\item \<checker.jar>: \url{https://search.maven.org/artifact/org.checkerframework/checker/3.8.0/jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.10.0/checker-qual-3.10.0.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.10.0/checker-util-3.10.0.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.10.0/checker-3.10.0-all.jar}
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
-(Section~\ref{java8-install}) and for JDK 9+ (Section~\ref{java11-install}).
+(Section~\ref{javac-jdk8}) and for JDK 9+ (Section~\ref{javac-jdk11}).
 
 
 \subsectionAndLabel{JDK 8}{javac-jdk8}
@@ -855,10 +856,8 @@ then you can enable Checker Framework checkers by following the
 instructions below.
 
 See the directory \code{docs/examples/MavenExample/} for examples of the use of
-Maven build files that run a checker with JDK 8.
-See the directory \code{docs/examples/MavenExampleJDK11/} for examples of the use of
-Maven build files that run a checker with JDK 11.
-These examples can be used to verify that
+Maven build files.
+This example can be used to verify that
 Maven is correctly downloading the Checker Framework from the
 \href{https://search.maven.org/search?q=org.checkerframework}{Maven
   Central Repository} and executing it.
@@ -893,7 +892,6 @@ checker as an annotation processor directly.
       <artifactId>checker-qual</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
-    <!-- If using JDK 8, add the following additional dependency. -->
     <dependency>
       <groupId>com.google.errorprone</groupId>
       <artifactId>javac</artifactId>
@@ -902,6 +900,9 @@ checker as an annotation processor directly.
   </dependencies>
 \end{alltt}
 
+Java 11 and later do not need the \<com.google.errorprone.javac>
+dependency.  If you will never use Java 8, you can omit it.
+
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:
 \begin{Verbatim}
@@ -909,7 +910,7 @@ latest bug fixes and new features:
 \end{Verbatim}
 
 The need for the \<com.google.errorprone:javac> artifact when running under
-JDK 8 is explained in Section~\ref{java8-install}.
+JDK 8 is explained in Section~\ref{javac-jdk8}.
 
 \end{enumerate}
 
@@ -1105,7 +1106,7 @@ may suppress warnings from the stub parser.
 To use a locally-built version of the Checker Framework, first run:
 
 \begin{alltt}
-./gradlew deployArtifactsToLocalRepo
+./gradlew publishToMavenLocal
 \end{alltt}
 
 \noindent
@@ -1331,79 +1332,10 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 
 \sectionAndLabel{Type inference tools}{type-inference-varieties}
 
-There are two different tasks that are commonly called ``type inference''.
-You are probably interested in type inference to annotate a program's
-source code; see Section~\ref{type-inference-to-annotate}.  This section
-explains the two different varieties of type inference.
-
-
-\subsectionAndLabel{Local variable type inference within a method body}{type-inference-local}
-
-While type-checking a method, the
-type-checker determines types for local variables with no type
-annotation, and determines more precise types for all expressions (Section~\ref{type-refinement}).
-The type-checker uses those inferred types, but never tells the
-programmer (or other tools) what it inferred.  Each time the
-type-checker runs, it re-does local type inference.
-
-Local variable type inference is built into the Checker Framework.  Every
-checker can take advantage of it at no extra effort.  However, it only
-works within a method, not across method boundaries.
-%
-Every method
-signature (arguments and return values) and field must have already been explicitly annotated,
-either by the programmer or by a separate type-checking tool
-(Section~\ref{type-inference-to-annotate}).
-A
-programmer rarely writes any qualifiers
-inside the body of a method (except sometimes on type arguments).
-
-
-Advantages of this variety of type inference include:
-\begin{itemize}
-\item
-  If the type qualifier is obvious to the programmer, then omitting it
-  can reduce annotation clutter in the program.
-\item
-  If the code changes, then there is no old annotation to update.
-\item
-  Inference chooses the most general possible type, which may permit more
-  uses than a programmer-chosen type would have.
-\end{itemize}
-
-
-\subsectionAndLabel{Type inference to annotate a program's source code}{type-inference-whole-program}
-
-As a separate step before type-checking, a type inference tool takes the
-whole program as input, and outputs a set of type qualifiers that can be
-inserted into the source code or the class file
-(Section~\ref{type-inference-to-annotate}).  They can be used by other
-tools.
-
-A programmer runs inference just once.  The programmer can view and adjust the
-annotations before committing them to the source code repository.
-
-This variety of type inference must be provided by a separate tool,
-before type-checking runs.  The Checker Framework comes with such a tool
-(Section~\ref{whole-program-inference}).
-
-There exist monolithic whole-program analyses that run without requiring any
-annotations in the source code.  Using such an analysis is somewhat similar
-to running a whole-program inference tool, then running a type-checker.
-Advantages of the latter two-step approach include:
-\begin{itemize}
-\item
-  The type qualifiers act as machine-checked documentation,
-  which can aid programmer understanding.
-\item
-  Error messages may be more comprehensible.  With a monolithic
-  whole-program analysis, error messages can be obscure, because the
-  analysis has already inferred (possibly incorrect) types for a number of
-  variables.
-\item
-  Type-checking is modular, which can be faster than re-doing a
-  whole-program analysis every time the program is type-checked.
-\end{itemize}
+A type inference tool infers type annotations for a program's method
+signatures and fields, so that the programmer does not need to manually
+annotate the program's source code.  Section~\ref{type-inference-tools}
+lists type inference tools.
 
 
 
@@ -1423,4 +1355,4 @@ Advantages of the latter two-step approach include:
 % LocalWords:  annotationProcessorPaths checkTypes OracleJDK java8 java11
 % LocalWords:  bootclasspath processorpath intellij typechecking postpass
 % LocalWords:  Delombok r4173 pathnames HandlerUtil errorProneJavac
-% LocalWords:  uncomment
+% LocalWords:  uncomment deployArtifactsToLocalRepo

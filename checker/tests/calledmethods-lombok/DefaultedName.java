@@ -1,7 +1,7 @@
 import lombok.Builder;
 
 @Builder
-class DefaultedName {
+public class DefaultedName {
     @Builder.Default @lombok.NonNull String name = "Martin";
 
     static void test1() {

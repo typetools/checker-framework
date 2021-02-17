@@ -5,7 +5,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.StringVal;
 
-class StringLenConcats {
+public class StringLenConcats {
 
     void stringLenConcat(@ArrayLen(3) String a, @ArrayLen(5) String b) {
         @ArrayLen({7, 8, 9}) String ab = a + b;

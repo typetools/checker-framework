@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue419 {
+public class Issue419 {
     @SuppressWarnings("nullness")
     <T> @NonNull T verifyNotNull(@Nullable T o) {
         return o;

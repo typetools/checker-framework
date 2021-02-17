@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
@@ -184,7 +184,7 @@ public class PluginUtil {
         if (objs == null) {
             return "null";
         }
-        return UtilPlume.join(delimiter, objs);
+        return StringsPlume.join(delimiter, objs);
     }
 
     /**
@@ -199,7 +199,7 @@ public class PluginUtil {
         if (values == null) {
             return "null";
         }
-        return UtilPlume.join(delimiter, values);
+        return StringsPlume.join(delimiter, values);
     }
 
     /**

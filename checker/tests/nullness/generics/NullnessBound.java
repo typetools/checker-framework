@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class NullnessBound {
+public class NullnessBound {
 
     public void test() {
         Gen1<@Nullable String> t1 = new Gen1<>();

@@ -11,9 +11,9 @@ public class FileAnnotationFileResource implements AnnotationFileResource {
     private final File file;
 
     /**
-     * Constructs a {@code AnnotationFileResource} for the specified stub file.
+     * Constructs a {@code AnnotationFileResource} for the specified annotation file (stub file).
      *
-     * @param file the stub file
+     * @param file the annotation file
      */
     public FileAnnotationFileResource(File file) {
         this.file = file;

@@ -6,12 +6,12 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.BaseContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -60,7 +60,7 @@ public class Subsequence {
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
-            AnnotationMirror hasSub, TreePath currentPath, FlowExpressionContext context) {
+            AnnotationMirror hasSub, TreePath currentPath, JavaExpressionContext context) {
         if (hasSub == null) {
             return null;
         }
@@ -81,24 +81,24 @@ public class Subsequence {
      * Returns a Subsequence representing the {@link HasSubsequence} annotation on the declaration
      * of {@code rec} or null if there is not such annotation.
      *
-     * @param rec some tree
+     * @param expr some tree
      * @param factory an AnnotatedTypeFactory
      * @param currentPath the path at which to viewpoint adapt the subsequence
      * @param context the context in which to viewpoint adapt the subsequence
      * @return null or a new Subsequence from the declaration of {@code varTree}
      */
     public static Subsequence getSubsequenceFromReceiver(
-            Receiver rec,
+            JavaExpression expr,
             AnnotatedTypeFactory factory,
             TreePath currentPath,
-            FlowExpressionContext context) {
-        if (rec == null) {
+            JavaExpressionContext context) {
+        if (expr == null) {
             return null;
         }
 
         Element element;
-        if (rec instanceof FieldAccess) {
-            element = ((FieldAccess) rec).getField();
+        if (expr instanceof FieldAccess) {
+            element = ((FieldAccess) expr).getField();
         } else {
             return null;
         }
@@ -108,31 +108,36 @@ public class Subsequence {
 
     /*
      * Helper function to standardize and viewpoint adapt a String given a path and a context.
-     * Wraps FlowExpressionParseUtil#parse. If a parse exception is encountered, this returns
+     * Wraps JavaExpressionParseUtil#parse. If a parse exception is encountered, this returns
      * its argument.
      */
     private static String standardizeAndViewpointAdapt(
-            String s, TreePath currentPath, FlowExpressionContext context) {
+            String s, TreePath currentPath, JavaExpressionContext context) {
         try {
-            return FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
-        } catch (FlowExpressionParseException e) {
+            return JavaExpressionParseUtil.parse(s, context, currentPath, false).toString();
+        } catch (JavaExpressionParseException e) {
             return s;
         }
     }
 
     /**
-     * If the passed receiver is a FieldAccess, returns the context associated with it. Otherwise
+     * If the passed expression is a FieldAccess, returns the context associated with it. Otherwise
      * returns null.
      *
      * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
+     *
+     * @param expr the expression from which to obtain a context
+     * @param checker the type-checker
+     * @return the expression context for the given expression and checker
      */
-    public static FlowExpressionContext getContextFromReceiver(Receiver rec, BaseContext checker) {
-        if (rec == null) {
+    public static JavaExpressionContext getContextFromJavaExpression(
+            JavaExpression expr, SourceChecker checker) {
+        if (expr == null) {
             return null;
         }
-        if (rec instanceof FieldAccess) {
-            FieldAccess fa = (FieldAccess) rec;
-            return new FlowExpressionParseUtil.FlowExpressionContext(
+        if (expr instanceof FieldAccess) {
+            FieldAccess fa = (FieldAccess) expr;
+            return new JavaExpressionParseUtil.JavaExpressionContext(
                     fa.getReceiver(), null, checker);
 
         } else {
@@ -143,14 +148,14 @@ public class Subsequence {
     /**
      * Returns the additive inverse of the given String. That is, if the result of this method is
      * some String s', then s + s' == 0 will evaluate to true. Note that this relies on the fact
-     * that the Flow Expression Parser cannot parse multiplication, so it naively just changes '-'
-     * to '+' and vice-versa.
+     * that the JavaExpression parser cannot parse multiplication, so it naively just changes '-' to
+     * '+' and vice-versa.
      *
      * <p>The passed String is standardized and viewpoint adapted before this transformation is
      * applied.
      */
     public static String negateString(
-            String s, TreePath currentPath, FlowExpressionContext context) {
+            String s, TreePath currentPath, JavaExpressionContext context) {
         String original = standardizeAndViewpointAdapt(s, currentPath, context);
         String result = "";
         if (!original.startsWith("-")) {

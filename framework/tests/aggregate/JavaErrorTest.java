@@ -1,4 +1,4 @@
-class Test {
+public class JavaErrorTest {
     // Checking that if one checker finds a Java error
     // and therefor does not set a root, then
     // checkers relying on that checker should also not run.

@@ -26,6 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -307,8 +308,15 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         return false;
     }
 
+    /**
+     * Returns true if the enclosing method is a constructor whose return type is annotated as
+     * {@code @Unique}.
+     *
+     * @return true if the enclosing method is a constructor whose return type is annotated as
+     *     {@code @Unique}
+     */
     private boolean isInUniqueConstructor() {
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
         if (enclosingMethod == null) {
             return false; // No enclosing method.
         }

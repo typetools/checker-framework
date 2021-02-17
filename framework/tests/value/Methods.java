@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class Methods {
+public class Methods {
 
     static int i = 3;
     static final int k = 3;

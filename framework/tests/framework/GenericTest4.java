@@ -5,7 +5,7 @@ import org.checkerframework.framework.testchecker.util.*;
 // https://github.com/typetools/checker-framework/issues/134
 // Handling of generics from different enclosing classes.
 
-class GenericTest4 {
+public class GenericTest4 {
     public interface Foo {}
 
     class Outer<O> {

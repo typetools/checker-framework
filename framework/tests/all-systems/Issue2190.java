@@ -1,5 +1,5 @@
 // Test case for Issue 2190.
-class Issue2190 {
+public class Issue2190 {
     interface A<X extends B> {}
 
     abstract class B implements C {}

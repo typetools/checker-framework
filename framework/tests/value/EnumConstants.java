@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import org.checkerframework.common.value.qual.*;
 
-class EnumConstants {
+public class EnumConstants {
     enum MyEnum {
         VALUE,
         OTHER_VALUE,

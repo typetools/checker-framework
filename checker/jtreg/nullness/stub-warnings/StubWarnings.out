@@ -1,5 +1,5 @@
-- compiler.warn.proc.messager: AnnotationFileParser: in file binary.astub at line 6: redundant stub file specification for: Binary.foo()
-- compiler.warn.proc.messager: AnnotationFileParser: in file binary.astub at line 8: redundant stub file specification for: Binary.bar(java.lang.Object)
+- compiler.warn.proc.messager: binary.astub:(line 6,col 5): redundant stub file specification for Binary.foo()
+- compiler.warn.proc.messager: binary.astub:(line 8,col 5): redundant stub file specification for Binary.bar(java.lang.Object)
 - compiler.err.warnings.and.werror
 1 error
 2 warnings

@@ -2,7 +2,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-class ValueWrapperCast {
+public class ValueWrapperCast {
     void testShort_plus(@IntRange(from = 0) Short x) {
         @IntRange(from = 1, to = Short.MAX_VALUE + 1) int y = x + 1;
         // :: error: (assignment.type.incompatible)

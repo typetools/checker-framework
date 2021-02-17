@@ -1,6 +1,6 @@
 package com.example;
 
-class GenericTest11 {
+public class GenericTest11 {
     public void m(BeanManager beanManager) {
         Bean<?> bean = beanManager.getBeans(GenericTest11.class).iterator().next();
         CreationalContext<?> context = beanManager.createCreationalContext(bean);

@@ -9,12 +9,22 @@ import org.checkerframework.dataflow.analysis.Store;
  * A ClassName represents the occurrence of a class as part of a static field access or method
  * invocation.
  */
-public class ClassName extends Receiver {
+public class ClassName extends JavaExpression {
+    /** The string representation of the raw type of this. */
     private final String typeString;
 
+    /**
+     * Creates a new ClassName object for the given type.
+     *
+     * @param type the type for this ClassName
+     */
     public ClassName(TypeMirror type) {
         super(type);
-        typeString = type.toString();
+        String typeString = type.toString();
+        if (typeString.endsWith(">")) {
+            typeString = typeString.substring(0, typeString.indexOf("<"));
+        }
+        this.typeString = typeString;
     }
 
     @Override
@@ -37,13 +47,22 @@ public class ClassName extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
-        return this.equals(other);
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof ClassName)) {
+            return false;
+        }
+        ClassName other = (ClassName) je;
+        return typeString.equals(other.typeString);
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other);
     }
 
     @Override
@@ -57,7 +76,7 @@ public class ClassName extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // not modifiable
     }
 }

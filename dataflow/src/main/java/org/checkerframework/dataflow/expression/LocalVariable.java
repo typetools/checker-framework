@@ -9,17 +9,29 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class LocalVariable extends Receiver {
+/** A local variable. */
+public class LocalVariable extends JavaExpression {
+    /** The element for this local variable. */
     protected final Element element;
 
+    /**
+     * Creates a new LocalVariable.
+     *
+     * @param localVar a CFG local variable
+     */
     public LocalVariable(LocalVariableNode localVar) {
         super(localVar.getType());
         this.element = localVar.getElement();
     }
 
-    public LocalVariable(Element elem) {
-        super(ElementUtils.getType(elem));
-        this.element = elem;
+    /**
+     * Creates a LocalVariable
+     *
+     * @param element the element for the local variable
+     */
+    public LocalVariable(Element element) {
+        super(ElementUtils.getType(element));
+        this.element = element;
     }
 
     @Override
@@ -29,15 +41,15 @@ public class LocalVariable extends Receiver {
         }
 
         LocalVariable other = (LocalVariable) obj;
-        VarSymbol vs = (VarSymbol) element;
-        VarSymbol vsother = (VarSymbol) other.element;
-        // The code below isn't just return vs.equals(vsother) because an element might be
+        VarSymbol vs1 = (VarSymbol) this.element;
+        VarSymbol vs2 = (VarSymbol) other.element;
+        // The code below isn't just return vs1.equals(vs2) because an element might be
         // different between subcheckers.  The owner of a lambda parameter is the enclosing
         // method, so a local variable and a lambda parameter might have the same name and the
         // same owner.  pos is used to differentiate this case.
-        return vs.pos == vsother.pos
-                && vsother.name.contentEquals(vs.name)
-                && vsother.owner.toString().equals(vs.owner.toString());
+        return vs1.pos == vs2.pos
+                && vs1.name.contentEquals(vs2.name)
+                && vs1.owner.toString().equals(vs2.owner.toString());
     }
 
     public Element getElement() {
@@ -59,21 +71,26 @@ public class LocalVariable extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public String toStringDebug() {
+        return super.toStringDebug() + " [owner=" + ((VarSymbol) element).owner + "]";
+    }
+
+    @Override
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
-        if (!(other instanceof LocalVariable)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof LocalVariable)) {
             return false;
         }
-        LocalVariable l = (LocalVariable) other;
-        return l.equals(this);
+        LocalVariable other = (LocalVariable) je;
+        return this.equals(other);
     }
 
     @Override
-    public boolean containsSyntacticEqualReceiver(Receiver other) {
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return syntacticEquals(other);
     }
 

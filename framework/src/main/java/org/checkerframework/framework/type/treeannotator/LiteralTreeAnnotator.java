@@ -22,7 +22,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Adds annotations to a type based on the contents of a tree. This class applies annotations
@@ -45,7 +45,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
      */
     private final Map<Kind, Set<AnnotationMirror>> treeKinds;
     private final Map<Class<?>, Set<AnnotationMirror>> treeClasses;
-    private final Map<Pattern, Set<AnnotationMirror>> stringPatterns;
+    private final IdentityHashMap<Pattern, Set<AnnotationMirror>> stringPatterns;
 
     protected final QualifierHierarchy qualHierarchy;
 
@@ -253,7 +253,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                             matchesOnePerLine += System.lineSeparator() + "     " + match;
                         }
                         throw new BugInCF(
-                                UtilPlume.joinLines(
+                                StringsPlume.joinLines(
                                         "Bug in @QualifierForLiterals(stringpatterns=...) in type hierarchy definition:",
                                         " the glb of `matches` for \"" + string + "\" is " + res,
                                         " which is a subtype of " + sam,

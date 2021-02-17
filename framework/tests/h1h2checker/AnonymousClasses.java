@@ -2,7 +2,7 @@ import java.util.Comparator;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
 
-class AnonymousClasses {
+public class AnonymousClasses {
     private <@H1S1 T extends @H1S1 Comparator<T>> void testGenericAnonymous() {
         // :: error: (type.argument.type.incompatible) :: error: (constructor.invocation.invalid)
         new @H1S1 Gen<T>() {};

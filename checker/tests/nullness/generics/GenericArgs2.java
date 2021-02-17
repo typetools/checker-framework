@@ -7,7 +7,7 @@ class Cell<T extends @Nullable Object> {
     void add(T arg) {}
 }
 
-class GenericArgs2 {
+public class GenericArgs2 {
     static <F extends Object> void test1(Cell<F> collection) {
         // :: error: (argument.type.incompatible)
         collection.add(null); // should fail

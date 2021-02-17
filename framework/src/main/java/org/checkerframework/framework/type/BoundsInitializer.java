@@ -35,7 +35,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type
@@ -905,7 +905,7 @@ public class BoundsInitializer {
 
         @Override
         public String toString() {
-            return UtilPlume.join(",", this);
+            return StringsPlume.join(",", this);
         }
 
         /**
@@ -1320,11 +1320,11 @@ public class BoundsInitializer {
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedUnionType isect = (AnnotatedUnionType) parent;
-            if (parent.directSuperTypes().size() <= altIndex) {
+            if (parent.directSupertypes().size() <= altIndex) {
                 throw new BugInCF("Invalid altIndex( %s ):%nparent=%s", altIndex, parent);
             }
 
-            return isect.directSuperTypes().get(altIndex);
+            return isect.directSupertypes().get(altIndex);
         }
 
         @Override
@@ -1371,7 +1371,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "replacement=" + replacement,
@@ -1389,7 +1389,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "argIndex=" + argIndex));

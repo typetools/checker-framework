@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class UnparseablePredicate {
+public class UnparseablePredicate {
 
     // :: error: predicate.invalid
     void unclosedOpen(@TestAccumulationPredicate("(foo && bar") Object x) {}

@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class SameLenManyArrays {
+public class SameLenManyArrays {
     void transfer1(int @SameLen("#2") [] a, int[] b) {
         int[] c = new int[a.length];
         for (int i = 0; i < c.length; i++) { // i's type is @LTL("c")

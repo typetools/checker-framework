@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /** This file contains basic utility functions. */
 public class SystemUtil {
@@ -50,14 +50,14 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param objs the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@code UtilPlume.join}
+     * @deprecated use {@code StringsPlume.join}
      */
-    @Deprecated // use UtilPlume.join
+    @Deprecated // use StringsPlume.join
     public static <T> String join(CharSequence delimiter, T[] objs) {
         if (objs == null) {
             return "null";
         }
-        return UtilPlume.join(delimiter, objs);
+        return StringsPlume.join(delimiter, objs);
     }
 
     /**
@@ -67,14 +67,14 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@code UtilPlume.join}
+     * @deprecated use {@code StringsPlume.join}
      */
-    @Deprecated // use UtilPlume.join
+    @Deprecated // use StringsPlume.join
     public static String join(CharSequence delimiter, Iterable<?> values) {
         if (values == null) {
             return "null";
         }
-        return UtilPlume.join(delimiter, values);
+        return StringsPlume.join(delimiter, values);
     }
 
     /**
@@ -84,9 +84,9 @@ public class SystemUtil {
      * @param <T> the type of array elements
      * @param a array of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@code UtilPlume.joinLines}
+     * @deprecated use {@code StringsPlume.joinLines}
      */
-    @Deprecated // use UtilPlume.joinLines
+    @Deprecated // use StringsPlume.joinLines
     @SafeVarargs
     @SuppressWarnings("varargs")
     public static <T> String joinLines(T... a) {
@@ -99,9 +99,9 @@ public class SystemUtil {
      *
      * @param v list of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@code UtilPlume.joinLines}
+     * @deprecated use {@code StringsPlume.joinLines}
      */
-    @Deprecated // use UtilPlume.joinLines
+    @Deprecated // use StringsPlume.joinLines
     public static String joinLines(Iterable<? extends Object> v) {
         return join(LINE_SEPARATOR, v);
     }

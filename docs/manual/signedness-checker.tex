@@ -251,20 +251,22 @@ the Signedness Checker permits both \verb|(byte) (myInt >> 8)| and
 
 \sectionAndLabel{Utility routines for manipulating unsigned values}{signedness-utilities}
 
-Class \refclass{checker/signedness}{SignednessUtil} provides static
+Class \refclass{checker/signedness/util}{SignednessUtil} provides static
 utility methods for working with unsigned values.  They are
 properly annotated with \refqualclass{checker/signedness/qual}{Unsigned}
 where appropriate, so using them may reduce the number of annotations that
 you need to write.
+To use the \refclass{checker/signedness/util}{SignednessUtil} class, the
+\<checker-util.jar> file must be on the classpath at run time.
 
-Class \refclass{checker/signedness}{SignednessUtilExtra} contains more utility
+Class \refclass{checker/signedness/util}{SignednessUtilExtra} contains more utility
 methods that reference packages not included in Android.  This class is not
-included in \code{checker-qual.jar}, so you may want to copy the methods to your code.
+included in \code{checker-util.jar}, so you may want to copy the methods to your code.
 
 
 \sectionAndLabel{Local type refinement}{signedness-refinement}
 
-Local type refinment/inference (Section~\ref{type-refinement}) may be
+Local type refinement/inference (Section~\ref{type-refinement}) may be
 surprising for the Signedness type system.  Ordinarily, an expression with
 unsigned type may not participate in a division, as shown in
 Sections~\ref{signedness-checker-prohibited-operations}
@@ -326,3 +328,8 @@ $\Rightarrow$
   and the Checker Framework's annotations.}
 \label{fig-signedness-refactoring}
 \end{figure}
+
+% LocalWords:  Signedness signedness IntRange bitwise SignedPositive myInt
+% LocalWords:  SignedPositiveFromUnsigned SignednessGlb PolySigned qual
+% LocalWords:  UnknownSignedness SignednessBottom upcasting comparators
+% LocalWords:  SignednessUtil SignednessUtilExtra

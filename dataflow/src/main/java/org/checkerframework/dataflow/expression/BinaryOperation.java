@@ -1,24 +1,37 @@
 package org.checkerframework.dataflow.expression;
 
-import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.Pretty;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 
-/** FlowExpression.Receiver for binary operations. */
-public class BinaryOperation extends Receiver {
+/** JavaExpression for binary operations. */
+public class BinaryOperation extends JavaExpression {
 
     /** The binary operation kind. */
-    protected final Kind operationKind;
-    /** The binary operation kind for pretty printing. */
-    protected final JCTree.Tag tag;
+    protected final Tree.Kind operationKind;
     /** The left operand. */
-    protected final Receiver left;
+    protected final JavaExpression left;
     /** The right operand. */
-    protected final Receiver right;
+    protected final JavaExpression right;
+
+    /**
+     * Create a binary operation.
+     *
+     * @param type the result type
+     * @param operationKind the operator
+     * @param left the left operand
+     * @param right the right operand
+     */
+    public BinaryOperation(
+            TypeMirror type, Tree.Kind operationKind, JavaExpression left, JavaExpression right) {
+        super(type);
+        this.operationKind = operationKind;
+        this.left = left;
+        this.right = right;
+    }
 
     /**
      * Create a binary operation.
@@ -27,12 +40,8 @@ public class BinaryOperation extends Receiver {
      * @param left the left operand
      * @param right the right operand
      */
-    public BinaryOperation(BinaryOperationNode node, Receiver left, Receiver right) {
-        super(node.getType());
-        this.operationKind = node.getTree().getKind();
-        this.tag = ((JCTree) node.getTree()).getTag();
-        this.left = left;
-        this.right = right;
+    public BinaryOperation(BinaryOperationNode node, JavaExpression left, JavaExpression right) {
+        this(node.getType(), node.getTree().getKind(), left, right);
     }
 
     /**
@@ -40,7 +49,7 @@ public class BinaryOperation extends Receiver {
      *
      * @return the binary operation kind
      */
-    public Kind getOperationKind() {
+    public Tree.Kind getOperationKind() {
         return operationKind;
     }
 
@@ -49,7 +58,7 @@ public class BinaryOperation extends Receiver {
      *
      * @return the left operand
      */
-    public Receiver getLeft() {
+    public JavaExpression getLeft() {
         return left;
     }
 
@@ -58,12 +67,12 @@ public class BinaryOperation extends Receiver {
      *
      * @return the right operand
      */
-    public Receiver getRight() {
+    public JavaExpression getRight() {
         return right;
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         if (getClass() == clazz) {
             return true;
         }
@@ -81,19 +90,25 @@ public class BinaryOperation extends Receiver {
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
-        if (!(other instanceof BinaryOperation)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof BinaryOperation)) {
             return false;
         }
-        BinaryOperation biOp = (BinaryOperation) other;
-        if (!(operationKind == biOp.getOperationKind())) {
-            return false;
-        }
-        return left.equals(biOp.left) && right.equals(biOp.right);
+        BinaryOperation other = (BinaryOperation) je;
+        return operationKind == other.getOperationKind()
+                && left.syntacticEquals(other.left)
+                && right.syntacticEquals(other.right);
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other)
+                || left.containsSyntacticEqualJavaExpression(other)
+                || right.containsSyntacticEqualJavaExpression(other);
+    }
+
+    @Override
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return left.containsModifiableAliasOf(store, other)
                 || right.containsModifiableAliasOf(store, other);
     }
@@ -143,11 +158,61 @@ public class BinaryOperation extends Receiver {
 
     @Override
     public String toString() {
-        final Pretty pretty = new Pretty(null, true);
-        StringBuilder result = new StringBuilder();
-        result.append(left.toString());
-        result.append(pretty.operatorName(tag));
-        result.append(right.toString());
-        return result.toString();
+        return left.toString()
+                + " "
+                + operationKindToString(operationKind)
+                + " "
+                + right.toString();
+    }
+
+    /**
+     * Return the Java source code representation of the given operation.
+     *
+     * @param operationKind an unary operation kind
+     * @return the Java source code representation of the given operation
+     */
+    private String operationKindToString(Tree.Kind operationKind) {
+        switch (operationKind) {
+            case CONDITIONAL_AND:
+                return "&&";
+            case AND:
+                return "&";
+            case OR:
+                return "|";
+            case DIVIDE:
+                return "/";
+            case EQUAL_TO:
+                return "==";
+            case GREATER_THAN:
+                return ">";
+            case GREATER_THAN_EQUAL:
+                return ">=";
+            case LEFT_SHIFT:
+                return "<<";
+            case LESS_THAN:
+                return "<";
+            case LESS_THAN_EQUAL:
+                return "<=";
+            case MINUS:
+                return "-";
+            case MULTIPLY:
+                return "*";
+            case NOT_EQUAL_TO:
+                return "!=";
+            case CONDITIONAL_OR:
+                return "||";
+            case PLUS:
+                return "+";
+            case REMAINDER:
+                return "%";
+            case RIGHT_SHIFT:
+                return ">>";
+            case UNSIGNED_RIGHT_SHIFT:
+                return ">>>";
+            case XOR:
+                return "^";
+            default:
+                throw new Error("unhandled " + operationKind);
+        }
     }
 }

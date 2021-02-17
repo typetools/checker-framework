@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
+import com.sun.tools.javac.code.Symbol;
 import java.util.Objects;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -9,11 +10,11 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class FieldAccess extends Receiver {
-    protected final Receiver receiver;
+public class FieldAccess extends JavaExpression {
+    protected final JavaExpression receiver;
     protected final VariableElement field;
 
-    public Receiver getReceiver() {
+    public JavaExpression getReceiver() {
         return receiver;
     }
 
@@ -21,13 +22,13 @@ public class FieldAccess extends Receiver {
         return field;
     }
 
-    public FieldAccess(Receiver receiver, FieldAccessNode node) {
+    public FieldAccess(JavaExpression receiver, FieldAccessNode node) {
         super(node.getType());
         this.receiver = receiver;
         this.field = node.getElement();
     }
 
-    public FieldAccess(Receiver receiver, TypeMirror type, VariableElement fieldElement) {
+    public FieldAccess(JavaExpression receiver, TypeMirror type, VariableElement fieldElement) {
         super(type);
         this.receiver = receiver;
         this.field = fieldElement;
@@ -56,25 +57,23 @@ public class FieldAccess extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return super.containsModifiableAliasOf(store, other)
                 || receiver.containsModifiableAliasOf(store, other);
     }
 
     @Override
-    public boolean containsSyntacticEqualReceiver(Receiver other) {
-        return syntacticEquals(other) || receiver.containsSyntacticEqualReceiver(other);
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return syntacticEquals(other) || receiver.containsSyntacticEqualJavaExpression(other);
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
-        if (!(other instanceof FieldAccess)) {
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof FieldAccess)) {
             return false;
         }
-        FieldAccess fa = (FieldAccess) other;
-        return super.syntacticEquals(other)
-                || (fa.getField().equals(getField())
-                        && fa.getReceiver().syntacticEquals(getReceiver()));
+        FieldAccess other = (FieldAccess) je;
+        return this.receiver.syntacticEquals(other.receiver) && this.field.equals(other.field);
     }
 
     @Override
@@ -87,7 +86,19 @@ public class FieldAccess extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public String toStringDebug() {
+        return String.format(
+                "FieldAccess(type=%s, receiver=%s, field=%s [%s] [%s] owner=%s)",
+                type,
+                receiver.toStringDebug(),
+                field,
+                field.getClass().getSimpleName(),
+                System.identityHashCode(field),
+                ((Symbol) field).owner);
+    }
+
+    @Override
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz || receiver.containsOfClass(clazz);
     }
 

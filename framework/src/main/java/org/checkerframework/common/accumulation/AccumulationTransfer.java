@@ -11,8 +11,7 @@ import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -76,8 +75,8 @@ public class AccumulationTransfer extends CFTransfer {
         List<String> valuesAsList = Arrays.asList(values);
         // If dataflow has already recorded information about the target, fetch it and integrate
         // it into the list of values in the new annotation.
-        Receiver target = FlowExpressions.internalReprOf(atypeFactory, node);
-        if (CFAbstractStore.canInsertReceiver(target)) {
+        JavaExpression target = JavaExpression.fromNode(atypeFactory, node);
+        if (CFAbstractStore.canInsertJavaExpression(target)) {
             CFValue flowValue = result.getRegularStore().getValue(target);
             if (flowValue != null) {
                 Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
@@ -118,7 +117,9 @@ public class AccumulationTransfer extends CFTransfer {
      * @param newAnno the new value
      */
     private void insertIntoStores(
-            TransferResult<CFValue, CFStore> result, Receiver target, AnnotationMirror newAnno) {
+            TransferResult<CFValue, CFStore> result,
+            JavaExpression target,
+            AnnotationMirror newAnno) {
         if (result.containsTwoStores()) {
             CFStore thenStore = result.getThenStore();
             CFStore elseStore = result.getElseStore();

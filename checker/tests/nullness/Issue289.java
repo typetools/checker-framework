@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue289 {
+public class Issue289 {
     void simple() {
         List<Object> lo = new ArrayList<>();
         List<String> ls = new ArrayList<>();

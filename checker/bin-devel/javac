@@ -27,9 +27,10 @@ cfDir="${mydir}"/../..
 annoToolsDir="${cfDir}"/../annotation-tools
 stubparserDir="${cfDir}"/../stubparser
 classes="build/classes/java/main"
+testclasses="build/classes/java/test"
 resources="build/resources/main"
 
-buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar:$( (cd "${cfDir}" && ./gradlew -q :checker:printPlumeUtilJarPath) )
+buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${testclasses}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${cfDir}"/checker-qual/"${classes}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar:$( (cd "${cfDir}" && ./gradlew -q :checker:printPlumeUtilJarPath) )
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
@@ -41,6 +42,7 @@ nl='
 '
 for i in "$@" ; do
    IFS=
+   # shellcheck disable=SC2027
    args=$args$nl"'"$i"'"
    IFS="$saveIFS"
 done

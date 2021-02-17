@@ -2,7 +2,7 @@
 
 // @skip-test until fixed
 
-class Pilot2HalfLength {
+public class Pilot2HalfLength {
     private static int[] getFirstHalf(int[] array) {
         int[] firstHalf = new int[array.length / 2];
         for (int i = 0; i < firstHalf.length; i++) {

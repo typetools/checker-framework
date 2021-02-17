@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
-class LTLDivide {
+public class LTLDivide {
     int[] test(int[] array) {
         //        @LTLengthOf("array") int len = array.length / 2;
         int len = array.length / 2;

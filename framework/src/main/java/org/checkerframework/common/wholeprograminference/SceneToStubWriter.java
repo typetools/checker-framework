@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.google.common.collect.ComparisonChain;
-import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -25,8 +24,10 @@ import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
@@ -38,19 +39,18 @@ import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.field.AnnotationFieldType;
-import scenelib.annotations.io.IndexFileWriter;
 
 // In this file, "base name" means "type without its package part in binary name format".
 // For example, "Outer$Inner" is a base name.
 
 /**
  * SceneToStubWriter provides a static method that writes an {@link AScene} in stub file format to a
- * file {@link #write(ASceneWrapper,String)}. This class is the equivalent of {@code
- * IndexFileWriter} from the Annotation File Utilities, but outputs the results in the stub file
- * format instead of jaif format. This class is not part of the Annotation File Utilities, a library
- * for manipulating .jaif files, because it has nothing to do with .jaif files.
+ * file {@link #write}. This class is the equivalent of {@code IndexFileWriter} from the Annotation
+ * File Utilities, but outputs the results in the stub file format instead of jaif format. This
+ * class is not part of the Annotation File Utilities, a library for manipulating .jaif files,
+ * because it has nothing to do with .jaif files.
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
  * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). {@link
@@ -67,7 +67,7 @@ import scenelib.annotations.io.IndexFileWriter;
 public final class SceneToStubWriter {
 
     /**
-     * The entry point to this class is {@link #write(ASceneWrapper, String)}.
+     * The entry point to this class is {@link #write}.
      *
      * <p>This is a utility class with only static methods. It is not instantiable.
      */
@@ -93,9 +93,10 @@ public final class SceneToStubWriter {
      *
      * @param scene the scene to write out
      * @param filename the name of the file to write (must end with .astub)
+     * @param checker the checker, for computing preconditions and postconditions
      */
-    public static void write(ASceneWrapper scene, String filename) {
-        writeImpl(scene, filename);
+    public static void write(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
+        writeImpl(scene, filename, checker);
     }
 
     /**
@@ -140,7 +141,7 @@ public final class SceneToStubWriter {
         StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
             AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-            sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
+            sj.add(f.getKey() + "=" + aft.format(f.getValue()));
         }
         return sj.toString();
     }
@@ -215,6 +216,9 @@ public final class SceneToStubWriter {
         }
     }
 
+    /** Static variable to improve performance of getNextArrayLevel. */
+    private static List<TypePathEntry> location;
+
     /**
      * Gets the outermost array level (or the component if not an array) from the given type
      * element, or null if scene-lib is not storing any more information about this array (for
@@ -229,9 +233,9 @@ public final class SceneToStubWriter {
             return null;
         }
 
-        for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
-            InnerTypeLocation loc = ite.getKey();
-            if (loc.location.contains(TypePathEntry.ARRAY)) {
+        for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
+            location = ite.getKey();
+            if (location.contains(TypePathEntry.ARRAY_ELEMENT)) {
                 return ite.getValue();
             }
         }
@@ -412,10 +416,11 @@ public final class SceneToStubWriter {
      * @param basename the binary name of the class without the package part
      * @param aClass the AClass for {@code basename}
      * @param printWriter the writer where the class definition should be printed
+     * @param checker the type-checker whose annotations are being written
      * @return the number of outer classes within which this class is nested
      */
     private static int printClassDefinitions(
-            String basename, AClass aClass, PrintWriter printWriter) {
+            String basename, AClass aClass, PrintWriter printWriter, BaseTypeChecker checker) {
         String[] classNames = basename.split("\\$");
         TypeElement innermostTypeElt = aClass.getTypeElement();
         if (innermostTypeElt == null) {
@@ -425,6 +430,11 @@ public final class SceneToStubWriter {
 
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
+            if (i == classNames.length - 1) {
+                printWriter.print(indents(i));
+                printWriter.println(
+                        "@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
+            }
             printWriter.print(indents(i));
             if (aClass.isEnum(nameToPrint)) {
                 printWriter.print("enum ");
@@ -526,10 +536,15 @@ public final class SceneToStubWriter {
      * @param simplename the simple name of the enclosing class, for receiver parameters and
      *     constructor names
      * @param printWriter where to print the method signature
+     * @param atf the type factory, for computing preconditions and postconditions
      * @param indentLevel the indent string
      */
     private static void printMethodDeclaration(
-            AMethod aMethod, String simplename, PrintWriter printWriter, String indentLevel) {
+            AMethod aMethod,
+            String simplename,
+            PrintWriter printWriter,
+            String indentLevel,
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> atf) {
 
         if (aMethod.getTypeParameters() == null) {
             // aMethod.setFieldsFromMethodElement has not been called
@@ -539,6 +554,11 @@ public final class SceneToStubWriter {
         for (Annotation declAnno : aMethod.tlAnnotationsHere) {
             printWriter.print(indentLevel);
             printWriter.println(formatAnnotation(declAnno));
+        }
+
+        for (AnnotationMirror contractAnno : atf.getContractAnnotations(aMethod)) {
+            printWriter.print(indentLevel);
+            printWriter.println(contractAnno);
         }
 
         printWriter.print(indentLevel);
@@ -571,13 +591,14 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The implementation of {@link #write(ASceneWrapper, String)}. Prints imports, classes, method
-     * signatures, and fields in stub file format, all with appropriate annotations.
+     * The implementation of {@link #write}. Prints imports, classes, method signatures, and fields
+     * in stub file format, all with appropriate annotations.
      *
      * @param scene the scene to write
      * @param filename the name of the file to write (must end in .astub)
+     * @param checker the checker, for computing preconditions
      */
-    private static void writeImpl(ASceneWrapper scene, String filename) {
+    private static void writeImpl(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
         // Sort by package name first so that output is deterministic and default package
         // comes first; within package sort by class name.
         @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
@@ -588,7 +609,10 @@ public final class SceneToStubWriter {
                     @Override
                     public int compare(@BinaryName String o1, @BinaryName String o2) {
                         return ComparisonChain.start()
-                                .compare(packagePart(o1), packagePart(o2))
+                                .compare(
+                                        packagePart(o1),
+                                        packagePart(o2),
+                                        Comparator.nullsFirst(Comparator.naturalOrder()))
                                 .compare(basenamePart(o1), basenamePart(o2))
                                 .result();
                     }
@@ -618,10 +642,11 @@ public final class SceneToStubWriter {
                         throw new BugInCF(e);
                     }
                     importDefWriter.visit();
+                    printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
                     printWriter.println();
                     anyClassPrintable = true;
                 }
-                printClass(clazz, scene.getAScene().getClasses().get(clazz), printWriter);
+                printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
             }
         }
         if (printWriter != null) {
@@ -665,10 +690,14 @@ public final class SceneToStubWriter {
      *
      * @param classname the class name
      * @param aClass the representation of the class
+     * @param checker the checker, for computing preconditions
      * @param printWriter the writer on which to print
      */
     private static void printClass(
-            @BinaryName String classname, AClass aClass, PrintWriter printWriter) {
+            @BinaryName String classname,
+            AClass aClass,
+            BaseTypeChecker checker,
+            PrintWriter printWriter) {
 
         String basename = basenamePart(classname);
         String innermostClassname =
@@ -681,7 +710,7 @@ public final class SceneToStubWriter {
             printWriter.println("package " + pkg + ";");
         }
 
-        int curlyCount = printClassDefinitions(basename, aClass, printWriter);
+        int curlyCount = printClassDefinitions(basename, aClass, printWriter, checker);
 
         String indentLevel = indents(curlyCount);
 
@@ -706,7 +735,11 @@ public final class SceneToStubWriter {
             printWriter.println();
             for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
                 printMethodDeclaration(
-                        methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
+                        methodEntry.getValue(),
+                        innermostClassname,
+                        printWriter,
+                        indentLevel,
+                        checker.getTypeFactory());
             }
         }
         for (int i = 0; i < curlyCount; i++) {

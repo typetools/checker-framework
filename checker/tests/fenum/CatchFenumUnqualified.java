@@ -1,6 +1,6 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 
-class CatchFenumUnqualfied {
+public class CatchFenumUnqualified {
     void method() {
         try {
         } catch (

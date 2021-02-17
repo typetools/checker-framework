@@ -79,8 +79,8 @@ public interface Analysis<
      * the nodes.
      *
      * @param node the node to analyze
-     * @param preOrPost indicates which store to return: the store immediately before {@code node}
-     *     or the store after {@code node}
+     * @param preOrPost which store to return: the store immediately before {@code node} or the
+     *     store after {@code node}
      * @param blockTransferInput the transfer input of the block of this node
      * @param nodeValues abstract values of nodes
      * @param analysisCaches caches of analysis results

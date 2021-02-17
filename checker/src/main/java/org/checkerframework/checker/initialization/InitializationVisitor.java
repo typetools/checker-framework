@@ -26,10 +26,11 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -59,10 +60,6 @@ public class InitializationVisitor<
     // Error message keys
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
             "initialization.invalid.cast";
-    private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
-            "initialization.fields.uninitialized";
-    private static final @CompilerMessageKey String COMMITMENT_STATIC_FIELDS_UNINITIALIZED =
-            "initialization.static.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
@@ -171,7 +168,7 @@ public class InitializationVisitor<
 
     @Override
     protected boolean checkContract(
-            Receiver expr,
+            JavaExpression expr,
             AnnotationMirror necessaryAnnotation,
             AnnotationMirror inferredAnnotation,
             CFAbstractStore<?, ?> store) {
@@ -181,6 +178,9 @@ public class InitializationVisitor<
         if (!atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)
                 || !(expr instanceof FieldAccess)) {
             return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
+        }
+        if (expr.containsUnknown()) {
+            return false;
         }
 
         FieldAccess fa = (FieldAccess) expr;
@@ -195,32 +195,32 @@ public class InitializationVisitor<
                 }
             }
         } else {
-            Set<AnnotationMirror> recvAnnoSet;
             @SuppressWarnings("unchecked")
             Value value = (Value) store.getValue(fa.getReceiver());
 
+            Set<AnnotationMirror> receiverAnnoSet;
             if (value != null) {
-                recvAnnoSet = value.getAnnotations();
+                receiverAnnoSet = value.getAnnotations();
             } else if (fa.getReceiver() instanceof LocalVariable) {
                 Element elem = ((LocalVariable) fa.getReceiver()).getElement();
-                AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
-                recvAnnoSet = recvType.getAnnotations();
+                AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(elem);
+                receiverAnnoSet = receiverType.getAnnotations();
             } else {
                 // Is there anything better we could do?
                 return false;
             }
 
-            boolean isRecvInitialized = false;
-            for (AnnotationMirror anno : recvAnnoSet) {
+            boolean isReceiverInitialized = false;
+            for (AnnotationMirror anno : receiverAnnoSet) {
                 if (atypeFactory.isInitialized(anno)) {
-                    isRecvInitialized = true;
+                    isReceiverInitialized = true;
                 }
             }
 
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
             // The receiver is fully initialized and the field type
             // has the invariant type.
-            if (isRecvInitialized
+            if (isReceiverInitialized
                     && AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
                 return true;
             }
@@ -358,6 +358,13 @@ public class InitializationVisitor<
     /**
      * Checks that all fields (all static fields if {@code staticFields} is true) are initialized in
      * the given store.
+     *
+     * @param node a {@link ClassTree} if {@code staticFields} is true; a {@link MethodTree} for a
+     *     constructor if {@code staticFields} is false. This is where errors are reported, if they
+     *     are not reported at the fields themselves
+     * @param staticFields whether to check static fields or instance fields
+     * @param store the store
+     * @param receiverAnnotations the annotations on the receiver
      */
     // TODO: the code for checking if fields are initialized should be re-written,
     // as the current version contains quite a few ugly parts, is hard to understand,
@@ -366,7 +373,7 @@ public class InitializationVisitor<
     // GenericAnnotatedTypeFactory.initializationStaticStore and
     // GenericAnnotatedTypeFactory.initializationStore.
     protected void checkFieldsInitialized(
-            Tree blockNode,
+            Tree node,
             boolean staticFields,
             Store store,
             List<? extends AnnotationMirror> receiverAnnotations) {
@@ -376,15 +383,11 @@ public class InitializationVisitor<
             return;
         }
 
-        String COMMITMENT_FIELDS_UNINITIALIZED_KEY =
-                (staticFields
-                        ? COMMITMENT_STATIC_FIELDS_UNINITIALIZED
-                        : COMMITMENT_FIELDS_UNINITIALIZED);
-
         Pair<List<VariableTree>, List<VariableTree>> uninitializedFields =
                 atypeFactory.getUninitializedFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);
         List<VariableTree> violatingFields = uninitializedFields.first;
+        List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
         if (staticFields) {
             // TODO: Why is nothing done for static fields?
@@ -394,20 +397,62 @@ public class InitializationVisitor<
             // remove fields that have already been initialized by an
             // initializer block
             violatingFields.removeAll(initializedFields);
+            nonviolatingFields.removeAll(initializedFields);
         }
+
+        // Errors are issued at the field declaration if the field is static or if the constructor
+        // is the default constructor.
+        // Errors are issued at the constructor declaration if the field is non-static and the
+        // constructor is non-default.
+        boolean errorAtField = staticFields || TreeUtils.isSynthetic((MethodTree) node);
+
+        String FIELDS_UNINITIALIZED_KEY =
+                (staticFields
+                        ? "initialization.static.field.uninitialized"
+                        : errorAtField
+                                ? "initialization.field.uninitialized"
+                                : "initialization.fields.uninitialized");
 
         // Remove fields with a relevant @SuppressWarnings annotation.
         violatingFields.removeIf(
                 f ->
                         checker.shouldSuppressWarnings(
-                                TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
+                                TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
+        nonviolatingFields.removeIf(
+                f ->
+                        checker.shouldSuppressWarnings(
+                                TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
 
         if (!violatingFields.isEmpty()) {
-            StringJoiner fieldsString = new StringJoiner(", ");
-            for (VariableTree f : violatingFields) {
-                fieldsString.add(f.getName());
+            if (errorAtField) {
+                // Issue each error at the relevant field
+                for (VariableTree f : violatingFields) {
+                    checker.reportError(f, FIELDS_UNINITIALIZED_KEY, f.getName());
+                }
+            } else {
+                // Issue all the errors at the relevant constructor
+                StringJoiner fieldsString = new StringJoiner(", ");
+                for (VariableTree f : violatingFields) {
+                    fieldsString.add(f.getName());
+                }
+                checker.reportError(node, FIELDS_UNINITIALIZED_KEY, fieldsString);
             }
-            checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
+        }
+
+        // Support -Ainfer command-line argument.
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        if (wpi != null) {
+            // For each uninitialized field, treat it as if the default value is assigned to it.
+            List<VariableTree> uninitFields = new ArrayList<>(violatingFields);
+            uninitFields.addAll(nonviolatingFields);
+            for (VariableTree fieldTree : uninitFields) {
+                Element elt = TreeUtils.elementFromTree(fieldTree);
+                wpi.updateFieldFromType(
+                        fieldTree,
+                        elt,
+                        fieldTree.getName().toString(),
+                        atypeFactory.getDefaultValueAnnotatedType(elt.asType()));
+            }
         }
     }
 }

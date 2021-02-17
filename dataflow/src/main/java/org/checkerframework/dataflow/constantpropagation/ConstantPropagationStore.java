@@ -8,7 +8,7 @@ import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
@@ -152,7 +152,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     }
 
     @Override
-    public boolean canAlias(Receiver a, Receiver b) {
+    public boolean canAlias(JavaExpression a, JavaExpression b) {
         return true;
     }
 

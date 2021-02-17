@@ -1,7 +1,7 @@
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-class Issue3033 {
+public class Issue3033 {
 
     void main() {
         @Tainted String a = getTainted();

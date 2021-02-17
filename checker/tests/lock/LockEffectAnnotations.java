@@ -1,5 +1,3 @@
-package chapter;
-
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;

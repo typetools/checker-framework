@@ -384,15 +384,9 @@ query the qualifier on a given object, though you can use reflection to
 examine a class/method/field declaration.
 
 Using the Checker Framework does increase compilation time.
-% In theory it
-% should only add a few percent overhead, but our current implementation
-It can double the compilation time --- or more, if you run many pluggable
-type-checkers at once.  This is especially true if you run pluggable
-type-checking on every file, instead of incremental compilation of just the files
-that have recently changed.
-Nonetheless, compilation with pluggable type-checking still feels like
-compilation, and you can do it as part of your normal development process,
-or during continuous integration.
+It can increase the compilation time by 2--10 times --- or more, if you run
+many pluggable type-checkers at once.  For workarounds, see
+Section~\ref{faq-cf-is-slow}.
 
 
 \subsectionAndLabel{How do I shorten the command line when invoking a checker?}{faq-shorten-command-line}
@@ -669,7 +663,7 @@ welcome it as a contribution to the Checker Framework.
 Some checkers have library methods that you can explicitly insert in your
 source code.
 Examples include the Nullness Checker's
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method (see
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} method (see
 Section~\ref{suppressing-warnings-with-assertions}) and the Regex Checker's
 \<RegexUtil> class (see Section~\ref{regexutil-methods}).
 But, it would be better to have more general support that does not require
@@ -1520,9 +1514,18 @@ type-and-effect system that is distributed with the Checker Framework.
 
 \subsectionAndLabel{The Checker Framework runs too slowly}{faq-cf-is-slow}
 
-Using a pluggable type-checker increases compile times by a factor of 2-5.
+Using a pluggable type-checker increases compile times by a factor of 2--10.
 Slow compilation speed is probably the worst thing about the Checker
 Framework.
+
+To improve performance, the most important thing you can do is
+\emph{incremental compilation}.  When compiling just a few source files
+(the size of a typical edit or commit), you won't notice the slowdown.  If
+you compile all files in a large project, you will definitely notice a
+slowdown.  You should structure your build system to make compiling all
+files rare, by declaring dependencies and using caching.
+% (Note that some build systems have a bug, in that they unnecessarily always
+% re-run compilation that uses annotation processors.)
 
 If the Checker Framework is too slow for you to run on every compilation,
 you can run it periodically, such as in a Git commit hook or in continuous
@@ -1531,16 +1534,30 @@ integration.
 The Checker Framework team does not currently have the resources to fix
 performance problems, but we welcome community contributions.
 
-Here are some reasons that the Checker Framework is so slow.
+Here are some reasons that the Checker Framework is slow.
 \begin{itemize}
 \item
   It has to do all the same work as the compiler does, such as resolving
-  overloading/overriding/generics and type-checking.  It does so for
-  richer, user-defined type systems whereas \<javac> hard-codes one type
-  system.
+  overloading and overriding, inferring generics, and type-checking.
 \item
-  Its implementation has some inefficiencies.  For example, when running a
-  compound or aggregate checker, it makes multiple passes over the program
+  Its analysis is general; it interprets user-defined type systems whereas
+  \<javac> hard-codes one type system and integrates it with other processing.
+\item
+  Its analysis are much richer.  \<javac> can take certain shortcuts that
+  are not correct for all possible type systems.
+\item
+  It builds a control flow graph and performs a fixpoint analysis on it,
+  which \<javac> does not do.
+\item
+  It manipulates multiple representations of data, including \<javac>'s
+  internal representation, source code, control flow graph, and its own
+  internal representation.  These transformations and lookups take time.
+\item
+  It switches between dataflow analysis and type analysis, and this
+  sometimes causes it to redo work.
+\item
+  When running a compound or aggregate checker, it computes the control
+  flow graph multiple times, and it makes multiple passes over the program
   rather than just one.
 \end{itemize}
 

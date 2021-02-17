@@ -112,12 +112,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // or @GTENegativeOne must also be aliased in the constructor of
         // ValueAnnotatedTypeFactory to the appropriate @IntRangeFrom*
         // annotation.
-        addAliasedAnnotation(IndexFor.class, NN);
-        addAliasedAnnotation(IndexOrLow.class, GTEN1);
-        addAliasedAnnotation(IndexOrHigh.class, NN);
-        addAliasedAnnotation(LengthOf.class, NN);
-        addAliasedAnnotation(PolyIndex.class, POLY);
-        addAliasedAnnotation(SubstringIndexFor.class, GTEN1);
+        addAliasedTypeAnnotation(IndexFor.class, NN);
+        addAliasedTypeAnnotation(IndexOrLow.class, GTEN1);
+        addAliasedTypeAnnotation(IndexOrHigh.class, NN);
+        addAliasedTypeAnnotation(LengthOf.class, NN);
+        addAliasedTypeAnnotation(PolyIndex.class, POLY);
+        addAliasedTypeAnnotation(SubstringIndexFor.class, GTEN1);
 
         imf = new IndexMethodIdentifier(this);
 

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 
-class TestSwitch {
+public class TestSwitch {
     void m() {
         @SuppressWarnings("fenum:assignment.type.incompatible")
         @Fenum("TEST") final int annotated = 3;

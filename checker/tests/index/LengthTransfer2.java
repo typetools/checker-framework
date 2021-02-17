@@ -2,7 +2,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-class LengthTransfer2 {
+public class LengthTransfer2 {
     public static void main(String[] args) {
         if (args.length != 2) {
             System.err.println("Needs 2 arguments, got " + args.length);

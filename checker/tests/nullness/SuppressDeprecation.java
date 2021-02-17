@@ -5,7 +5,7 @@ class SuppressDeprecationOther {
     void old() {}
 }
 
-class SuppressDeprecation {
+public class SuppressDeprecation {
 
     @MonotonicNonNull String tz1;
 

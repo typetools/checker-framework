@@ -5,7 +5,7 @@ import com.amazonaws.services.kms.model.DataKeySpec;
 import com.amazonaws.services.kms.model.GenerateDataKeyRequest;
 import org.checkerframework.checker.calledmethods.qual.*;
 
-class GenerateDataKeyRequestExamples {
+public class GenerateDataKeyRequestExamples {
 
     void correctWithKeySpec(AWSKMS client) {
         GenerateDataKeyRequest request = new GenerateDataKeyRequest();

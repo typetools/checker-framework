@@ -3,7 +3,7 @@
 
 import java.util.Optional;
 
-class Issue496 {
+public class Issue496 {
 
     public static class Entity<T> {
         public final T value;

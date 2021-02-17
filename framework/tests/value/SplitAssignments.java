@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class SplitAssignments {
+public class SplitAssignments {
     void foo(@IntRange(from = 5, to = 200) int x) {
         int z;
         if ((z = x) == 5) {

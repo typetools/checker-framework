@@ -31,13 +31,11 @@ import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -207,16 +205,16 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             if (aTypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {
-                    Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
-                    store.insertValue(rec, POS);
+                    JavaExpression je = JavaExpression.fromNode(aTypeFactory, internal);
+                    store.insertValue(je, POS);
                 }
             }
         } else if (intLiteral == -1) {
             if (aTypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {
-                    Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
-                    store.insertValue(rec, NN);
+                    JavaExpression je = JavaExpression.fromNode(aTypeFactory, internal);
+                    store.insertValue(je, NN);
                 }
             }
         }
@@ -267,11 +265,11 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         if (!isNonNegative(leftAnno) || !isNonNegative(otherAnno)) {
             return;
         }
-        Receiver otherRec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
+        JavaExpression otherJe = JavaExpression.fromNode(aTypeFactory, otherNode);
         if (aTypeFactory
                 .getLessThanAnnotatedTypeFactory()
-                .isLessThanOrEqual(leftNode.getTree(), otherRec.toString())) {
-            store.insertValue(otherRec, POS);
+                .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
+            store.insertValue(otherJe, POS);
         }
     }
 
@@ -297,18 +295,18 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             return;
         }
 
-        Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
+        JavaExpression leftJe = JavaExpression.fromNode(aTypeFactory, left);
 
         if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
-            store.insertValue(leftRec, NN);
+            store.insertValue(leftJe, NN);
             return;
         }
         if (AnnotationUtils.areSame(rightAnno, NN)) {
-            store.insertValue(leftRec, POS);
+            store.insertValue(leftJe, POS);
             return;
         }
         if (AnnotationUtils.areSame(rightAnno, POS)) {
-            store.insertValue(leftRec, POS);
+            store.insertValue(leftJe, POS);
             return;
         }
     }
@@ -334,12 +332,12 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             return;
         }
 
-        Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
+        JavaExpression leftJe = JavaExpression.fromNode(aTypeFactory, left);
 
         AnnotationMirror newLBType =
                 aTypeFactory.getQualifierHierarchy().greatestLowerBound(rightAnno, leftAnno);
 
-        store.insertValue(leftRec, newLBType);
+        store.insertValue(leftJe, newLBType);
     }
 
     /**
@@ -718,19 +716,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         for (VariableTree variableTree : paramTrees) {
             if (TreeUtils.typeOf(variableTree).getKind() == TypeKind.CHAR) {
-
-                Receiver rec = null;
-                try {
-                    rec =
-                            FlowExpressionParseUtil.internalReprOfVariable(
-                                    aTypeFactory, variableTree);
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    // do nothing
-                }
-
-                if (rec != null) {
-                    info.insertValue(rec, aTypeFactory.NN);
-                }
+                JavaExpression je = JavaExpression.fromVariableTree(variableTree);
+                info.insertValue(je, aTypeFactory.NN);
             }
         }
     }

@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
+import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -29,7 +30,9 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.plumelib.util.ImmutableTypes;
 
@@ -84,6 +87,63 @@ public final class TypesUtils {
         return t.getArrayType(componentType);
     }
 
+    /// Creating a Class<?>
+
+    /**
+     * Returns the {@link Class} for a given {@link TypeMirror}. Returns {@code Object.class} if it
+     * cannot determine anything more specific.
+     *
+     * @param typeMirror a TypeMirror
+     * @return the class for {@code typeMirror}
+     */
+    public static Class<?> getClassFromType(TypeMirror typeMirror) {
+
+        switch (typeMirror.getKind()) {
+            case INT:
+                return int.class;
+            case LONG:
+                return long.class;
+            case SHORT:
+                return short.class;
+            case BYTE:
+                return byte.class;
+            case CHAR:
+                return char.class;
+            case DOUBLE:
+                return double.class;
+            case FLOAT:
+                return float.class;
+            case BOOLEAN:
+                return boolean.class;
+
+            case ARRAY:
+                Class<?> componentClass =
+                        getClassFromType(((ArrayType) typeMirror).getComponentType());
+                // In Java 12, use this instead:
+                // return fooClass.arrayType();
+                return java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
+
+            case DECLARED:
+                // BUG: need to compute a @ClassGetName, but this code computes a
+                // @CanonicalNameOrEmpty.  They are different for inner classes.
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
+                @DotSeparatedIdentifiers String typeString =
+                        TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
+                if (typeString.equals("<nulltype>")) {
+                    return void.class;
+                }
+
+                try {
+                    return Class.forName(typeString);
+                } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+                    return Object.class;
+                }
+
+            default:
+                return Object.class;
+        }
+    }
+
     /// Getters
 
     /**
@@ -128,6 +188,19 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns the binary name.
+     *
+     * @param type a type
+     * @return the binary name
+     */
+    public static @BinaryName String binaryName(TypeMirror type) {
+        if (type.getKind() != TypeKind.DECLARED) {
+            throw new BugInCF("Only declared types have a binary name");
+        }
+        return ElementUtils.getBinaryName((TypeElement) ((DeclaredType) type).asElement());
+    }
+
+    /**
      * Returns the type element for {@code type} if {@code type} is a class, interface, annotation
      * type, or enum. Otherwise, returns null.
      *
@@ -140,10 +213,24 @@ public final class TypesUtils {
         if (element == null) {
             return null;
         }
-        if (ElementUtils.isClassElement(element)) {
+        if (ElementUtils.isTypeElement(element)) {
             return (TypeElement) element;
         }
         return null;
+    }
+
+    /**
+     * Given an array type, returns the type with all array levels stripped off.
+     *
+     * @param at an array type
+     * @return the type with all array levels stripped off
+     */
+    public static TypeMirror getInnermostComponentType(ArrayType at) {
+        TypeMirror result = at;
+        while (result.getKind() == TypeKind.ARRAY) {
+            result = ((ArrayType) result).getComponentType();
+        }
+        return result;
     }
 
     /// Equality
@@ -686,7 +773,7 @@ public final class TypesUtils {
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     * @return the least upper bound of {@code tm1} and {@code tm2}.
+     * @return the least upper bound of {@code tm1} and {@code tm2}
      */
     public static TypeMirror leastUpperBound(
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
@@ -748,7 +835,7 @@ public final class TypesUtils {
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     * @return the greatest lower bound of {@code tm1} and {@code tm2}.
+     * @return the greatest lower bound of {@code tm1} and {@code tm2}
      */
     public static TypeMirror greatestLowerBound(
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
@@ -801,7 +888,7 @@ public final class TypesUtils {
      * @param methodElement a method
      * @param substitutedReceiverType the receiver type, after substitution
      * @param env the environment
-     * @return the return type of the mehtod
+     * @return the return type of the method
      */
     public static TypeMirror substituteMethodReturnType(
             Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {
@@ -826,6 +913,28 @@ public final class TypesUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
         return javacTypes.asSuper((Type) type, ((Type) superType).tsym);
+    }
+
+    /**
+     * Returns the superclass of the given class. Returns null if there is not one.
+     *
+     * @param type a type
+     * @param types type utilities
+     * @return the superclass of the given class, or null
+     */
+    public static @Nullable TypeMirror getSuperclass(TypeMirror type, Types types) {
+        List<? extends TypeMirror> superTypes = types.directSupertypes(type);
+        for (TypeMirror t : superTypes) {
+            // ignore interface types
+            if (!(t instanceof ClassType)) {
+                continue;
+            }
+            ClassType tt = (ClassType) t;
+            if (!tt.isInterface()) {
+                return t;
+            }
+        }
+        return null;
     }
 
     /**

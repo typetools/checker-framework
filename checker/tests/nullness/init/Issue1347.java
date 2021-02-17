@@ -1,7 +1,7 @@
 // Test case for Issue 1347.
 // https://github.com/typetools/checker-framework/issues/1347
 
-class Issue1347<T> {
+public class Issue1347<T> {
     T t;
     T t2;
     Object o;

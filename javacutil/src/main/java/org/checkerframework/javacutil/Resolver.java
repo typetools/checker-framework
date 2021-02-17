@@ -33,7 +33,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/** A utility class to find symbols corresponding to string references. */
+/** A utility class to find symbols corresponding to string references (identifiers). */
 // This class reflectively accesses jdk.compiler/com.sun.tools.javac.comp.
 // This is why --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED is required when
 // running the Checker Framework.  If this class is re-written, then that --add-opens should be
@@ -218,24 +218,23 @@ public class Resolver {
     }
 
     /**
-     * Finds the local variable with name {@code name} in the given scope.
+     * Finds the local variable (including formal parameters) with name {@code name} in the given
+     * scope.
      *
      * @param name the name of the local variable
      * @param path the tree path to the local scope
      * @return the element for the local variable, {@code null} otherwise
      */
-    public @Nullable VariableElement findLocalVariableOrParameterOrField(
-            String name, TreePath path) {
+    public @Nullable VariableElement findLocalVariableOrParameter(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
             Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
             if (res.getKind() == ElementKind.LOCAL_VARIABLE
-                    || res.getKind() == ElementKind.PARAMETER
-                    || res.getKind() == ElementKind.FIELD) {
+                    || res.getKind() == ElementKind.PARAMETER) {
                 return (VariableElement) res;
             } else {
-                // Most likely didn't find the variable and the Element is a SymbolNotFoundError
+                // The Element might be FIELD or a SymbolNotFoundError.
                 return null;
             }
         } finally {
@@ -264,6 +263,37 @@ public class Resolver {
     }
 
     /**
+     * Finds the nested class with {@code name} in a given type.
+     *
+     * @param name the name of the class
+     * @param type the type
+     * @param path the tree path
+     * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
+     */
+    public @Nullable ClassSymbol findNestedClassInType(
+            String name, TypeMirror type, TreePath path) {
+        Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+        try {
+            Env<AttrContext> env = getEnvForPath(path);
+            Element res =
+                    wrapInvocationOnResolveInstance(
+                            FIND_IDENT_IN_TYPE,
+                            env,
+                            type,
+                            names.fromString(name),
+                            Kinds.KindSelector.TYP);
+
+            if (ElementUtils.isTypeElement(res)) {
+                return (ClassSymbol) res;
+            } else {
+                return null;
+            }
+        } finally {
+            log.popDiagnosticHandler(discardDiagnosticHandler);
+        }
+    }
+
+    /**
      * Finds the class with name {@code name} in a given package.
      *
      * @param name the name of the class
@@ -282,7 +312,7 @@ public class Resolver {
                             pck,
                             names.fromString(name),
                             Kinds.KindSelector.TYP);
-            if (ElementUtils.isClassElement(res)) {
+            if (ElementUtils.isTypeElement(res)) {
                 return (ClassSymbol) res;
             } else {
                 return null;

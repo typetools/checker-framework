@@ -25,7 +25,4 @@ docs/examples/units-extension/README
 docs/examples/MavenExample/pom.xml
 docs/examples/MavenExample/README
 docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java
-docs/examples/MavenExampleJDK11/pom.xml
-docs/examples/MavenExampleJDK11/README
-docs/examples/MavenExampleJDK11/src/main/java/org/checkerframework/example/MavenExample.java
 docs/tutorial/**

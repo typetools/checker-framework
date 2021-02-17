@@ -34,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -88,7 +88,6 @@ public class AnnotationBuilder {
      * @param env the processing environment
      * @param name the canonical name of the annotation to build
      */
-    //
     public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -118,6 +117,15 @@ public class AnnotationBuilder {
         this.elementValues = new LinkedHashMap<>();
         // AnnotationValues are immutable so putAll should suffice
         this.elementValues.putAll(annotation.getElementValues());
+    }
+
+    /**
+     * Returns the type element of the annotation that is being built.
+     *
+     * @return the type element of the annotation that is being built
+     */
+    public TypeElement getAnnotationElt() {
+        return annotationElt;
     }
 
     /**
@@ -733,7 +741,7 @@ public class AnnotationBuilder {
                 toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
                 List<?> list = (List<?>) value;
-                toStringVal = "{" + UtilPlume.join(", ", list) + "}";
+                toStringVal = "{" + StringsPlume.join(", ", list) + "}";
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;

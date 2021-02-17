@@ -1,7 +1,7 @@
 // Test case for Issue 548:
 // https://github.com/typetools/checker-framework/issues/548
 
-class TryFinallyContinue {
+public class TryFinallyContinue {
     String testWhile1() {
         String ans = "x";
         while (true) {

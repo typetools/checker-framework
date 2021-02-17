@@ -2,7 +2,7 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.common.returnsreceiver.qual.*;
 
 /* Simple inference of a fluent builder */
-class SimpleFluentInference {
+public class SimpleFluentInference {
     SimpleFluentInference build(@CalledMethods({"a", "b"}) SimpleFluentInference this) {
         return this;
     }

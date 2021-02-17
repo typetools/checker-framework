@@ -3,7 +3,7 @@
 // problem but still permits some unsoundness is worse than no solution and
 // an obvious issue.
 
-class Reassignment {
+public class Reassignment {
     void test(int[] arr, int i) {
         if (i > 0 && i < arr.length) {
             arr = new int[0];

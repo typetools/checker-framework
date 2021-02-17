@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class NonNullIteratorNext {
+public class NonNullIteratorNext {
     interface MyIterator<E> extends java.util.Iterator<E> {
         @NonNull E next();
     }

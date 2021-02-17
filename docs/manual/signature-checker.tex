@@ -37,7 +37,7 @@ examples appear in a table below.
 \item[\refqualclass{checker/signature/qual}{FullyQualifiedName}]
   A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-6.html#jls-6.7}{JLS \S
     6.7}), such as
-  \<pakkage.Outer.Inner>, is used in Java code and in messages to
+  \<mypackage.Outer.Inner>, is used in Java code and in messages to
   the user.
 
 \item[\refqualclass{checker/signature/qual}{ClassGetName}]
@@ -54,7 +54,7 @@ examples appear in a table below.
 
 \item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
   A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
-  \<Lpakkage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
+  \<Lmypackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
   for example to refer to other types.  It abbreviates primitive types and
   array types.  It uses internal form (binary names, but with \</> instead of
   \<.>; see
@@ -63,13 +63,13 @@ examples appear in a table below.
 
 \item[\refqualclass{checker/signature/qual}{BinaryName}]
   A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
-  \<pakkage.Outer\$Inner>, is
+  \<mypackage.Outer\$Inner>, is
   the conceptual name of a type in its own \<.class> file.
 
 \item[\refqualclass{checker/signature/qual}{InternalForm}]
   The \emph{internal form}
   (\href{https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.2}{JVMS
-    \S 4.2}), such as \<pakkage/Outer\$Inner>, is how a class name is
+    \S 4.2}), such as \<mypackage/Outer\$Inner>, is how a class name is
   actually represented in its own \<.class> file.  It is also known as the
   ``syntax of binary names that appear in class file structures''.  It is
   the same as the binary name, but with periods (\<.>) replaced by slashes
@@ -187,7 +187,9 @@ command-line option to javac.
 
 
 % LocalWords:  Regex regex quals FullyQualifiedName BinaryName FieldDescriptor
-% LocalWords:  Lpackage MyClass MethodDescriptor forName substring
-%  LocalWords:  jls getName ClassGetName ClassLoader LMyClass Ljava
-%  LocalWords:  DotSeparatedIdentifiers
-%  LocalWords:  FieldDescriptorWithoutPackage
+% LocalWords:  Lpackage MyClass MethodDescriptor forName substring boolean
+% LocalWords:  jls getName ClassGetName ClassLoader LMyClass Ljava jvms
+% LocalWords:  DotSeparatedIdentifiers CharSequence Lmypackage mypackage
+% LocalWords:  FieldDescriptorWithoutPackage InternalForm getSimpleName
+% LocalWords:  ClassGetSimpleName FqBinaryName CanonicalName
+% LocalWords:  BinaryNameWithoutPackage

@@ -71,7 +71,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             currentClass = element.getSimpleName().toString();
 
             AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
-            System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSuperTypes());
+            System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSupertypes());
 
             super.processClassTree(node);
         }
@@ -137,7 +137,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         String simpleName = typeElt.getSimpleName().toString();
         // Output class info
         AnnotatedDeclaredType type = atypeFactory.fromElement(typeElt);
-        System.out.println(simpleName + "\t" + type + "\t" + type.directSuperTypes());
+        System.out.println(simpleName + "\t" + type + "\t" + type.directSupertypes());
 
         // output fields and methods
         for (Element enclosedElt : typeElt.getEnclosedElements()) {

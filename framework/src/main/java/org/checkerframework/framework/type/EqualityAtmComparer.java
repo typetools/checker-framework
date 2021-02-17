@@ -3,12 +3,12 @@ package org.checkerframework.framework.type;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Compares two annotated type mirrors for structural equality using only the primary annotations
  * and underlying types of the two input types and their component types. Note, this leaves out
- * other fields specific to some AnnotatedTypeMirrors (like directSuperTypes, wasRaw,
+ * other fields specific to some AnnotatedTypeMirrors (like directSupertypes, wasRaw,
  * isUninferredTypeArgument etc...). Ideally, both EqualityAtmComparer and HashcodeAtmVisitor would
  * visit relevant fields.
  *
@@ -29,7 +29,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         throw new UnsupportedOperationException(
-                UtilPlume.joinLines(
+                StringsPlume.joinLines(
                         "Comparing two different subclasses of AnnotatedTypeMirror.",
                         "type1=" + type1,
                         "type2=" + type2));

@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Test {
+public class Issue411 {
 
     @MonotonicNonNull Object field1 = null;
     final @Nullable Object field2 = null;

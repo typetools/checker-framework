@@ -11,14 +11,10 @@ import java.util.Locale;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.NullType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.SimpleTypeVisitor7;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
@@ -26,7 +22,6 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
-import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -37,6 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class provides a collection of utilities to ease working with syntax trees that have
@@ -62,7 +58,7 @@ public class FormatterTreeUtil {
     }
 
     /** Describes the ways a format method may be invoked. */
-    public enum InvocationType {
+    public static enum InvocationType {
         /**
          * The parameters are passed as varargs. For example:
          *
@@ -131,25 +127,24 @@ public class FormatterTreeUtil {
 
     private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
         Node vararg = node.getArgument(1);
-        if (vararg instanceof ArrayCreationNode) {
-            List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
-            ConversionCategory[] res = new ConversionCategory[convs.size()];
-            for (int i = 0; i < convs.size(); ++i) {
-                Node conv = convs.get(i);
-                if (conv instanceof FieldAccessNode) {
-                    Class<? extends Object> clazz =
-                            typeMirrorToClass(((FieldAccessNode) conv).getType());
-                    if (clazz == ConversionCategory.class) {
-                        res[i] =
-                                ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
-                        continue; /* avoid returning null */
-                    }
-                }
-                return null;
-            }
-            return res;
+        if (!(vararg instanceof ArrayCreationNode)) {
+            return null;
         }
-        return null;
+        List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+        ConversionCategory[] res = new ConversionCategory[convs.size()];
+        for (int i = 0; i < convs.size(); ++i) {
+            Node conv = convs.get(i);
+            if (conv instanceof FieldAccessNode) {
+                Class<? extends Object> clazz =
+                        TypesUtils.getClassFromType(((FieldAccessNode) conv).getType());
+                if (clazz == ConversionCategory.class) {
+                    res[i] = ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+                    continue; /* avoid returning null */
+                }
+            }
+            return null;
+        }
+        return res;
     }
 
     public Result<ConversionCategory[]> asFormatCallCategories(MethodInvocationNode node) {
@@ -164,9 +159,15 @@ public class FormatterTreeUtil {
         return anno != null;
     }
 
-    /** Returns true if the given ExpressionTree has type java.util.Locale. */
+    /**
+     * Returns true if the given ExpressionTree has type java.util.Locale.
+     *
+     * @param e an expression
+     * @param atypeFactory the type factory
+     * @return true if the given ExpressionTree has type java.util.Locale
+     */
     public static boolean isLocale(ExpressionTree e, AnnotatedTypeFactory atypeFactory) {
-        return (typeMirrorToClass(atypeFactory.getAnnotatedType(e).getUnderlyingType())
+        return (TypesUtils.getClassFromType(atypeFactory.getAnnotatedType(e).getUnderlyingType())
                 == Locale.class);
     }
 
@@ -293,45 +294,53 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns the type of the function's parameters. Use {@link
-         * #isValidParameter(ConversionCategory, TypeMirror) isValidParameter} and {@link
-         * #isParameterNull(TypeMirror) isParameterNull} to work with the result.
+         * Returns the types of the arguments to the call. Use {@link #isValidArgument} and {@link
+         * #isArgumentNull} to work with the result.
+         *
+         * @return the types of the arguments to the call
          */
-        public final Result<TypeMirror>[] getParamTypes() {
+        public final Result<TypeMirror>[] getArgTypes() {
             // One to suppress warning in javac, the other to suppress warning in Eclipse...
             @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
-                TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
+                TypeMirror argType;
+                if (TreeUtils.isNullExpression(arg)) {
+                    argType = atypeFactory.getProcessingEnv().getTypeUtils().getNullType();
+                } else {
+                    argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
+                }
                 res[i] = new Result<>(argType, arg);
             }
             return res;
         }
 
         /**
-         * Checks if the type of a parameter returned from {@link #getParamTypes()} is valid for the
+         * Checks if the type of an argument returned from {@link #getArgTypes()} is valid for the
          * passed ConversionCategory.
+         *
+         * @param formatCat a format specifier
+         * @param argType an argument type
+         * @return true if the argument can be passed to the format specifier
          */
-        public final boolean isValidParameter(ConversionCategory formatCat, TypeMirror paramType) {
-            Class<? extends Object> type = typeMirrorToClass(paramType);
-            if (type == null) {
-                // we did not recognize the parameter type
-                return false;
+        public final boolean isValidArgument(ConversionCategory formatCat, TypeMirror argType) {
+            if (argType.getKind() == TypeKind.NULL || isArgumentNull(argType)) {
+                return true;
             }
-            for (Class<? extends Object> c : formatCat.types) {
-                if (c.isAssignableFrom(type)) {
-                    return true;
-                }
-            }
-            return false;
+            Class<? extends Object> type = TypesUtils.getClassFromType(argType);
+            return formatCat.isAssignableFrom(type);
         }
 
         /**
-         * Checks if the parameter returned from {@link #getParamTypes()} is a {@code null}
-         * expression.
+         * Checks if the argument returned from {@link #getArgTypes()} is a {@code null} expression.
+         *
+         * @param type a type
+         * @return true if the argument is a {@code null} expression
          */
-        public final boolean isParameterNull(TypeMirror type) {
+        public final boolean isArgumentNull(TypeMirror type) {
+            // TODO: Just check whether it is the VOID TypeMirror.
+
             // is it the null literal
             return type.accept(
                     new SimpleTypeVisitor7<Boolean, Class<Void>>() {
@@ -385,13 +394,14 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes an invalid formatter string and, returns a syntax trees element that represents a
-     * {@link InvalidFormat} annotation with the invalid formatter string as value.
+     * Creates an {@link InvalidFormat} annotation with the given string as its value.
+     *
+     * @param invalidFormatString an invalid formatter string
+     * @return an {@link InvalidFormat} annotation with the given string as its value
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
         builder.setValue("value", invalidFormatString);
         return builder.build();
     }
@@ -405,12 +415,13 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes a list of ConversionCategory elements, and returns a syntax tree element that
-     * represents a {@link Format} annotation with the list as value.
+     * Creates a {@code @}{@link Format} annotation with the given list as its value.
+     *
+     * @param args conversion categories for the {@code @Format} annotation
+     * @return a {@code @}{@link Format} annotation with the given list as its value
      */
     public AnnotationMirror categoriesToFormatAnnotation(ConversionCategory[] args) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, Format.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Format.class);
         builder.setValue("value", args);
         return builder.build();
     }
@@ -424,72 +435,5 @@ public class FormatterTreeUtil {
                 AnnotationUtils.getElementValueEnumArray(
                         anno, "value", ConversionCategory.class, false);
         return list.toArray(new ConversionCategory[] {});
-    }
-
-    /** Converts a TypeMirror to a Class. */
-    private static class TypeMirrorToClassVisitor
-            extends SimpleTypeVisitor7<Class<? extends Object>, Class<Void>> {
-        @Override
-        public Class<? extends Object> visitPrimitive(PrimitiveType t, Class<Void> v) {
-            switch (t.getKind()) {
-                case BOOLEAN:
-                    return Boolean.class;
-                case BYTE:
-                    return Byte.class;
-                case CHAR:
-                    return Character.class;
-                case SHORT:
-                    return Short.class;
-                case INT:
-                    return Integer.class;
-                case LONG:
-                    return Long.class;
-                case FLOAT:
-                    return Float.class;
-                case DOUBLE:
-                    return Double.class;
-                default:
-                    return null;
-            }
-        }
-
-        @Override
-        public Class<? extends Object> visitDeclared(DeclaredType dt, Class<Void> v) {
-            return dt.asElement()
-                    .accept(
-                            new SimpleElementVisitor8<Class<? extends Object>, Class<Void>>() {
-                                @Override
-                                public Class<? extends Object> visitType(
-                                        TypeElement e, Class<Void> v) {
-                                    try {
-                                        @SuppressWarnings(
-                                                "signature" // BUG: need to compute a @ClassGetName,
-                                        // but this code computes a @CanonicalNameOrEmpty.  They are
-                                        // different for inner classes.
-                                        )
-                                        @ClassGetName String cname = e.getQualifiedName().toString();
-                                        return Class.forName(cname);
-                                    } catch (ClassNotFoundException e1) {
-                                        return null; // the lookup should work for all
-                                        // the classes we care about
-                                    }
-                                }
-                            },
-                            Void.TYPE);
-        }
-    }
-
-    /** The singleton instance of TypeMirrorToClassVisitor. */
-    private static TypeMirrorToClassVisitor typeMirrorToClassVisitor =
-            new TypeMirrorToClassVisitor();
-
-    /**
-     * Converts a TypeMirror to a Class.
-     *
-     * @param type a TypeMirror
-     * @return the class corresponding to the argument
-     */
-    private static final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {
-        return type.accept(typeMirrorToClassVisitor, Void.TYPE);
     }
 }

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
-class CmPredicate {
+public class CmPredicate {
 
     void testOr1() {
         MyClass m1 = new MyClass();

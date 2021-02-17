@@ -4,7 +4,7 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.LessThan;
 
 @SuppressWarnings("lowerbound")
-class BasicSubsequence3 {
+public class BasicSubsequence3 {
     @HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
     int[] array;
 

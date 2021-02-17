@@ -39,6 +39,7 @@ import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
@@ -73,6 +74,18 @@ public class AnnotationUtils {
         @SuppressWarnings("signature:assignment.type.incompatible") // JDK needs annotations
         @CanonicalName String name = elm.getQualifiedName().toString();
         return name;
+    }
+
+    /**
+     * Returns the binary name of an annotation as a String.
+     *
+     * @param annotation the annotation whose binary name to return
+     * @return the binary name of an annotation as a String
+     */
+    public static final @BinaryName String annotationBinaryName(AnnotationMirror annotation) {
+        final DeclaredType annoType = annotation.getAnnotationType();
+        final TypeElement elm = (TypeElement) annoType.asElement();
+        return ElementUtils.getBinaryName(elm);
     }
 
     /**
@@ -536,7 +549,7 @@ public class AnnotationUtils {
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
         switch (elementType) {
             case TYPE:
-                return EnumSet.copyOf(ElementUtils.classElementKinds());
+                return EnumSet.copyOf(ElementUtils.typeElementKinds());
             case FIELD:
                 return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
             case METHOD:
@@ -1036,5 +1049,19 @@ public class AnnotationUtils {
             result.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
         }
         return result.toString();
+    }
+
+    /**
+     * Converts an AnnotationMirror to a Class. Throws an exception if it is not able to do so.
+     *
+     * @param am an AnnotationMirror
+     * @return the Class corresponding to the given AnnotationMirror
+     */
+    public static Class<?> annotationMirrorToClass(AnnotationMirror am) {
+        try {
+            return Class.forName(AnnotationUtils.annotationBinaryName(am));
+        } catch (ClassNotFoundException e) {
+            throw new BugInCF(e);
+        }
     }
 }

@@ -101,7 +101,8 @@ public class ContractsFromMethod {
     /// Helper methods
 
     /**
-     * Returns the contracts on method or constructor {@code executableElement}.
+     * Returns the contracts (of a particular kind) on method or constructor {@code
+     * executableElement}.
      *
      * @param <T> the type of {@link Contract} to return
      * @param executableElement the method whose contracts to return
@@ -112,12 +113,12 @@ public class ContractsFromMethod {
     private <T extends Contract> Set<T> getContracts(
             ExecutableElement executableElement, Kind kind, Class<T> clazz) {
         Set<T> result = new LinkedHashSet<>();
-        // Check for a single contract annotation.
+        // Check for a single framework-defined contract annotation.
         AnnotationMirror frameworkContractAnno =
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
         result.addAll(getContract(kind, frameworkContractAnno, clazz));
 
-        // Check for a wrapper around contract annotations.
+        // Check for a framework-defined wrapper around contract annotations.
         AnnotationMirror frameworkContractAnnos =
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractsClass);
         if (frameworkContractAnnos != null) {
@@ -200,7 +201,7 @@ public class ContractsFromMethod {
      * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
      * contractAnno}. May return null.
      *
-     * @param contractAnno a pre- or post-condition annotation
+     * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
      * @return the type annotation specified in {@code contractAnno.qualifier}
      */
     private AnnotationMirror getQualifierEnforcedByContractAnnotation(
@@ -210,9 +211,9 @@ public class ContractsFromMethod {
 
     /**
      * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-     * contractAnno}, with arguments taken from {@code argumentAnno}. May return null.
+     * contractAnno}, with elements/arguments taken from {@code argumentAnno}. May return null.
      *
-     * @param contractAnno a pre- or post-condition annotation
+     * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
      * @param argumentAnno supplies the elements/fields in the return value
      * @return the type annotation specified in {@code contractAnno.qualifier}
      */
@@ -227,12 +228,15 @@ public class ContractsFromMethod {
 
     /**
      * Returns the annotation mirror as specified by the "qualifier" element in {@code
-     * contractAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
-     * argumentAnno} to the returned annotation, renamed according to {@code argumentRenaming}.
+     * contractAnno}. If {@code argumentAnno} is specified, then elements/arguments are copied from
+     * {@code argumentAnno} to the returned annotation, renamed according to {@code
+     * argumentRenaming}. If {@code argumentAnno} is not specified, the result has no
+     * elements/arguments; this may make it invalid.
      *
      * <p>This is a helper method. Use one of its overloads if possible.
      *
-     * @param contractAnno a contract annotation, which has a {@code qualifier} element
+     * @param contractAnno a contract annotation, such as {@code @RequiresQualifier}, which has a
+     *     {@code qualifier} element/field
      * @param argumentAnno annotation containing the argument values, or {@code null}
      * @param argumentRenaming renaming of argument names, which maps from names in {@code
      *     argumentAnno} to names used in the returned annotation, or {@code null}

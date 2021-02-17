@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 // Test case for Issue 602
 // https://github.com/typetools/checker-framework/issues/602
 // @skip-test
-class Issue602 {
+public class Issue602 {
     @PolyNull String id(@PolyNull String o) {
         return o;
     }

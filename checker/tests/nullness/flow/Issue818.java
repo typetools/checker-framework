@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue818 {
+public class Issue818 {
     public static @Nullable Object o = null;
 
     void method() {

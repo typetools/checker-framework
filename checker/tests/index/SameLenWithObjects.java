@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-class SameLenWithObjects {
+public class SameLenWithObjects {
 
     class SimpleCollection {
         Object[] var_infos;

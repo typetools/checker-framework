@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class TernaryGenerics {
+public class TernaryGenerics {
     class Generic1<T extends @NonNull Object> {
         void cond(boolean b, T p) {
             // :: error: (assignment.type.incompatible)

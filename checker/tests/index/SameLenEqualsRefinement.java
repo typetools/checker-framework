@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class SameLenEqualsRefinement {
+public class SameLenEqualsRefinement {
     void transfer3(int @SameLen("#2") [] a, int[] b, int[] c) {
         if (a == c) {
             for (int i = 0; i < c.length; i++) { // i's type is @LTL("c")

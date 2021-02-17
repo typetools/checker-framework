@@ -4,12 +4,13 @@ import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 
-@SuppressWarnings("fields.uninitialized")
 public class KeyForValidation {
 
     // :: error: (expression.unparsable.type.invalid)
+    // :: error: (initialization.static.field.uninitialized)
     static @KeyFor("this") Object f;
 
+    // :: error: (initialization.field.uninitialized)
     @KeyFor("this") Object g;
 
     // :: error: (expression.unparsable.type.invalid)
@@ -28,8 +29,10 @@ public class KeyForValidation {
     void m4(@KeyFor("#2") String p, Map<Integer, Integer> m) {}
 
     // :: error: (expression.unparsable.type.invalid)
+    // :: error: (initialization.field.uninitialized)
     @KeyFor("INVALID") Object h;
 
+    // :: error: (initialization.field.uninitialized)
     @KeyFor("f") Object i;
 
     void foo(Object p) {

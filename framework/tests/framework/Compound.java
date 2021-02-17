@@ -5,7 +5,7 @@
  * Assignment and compound assignment should be treated equally for
  * method type argument inference.
  */
-class Compound {
+public class Compound {
     public static void one() {
         long total = 0;
         total = two();
