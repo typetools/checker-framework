@@ -8,11 +8,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This is a string that is a valid {@linkplain
- * org.checkerframework.checker.signature.qual.CanonicalName canonical name} and a valid {@linkplain
- * org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType binary name or primitive
- * type}. It represents a primitive type or a non-array, non-inner class, where the latter is
- * represented by dot-separated identifiers.
+ * This is a string that is a valid {@linkplain CanonicalName canonical name} and a valid
+ * {@linkplain BinaryNameOrPrimitiveType binary name or primitive type}. It represents a primitive
+ * type or a non-array, non-inner class, where the latter is represented by dot-separated
+ * identifiers.
  *
  * <p>Examples: int, MyClass, java.lang.Integer
  *
