@@ -1,4 +1,4 @@
-// @skip-test until fake overrides affect formal parameter names as well as return types
+// @skip-test until fake overrides affect formal parameter types as well as return types
 
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.signature.qual.CanonicalName;

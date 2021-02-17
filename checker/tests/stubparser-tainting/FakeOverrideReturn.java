@@ -53,6 +53,8 @@ public class FakeOverrideReturn {
         FakeOverrideRSuper sup = new FakeOverrideRSuper();
         FakeOverrideRMid mid = new FakeOverrideRMid();
 
+        // TEMPORARY ERROR here (probably)
+        // :: error: (assignment.type.incompatible)
         @Untainted int j = mid.returnsUntaintedIntWithFakeOverride2();
         @Untainted int k = sup.returnsPolyTaintedIntWithFakeOverride();
     }

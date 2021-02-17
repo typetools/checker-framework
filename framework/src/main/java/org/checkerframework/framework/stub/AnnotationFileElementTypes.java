@@ -30,6 +30,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
@@ -328,9 +329,11 @@ public class AnnotationFileElementTypes {
      * @param elt element for which annotations are returned
      * @param receiverType the type of the class that contains member (or a subtype of it)
      * @return the most specific AnnotatedTypeMirror for {@code elt} that is a fake override, or
-     *     null if none
+     *     null if no overrides, or throws a UserError if there are multiple most specific fake
+     *     overrides
      */
-    public AnnotatedTypeMirror getFakeOverride(Element elt, AnnotatedTypeMirror receiverType) {
+    public @Nullable AnnotatedTypeMirror getFakeOverride(
+            Element elt, AnnotatedTypeMirror receiverType) {
         if (parsing) {
             throw new BugInCF("parsing while calling getFakeOverride");
         }

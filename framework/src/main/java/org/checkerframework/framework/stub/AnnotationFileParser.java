@@ -70,6 +70,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -237,9 +238,9 @@ public class AnnotationFileParser {
         public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>();
 
         /**
-         * Map from a method element to all the fake overrides of it (including fake overrides of
-         * real overrides of it). Given a key {@code ee}, the fake overrides are always in subtypes
-         * of {@code ee.getEnclosingElement()}, which is the same as {@code ee.getReceiverType()}.
+         * Map from a method element to all the fake overrides of it. Given a key {@code ee}, the
+         * fake overrides are always in subtypes of {@code ee.getEnclosingElement()}, which is the
+         * same as {@code ee.getReceiverType()}.
          */
         public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>>
                 fakeOverrides = new HashMap<>();
@@ -1517,7 +1518,7 @@ public class AnnotationFileParser {
         return Pair.of(elementsToDecl, fakeOverrideDecls);
     }
 
-    // Used only by getMembers
+    // Used only by getMembers().
     /**
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
@@ -1600,7 +1601,8 @@ public class AnnotationFileParser {
 
     /**
      * Given a method declaration that does not correspond to an element, returns all the methods
-     * that it would override. This includes transitively overridden methods.
+     * that it would directly override or implement. This does not include transitively
+     * overridden/implemented methods.
      *
      * <p>As with regular overrides, the parameter types must be exact matches; contravariance is
      * not permitted.
@@ -1611,13 +1613,38 @@ public class AnnotationFileParser {
      */
     private List<ExecutableElement> fakeOverriddenMethods(
             TypeElement typeElt, MethodDeclaration methodDecl) {
-        NodeList<Parameter> declParams = methodDecl.getParameters();
         List<ExecutableElement> result = new ArrayList<>();
-        for (TypeElement supertype : ElementUtils.getAllSupertypes(typeElt, processingEnv)) {
-            if (supertype.equals(typeElt)) {
-                continue;
-            }
-            for (Element elt : supertype.getEnclosedElements()) {
+        Set<TypeElement> visited = new HashSet<>();
+        fakeOverriddenMethodsHelper(typeElt, methodDecl, result, visited, false);
+        return result;
+    }
+
+    /**
+     * Add to {@code result} any methods that the given method declaration would override or
+     * implement.
+     *
+     * <p>This method is a helper for {@link #fakeOverriddenMethods( TypeElement,
+     * MethodDeclaration)}.
+     *
+     * @param typeElt the type in which to search for the method (also searches in supertypes if not
+     *     found in {@code typeElt}
+     * @param methodDecl the method declaration
+     * @param result the list of matching methods
+     * @param visited what types have been visited so far
+     * @param found if true, an override has been found and should not be looked for
+     */
+    private void fakeOverriddenMethodsHelper(
+            TypeElement typeElt,
+            MethodDeclaration methodDecl,
+            List<ExecutableElement> result,
+            Set<TypeElement> visited,
+            boolean found) {
+        if (!visited.add(typeElt)) {
+            return;
+        }
+
+        if (!found) {
+            for (Element elt : typeElt.getEnclosedElements()) {
                 if (elt.getKind() != ElementKind.METHOD) {
                     continue;
                 }
@@ -1628,12 +1655,23 @@ public class AnnotationFileParser {
                     continue;
                 }
                 List<? extends VariableElement> candidateParams = candidate.getParameters();
-                if (sameTypes(candidateParams, declParams)) {
+                found = sameTypes(candidateParams, methodDecl.getParameters());
+                if (found && !result.contains(candidate)) {
                     result.add(candidate);
                 }
             }
         }
-        return result;
+
+        TypeElement superType = ElementUtils.getSuperClass(typeElt);
+        if (superType != null) {
+            fakeOverriddenMethodsHelper(superType, methodDecl, result, visited, found);
+        }
+
+        for (TypeMirror interfaceTypeMirror : typeElt.getInterfaces()) {
+            TypeElement interfaceElement =
+                    (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
+            fakeOverriddenMethodsHelper(interfaceElement, methodDecl, result, visited, found);
+        }
     }
 
     /**
@@ -1742,7 +1780,6 @@ public class AnnotationFileParser {
                 methodType.getReturnType(),
                 ((MethodDeclaration) decl).getType(),
                 annotations,
-                // /*isFakeOverride*/ true,
                 decl);
 
         List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
