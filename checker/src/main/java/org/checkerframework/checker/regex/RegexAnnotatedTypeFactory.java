@@ -117,6 +117,11 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final ExecutableElement patternCompile =
             TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
 
+    /**
+     * Create a new RegexAnnotatedTypeFactory.
+     *
+     * @param checker the checker
+     */
     public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
