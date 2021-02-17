@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 
@@ -500,6 +501,7 @@ public abstract class AbstractAnalysis<
          * @see PriorityQueue#isEmpty
          * @return true if {@link #queue} is empty else false
          */
+        @Pure
         @EnsuresNonNullIf(result = false, expression = "poll()")
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
@@ -531,6 +533,7 @@ public abstract class AbstractAnalysis<
          * @see PriorityQueue#poll
          * @return the head of {@link #queue}
          */
+        @Pure
         public @Nullable Block poll() {
             return queue.poll();
         }
