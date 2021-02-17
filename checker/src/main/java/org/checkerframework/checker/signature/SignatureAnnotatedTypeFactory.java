@@ -237,9 +237,9 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
          * </code></pre>
          *
-         * Class.getName and Class.getCanonicalName() sometimes return a binary name (which is more
-         * specific than their annotations, which are ClassGetName and FullyQualifiedName,
-         * respectively):
+         * Class.getName and Class.getCanonicalName(): Cwhen called on a primitive type ,the return
+         * a {@link PrimitiveType}. When called on a non-array, non-nested, non-primitive type, they
+         * return a {@link BinaryName}:
          *
          * <pre><code>
          * {@literal @}BinaryName String binaryName = MyClass.class.getName();
