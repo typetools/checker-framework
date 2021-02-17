@@ -642,9 +642,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         CompilationUnit node = (CompilationUnit) javaParserNode;
         processCompilationUnit(javacTree, node);
-        // TODO: A CompilationUnitTree could also be a package-info.java file. Currently skipping
-        // descending into these specific constructs such as getPackageAnnotations, because they
-        // probably won't be useful and TreeScanner also skips them. Should we process them?
         assert (javacTree.getPackage() != null) == node.getPackageDeclaration().isPresent();
         if (javacTree.getPackage() != null) {
             javacTree.getPackage().accept(this, node.getPackageDeclaration().get());
@@ -1490,9 +1487,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitVariable(VariableTree javacTree, Node javaParserNode) {
+        // Javac uses the class VariableTree to represent multiple syntactic concepts such as
+        // variable declarations, parameters, and fields.
         if (javaParserNode instanceof VariableDeclarator) {
+            // JavaParser uses VariableDeclarator as parts of other declaration types like
+            // VariableDeclarationExpr when multiple variables may be declared.
             VariableDeclarator node = (VariableDeclarator) javaParserNode;
             processVariable(javacTree, node);
+            // Don't process the variable type when it's the Java keyword "var".
             if (!node.getType().isVarType()
                     && (!node.getType().isClassOrInterfaceType()
                             || !node.getType()
