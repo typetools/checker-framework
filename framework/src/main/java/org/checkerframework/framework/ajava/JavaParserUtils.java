@@ -39,7 +39,12 @@ public class JavaParserUtils {
             return enumDecl.get();
         }
 
-        throw new BugInCF("Requesting declaration for type that doesn't exist: " + name);
+        Optional<CompilationUnit.Storage> storage = root.getStorage();
+        if (storage.isPresent()) {
+            throw new BugInCF("Type " + name + " not found in " + storage.get().getPath());
+        } else {
+            throw new BugInCF("Type " + name + " not found in " + root);
+        }
     }
 
     /**
@@ -64,12 +69,11 @@ public class JavaParserUtils {
     }
 
     /**
-     * Side-effects node by combing any added String literals in node's subtree into their
+     * Side-effects node by combining any added String literals in node's subtree into their
      * concatenation. For example, the expression {@code "a" + "b"} becomes {@code "ab"}. This
-     * occurs even if when reading from left to right that the two string literals are not added
-     * directly. For example, in the expression {@code 1 + "a" + "b"} we might imagine that {@code 1
-     * + "a"} is evaluated and then {@code "b"} is added. Regardless, this is transformed into
-     * {@code 1 + "ab"}.
+     * occurs even if, when reading from left to right, the two string literals are not added
+     * directly. For example, the expression {@code 1 + "a" + "b"} parses as {@code (1 + "a") +
+     * "b"}}, but it is transformed into {@code 1 + "ab"}.
      *
      * <p>This is the same transformation performed by javac automatically. Javac seems to ignore
      * string literals surrounded in parentheses, so this method does as well.
@@ -80,9 +84,7 @@ public class JavaParserUtils {
         node.accept(new StringLiteralConcatenateVisitor(), null);
     }
 
-    /**
-     * Visitor that conccombines added String literals, see {@link #concatenateAddedStringLiterals}
-     */
+    /** Visitor that combines added String literals, see {@link #concatenateAddedStringLiterals}. */
     public static class StringLiteralConcatenateVisitor extends VoidVisitorAdapter<Void> {
         @Override
         public void visit(BinaryExpr node, Void p) {
