@@ -9,16 +9,17 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * This is a string that is a valid {@linkplain
- * org.checkerframework.checker.signature.qual.FullyQualifiedName fully qualified name} and a valid
- * {@linkplain org.checkerframework.checker.signature.qual.BinaryName binary name}. It represents a
- * non-array, non-inner, non-primitive class: dot-separated identifiers.
+ * org.checkerframework.checker.signature.qual.Canonicalname canonical name} and a valid {@linkplain
+ * org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType binary name or primitive
+ * type}. It represents a primitive type or a non-array, non-inner class, where the latter is
+ * represented by dot-separated identifiers.
  *
- * <p>Examples: int, MyClass, java.lang, java.lang.Integer
+ * <p>Examples: int, MyClass, java.lang.Integer
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({DotSeparatedIdentifiersOrPrimitiveType.class, BinaryName.class})
-public @interface DotSeparatedIdentifiers {}
+@SubtypeOf({DotSeparatedIdentifiersOrPrimitiveType.class})
+public @interface CanonicalNameOrPrimitiveType {}

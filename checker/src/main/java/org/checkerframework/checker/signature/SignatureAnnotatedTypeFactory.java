@@ -22,6 +22,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
 import org.checkerframework.checker.signature.qual.BinaryNameWithoutPackage;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.CanonicalNameAndBinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -70,6 +71,9 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@literal @}{@link CanonicalName} annotation. */
     protected final AnnotationMirror CANONICAL_NAME =
             AnnotationBuilder.fromClass(elements, CanonicalName.class);
+    /** The {@literal @}{@link CanonicalNameAndBinaryName} annotation. */
+    protected final AnnotationMirror CANONICAL_NAME_AND_BINARY_NAME =
+            AnnotationBuilder.fromClass(elements, CanonicalNameAndBinaryName.class);
     /** The {@literal @}{@link PrimitiveType} annotation. */
     protected final AnnotationMirror PRIMITIVE_TYPE =
             AnnotationBuilder.fromClass(elements, PrimitiveType.class);
@@ -305,7 +309,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     type.replaceAnnotation(
                                             isClassGetName
                                                     ? BINARY_NAME
-                                                    : DOT_SEPARATED_IDENTIFIERS);
+                                                    : CANONICAL_NAME_AND_BINARY_NAME);
                                 }
                             }
                         }
