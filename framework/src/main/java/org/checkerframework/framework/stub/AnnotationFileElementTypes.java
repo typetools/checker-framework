@@ -184,7 +184,7 @@ public class AnnotationFileElementTypes {
         parsing = false;
     }
 
-    /** Parses the ajava files passed through the -Aajava option. */
+    /** Parses the ajava files passed through the -Aajava command-line option. */
     public void parseAjavaFiles() {
         parsing = true;
         // TODO: Error if this is called more than once?
@@ -212,9 +212,8 @@ public class AnnotationFileElementTypes {
         parsing = true;
         SourceChecker checker = factory.getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        InputStream in;
         try {
-            in = new FileInputStream(ajavaPath);
+            InputStream in = new FileInputStream(ajavaPath);
             AnnotationFileParser.parseAjavaFile(
                     ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
         } catch (IOException e) {

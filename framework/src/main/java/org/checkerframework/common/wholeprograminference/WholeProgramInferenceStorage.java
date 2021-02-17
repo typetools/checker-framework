@@ -13,7 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * Stores annotations from whole program inference. For a given location such as a field or method,
+ * Stores annotations from whole-program inference. For a given location such as a field or method,
  * an object can be obtained containing the inferred annotations for that object.
  *
  * <p>Also writes stored annotations to storage files. The specific format depends on the
@@ -34,15 +34,15 @@ public interface WholeProgramInferenceStorage<T> {
     public String getFileForElement(Element elt);
 
     /**
-     * Given an Element in a compilation unit that has already been read into storage, returns
-     * whether there exists a stored method matching {@code elt}.
+     * Given an ExecutableElement in a compilation unit that has already been read into storage,
+     * returns whether there exists a stored method matching {@code elt}.
      *
      * <p>An implementation is permitted to return false if {@code elt} represents a method that was
      * synthetically added by javac, such as zero-argument constructors or valueOf(String) methods
      * for enum types.
      *
      * @param methodElt a method or constructor Element
-     * @return true if the storage has a method corresponding to {@code elt}, false otherwise
+     * @return true if the storage has a method corresponding to {@code elt}
      */
     public boolean hasStorageLocationForMethod(ExecutableElement methodElt);
 
@@ -104,6 +104,8 @@ public interface WholeProgramInferenceStorage<T> {
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atypeFactory);
 
+    // Fields are special because currently WPI computes preconditions for fields only, not for
+    // other expressions.
     /**
      * Returns the pre- or postcondition annotations for a field.
      *
@@ -154,8 +156,8 @@ public interface WholeProgramInferenceStorage<T> {
      *
      * @param newATM the type whose annotations will be added to the {@code AnnotatedTypeMirror}
      * @param curATM the annotations currently stored at the location, used to check if the element
-     *     which will be updated has explicit annotations in source code
-     * @param storageLocationToUpdate the storage location which will be updated
+     *     that will be updated has explicit annotations in source code
+     * @param storageLocationToUpdate the storage location that will be updated
      * @param defLoc the location where the annotation will be added
      * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
      *     source code
