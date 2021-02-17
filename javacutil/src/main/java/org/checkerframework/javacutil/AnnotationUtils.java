@@ -688,9 +688,11 @@ public class AnnotationUtils {
      *
      * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
      *
-     * <p>If possible, it is more efficient to use {@code
-     * anno.getElementValues().get(someElement).getValue();} rather than this which iterates through
-     * a map.
+     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
+     * rather than this method which iterates through a map. The same comment is true of all {@code
+     * getElementValue*} methods. It is true even if the annotation has only one element/field.
+     * Using that method is possible if the type of the annotation is known (in which case the
+     * element/field's Element (called {@code someElement} in the code snippet) is available.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
