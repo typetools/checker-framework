@@ -304,6 +304,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * and if the store already contains information about a hierarchy other than {@code a}s
      * hierarchy, that information is preserved.
      *
+     * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+     * store.
+     *
      * @param expr an expression
      * @param a an annotation for the expression
      */
@@ -341,6 +344,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * <p>Note that this happens per hierarchy, and if the store already contains information about
      * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
+     *
+     * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+     * store.
      *
      * @param expr an expression
      * @param newAnno the expression's annotation
@@ -438,7 +444,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * and if the store already contains information about a hierarchy for which {@code value} does
      * not contain information, then that information is preserved.
      *
-     * <p>This method does nothing if {@code expr} cannot be inserted into the store.
+     * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+     * store.
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
@@ -498,8 +505,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
-     * insertValuePermitNondeterministic}. This implementation does the real work. The expression
-     * will definitely be inserted.
+     * insertValuePermitNondeterministic}. This implementation does the real work; its callees
+     * contain boilerplate such as exiting early if the expression contains unknown or is
+     * nondeterministic.
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
