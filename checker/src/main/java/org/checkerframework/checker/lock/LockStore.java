@@ -226,7 +226,12 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    public void insertValueImpl(JavaExpression je, @Nullable CFValue value) {
+    public void insertValue(
+            JavaExpression je, @Nullable CFValue value, boolean permitNondeterministic) {
+        if (!shouldInsert(je, value, permitNondeterministic)) {
+            return;
+        }
+
         // Even with concurrent semantics enabled, a @LockHeld value must always be
         // stored for fields and @Pure method calls. This is sound because:
         //  * Another thread can never release the lock on the current thread, and
@@ -250,6 +255,6 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             }
         }
 
-        super.insertValueImpl(je, value);
+        super.insertValue(je, value, permitNondeterministic);
     }
 }

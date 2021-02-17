@@ -50,7 +50,11 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
      * initialized.
      */
     @Override
-    public void insertValueImpl(JavaExpression je, V value) {
+    public void insertValue(JavaExpression je, V value, boolean permitNondeterministic) {
+        if (!shouldInsert(je, value, permitNondeterministic)) {
+            return;
+        }
+
         InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
                 (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
@@ -72,7 +76,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             }
         }
 
-        super.insertValueImpl(je, value);
+        super.insertValue(je, value, permitNondeterministic);
 
         for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {

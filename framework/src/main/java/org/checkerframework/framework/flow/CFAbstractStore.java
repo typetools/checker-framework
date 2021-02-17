@@ -379,7 +379,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @param permitNondeterministic whether nondeterministic expressions may be inserted into the
      *     store
      */
-    public void insertOrRefine(
+    protected void insertOrRefine(
             JavaExpression expr, AnnotationMirror newAnno, boolean permitNondeterministic) {
         if (!canInsertJavaExpression(expr)) {
             return;
@@ -474,45 +474,60 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
-     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue)}. Calls {@link
-     * #insertValueImpl} if the expression can be inserted into the store.
+     * Returns true if the given (expression, value) pair can be inserted in the store, namely if
+     * the value is non-null and the expression does not contain unknown or a nondeterministic
+     * expression.
+     *
+     * <p>This method returning true does not guarantee that the value will be inserted; the
+     * implementation of {@link #insertValue( JavaExpression, CFAbstractValue, boolean)} might still
+     * not insert it.
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
      * @param permitNondeterministic if false, does nothing if {@code expr} is nondeterministic; if
      *     true, permit nondeterministic expressions to be placed in the store
      */
-    private final void insertValue(
+    protected boolean shouldInsert(
             JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
-            return;
+            return false;
         }
         if (expr.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
-            return;
+            return false;
         }
         if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
             // Nondeterministic expressions may not be stored.
             // (They are likely to be quickly evicted, as soon as a side-effecting method is
             // called.)
-            return;
+            return false;
         }
-        insertValueImpl(expr, value);
+        return true;
     }
 
     /**
      * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
-     * insertValuePermitNondeterministic}. This implementation does the real work; its callees
-     * contain boilerplate such as exiting early if the expression contains unknown or is
-     * nondeterministic.
+     * insertValuePermitNondeterministic}.
+     *
+     * <p>Every overriding implementation should start with
+     *
+     * <pre>{@code
+     * if (!shouldInsert) {
+     *   return;
+     * }
+     * }</pre>
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
      */
-    protected void insertValueImpl(JavaExpression expr, @Nullable V value) {
+    protected void insertValue(
+            JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
+        if (!shouldInsert(expr, value, permitNondeterministic)) {
+            return;
+        }
+
         if (expr instanceof LocalVariable) {
             LocalVariable localVar = (LocalVariable) expr;
             V oldValue = localVariableValues.get(localVar);
