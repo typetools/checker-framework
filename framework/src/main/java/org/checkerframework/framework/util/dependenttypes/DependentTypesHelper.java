@@ -407,9 +407,12 @@ public class DependentTypesHelper {
     /**
      * Viewpoint-adapt a type qualifier obtained from a contract to {@code jeContext}.
      *
-     * @param annoFromContract a qualifier that was written on a method declaration
-     * @param jeContext the context to use for standardization
-     * @param errorTree if non-null, where to report any errors that occur will parsing the
+     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
+     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} to the given context.
+     *
+     * @param annoFromContract an annotation from a contract
+     * @param jeContext the context to use
+     * @param errorTree if non-null, where to report any errors that occur when parsing the
      *     dependent type annotation; if null, report no errors
      * @return the viewpoint-adapted annotation, or the argument if it is not a dependant type
      *     annotation
@@ -625,10 +628,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Parse the dependent types in {@code type} as if they were written at {@code localVarPath}.
+     * Parse and standardize the expressions in dependent types in {@code type} as if they were
+     * written at {@code localVarPath}. For example, {@code @KeyFor("field") String} is changed to
+     * {@code @KeyFor("this.field")}
      *
      * @param localVarPath the expression is parsed as if it were written at this location
-     * @param type the type to viewpoint-adapt; is side-effected by this method
+     * @param type the type to parse; is side-effected by this method
      */
     private void parseToPath(TreePath localVarPath, AnnotatedTypeMirror type) {
         Tree enclosingClass = TreePathUtil.enclosingClass(localVarPath);
@@ -724,16 +729,16 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardizes Java expressions in an annotation. If the annotation is not a dependent type
+     * Viewpoint-adapts Java expressions in an annotation. If the annotation is not a dependent type
      * annotation, returns null.
      *
      * @param context information about any receiver and arguments
      * @param localVarPath if non-null, the expression is parsed as if it were written at this
      *     location
-     * @param anno the annotation to be standardized
+     * @param anno the annotation to viewpoint-adapt
      * @param removeErroneousExpressions if true, remove erroneous expressions rather than
      *     converting them into an explanation of why they are illegal
-     * @return the standardized annotation, or null if no standardization is needed
+     * @return the viewpoint-adapted annotation, or null if no viewpoint-adaption is needed
      */
     public AnnotationMirror standardizeAnnotationIfDependentType(
             JavaExpressionContext context,

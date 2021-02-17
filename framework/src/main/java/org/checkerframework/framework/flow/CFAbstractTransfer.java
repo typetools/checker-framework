@@ -576,7 +576,7 @@ public abstract class CFAbstractTransfer<
                                 methodDeclTree, methodAst.getClassTree(), analysis.checker);
             }
 
-            annotation = standardizeAnnotationFromContract(annotation, methodUseContext);
+            annotation = viewpointAdaptAnnoFromContract(annotation, methodUseContext);
 
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -593,13 +593,16 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Standardize a type qualifier annotation obtained from a contract.
+     * Viewpoint-adapts a type qualifier annotation obtained from a contract.
      *
-     * @param annoFromContract a contract annotation that was written on a method declaration
+     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
+     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} to the given context.
+     *
+     * @param annoFromContract an annotation from a contract
      * @param jeContext the context to use for standardization
      * @return the standardized annotation, or the argument if it does not need standardization
      */
-    private AnnotationMirror standardizeAnnotationFromContract(
+    private AnnotationMirror viewpointAdaptAnnoFromContract(
             AnnotationMirror annoFromContract, JavaExpressionContext jeContext) {
         // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
         return analysis.dependentTypesHelper.viewpointAdaptQualifierFromContract(
@@ -1208,7 +1211,7 @@ public abstract class CFAbstractTransfer<
 
             // Standardize with respect to the method use (the call site).
             AnnotationMirror standardizedUse =
-                    standardizeAnnotationFromContract(anno, methodUseContext);
+                    viewpointAdaptAnnoFromContract(anno, methodUseContext);
 
             anno = standardizedUse;
 
