@@ -484,8 +484,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
-     * @param permitNondeterministic if false, does nothing if {@code expr} is nondeterministic; if
-     *     true, permit nondeterministic expressions to be placed in the store
+     * @param permitNondeterministic if false, returns false if {@code expr} is nondeterministic; if
+     *     true, permits nondeterministic expressions to be placed in the store
+     * @return true if the given (expression, value) pair can be inserted in the store
      */
     protected boolean shouldInsert(
             JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
@@ -521,6 +522,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * @param expr the expression to insert in the store
      * @param value the value of the expression
+     * @param permitNondeterministic if false, does nothing if {@code expr} is nondeterministic; if
+     *     true, permits nondeterministic expressions to be placed in the store
      */
     protected void insertValue(
             JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
