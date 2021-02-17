@@ -21,7 +21,8 @@ import org.checkerframework.framework.qual.UpperBoundFor;
  * <p>For fields of a class, the {@link NonNull} annotation indicates that this field is never
  * {@code null} <em>after the class has been fully initialized</em>. For static fields, the {@link
  * NonNull} annotation indicates that this field is never {@code null} <em>after the containing
- * class is initialized</em>. See the <a
+ * class is initialized</em>. "Fully initialized" essentially means that the Java constructor has
+ * completed. See the <a
  * href="https://checkerframework.org/manual/#initialization-checker">Initialization Checker
  * documentation</a> for more details.
  *

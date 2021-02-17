@@ -50,7 +50,7 @@ public class FormatterTreeUtil {
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        org.checkerframework.checker.formatter.qual.Format.class.getCanonicalName(),
+                        "org.checkerframework.checker.formatter.qual.Format",
                         "value",
                         0,
                         processingEnv);
