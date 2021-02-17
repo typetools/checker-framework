@@ -38,8 +38,8 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
- * some JavaParser node Some trees shouldn't be matched with a JavaParser node because there isn't a
- * corresponding JavaParser node. These trees are excluded.
+ * some JavaParser node. Some trees shouldn't be matched with a JavaParser node because there isn't
+ * a corresponding JavaParser node. These trees are excluded.
  *
  * <p>The primary purpose is to test the {@link JointJavacJavaParserVisitor} class when the
  * -AcheckJavaParserVisitor flag is used. That class traverses a javac tree and JavaParser AST
@@ -99,12 +99,11 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         visit(tree.getImplementsClause(), p);
         if (tree.getKind() == Kind.ENUM) {
             // Enum constants expand to a VariableTree like
-            // public static final MY_ENUM_CONSTANT = new MyEnum(args ...)
+            //    public static final MY_ENUM_CONSTANT = new MyEnum(args ...)
             // The constructor invocation in the initializer has no corresponding JavaParser node,
-            // this removes those invocations. This doesn't remove any trees that should be matched
-            // to
-            // a JavaParser node because it's illegal to explicitly construct an instance of an
-            // enum.
+            // so this removes those invocations. This doesn't remove any trees that should be
+            // matched to a JavaParser node, because it's illegal to explicitly construct an
+            // instance of an enum.
             for (Tree member : tree.getMembers()) {
                 member.accept(this, p);
                 if (member.getKind() != Kind.VARIABLE) {
@@ -378,17 +377,13 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     /** Visitor that records whether it has visited a "var" keyword. */
     private static class HasVarTypeVisitor extends VoidVisitorAdapter<Void> {
         /** Whether a "var" keyword has been visited. */
-        public boolean hasVarType;
-
-        /** Constructs a visitor that hasn't yet recorded visiting a "var" keyword. */
-        public HasVarTypeVisitor() {
-            hasVarType = false;
-        }
+        public boolean hasVarType = false;
 
         @Override
         public void visit(ClassOrInterfaceType node, Void p) {
             if (node.getName().asString().equals("var")) {
                 hasVarType = true;
+                return;
             }
 
             super.visit(node, p);
@@ -411,7 +406,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
                 java.io.InputStream in = javacCompilationUnit.getSourceFile().openInputStream();
                 javaParserCompilationUnit = StaticJavaParser.parse(in);
             } catch (IOException e) {
-                throw new BugInCF("Unable to read source file for compilation unit", e);
+                throw new BugInCF(
+                        "Unable to read source file for compilation unit "
+                                + javacCompilationUnit.getSourceFile(),
+                        e);
             }
             HasVarTypeVisitor varVisitor = new HasVarTypeVisitor();
             varVisitor.visit(javaParserCompilationUnit, null);

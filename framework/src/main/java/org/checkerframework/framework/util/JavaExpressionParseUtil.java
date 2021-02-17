@@ -323,8 +323,7 @@ public class JavaExpressionParseUtil {
             }
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
 
-            JavaExpressionContext contextForIndex = context.copyNotParsingMember();
-            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
+            JavaExpression index = expr.getIndex().accept(this, context);
 
             return new ArrayAccess(componentType, array, index);
         }
@@ -877,9 +876,13 @@ public class JavaExpressionParseUtil {
         private @Nullable TypeMirror convertTypeToTypeMirror(
                 Type type, JavaExpressionContext context) {
             if (type.isClassOrInterfaceType()) {
-                return StaticJavaParser.parseExpression(type.asString())
-                        .accept(this, context)
-                        .getType();
+                try {
+                    return StaticJavaParser.parseExpression(type.asString())
+                            .accept(this, context)
+                            .getType();
+                } catch (ParseProblemException e) {
+                    return null;
+                }
             } else if (type.isPrimitiveType()) {
                 switch (type.asPrimitiveType().getType()) {
                     case BOOLEAN:
@@ -1274,19 +1277,6 @@ public class JavaExpressionParseUtil {
         public JavaExpressionContext copyChangeToParsingMemberOfReceiver(JavaExpression receiver) {
             return new JavaExpressionContext(
                     receiver, arguments, checker, /*parsingMember=*/ true, useLocalScope);
-        }
-
-        /**
-         * Returns a copy of the context that differs in that parsingMember is set to false.
-         *
-         * @return a copy of the context, with parsingMember set to false
-         */
-        public JavaExpressionContext copyNotParsingMember() {
-            if (parsingMember == false) {
-                return this;
-            }
-            return new JavaExpressionContext(
-                    receiver, arguments, checker, /*parsingMember=*/ false, useLocalScope);
         }
 
         /**
