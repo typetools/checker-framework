@@ -56,10 +56,9 @@ public class Subsequence {
     /**
      * Factory method to create a representation of a subsequence.
      *
-     * @param context the JavaExpressionContext
-     * @param factory the type factory
      * @param hasSub {@link HasSubsequence} annotation or null
      * @param context the parsing context
+     * @param factory the type factory
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
