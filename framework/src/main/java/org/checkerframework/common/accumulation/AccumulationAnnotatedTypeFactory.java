@@ -53,19 +53,16 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     public final AccumulationChecker accumulationChecker;
 
     /**
-     * The canonical top annotation for this accumulation checker: an instance of the accumulator
-     * annotation with no arguments.
-     */
-    public final AnnotationMirror top;
-
-    /** The canonical bottom annotation for this accumulation checker. */
-    public final AnnotationMirror bottom;
-
-    /**
      * The annotation that accumulates things in this accumulation checker. Must be an annotation
      * with exactly one field named "value" whose type is a String array.
      */
     private final Class<? extends Annotation> accumulator;
+
+    /**
+     * The canonical top annotation for this accumulation checker: an instance of the accumulator
+     * annotation with no arguments.
+     */
+    public final AnnotationMirror top;
 
     /**
      * The name of the accumulator annotation, to avoid recomputing it from {@link #accumulator}
@@ -84,6 +81,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * #predicate} every time the checker needs to check if an arbitrary annotation is a predicate.
      */
     private final @Nullable @CanonicalName String predicateName;
+
+    /** The canonical bottom annotation for this accumulation checker. */
+    public final AnnotationMirror bottom;
 
     /**
      * Create an annotated type factory for an accumulation checker.
@@ -110,9 +110,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
         this.accumulationChecker = (AccumulationChecker) checker;
 
-        this.top = createAccumulatorAnnotation(Collections.emptyList());
-        this.bottom = AnnotationBuilder.fromClass(elements, bottom);
-
         this.accumulator = accumulator;
         // Check that the requirements of the accumulator are met.
         Method[] accDeclaredMethods = accumulator.getDeclaredMethods();
@@ -131,6 +128,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 || ((String[]) accValue.getDefaultValue()).length != 0) {
             rejectMalformedAccumulator("have the empty String array {} as its default value");
         }
+
+        this.top = createAccumulatorAnnotation(Collections.emptyList());
 
         this.accumulatorName = AnnotationUtils.annotationName(top);
 
@@ -152,6 +151,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         } else {
             this.predicateName = null;
         }
+
+        this.bottom = AnnotationBuilder.fromClass(elements, bottom);
 
         // Every subclass must call postInit!  This does not do so.
     }
