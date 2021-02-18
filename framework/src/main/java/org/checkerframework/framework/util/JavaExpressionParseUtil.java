@@ -60,7 +60,6 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -962,7 +961,7 @@ public class JavaExpressionParseUtil {
             if (isOriginalReceiver) {
                 locationOfField = context.receiver;
             } else {
-                locationOfField = JavaExpression.fromNode(new ImplicitThisNode(receiverType));
+                locationOfField = new ThisReference(receiverType);
             }
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
