@@ -61,7 +61,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -1145,11 +1144,10 @@ public class JavaExpressionParseUtil {
         public static JavaExpressionContext buildContextForLambda(
                 LambdaExpressionTree lambdaTree, TreePath path, SourceChecker checker) {
             TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
-            Node receiver = new ImplicitThisNode(enclosingType);
-            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
+            JavaExpression receiverJe = new ThisReference(enclosingType);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableTree arg : lambdaTree.getParameters()) {
-                parametersJe.add(JavaExpression.fromNode(new LocalVariableNode(arg, receiver)));
+                parametersJe.add(JavaExpression.fromVariableTree(arg));
             }
             return new JavaExpressionContext(receiverJe, parametersJe, checker);
         }
@@ -1165,9 +1163,7 @@ public class JavaExpressionParseUtil {
          */
         public static JavaExpressionContext buildContextForClassDeclaration(
                 ClassTree classTree, SourceChecker checker) {
-            Node receiver = new ImplicitThisNode(TreeUtils.typeOf(classTree));
-
-            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
+            JavaExpression receiverJe = new ThisReference(TreeUtils.typeOf(classTree));
             return new JavaExpressionContext(receiverJe, Collections.emptyList(), checker);
         }
 
