@@ -175,10 +175,7 @@ public class LockAnnotatedTypeFactory
 
             @Override
             protected String standardizeString(
-                    String expression,
-                    JavaExpressionContext context,
-                    TreePath localScope,
-                    boolean useLocalScope) {
+                    String expression, JavaExpressionContext context, TreePath localVarPath) {
                 if (DependentTypesError.isExpressionError(expression)) {
                     return expression;
                 }
@@ -190,8 +187,7 @@ public class LockAnnotatedTypeFactory
 
                 try {
                     JavaExpression result =
-                            JavaExpressionParseUtil.parse(
-                                    expression, context, localScope, useLocalScope);
+                            JavaExpressionParseUtil.parse(expression, context, localVarPath);
                     if (result == null) {
                         return new DependentTypesError(expression, /*error message=*/ " ")
                                 .toString();

@@ -608,8 +608,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                             Subsequence.getContextFromJavaExpression(je, atypeFactory.getChecker());
 
                     Subsequence subsequence =
-                            Subsequence.getSubsequenceFromReceiver(
-                                    je, atypeFactory, currentPath, context);
+                            Subsequence.getSubsequenceFromReceiver(je, atypeFactory, context);
 
                     if (subsequence != null) {
                         String from = subsequence.from;
