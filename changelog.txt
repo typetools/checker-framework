@@ -30,6 +30,20 @@ Changes to JavaExpression parsing:
     * `GenericAnnotatedTypeFactory#standardizeAnnotationFromContract` => `DependentTypesHelper`
     * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`
 
+Parsing a Java expression no longer requires the formal parameters
+`AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
+in `JavaExpression` with simplified signatures include
+ * `fromArrayAccess`
+ * `fromNodeFieldAccess`
+ * `fromNode`
+ * `fromTree`
+ * `getParametersOfEnclosingMethod`
+ * `getReceiver`
+
+`CFAbstractStore.insertValue` does nothing if passed a nondeterministic
+expression.  Use new method `CFAbstractStore.insertValuePermitNondeterministic`
+to map a nondeterministic expression to a value.
+
 **Closed issues:**
 
 ---------------------------------------------------------------------------

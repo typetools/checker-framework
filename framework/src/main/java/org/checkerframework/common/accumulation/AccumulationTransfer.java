@@ -75,7 +75,7 @@ public class AccumulationTransfer extends CFTransfer {
         List<String> valuesAsList = Arrays.asList(values);
         // If dataflow has already recorded information about the target, fetch it and integrate
         // it into the list of values in the new annotation.
-        JavaExpression target = JavaExpression.fromNode(atypeFactory, node);
+        JavaExpression target = JavaExpression.fromNode(node);
         if (CFAbstractStore.canInsertJavaExpression(target)) {
             CFValue flowValue = result.getRegularStore().getValue(target);
             if (flowValue != null) {

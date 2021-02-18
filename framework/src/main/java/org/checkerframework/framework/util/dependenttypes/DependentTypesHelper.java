@@ -236,7 +236,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        JavaExpression receiver = JavaExpression.getReceiver(tree, factory);
+        JavaExpression receiver = JavaExpression.getReceiver(tree);
         List<JavaExpression> argsJe = argumentTreesToJavaExpressions(tree, methodType, argTrees);
 
         JavaExpressionContext context =
@@ -281,11 +281,11 @@ public class DependentTypesHelper {
                 List<JavaExpression> result = new ArrayList<>();
 
                 for (int i = 0; i < method.getParameters().size() - 1; i++) {
-                    result.add(JavaExpression.fromTree(factory, argTrees.get(i)));
+                    result.add(JavaExpression.fromTree(argTrees.get(i)));
                 }
                 List<JavaExpression> varargArgs = new ArrayList<>();
                 for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
-                    varargArgs.add(JavaExpression.fromTree(factory, argTrees.get(i)));
+                    varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
                 }
                 Element varargsElement =
                         method.getParameters().get(method.getParameters().size() - 1);
@@ -298,7 +298,7 @@ public class DependentTypesHelper {
 
         List<JavaExpression> result = new ArrayList<>();
         for (ExpressionTree argTree : argTrees) {
-            result.add(JavaExpression.fromTree(factory, argTree));
+            result.add(JavaExpression.fromTree(argTree));
         }
         return result;
     }
@@ -359,6 +359,7 @@ public class DependentTypesHelper {
         }
 
         TreePath path = factory.getPath(tree);
+        ;
         parseToPath(path, type);
     }
 
@@ -523,7 +524,7 @@ public class DependentTypesHelper {
                 JavaExpression receiverJe;
                 if (declarationTree.getKind() == Tree.Kind.IDENTIFIER) {
                     JavaExpression nodeJe =
-                            JavaExpression.fromTree(factory, (IdentifierTree) declarationTree);
+                            JavaExpression.fromTree((IdentifierTree) declarationTree);
                     receiverJe =
                             nodeJe instanceof FieldAccess
                                     ? ((FieldAccess) nodeJe).getReceiver()
@@ -561,7 +562,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        JavaExpression receiver = JavaExpression.fromTree(factory, node.getExpression());
+        JavaExpression receiver = JavaExpression.fromTree(node.getExpression());
         JavaExpressionContext context = new JavaExpressionContext(receiver, factory.getChecker());
         viewpointAdaptToContext(context, type);
     }
@@ -644,7 +645,7 @@ public class DependentTypesHelper {
         JavaExpressionContext localContext =
                 new JavaExpressionContext(
                         receiver,
-                        JavaExpression.getParametersOfEnclosingMethod(factory, localVarPath),
+                        JavaExpression.getParametersOfEnclosingMethod(localVarPath),
                         factory.getChecker());
         standardizeAtm(localContext, localVarPath, type, /*removeErroneousExpressions=*/ false);
     }

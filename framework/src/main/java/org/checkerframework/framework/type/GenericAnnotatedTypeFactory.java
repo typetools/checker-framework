@@ -943,7 +943,7 @@ public abstract class GenericAnnotatedTypeFactory<
         JavaExpressionParseUtil.JavaExpressionContext context =
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
-                        JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
+                        JavaExpression.getParametersOfEnclosingMethod(currentPath),
                         this.getChecker());
 
         return JavaExpressionParseUtil.parse(expression, context, currentPath);

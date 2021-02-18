@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** JavaExpression for literals. */
@@ -100,6 +101,11 @@ public class ValueLiteral extends JavaExpression {
     @Override
     public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
     }
 
     @Override

@@ -103,6 +103,14 @@ public class LockAnnotatedTypeFactory
     protected final AnnotationMirror GUARDSATISFIED =
             AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
+    /** The value() element/field of a @GuardSatisfied annotation. */
+    protected final ExecutableElement guardSatisfiedValueElement =
+            TreeUtils.getMethod(
+                    "org.checkerframework.checker.lock.qual.GuardSatisfied",
+                    "value",
+                    0,
+                    processingEnv);
+
     /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;
 
@@ -546,7 +554,12 @@ public class LockAnnotatedTypeFactory
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
-        return AnnotationUtils.getElementValue(am, "value", Integer.class, true);
+        AnnotationValue av = am.getElementValues().get(guardSatisfiedValueElement);
+        if (av == null) {
+            return -1;
+        } else {
+            return (int) av.getValue();
+        }
     }
 
     @Override

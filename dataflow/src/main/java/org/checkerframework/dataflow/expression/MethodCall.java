@@ -9,6 +9,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.util.PurityUtils;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /** A call to a @Deterministic method. */
 public class MethodCall extends JavaExpression {
@@ -39,22 +41,6 @@ public class MethodCall extends JavaExpression {
         this.method = method;
     }
 
-    @Override
-    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-        if (getClass() == clazz) {
-            return true;
-        }
-        if (receiver.containsOfClass(clazz)) {
-            return true;
-        }
-        for (JavaExpression p : arguments) {
-            if (p.containsOfClass(clazz)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * Returns the ExecutableElement for the method call.
      *
@@ -83,6 +69,28 @@ public class MethodCall extends JavaExpression {
     }
 
     @Override
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+        if (getClass() == clazz) {
+            return true;
+        }
+        if (receiver.containsOfClass(clazz)) {
+            return true;
+        }
+        for (JavaExpression p : arguments) {
+            if (p.containsOfClass(clazz)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return PurityUtils.isDeterministic(provider, method)
+                && listIsDeterministic(arguments, provider);
+    }
+
+    @Override
     public boolean isUnassignableByOtherCode() {
         // There is no need to check that the method is deterministic, because a MethodCall is
         // only created for deterministic methods.
@@ -96,13 +104,6 @@ public class MethodCall extends JavaExpression {
     }
 
     @Override
-    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other)
-                || receiver.containsSyntacticEqualJavaExpression(other)
-                || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
-    }
-
-    @Override
     public boolean syntacticEquals(JavaExpression je) {
         if (!(je instanceof MethodCall)) {
             return false;
@@ -111,6 +112,13 @@ public class MethodCall extends JavaExpression {
         return method.equals(other.method)
                 && this.receiver.syntacticEquals(other.receiver)
                 && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return syntacticEquals(other)
+                || receiver.containsSyntacticEqualJavaExpression(other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
     }
 
     @Override
