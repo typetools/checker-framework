@@ -38,7 +38,7 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
         NullnessValue result = super.leastUpperBound(other);
 
         AnnotationMirror resultNullableAnno =
-                AnnotationUtils.getAnnotationByClass(result.annotations, Nullable.class);
+                analysis.getTypeFactory().getAnnotationByClass(result.annotations, Nullable.class);
 
         if (resultNullableAnno != null && other != null) {
             if ((this.isPolyNullNonNull
@@ -64,8 +64,8 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
      */
     @Pure
     private boolean containsNonNullOrPolyNull() {
-        return AnnotationUtils.containsSameByClass(annotations, NonNull.class)
-                || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);
+        return analysis.getTypeFactory().containsSameByClass(annotations, NonNull.class)
+                || analysis.getTypeFactory().containsSameByClass(annotations, PolyNull.class);
     }
 
     /**
@@ -75,8 +75,8 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
      */
     @Pure
     private boolean containsNullableOrPolyNull() {
-        return AnnotationUtils.containsSameByClass(annotations, Nullable.class)
-                || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);
+        return analysis.getTypeFactory().containsSameByClass(annotations, Nullable.class)
+                || analysis.getTypeFactory().containsSameByClass(annotations, PolyNull.class);
     }
 
     @SideEffectFree
