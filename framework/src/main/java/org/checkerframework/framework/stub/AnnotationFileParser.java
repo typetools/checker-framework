@@ -1549,19 +1549,17 @@ public class AnnotationFileParser {
             if (elt != null) {
                 putIfAbsent(elementsToDecl, elt, method);
             } else {
-                List<ExecutableElement> overriddenMethods = fakeOverriddenMethods(typeElt, method);
-                if (overriddenMethods.isEmpty()) {
+                ExecutableElement overriddenMethod = fakeOverriddenMethod(typeElt, method);
+                if (overriddenMethod == null) {
                     // Didn't find the element and it isn't a fake override.  Issue a warning.
                     findElement(typeElt, method, /*noWarn=*/ false);
                 } else {
-                    for (ExecutableElement overriddenMethod : overriddenMethods) {
-                        List<BodyDeclaration<?>> l = fakeOverrideDecls.get(overriddenMethod);
-                        if (l == null) {
-                            l = new ArrayList<>();
-                            fakeOverrideDecls.put(overriddenMethod, l);
-                        }
-                        l.add(member);
+                    List<BodyDeclaration<?>> l = fakeOverrideDecls.get(overriddenMethod);
+                    if (l == null) {
+                        l = new ArrayList<>();
+                        fakeOverrideDecls.put(overriddenMethod, l);
                     }
+                    l.add(member);
                 }
             }
         } else if (member instanceof ConstructorDeclaration) {
@@ -1600,9 +1598,9 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Given a method declaration that does not correspond to an element, returns all the methods
-     * that it would directly override or implement. This does not include transitively
-     * overridden/implemented methods.
+     * Given a method declaration that does not correspond to an element, returns the method it
+     * directly overrides or implements. As Java does, this prefers a method in a superclass to one
+     * in an interface.
      *
      * <p>As with regular overrides, the parameter types must be exact matches; contravariance is
      * not permitted.
@@ -1611,67 +1609,40 @@ public class AnnotationFileParser {
      * @param methodDecl the method declaration that does not correspond to an element
      * @return all the methods that the method declaration would override
      */
-    private List<ExecutableElement> fakeOverriddenMethods(
+    private ExecutableElement fakeOverriddenMethod(
             TypeElement typeElt, MethodDeclaration methodDecl) {
-        List<ExecutableElement> result = new ArrayList<>();
-        Set<TypeElement> visited = new HashSet<>();
-        fakeOverriddenMethodsHelper(typeElt, methodDecl, result, visited, false);
-        return result;
-    }
-
-    /**
-     * Add to {@code result} any methods that the given method declaration would override or
-     * implement.
-     *
-     * <p>This method is a helper for {@link #fakeOverriddenMethods( TypeElement,
-     * MethodDeclaration)}.
-     *
-     * @param typeElt the type in which to search for the method (also searches in supertypes if not
-     *     found in {@code typeElt}
-     * @param methodDecl the method declaration
-     * @param result the list of matching methods
-     * @param visited what types have been visited so far
-     * @param found if true, an override has been found and should not be looked for
-     */
-    private void fakeOverriddenMethodsHelper(
-            TypeElement typeElt,
-            MethodDeclaration methodDecl,
-            List<ExecutableElement> result,
-            Set<TypeElement> visited,
-            boolean found) {
-        if (!visited.add(typeElt)) {
-            return;
-        }
-
-        if (!found) {
-            for (Element elt : typeElt.getEnclosedElements()) {
-                if (elt.getKind() != ElementKind.METHOD) {
-                    continue;
-                }
-                ExecutableElement candidate = (ExecutableElement) elt;
-                if (!candidate
-                        .getSimpleName()
-                        .contentEquals(methodDecl.getName().getIdentifier())) {
-                    continue;
-                }
-                List<? extends VariableElement> candidateParams = candidate.getParameters();
-                found = sameTypes(candidateParams, methodDecl.getParameters());
-                if (found && !result.contains(candidate)) {
-                    result.add(candidate);
-                }
+        for (Element elt : typeElt.getEnclosedElements()) {
+            if (elt.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement candidate = (ExecutableElement) elt;
+            if (!candidate.getSimpleName().contentEquals(methodDecl.getName().getIdentifier())) {
+                continue;
+            }
+            List<? extends VariableElement> candidateParams = candidate.getParameters();
+            if (sameTypes(candidateParams, methodDecl.getParameters())) {
+                return candidate;
             }
         }
 
         TypeElement superType = ElementUtils.getSuperClass(typeElt);
         if (superType != null) {
-            fakeOverriddenMethodsHelper(superType, methodDecl, result, visited, found);
+            ExecutableElement result = fakeOverriddenMethod(superType, methodDecl);
+            if (result != null) {
+                return result;
+            }
         }
 
         for (TypeMirror interfaceTypeMirror : typeElt.getInterfaces()) {
             TypeElement interfaceElement =
                     (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
-            fakeOverriddenMethodsHelper(interfaceElement, methodDecl, result, visited, found);
+            ExecutableElement result = fakeOverriddenMethod(interfaceElement, methodDecl);
+            if (result != null) {
+                return result;
+            }
         }
+
+        return null;
     }
 
     /**
