@@ -122,7 +122,7 @@ public class ValueTransfer extends CFTransfer {
         }
         String annoName = AnnotationUtils.annotationName(anno);
         if (annoName.equals(ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-            return ValueAnnotatedTypeFactory.getRange(anno);
+            return atypeFactory.getRange(anno);
         } else if (annoName.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             return Range.NOTHING;
         }
@@ -300,7 +300,7 @@ public class ValueTransfer extends CFTransfer {
             intAnno =
                     hierarchy.findAnnotationInHierarchy(
                             value.getAnnotations(), atypeFactory.UNKNOWNVAL);
-            Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
+            Range range = atypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
@@ -383,7 +383,7 @@ public class ValueTransfer extends CFTransfer {
                 || AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
             range = Range.EVERYTHING;
         } else if (atypeFactory.isIntRange(val)) {
-            range = ValueAnnotatedTypeFactory.getRange(val);
+            range = atypeFactory.getRange(val);
         } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
             List<Long> values = ValueAnnotatedTypeFactory.getIntValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
@@ -575,7 +575,7 @@ public class ValueTransfer extends CFTransfer {
 
         RangeOrListOfValues rolv;
         if (atypeFactory.isIntRange(lengthAnno)) {
-            rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(lengthAnno));
+            rolv = new RangeOrListOfValues(atypeFactory.getRange(lengthAnno));
         } else if (AnnotationUtils.areSameByName(
                 lengthAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
             List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);

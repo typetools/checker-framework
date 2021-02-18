@@ -98,9 +98,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // Check that the arguments to a HasSubsequence annotation are valid JavaExpressions,
             // and issue an error if one of them is not.
 
-            String seq = AnnotationUtils.getElementValue(anno, "subsequence", String.class, true);
-            String from = AnnotationUtils.getElementValue(anno, "from", String.class, true);
-            String to = AnnotationUtils.getElementValue(anno, "to", String.class, true);
+            String seq = atypeFactory.hasSubsequenceSubsequenceValue(anno);
+            String from = atypeFactory.hasSubsequenceFromValue(anno);
+            String to = atypeFactory.hasSubsequenceToValue(anno);
 
             // check that each expression is parseable in this context
             ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());

@@ -248,6 +248,10 @@ public class OffsetEquation {
      */
     private void addTerm(char operator, String term) {
         term = term.trim();
+        if (operator == '-' && term.equals("2147483648")) {
+            addInt(-2147483648);
+            return;
+        }
         if (isInt(term)) {
             int literal = parseInt(term);
             addInt(operator == '-' ? -1 * literal : literal);
