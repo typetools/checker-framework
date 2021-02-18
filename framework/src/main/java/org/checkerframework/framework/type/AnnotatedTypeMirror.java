@@ -645,6 +645,8 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Removes an annotation of the given class from the type.
      *
+     * <p>This method is inefficient because it computes canonical names.
+     *
      * @param a the class of the annotation to remove
      * @return true if the annotation was removed, false if the type's annotations were unchanged
      */
