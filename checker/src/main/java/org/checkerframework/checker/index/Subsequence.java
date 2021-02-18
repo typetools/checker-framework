@@ -1,7 +1,6 @@
 package org.checkerframework.checker.index;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.qual.HasSubsequence;
@@ -89,14 +88,12 @@ public class Subsequence {
      *
      * @param expr some tree
      * @param factory an AnnotatedTypeFactory
-     * @param currentPath the path at which to viewpoint adapt the subsequence
      * @param context the context in which to viewpoint adapt the subsequence
      * @return null or a new Subsequence from the declaration of {@code varTree}
      */
     public static Subsequence getSubsequenceFromReceiver(
             JavaExpression expr,
             BaseAnnotatedTypeFactoryForIndexChecker factory,
-            TreePath currentPath,
             JavaExpressionContext context) {
         if (expr == null) {
             return null;

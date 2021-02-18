@@ -485,8 +485,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 JavaExpressionContext context =
                         Subsequence.getContextFromJavaExpression(lhsSeqExpr, checker);
                 Subsequence subSeq =
-                        Subsequence.getSubsequenceFromReceiver(
-                                lhsSeqExpr, atypeFactory, getCurrentPath(), context);
+                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory, context);
 
                 if (subSeq != null) {
                     String from = subSeq.from;
