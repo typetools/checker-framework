@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -78,6 +79,11 @@ public class LocalVariable extends JavaExpression {
     @Override
     public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
     }
 
     @Override

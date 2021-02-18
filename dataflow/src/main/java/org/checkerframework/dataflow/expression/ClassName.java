@@ -4,6 +4,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * A ClassName represents the occurrence of a class as part of a static field access or method
@@ -52,6 +53,21 @@ public class ClassName extends JavaExpression {
     }
 
     @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
+    }
+
+    @Override
+    public boolean isUnassignableByOtherCode() {
+        return true;
+    }
+
+    @Override
+    public boolean isUnmodifiableByOtherCode() {
+        return true;
+    }
+
+    @Override
     public boolean syntacticEquals(JavaExpression je) {
         if (!(je instanceof ClassName)) {
             return false;
@@ -63,16 +79,6 @@ public class ClassName extends JavaExpression {
     @Override
     public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return this.syntacticEquals(other);
-    }
-
-    @Override
-    public boolean isUnassignableByOtherCode() {
-        return true;
-    }
-
-    @Override
-    public boolean isUnmodifiableByOtherCode() {
-        return true;
     }
 
     @Override
