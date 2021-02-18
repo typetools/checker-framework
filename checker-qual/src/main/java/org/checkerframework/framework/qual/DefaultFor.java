@@ -52,17 +52,22 @@ public @interface DefaultFor {
     /**
      * Returns regular expressions matching variables to whose type an annotation should be applied.
      * A variable uses this default if it matches at least one of these regular expressions, and it
-     * matches none of the exceptions in {@link #variableNamesExceptions}.
+     * matches none of the exceptions in {@link #namesExceptions}.
+     *
+     * <p>The regular expression must match the entire name. For example, to match any name that
+     * contains "foo", use ".*foo.*".
+     *
+     * <p>This also applies to method return types.
      *
      * @return regular expressions matching variables to whose type an annotation should be applied
      */
-    String[] variableNames() default {};
+    String[] names() default {};
 
     /**
      * Returns exceptions to regular exception rules.
      *
      * @return exceptions to regular exception rules
-     * @see #variableNames
+     * @see #names
      */
-    String[] variableNamesExceptions() default {};
+    String[] namesExceptions() default {};
 }

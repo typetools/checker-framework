@@ -780,4 +780,40 @@ public class ElementUtils {
     public static boolean inSameClass(Element e1, Element e2) {
         return e1.getEnclosingElement().equals(e2.getEnclosingElement());
     }
+
+    /** A verbose representation of the given element. */
+    public static String toStringDebug(Element elt) {
+        StringJoiner result = new StringJoiner(System.lineSeparator());
+        Element enclosing = elt.getEnclosingElement();
+        result.add(
+                String.format(
+                        "%s [%s %s] enclosing=%s [%s %s]",
+                        elt,
+                        elt.getKind(),
+                        elt.getClass().getSimpleName(),
+                        enclosing,
+                        enclosing.getKind(),
+                        enclosing.getClass().getSimpleName()));
+        /*
+        switch (elt.getKind()) {
+            case FIELD:
+                break;
+            case PARAMETER:
+                break;
+
+            case CLASS:
+            case INTERFACE:
+                Iterable<Symbol> elements = ((Symbol.ClassSymbol) elt).members().getElements();
+                for (Symbol sym : elements) {
+                    result.add(String.format("    member: %s  [%s]%n", sym, sym.getClass()));
+                }
+                break;
+
+            default:
+                break;
+        }
+        */
+
+        return result.toString();
+    }
 }

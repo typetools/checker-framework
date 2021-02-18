@@ -16,8 +16,9 @@ Signature Checker supports two new type qualifiers:
 
 **Implementation details:**
 
-You can make a variable's default type depend on the variable's name.
-`@DefaultFor` has new elements `variableNames` and `variableNamesExceptions`.
+You can make a variable's default type depend on its name, or a method
+return type default depend on the method's name.  To support this feature,
+`@DefaultFor` has new elements `names` and `namesExceptions`.
 
 Changes to protected fields in `OverrideChecker`:
  * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`

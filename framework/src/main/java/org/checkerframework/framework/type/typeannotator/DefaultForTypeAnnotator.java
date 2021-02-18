@@ -1,21 +1,31 @@
 package org.checkerframework.framework.type.typeannotator;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -36,12 +46,16 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
     /** Map from {@link AnnotatedTypeMirror} classes to annotations. */
     private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> atmClasses;
-    /** Map from full qualified class name strings to annotations. */
+    /** Map from fully qualified class name strings to annotations. */
     private final Map<String, Set<AnnotationMirror>> types;
+    /**
+     * A list where each element associates an annotation with name regexes and name exceptions
+     * regexes.
+     */
+    private final NamesRegexes namesRegexes;
 
     /** {@link QualifierHierarchy} */
     private final QualifierHierarchy qualHierarchy;
-    // private final AnnotatedTypeFactory atypeFactory;
 
     /**
      * Creates a {@link DefaultForTypeAnnotator} from the given checker, using that checker to
@@ -52,13 +66,14 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         this.typeKinds = new EnumMap<>(TypeKind.class);
         this.atmClasses = new HashMap<>();
         this.types = new HashMap<>();
+        this.namesRegexes = new NamesRegexes();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
 
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = typeFactory.getSupportedTypeQualifiers();
 
-        // For each qualifier, read the @DefaultFor annotation and put its type types and kinds
+        // For each qualifier, read the @DefaultFor annotation and put its types, kinds, and names
         // into maps.
         for (Class<? extends Annotation> qual : quals) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
@@ -68,6 +83,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
 
             AnnotationMirror theQual =
                     AnnotationBuilder.fromClass(typeFactory.getElementUtils(), qual);
+
             for (org.checkerframework.framework.qual.TypeKind typeKind : defaultFor.typeKinds()) {
                 TypeKind mappedTk = mapTypeKinds(typeKind);
                 addTypeKind(mappedTk, theQual);
@@ -76,6 +92,8 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
             for (Class<?> typeName : defaultFor.types()) {
                 addTypes(typeName, theQual);
             }
+
+            namesRegexes.add(theQual, defaultFor);
         }
     }
 
@@ -193,5 +211,143 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         }
 
         return this;
+    }
+
+    /**
+     * Apply defaults based on a variable name to a type.
+     *
+     * @param type a type to apply defaults to
+     * @param name the name of the variable that has type {@code type}, or the name of the method
+     *     whose return type is {@code type}
+     */
+    public void defaultTypeFromName(AnnotatedTypeMirror type, String name) {
+        // TODO: Check whether the annotation is applicable to this Java type?
+        AnnotationMirror defaultAnno = namesRegexes.getDefaultAnno(name);
+        if (defaultAnno != null) {
+            if (typeFactory
+                            .getQualifierHierarchy()
+                            .findAnnotationInHierarchy(type.getAnnotations(), defaultAnno)
+                    == null) {
+                type.addAnnotation(defaultAnno);
+            }
+        }
+    }
+
+    // TODO
+    @Override
+    public Void visitExecutable(AnnotatedExecutableType type, Void aVoid) {
+        ExecutableElement element = type.getElement();
+
+        Iterator<AnnotatedTypeMirror> paramTypes = type.getParameterTypes().iterator();
+        for (VariableElement paramElt : element.getParameters()) {
+            String paramName = paramElt.getSimpleName().toString();
+            AnnotatedTypeMirror paramType = paramTypes.next();
+            defaultTypeFromName(paramType, paramName);
+        }
+
+        String methodName = element.getSimpleName().toString();
+        AnnotatedTypeMirror returnType = type.getReturnType();
+        defaultTypeFromName(returnType, methodName);
+
+        return null;
+    }
+
+    private static class NamesRegexes extends ArrayList<NameRegexes> {
+
+        static final long serialVersionUID = 20200218;
+
+        /**
+         * Update this list from the fields of a @DefaultFor annotation.
+         *
+         * @param defaultFor a @DefaultFor annotation
+         */
+        void add(AnnotationMirror theQual, DefaultFor defaultFor) {
+            if (defaultFor.names().length != 0) {
+                NameRegexes thisName = new NameRegexes(theQual);
+                for (String nameRegex : defaultFor.names()) {
+                    try {
+                        thisName.names.add(Pattern.compile(nameRegex));
+                    } catch (PatternSyntaxException e) {
+                        throw new TypeSystemError(
+                                "In annotation %s, names() value \"%s\" is not a regular expression",
+                                theQual, nameRegex);
+                    }
+                }
+                for (String namesExceptionsRegex : defaultFor.namesExceptions()) {
+                    try {
+                        thisName.namesExceptions.add(Pattern.compile(namesExceptionsRegex));
+                    } catch (PatternSyntaxException e) {
+                        throw new TypeSystemError(
+                                "In annotation %s, namesExceptions() value \"%s\" is not a regular expression",
+                                theQual, namesExceptionsRegex);
+                    }
+                }
+                add(thisName);
+            } else if (defaultFor.namesExceptions().length != 0) {
+                throw new TypeSystemError(
+                        "Annotation %s has empty names() but nonempty namesExceptions()", theQual);
+            }
+        }
+
+        /**
+         * Returns the annotation that should be the default for a variable of the given name.
+         *
+         * @param name a variable name
+         * @return the annotation that should be the default for a variable named {@code name}, or
+         *     null if none
+         */
+        @Nullable AnnotationMirror getDefaultAnno(String name) {
+            if (this.isEmpty()) {
+                return null;
+            }
+            AnnotationMirror result = null;
+            for (NameRegexes nameRegexes : this) {
+                if (nameRegexes.matches(name)) {
+                    if (result == null) {
+                        result = nameRegexes.anno;
+                    } else {
+                        // This could use combine the annotatations instead, but I think doing so
+                        // silently  would confuse users.
+                        throw new TypeSystemError(
+                                "Multiple annotations are applicable to the name \"%s\"", name);
+                    }
+                }
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Associates an annotation with the variable names that cause the annotation to be chosen as a
+     * default.
+     */
+    private static class NameRegexes {
+        /** The annotation. */
+        final AnnotationMirror anno;
+        /** The name regexes. */
+        final List<Pattern> names = new ArrayList<>(0);
+        /** The name exception regexes. */
+        final List<Pattern> namesExceptions = new ArrayList<>(0);
+
+        /**
+         * Constructs a NameRegexes from a @DefaultFor annotation.
+         *
+         * @param theQual the qualifier that {@code defaultFor} is written on
+         */
+        NameRegexes(AnnotationMirror theQual) {
+            this.anno = theQual;
+        }
+
+        /**
+         * Returns true if the regular expressions match the given name -- that is, if {@link #anno}
+         * should be used as the default for a variable named {@code name}.
+         *
+         * @return true if {@link #anno} should be used as the default for a variable named {@code
+         *     name}
+         */
+        public boolean matches(String name) {
+            return names.stream().anyMatch(p -> p.matcher(name).matches())
+                    && !namesExceptions.stream().anyMatch(p -> p.matcher(name).matches());
+        }
     }
 }
