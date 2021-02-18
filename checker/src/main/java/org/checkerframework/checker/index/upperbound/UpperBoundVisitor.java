@@ -147,10 +147,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * Checks if this array access is legal. Uses the common assignment check and a simple MinLen
      * check of its own. The MinLen check is needed because the common assignment check always
      * returns false when the upper bound qualifier is @UpperBoundUnknown.
+     *
+     * @param indexTree the array index
+     * @param arrTree the array
      */
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
 
-        String arrName = JavaExpression.fromTree(this.atypeFactory, arrTree).toString();
+        String arrName = JavaExpression.fromTree(arrTree).toString();
         LessThanLengthOf lhsQual = (LessThanLengthOf) UBQualifier.createUBQualifier(arrName, "0");
         if (relaxedCommonAssignmentCheck(lhsQual, indexTree) || checkMinLen(indexTree, arrTree)) {
             return;

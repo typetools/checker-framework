@@ -541,9 +541,14 @@ public class ValueTransfer extends CFTransfer {
     /**
      * Transform @IntVal or @IntRange annotations of a array or string length into an @ArrayLen
      * or @ArrayLenRange annotation for the array or string.
+     *
+     * @param lengthNode an invocation of method {@code length} or an access of the {@code length}
+     *     field
+     * @param receiverNode the receiver of {@code lengthNode}
+     * @param store the store to update
      */
     private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
-        JavaExpression lengthExpr = JavaExpression.fromNode(analysis.getTypeFactory(), lengthNode);
+        JavaExpression lengthExpr = JavaExpression.fromNode(lengthNode);
 
         // If the expression is not representable (for example if String.length() for some reason is
         // not marked @Pure, then do not refine.
@@ -563,7 +568,7 @@ public class ValueTransfer extends CFTransfer {
         if (AnnotationUtils.areSameByName(lengthAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             // If the length is bottom, then this is dead code, so the receiver type
             // should also be bottom.
-            JavaExpression receiver = JavaExpression.fromNode(atypeFactory, receiverNode);
+            JavaExpression receiver = JavaExpression.fromNode(receiverNode);
             store.insertValue(receiver, lengthAnno);
             return;
         }
@@ -590,7 +595,7 @@ public class ValueTransfer extends CFTransfer {
         } else {
             combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
         }
-        JavaExpression receiver = JavaExpression.fromNode(analysis.getTypeFactory(), receiverNode);
+        JavaExpression receiver = JavaExpression.fromNode(receiverNode);
         store.insertValue(receiver, combinedRecAnno);
     }
 
@@ -1387,7 +1392,7 @@ public class ValueTransfer extends CFTransfer {
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
         // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            JavaExpression je = JavaExpression.fromNode(analysis.getTypeFactory(), internal);
+            JavaExpression je = JavaExpression.fromNode(internal);
             CFValue currentValueFromStore;
             if (CFAbstractStore.canInsertJavaExpression(je)) {
                 currentValueFromStore = store.getValue(je);
@@ -1544,12 +1549,11 @@ public class ValueTransfer extends CFTransfer {
             int minLength = atypeFactory.getMinLenValue(argumentAnno);
             // Update the annotation of the receiver
             if (minLength != 0) {
-                JavaExpression receiver =
-                        JavaExpression.fromNode(atypeFactory, n.getTarget().getReceiver());
+                JavaExpression receiver = JavaExpression.fromNode(n.getTarget().getReceiver());
 
                 AnnotationMirror minLenAnno =
                         atypeFactory.createArrayLenRangeAnnotation(minLength, Integer.MAX_VALUE);
-                thenStore.insertValue(receiver, minLenAnno);
+                thenStore.insertValuePermitNondeterministic(receiver, minLenAnno);
             }
         }
 

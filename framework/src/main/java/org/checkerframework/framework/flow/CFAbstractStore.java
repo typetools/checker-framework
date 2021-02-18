@@ -288,7 +288,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // store information about method call if possible
-        JavaExpression methodCall = JavaExpression.fromNode(analysis.getTypeFactory(), n);
+        JavaExpression methodCall = JavaExpression.fromNode(n);
         replaceValue(methodCall, val);
     }
 
@@ -303,9 +303,30 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * new and old value are taken (according to the lattice). Note that this happens per hierarchy,
      * and if the store already contains information about a hierarchy other than {@code a}s
      * hierarchy, that information is preserved.
+     *
+     * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+     * store.
+     *
+     * @param expr an expression
+     * @param a an annotation for the expression
      */
     public void insertValue(JavaExpression expr, AnnotationMirror a) {
         insertValue(expr, analysis.createSingleAnnotationValue(a, expr.getType()));
+    }
+
+    /**
+     * Like {@link #insertValue(JavaExpression, AnnotationMirror)}, but permits nondeterministic
+     * expressions to be stored.
+     *
+     * <p>For an explanation of when to permit nondeterministic expressions, see {@link
+     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue)}.
+     *
+     * @param expr an expression
+     * @param a an annotation for the expression
+     */
+    public void insertValuePermitNondeterministic(JavaExpression expr, AnnotationMirror a) {
+        insertValuePermitNondeterministic(
+                expr, analysis.createSingleAnnotationValue(a, expr.getType()));
     }
 
     /**
@@ -323,14 +344,56 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * <p>Note that this happens per hierarchy, and if the store already contains information about
      * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
+     *
+     * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+     * store.
+     *
+     * @param expr an expression
+     * @param newAnno the expression's annotation
      */
-    public void insertOrRefine(JavaExpression expr, AnnotationMirror newAnno) {
+    public final void insertOrRefine(JavaExpression expr, AnnotationMirror newAnno) {
+        insertOrRefine(expr, newAnno, false);
+    }
+
+    /**
+     * Like {@link #insertOrRefine(JavaExpression, AnnotationMirror)}, but permits nondeterministic
+     * expressions to be inserted.
+     *
+     * <p>For an explanation of when to permit nondeterministic expressions, see {@link
+     * #insertValuePermitNondeterministic(JavaExpression, CFAbstractValue)}.
+     *
+     * @param expr an expression
+     * @param newAnno the expression's annotation
+     */
+    public final void insertOrRefinePermitNondeterministic(
+            JavaExpression expr, AnnotationMirror newAnno) {
+        insertOrRefine(expr, newAnno, true);
+    }
+
+    /**
+     * Helper function for {@link #insertOrRefine(JavaExpression, AnnotationMirror)} and {@link
+     * #insertOrRefinePermitNondeterministic}.
+     *
+     * @param expr an expression
+     * @param newAnno the expression's annotation
+     * @param permitNondeterministic whether nondeterministic expressions may be inserted into the
+     *     store
+     */
+    protected void insertOrRefine(
+            JavaExpression expr, AnnotationMirror newAnno, boolean permitNondeterministic) {
         if (!canInsertJavaExpression(expr)) {
             return;
         }
+        if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
+            return;
+        }
+
         V oldValue = getValue(expr);
         if (oldValue == null) {
-            insertValue(expr, analysis.createSingleAnnotationValue(newAnno, expr.getType()));
+            insertValue(
+                    expr,
+                    analysis.createSingleAnnotationValue(newAnno, expr.getType()),
+                    permitNondeterministic);
             return;
         }
         QualifierHierarchy qualifierHierarchy = analysis.getTypeFactory().getQualifierHierarchy();
@@ -338,7 +401,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         AnnotationMirror oldAnno =
                 qualifierHierarchy.findAnnotationInHierarchy(oldValue.annotations, top);
         if (oldAnno == null) {
-            insertValue(expr, analysis.createSingleAnnotationValue(newAnno, expr.getType()));
+            insertValue(
+                    expr,
+                    analysis.createSingleAnnotationValue(newAnno, expr.getType()),
+                    permitNondeterministic);
             return;
         }
 
@@ -347,7 +413,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             glb = newAnno;
         }
 
-        insertValue(expr, analysis.createSingleAnnotationValue(glb, expr.getType()));
+        insertValue(
+                expr,
+                analysis.createSingleAnnotationValue(glb, expr.getType()),
+                permitNondeterministic);
     }
 
     /** Returns true if {@code expr} can be stored in this store. */
@@ -374,17 +443,94 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * new and old value are taken (according to the lattice). Note that this happens per hierarchy,
      * and if the store already contains information about a hierarchy for which {@code value} does
      * not contain information, then that information is preserved.
+     *
+     * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+     * store.
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
      */
-    public void insertValue(JavaExpression expr, @Nullable V value) {
+    public final void insertValue(JavaExpression expr, @Nullable V value) {
+        insertValue(expr, value, false);
+    }
+    /**
+     * Like {@link #insertValue(JavaExpression, CFAbstractValue)}, but updates the store even if
+     * {@code expr} is nondeterministic.
+     *
+     * <p>Usually, nondeterministic JavaExpressions should not be stored in a Store. For example, in
+     * the body of {@code if (nondet() == 3) {...}}, the store should not record that the value of
+     * {@code nondet()} is 3, because it might not be 3 the next time {@code nondet()} is executed.
+     *
+     * <p>However, contracts can mention a nondeterministic JavaExpression. For example, a contract
+     * might have a postcondition that{@code nondet()} is odd. This means that the next call
+     * to{@code nondet()} will return odd. Such a postcondition may be evicted from the store by
+     * calling a side-effecting method.
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
+     */
+    public final void insertValuePermitNondeterministic(JavaExpression expr, @Nullable V value) {
+        insertValue(expr, value, true);
+    }
+
+    /**
+     * Returns true if the given (expression, value) pair can be inserted in the store, namely if
+     * the value is non-null and the expression does not contain unknown or a nondeterministic
+     * expression.
+     *
+     * <p>This method returning true does not guarantee that the value will be inserted; the
+     * implementation of {@link #insertValue( JavaExpression, CFAbstractValue, boolean)} might still
+     * not insert it.
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
+     * @param permitNondeterministic if false, returns false if {@code expr} is nondeterministic; if
+     *     true, permits nondeterministic expressions to be placed in the store
+     * @return true if the given (expression, value) pair can be inserted in the store
+     */
+    protected boolean shouldInsert(
+            JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
-            return;
+            return false;
         }
         if (expr.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
+            return false;
+        }
+        if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
+            // Nondeterministic expressions may not be stored.
+            // (They are likely to be quickly evicted, as soon as a side-effecting method is
+            // called.)
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
+     * insertValuePermitNondeterministic}.
+     *
+     * <p>Every overriding implementation should start with
+     *
+     * <pre>{@code
+     * if (!shouldInsert) {
+     *   return;
+     * }
+     * }</pre>
+     *
+     * @param expr the expression to insert in the store
+     * @param value the value of the expression
+     * @param permitNondeterministic if false, does nothing if {@code expr} is nondeterministic; if
+     *     true, permits nondeterministic expressions to be placed in the store
+     */
+    protected void insertValue(
+            JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
+        if (!shouldInsert(expr, value, permitNondeterministic)) {
             return;
         }
+
         if (expr instanceof LocalVariable) {
             LocalVariable localVar = (LocalVariable) expr;
             V oldValue = localVariableValues.get(localVar);
@@ -575,11 +721,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
+     * @param n the node whose abstract value to return
      * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(FieldAccessNode n) {
-        FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(analysis.getTypeFactory(), n);
+        FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(n);
         return fieldValues.get(fieldAccess);
     }
 
@@ -599,11 +746,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Returns the current abstract value of a method call, or {@code null} if no information is
      * available.
      *
+     * @param n a method call
      * @return the current abstract value of a method call, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(MethodInvocationNode n) {
-        JavaExpression method = JavaExpression.fromNode(analysis.getTypeFactory(), n, true);
+        JavaExpression method = JavaExpression.fromNode(n);
         if (method == null) {
             return null;
         }
@@ -614,17 +762,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
+     * @param n the node whose abstract value to return
      * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(ArrayAccessNode n) {
-        ArrayAccess arrayAccess = JavaExpression.fromArrayAccess(analysis.getTypeFactory(), n);
+        ArrayAccess arrayAccess = JavaExpression.fromArrayAccess(n);
         return arrayValues.get(arrayAccess);
     }
 
-    /** Update the information in the store by considering an assignment with target {@code n}. */
+    /**
+     * Update the information in the store by considering an assignment with target {@code n}.
+     *
+     * @param n the left-hand side of an assignment
+     * @param val the right-hand value of an assignment
+     */
     public void updateForAssignment(Node n, @Nullable V val) {
-        JavaExpression je = JavaExpression.fromNode(analysis.getTypeFactory(), n);
+        JavaExpression je = JavaExpression.fromNode(n);
         if (je instanceof ArrayAccess) {
             updateForArrayAssignment((ArrayAccess) je, val);
         } else if (je instanceof FieldAccess) {
