@@ -30,6 +30,10 @@ Changes to JavaExpression parsing:
     * `GenericAnnotatedTypeFactory#standardizeAnnotationFromContract` => `DependentTypesHelper`
     * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`
 
+Changes to JavaExpressionContext:
+ * New method JavaExpressionContext#buildContextForMethodDeclaration(MethodTree, SourceChecker)
+   replaces all overloads of buildContextForMethodDeclaration.
+
 Parsing a Java expression no longer requires the formal parameters
 `AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
 in `JavaExpression` with simplified signatures include
