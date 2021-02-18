@@ -161,6 +161,9 @@ public class AnnotationUtils {
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
+     * <p>This method is not very efficient. It is more efficient to use {@link #areSameByName} or
+     * {@link AnnotatedTypFactory#areSameByClass}.
+     *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
      * @return true if annoclass is the class of am
