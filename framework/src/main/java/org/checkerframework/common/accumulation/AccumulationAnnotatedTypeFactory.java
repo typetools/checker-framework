@@ -19,6 +19,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.accumulation.AccumulationChecker.AliasAnalysis;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -67,10 +68,22 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     private final Class<? extends Annotation> accumulator;
 
     /**
+     * The name of the accumulator annotation, to avoid recomputing it from {@link #accumulator}
+     * every time the checker needs to check if an arbitrary annotation is an accumulator.
+     */
+    private final @CanonicalName String accumulatorName;
+
+    /**
      * The predicate annotation for this accumulation analysis, or null if predicates are not
      * supported. A predicate annotation must have a single element named "value" of type String.
      */
     private final @MonotonicNonNull Class<? extends Annotation> predicate;
+
+    /**
+     * The name of the predicate annotation, if one exists, to avoid recomputing it from {@link
+     * #predicate} every time the checker needs to check if an arbitrary annotation is a predicate.
+     */
+    private final @MonotonicNonNull @CanonicalName String predicateName;
 
     /**
      * Create an annotated type factory for an accumulation checker.
@@ -115,6 +128,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 || ((String[]) accValue.getDefaultValue()).length != 0) {
             rejectMalformedAccumulator("have the empty String array {} as its default value");
         }
+        this.top = createAccumulatorAnnotation(Collections.emptyList());
+        this.accumulatorName = AnnotationUtils.annotationName(top);
 
         this.predicate = predicate;
         // If there is a predicate annotation, check that its requirements are met.
@@ -130,10 +145,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             if (!predValue.getReturnType().isInstance("")) {
                 rejectMalformedPredicate("have an element of type String");
             }
+            this.predicateName = AnnotationUtils.annotationName(createPredicateAnnotation("false"));
+        } else {
+            this.predicateName = null;
         }
 
         this.bottom = AnnotationBuilder.fromClass(elements, bottom);
-        this.top = createAccumulatorAnnotation(Collections.emptyList());
 
         // Every subclass must call postInit!  This does not do so.
     }
@@ -245,7 +262,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the annotation mirror is an instance of this factory's accumulator annotation
      */
     public boolean isAccumulatorAnnotation(AnnotationMirror anm) {
-        return AnnotationUtils.areSameByClass(anm, accumulator);
+        return AnnotationUtils.areSameByName(anm, accumulatorName);
     }
 
     @Override
@@ -663,6 +680,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if anno is a predicate annotation
      */
     protected boolean isPredicate(AnnotationMirror anno) {
-        return predicate != null && AnnotationUtils.areSameByClass(anno, predicate);
+        return predicateName != null && AnnotationUtils.areSameByName(anno, predicateName);
     }
 }
