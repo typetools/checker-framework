@@ -1126,17 +1126,7 @@ public class JavaExpressionParseUtil {
         public static JavaExpressionContext buildContextForMethodDeclaration(
                 MethodTree methodDeclaration, SourceChecker checker) {
             ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
-            JavaExpression thisExpression;
-            if (methodElt.getReceiverType().getKind() != TypeKind.NONE) {
-                thisExpression = new ThisReference(methodElt.getReceiverType());
-            } else if (methodElt.getKind() == ElementKind.CONSTRUCTOR
-                    || ElementUtils.isStatic(methodElt)) {
-                TypeElement classElt = ElementUtils.enclosingTypeElement(methodElt);
-                thisExpression = new ThisReference(classElt.asType());
-            } else {
-                throw new BugInCF("Type of this not found: %s", methodDeclaration);
-            }
-
+            JavaExpression thisExpression = JavaExpression.getImplicitReceiver(methodElt);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableElement param : methodElt.getParameters()) {
                 parametersJe.add(new LocalVariable(param));
