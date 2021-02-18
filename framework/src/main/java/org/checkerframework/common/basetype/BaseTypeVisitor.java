@@ -83,6 +83,8 @@ import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -946,10 +948,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        TreePath pathToMethodDecl = getCurrentPath();
         JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodTree, pathToMethodDecl, checker);
+                JavaExpressionContext.buildContextForMethodDeclaration(methodTree, checker);
 
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
@@ -4202,14 +4202,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return Collections.emptySet();
         }
 
-        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         // This is the path to a place where the contract is being used, which might or might not be
         // where the contract was defined.  For example, methodTree might be an overriding
         // definition, and the contract might be for a superclass.
         MethodTree methodTree = visitorState.getMethodTree();
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        ThisReference receiverJe =
+                new ThisReference(methodType.getReceiverType().getUnderlyingType());
+        List<JavaExpression> parametersJe = new ArrayList<>();
+        for (VariableElement param : methodElt.getParameters()) {
+            parametersJe.add(new LocalVariable(param));
+        }
         JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodTree, methodType.getReceiverType().getUnderlyingType(), checker);
+                new JavaExpressionContext(receiverJe, parametersJe, checker);
+
+        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;

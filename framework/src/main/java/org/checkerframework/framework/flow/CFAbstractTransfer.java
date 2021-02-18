@@ -573,7 +573,7 @@ public abstract class CFAbstractTransfer<
             if (methodUseContext == null) {
                 methodUseContext =
                         JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodDeclTree, methodAst.getClassTree(), analysis.checker);
+                                methodDeclTree, analysis.checker);
             }
 
             annotation = viewpointAdaptAnnoFromContract(annotation, methodUseContext);

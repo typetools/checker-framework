@@ -49,7 +49,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -61,7 +60,6 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -1122,61 +1120,28 @@ public class JavaExpressionParseUtil {
          *
          * @param methodDeclaration used to translate parameter numbers in a Java expression to
          *     formal parameters of the method
-         * @param enclosingTree used to look up fields and as the type of "this" in Java expressions
          * @param checker used to build JavaExpression
          * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, Tree enclosingTree, SourceChecker checker) {
-            return buildContextForMethodDeclaration(
-                    methodDeclaration, TreeUtils.typeOf(enclosingTree), checker);
-        }
-
-        /**
-         * Creates a {@link JavaExpressionContext} for the method declared in {@code
-         * methodDeclaration}.
-         *
-         * @param methodDeclaration used to translate parameter numbers in a Java expression to
-         *     formal parameters of the method
-         * @param currentPath the path to the method. It is used to find the enclosing class, which
-         *     is used to look up fields and as the type of "this" in Java expressions.
-         * @param checker used to build JavaExpression
-         * @return context created from {@code methodDeclaration}
-         */
-        public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, TreePath currentPath, SourceChecker checker) {
-            Tree classTree = TreePathUtil.enclosingClass(currentPath);
-            return buildContextForMethodDeclaration(methodDeclaration, classTree, checker);
-        }
-
-        /**
-         * Creates a {@link JavaExpressionContext} for the method declared in {@code
-         * methodDeclaration}.
-         *
-         * @param methodDeclaration used to translate parameter numbers in a Java expression to
-         *     formal parameters of the method
-         * @param enclosingType used to look up fields and as type of "this" in Java expressions
-         * @param checker used to build JavaExpression
-         * @return context created from {@code methodDeclaration}
-         */
-        public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, TypeMirror enclosingType, SourceChecker checker) {
-
+                MethodTree methodDeclaration, SourceChecker checker) {
             ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
-
-            Node receiver;
-            if (methodDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
-                Element classElt = ElementUtils.enclosingTypeElement(methodElt);
-                receiver = new ClassNameNode(enclosingType, classElt);
+            JavaExpression thisExpression;
+            if (methodElt.getReceiverType().getKind() != TypeKind.NONE) {
+                thisExpression = new ThisReference(methodElt.getReceiverType());
+            } else if (methodElt.getKind() == ElementKind.CONSTRUCTOR
+                    || ElementUtils.isStatic(methodElt)) {
+                TypeElement classElt = ElementUtils.enclosingTypeElement(methodElt);
+                thisExpression = new ThisReference(classElt.asType());
             } else {
-                receiver = new ImplicitThisNode(enclosingType);
+                throw new BugInCF("Type of this not found: %s", methodDeclaration);
             }
-            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
+
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableElement param : methodElt.getParameters()) {
                 parametersJe.add(new LocalVariable(param));
             }
-            return new JavaExpressionContext(receiverJe, parametersJe, checker);
+            return new JavaExpressionContext(thisExpression, parametersJe, checker);
         }
 
         /**
