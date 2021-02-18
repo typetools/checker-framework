@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -385,7 +386,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return its from() element/field
      */
     private long getIntRangeFromValue(AnnotationMirror anno) {
-        return (long) anno.getElementValues().get(intRangeFromElement).getValue();
+        AnnotationValue v = anno.getElementValues().get(intRangeFromElement);
+        if (v == null) {
+            return Long.MIN_VALUE;
+        } else {
+            return (long) v.getValue();
+        }
     }
 
     /**
@@ -396,7 +402,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return its to() element/field
      */
     private long getIntRangeToValue(AnnotationMirror anno) {
-        return (long) anno.getElementValues().get(intRangeToElement).getValue();
+        AnnotationValue v = anno.getElementValues().get(intRangeToElement);
+        if (v == null) {
+            return Long.MAX_VALUE;
+        } else {
+            return (long) v.getValue();
+        }
     }
 
     /**
@@ -406,7 +417,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return its from() element/field
      */
     private int getArrayLenRangeFromValue(AnnotationMirror anno) {
-        return (int) anno.getElementValues().get(arrayLenRangeFromElement).getValue();
+        AnnotationValue v = anno.getElementValues().get(arrayLenRangeFromElement);
+        if (v == null) {
+            return 0;
+        } else {
+            return (int) v.getValue();
+        }
     }
 
     /**
@@ -416,7 +432,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return its to() element/field
      */
     private int getArrayLenRangeToValue(AnnotationMirror anno) {
-        return (int) anno.getElementValues().get(arrayLenRangeToElement).getValue();
+        AnnotationValue v = anno.getElementValues().get(arrayLenRangeToElement);
+        if (v == null) {
+            return Integer.MAX_VALUE;
+        } else {
+            return (int) v.getValue();
+        }
     }
 
     /**
@@ -426,7 +447,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return its value() element/field
      */
     private int getMinLenValueValue(AnnotationMirror anno) {
-        return (int) anno.getElementValues().get(minLenValueElement).getValue();
+        AnnotationValue v = anno.getElementValues().get(minLenValueElement);
+        if (v == null) {
+            return 0;
+        } else {
+            return (int) v.getValue();
+        }
     }
 
     /**
