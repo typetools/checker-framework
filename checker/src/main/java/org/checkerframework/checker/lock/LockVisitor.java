@@ -1235,8 +1235,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         TreePath currentPath = getCurrentPath();
-        List<JavaExpression> params =
-                JavaExpression.getParametersOfEnclosingMethod(atypeFactory, currentPath);
+        List<JavaExpression> params = JavaExpression.getParametersOfEnclosingMethod(currentPath);
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
@@ -1247,7 +1246,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (implicitThis) {
             self = pseudoReceiver;
         } else if (TreeUtils.isExpressionTree(tree)) {
-            self = JavaExpression.fromTree(atypeFactory, (ExpressionTree) tree);
+            self = JavaExpression.fromTree((ExpressionTree) tree);
         } else {
             self = new Unknown(TreeUtils.typeOf(tree));
         }

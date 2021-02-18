@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -57,9 +58,12 @@ public class FieldAccess extends JavaExpression {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-        return super.containsModifiableAliasOf(store, other)
-                || receiver.containsModifiableAliasOf(store, other);
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof FieldAccess)) {
+            return false;
+        }
+        FieldAccess other = (FieldAccess) je;
+        return this.receiver.syntacticEquals(other.receiver) && this.field.equals(other.field);
     }
 
     @Override
@@ -68,12 +72,9 @@ public class FieldAccess extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression je) {
-        if (!(je instanceof FieldAccess)) {
-            return false;
-        }
-        FieldAccess other = (FieldAccess) je;
-        return this.receiver.syntacticEquals(other.receiver) && this.field.equals(other.field);
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+        return super.containsModifiableAliasOf(store, other)
+                || receiver.containsModifiableAliasOf(store, other);
     }
 
     @Override
@@ -100,6 +101,11 @@ public class FieldAccess extends JavaExpression {
     @Override
     public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz || receiver.containsOfClass(clazz);
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return receiver.isDeterministic(provider);
     }
 
     @Override

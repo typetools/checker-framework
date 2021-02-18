@@ -6,6 +6,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -65,6 +66,12 @@ public class ArrayCreation extends JavaExpression {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return listIsDeterministic(dimensions, provider)
+                && listIsDeterministic(initializers, provider);
     }
 
     @Override

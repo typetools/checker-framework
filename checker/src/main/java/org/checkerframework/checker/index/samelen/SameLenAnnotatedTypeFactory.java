@@ -291,8 +291,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationMirror sequenceAnno =
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
-                    JavaExpression sequenceExpr =
-                            JavaExpression.fromTree(this.atypeFactory, sequenceTree);
+                    JavaExpression sequenceExpr = JavaExpression.fromTree(sequenceTree);
                     if (mayAppearInSameLen(sequenceExpr)) {
                         String recString = sequenceExpr.toString();
                         if (areSameByClass(sequenceAnno, SameLenUnknown.class)) {

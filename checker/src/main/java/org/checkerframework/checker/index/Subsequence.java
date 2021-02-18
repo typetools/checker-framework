@@ -8,11 +8,9 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Holds information from {@link HasSubsequence} annotations. */
@@ -42,7 +40,8 @@ public class Subsequence {
      * @param factory an AnnotatedTypeFactory
      * @return null or a new Subsequence from the declaration of {@code varTree}
      */
-    public static Subsequence getSubsequenceFromTree(Tree varTree, AnnotatedTypeFactory factory) {
+    public static Subsequence getSubsequenceFromTree(
+            Tree varTree, BaseAnnotatedTypeFactoryForIndexChecker factory) {
 
         if (!(varTree.getKind() == Tree.Kind.IDENTIFIER
                 || varTree.getKind() == Tree.Kind.MEMBER_SELECT
@@ -52,21 +51,27 @@ public class Subsequence {
 
         Element element = TreeUtils.elementFromTree(varTree);
         AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
-        return createSubsequence(hasSub, null, null);
+        return createSubsequence(hasSub, null, null, factory);
     }
 
     /**
+     * @param currentPath the current path
+     * @param context the JavaExpressionContext
+     * @param factory the type factory
      * @param hasSub {@link HasSubsequence} annotation or null
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
-            AnnotationMirror hasSub, TreePath currentPath, JavaExpressionContext context) {
+            AnnotationMirror hasSub,
+            TreePath currentPath,
+            JavaExpressionContext context,
+            BaseAnnotatedTypeFactoryForIndexChecker factory) {
         if (hasSub == null) {
             return null;
         }
-        String from = AnnotationUtils.getElementValue(hasSub, "from", String.class, false);
-        String to = AnnotationUtils.getElementValue(hasSub, "to", String.class, false);
-        String array = AnnotationUtils.getElementValue(hasSub, "subsequence", String.class, false);
+        String from = factory.hasSubsequenceFromValue(hasSub);
+        String to = factory.hasSubsequenceToValue(hasSub);
+        String array = factory.hasSubsequenceSubsequenceValue(hasSub);
 
         if (context != null && currentPath != null) {
             from = standardizeAndViewpointAdapt(from, currentPath, context);
@@ -89,7 +94,7 @@ public class Subsequence {
      */
     public static Subsequence getSubsequenceFromReceiver(
             JavaExpression expr,
-            AnnotatedTypeFactory factory,
+            BaseAnnotatedTypeFactoryForIndexChecker factory,
             TreePath currentPath,
             JavaExpressionContext context) {
         if (expr == null) {
@@ -103,7 +108,10 @@ public class Subsequence {
             return null;
         }
         return createSubsequence(
-                factory.getDeclAnnotation(element, HasSubsequence.class), currentPath, context);
+                factory.getDeclAnnotation(element, HasSubsequence.class),
+                currentPath,
+                context,
+                factory);
     }
 
     /*
