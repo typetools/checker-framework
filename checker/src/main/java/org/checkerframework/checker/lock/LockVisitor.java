@@ -1306,10 +1306,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                     lockExpression.lockExpression =
                             JavaExpressionParseUtil.parse(
-                                    itself.toString() + "." + remainingExpression,
-                                    jeContext,
-                                    path,
-                                    true);
+                                    itself.toString() + "." + remainingExpression, jeContext, path);
                     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpression.lockExpression)) {
                         checker.reportError(
                                 path.getLeaf(),
@@ -1320,7 +1317,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             } else {
                 lockExpression.lockExpression =
-                        JavaExpressionParseUtil.parse(expression, jeContext, path, true);
+                        JavaExpressionParseUtil.parse(expression, jeContext, path);
                 return lockExpression;
             }
         } catch (JavaExpressionParseException ex) {

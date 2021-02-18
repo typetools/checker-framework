@@ -161,8 +161,8 @@ public class AnnotationUtils {
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
-     * <p>This method is not very efficient. It is more efficient to use {@link #areSameByName} or
-     * {@link AnnotatedTypFactory#areSameByClass}.
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#areSameByClass} or {@link #areSameByName}.
      *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
@@ -245,6 +245,9 @@ public class AnnotationUtils {
      * Checks that the collection contains the annotation. Using Collection.contains does not always
      * work, because it does not use areSame for comparison.
      *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#containsSameByClass} or {@link #containsSameByName}.
+     *
      * @param c a collection of AnnotationMirrors
      * @param anno the annotation class to search for in c
      * @return true iff c contains anno, according to areSameByClass
@@ -256,6 +259,9 @@ public class AnnotationUtils {
 
     /**
      * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
+     *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#getAnnotationByClass} or {@link #getAnnotationByName}.
      *
      * @param c a collection of AnnotationMirrors
      * @param anno the class to search for in c

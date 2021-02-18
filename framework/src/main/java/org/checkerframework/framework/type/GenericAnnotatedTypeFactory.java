@@ -96,7 +96,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -938,10 +937,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Produces the JavaExpression associated with expression on currentPath.
+     * Produces the JavaExpression as if {@code expression} were written at {@code currentPath}.
      *
      * @param expression a Java expression
-     * @param currentPath the path to an annotation containing {@code expression}
+     * @param currentPath the current path
      * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
@@ -956,7 +955,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         JavaExpression.getParametersOfEnclosingMethod(currentPath),
                         this.getChecker());
 
-        return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
+        return JavaExpressionParseUtil.parse(expression, context, currentPath);
     }
 
     /**
@@ -1996,7 +1995,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f, visitorState.getPath());
+        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f);
         return f;
     }
 
@@ -2578,29 +2577,5 @@ public abstract class GenericAnnotatedTypeFactory<
         } else {
             return null;
         }
-    }
-
-    /**
-     * Standardize a type qualifier annotation obtained from a contract.
-     *
-     * @param annoFromContract the annotation to be standardized
-     * @param jeContext the context to use for standardization
-     * @param path the path to a use of the contract (a method call) or to the method declaration
-     * @return the standardized annotation, or the argument if it does not need standardization
-     */
-    public AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
-        if (!dependentTypesHelper.hasDependentAnnotations()) {
-            return annoFromContract;
-        }
-
-        AnnotationMirror standardized =
-                dependentTypesHelper.standardizeAnnotationIfDependentType(
-                        jeContext, path, annoFromContract, false, false);
-        if (standardized != null) {
-            dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
-            return standardized;
-        }
-        return annoFromContract;
     }
 }
