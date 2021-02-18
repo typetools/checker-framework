@@ -83,7 +83,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * The name of the predicate annotation, if one exists, to avoid recomputing it from {@link
      * #predicate} every time the checker needs to check if an arbitrary annotation is a predicate.
      */
-    private final @MonotonicNonNull @CanonicalName String predicateName;
+    private final @Nullable @CanonicalName String predicateName;
 
     /**
      * Create an annotated type factory for an accumulation checker.
@@ -110,6 +110,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
         this.accumulationChecker = (AccumulationChecker) checker;
 
+        this.top = createAccumulatorAnnotation(Collections.emptyList());
+        this.bottom = AnnotationBuilder.fromClass(elements, bottom);
+
         this.accumulator = accumulator;
         // Check that the requirements of the accumulator are met.
         Method[] accDeclaredMethods = accumulator.getDeclaredMethods();
@@ -128,7 +131,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 || ((String[]) accValue.getDefaultValue()).length != 0) {
             rejectMalformedAccumulator("have the empty String array {} as its default value");
         }
-        this.top = createAccumulatorAnnotation(Collections.emptyList());
+
         this.accumulatorName = AnnotationUtils.annotationName(top);
 
         this.predicate = predicate;
@@ -149,8 +152,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         } else {
             this.predicateName = null;
         }
-
-        this.bottom = AnnotationBuilder.fromClass(elements, bottom);
 
         // Every subclass must call postInit!  This does not do so.
     }
