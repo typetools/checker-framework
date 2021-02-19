@@ -160,7 +160,13 @@ public class FormatterTreeUtil {
         return new Result<>(asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
-    /** Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}. */
+    /**
+     * Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}.
+     *
+     * @param node a method call
+     * @param atypeFactory a type factory
+     * @return true if {@code node} is a call to a method annotated with {@code @FormatMethod}
+     */
     public boolean isFormatMethodCall(
             MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
