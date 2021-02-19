@@ -210,7 +210,7 @@ public class FormatterTreeUtil {
          * Returns an error description if the format-string argument's type is <em>not</em>
          * annotated as {@code @Format}. Returns null if it is annotated.
          *
-         * @result an error description if the format string is not annotated as {@code @Format}, or
+         * @return an error description if the format string is not annotated as {@code @Format}, or
          *     null if it is
          */
         public final Result<String> errMissingFormatAnnotation() {
