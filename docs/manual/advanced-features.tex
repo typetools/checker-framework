@@ -219,6 +219,10 @@ rules are used in order, until one applies.
   The qualifier with a meta-annotation \<@DefaultFor(typeKinds = KIND)>, where \<KIND> is the
   \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
 \item
+  The qualifier with a meta-annotation \<@DefaultFor(names = REGEX)>, where \<REGEX>
+  matches the name of the variable being defined (if any).  For return types, the  the name of
+  the method is used. (Section~\ref{default-for-use})
+\item
   The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
   (Section~\ref{default-qualifier})
 \item

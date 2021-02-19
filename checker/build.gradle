@@ -104,7 +104,8 @@ task allSourcesJar(type: Jar) {
     archiveFileName = "checker-source.jar"
     archiveClassifier = "sources"
     from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
-            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava,
+            project(':checker-qual').sourceSets.main.allJava, project(':checker-util').sourceSets.main.allJava)
 }
 
 task allJavadocJar(type: Jar) {
