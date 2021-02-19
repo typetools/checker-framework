@@ -576,10 +576,7 @@ public abstract class CFAbstractTransfer<
                                 methodDeclTree, methodAst.getClassTree(), analysis.checker);
             }
 
-            TreePath methodDeclPath = analysis.atypeFactory.getPath(methodDeclTree);
-
-            annotation =
-                    standardizeAnnotationFromContract(annotation, methodUseContext, methodDeclPath);
+            annotation = viewpointAdaptAnnoFromContract(annotation, methodUseContext);
 
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -587,8 +584,7 @@ public abstract class CFAbstractTransfer<
                 // be optimized to store the result the first time.
                 // (same for other annotations)
                 JavaExpression exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, methodUseContext, methodDeclPath, false);
+                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
                 initialStore.insertValuePermitNondeterministic(exprJe, annotation);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
@@ -597,30 +593,20 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Standardize a type qualifier annotation obtained from a contract.
+     * Viewpoint-adapts a type qualifier annotation obtained from a contract.
      *
-     * @param annoFromContract a contract annotation that was written on a method declaration
+     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
+     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} to the given context.
+     *
+     * @param annoFromContract an annotation from a contract
      * @param jeContext the context to use for standardization
-     * @param path the program element that will be annotated by the returned annotation
      * @return the standardized annotation, or the argument if it does not need standardization
      */
-    private AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
-        if (!analysis.dependentTypesHelper.hasDependentAnnotations()) {
-            return annoFromContract;
-        }
-
-        // TODO: common implementation with
-        // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
-        AnnotationMirror standardized =
-                analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
-                        jeContext, path, annoFromContract, false, false);
-        if (standardized != null) {
-            // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
-            // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
-            return standardized;
-        }
-        return annoFromContract;
+    private AnnotationMirror viewpointAdaptAnnoFromContract(
+            AnnotationMirror annoFromContract, JavaExpressionContext jeContext) {
+        // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
+        return analysis.dependentTypesHelper.viewpointAdaptQualifierFromContract(
+                annoFromContract, jeContext, /*errorTree=*/ null);
     }
 
     /**
@@ -1208,8 +1194,6 @@ public abstract class CFAbstractTransfer<
             S elseStore,
             Set<? extends Contract> postconditions) {
 
-        GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = analysis.getTypeFactory();
-
         // These lazily initialized variables are needed only if the method has any contracts.
         JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
@@ -1226,16 +1210,14 @@ public abstract class CFAbstractTransfer<
             }
 
             // Standardize with respect to the method use (the call site).
-            TreePath pathToInvocation = atypeFactory.getPath(invocationTree);
             AnnotationMirror standardizedUse =
-                    standardizeAnnotationFromContract(anno, methodUseContext, pathToInvocation);
+                    viewpointAdaptAnnoFromContract(anno, methodUseContext);
 
             anno = standardizedUse;
 
             try {
                 JavaExpression je =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, methodUseContext, pathToInvocation, false);
+                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call

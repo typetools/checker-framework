@@ -2763,4 +2763,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             return null;
         }
     }
+
+    /**
+     * Return the path to the current compilation unit.
+     *
+     * @return path to the current compilation unit
+     */
+    public TreePath getPathToCompilationUnit() {
+        return TreePath.getPath(currentRoot, currentRoot);
+    }
 }

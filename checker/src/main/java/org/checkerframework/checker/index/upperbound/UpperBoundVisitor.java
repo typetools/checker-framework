@@ -125,7 +125,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String s, JavaExpressionContext context, Tree tree) {
         JavaExpression je;
         try {
-            je = JavaExpressionParseUtil.parse(s, context, getCurrentPath(), false);
+            je = JavaExpressionParseUtil.parse(s, context);
         } catch (JavaExpressionParseException e) {
             checker.report(tree, e.getDiagMessage());
             return;
@@ -364,11 +364,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Given a Java expression, returns the additive inverse, as a String. Assumes that
-     * JavaExpressions do not contain multiplication.
+     * Given a Java expression, returns the additive inverse (the negation) as a String. Assumes
+     * that JavaExpressions do not contain multiplication.
+     *
+     * @param s a Java expression string
+     * @param context the parse context
+     * @return the string's additive inverse (its negation)
      */
     private String negateString(String s, JavaExpressionContext context) {
-        return Subsequence.negateString(s, getCurrentPath(), context);
+        return Subsequence.negateString(s, context);
     }
 
     /*
@@ -481,8 +485,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 JavaExpressionContext context =
                         Subsequence.getContextFromJavaExpression(lhsSeqExpr, checker);
                 Subsequence subSeq =
-                        Subsequence.getSubsequenceFromReceiver(
-                                lhsSeqExpr, atypeFactory, getCurrentPath(), context);
+                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory, context);
 
                 if (subSeq != null) {
                     String from = subSeq.from;

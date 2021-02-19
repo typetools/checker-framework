@@ -27,7 +27,13 @@ Changes to protected fields in `OverrideChecker`:
  * Renamed `overridingType` => `overriderType`
  * Renamed `overridingReturnType` => `overriderReturnType`
 
-Moved JavaExpressionParseUtil#fromVariableTree to JavaExpression.
+Changes to JavaExpression parsing:
+ * The signatures of these methods changed; see Javadoc.
+    * `JavaExpressionParseUtil#parse`
+    * `DependentTypesHelper#standardizeString`
+ * These methods moved:
+    * `GenericAnnotatedTypeFactory#standardizeAnnotationFromContract` => `DependentTypesHelper`
+    * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`
 
 Parsing a Java expression no longer requires the formal parameters
 `AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
