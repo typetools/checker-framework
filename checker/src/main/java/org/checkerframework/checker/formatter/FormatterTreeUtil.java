@@ -207,8 +207,8 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns an error description (in a {@link #Result}) if the format-string argument's type
-         * is {@emph not} annotated as {@code @Format}; returns null if it is annotated.
+         * Returns an error description if the format-string argument's type is <em>not</em>
+         * annotated as {@code @Format}. Returns null if it is annotated.
          */
         public final Result<String> errMissingFormatAnnotation() {
             if (!formatAnno.hasAnnotation(Format.class)) {

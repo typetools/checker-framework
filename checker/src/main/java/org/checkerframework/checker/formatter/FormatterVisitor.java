@@ -178,18 +178,19 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     /**
-     * Returns true if {@code invokTree}'s arguments are {@code enclosingMethod}'s formal
-     * parameters. In other words, {@code invokTree} forwards {@code enclosingMethod}'s arguments.
+     * Returns true if {@code invocationTree}'s arguments are {@code enclosingMethod}'s formal
+     * parameters. In other words, {@code invocationTree} forwards {@code enclosingMethod}'s
+     * arguments.
      *
      * <p>Only arguments from the last String formal parameter onward count.
      *
-     * @param invocTree an invocation of a method
+     * @param invocationTree an invocation of a method
      * @param enclosingMethod the method that contains the call
-     * @return true if {@code invokTree} is a call to a method that forwards its containing method's
-     *     arguments
+     * @return true if {@code invocationTree} is a call to a method that forwards its containing
+     *     method's arguments
      */
     private boolean forwardsArguments(
-            MethodInvocationTree invocTree, @Nullable MethodTree enclosingMethod) {
+            MethodInvocationTree invocationTree, @Nullable MethodTree enclosingMethod) {
 
         if (enclosingMethod == null) {
             return false;
@@ -197,7 +198,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         ExecutableElement enclosingMethodElement =
                 TreeUtils.elementFromDeclaration(enclosingMethod);
 
-        List<? extends ExpressionTree> args = invocTree.getArguments();
+        List<? extends ExpressionTree> args = invocationTree.getArguments();
         List<? extends VariableTree> params = enclosingMethod.getParameters();
         List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
 
