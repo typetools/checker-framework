@@ -36,12 +36,11 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
     /** Map from {@link AnnotatedTypeMirror} classes to annotations. */
     private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> atmClasses;
-    /** Map from full qualified class name strings to annotations. */
+    /** Map from fully qualified class name strings to annotations. */
     private final Map<String, Set<AnnotationMirror>> types;
 
     /** {@link QualifierHierarchy} */
     private final QualifierHierarchy qualHierarchy;
-    // private final AnnotatedTypeFactory atypeFactory;
 
     /**
      * Creates a {@link DefaultForTypeAnnotator} from the given checker, using that checker to
