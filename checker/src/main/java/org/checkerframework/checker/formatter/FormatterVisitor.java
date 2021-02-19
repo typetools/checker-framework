@@ -24,9 +24,11 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Whenever a format method invocation is found in the syntax tree, checks are performed as
@@ -205,7 +207,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             + " is annotated @FormatMethod but has no String formal parameter");
         }
 
-        ExecutableElement calledMethodElement = ElementUtils.elementFromUse(invocationTree);
+        ExecutableElement calledMethodElement = TreeUtils.elementFromUse(invocationTree);
         int callIndex = formatStringIndex(calledMethodElement);
         if (callIndex == -1) {
             throw new BugInCF(
@@ -216,17 +218,16 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
 
         List<? extends ExpressionTree> args = invocationTree.getArguments();
         List<? extends VariableTree> params = enclosingMethod.getParameters();
-        List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
 
         if (params.size() - paramIndex != args.size() - callIndex) {
             return false;
         }
         while (paramIndex < params.size()) {
-            ExpressionTree argTree = args.get(argIndex);
+            ExpressionTree argTree = args.get(callIndex);
             if (argTree.getKind() != Tree.Kind.IDENTIFIER) {
                 return false;
             }
-            VariableTree param = params.get(argIndex);
+            VariableTree param = params.get(paramIndex);
             if (param.getName() != ((IdentifierTree) argTree).getName()) {
                 return false;
             }
@@ -245,7 +246,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     private int formatStringIndex(ExecutableElement m) {
         List<? extends VariableElement> params = m.getParameters();
         for (int i = 0; i < params.size(); i++) {
-            if (ElementUtils.isString(params.get(i))) {
+            if (TypesUtils.isString(params.get(i).asType())) {
                 return i;
             }
         }
