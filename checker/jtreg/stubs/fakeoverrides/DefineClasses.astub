@@ -1,0 +1,12 @@
+package fakeoverrides;
+import org.checkerframework.checker.tainting.qual.Untainted;
+
+class SuperClass implements SuperInterface {
+    // fake override:
+    @Untainted int m();
+}
+
+interface SubInterface extends SuperInterface {
+    // fake override:
+    int m();
+}
