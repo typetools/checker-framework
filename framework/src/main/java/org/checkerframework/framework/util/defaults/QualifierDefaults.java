@@ -358,6 +358,9 @@ public class QualifierDefaults {
                 case FIELD:
                 case LOCAL_VARIABLE:
                 case PARAMETER:
+                case RESOURCE_VARIABLE:
+                case EXCEPTION_PARAMETER:
+                case ENUM_CONSTANT:
                     String varName = elt.getSimpleName().toString();
                     ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
                             .getDefaultForTypeAnnotator()

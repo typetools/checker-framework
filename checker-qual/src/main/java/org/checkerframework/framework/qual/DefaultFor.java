@@ -51,22 +51,23 @@ public @interface DefaultFor {
 
     /**
      * Returns regular expressions matching names of variables, to whose types the annotation should
-     * be applied as a default. Does not apply if the name matches any of the regexes in {@link
+     * be applied as a default. If a regular expression matches the name of a method, the annotation
+     * is applied as a default to the return type.
+     *
+     * <p>The regular expression must match the entire variable or method name. For example, to
+     * match any name that contains "foo", use ".*foo.*".
+     *
+     * <p>The default does not apply if the name matches any of the regexes in {@link
      * #namesExceptions}.
-     *
-     * <p>The regular expression must match the entire name. For example, to match any name that
-     * contains "foo", use ".*foo.*".
-     *
-     * <p>This also applies to method return types.
      *
      * @return regular expressions matching variables to whose type an annotation should be applied
      */
     String[] names() default {};
 
     /**
-     * Returns exceptions to regular exception rules.
+     * Returns exceptions to regular expression rules.
      *
-     * @return exceptions to regular exception rules
+     * @return exceptions to regular expression rules
      * @see #names
      */
     String[] namesExceptions() default {};

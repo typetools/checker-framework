@@ -52,7 +52,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
      * A list where each element associates an annotation with name regexes and name exception
      * regexes.
      */
-    private final NamesRegexes namesRegexes;
+    private final ListOfNameRegexes listOfNameRegexes;
 
     /** {@link QualifierHierarchy} */
     private final QualifierHierarchy qualHierarchy;
@@ -66,7 +66,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         this.typeKinds = new EnumMap<>(TypeKind.class);
         this.atmClasses = new HashMap<>();
         this.types = new HashMap<>();
-        this.namesRegexes = new NamesRegexes();
+        this.listOfNameRegexes = new ListOfNameRegexes();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
 
@@ -93,7 +93,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
                 addTypes(typeName, theQual);
             }
 
-            namesRegexes.add(theQual, defaultFor);
+            listOfNameRegexes.add(theQual, defaultFor);
         }
     }
 
@@ -222,7 +222,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
      */
     public void defaultTypeFromName(AnnotatedTypeMirror type, String name) {
         // TODO: Check whether the annotation is applicable to this Java type?
-        AnnotationMirror defaultAnno = namesRegexes.getDefaultAnno(name);
+        AnnotationMirror defaultAnno = listOfNameRegexes.getDefaultAnno(name);
         if (defaultAnno != null) {
             if (typeFactory
                             .getQualifierHierarchy()
@@ -255,7 +255,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
      * A list where each element associates an annotation with name regexes and name exception
      * regexes.
      */
-    private static class NamesRegexes extends ArrayList<NameRegexes> {
+    private static class ListOfNameRegexes extends ArrayList<NameRegexes> {
 
         static final long serialVersionUID = 20200218L;
 
