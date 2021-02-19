@@ -1044,7 +1044,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
-    @FormatMethod
+    // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+    // property key that maps to a format string for `args`.
+    // @FormatMethod
+    @SuppressWarnings("formatter:format.string.invalid") // arg is a format string or a property key
     private void report(
             Object source,
             javax.tools.Diagnostic.Kind kind,
@@ -1121,12 +1124,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      */
     @FormatMethod
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
-        String ftdmsg = String.format(msg, args);
+        message(kind, String.format(msg, args));
+    }
+
+    /**
+     * Print a non-localized message using the javac messager. This is preferable to using
+     * System.out or System.err, but should only be used for exceptional cases that don't happen in
+     * correct usage. Localized messages should be raised using {@link #reportError}, {@link
+     * #reportWarning}, etc.
+     *
+     * @param kind the kind of message to print
+     * @param msg the message text
+     * @see SourceChecker#report(Object, DiagMessage)
+     */
+    public void message(javax.tools.Diagnostic.Kind kind, String msg) {
         if (messager == null) {
             // If this method is called before initChecker() sets the field
             messager = processingEnv.getMessager();
         }
-        messager.printMessage(kind, ftdmsg);
+        messager.printMessage(kind, msg);
     }
 
     /**

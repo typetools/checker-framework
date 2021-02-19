@@ -2663,13 +2663,24 @@ public class AnnotationFileParser {
     @FormatMethod
     private void warn(@Nullable NodeWithRange<?> astNode, String warning, Object... args) {
         if (!isJdkAsStub) {
-            String formatted = String.format(warning, args);
-            if (warnings.add(formatted)) {
+            warn(astNode, String.format(warning, args));
+        }
+    }
+
+    /**
+     * Issues a warning, only if it has not been previously issued.
+     *
+     * @param astNode where to report errors
+     * @param warning a warning message
+     */
+    private void warn(@Nullable NodeWithRange<?> astNode, String warning) {
+        if (!isJdkAsStub) {
+            if (warnings.add(warning)) {
                 processingEnv
                         .getMessager()
                         .printMessage(
                                 javax.tools.Diagnostic.Kind.WARNING,
-                                fileAndLine(astNode) + formatted);
+                                fileAndLine(astNode) + warning);
             }
         }
     }

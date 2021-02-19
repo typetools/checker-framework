@@ -30,7 +30,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -443,7 +442,6 @@ public class Resolver {
      * @return the result of invoking the method on {@code resolve} (as the receiver) and the
      *     arguments
      */
-    @FormatMethod
     private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
         return wrapInvocation(resolve, method, args);
     }
@@ -456,7 +454,6 @@ public class Resolver {
      * @param args the arguments to the call
      * @return the result of invoking the method on the receiver and arguments
      */
-    @FormatMethod
     private Symbol wrapInvocation(Object receiver, Method method, @Nullable Object... args) {
         try {
             @SuppressWarnings("nullness") // assume arguments are OK
