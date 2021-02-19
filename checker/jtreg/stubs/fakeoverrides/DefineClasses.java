@@ -10,7 +10,7 @@ interface SuperInterface {
 
 class SuperClass implements SuperInterface {
     // fake override:
-    // int m();
+    // @Untainted int m();
 }
 
 interface SubInterface extends SuperInterface {
