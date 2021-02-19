@@ -359,30 +359,50 @@ public class AnnotationFileElementTypes {
         TypeMirror receiverTypeMirror = receiverType.getUnderlyingType();
 
         // A list of fake receiver types.
-        List<TypeMirror> applicable = new ArrayList<>();
+        List<TypeMirror> applicableClasses = new ArrayList<>();
+        List<TypeMirror> applicableInterfaces = new ArrayList<>();
         for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
             TypeMirror fakeLocation = candidatePair.first;
             AnnotatedExecutableType candidate = (AnnotatedExecutableType) candidatePair.second;
             if (factory.types.isSameType(receiverTypeMirror, fakeLocation)) {
                 return candidate;
             } else if (factory.types.isSubtype(receiverTypeMirror, fakeLocation)) {
-                applicable.add(fakeLocation);
+                TypeElement fakeElement = TypesUtils.getTypeElement(fakeLocation);
+                switch (fakeElement.getKind()) {
+                    case CLASS:
+                    case ENUM:
+                        applicableClasses.add(fakeLocation);
+                        break;
+                    case INTERFACE:
+                    case ANNOTATION_TYPE:
+                        applicableInterfaces.add(fakeLocation);
+                        break;
+                    default:
+                        throw new BugInCF(
+                                "What type? %s %s %s",
+                                fakeElement.getKind(), fakeElement.getClass(), fakeElement);
+                }
             }
         }
 
-        if (applicable.isEmpty()) {
+        if (applicableClasses.isEmpty() && applicableInterfaces.isEmpty()) {
             return null;
         }
         TypeMirror fakeReceiverType =
-                TypesUtils.mostSpecific(applicable, factory.getProcessingEnv());
+                TypesUtils.mostSpecific(
+                        !applicableClasses.isEmpty() ? applicableClasses : applicableInterfaces,
+                        factory.getProcessingEnv());
         if (fakeReceiverType == null) {
             StringJoiner message = new StringJoiner(System.lineSeparator());
             message.add(
                     String.format(
                             "No most specific fake override found for %s with receiver %s.  These fake overrides are applicable:",
                             elt, receiverTypeMirror));
-            for (TypeMirror candidate : applicable) {
-                message.add("  candidate: " + candidate);
+            for (TypeMirror candidate : applicableClasses) {
+                message.add("  class candidate: " + candidate);
+            }
+            for (TypeMirror candidate : applicableInterfaces) {
+                message.add("  interface candidate: " + candidate);
             }
             throw new BugInCF(message.toString());
         }
@@ -394,7 +414,9 @@ public class AnnotationFileElementTypes {
             }
         }
 
-        throw new BugInCF("No match for %s in %s", fakeReceiverType, applicable);
+        throw new BugInCF(
+                "No match for %s in %s %s %s",
+                fakeReceiverType, candidates, applicableClasses, applicableInterfaces);
     }
 
     ///
