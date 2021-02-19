@@ -394,14 +394,9 @@ public class DependentTypesHelper {
             return;
         }
 
-        TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
-        if (pathToMethodDecl == null) {
-            return;
-        }
-
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodDeclTree, pathToMethodDecl, factory.getChecker());
+                        methodDeclTree, factory.getChecker());
         viewpointAdaptToContext(context, atm);
     }
 
@@ -449,11 +444,6 @@ public class DependentTypesHelper {
         if (!hasDependentType(atm)) {
             return;
         }
-
-        TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
-        if (pathToMethodDecl == null) {
-            return;
-        }
         // TODO: 1.) parameter names need to be coverted to the # index syntax.
         // TODO: 2.) If an annotation only has expressions that cannot be delocalized, then that
         // annotation needs to be changed to top, rather than the dependent type annotation with
@@ -461,7 +451,7 @@ public class DependentTypesHelper {
 
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodDeclTree, pathToMethodDecl, factory.getChecker());
+                        methodDeclTree, factory.getChecker());
         standardizeAtm(context, null, atm, /*removeErroneousExpressions=*/ true);
     }
 
@@ -499,7 +489,7 @@ public class DependentTypesHelper {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
                     JavaExpressionContext context =
                             JavaExpressionContext.buildContextForMethodDeclaration(
-                                    methodDeclTree, pathTillEnclTree, factory.getChecker());
+                                    methodDeclTree, factory.getChecker());
                     viewpointAdaptToContext(context, type);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
@@ -1008,12 +998,8 @@ public class DependentTypesHelper {
      * @param methodType annotated type of the method
      */
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
-        Element ele = TreeUtils.elementFromDeclaration(node);
-        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(ele).asType();
-
         JavaExpressionContext context =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        node, enclosingType, factory.getChecker());
+                JavaExpressionContext.buildContextForMethodDeclaration(node, factory.getChecker());
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
             viewpointAdaptToContext(context, atm);
