@@ -304,7 +304,12 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.String");
     }
 
-    /** Returns true if the element is a reference to a compile-time constant. */
+    /**
+     * Returns true if the element is a reference to a compile-time constant.
+     *
+     * @param elt an element
+     * @return true if the element is a reference to a compile-time constant
+     */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
