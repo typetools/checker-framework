@@ -60,6 +60,15 @@ public @interface DefaultFor {
      * <p>The default does not apply if the name matches any of the regexes in {@link
      * #namesExceptions}.
      *
+     * <p>This affects formal parameter types only if one of the following is true:
+     *
+     * <ul>
+     *   <li>The method's source code is available; that is, the method is type-checked along with
+     *       client calls.
+     *   <li>When the method was compiled in a previous run of javac, either the processor was run
+     *       or the {@code -g} command-line option was provided.
+     * </ul>
+     *
      * @return regular expressions matching variables to whose type an annotation should be applied
      */
     String[] names() default {};
