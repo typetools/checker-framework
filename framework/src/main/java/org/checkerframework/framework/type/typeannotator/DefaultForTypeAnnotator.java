@@ -356,7 +356,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
          */
         public boolean matches(String name) {
             return names.stream().anyMatch(p -> p.matcher(name).matches())
-                    && !namesExceptions.stream().anyMatch(p -> p.matcher(name).matches());
+                    && namesExceptions.stream().noneMatch(p -> p.matcher(name).matches());
         }
     }
 }
