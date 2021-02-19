@@ -67,6 +67,10 @@ public class CheckerMain {
     /** The path to checker-qual.jar. */
     protected final File checkerQualJar;
 
+    /** The path to checker-util.jar. */
+    protected final File checkerUtilJar;
+
+    /** Compilation bootclasspath. */
     private final List<String> compilationBootclasspath;
 
     private final List<String> runtimeClasspath;
@@ -96,6 +100,12 @@ public class CheckerMain {
     public static final String CHECKER_QUAL_PATH_OPT = "-checkerQualJar";
 
     /**
+     * Option name for specifying an alternative checker-util.jar location. The accompanying value
+     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String CHECKER_UTIL_PATH_OPT = "-checkerUtilJar";
+
+    /**
      * Option name for specifying an alternative javac.jar location. The accompanying value MUST be
      * the path to the jar file (NOT the path to its encompassing directory)
      */
@@ -123,6 +133,10 @@ public class CheckerMain {
                 extractFileArg(
                         CHECKER_QUAL_PATH_OPT, new File(searchPath, "checker-qual.jar"), args);
 
+        this.checkerUtilJar =
+                extractFileArg(
+                        CHECKER_UTIL_PATH_OPT, new File(searchPath, "checker-util.jar"), args);
+
         this.javacJar = extractFileArg(JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
 
         this.compilationBootclasspath = createCompilationBootclasspath(args);
@@ -139,10 +153,9 @@ public class CheckerMain {
     /** Assert that required jars exist. */
     protected void assertValidState() {
         if (SystemUtil.getJreVersion() < 9) {
-            assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
+            assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar, checkerUtilJar));
         } else {
-            // TODO: once the jdk11 jars exist, check for them.
-            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
+            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar, checkerUtilJar));
         }
     }
 
@@ -175,6 +188,8 @@ public class CheckerMain {
     protected List<String> createCpOpts(final List<String> argsList) {
         final List<String> extractedOpts = extractCpOpts(argsList);
         extractedOpts.add(0, this.checkerQualJar.getAbsolutePath());
+        extractedOpts.add(0, this.checkerUtilJar.getAbsolutePath());
+
         return extractedOpts;
     }
 
@@ -188,6 +203,8 @@ public class CheckerMain {
             extractedOpts.addAll(this.cpOpts);
         }
         extractedOpts.add(0, this.checkerJar.getAbsolutePath());
+        extractedOpts.add(0, this.checkerUtilJar.getAbsolutePath());
+
         return extractedOpts;
     }
 

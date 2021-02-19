@@ -9,13 +9,13 @@ public class ParameterInferenceTest {
     }
 
     void expectsParentNoSignature(int t) {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Parent int parent = t;
     }
 
     void test2() {
         @Top int top = (@Top int) 0;
-        // :: error: (argument.type.incompatible)
+        // :: warning: (argument.type.incompatible)
         expectsTopNoSignature(top);
     }
 

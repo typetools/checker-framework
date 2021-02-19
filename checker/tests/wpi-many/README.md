@@ -12,8 +12,7 @@ To add a new project (named `$PROJECT` below) to `testin.txt`, follow these step
 Do not initialize it with any content.
 2. Clone that repo and the project you intend to add locally.
 3. Copy the contents of the project you are adding to your new repo and commit the result.
-4. Run `checker/bin/remove-annotations.sh` on your new repository. (Note that `remove-annotations.sh`
-needs GNU `readlink`, so it will not work by default on a Mac without installing GNU coreutils.)
+4. Run `java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.RemoveAnnotationsForInference .` on your new repository.
 5. Edit the build file of the new project and disable the Checker Framework. This is usually done
 by commenting out the checkerframework-gradle-plugin and checkerFramework lines for Gradle users.
 In addition, you probably will need to add `org.checkerframework:checker-qual:$LATEST-CF-VERSION` as an

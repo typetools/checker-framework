@@ -37,6 +37,7 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -98,12 +99,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // Check that the arguments to a HasSubsequence annotation are valid JavaExpressions,
             // and issue an error if one of them is not.
 
-            String seq = AnnotationUtils.getElementValue(anno, "subsequence", String.class, true);
-            String from = AnnotationUtils.getElementValue(anno, "from", String.class, true);
-            String to = AnnotationUtils.getElementValue(anno, "to", String.class, true);
+            String seq = atypeFactory.hasSubsequenceSubsequenceValue(anno);
+            String from = atypeFactory.hasSubsequenceFromValue(anno);
+            String to = atypeFactory.hasSubsequenceToValue(anno);
 
             // check that each expression is parseable in this context
-            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
             JavaExpressionContext context =
                     JavaExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
             checkEffectivelyFinalAndParsable(seq, context, node);
@@ -125,7 +126,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String s, JavaExpressionContext context, Tree tree) {
         JavaExpression je;
         try {
-            je = JavaExpressionParseUtil.parse(s, context, getCurrentPath(), false);
+            je = JavaExpressionParseUtil.parse(s, context);
         } catch (JavaExpressionParseException e) {
             checker.report(tree, e.getDiagMessage());
             return;
@@ -147,10 +148,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * Checks if this array access is legal. Uses the common assignment check and a simple MinLen
      * check of its own. The MinLen check is needed because the common assignment check always
      * returns false when the upper bound qualifier is @UpperBoundUnknown.
+     *
+     * @param indexTree the array index
+     * @param arrTree the array
      */
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
 
-        String arrName = JavaExpression.fromTree(this.atypeFactory, arrTree).toString();
+        String arrName = JavaExpression.fromTree(arrTree).toString();
         LessThanLengthOf lhsQual = (LessThanLengthOf) UBQualifier.createUBQualifier(arrName, "0");
         if (relaxedCommonAssignmentCheck(lhsQual, indexTree) || checkMinLen(indexTree, arrTree)) {
             return;
@@ -363,11 +367,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Given a Java expression, returns the additive inverse, as a String. Assumes that
-     * JavaExpressions do not contain multiplication.
+     * Given a Java expression, returns the additive inverse (the negation) as a String. Assumes
+     * that JavaExpressions do not contain multiplication.
+     *
+     * @param s a Java expression string
+     * @param context the parse context
+     * @return the string's additive inverse (its negation)
      */
     private String negateString(String s, JavaExpressionContext context) {
-        return Subsequence.negateString(s, getCurrentPath(), context);
+        return Subsequence.negateString(s, context);
     }
 
     /*
@@ -480,8 +488,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 JavaExpressionContext context =
                         Subsequence.getContextFromJavaExpression(lhsSeqExpr, checker);
                 Subsequence subSeq =
-                        Subsequence.getSubsequenceFromReceiver(
-                                lhsSeqExpr, atypeFactory, getCurrentPath(), context);
+                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory, context);
 
                 if (subSeq != null) {
                     String from = subSeq.from;

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Run wpi.sh on plume-lib projects and check
 
@@ -21,7 +21,7 @@ clean_compile_output() {
     in="$1"
     out="$2"
 
-    cp -f "$in" "$out"
+    cp -f "$in" "$out" || exit 1
 
     # Remove "Running ..." line
     sed -i '/^Running /d' "$out"
@@ -48,7 +48,7 @@ test_wpi_plume_lib() {
 
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
-    "$CHECKERFRAMEWORK/checker/bin-devel/remove-annotations.sh"
+    java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
@@ -56,7 +56,7 @@ test_wpi_plume_lib() {
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
     if ! cmp --quiet expected.txt actual.txt ; then
-      echo "Comparing $EXPECTED_FILE $ACTUAL_FILE"
+      echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
       diff -u expected.txt actual.txt
       exit 1
     fi
@@ -68,9 +68,11 @@ test_wpi_plume_lib() {
 mkdir -p "$TESTDIR"
 cd "$TESTDIR" || (echo "can't do: cd $TESTDIR" && exit 1)
 
+# Get the list of checkers from the project's build.gradle file
 test_wpi_plume_lib bcel-util         "formatter,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib bibtex-clean      "formatter,index,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib html-pretty-print "formatter,index,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib icalavailable     "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
+test_wpi_plume_lib lookup            "formatter,index,interning,lock,nullness,regex,signature"
 
 echo "exiting test-wpi-plumelib.sh"

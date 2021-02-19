@@ -3,45 +3,51 @@ package org.checkerframework.dataflow.expression;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
-import org.plumelib.util.StringsPlume;
+import org.checkerframework.dataflow.util.PurityUtils;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /** A call to a @Deterministic method. */
 public class MethodCall extends JavaExpression {
 
-    protected final JavaExpression receiver;
-    protected final List<JavaExpression> parameters;
+    /** The method being called. */
     protected final ExecutableElement method;
+    /** The receiver argument. */
+    protected final JavaExpression receiver;
+    /** The arguments. */
+    protected final List<JavaExpression> arguments;
 
+    /**
+     * Creates a new MethodCall.
+     *
+     * @param type the type of the method call
+     * @param method the method being called
+     * @param receiver the receiver argument
+     * @param arguments the arguments
+     */
     public MethodCall(
             TypeMirror type,
             ExecutableElement method,
             JavaExpression receiver,
-            List<JavaExpression> parameters) {
+            List<JavaExpression> arguments) {
         super(type);
         this.receiver = receiver;
-        this.parameters = parameters;
+        this.arguments = arguments;
         this.method = method;
     }
 
-    @Override
-    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-        if (getClass() == clazz) {
-            return true;
-        }
-        if (receiver.containsOfClass(clazz)) {
-            return true;
-        }
-        for (JavaExpression p : parameters) {
-            if (p.containsOfClass(clazz)) {
-                return true;
-            }
-        }
-        return false;
+    /**
+     * Returns the ExecutableElement for the method call.
+     *
+     * @return the ExecutableElement for the method call
+     */
+    public ExecutableElement getElement() {
+        return method;
     }
 
     /**
@@ -54,23 +60,34 @@ public class MethodCall extends JavaExpression {
     }
 
     /**
-     * Returns the method call parameters (for inspection only - do not modify any of the
-     * parameters).
+     * Returns the method call arguments (for inspection only - do not modify any of the arguments).
      *
-     * @return the method call parameters (for inspection only - do not modify any of the
-     *     parameters)
+     * @return the method call arguments (for inspection only - do not modify any of the arguments)
      */
-    public List<JavaExpression> getParameters() {
-        return Collections.unmodifiableList(parameters);
+    public List<JavaExpression> getArguments() {
+        return Collections.unmodifiableList(arguments);
     }
 
-    /**
-     * Returns the ExecutableElement for the method call.
-     *
-     * @return the ExecutableElement for the method call
-     */
-    public ExecutableElement getElement() {
-        return method;
+    @Override
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+        if (getClass() == clazz) {
+            return true;
+        }
+        if (receiver.containsOfClass(clazz)) {
+            return true;
+        }
+        for (JavaExpression p : arguments) {
+            if (p.containsOfClass(clazz)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return PurityUtils.isDeterministic(provider, method)
+                && listIsDeterministic(arguments, provider);
     }
 
     @Override
@@ -78,7 +95,7 @@ public class MethodCall extends JavaExpression {
         // There is no need to check that the method is deterministic, because a MethodCall is
         // only created for deterministic methods.
         return receiver.isUnmodifiableByOtherCode()
-                && parameters.stream().allMatch(JavaExpression::isUnmodifiableByOtherCode);
+                && arguments.stream().allMatch(JavaExpression::isUnmodifiableByOtherCode);
     }
 
     @Override
@@ -87,39 +104,21 @@ public class MethodCall extends JavaExpression {
     }
 
     @Override
-    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other) || receiver.syntacticEquals(other);
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof MethodCall)) {
+            return false;
+        }
+        MethodCall other = (MethodCall) je;
+        return method.equals(other.method)
+                && this.receiver.syntacticEquals(other.receiver)
+                && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        if (!(other instanceof MethodCall)) {
-            return false;
-        }
-        MethodCall otherMethod = (MethodCall) other;
-        if (!receiver.syntacticEquals(otherMethod.receiver)) {
-            return false;
-        }
-        if (parameters.size() != otherMethod.parameters.size()) {
-            return false;
-        }
-        int i = 0;
-        for (JavaExpression p : parameters) {
-            if (!p.syntacticEquals(otherMethod.parameters.get(i))) {
-                return false;
-            }
-            i++;
-        }
-        return method.equals(otherMethod.method);
-    }
-
-    public boolean containsSyntacticEqualParameter(LocalVariable var) {
-        for (JavaExpression p : parameters) {
-            if (p.containsSyntacticEqualJavaExpression(var)) {
-                return true;
-            }
-        }
-        return false;
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return syntacticEquals(other)
+                || receiver.containsSyntacticEqualJavaExpression(other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
     }
 
     @Override
@@ -127,7 +126,7 @@ public class MethodCall extends JavaExpression {
         if (receiver.containsModifiableAliasOf(store, other)) {
             return true;
         }
-        for (JavaExpression p : parameters) {
+        for (JavaExpression p : arguments) {
             if (p.containsModifiableAliasOf(store, other)) {
                 return true;
             }
@@ -147,9 +146,9 @@ public class MethodCall extends JavaExpression {
             return false;
         }
         MethodCall other = (MethodCall) obj;
-        return parameters.equals(other.parameters)
+        return method.equals(other.method)
                 && receiver.equals(other.receiver)
-                && method.equals(other.method);
+                && arguments.equals(other.arguments);
     }
 
     @Override
@@ -157,23 +156,25 @@ public class MethodCall extends JavaExpression {
         if (method.getKind() == ElementKind.CONSTRUCTOR) {
             return super.hashCode();
         }
-        return Objects.hash(method, receiver, parameters);
+        return Objects.hash(method, receiver, arguments);
     }
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        StringBuilder preParen = new StringBuilder();
         if (receiver instanceof ClassName) {
-            result.append(receiver.getType());
+            preParen.append(receiver.getType());
         } else {
-            result.append(receiver);
+            preParen.append(receiver);
         }
-        result.append(".");
+        preParen.append(".");
         String methodName = method.getSimpleName().toString();
-        result.append(methodName);
-        result.append("(");
-        result.append(StringsPlume.join(", ", parameters));
-        result.append(")");
+        preParen.append(methodName);
+        preParen.append("(");
+        StringJoiner result = new StringJoiner(", ", preParen, ")");
+        for (JavaExpression argument : arguments) {
+            result.add(argument.toString());
+        }
         return result.toString();
     }
 }

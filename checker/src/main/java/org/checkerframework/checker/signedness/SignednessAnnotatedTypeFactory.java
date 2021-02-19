@@ -42,6 +42,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -58,7 +59,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
     /** The @Signed annotation. */
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
-    /** The @Unigned annotation. */
+    /** The @Unsigned annotation. */
     private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
     /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
     private final AnnotationMirror SIGNEDNESS_GLB =
@@ -254,6 +255,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
+         *
+         * @param type a type to change the annotation of, if it is boolean
          */
         private void annotateBooleanAsUnknownSignedness(AnnotatedTypeMirror type) {
             switch (type.getKind()) {
@@ -508,7 +511,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *     same effect
      */
     /*package-private*/ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
-        Pair<Tree, Tree> enclosingPair = TreeUtils.enclosingNonParen(path);
+        Pair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
         // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
         Tree enclosing = enclosingPair.first;
         // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
@@ -557,7 +560,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     /*package-private*/ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
         // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
-        Tree enclosing = TreeUtils.enclosingNonParen(path).first;
+        Tree enclosing = TreePathUtil.enclosingNonParen(path).first;
 
         PrimitiveTypeTree castPrimitiveType = primitiveTypeCast(enclosing);
         if (castPrimitiveType == null) {

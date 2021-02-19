@@ -39,18 +39,26 @@ import org.checkerframework.javacutil.TypesUtils;
  * something to do with Formatters.
  */
 public class FormatterTreeUtil {
+    /** The checker. */
     public final BaseTypeChecker checker;
+    /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
+
+    /** The value() element/field of an @InvalidFormat annotation. */
+    protected final ExecutableElement invalidFormatValueElement;
 
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        invalidFormatValueElement =
+                TreeUtils.getMethod(
+                        InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        org.checkerframework.checker.formatter.qual.Format.class.getCanonicalName(),
+                        Format.class.getCanonicalName(),
                         "value",
                         0,
                         processingEnv);
@@ -408,11 +416,24 @@ public class FormatterTreeUtil {
     }
 
     /**
+     * Gets the value() element/field out of an InvalidFormat annotation.
+     *
+     * @param anno an InvalidFormat annotation
+     * @return its value() element/field
+     */
+    private String getInvalidFormatValue(AnnotationMirror anno) {
+        return (String) anno.getElementValues().get(invalidFormatValueElement).getValue();
+    }
+
+    /**
      * Takes a syntax tree element that represents a {@link InvalidFormat} annotation, and returns
      * its value.
+     *
+     * @param anno an InvalidFormat annotation
+     * @return its value() element/field
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
-        return "\"" + AnnotationUtils.getElementValue(anno, "value", String.class, true) + "\"";
+        return "\"" + getInvalidFormatValue(anno) + "\"";
     }
 
     /**

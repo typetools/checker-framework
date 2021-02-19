@@ -62,14 +62,8 @@ public class CollectionToArrayHeuristics {
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
-                TreeUtils.getMethod(
-                        java.util.Collection.class.getCanonicalName(),
-                        "toArray",
-                        processingEnv,
-                        "T[]");
-        this.size =
-                TreeUtils.getMethod(
-                        java.util.Collection.class.getCanonicalName(), "size", 0, processingEnv);
+                TreeUtils.getMethod("java.util.Collection", "toArray", processingEnv, "T[]");
+        this.size = TreeUtils.getMethod("java.util.Collection", "size", 0, processingEnv);
         this.collectionType =
                 factory.fromElement(ElementUtils.getTypeElement(processingEnv, Collection.class));
 
@@ -178,7 +172,7 @@ public class CollectionToArrayHeuristics {
             if (t.getKind() == TypeKind.ARRAY) {
                 List<? extends AnnotationMirror> ams = t.getAnnotationMirrors();
                 for (AnnotationMirror am : ams) {
-                    if (AnnotationUtils.areSameByClass(am, ArrayLen.class)) {
+                    if (atypeFactory.areSameByClass(am, ArrayLen.class)) {
                         List<Integer> lens =
                                 AnnotationUtils.getElementValueArray(
                                         am, "value", Integer.class, false);

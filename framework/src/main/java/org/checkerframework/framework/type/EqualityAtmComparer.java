@@ -8,7 +8,7 @@ import org.plumelib.util.StringsPlume;
 /**
  * Compares two annotated type mirrors for structural equality using only the primary annotations
  * and underlying types of the two input types and their component types. Note, this leaves out
- * other fields specific to some AnnotatedTypeMirrors (like directSuperTypes, wasRaw,
+ * other fields specific to some AnnotatedTypeMirrors (like directSupertypes, wasRaw,
  * isUninferredTypeArgument etc...). Ideally, both EqualityAtmComparer and HashcodeAtmVisitor would
  * visit relevant fields.
  *

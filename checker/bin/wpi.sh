@@ -147,8 +147,14 @@ function configure_and_exec_dljc {
       return
   fi
 
+  if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
+    JDK_VERSION_ARG="--jdkVersion 8"
+  else
+    JDK_VERSION_ARG="--jdkVersion 11"
+  fi
+
   # This command also includes "clean"; I'm not sure why it is necessary.
-  DLJC_CMD="${DLJC} -t wpi $* -- ${BUILD_CMD}"
+  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} $* -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"

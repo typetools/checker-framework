@@ -17,7 +17,7 @@ public class ReadyReadLine {
     }
 }
 
-// this is a replication of the JDK BufferedReader (with only the relevant methods)
+// This is a replication of the JDK BufferedReader, with only the relevant methods.
 class MyBufferedReader {
     public @Nullable String readLine() throws Exception {
         return null;

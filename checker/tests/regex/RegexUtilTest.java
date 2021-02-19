@@ -3,10 +3,10 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
 public class RegexUtilTest {
     void fullyQualifiedRegexUtil(String s) {
-        if (org.checkerframework.checker.regex.RegexUtil.isRegex(s, 2)) {
+        if (org.checkerframework.checker.regex.util.RegexUtil.isRegex(s, 2)) {
             @Regex(2) String s2 = s;
         }
-        @Regex(2) String s2 = org.checkerframework.checker.regex.RegexUtil.asRegex(s, 2);
+        @Regex(2) String s2 = org.checkerframework.checker.regex.util.RegexUtil.asRegex(s, 2);
     }
 
     void unqualifiedRegexUtil(String s) {
@@ -17,12 +17,12 @@ public class RegexUtilTest {
     }
 
     void fullyQualifiedRegexUtilNoParamsArg(String s) {
-        if (org.checkerframework.checker.regex.RegexUtil.isRegex(s)) {
+        if (org.checkerframework.checker.regex.util.RegexUtil.isRegex(s)) {
             @Regex String s2 = s;
             @Regex(0) String s3 = s;
         }
-        @Regex String s2 = org.checkerframework.checker.regex.RegexUtil.asRegex(s);
-        @Regex(0) String s3 = org.checkerframework.checker.regex.RegexUtil.asRegex(s);
+        @Regex String s2 = org.checkerframework.checker.regex.util.RegexUtil.asRegex(s);
+        @Regex(0) String s3 = org.checkerframework.checker.regex.util.RegexUtil.asRegex(s);
     }
 
     void unqualifiedRegexUtilNoParamsArg(String s) {

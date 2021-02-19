@@ -16,7 +16,6 @@ import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -93,8 +92,8 @@ public class NullnessTransfer
         this.nullnessTypeFactory = analysis.getTypeFactory();
         Elements elements = nullnessTypeFactory.getElementUtils();
         this.keyForTypeFactory =
-                ((BaseTypeChecker) nullnessTypeFactory.getContext().getChecker())
-                        .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+                nullnessTypeFactory.getChecker().getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+
         NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
@@ -110,9 +109,12 @@ public class NullnessTransfer
     /**
      * Sets a given {@link Node} to non-null in the given {@code store}. Calls to this method
      * implement case 2.
+     *
+     * @param store the store to update
+     * @param node the node that should be non-null
      */
     protected void makeNonNull(NullnessStore store, Node node) {
-        JavaExpression internalRepr = JavaExpression.fromNode(nullnessTypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(node);
         store.insertValue(internalRepr, NONNULL);
     }
 
@@ -182,8 +184,7 @@ public class NullnessTransfer
 
             List<Node> secondParts = splitAssignments(secondNode);
             for (Node secondPart : secondParts) {
-                JavaExpression secondInternal =
-                        JavaExpression.fromNode(nullnessTypeFactory, secondPart);
+                JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
                 if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                     thenStore = thenStore == null ? res.getThenStore() : thenStore;
                     elseStore = elseStore == null ? res.getElseStore() : elseStore;
@@ -368,7 +369,7 @@ public class NullnessTransfer
         // Refine result to @NonNull if n is an invocation of Map.get, the argument is a key for
         // the map, and the map's value type is not @Nullable.
         if (keyForTypeFactory != null && keyForTypeFactory.isMapGet(n)) {
-            String mapName = JavaExpression.fromNode(nullnessTypeFactory, receiver).toString();
+            String mapName = JavaExpression.fromNode(receiver).toString();
             AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))

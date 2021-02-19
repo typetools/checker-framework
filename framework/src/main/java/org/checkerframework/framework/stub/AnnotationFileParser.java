@@ -850,7 +850,7 @@ public class AnnotationFileParser {
         if (typeDecl.getExtendedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType annotatedSupertype =
-                        findAnnotatedType(supertype, type.directSuperTypes(), typeDecl);
+                        findAnnotatedType(supertype, type.directSupertypes(), typeDecl);
                 if (annotatedSupertype == null) {
                     warn(
                             typeDecl,
@@ -867,7 +867,7 @@ public class AnnotationFileParser {
         if (typeDecl.getImplementedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType annotatedSupertype =
-                        findAnnotatedType(supertype, type.directSuperTypes(), typeDecl);
+                        findAnnotatedType(supertype, type.directSupertypes(), typeDecl);
                 if (annotatedSupertype == null) {
                     warn(
                             typeDecl,
@@ -1478,6 +1478,7 @@ public class AnnotationFileParser {
      * @param typeElt the class in which {@code member} is declared
      * @param member the stub file declaration of a method
      * @param typeDeclName used only for debugging
+     * @param astNode where to report errors
      */
     private void putNewElement(
             Map<Element, BodyDeclaration<?>> elementsToDecl,

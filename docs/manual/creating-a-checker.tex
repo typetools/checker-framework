@@ -1286,7 +1286,7 @@ The steps to customizing type refinement are:
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
-\refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-}
+\refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-}
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
@@ -1893,9 +1893,9 @@ output if it cannot parse it.)
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by
+pseudo-assignment check (\<commonAssignmentCheck>) performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
-Section~\ref{creating-extending-visitor}).
+Section~\ref{creating-extending-visitor}.
 
 \item \code{-AshowInferenceSteps}: print debugging information
 about intermediate steps in method type argument inference
@@ -1909,11 +1909,16 @@ about intermediate steps in method type argument inference
 
 \item \code{-AoutputArgsToFile}:
   This saves the final command-line parameters as passed to the compiler in a file.
-  This file can be used as a script (if the file is marked as executable on Unix, or
-  if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
-  Note that this argument cannot be included in a file containing command-line arguments
-  passed to the compiler using the @argfile syntax.
+  The file can be used as a script to re-execute the same compilation command.
+  (The script file must be marked as executable on Unix, or
+  must have a \code{.bat} extension on Windows.)
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
+
+  The \code{-AoutputArgsToFile} command-line argument is processed by
+  CheckerMain, not by the annotation processor.  That means that it can be
+  supplied only when you use the Checker Framework compiler (the ``Checker
+  Framework javac wrapper''), and it cannot be written in a file containing
+  command-line arguments passed to the compiler using the @argfile syntax.
 
 \end{itemize}
 
@@ -1930,7 +1935,7 @@ for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
 \noindent
-where the first command creates file \<someDirectory/myClass.dot> that
+where the first command creates file \<someDirectory/MyClass.dot> that
 represents the CFG, and the last command draws the CFG in a PDF file.
 The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 

@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 
@@ -76,6 +77,8 @@ public abstract class AbstractAnalysis<
      *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
+    // currentNode == null when isRunning is true.
+    // See https://github.com/typetools/checker-framework/issues/4115
     protected @InternedDistinct @Nullable Node currentNode;
 
     /**
@@ -184,10 +187,10 @@ public abstract class AbstractAnalysis<
     @Override
     public @Nullable V getValue(Node n) {
         if (isRunning) {
-            assert currentNode != null
-                    : "@AssumeAssertion(nullness): currentNode is nonull if isRunning.";
             // we don't have a org.checkerframework.dataflow fact about the current node yet
-            if (currentNode == n || (currentTree != null && currentTree == n.getTree())) {
+            if (currentNode == null
+                    || currentNode == n
+                    || (currentTree != null && currentTree == n.getTree())) {
                 return null;
             }
             // check that 'n' is a subnode of 'node'. Check immediate operands
@@ -498,6 +501,7 @@ public abstract class AbstractAnalysis<
          * @see PriorityQueue#isEmpty
          * @return true if {@link #queue} is empty else false
          */
+        @Pure
         @EnsuresNonNullIf(result = false, expression = "poll()")
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
@@ -529,6 +533,7 @@ public abstract class AbstractAnalysis<
          * @see PriorityQueue#poll
          * @return the head of {@link #queue}
          */
+        @Pure
         public @Nullable Block poll() {
             return queue.poll();
         }

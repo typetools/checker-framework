@@ -586,8 +586,8 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
-  \href{http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
-    checker and inferencer} of the \href{http://jastadd.org/}{JastAdd
+  \href{https://jastadd.cs.lth.se/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
+    checker and inferencer} of the \href{https://jastadd.cs.lth.se/}{JastAdd
     Extensible Compiler}.
 \end{itemize}
 
@@ -649,7 +649,7 @@ an \<assert> message (see Section~\ref{assumeassertion}).
 If you need to suppress a warning within an expression, then
 sometimes writing an assertion is not convenient.  In such a case,
 you can suppress warnings by writing a call to the
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method.
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} method.
 The rest of this section discusses the \<castNonNull> method.
 
 The Nullness Checker considers both the return value, and also the
@@ -675,7 +675,7 @@ code:
   the argument is \<null>.  However, it is not intended for general defensive
   programming; see Section~\ref{defensive-programming}.
 
-  To use the \<castNonNull> method, the \<checker-qual.jar> file
+  To use the \<castNonNull> method, the \<checker-util.jar> file
   must be on the classpath at run time.
 
 \begin{sloppypar}
@@ -1190,8 +1190,10 @@ based on previous statements in the method.
 
 Java's \<Optional> class provides utility routines to reduce clutter when
 using \<Optional>.  The Nullness Checker provides an
-\refclass{checker/nullness}{Opt} class that provides all the same methods,
+\refclass{checker/nullness/util}{Opt} class that provides all the same methods,
 but written for regular possibly-null Java references.
+To use the \refclass{checker/nullness/util}{Opt} class, the
+\<checker-util.jar> file must be on the classpath at run time.
 
 
 \sectionAndLabel{Initialization Checker}{initialization-checker}

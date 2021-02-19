@@ -1,29 +1,18 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.Unknown;
-import org.checkerframework.dataflow.expression.ValueLiteral;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
@@ -250,120 +239,6 @@ public class OffsetEquation {
     }
 
     /**
-     * Evaluates an offset term. If the term is an integer constant, returns its value. Otherwise,
-     * returns null.
-     *
-     * @param factory the AnnotatedTypeFactory used to access elements annotations. It can be null.
-     */
-    private Integer evalConstantTerm(JavaExpression termExpr, BaseAnnotatedTypeFactory factory) {
-        if (termExpr instanceof ValueLiteral) {
-            // Integer literal
-            Object value = ((ValueLiteral) termExpr).getValue();
-            if (value instanceof Integer) {
-                return (Integer) value;
-            }
-        } else if (termExpr instanceof MethodCall) {
-            // TODO: generalize
-            // Length of string literal
-            MethodCall call = (MethodCall) termExpr;
-            if (call.getElement().getSimpleName().toString().equals("length")) {
-                JavaExpression callReceiver = call.getReceiver();
-                if (callReceiver instanceof ValueLiteral) {
-                    Object value = ((ValueLiteral) callReceiver).getValue();
-                    if (value instanceof String) {
-                        return ((String) value).length();
-                    }
-                }
-            }
-        } else if (factory != null && termExpr instanceof LocalVariable) {
-            Element element = ((LocalVariable) termExpr).getElement();
-            Long exactValue =
-                    ValueCheckerUtils.getExactValue(
-                            element, factory.getTypeFactoryOfSubchecker(ValueChecker.class));
-
-            if (exactValue != null) {
-                return exactValue.intValue();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Standardizes and viewpoint-adapts string terms in the list based on the supplied context.
-     * Terms that evaluate to a integer constant are removed from the list, and the constants are
-     * added to or subtracted from the intValue field.
-     *
-     * @param factory the AnnotatedTypeFactory used for annotation accessing. It can be null.
-     */
-    private void standardizeAndViewpointAdaptExpressions(
-            List<String> terms,
-            boolean subtract,
-            JavaExpressionContext context,
-            TreePath scope,
-            boolean useLocalScope,
-            AnnotatedTypeFactory factory)
-            throws JavaExpressionParseException {
-        // Standardize all terms and remove constants
-        int length = terms.size(), j = 0;
-        for (int i = 0; i < length; ++i) {
-            String term = terms.get(i);
-            JavaExpression termExpr =
-                    JavaExpressionParseUtil.parse(term, context, scope, useLocalScope);
-            Integer termConstant = evalConstantTerm(termExpr, (BaseAnnotatedTypeFactory) factory);
-            if (termConstant == null) {
-                terms.set(j, termExpr.toString());
-                ++j;
-            } else if (subtract) {
-                intValue -= termConstant;
-            } else {
-                intValue += termConstant;
-            }
-        }
-        // Remove remaining elements from the end of the list
-        terms.subList(j, length).clear();
-    }
-
-    /**
-     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
-     *
-     * @param context a JavaExpressionContext
-     * @param scope local scope
-     * @param useLocalScope whether or not local scope is used
-     * @param factory an AnnotatedTypeFactory used for annotation accessing. It can be null.
-     * @throws JavaExpressionParseException if any term isn't able to be parsed this exception is
-     *     thrown. If this happens, no string terms are changed.
-     */
-    public void standardizeAndViewpointAdaptExpressions(
-            JavaExpressionContext context,
-            TreePath scope,
-            boolean useLocalScope,
-            AnnotatedTypeFactory factory)
-            throws JavaExpressionParseException {
-
-        standardizeAndViewpointAdaptExpressions(
-                addedTerms, false, context, scope, useLocalScope, factory);
-        standardizeAndViewpointAdaptExpressions(
-                subtractedTerms, true, context, scope, useLocalScope, factory);
-    }
-
-    /**
-     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
-     *
-     * @param context a JavaExpressionContext
-     * @param scope local scope
-     * @param useLocalScope whether or not local scope is used
-     * @throws JavaExpressionParseException if any term isn't able to be parsed this exception is
-     *     thrown. If this happens, no string terms are changed.
-     */
-    public void standardizeAndViewpointAdaptExpressions(
-            JavaExpressionContext context, TreePath scope, boolean useLocalScope)
-            throws JavaExpressionParseException {
-
-        standardizeAndViewpointAdaptExpressions(context, scope, useLocalScope, null);
-    }
-
-    /**
      * Adds the term to this equation. If string is an integer, then it is added or subtracted,
      * depending on operator, from the int value of this equation. Otherwise, the term is placed in
      * the added or subtracted terms set, depending on operator.
@@ -373,6 +248,10 @@ public class OffsetEquation {
      */
     private void addTerm(char operator, String term) {
         term = term.trim();
+        if (operator == '-' && term.equals("2147483648")) {
+            addInt(-2147483648);
+            return;
+        }
         if (isInt(term)) {
             int literal = parseInt(term);
             addInt(operator == '-' ? -1 * literal : literal);
@@ -551,9 +430,17 @@ public class OffsetEquation {
         return eq;
     }
 
+    /**
+     * Updates an offset equation from a Node.
+     *
+     * @param node the Node from which to create an offset equation
+     * @param factory an AnnotationTypeFactory
+     * @param eq an OffsetEquation to update
+     * @param op '+' or '-'
+     */
     private static void createOffsetFromNode(
             Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
-        JavaExpression je = JavaExpression.fromNode(factory, node);
+        JavaExpression je = JavaExpression.fromNode(node);
         if (je instanceof Unknown || je == null) {
             if (node instanceof NumericalAdditionNode) {
                 createOffsetFromNode(

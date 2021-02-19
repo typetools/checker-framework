@@ -234,7 +234,7 @@ public class ASceneWrapper {
             if (element == null || element.getKind() == ElementKind.PACKAGE) {
                 break;
             }
-            TypeElement t = ElementUtils.enclosingClass(element);
+            TypeElement t = ElementUtils.enclosingTypeElement(element);
             previous = outerClass;
             outerClass = (ClassSymbol) t;
             // It is necessary to check that previous isn't equal to outer class because

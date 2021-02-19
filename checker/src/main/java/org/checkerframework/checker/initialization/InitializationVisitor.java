@@ -61,10 +61,6 @@ public class InitializationVisitor<
     // Error message keys
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
             "initialization.invalid.cast";
-    private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
-            "initialization.fields.uninitialized";
-    private static final @CompilerMessageKey String COMMITMENT_STATIC_FIELDS_UNINITIALIZED =
-            "initialization.static.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
@@ -364,6 +360,13 @@ public class InitializationVisitor<
     /**
      * Checks that all fields (all static fields if {@code staticFields} is true) are initialized in
      * the given store.
+     *
+     * @param node a {@link ClassTree} if {@code staticFields} is true; a {@link MethodTree} for a
+     *     constructor if {@code staticFields} is false. This is where errors are reported, if they
+     *     are not reported at the fields themselves
+     * @param staticFields whether to check static fields or instance fields
+     * @param store the store
+     * @param receiverAnnotations the annotations on the receiver
      */
     // TODO: the code for checking if fields are initialized should be re-written,
     // as the current version contains quite a few ugly parts, is hard to understand,
@@ -372,7 +375,7 @@ public class InitializationVisitor<
     // GenericAnnotatedTypeFactory.initializationStaticStore and
     // GenericAnnotatedTypeFactory.initializationStore.
     protected void checkFieldsInitialized(
-            Tree blockNode,
+            Tree node,
             boolean staticFields,
             Store store,
             List<? extends AnnotationMirror> receiverAnnotations) {
@@ -381,11 +384,6 @@ public class InitializationVisitor<
         if (store == null) {
             return;
         }
-
-        String COMMITMENT_FIELDS_UNINITIALIZED_KEY =
-                (staticFields
-                        ? COMMITMENT_STATIC_FIELDS_UNINITIALIZED
-                        : COMMITMENT_FIELDS_UNINITIALIZED);
 
         Pair<List<VariableTree>, List<VariableTree>> uninitializedFields =
                 atypeFactory.getUninitializedFields(
@@ -404,22 +402,43 @@ public class InitializationVisitor<
             nonviolatingFields.removeAll(initializedFields);
         }
 
+        // Errors are issued at the field declaration if the field is static or if the constructor
+        // is the default constructor.
+        // Errors are issued at the constructor declaration if the field is non-static and the
+        // constructor is non-default.
+        boolean errorAtField = staticFields || TreeUtils.isSynthetic((MethodTree) node);
+
+        String FIELDS_UNINITIALIZED_KEY =
+                (staticFields
+                        ? "initialization.static.field.uninitialized"
+                        : errorAtField
+                                ? "initialization.field.uninitialized"
+                                : "initialization.fields.uninitialized");
+
         // Remove fields with a relevant @SuppressWarnings annotation.
         violatingFields.removeIf(
                 f ->
                         checker.shouldSuppressWarnings(
-                                TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
+                                TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
         nonviolatingFields.removeIf(
                 f ->
                         checker.shouldSuppressWarnings(
-                                TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
+                                TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
 
         if (!violatingFields.isEmpty()) {
-            StringJoiner fieldsString = new StringJoiner(", ");
-            for (VariableTree f : violatingFields) {
-                fieldsString.add(f.getName());
+            if (errorAtField) {
+                // Issue each error at the relevant field
+                for (VariableTree f : violatingFields) {
+                    checker.reportError(f, FIELDS_UNINITIALIZED_KEY, f.getName());
+                }
+            } else {
+                // Issue all the errors at the relevant constructor
+                StringJoiner fieldsString = new StringJoiner(", ");
+                for (VariableTree f : violatingFields) {
+                    fieldsString.add(f.getName());
+                }
+                checker.reportError(node, FIELDS_UNINITIALIZED_KEY, fieldsString);
             }
-            checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
         }
 
         // Support -Ainfer command-line argument.

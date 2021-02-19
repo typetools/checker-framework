@@ -236,7 +236,12 @@ results_available=$(grep -Zvl -e "no build file found for" \
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
 
-if [ -n "${results_available}" ]; then
+if [ -z "${results_available}" ]; then
+  echo "No results are available."
+  echo "Log files:"
+  ls "${OUTDIR}-results"/*.log
+  echo "End of log files."
+else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose

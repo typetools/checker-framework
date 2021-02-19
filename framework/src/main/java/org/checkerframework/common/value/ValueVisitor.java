@@ -279,7 +279,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 && exprAnno != null
                 && atypeFactory.isIntRange(castAnno)
                 && atypeFactory.isIntRange(exprAnno)) {
-            final Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
+            final Range castRange = atypeFactory.getRange(castAnno);
             final TypeKind castTypeKind = castType.getKind();
             if (castTypeKind == TypeKind.BYTE && castRange.isByteEverything()) {
                 return p;
@@ -300,7 +300,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // Range.ignoreOverflow is only set if this checker is ignoring overflow.
                 // In that case, do not warn if the range of the expression encompasses
                 // the whole type being casted to (i.e. the warning is actually about overflow).
-                Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
+                Range exprRange = atypeFactory.getRange(exprAnno);
                 if (castTypeKind == TypeKind.BYTE
                         || castTypeKind == TypeKind.CHAR
                         || castTypeKind == TypeKind.SHORT
@@ -409,7 +409,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             // If the method is static, issue no warning.  This is incorrect in the case of a
             // constructor or a static method in an inner class.
             if (!ElementUtils.isStatic(method)) {
-                receiverType = ElementUtils.getType(ElementUtils.enclosingClass(method));
+                receiverType = ElementUtils.getType(ElementUtils.enclosingTypeElement(method));
             }
             if (receiverType != null
                     && receiverType.getKind() != TypeKind.NONE

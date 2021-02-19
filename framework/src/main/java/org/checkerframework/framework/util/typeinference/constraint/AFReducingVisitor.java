@@ -188,7 +188,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         if (!TypesUtils.isErasedSubtype(
                 subtype.getUnderlyingType(),
                 supertype.getUnderlyingType(),
-                typeFactory.getContext().getTypeUtils())) {
+                typeFactory.getChecker().getTypeUtils())) {
             return null;
         }
         AnnotatedDeclaredType subAsSuper =

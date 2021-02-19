@@ -54,7 +54,9 @@ You can suppress warnings throughout the codebase by using the following mechani
   the \code{-AuseConservativeDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
 \item
-  the \code{-Alint} command-line option enables/disables optional checks (Section~\ref{alint}), or
+  the \code{-Alint} command-line option enables/disables optional checks (Section~\ref{alint}),
+\item
+  changing the specification of a method (Section~\ref{suppressing-warnings-stub}), or
 \item
   not running the annotation processor
   (Section~\ref{no-processor}).
@@ -103,8 +105,9 @@ the following forms:
 or
 \code{"\emph{messagekey}"}.
 
-The argument \emph{checkername} is
-in lower case and is derived from the way you invoke the checker.  For
+The argument \emph{checkername} is the checker name, without ``Checker''.
+It is lower case by default, though a checker can choose a different casing.
+For
 example, if you invoke a checker as
 \code{javac -processor MyNiftyChecker ...},
 then you would suppress its error messages with
@@ -340,9 +343,10 @@ option also serves the latter purpose).
 \sectionAndLabel{\code{@AssumeAssertion} string in an \<assert> message}{assumeassertion}
 
 \begin{sloppypar}
-You can suppress a warning by \<assert>ing that some property is true, and
-placing the string \<@AssumeAssertion(\emph{checkername})> in the assertion
-message.
+Sometimes, it is too disruptive to refactor your code to create a location
+where \<@SuppressWarnings> can be written.  You can instead suppress a
+warning by writing an assertion whose message contains the string
+\<@AssumeAssertion(\emph{checkername})>.
 \end{sloppypar}
 
 For example, in this code:
@@ -365,15 +369,18 @@ type refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
 rules about what type refinement it performs.
 
-The value in parentheses is a lowercase checker name,
+The value in parentheses is a checker name (typically lowercase),
 exactly as in the \<@SuppressWarnings> annotation
-(Section~\ref{suppresswarnings-annotation-syntax}).  The same good practices apply
+(Section~\ref{suppresswarnings-annotation-syntax}).
+Any subcheckers will also assume that the
+assertion is true (e.g., the Map Key Checker will assume that
+the assertion in the example above cannot fail, when it runs
+as a subchecker of the Nullness Checker).
+
+The same good practices apply
 as for \<@SuppressWarnings> annotations, such as writing a comment
 justifying why the assumption is safe
 (Section~\ref{suppresswarnings-best-practices}).
-Sometimes, writing an assertion and \<@AssumeAssertion> is a less
-disruptive code change than refactoring to create a location where
-\<@SuppressWarnings> can be written.
 
 The \<-AassumeAssertionsAreEnabled> and \<-AassumeAssertionsAreDisabled>
 command-line options (Section~\ref{type-refinement-assertions}) do not
@@ -409,11 +416,14 @@ information regardless of the \<-AassumeAssertionsAreEnabled> and
 \subsectionAndLabel{Suppressing warnings and defensive programming}{defensive-programming}
 
 This section explains the distinction between two different uses for
-assertions (and for related methods like JUnit's \<Assert.assertNotNull>).
+assertions:
+debugging a program (also known as defensive programming) versus specifying a program.
+The discussion also applies to methods like JUnit's \<Assert.assertNotNull>.
 
-Assertions are commonly used for two distinct purposes:  documenting how
-the program works and debugging the program when it does not work
-correctly.  By default, the Checker Framework assumes that each assertion
+The purpose of assertions is to aid debugging by throwing an exception
+when a program does not work correctly.  Sometimes, programmers use assertions for a
+different  purpose:  documenting how
+the program works.  By default, the Checker Framework assumes that each assertion
 is used for debugging:  the assertion might fail at run time, and the programmer
 wishes to be informed at compile time about such possible run-time errors.  On
 the other hand, if you write the \<@AssumeAssertion> string in the \<assert>
@@ -421,10 +431,7 @@ message, then the Checker Framework assumes that you have used some other
 technique to verify that the assertion can never fail at run time, so the
 checker assumes the assertion passes and does not issue a warning.
 
-Distinguishing the purpose of each assertion is important for precise
-type-checking.
-% In particular, the Checker Framework would miss many errors
-% if it assumed that every assertion succeeds at run time.
+% Here is an example of an assertion used for debugging.
 Suppose that a
 programmer encounters a failing test, adds an assertion to aid debugging, and fixes the
 test.  The programmer leaves the assertion in the program if the programmer
@@ -468,40 +475,57 @@ that the assertion always succeeds at run time.
 % \end{enumerate}
 
 
-Sometimes methods such as
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} are used
-instead of assertions.  Just as for assertions, you can treat them as
-debugging aids or as documentation.
+Methods such as
+\sunjavadoc{java.base/java/util/Objects.html\#requireNonNull-T-}{Objects.requireNonNull},
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-}, and
+Guava's \<verifyNotNull> and \<checkNotNull> are
+similar to assertions.  Just as for assertions, their intended use is as
+debugging aids, but some programmers may use them as documentation of facts
+that have been verified in some other manner.
 If you know that a particular codebase uses
 a nullness-checking method not for defensive programming but to indicate
-facts that are guaranteed to be true (that is, these assertions will never
+facts that are guaranteed to be true (that is, these assertions cannot
 fail at run time), then you can suppress
 warnings related to it.
-Annotate its definition just as
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} is annotated (see the
-source code for the Checker Framework).
-% TODO:
-% For an assert statement, XXXXX.
-Also, be sure to document the intention in the method's Javadoc, so that
-programmers do not
-accidentally misuse it for defensive programming.
+\begin{itemize}
+\item
+  If the method is defined in your source code,
+  annotate its definition just as
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is annotated (see the
+  source code for the Checker Framework).
+  Also, be sure to document the intention in the method's Javadoc, so that
+  programmers do not
+  accidentally misuse it for defensive programming.
+\item
+  If the method is defined in an external library, write a stub file that
+  changes the method's annotations, or use \<-AskipUses> to make the
+  Checker Framework ignore all calls to an entire class.
+\end{itemize}
 
 
 If you are annotating a codebase that already contains precondition checks,
 such as:
 
 \begin{Verbatim}
-  public String get(String key, String def) {
+  public String myGet(String key, String def) {
     checkNotNull(key, "key"); // NOI18N
     ...
   }
 \end{Verbatim}
 
 \noindent
-then you should mark the appropriate parameter as \<@NonNull> (which is the
-default).  This will prevent the checker from issuing a warning about the
-\<checkNotNull> call.
+then you should mark the appropriate parameter of \<myGet> as \<@NonNull> (which is the
+default).  The checker will not issue a warning about the
+\<checkNotNull> call, but will issue a warning at incorrect calls to \<myGet>.
 
+Note that some libraries have incorrect specifications of their assertion
+methods.  For example, Guava's \<Verify.verifyNotNull> is incorrectly
+specified to have a \<@Nullable> formal parameter.  In a correct execution,
+\<null> never flows there, so its type should be \<@NonNull>.  You can use
+a version of Guava with corrected annotations by replacing the group name
+``com.google.guava'' by ``org.checkerframework.annotatedlib'' where your
+build file refers to Maven Central's \<guava> artifact.  (The code is
+identical; the only difference is annotations.)
 
 
 \sectionAndLabel{\code{-AsuppressWarnings} command-line option}{suppresswarnings-command-line}
@@ -669,6 +693,31 @@ options are silently ignored.  In particular, this means that \<-Alint=all
 \code{-Alint=-all,cast:redundant}.
 
 
+\sectionAndLabel{Change the specification of a method}{suppressing-warnings-stub}
+
+To prevent a checker from issuing a warning at calls to a specific method,
+you can change the annotations on that method by writing a stub file (see
+Section~\ref{stub}).
+
+Stub files are usually used to provide correct specifications for
+unspecified code.
+
+Stub files can also be used to provide \emph{incorrect} specifications, for
+the purpose of suppressing warnings.  For example, suppose that you are
+running the Nullness Checker to prevent null pointer exceptions.  Further
+suppose that for some reason you do not care if method
+\<Objects.requireNonNull> crashes with a \<NullPointerException>.  You can
+supply a stub file containing:
+
+\begin{Verbatim}
+package java.util;
+class Objects {
+  @EnsuresNonNull("#1")
+  public static <T> @NonNull T requireNonNull(@Nullable T obj);
+}
+\end{Verbatim}
+
+
 \sectionAndLabel{Don't run the processor}{no-processor}
 
 You can compile parts of your code without use of the
@@ -812,5 +861,6 @@ annotations, those compatibility annotations are no longer necessary.
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode checkerframework askipuses
 %%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
-%%  LocalWords:  assumeassertion askipdefs alint compat substring
-% LocalWords:  AcheckPurityAnnotations allcheckers
+%%  LocalWords:  assumeassertion askipdefs alint compat substring myGet
+% LocalWords:  AcheckPurityAnnotations allcheckers requireNonNull
+% LocalWords:  verifyNotNull

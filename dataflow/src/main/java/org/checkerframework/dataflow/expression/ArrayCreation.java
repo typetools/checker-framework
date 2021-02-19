@@ -2,15 +2,22 @@ package org.checkerframework.dataflow.expression;
 
 import java.util.List;
 import java.util.Objects;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
-/** FlowExpression for array creations. {@code new String[]()}. */
+/** JavaExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {
 
-    /** List of dimensions expressions. {code null} means that there is no dimension expression. */
-    protected final List<? extends @Nullable JavaExpression> dimensions;
+    /**
+     * List of dimensions expressions. A {code null} element means that there is no dimension
+     * expression for the given array level.
+     */
+    protected final List<@Nullable JavaExpression> dimensions;
     /** List of initializers. */
     protected final List<JavaExpression> initializers;
 
@@ -18,25 +25,27 @@ public class ArrayCreation extends JavaExpression {
      * Creates an ArrayCreation object.
      *
      * @param type array type
-     * @param dimensions list of dimension expressions; {code null} means that there is no dimension
-     *     expression
+     * @param dimensions list of dimension expressions; a {code null} element means that there is no
+     *     dimension expression for the given array level.
      * @param initializers list of initializer expressions
      */
     public ArrayCreation(
             TypeMirror type,
-            List<? extends @Nullable JavaExpression> dimensions,
+            List<@Nullable JavaExpression> dimensions,
             List<JavaExpression> initializers) {
         super(type);
+        assert type.getKind() == TypeKind.ARRAY;
         this.dimensions = dimensions;
         this.initializers = initializers;
     }
 
     /**
-     * Returns a list of receivers representing the dimension of this array creation.
+     * Returns a list representing the dimensions of this array creation. A {code null} element
+     * means that there is no dimension expression for the given array level.
      *
-     * @return a list of receivers representing the dimension of this array creation
+     * @return a list representing the dimensions of this array creation
      */
-    public List<? extends @Nullable JavaExpression> getDimensions() {
+    public List<@Nullable JavaExpression> getDimensions() {
         return dimensions;
     }
 
@@ -57,6 +66,12 @@ public class ArrayCreation extends JavaExpression {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return listIsDeterministic(dimensions, provider)
+                && listIsDeterministic(initializers, provider);
     }
 
     @Override
@@ -88,20 +103,30 @@ public class ArrayCreation extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        return this.equals(other);
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof ArrayCreation)) {
+            return false;
+        }
+        ArrayCreation other = (ArrayCreation) je;
+        return JavaExpression.syntacticEqualsList(this.dimensions, other.dimensions)
+                && JavaExpression.syntacticEqualsList(this.initializers, other.initializers)
+                && getType().toString().equals(other.getType().toString());
     }
 
     @Override
     public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other);
+        return syntacticEquals(other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(dimensions, other)
+                || JavaExpression.listContainsSyntacticEqualJavaExpression(initializers, other);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("new " + type);
-        if (!dimensions.isEmpty()) {
+        if (dimensions.isEmpty()) {
+            sb.append("new " + type);
+        } else {
+            sb.append("new " + TypesUtils.getInnermostComponentType((ArrayType) type));
             for (JavaExpression dim : dimensions) {
                 sb.append("[");
                 sb.append(dim == null ? "" : dim);
@@ -114,5 +139,18 @@ public class ArrayCreation extends JavaExpression {
             sb.append("}");
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toStringDebug() {
+        return "\""
+                + super.toStringDebug()
+                + "\""
+                + " type="
+                + type
+                + " dimensions="
+                + dimensions
+                + " initializers="
+                + initializers;
     }
 }

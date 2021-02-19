@@ -4,14 +4,15 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /** Stands for any expression that the Dataflow Framework lacks explicit support for. */
 @UsesObjectEquals
 public class Unknown extends JavaExpression {
     /**
-     * Create a new Unknown receiver.
+     * Create a new Unknown JavaExpression.
      *
-     * @param type the Java type of this receiver
+     * @param type the Java type of this
      */
     public Unknown(TypeMirror type) {
         super(type);
@@ -34,13 +35,13 @@ public class Unknown extends JavaExpression {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-        return true;
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+        return getClass() == clazz;
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-        return getClass() == clazz;
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return false;
     }
 
     @Override
@@ -51,5 +52,20 @@ public class Unknown extends JavaExpression {
     @Override
     public boolean isUnmodifiableByOtherCode() {
         return false;
+    }
+
+    @Override
+    public boolean syntacticEquals(JavaExpression je) {
+        return this == je;
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other);
+    }
+
+    @Override
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+        return true;
     }
 }
