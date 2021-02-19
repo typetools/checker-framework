@@ -44,7 +44,7 @@ if [ $status -ne 0 ]; then exit $status; fi
 
 
 # User documentation
-make -C docs/manual all
+./gradlew manual
 git diff  --exit-code docs/manual/contributors.tex || \
     (set +x && set +v &&
      echo "docs/manual/contributors.tex is not up to date." &&
