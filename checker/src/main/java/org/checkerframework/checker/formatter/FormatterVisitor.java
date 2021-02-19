@@ -236,6 +236,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         return true;
     }
 
+    // TODO: Should this be the last String argument?  That would require that every method
+    // annotated with @FormatMethod uses varargs syntax.
     /**
      * Returns the index of the format string of a method: the first formal parameter with declared
      * type String.
