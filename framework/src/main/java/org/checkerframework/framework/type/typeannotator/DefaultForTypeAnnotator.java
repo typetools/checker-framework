@@ -248,7 +248,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         AnnotatedTypeMirror returnType = type.getReturnType();
         defaultTypeFromName(returnType, methodName);
 
-        return null;
+        return super.visitExecutable(type, aVoid);
     }
 
     /**
