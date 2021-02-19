@@ -50,9 +50,9 @@ public @interface DefaultFor {
     Class<?>[] types() default {};
 
     /**
-     * Returns regular expressions matching variables to whose type an annotation should be applied.
-     * A variable uses this default if it matches at least one of these regular expressions, and it
-     * matches none of the exceptions in {@link #namesExceptions}.
+     * Returns regular expressions matching names of variables, to whose types the annotation should
+     * be applied as a default. Does not apply if the name matches any of the regexes in {@link
+     * #namesExceptions}.
      *
      * <p>The regular expression must match the entire name. For example, to match any name that
      * contains "foo", use ".*foo.*".

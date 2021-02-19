@@ -49,7 +49,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     /** Map from fully qualified class name strings to annotations. */
     private final Map<String, Set<AnnotationMirror>> types;
     /**
-     * A list where each element associates an annotation with name regexes and name exceptions
+     * A list where each element associates an annotation with name regexes and name exception
      * regexes.
      */
     private final NamesRegexes namesRegexes;
@@ -233,7 +233,6 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         }
     }
 
-    // TODO
     @Override
     public Void visitExecutable(AnnotatedExecutableType type, Void aVoid) {
         ExecutableElement element = type.getElement();
@@ -252,14 +251,20 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         return null;
     }
 
+    /**
+     * A list where each element associates an annotation with name regexes and name exception
+     * regexes.
+     */
     private static class NamesRegexes extends ArrayList<NameRegexes> {
 
-        static final long serialVersionUID = 20200218;
+        static final long serialVersionUID = 20200218L;
 
         /**
-         * Update this list from the fields of a @DefaultFor annotation.
+         * Update this list from the {@code names} and {@code namesExceptions} fields of
+         * a @DefaultFor annotation.
          *
-         * @param defaultFor a @DefaultFor annotation
+         * @param theQual the qualifier thet the @DefaultFor annotation is written on
+         * @param defaultFor the @DefaultFor annotation written on {@code theQual}
          */
         void add(AnnotationMirror theQual, DefaultFor defaultFor) {
             if (defaultFor.names().length != 0) {
@@ -342,6 +347,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
          * Returns true if the regular expressions match the given name -- that is, if {@link #anno}
          * should be used as the default for a variable named {@code name}.
          *
+         * @param name a variable or method name
          * @return true if {@link #anno} should be used as the default for a variable named {@code
          *     name}
          */
