@@ -294,6 +294,16 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
+    /**
+     * Check if the element is an element for 'java.lang.String'
+     *
+     * @param element the type element
+     * @return true iff the element is java.lang.String element
+     */
+    public static boolean isString(TypeElement element) {
+        return element.getQualifiedName().contentEquals("java.lang.String");
+    }
+
     /** Returns true if the element is a reference to a compile-time constant. */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
