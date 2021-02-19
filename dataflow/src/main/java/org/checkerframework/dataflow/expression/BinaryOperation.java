@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.Tree;
+import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -219,6 +220,18 @@ public class BinaryOperation extends JavaExpression {
                 return "^";
             default:
                 throw new Error("unhandled " + operationKind);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("interning:not.interned") // test whether method returns its argument
+    public BinaryOperation atMethodSignature(List<JavaExpression> parameters) {
+        JavaExpression newLeft = left.atMethodSignature(parameters);
+        JavaExpression newRight = right.atMethodSignature(parameters);
+        if (left == newLeft && right == newRight) {
+            return this;
+        } else {
+            return new BinaryOperation(type, operationKind, newLeft, newRight);
         }
     }
 }

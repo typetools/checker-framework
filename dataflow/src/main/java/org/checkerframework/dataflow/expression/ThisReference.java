@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
+import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -59,5 +60,10 @@ public class ThisReference extends JavaExpression {
     @Override
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // 'this' is not modifiable
+    }
+
+    @Override
+    public ThisReference atMethodSignature(List<JavaExpression> parameters) {
+        return this;
     }
 }

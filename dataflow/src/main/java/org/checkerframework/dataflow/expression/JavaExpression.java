@@ -22,6 +22,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -287,7 +288,7 @@ public abstract class JavaExpression {
             result = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
-            result = new LocalVariable(lv);
+            result = LocalVariable.create(lv);
         } else if (receiverNode instanceof ArrayAccessNode) {
             ArrayAccessNode a = (ArrayAccessNode) receiverNode;
             result = fromArrayAccess(a);
@@ -647,6 +648,50 @@ public abstract class JavaExpression {
             return new ClassName(enclosingType);
         } else {
             return new ThisReference(enclosingType);
+        }
+    }
+
+    ///
+    /// Viewpont adaptation
+    ///
+
+    /**
+     * Returns a variant of this with LocalVariable replaced by FormalParameter where possible. That
+     * is, it replaces formal parameter names by "#2" syntax.
+     *
+     * @param parameters the formal parameters of the method; the index withing this list is the "2"
+     *     in "#2"
+     * @return a variant of this with formal parameters expressed as "#2"
+     */
+    public abstract JavaExpression atMethodSignature(List<JavaExpression> parameters);
+
+    /**
+     * Returns a variant of the given list with LocalVariable replaced by FormalParameter where
+     * possible. That is, it replaces formal parameter names by "#2" syntax.
+     *
+     * @param list a list of JavaExpressions
+     * @param parameters the formal parameters of the method; the index withing this list is the "2"
+     *     in "#2"
+     * @return a variant of the given list with formal parameters expressed as "#2"
+     */
+    @SuppressWarnings("interning:not.interned") // test whether method returns its argument
+    public static List<@PolyNull JavaExpression> listAtMethodSignature(
+            List<@PolyNull JavaExpression> list, List<JavaExpression> parameters) {
+        List<@PolyNull JavaExpression> result = new ArrayList<>(list.size());
+        boolean different = false;
+        for (JavaExpression elt : list) {
+            if (elt == null) {
+                result.add(null);
+            } else {
+                JavaExpression newElt = elt.atMethodSignature(parameters);
+                different = different || newElt != elt;
+                result.add(newElt);
+            }
+        }
+        if (different) {
+            return result;
+        } else {
+            return list;
         }
     }
 }

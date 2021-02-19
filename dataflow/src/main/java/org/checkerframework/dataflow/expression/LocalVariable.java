@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -10,7 +11,12 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** A local variable. */
+/**
+ * A local variable.
+ *
+ * <p>This class also represents a formal parameter expressed using its name. Class {@link
+ * FormalParameter} represents a formal parameter expressed using the "#2" notation.
+ */
 public class LocalVariable extends JavaExpression {
     /** The element for this local variable. */
     protected final Element element;
@@ -20,7 +26,7 @@ public class LocalVariable extends JavaExpression {
      *
      * @param localVar a CFG local variable
      */
-    public LocalVariable(LocalVariableNode localVar) {
+    protected LocalVariable(LocalVariableNode localVar) {
         super(localVar.getType());
         this.element = localVar.getElement();
     }
@@ -35,15 +41,48 @@ public class LocalVariable extends JavaExpression {
         this.element = element;
     }
 
+    /**
+     * Creates a LocalVariable or a FormalParameter, depending on whether the argument starts with
+     * "__param__".
+     *
+     * @param localVar a CFG node for a variable
+     * @return a LocalVariable or FormalParameter for the given CFG variable
+     */
+    public static JavaExpression create(LocalVariableNode localVar) {
+        String name = localVar.getName();
+        if (name.startsWith(FormalParameter.PARAMETER_REPLACEMENT)) {
+            try {
+                return new FormalParameter(
+                        Integer.parseInt(
+                                name.substring(FormalParameter.PARAMETER_REPLACEMENT_LENGTH)),
+                        localVar.getElement());
+            } catch (NumberFormatException e) {
+                // fallthrough
+            }
+        }
+        return new LocalVariable(localVar);
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof LocalVariable)) {
             return false;
         }
-
         LocalVariable other = (LocalVariable) obj;
-        VarSymbol vs1 = (VarSymbol) this.element;
-        VarSymbol vs2 = (VarSymbol) other.element;
+
+        return sameElement(element, other.element);
+    }
+
+    /**
+     * Returns true if the two elements are the same.
+     *
+     * @param element1 the first element to compare
+     * @param element2 the second element to compare
+     * @return true if the two elements are the same
+     */
+    protected static boolean sameElement(Element element1, Element element2) {
+        VarSymbol vs1 = (VarSymbol) element1;
+        VarSymbol vs2 = (VarSymbol) element2;
         // The code below isn't just return vs1.equals(vs2) because an element might be
         // different between subcheckers.  The owner of a lambda parameter is the enclosing
         // method, so a local variable and a lambda parameter might have the same name and the
@@ -53,6 +92,11 @@ public class LocalVariable extends JavaExpression {
                 && vs1.owner.toString().equals(vs2.owner.toString());
     }
 
+    /**
+     * Returns the element for this variable.
+     *
+     * @return the element for this variable
+     */
     public Element getElement() {
         return element;
     }
@@ -92,6 +136,7 @@ public class LocalVariable extends JavaExpression {
             return false;
         }
         LocalVariable other = (LocalVariable) je;
+        // TODO: Should this just check the element name?
         return this.equals(other);
     }
 
@@ -108,5 +153,15 @@ public class LocalVariable extends JavaExpression {
     @Override
     public boolean isUnmodifiableByOtherCode() {
         return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
+    }
+
+    @Override
+    public JavaExpression atMethodSignature(List<JavaExpression> parameters) {
+        int index = parameters.indexOf(this);
+        if (index == -1) {
+            return this;
+        } else {
+            return new FormalParameter(index + 1, element);
+        }
     }
 }

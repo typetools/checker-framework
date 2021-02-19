@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.Tree;
+import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -135,6 +136,17 @@ public class UnaryOperation extends JavaExpression {
                 return "+" + operandString;
             default:
                 throw new Error("Unrecognized unary operation kind " + operationKind);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("interning:not.interned") // test whether method returns its argument
+    public UnaryOperation atMethodSignature(List<JavaExpression> parameters) {
+        JavaExpression newOperand = operand.atMethodSignature(parameters);
+        if (operand == newOperand) {
+            return this;
+        } else {
+            return new UnaryOperation(type, operationKind, newOperand);
         }
     }
 }

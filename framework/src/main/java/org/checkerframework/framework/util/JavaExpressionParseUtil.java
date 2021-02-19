@@ -68,6 +68,7 @@ import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.BinaryOperation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
@@ -105,15 +106,6 @@ public class JavaExpressionParseUtil {
 
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
-
-    /**
-     * Parsable replacement for parameter references. It is parseable because it is a Java
-     * identifier.
-     */
-    private static final String PARAMETER_REPLACEMENT = "_param_";
-
-    /** The length of {@link #PARAMETER_REPLACEMENT}. */
-    private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
 
     /**
      * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
@@ -206,7 +198,8 @@ public class JavaExpressionParseUtil {
 
         for (Integer integer : parameterIndices(expression)) {
             updatedExpression =
-                    updatedExpression.replaceAll("#" + integer, PARAMETER_REPLACEMENT + integer);
+                    updatedExpression.replaceAll(
+                            "#" + integer, FormalParameter.PARAMETER_REPLACEMENT + integer);
         }
 
         return updatedExpression;
@@ -365,7 +358,7 @@ public class JavaExpressionParseUtil {
             setResolverField();
 
             // Formal parameter, using "#2" syntax.
-            if (!context.parsingMember && s.startsWith(PARAMETER_REPLACEMENT)) {
+            if (!context.parsingMember && s.startsWith(FormalParameter.PARAMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // (at the method scope) using the special #NN syntax.
                 return getParameterJavaExpression(s, context);
@@ -986,7 +979,7 @@ public class JavaExpressionParseUtil {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(s, "no parameters found"));
             }
-            int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
+            int idx = Integer.parseInt(s.substring(FormalParameter.PARAMETER_REPLACEMENT_LENGTH));
 
             if (idx == 0) {
                 throw new ParseRuntimeException(

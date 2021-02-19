@@ -177,4 +177,17 @@ public class MethodCall extends JavaExpression {
         }
         return result.toString();
     }
+
+    @Override
+    @SuppressWarnings("interning:not.interned") // test whether method returns its argument
+    public MethodCall atMethodSignature(List<JavaExpression> parameters) {
+        JavaExpression newReceiver = receiver.atMethodSignature(parameters);
+        List<JavaExpression> newArguments =
+                JavaExpression.listAtMethodSignature(arguments, parameters);
+        if (receiver == newReceiver && arguments == newArguments) {
+            return this;
+        } else {
+            return new MethodCall(type, method, newReceiver, newArguments);
+        }
+    }
 }
