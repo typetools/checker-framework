@@ -6,6 +6,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
@@ -134,6 +135,11 @@ public class FormalParameter extends JavaExpression {
 
     @Override
     public boolean isUnmodifiableByOtherCode() {
+        return true;
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
         return true;
     }
 
