@@ -48,7 +48,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             MethodTree enclosingMethod =
                     TreePathUtil.enclosingMethod(atypeFactory.getPath(fc.node));
 
-            Result<String> errMissingFormat = fc.hasFormatAnnotation();
+            Result<String> errMissingFormat = fc.errMissingFormatAnnotation();
             if (errMissingFormat != null) {
                 // The string's type has no @Format annotation.
                 if (isWrappedFormatCall(fc, enclosingMethod)) {
@@ -178,12 +178,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     /**
-     * Returns true if {@code fc} is within a method m, and fc's arguments are m's formal
-     * parameters. In other words, fc forwards m's arguments.
+     * Returns true if {@code invokTree}'s arguments are {@code enclosingMethod}'s formal
+     * parameters. In other words, {@code invokTree} forwards {@code enclosingMethod}'s arguments.
+     *
+     * <p>Only arguments from the last String formal parameter onward count.
      *
      * @param invocTree an invocation of a method
      * @param enclosingMethod the method that contains the call
-     * @return true if {@code fc} is a call to a method that forwards its containing method's
+     * @return true if {@code invokTree} is a call to a method that forwards its containing method's
      *     arguments
      */
     private boolean forwardsArguments(
