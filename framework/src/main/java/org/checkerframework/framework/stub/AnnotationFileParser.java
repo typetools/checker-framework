@@ -1607,9 +1607,9 @@ public class AnnotationFileParser {
      *
      * @param typeElt the type in which the method appears
      * @param methodDecl the method declaration that does not correspond to an element
-     * @return all the methods that the method declaration would override
+     * @return the methods that the given method declaration would override, or null if none
      */
-    private ExecutableElement fakeOverriddenMethod(
+    private @Nullable ExecutableElement fakeOverriddenMethod(
             TypeElement typeElt, MethodDeclaration methodDecl) {
         for (Element elt : typeElt.getEnclosedElements()) {
             if (elt.getKind() != ElementKind.METHOD) {
