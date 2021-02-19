@@ -480,6 +480,15 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
+task manual {
+    description 'Build the manual'
+    doLast {
+        exec {
+            commandLine "make", "-C", "docs/manual", "all"
+        }
+    }
+}
+
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
