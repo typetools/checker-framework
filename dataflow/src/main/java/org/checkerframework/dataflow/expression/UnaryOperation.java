@@ -6,6 +6,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /** JavaExpression for unary operations. */
 public class UnaryOperation extends JavaExpression {
@@ -62,6 +63,11 @@ public class UnaryOperation extends JavaExpression {
             return true;
         }
         return operand.containsOfClass(clazz);
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return operand.isDeterministic(provider);
     }
 
     @Override

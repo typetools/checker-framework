@@ -21,7 +21,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -238,11 +237,7 @@ public class NullnessAnnotatedTypeFactory
                 new SystemGetPropertyHandler(processingEnv, this, permitClearProperty);
 
         classGetCanonicalName =
-                TreeUtils.getMethod(
-                        java.lang.Class.class.getCanonicalName(),
-                        "getCanonicalName",
-                        0,
-                        processingEnv);
+                TreeUtils.getMethod("java.lang.Class", "getCanonicalName", 0, processingEnv);
 
         postInit();
 
@@ -566,14 +561,6 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
-        Set<Class<? extends Annotation>> l =
-                new HashSet<>(super.getInvalidConstructorReturnTypeAnnotations());
-        l.addAll(getNullnessAnnotations());
-        return l;
-    }
-
-    @Override
     public AnnotationMirror getFieldInvariantAnnotation() {
         return NONNULL;
     }
@@ -658,14 +645,15 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * Returns true if some annotation in the given list is a nullness annotation such
-     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     * Returns true if some annotation on the given type, or in the given list, is a nullness
+     * annotation such as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
      * <p>This method ignores aliases of nullness annotations that are declaration annotations,
      * because they may apply to inner types.
      *
-     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
-     *     not from such a location
+     * @param annoTrees a list of annotations that the the Java parser attached to the
+     *     variable/method declaration; null if this type is not from such a location. This is a
+     *     list of extra annotations to check, in addition to those on the type.
      * @param typeTree the type whose annotations to test
      * @return true if some annotation is a nullness annotation
      */
@@ -673,8 +661,25 @@ public class NullnessAnnotatedTypeFactory
             List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         List<? extends AnnotationTree> annos =
                 TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+        return containsNullnessAnnotation(annos);
+    }
 
-        for (AnnotationTree annoTree : annos) {
+    /**
+     * Returns true if some annotation in the given list is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * <p>This method ignores aliases of nullness annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
+     * <p>Clients that are processing a field or variable definition, or a method return type,
+     * should call {@link #containsNullnessAnnotation(List, Tree)} instead.
+     *
+     * @param annoTrees a list of annotations to check
+     * @return true if some annotation is a nullness annotation
+     * @see #containsNullnessAnnotation(List, Tree)
+     */
+    protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annoTrees) {
+        for (AnnotationTree annoTree : annoTrees) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
             if (isNullnessAnnotation(am) && !AnnotationUtils.isDeclarationAnnotation(am)) {
                 return true;

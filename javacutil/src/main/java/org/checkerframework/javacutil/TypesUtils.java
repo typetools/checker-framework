@@ -888,7 +888,7 @@ public final class TypesUtils {
      * @param methodElement a method
      * @param substitutedReceiverType the receiver type, after substitution
      * @param env the environment
-     * @return the return type of the mehtod
+     * @return the return type of the method
      */
     public static TypeMirror substituteMethodReturnType(
             Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {

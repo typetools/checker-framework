@@ -1,3 +1,57 @@
+Version 3.??.??, March 1, 2021
+
+**User-visible changes:**
+
+Nullness Checker error message key changes:
+ * `known.nonnull` => `nulltest.redundant`
+ * `initialization.static.fields.uninitialized` => `initialization.static.field.uninitialized`,
+   and it is now issued on the field rather than on the class
+ * new `initialization.field.uninitialized` is issued on the field instead of
+   `initialization.fields.uninitialized` on the class, if there is no
+   explicitly-written constructor.
+
+Signature Checker supports two new type qualifiers:
+ * `@CanonicalNameAndBinaryName`
+ * `@CanonicalNameOrPrimitiveType`
+
+**Implementation details:**
+
+Changes to protected fields in `OverrideChecker`:
+ * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
+ * Renamed `methodReference` => `isMethodReference`
+ * Renamed `overridingType` => `overriderType`
+ * Renamed `overridingReturnType` => `overriderReturnType`
+
+Changes to JavaExpression parsing:
+ * The signatures of these methods changed; see Javadoc.
+    * `JavaExpressionParseUtil#parse`
+    * `DependentTypesHelper#standardizeString`
+ * These methods moved:
+    * `GenericAnnotatedTypeFactory#standardizeAnnotationFromContract` => `DependentTypesHelper`
+    * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`
+
+Changes to JavaExpressionContext:
+ * New method JavaExpressionContext#buildContextForMethodDeclaration(MethodTree, SourceChecker)
+   replaces all overloads of buildContextForMethodDeclaration.
+
+Parsing a Java expression no longer requires the formal parameters
+`AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
+in `JavaExpression` with simplified signatures include
+ * `fromArrayAccess`
+ * `fromNodeFieldAccess`
+ * `fromNode`
+ * `fromTree`
+ * `getParametersOfEnclosingMethod`
+ * `getReceiver`
+
+`CFAbstractStore.insertValue` does nothing if passed a nondeterministic
+expression.  Use new method `CFAbstractStore.insertValuePermitNondeterministic`
+to map a nondeterministic expression to a value.
+
+**Closed issues:**
+
+---------------------------------------------------------------------------
+
 Version 3.10.0, February 1, 2021
 
 **User-visible changes:**

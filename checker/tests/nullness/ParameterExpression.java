@@ -47,19 +47,59 @@ public class ParameterExpression {
     @EnsuresNonNull("param")
     // :: error: (flowexpr.parse.error)
     // :: warning: (expression.parameter.name.invalid)
-    public void m6(Object param) {
+    public void m6a(Object param) {
         param = new Object();
     }
 
-    // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
-    // formal parameter.
+    @EnsuresNonNull("param")
+    // :: error: (flowexpr.parse.error)
+    // :: warning: (expression.parameter.name.invalid)
+    public void m6b(Object param) {
+        // :: error: (assignment.type.incompatible)
+        param = null;
+    }
+
+    @EnsuresNonNull("param")
+    // :: error: (flowexpr.parse.error)
+    // :: warning: (expression.parameter.name.invalid)
+    public void m6c(@Nullable Object param) {
+        param = new Object();
+    }
+
+    @EnsuresNonNull("param")
+    // :: error: (flowexpr.parse.error)
+    // :: warning: (expression.parameter.name.invalid)
+    public void m6d(@Nullable Object param) {
+        param = null;
+    }
+
     @EnsuresNonNull("field")
-    // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
     // :: error: (contracts.postcondition.not.satisfied)
     // :: warning: (expression.parameter.name.shadows.field)
-    public void m7(Object field) {
+    public void m7a(Object field) {
         field = new Object();
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (contracts.postcondition.not.satisfied)
+    // :: warning: (expression.parameter.name.shadows.field)
+    public void m7b(Object field) {
+        // :: error: (assignment.type.incompatible)
+        field = null;
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (contracts.postcondition.not.satisfied)
+    // :: warning: (expression.parameter.name.shadows.field)
+    public void m7c(@Nullable Object field) {
+        field = new Object();
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (contracts.postcondition.not.satisfied)
+    // :: warning: (expression.parameter.name.shadows.field)
+    public void m7d(@Nullable Object field) {
+        field = null;
     }
 
     // Preconditions
@@ -74,8 +114,6 @@ public class ParameterExpression {
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
     // formal parameter.
     @RequiresNonNull("field")
-    // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
     // :: warning: (expression.parameter.name.shadows.field)
     public void m10(Object field) {}
 
@@ -97,13 +135,33 @@ public class ParameterExpression {
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
     // formal parameter.
     @EnsuresNonNullIf(result = true, expression = "field")
-    // The user should write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
     // :: warning: (expression.parameter.name.shadows.field)
-    public boolean m13(Object field) {
+    public boolean m13a(@Nullable Object field) {
         field = new Object();
         // :: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: warning: (expression.parameter.name.shadows.field)
+    public boolean m13b(@Nullable Object field) {
+        field = new Object();
+        return false;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: warning: (expression.parameter.name.shadows.field)
+    public boolean m13c(@Nullable Object field) {
+        field = null;
+        // :: error: (contracts.conditional.postcondition.not.satisfied)
+        return true;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: warning: (expression.parameter.name.shadows.field)
+    public boolean m13d(@Nullable Object field) {
+        field = null;
+        return false;
     }
 
     // Annotations on formal parameters referring to a formal parameter of the same method.

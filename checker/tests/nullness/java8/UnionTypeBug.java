@@ -14,8 +14,10 @@ abstract class UnionTypeBug {
 
             badBoy();
 
+            // :: warning: (nullness.on.exception.parameter)
         } catch (@NonNull InnerException1 | @NonNull InnerException2 e) {
 
+            // :: warning: (nullness.on.exception.parameter)
         } catch (@NonNull InnerException3 | @NonNull InnerException4 e) {
 
         }

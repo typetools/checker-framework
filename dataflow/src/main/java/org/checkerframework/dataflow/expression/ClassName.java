@@ -4,13 +4,14 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * A ClassName represents the occurrence of a class as part of a static field access or method
  * invocation.
  */
 public class ClassName extends JavaExpression {
-    /** The string representation of the type of this. */
+    /** The string representation of the raw type of this. */
     private final String typeString;
 
     /**
@@ -20,7 +21,11 @@ public class ClassName extends JavaExpression {
      */
     public ClassName(TypeMirror type) {
         super(type);
-        typeString = type.toString();
+        String typeString = type.toString();
+        if (typeString.endsWith(">")) {
+            typeString = typeString.substring(0, typeString.indexOf("<"));
+        }
+        this.typeString = typeString;
     }
 
     @Override
@@ -48,6 +53,21 @@ public class ClassName extends JavaExpression {
     }
 
     @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
+    }
+
+    @Override
+    public boolean isUnassignableByOtherCode() {
+        return true;
+    }
+
+    @Override
+    public boolean isUnmodifiableByOtherCode() {
+        return true;
+    }
+
+    @Override
     public boolean syntacticEquals(JavaExpression je) {
         if (!(je instanceof ClassName)) {
             return false;
@@ -59,16 +79,6 @@ public class ClassName extends JavaExpression {
     @Override
     public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return this.syntacticEquals(other);
-    }
-
-    @Override
-    public boolean isUnassignableByOtherCode() {
-        return true;
-    }
-
-    @Override
-    public boolean isUnmodifiableByOtherCode() {
-        return true;
     }
 
     @Override

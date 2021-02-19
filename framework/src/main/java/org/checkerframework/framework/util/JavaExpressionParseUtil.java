@@ -35,6 +35,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -59,7 +60,6 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -78,7 +78,6 @@ import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -119,24 +118,46 @@ public class JavaExpressionParseUtil {
     private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
 
     /**
-     * Parse a string and return its representation as a {@link JavaExpression}, or throw a {@link
-     * JavaExpressionParseException}.
+     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
+     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
      *
      * @param expression a Java expression to parse
-     * @param context information about any receiver and arguments
-     * @param localScope a program element annotated with an annotation that contains {@code
-     *     expression}
-     * @param useLocalScope whether {@code annotatedConstruct} should be used to resolve identifiers
+     * @param context information about any receiver and arguments; also has a reference to the
+     *     checker
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(String expression, JavaExpressionContext context)
+            throws JavaExpressionParseException {
+        return parse(expression, context, null);
+    }
+    /**
+     * Parse a string with respect to {@code localPath} and viewpoint-adapt it to the given {@code
+     * context}. Return its representation as a {@link JavaExpression}, or throw a {@link
+     * JavaExpressionParseException}.
+     *
+     * <p>If {@code localPath} is non-null, then identifiers are parsed as if the expression was
+     * written at the location of {@code localPath}. This means identifiers will be parsed to local
+     * variables in scope at {@code localPath} when possible. If {@code localPath} is null, then no
+     * identifier can be parsed to a local variable. In either case, the parameter syntax, e.g. #1,
+     * is always parsed to the arguments in {@code context}. This is because a parameter of a lambda
+     * can refer both to local variables in scope at its declaration and to a parameter of the
+     * lambda.
+     *
+     * @param expression a Java expression to parse
+     * @param context information about any receiver and arguments; also has a reference to the
+     *     checker
+     * @param localPath if non-null, the expression is parsed as if it were written at this location
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
     public static JavaExpression parse(
-            String expression,
-            JavaExpressionContext context,
-            TreePath localScope,
-            boolean useLocalScope)
+            String expression, JavaExpressionContext context, @Nullable TreePath localPath)
             throws JavaExpressionParseException {
-
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
         Expression expr;
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
@@ -146,9 +167,12 @@ public class JavaExpressionParseUtil {
 
         JavaExpression result;
         try {
-            context = context.copyAndSetUseLocalScope(useLocalScope);
             ProcessingEnvironment env = context.checker.getProcessingEnvironment();
-            result = expr.accept(new ExpressionToJavaExpressionVisitor(localScope, env), context);
+            result =
+                    expr.accept(
+                            new ExpressionToJavaExpressionVisitor(
+                                    pathToCompilationUnit, localPath, env),
+                            context);
         } catch (ParseRuntimeException e) {
             // Convert unchecked to checked exception. Visitor methods can't throw checked
             // exceptions. They override the methods in the superclass, and a checked exception
@@ -197,10 +221,13 @@ public class JavaExpressionParseUtil {
             extends GenericVisitorWithDefaults<JavaExpression, JavaExpressionContext> {
 
         /**
-         * The Java program element that is annotated by an annotation that contains the expression
-         * that is being translated.
+         * The underlying javac API used to convert from Strings to Elements requires a tree path
+         * even when the information could be deduced from elements alone. So use the path to the
+         * current CompilationUnit.
          */
-        private final TreePath annotatedConstruct;
+        private final TreePath pathToCompilationUnit;
+        /** If non-null, the expression is parsed as if it were written at this location. */
+        private final @Nullable TreePath localVarPath;
         /** The processing environment. */
         private final ProcessingEnvironment env;
         /** The resolver. Computed from the environment, but lazily initialized. */
@@ -214,11 +241,17 @@ public class JavaExpressionParseUtil {
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
          *
-         * @param annotatedConstruct path to the expression
+         * @param pathToCompilationUnit required to use the underlying Javac API
+         * @param localVarPath if non-null, the expression is parsed as if it were written at this
+         *     location
          * @param env the processing environment
          */
-        ExpressionToJavaExpressionVisitor(TreePath annotatedConstruct, ProcessingEnvironment env) {
-            this.annotatedConstruct = annotatedConstruct;
+        ExpressionToJavaExpressionVisitor(
+                TreePath pathToCompilationUnit,
+                @Nullable TreePath localVarPath,
+                ProcessingEnvironment env) {
+            this.pathToCompilationUnit = pathToCompilationUnit;
+            this.localVarPath = localVarPath;
             this.env = env;
             this.types = env.getTypeUtils();
             this.stringTypeMirror =
@@ -322,8 +355,7 @@ public class JavaExpressionParseUtil {
             }
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
 
-            JavaExpressionContext contextForIndex = context.copyNotParsingMember();
-            JavaExpression index = expr.getIndex().accept(this, contextForIndex);
+            JavaExpression index = expr.getIndex().accept(this, context);
 
             return new ArrayAccess(componentType, array, index);
         }
@@ -342,28 +374,158 @@ public class JavaExpressionParseUtil {
             }
 
             // Local variable or parameter.
-            if (!context.parsingMember && context.useLocalScope) {
+            if (!context.parsingMember && localVarPath != null) {
                 // Attempt to match a local variable within the scope of the
                 // given path before attempting to match a field.
-                VariableElement varElem =
-                        resolver.findLocalVariableOrParameter(s, annotatedConstruct);
+                VariableElement varElem = resolver.findLocalVariableOrParameter(s, localVarPath);
                 if (varElem != null) {
                     return new LocalVariable(varElem);
                 }
             }
 
             // Field access
+            FieldAccess fieldAccess = getIdentifierAsField(context, s);
+            if (fieldAccess != null) {
+                return fieldAccess;
+            }
+
+            ClassName classType = getIdentifierAsClassName(context, s);
+            if (classType != null) {
+                return classType;
+            }
+
+            // Err if a formal parameter name is used, instead of the "#2" syntax.
+            if (context.arguments != null) {
+                for (int i = 0; i < context.arguments.size(); i++) {
+                    if (context.arguments.get(i) instanceof LocalVariable) {
+                        Element varElt = ((LocalVariable) context.arguments.get(i)).getElement();
+                        if (varElt.getKind() == ElementKind.PARAMETER
+                                && varElt.getSimpleName().contentEquals(s)) {
+                            throw new ParseRuntimeException(
+                                    constructJavaExpressionParseError(
+                                            s,
+                                            String.format(
+                                                    DependentTypesError.FORMAL_PARAM_NAME_STRING,
+                                                    i + 1,
+                                                    s)));
+                        }
+                    }
+                }
+            }
+
+            throw new ParseRuntimeException(
+                    constructJavaExpressionParseError(s, "identifier not found"));
+        }
+
+        /**
+         * If {@code identifier} is an unqualified class name, return the {@link ClassName}. If not,
+         * return null.
+         *
+         * <p>If {@code context.useLocalScope} is false, then the only classes that may be used
+         * without qualification are:
+         *
+         * <ol>
+         *   <li>the type of "this" in this context
+         *   <li>a type declared in "this" or in an enclosing type of "this"
+         *   <li>a type in the java.lang package
+         *   <li>a type in the unnamed package
+         * </ol>
+         *
+         * @param context JavaExpressionContext
+         * @param identifier possible class name
+         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name
+         */
+        protected @Nullable ClassName getIdentifierAsClassName(
+                JavaExpressionContext context, String identifier) {
+            if (!context.parsingMember && localVarPath != null) {
+                Element classElem = resolver.findClass(identifier, localVarPath);
+                TypeMirror classType = ElementUtils.getType(classElem);
+                if (classType != null) {
+                    return new ClassName(classType);
+                }
+            }
+
+            // Is identifier an inner class of this or of any enclosing class of this?
+            TypeMirror searchType = context.receiver.getType();
+            while (searchType.getKind() == TypeKind.DECLARED) {
+                // Is identifier the simple name of this?
+                if (((DeclaredType) searchType)
+                        .asElement()
+                        .getSimpleName()
+                        .contentEquals(identifier)) {
+                    return new ClassName(searchType);
+                }
+                Element classElem =
+                        resolver.findNestedClassInType(
+                                identifier, searchType, pathToCompilationUnit);
+                if (classElem != null) {
+                    TypeMirror classType = ElementUtils.getType(classElem);
+                    return new ClassName(classType);
+                }
+                searchType = getTypeOfEnclosingClass((DeclaredType) searchType);
+            }
+            if (context.receiver.getType().getKind() == TypeKind.DECLARED) {
+                // Is identifier in the same package as this?
+                PackageSymbol packageSymbol =
+                        (PackageSymbol)
+                                ElementUtils.enclosingPackage(
+                                        ((DeclaredType) context.receiver.getType()).asElement());
+                ClassSymbol classSymbol =
+                        resolver.findClassInPackage(
+                                identifier, packageSymbol, pathToCompilationUnit);
+                if (classSymbol != null) {
+                    return new ClassName(classSymbol.asType());
+                }
+            }
+            // Is identifier a simple name for a class in java.lang?
+            Symbol.PackageSymbol packageSymbol =
+                    resolver.findPackage("java.lang", pathToCompilationUnit);
+            if (packageSymbol != null) {
+                ClassSymbol classSymbol =
+                        resolver.findClassInPackage(
+                                identifier, packageSymbol, pathToCompilationUnit);
+                if (classSymbol != null) {
+                    return new ClassName(classSymbol.asType());
+                }
+            }
+
+            // Is identifier a class in the unnamed package?
+            Element classElem = resolver.findClass(identifier, pathToCompilationUnit);
+            if (classElem != null) {
+                PackageElement pkg = ElementUtils.enclosingPackage(classElem);
+                if (pkg != null && pkg.isUnnamed()) {
+                    TypeMirror classType = ElementUtils.getType(classElem);
+                    if (classType != null) {
+                        return new ClassName(classType);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * If {@code identifier} is a field name, then return the {@link FieldAccess} corresponding
+         * to using that field at the given {@code context}. If {@code identifier} is not a field
+         * name, this method returns null.
+         *
+         * @param context {@link JavaExpressionContext}
+         * @param identifier possibly a field name
+         * @return a field access, or null if {@code identifier} is not a field
+         */
+        protected @Nullable FieldAccess getIdentifierAsField(
+                JavaExpressionContext context, String identifier) {
             TypeMirror receiverType = context.receiver.getType();
             // isOriginalReceiver is true if receiverType has not been reassigned.
             boolean isOriginalReceiver = true;
             VariableElement fieldElem = null;
-            if (s.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
-                fieldElem = resolver.findField(s, receiverType, annotatedConstruct);
+            if (identifier.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
+                fieldElem = resolver.findField(identifier, receiverType, pathToCompilationUnit);
             }
             if (fieldElem == null) {
                 // Search for field in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
-                    fieldElem = resolver.findField(s, receiverType, annotatedConstruct);
+                    fieldElem = resolver.findField(identifier, receiverType, pathToCompilationUnit);
                     if (fieldElem != null) {
                         break;
                     }
@@ -381,38 +543,13 @@ public class JavaExpressionParseUtil {
                         && ElementUtils.isStatic(scopeClassElement)) {
                     throw new ParseRuntimeException(
                             constructJavaExpressionParseError(
-                                    s,
+                                    identifier,
                                     "a non-static field can't be referenced from a static inner class or enum"));
                 }
                 return fieldAccess;
             }
 
-            // Class name
-            Element classElem = resolver.findClass(s, annotatedConstruct);
-            TypeMirror classType = ElementUtils.getType(classElem);
-            if (classType != null) {
-                return new ClassName(classType);
-            }
-
-            // Err if a formal parameter name is used, instead of the "#2" syntax.
-            MethodTree enclMethod = TreePathUtil.enclosingMethod(annotatedConstruct);
-            if (enclMethod != null) {
-                List<? extends VariableTree> params = enclMethod.getParameters();
-                for (int i = 0; i < params.size(); i++) {
-                    if (params.get(i).getName().contentEquals(s)) {
-                        throw new ParseRuntimeException(
-                                constructJavaExpressionParseError(
-                                        s,
-                                        String.format(
-                                                DependentTypesError.FORMAL_PARAM_NAME_STRING,
-                                                i + 1,
-                                                s)));
-                    }
-                }
-            }
-
-            throw new ParseRuntimeException(
-                    constructJavaExpressionParseError(s, "identifier not found"));
+            return null;
         }
 
         @Override
@@ -455,7 +592,7 @@ public class JavaExpressionParseUtil {
                         getMethodElement(
                                 methodName,
                                 methodContext.receiver.getType(),
-                                annotatedConstruct,
+                                pathToCompilationUnit,
                                 arguments,
                                 resolver);
 
@@ -489,14 +626,6 @@ public class JavaExpressionParseUtil {
                         constructJavaExpressionParseError(expr.toString(), t.getMessage()));
             }
 
-            // TODO: reinstate this test, but issue a warning that the user
-            // can override, rather than halting parsing which the user cannot override.
-            /*if (!PurityUtils.isDeterministic(SOMEcontext.checker.getAnnotationProvider(),
-                    methodElement)) {
-                throw new JavaExpressionParseException(new DiagMessage(ERROR,
-                        "flowexpr.method.not.deterministic",
-                        methodElement.getSimpleName()));
-            }*/
             if (ElementUtils.isStatic(methodElement)) {
                 Element classElem = methodElement.getEnclosingElement();
                 JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
@@ -576,11 +705,11 @@ public class JavaExpressionParseUtil {
             setResolverField();
 
             Symbol.PackageSymbol packageSymbol =
-                    resolver.findPackage(expr.getScope().toString(), annotatedConstruct);
+                    resolver.findPackage(expr.getScope().toString(), pathToCompilationUnit);
             if (packageSymbol != null) {
                 ClassSymbol classSymbol =
                         resolver.findClassInPackage(
-                                expr.getNameAsString(), packageSymbol, annotatedConstruct);
+                                expr.getNameAsString(), packageSymbol, pathToCompilationUnit);
                 if (classSymbol != null) {
                     return new ClassName(classSymbol.asType());
                 }
@@ -775,9 +904,13 @@ public class JavaExpressionParseUtil {
         private @Nullable TypeMirror convertTypeToTypeMirror(
                 Type type, JavaExpressionContext context) {
             if (type.isClassOrInterfaceType()) {
-                return StaticJavaParser.parseExpression(type.asString())
-                        .accept(this, context)
-                        .getType();
+                try {
+                    return StaticJavaParser.parseExpression(type.asString())
+                            .accept(this, context)
+                            .getType();
+                } catch (ParseProblemException e) {
+                    return null;
+                }
             } else if (type.isPrimitiveType()) {
                 switch (type.asPrimitiveType().getType()) {
                     case BOOLEAN:
@@ -830,10 +963,7 @@ public class JavaExpressionParseUtil {
             if (isOriginalReceiver) {
                 locationOfField = context.receiver;
             } else {
-                locationOfField =
-                        JavaExpression.fromNode(
-                                context.checker.getAnnotationProvider(),
-                                new ImplicitThisNode(receiverType));
+                locationOfField = JavaExpression.fromNode(new ImplicitThisNode(receiverType));
             }
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
@@ -894,13 +1024,28 @@ public class JavaExpressionParseUtil {
         return result;
     }
 
+    /**
+     * Returns the 1-based index of the formal parameter that occurs in {@code s} or -1 if no formal
+     * parameter occurs.
+     *
+     * @param s a Java expression
+     * @return the 1-based indices of the formal parameter that occur in {@code s} or -1
+     */
+    public static int parameterIndex(String s) {
+        Matcher matcher = ANCHORED_PARAMETER_PATTERN.matcher(s);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return -1;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     /// Contexts
     ///
 
     /**
-     * Context used to parse a Java expression. When parsing expression E in annotation
-     * {@code @A(E)}, the context is the program element that is annotated by {@code @A(E)}.
+     * Context used to parse and viewpoint-adapt a Java expression. It contains the JavaExpressions
+     * to which {@code this} and the parameter syntax, e.g. {@code #1}, should parse.
      */
     public static class JavaExpressionContext {
         /** The value of {@code this} in this context. */
@@ -918,8 +1063,6 @@ public class JavaExpressionParseUtil {
          * If so, certain constructs like "#2" and local variables cannot occur.
          */
         public final boolean parsingMember;
-        /** Whether the TreePath should be used to find identifiers. */
-        public final boolean useLocalScope;
 
         /**
          * Creates a context for parsing a Java expression, with "null" for arguments.
@@ -945,7 +1088,7 @@ public class JavaExpressionParseUtil {
          */
         public JavaExpressionContext(
                 JavaExpression receiver, List<JavaExpression> arguments, SourceChecker checker) {
-            this(receiver, arguments, checker, false, true);
+            this(receiver, arguments, checker, false);
         }
 
         /**
@@ -955,24 +1098,20 @@ public class JavaExpressionParseUtil {
          *     identifiers in any Java expression with an implicit "this"
          * @param arguments used to replace parameter references, e.g. #1, in Java expressions, null
          *     if no arguments
-         * @param checker used to create {@link
-         *     org.checkerframework.dataflow.expression.JavaExpression}s
+         * @param checker used to create {@link JavaExpression}s
          * @param parsingMember whether or not the JavaExpressionParser is parsing the "member" part
          *     of a member select
-         * @param useLocalScope whether the TreePath should be used to find identifiers
          */
         private JavaExpressionContext(
                 JavaExpression receiver,
                 List<JavaExpression> arguments,
                 SourceChecker checker,
-                boolean parsingMember,
-                boolean useLocalScope) {
+                boolean parsingMember) {
             assert checker != null;
             this.receiver = receiver;
             this.arguments = arguments;
             this.checker = checker;
             this.parsingMember = parsingMember;
-            this.useLocalScope = useLocalScope;
         }
 
         /**
@@ -981,62 +1120,18 @@ public class JavaExpressionParseUtil {
          *
          * @param methodDeclaration used to translate parameter numbers in a Java expression to
          *     formal parameters of the method
-         * @param enclosingTree used to look up fields and as the type of "this" in Java expressions
          * @param checker used to build JavaExpression
          * @return context created from {@code methodDeclaration}
          */
         public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, Tree enclosingTree, SourceChecker checker) {
-            return buildContextForMethodDeclaration(
-                    methodDeclaration, TreeUtils.typeOf(enclosingTree), checker);
-        }
-
-        /**
-         * Creates a {@link JavaExpressionContext} for the method declared in {@code
-         * methodDeclaration}.
-         *
-         * @param methodDeclaration used to translate parameter numbers in a Java expression to
-         *     formal parameters of the method
-         * @param currentPath the path to the method. It is used to find the enclosing class, which
-         *     is used to look up fields and as the type of "this" in Java expressions.
-         * @param checker used to build JavaExpression
-         * @return context created from {@code methodDeclaration}
-         */
-        public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, TreePath currentPath, SourceChecker checker) {
-            Tree classTree = TreePathUtil.enclosingClass(currentPath);
-            return buildContextForMethodDeclaration(methodDeclaration, classTree, checker);
-        }
-
-        /**
-         * Creates a {@link JavaExpressionContext} for the method declared in {@code
-         * methodDeclaration}.
-         *
-         * @param methodDeclaration used to translate parameter numbers in a Java expression to
-         *     formal parameters of the method
-         * @param enclosingType used to look up fields and as type of "this" in Java expressions
-         * @param checker used to build JavaExpression
-         * @return context created from {@code methodDeclaration}
-         */
-        public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, TypeMirror enclosingType, SourceChecker checker) {
-
+                MethodTree methodDeclaration, SourceChecker checker) {
             ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
-
-            Node receiver;
-            if (methodDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
-                Element classElt = ElementUtils.enclosingTypeElement(methodElt);
-                receiver = new ClassNameNode(enclosingType, classElt);
-            } else {
-                receiver = new ImplicitThisNode(enclosingType);
-            }
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression thisExpression = JavaExpression.getImplicitReceiver(methodElt);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableElement param : methodElt.getParameters()) {
                 parametersJe.add(new LocalVariable(param));
             }
-            return new JavaExpressionContext(receiverJe, parametersJe, checker);
+            return new JavaExpressionContext(thisExpression, parametersJe, checker);
         }
 
         /**
@@ -1051,14 +1146,10 @@ public class JavaExpressionParseUtil {
                 LambdaExpressionTree lambdaTree, TreePath path, SourceChecker checker) {
             TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
             Node receiver = new ImplicitThisNode(enclosingType);
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             List<JavaExpression> parametersJe = new ArrayList<>();
             for (VariableTree arg : lambdaTree.getParameters()) {
-                parametersJe.add(
-                        JavaExpression.fromNode(
-                                checker.getAnnotationProvider(),
-                                new LocalVariableNode(arg, receiver)));
+                parametersJe.add(JavaExpression.fromNode(new LocalVariableNode(arg, receiver)));
             }
             return new JavaExpressionContext(receiverJe, parametersJe, checker);
         }
@@ -1076,8 +1167,7 @@ public class JavaExpressionParseUtil {
                 ClassTree classTree, SourceChecker checker) {
             Node receiver = new ImplicitThisNode(TreeUtils.typeOf(classTree));
 
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             return new JavaExpressionContext(receiverJe, Collections.emptyList(), checker);
         }
 
@@ -1092,11 +1182,10 @@ public class JavaExpressionParseUtil {
         public static JavaExpressionContext buildContextForMethodUse(
                 MethodInvocationNode methodInvocation, SourceChecker checker) {
             Node receiver = methodInvocation.getTarget().getReceiver();
-            JavaExpression receiverJe =
-                    JavaExpression.fromNode(checker.getAnnotationProvider(), receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             List<JavaExpression> argumentsJe = new ArrayList<>();
             for (Node arg : methodInvocation.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(checker.getAnnotationProvider(), arg));
+                argumentsJe.add(JavaExpression.fromNode(arg));
             }
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
@@ -1111,13 +1200,12 @@ public class JavaExpressionParseUtil {
          */
         public static JavaExpressionContext buildContextForMethodUse(
                 MethodInvocationTree methodInvocation, SourceChecker checker) {
-            JavaExpression receiverJe =
-                    JavaExpression.getReceiver(methodInvocation, checker.getAnnotationProvider());
+            JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocation);
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
             List<JavaExpression> argumentsJe = new ArrayList<>(args.size());
             for (ExpressionTree argTree : args) {
-                argumentsJe.add(JavaExpression.fromTree(checker.getAnnotationProvider(), argTree));
+                argumentsJe.add(JavaExpression.fromTree(argTree));
             }
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
@@ -1137,11 +1225,11 @@ public class JavaExpressionParseUtil {
 
             // This returns an Unknown with the type set to the class in which the
             // constructor is declared
-            JavaExpression receiverJe = JavaExpression.fromNode(checker.getAnnotationProvider(), n);
+            JavaExpression receiverJe = JavaExpression.fromNode(n);
 
             List<JavaExpression> argumentsJe = new ArrayList<>();
             for (Node arg : n.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(checker.getAnnotationProvider(), arg));
+                argumentsJe.add(JavaExpression.fromNode(arg));
             }
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
@@ -1149,39 +1237,13 @@ public class JavaExpressionParseUtil {
 
         /**
          * Returns a copy of the context that differs in that it has a different receiver and
-         * parsingMember is set to true. The outer receiver remains unchanged.
+         * parsingMember is set to true. The arguments remain unchanged.
          *
          * @param receiver the receiver for the newly-returned context
          * @return a copy of the context, with the given receiver
          */
         public JavaExpressionContext copyChangeToParsingMemberOfReceiver(JavaExpression receiver) {
-            return new JavaExpressionContext(
-                    receiver, arguments, checker, /*parsingMember=*/ true, useLocalScope);
-        }
-
-        /**
-         * Returns a copy of the context that differs in that parsingMember is set to false.
-         *
-         * @return a copy of the context, with parsingMember set to false
-         */
-        public JavaExpressionContext copyNotParsingMember() {
-            if (parsingMember == false) {
-                return this;
-            }
-            return new JavaExpressionContext(
-                    receiver, arguments, checker, /*parsingMember=*/ false, useLocalScope);
-        }
-
-        /**
-         * Returns a copy of the context that differs in that {@code useLocalScope} is set to the
-         * given value.
-         *
-         * @param useLocalScope whether the local scope should be used to resolve identifiers
-         * @return a copy of the context, with {@code useLocalScope} is set to the given value
-         */
-        public JavaExpressionContext copyAndSetUseLocalScope(boolean useLocalScope) {
-            return new JavaExpressionContext(
-                    receiver, arguments, checker, parsingMember, useLocalScope);
+            return new JavaExpressionContext(receiver, arguments, checker, /*parsingMember=*/ true);
         }
 
         /**
@@ -1197,7 +1259,6 @@ public class JavaExpressionParseUtil {
             sj.add("checker=" + "...");
             // sj.add("checker="+ checker);
             sj.add("parsingMember=" + parsingMember);
-            sj.add("useLocalScope=" + useLocalScope);
             return sj.toString();
         }
     }
@@ -1233,34 +1294,6 @@ public class JavaExpressionParseUtil {
         } else {
             return type.getEnclosingType();
         }
-    }
-
-    /**
-     * Get a JavaExpression from a VariableTree.
-     *
-     * @param provider gives the context
-     * @param tree the VariableTree
-     * @return a JavaExpression for the given VariableTree
-     * @throws JavaExpressionParseException if the expression string cannot be parsed
-     */
-    public static JavaExpression fromVariableTree(AnnotatedTypeFactory provider, VariableTree tree)
-            throws JavaExpressionParseException {
-        Element elt = TreeUtils.elementFromDeclaration(tree);
-
-        if (elt.getKind() == ElementKind.LOCAL_VARIABLE
-                || elt.getKind() == ElementKind.RESOURCE_VARIABLE
-                || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
-                || elt.getKind() == ElementKind.PARAMETER) {
-            return new LocalVariable(elt);
-        }
-        JavaExpression receiverJe = JavaExpression.getImplicitReceiver(elt);
-        JavaExpressionContext context =
-                new JavaExpressionContext(receiverJe, /*arguments=*/ null, provider.getChecker());
-        return parse(
-                tree.getName().toString(),
-                context,
-                provider.getPath(tree),
-                /*useLocalScope=*/ false);
     }
 
     ///////////////////////////////////////////////////////////////////////////

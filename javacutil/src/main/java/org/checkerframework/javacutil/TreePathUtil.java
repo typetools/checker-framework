@@ -11,6 +11,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -163,6 +164,9 @@ public final class TreePathUtil {
      * Gets the enclosing method of the tree node defined by the given {@link TreePath}. It returns
      * a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element}
      * can be obtained.
+     *
+     * <p>Also see {@code AnnotatedTypeFactory#getEnclosingMethod} and {@code
+     * AnnotatedTypeFactory#getEnclosingClassOrMethod}, which do not require a TreePath.
      *
      * @param path the path defining the tree node
      * @return the enclosing method as given by the path, or {@code null} if one does not exist
@@ -334,5 +338,40 @@ public final class TreePathUtil {
             return classTree.getModifiers().getFlags().contains(Modifier.STATIC);
         }
         return false;
+    }
+
+    ///
+    /// Formatting
+    ///
+
+    /**
+     * Return a printed representation of a TreePath.
+     *
+     * @param path a TreePath
+     * @return a printed representation of the given TreePath
+     */
+    public static String toString(TreePath path) {
+        StringJoiner result = new StringJoiner(System.lineSeparator() + "    ");
+        result.add("TreePath:");
+        for (Tree t : path) {
+            result.add(TreeUtils.toStringTruncated(t, 65));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Returns a string representation of the leaf of the given path, using {@link
+     * TreeUtils#toStringTruncated}.
+     *
+     * @param path a path
+     * @param length the maximum length for the result; must be at least 6
+     * @return a one-line string representation of the leaf of the given path that is no longer than
+     *     {@code length} characters long
+     */
+    public static String leafToStringTruncated(@Nullable TreePath path, int length) {
+        if (path == null) {
+            return "null";
+        }
+        return TreeUtils.toStringTruncated(path.getLeaf(), length);
     }
 }

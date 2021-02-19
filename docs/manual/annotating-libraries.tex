@@ -454,6 +454,9 @@ A checker automatically reads some of its own stub files, even without a
 \<-Astubs> command-line argument; see
 Section~\ref{creating-a-checker-annotated-jdk}.
 
+User-supplied stub files override a checker's built-in stub files and the
+annotated JDK\@.
+
 
 \subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
 
@@ -486,6 +489,7 @@ If a method appears in more than one stub file (or twice in the same
 stub file), then, for each type hierarchy, the last annotation read is used.
 
 The annotated JDK is read as a stub file.
+You can override JDK annotations by providing your own stub file.
 
 The command-line option \<-AmergeStubsWithSource> tells the checker to use
 both source files and stub files.  The checker permits only values that are
