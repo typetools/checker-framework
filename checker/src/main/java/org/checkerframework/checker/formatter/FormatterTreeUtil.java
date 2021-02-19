@@ -388,7 +388,6 @@ public class FormatterTreeUtil {
      * @param msgKey the diagnostic message key
      * @param args arguments to the diagnostic message
      */
-    @FormatMethod
     public final void warning(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
         checker.reportWarning(res.location, msgKey, args);
     }

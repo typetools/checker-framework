@@ -8,7 +8,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.i18nformatter.I18nFormatterTreeUtil.FormatType;
 import org.checkerframework.checker.i18nformatter.I18nFormatterTreeUtil.I18nFormatCall;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
@@ -123,7 +122,6 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
     }
 
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,

@@ -223,7 +223,6 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,

@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -29,7 +28,6 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
      * <p>{@inheritDoc}
      */
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -38,7 +37,6 @@ public class DiagMessage {
         "nullness:assignment.type.incompatible", // this call to Arrays.copyOf is polymorphic
         "nullness:argument.type.incompatible" // https://tinyurl.com/cfissue/3448
     })
-    @FormatMethod
     public DiagMessage(Kind kind, @CompilerMessageKey String messageKey, Object... args) {
         this.kind = kind;
         this.messageKey = messageKey;

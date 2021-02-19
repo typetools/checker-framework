@@ -59,7 +59,6 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,

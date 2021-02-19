@@ -23,7 +23,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -107,7 +106,6 @@ public class InitializationVisitor<
     }
 
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueExp,

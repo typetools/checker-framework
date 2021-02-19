@@ -154,7 +154,6 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     // TODO: Change the documentation in BaseTypeVisitor to point out that
     // this isn't called for pseudo-assignments.
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueExp,

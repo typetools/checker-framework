@@ -6,7 +6,6 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
@@ -62,7 +61,6 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
     }
 
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueTree,

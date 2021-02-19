@@ -146,7 +146,6 @@ public class NullnessVisitor
     }
 
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueExp,
@@ -167,7 +166,6 @@ public class NullnessVisitor
     }
 
     @Override
-    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,

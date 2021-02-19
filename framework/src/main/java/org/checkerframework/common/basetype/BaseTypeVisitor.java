@@ -74,7 +74,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -2620,7 +2619,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
-    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueExp,
@@ -2645,7 +2643,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
-    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
@@ -2687,7 +2684,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
-    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,

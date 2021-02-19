@@ -58,7 +58,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
@@ -1318,7 +1317,6 @@ public class JavaExpressionParseUtil {
          * @param errorKey the error message key
          * @param args the arguments to the error message key
          */
-        @FormatMethod
         public JavaExpressionParseException(@CompilerMessageKey String errorKey, Object... args) {
             this(null, errorKey, args);
         }
@@ -1330,7 +1328,6 @@ public class JavaExpressionParseUtil {
          * @param errorKey the error message key
          * @param args the arguments to the error message key
          */
-        @FormatMethod
         public JavaExpressionParseException(
                 @Nullable Throwable cause, @CompilerMessageKey String errorKey, Object... args) {
             super(cause);

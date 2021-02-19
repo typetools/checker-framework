@@ -1006,7 +1006,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
-    @FormatMethod
     public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
         report(source, Kind.ERROR, messageKey, args);
     }
@@ -1018,7 +1017,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
-    @FormatMethod
     public void reportWarning(
             Object source, @CompilerMessageKey String messageKey, Object... args) {
         report(source, Kind.MANDATORY_WARNING, messageKey, args);
