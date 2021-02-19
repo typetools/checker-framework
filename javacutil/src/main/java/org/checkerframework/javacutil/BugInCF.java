@@ -3,8 +3,8 @@ package org.checkerframework.javacutil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Exception type indicating a bug in the framework. To indicate a bug a checker implementation, use
- * {@link TypeSystemError}.
+ * Exception type indicating a bug in the framework. To indicate a bug in a checker implementation,
+ * use {@link TypeSystemError}.
  */
 @SuppressWarnings("serial")
 public class BugInCF extends RuntimeException {

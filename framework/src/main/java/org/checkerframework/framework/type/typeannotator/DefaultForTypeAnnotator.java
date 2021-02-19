@@ -263,7 +263,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
          * Update this list from the {@code names} and {@code namesExceptions} fields of
          * a @DefaultFor annotation.
          *
-         * @param theQual the qualifier thet the @DefaultFor annotation is written on
+         * @param theQual the qualifier that a @DefaultFor annotation is written on
          * @param defaultFor the @DefaultFor annotation written on {@code theQual}
          */
         void add(AnnotationMirror theQual, DefaultFor defaultFor) {
@@ -290,12 +290,14 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
                 add(thisName);
             } else if (defaultFor.namesExceptions().length != 0) {
                 throw new TypeSystemError(
-                        "Annotation %s has empty names() but nonempty namesExceptions()", theQual);
+                        "On annotation %s, %s has empty names() but nonempty namesExceptions()",
+                        theQual, defaultFor);
             }
         }
 
         /**
-         * Returns the annotation that should be the default for a variable of the given name.
+         * Returns the annotation that should be the default for a variable of the given name, or
+         * for the return type of a method of the given name.
          *
          * @param name a variable name
          * @return the annotation that should be the default for a variable named {@code name}, or
@@ -311,8 +313,8 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
                     if (result == null) {
                         result = nameRegexes.anno;
                     } else {
-                        // This could use combine the annotatations instead, but I think doing so
-                        // silently  would confuse users.
+                        // This could combine the annotatations instead, but I think doing so
+                        // silently would confuse users.
                         throw new TypeSystemError(
                                 "Multiple annotations are applicable to the name \"%s\"", name);
                     }
@@ -345,7 +347,8 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
 
         /**
          * Returns true if the regular expressions match the given name -- that is, if {@link #anno}
-         * should be used as the default for a variable named {@code name}.
+         * should be used as the default type for a variable named {@code name}, or for the return
+         * type of a method named {@code name}.
          *
          * @param name a variable or method name
          * @return true if {@link #anno} should be used as the default for a variable named {@code
