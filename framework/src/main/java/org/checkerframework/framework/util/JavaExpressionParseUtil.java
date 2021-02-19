@@ -707,21 +707,23 @@ public class JavaExpressionParseUtil {
                                         + " inside "
                                         + expr.getScope().toString()));
             }
-            String s = expr.getNameAsExpression().getNameAsString();
+            String identifier = expr.getNameAsExpression().getNameAsString();
 
             JavaExpression receiver = expr.getScope().accept(this, context);
-            FieldAccess fieldAccess = getIdentifierAsField(receiver, s);
+            FieldAccess fieldAccess = getIdentifierAsField(receiver, identifier);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
 
-            ClassName classType = getIdentifierAsClassName(receiver.getType(), s);
+            ClassName classType = getIdentifierAsClassName(receiver.getType(), identifier);
             if (classType != null) {
                 return classType;
             }
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(
-                            s, String.format("field or class %s not found in %s", s, receiver)));
+                            identifier,
+                            String.format(
+                                    "field or class %s not found in %s", identifier, receiver)));
         }
 
         // expr is a Class literal
