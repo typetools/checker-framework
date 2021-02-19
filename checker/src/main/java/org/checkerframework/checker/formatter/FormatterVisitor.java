@@ -231,6 +231,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             if (param.getName() != ((IdentifierTree) argTree).getName()) {
                 return false;
             }
+            paramIndex++;
+            callIndex++;
         }
 
         return true;
