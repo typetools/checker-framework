@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
@@ -24,17 +25,24 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Holds information about types parsed from annotation files (stub files). */
 public class AnnotationFileElementTypes {
@@ -311,6 +319,104 @@ public class AnnotationFileElementTypes {
             return annotationFileAnnos.declAnnos.get(eltName);
         }
         return Collections.emptySet();
+    }
+
+    /**
+     * Returns the method type of the most specific fake override for the given element, when used
+     * as a member of the given type.
+     *
+     * @param elt element for which annotations are returned
+     * @param receiverType the type of the class that contains member (or a subtype of it)
+     * @return the most specific AnnotatedTypeMirror for {@code elt} that is a fake override, or
+     *     null if there are no fake overrides
+     */
+    public @Nullable AnnotatedTypeMirror getFakeOverride(
+            Element elt, AnnotatedTypeMirror receiverType) {
+        if (parsing) {
+            throw new BugInCF("parsing while calling getFakeOverride");
+        }
+
+        if (elt.getKind() != ElementKind.METHOD) {
+            return null;
+        }
+
+        ExecutableElement method = (ExecutableElement) elt;
+
+        TypeMirror methodReceiverType = method.getReceiverType();
+        if (methodReceiverType != null && methodReceiverType.getKind() == TypeKind.NONE) {
+            return null;
+        }
+
+        // This is a list of pairs of (where defined, method type) for fake overrides.  The second
+        // element of each pair is currently always an AnnotatedExecutableType.
+        List<Pair<TypeMirror, AnnotatedTypeMirror>> candidates =
+                annotationFileAnnos.fakeOverrides.get(elt);
+
+        if (candidates == null || candidates.isEmpty()) {
+            return null;
+        }
+
+        TypeMirror receiverTypeMirror = receiverType.getUnderlyingType();
+
+        // A list of fake receiver types.
+        List<TypeMirror> applicableClasses = new ArrayList<>();
+        List<TypeMirror> applicableInterfaces = new ArrayList<>();
+        for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+            TypeMirror fakeLocation = candidatePair.first;
+            AnnotatedExecutableType candidate = (AnnotatedExecutableType) candidatePair.second;
+            if (factory.types.isSameType(receiverTypeMirror, fakeLocation)) {
+                return candidate;
+            } else if (factory.types.isSubtype(receiverTypeMirror, fakeLocation)) {
+                TypeElement fakeElement = TypesUtils.getTypeElement(fakeLocation);
+                switch (fakeElement.getKind()) {
+                    case CLASS:
+                    case ENUM:
+                        applicableClasses.add(fakeLocation);
+                        break;
+                    case INTERFACE:
+                    case ANNOTATION_TYPE:
+                        applicableInterfaces.add(fakeLocation);
+                        break;
+                    default:
+                        throw new BugInCF(
+                                "What type? %s %s %s",
+                                fakeElement.getKind(), fakeElement.getClass(), fakeElement);
+                }
+            }
+        }
+
+        if (applicableClasses.isEmpty() && applicableInterfaces.isEmpty()) {
+            return null;
+        }
+        TypeMirror fakeReceiverType =
+                TypesUtils.mostSpecific(
+                        !applicableClasses.isEmpty() ? applicableClasses : applicableInterfaces,
+                        factory.getProcessingEnv());
+        if (fakeReceiverType == null) {
+            StringJoiner message = new StringJoiner(System.lineSeparator());
+            message.add(
+                    String.format(
+                            "No most specific fake override found for %s with receiver %s.  These fake overrides are applicable:",
+                            elt, receiverTypeMirror));
+            for (TypeMirror candidate : applicableClasses) {
+                message.add("  class candidate: " + candidate);
+            }
+            for (TypeMirror candidate : applicableInterfaces) {
+                message.add("  interface candidate: " + candidate);
+            }
+            throw new BugInCF(message.toString());
+        }
+
+        for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+            TypeMirror candidateReceiverType = candidatePair.first;
+            if (factory.types.isSameType(fakeReceiverType, candidateReceiverType)) {
+                return (AnnotatedExecutableType) candidatePair.second;
+            }
+        }
+
+        throw new BugInCF(
+                "No match for %s in %s %s %s",
+                fakeReceiverType, candidates, applicableClasses, applicableInterfaces);
     }
 
     ///

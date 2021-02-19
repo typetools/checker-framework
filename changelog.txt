@@ -2,6 +2,11 @@ Version 3.??.??, March 1, 2021
 
 **User-visible changes:**
 
+In a stub file for a class C, you may write a declaration for a method that is
+inherited by C but not defined by it.  Previously, such stub declarations were
+ignored.  For more information, see the manual's documentation of "fake
+overrides".
+
 Nullness Checker error message key changes:
  * `known.nonnull` => `nulltest.redundant`
  * `initialization.static.fields.uninitialized` => `initialization.static.field.uninitialized`,
@@ -33,6 +38,10 @@ Changes to JavaExpression parsing:
  * These methods moved:
     * `GenericAnnotatedTypeFactory#standardizeAnnotationFromContract` => `DependentTypesHelper`
     * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`
+
+Changes to JavaExpressionContext:
+ * New method JavaExpressionContext#buildContextForMethodDeclaration(MethodTree, SourceChecker)
+   replaces all overloads of buildContextForMethodDeclaration.
 
 Parsing a Java expression no longer requires the formal parameters
 `AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
