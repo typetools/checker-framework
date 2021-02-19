@@ -880,6 +880,47 @@ public final class TypesUtils {
         return types.glb(t1, t2);
     }
 
+    /**
+     * Returns the most specific type from the list, or null if none exists.
+     *
+     * @param typeMirrors a list of types
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     * @return the most specific of the types, or null if none exists
+     */
+    public static @Nullable TypeMirror mostSpecific(
+            List<TypeMirror> typeMirrors, ProcessingEnvironment processingEnv) {
+        if (typeMirrors.size() == 1) {
+            return typeMirrors.get(0);
+        } else {
+            JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+            com.sun.tools.javac.code.Types types =
+                    com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+            com.sun.tools.javac.util.List<Type> typeList = typeMirrorListToTypeList(typeMirrors);
+            Type glb = types.glb(typeList);
+            for (Type candidate : typeList) {
+                if (types.isSameType(glb, candidate)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Given a list of TypeMirror, return a list of Type.
+     *
+     * @param typeMirrors a list of TypeMirrors
+     * @return the argument, converted to a javac list
+     */
+    private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
+            List<TypeMirror> typeMirrors) {
+        List<Type> typeList = new ArrayList<>();
+        for (TypeMirror tm : typeMirrors) {
+            typeList.add((Type) tm);
+        }
+        return com.sun.tools.javac.util.List.from(typeList);
+    }
+
     /// Substitutions
 
     /**
