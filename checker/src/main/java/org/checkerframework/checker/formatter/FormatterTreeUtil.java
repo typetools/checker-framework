@@ -160,8 +160,15 @@ public class FormatterTreeUtil {
         return new Result<>(asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
-    /** Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}. */
-    public boolean isFormatCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
+    /**
+     * Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}.
+     *
+     * @param node a method call
+     * @param atypeFactory a type factory
+     * @return true if {@code node} is a call to a method annotated with {@code @FormatMethod}
+     */
+    public boolean isFormatMethodCall(
+            MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, FormatMethod.class);
         return anno != null;
@@ -294,6 +301,7 @@ public class FormatterTreeUtil {
         /**
          * Returns the conversion category for every parameter.
          *
+         * @return the conversion categories of all the parameters
          * @see ConversionCategory
          */
         public final ConversionCategory[] getFormatCategories() {
