@@ -201,13 +201,11 @@ public class FormatterTreeUtil {
         ExpressionTree formatStringTree = invocationTree.getArguments().get(formatStringIndex);
         AnnotatedTypeMirror formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
         List<? extends ExpressionTree> allArgs = invocationTree.getArguments();
+        List<? extends ExpressionTree> args =
+                allArgs.subList(formatStringIndex + 1, allArgs.size());
 
         return new FormatCall(
-                invocationTree,
-                formatStringTree,
-                formatStringType,
-                allArgs.subList(formatStringIndex + 1, allArgs.size()),
-                atypeFactory);
+                invocationTree, formatStringTree, formatStringType, args, atypeFactory);
     }
 
     /** Represents a format method invocation in the syntax tree. */
