@@ -744,7 +744,8 @@ subprojects {
                                 "-workDir:${jtregOutput}/${name}/work",
                                 "-reportDir:${jtregOutput}/${name}/report",
                                 "-verbose:error,fail",
-                                "-javacoptions:-g",
+                                // Don't add debugging information
+                                //  "-javacoptions:-g",
                                 "-keywords:!ignore",
                                 "-samevm",
                                 "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",

@@ -201,21 +201,17 @@ public class FormatterTreeUtil {
         ExpressionTree formatStringTree = invocationTree.getArguments().get(formatStringIndex);
         AnnotatedTypeMirror formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
         List<? extends ExpressionTree> allArgs = invocationTree.getArguments();
+        List<? extends ExpressionTree> args =
+                allArgs.subList(formatStringIndex + 1, allArgs.size());
 
         return new FormatCall(
-                invocationTree,
-                formatStringTree,
-                formatStringType,
-                allArgs.subList(formatStringIndex + 1, allArgs.size()),
-                atypeFactory);
+                invocationTree, formatStringTree, formatStringType, args, atypeFactory);
     }
 
     /** Represents a format method invocation in the syntax tree. */
     public class FormatCall {
         /** The call itself. */
         final MethodInvocationTree invocationTree;
-        // /** The index of the format string in the arguments. */
-        // private final int formatStringIndex;
         /** The format string argument. */
         private final ExpressionTree formatStringTree;
         /** The type of the format string argument. */
@@ -338,6 +334,7 @@ public class FormatterTreeUtil {
         /**
          * Returns the conversion category for every parameter.
          *
+         * @return the conversion categories of all the parameters
          * @see ConversionCategory
          */
         public final ConversionCategory[] getFormatCategories() {
