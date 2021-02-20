@@ -214,8 +214,6 @@ public class FormatterTreeUtil {
     public class FormatCall {
         /** The call itself. */
         final MethodInvocationTree invocationTree;
-        // /** The index of the format string in the arguments. */
-        // private final int formatStringIndex;
         /** The format string argument. */
         private final ExpressionTree formatStringTree;
         /** The type of the format string argument. */
