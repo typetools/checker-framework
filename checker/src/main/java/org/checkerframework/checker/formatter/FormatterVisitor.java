@@ -42,8 +42,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        FormatterTreeUtil tu = atypeFactory.treeUtil;
-        if (tu.isFormatCall(node, atypeFactory)) {
+        FormatterTreeUtil ftu = atypeFactory.treeUtil;
+        if (ftu.isFormatMethodCall(node, atypeFactory)) {
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
             MethodTree enclosingMethod =
                     TreePathUtil.enclosingMethod(atypeFactory.getPath(fc.invocationTree));
@@ -55,7 +55,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     // Nothing to do, because call is legal.
                 } else {
                     // I.1
-                    tu.failure(errMissingFormat, "format.string.invalid", errMissingFormat.value());
+                    ftu.failure(
+                            errMissingFormat, "format.string.invalid", errMissingFormat.value());
                 }
             } else {
                 // The string has a @Format annotation.
@@ -70,11 +71,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             // For assignments, format.missing.arguments is issued
                             // from commonAssignmentCheck.
                             // II.1
-                            tu.failure(invc, "format.missing.arguments", formatl, argl);
+                            ftu.failure(invc, "format.missing.arguments", formatl, argl);
                         } else {
                             if (argl > formatl) {
                                 // II.2
-                                tu.warning(invc, "format.excess.arguments", formatl, argl);
+                                ftu.warning(invc, "format.excess.arguments", formatl, argl);
                             }
                             for (int i = 0; i < formatl; ++i) {
                                 ConversionCategory formatCat = formatCats[i];
@@ -84,14 +85,16 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                 switch (formatCat) {
                                     case UNUSED:
                                         // I.2
-                                        tu.warning(arg, "format.argument.unused", " " + (1 + i));
+                                        ftu.warning(arg, "format.argument.unused", " " + (1 + i));
                                         break;
                                     case NULL:
                                         // I.3
                                         if (argType.getKind() == TypeKind.NULL) {
-                                            tu.warning(arg, "format.specifier.null", " " + (1 + i));
+                                            ftu.warning(
+                                                    arg, "format.specifier.null", " " + (1 + i));
                                         } else {
-                                            tu.failure(arg, "format.specifier.null", " " + (1 + i));
+                                            ftu.failure(
+                                                    arg, "format.specifier.null", " " + (1 + i));
                                         }
                                         break;
                                     case GENERAL:
@@ -103,7 +106,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                                     TreeUtils.elementFromUse(node);
                                             CharSequence methodName =
                                                     ElementUtils.getSimpleNameOrDescription(method);
-                                            tu.failure(
+                                            ftu.failure(
                                                     arg,
                                                     "argument.type.incompatible",
                                                     "in varargs position",
@@ -119,7 +122,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     case ARRAY:
                         // III
                         if (!isWrappedFormatCall(fc, enclosingMethod)) {
-                            tu.warning(invc, "format.indirect.arguments");
+                            ftu.warning(invc, "format.indirect.arguments");
                         }
                         // TODO:  If it is explict array construction, such as "new Object[] {
                         // ... }", then we could treat it like the VARARGS case, analyzing each
@@ -130,14 +133,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             if (cat == ConversionCategory.NULL) {
                                 // I.3
                                 if (invc.value() == FormatterTreeUtil.InvocationType.NULLARRAY) {
-                                    tu.warning(invc, "format.specifier.null", "");
+                                    ftu.warning(invc, "format.specifier.null", "");
                                 } else {
-                                    tu.failure(invc, "format.specifier.null", "");
+                                    ftu.failure(invc, "format.specifier.null", "");
                                 }
                             }
                             if (cat == ConversionCategory.UNUSED) {
                                 // I.2
-                                tu.warning(invc, "format.argument.unused", "");
+                                ftu.warning(invc, "format.argument.unused", "");
                             }
                         }
                         break;
