@@ -211,41 +211,41 @@ public class FormatterTreeUtil {
         AnnotatedTypeMirror formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
         List<? extends ExpressionTree> args = theargs.subList(1, theargs.size());
         return new FormatCall(
-                formatStringType, args, invocationTree, formatStringTree, atypeFactory);
+                invocationTree, formatStringTree, formatStringType, args, atypeFactory);
     }
 
     /** Represents a format method invocation in the syntax tree. */
     public class FormatCall {
-        /** The type of the format string argument. */
-        private final AnnotatedTypeMirror formatStringType;
-        /** The arguments that follow the format string argument. */
-        private final List<? extends ExpressionTree> args;
         /** The call itself. */
         final MethodInvocationTree invocationTree;
         /** The format string argument. */
         private final ExpressionTree formatStringTree;
+        /** The type of the format string argument. */
+        private final AnnotatedTypeMirror formatStringType;
+        /** The arguments that follow the format string argument. */
+        private final List<? extends ExpressionTree> args;
         /** The type factory. */
         private final AnnotatedTypeFactory atypeFactory;
 
         /**
          * Create a new FormatCall object.
          *
-         * @param formatStringType the type of the format string argument
-         * @param args the arguments that follow the format string argument
          * @param invocationTree the call itself
          * @param formatStringTree the format string argument
+         * @param formatStringType the type of the format string argument
+         * @param args the arguments that follow the format string argument
          * @param atypeFactory the type factory
          */
         private FormatCall(
-                AnnotatedTypeMirror formatStringType,
-                List<? extends ExpressionTree> args,
                 MethodInvocationTree invocationTree,
                 ExpressionTree formatStringTree,
+                AnnotatedTypeMirror formatStringType,
+                List<? extends ExpressionTree> args,
                 AnnotatedTypeFactory atypeFactory) {
-            this.formatStringType = formatStringType;
-            this.args = args;
             this.invocationTree = invocationTree;
             this.formatStringTree = formatStringTree;
+            this.formatStringType = formatStringType;
+            this.args = args;
             this.atypeFactory = atypeFactory;
         }
 
