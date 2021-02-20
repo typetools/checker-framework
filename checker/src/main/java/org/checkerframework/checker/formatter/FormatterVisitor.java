@@ -44,9 +44,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil ftu = atypeFactory.treeUtil;
         if (ftu.isFormatMethodCall(node, atypeFactory)) {
-            FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
+            FormatCall fc = ftu.create(node, atypeFactory);
             MethodTree enclosingMethod =
-                    TreePathUtil.enclosingMethod(atypeFactory.getPath(fc.node));
+                    TreePathUtil.enclosingMethod(atypeFactory.getPath(fc.invocationTree));
 
             Result<String> errMissingFormat = fc.errMissingFormatAnnotation();
             if (errMissingFormat != null) {
@@ -177,7 +177,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         boolean withinFormatMethod =
                 (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
                         != null);
-        return withinFormatMethod && forwardsArguments(fc.node, enclosingMethod);
+        return withinFormatMethod && forwardsArguments(fc.invocationTree, enclosingMethod);
     }
 
     /**
