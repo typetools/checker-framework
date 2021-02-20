@@ -43,8 +43,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil ftu = atypeFactory.treeUtil;
-        if (ftu.isFormatMethodCall(node, atypeFactory)) {
-            FormatCall fc = ftu.create(node, atypeFactory);
+        FormatCall fc = ftu.create(node, atypeFactory);
+        if (fc != null) {
             MethodTree enclosingMethod =
                     TreePathUtil.enclosingMethod(atypeFactory.getPath(fc.invocationTree));
 
