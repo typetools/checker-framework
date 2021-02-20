@@ -214,10 +214,13 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns null if the format-string argument's type is annotated as {@code @Format}.
-         * Returns an error description if not annotated as {@code @Format}.
+         * Returns an error description if the format-string argument's type is <em>not</em>
+         * annotated as {@code @Format}. Returns null if it is annotated.
+         *
+         * @return an error description if the format string is not annotated as {@code @Format}, or
+         *     null if it is
          */
-        public final Result<String> hasFormatAnnotation() {
+        public final Result<String> errMissingFormatAnnotation() {
             if (!formatAnno.hasAnnotation(Format.class)) {
                 String msg = "(is a @Format annotation missing?)";
                 AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
