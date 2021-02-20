@@ -22,6 +22,7 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -194,8 +195,13 @@ public class FormatterTreeUtil {
      * @return a new FormatCall, or null if the invocation is of a method that is improperly
      *     annotated @FormatMethod
      */
-    public FormatCall create(
+    public @Nullable FormatCall create(
             MethodInvocationTree invocationTree, AnnotatedTypeFactory atypeFactory) {
+        FormatterTreeUtil ftu = ((FormatterAnnotatedTypeFactory) atypeFactory).treeUtil;
+        if (!ftu.isFormatMethodCall(invocationTree, atypeFactory)) {
+            return null;
+        }
+
         // TODO figure out how to make passing of environment
         // objects such as atypeFactory, processingEnv, ... nicer
         List<? extends ExpressionTree> theargs;
