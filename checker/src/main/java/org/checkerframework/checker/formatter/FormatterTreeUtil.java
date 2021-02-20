@@ -186,31 +186,67 @@ public class FormatterTreeUtil {
                 == Locale.class);
     }
 
+    /**
+     * Creates a new FormatCall, or returns null.
+     *
+     * @param invocationTree a method invocation, where the method is annotated @FormatMethod
+     * @param atypeFactory the type factory
+     * @return a new FormatCall, or null if the invocation is of a method that is improperly
+     *     annotated @FormatMethod
+     */
+    public FormatCall create(
+            MethodInvocationTree invocationTree, AnnotatedTypeFactory atypeFactory) {
+        // TODO figure out how to make passing of environment
+        // objects such as atypeFactory, processingEnv, ... nicer
+        List<? extends ExpressionTree> theargs;
+
+        theargs = invocationTree.getArguments();
+        if (isLocale(theargs.get(0), atypeFactory)) {
+            // call with Locale as first argument
+            theargs = theargs.subList(1, theargs.size());
+        }
+
+        // TODO Check that the first parameter exists and is a string.
+        ExpressionTree formatStringTree = theargs.get(0);
+        AnnotatedTypeMirror formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
+        List<? extends ExpressionTree> args = theargs.subList(1, theargs.size());
+        return new FormatCall(
+                invocationTree, formatStringTree, formatStringType, args, atypeFactory);
+    }
+
     /** Represents a format method invocation in the syntax tree. */
     public class FormatCall {
-        private final AnnotatedTypeMirror formatAnno;
+        /** The call itself. */
+        final MethodInvocationTree invocationTree;
+        /** The format string argument. */
+        private final ExpressionTree formatStringTree;
+        /** The type of the format string argument. */
+        private final AnnotatedTypeMirror formatStringType;
+        /** The arguments that follow the format string argument. */
         private final List<? extends ExpressionTree> args;
-        final MethodInvocationTree node;
-        private final ExpressionTree formatArg;
+        /** The type factory. */
         private final AnnotatedTypeFactory atypeFactory;
 
-        public FormatCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
-            this.node = node;
-            // TODO figure out how to make passing of environment
-            // objects such as atypeFactory, processingEnv, ... nicer
+        /**
+         * Create a new FormatCall object.
+         *
+         * @param invocationTree the call itself
+         * @param formatStringTree the format string argument
+         * @param formatStringType the type of the format string argument
+         * @param args the arguments that follow the format string argument
+         * @param atypeFactory the type factory
+         */
+        private FormatCall(
+                MethodInvocationTree invocationTree,
+                ExpressionTree formatStringTree,
+                AnnotatedTypeMirror formatStringType,
+                List<? extends ExpressionTree> args,
+                AnnotatedTypeFactory atypeFactory) {
+            this.invocationTree = invocationTree;
+            this.formatStringTree = formatStringTree;
+            this.formatStringType = formatStringType;
+            this.args = args;
             this.atypeFactory = atypeFactory;
-            List<? extends ExpressionTree> theargs;
-
-            theargs = node.getArguments();
-            if (isLocale(theargs.get(0), atypeFactory)) {
-                // call with Locale as first argument
-                theargs = theargs.subList(1, theargs.size());
-            }
-
-            // TODO Check that the first parameter exists and is a string.
-            formatArg = theargs.get(0);
-            formatAnno = atypeFactory.getAnnotatedType(formatArg);
-            this.args = theargs.subList(1, theargs.size());
         }
 
         /**
@@ -221,13 +257,13 @@ public class FormatterTreeUtil {
          *     null if it is
          */
         public final Result<String> errMissingFormatAnnotation() {
-            if (!formatAnno.hasAnnotation(Format.class)) {
+            if (!formatStringType.hasAnnotation(Format.class)) {
                 String msg = "(is a @Format annotation missing?)";
-                AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
+                AnnotationMirror inv = formatStringType.getAnnotation(InvalidFormat.class);
                 if (inv != null) {
                     msg = invalidFormatAnnotationToErrorMessage(inv);
                 }
-                return new Result<>(msg, formatArg);
+                return new Result<>(msg, formatStringTree);
             }
             return null;
         }
@@ -294,7 +330,7 @@ public class FormatterTreeUtil {
                                 Void.TYPE);
             }
 
-            ExpressionTree loc = node.getMethodSelect();
+            ExpressionTree loc = invocationTree.getMethodSelect();
             if (type != InvocationType.VARARG && !args.isEmpty()) {
                 loc = args.get(0);
             }
@@ -308,7 +344,7 @@ public class FormatterTreeUtil {
          * @see ConversionCategory
          */
         public final ConversionCategory[] getFormatCategories() {
-            AnnotationMirror anno = formatAnno.getAnnotation(Format.class);
+            AnnotationMirror anno = formatStringType.getAnnotation(Format.class);
             return formatAnnotationToCategories(anno);
         }
 
