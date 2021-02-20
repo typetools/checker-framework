@@ -186,11 +186,39 @@ public class FormatterTreeUtil {
                 == Locale.class);
     }
 
+    /**
+     * Creates a new FormatCall, or returns null.
+     *
+     * @param invocationTree a method invocation, where the method is annotated @FormatMethod
+     * @param atypeFactory the type factory
+     * @return a new FormatCall, or null if the invocation is of a method that is improperly
+     *     annotated @FormatMethod
+     */
+    public FormatCall create(
+            MethodInvocationTree invocationTree, AnnotatedTypeFactory atypeFactory) {
+        // TODO figure out how to make passing of environment
+        // objects such as atypeFactory, processingEnv, ... nicer
+        List<? extends ExpressionTree> theargs;
+
+        theargs = invocationTree.getArguments();
+        if (isLocale(theargs.get(0), atypeFactory)) {
+            // call with Locale as first argument
+            theargs = theargs.subList(1, theargs.size());
+        }
+
+        // TODO Check that the first parameter exists and is a string.
+        ExpressionTree formatStringTree = theargs.get(0);
+        AnnotatedTypeMirror formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
+        List<? extends ExpressionTree> args = theargs.subList(1, theargs.size());
+        return new FormatCall(
+                invocationTree, formatStringTree, formatStringType, args, atypeFactory);
+    }
+
     /** Represents a format method invocation in the syntax tree. */
     public class FormatCall {
         /** The call itself. */
         final MethodInvocationTree invocationTree;
-
+        /** The format string argument. */
         private final ExpressionTree formatStringTree;
         /** The type of the format string argument. */
         private final AnnotatedTypeMirror formatStringType;
@@ -203,22 +231,21 @@ public class FormatterTreeUtil {
          * Create a new FormatCall object.
          *
          * @param invocationTree the call itself
+         * @param formatStringTree the format string argument
+         * @param formatStringType the type of the format string argument
+         * @param args the arguments that follow the format string argument
          * @param atypeFactory the type factory
          */
-        public FormatCall(MethodInvocationTree invocationTree, AnnotatedTypeFactory atypeFactory) {
+        private FormatCall(
+                MethodInvocationTree invocationTree,
+                ExpressionTree formatStringTree,
+                AnnotatedTypeMirror formatStringType,
+                List<? extends ExpressionTree> args,
+                AnnotatedTypeFactory atypeFactory) {
             this.invocationTree = invocationTree;
-
-            List<? extends ExpressionTree> theargs;
-            theargs = invocationTree.getArguments();
-            if (isLocale(theargs.get(0), atypeFactory)) {
-                // call with Locale as first argument
-                theargs = theargs.subList(1, theargs.size());
-            }
-
-            // TODO Check that the first parameter exists and is a string.
-            formatStringTree = theargs.get(0);
-            formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
-            this.args = theargs.subList(1, theargs.size());
+            this.formatStringTree = formatStringTree;
+            this.formatStringType = formatStringType;
+            this.args = args;
             this.atypeFactory = atypeFactory;
         }
 
