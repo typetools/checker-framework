@@ -183,8 +183,8 @@ public class FormatterTreeUtil {
      *     annotated @FormatMethod
      */
     public @Nullable FormatCall create(
-            MethodInvocationTree invocationTree, FormatterAnnotatedTypeFactory atypeFactory) {
-        FormatterTreeUtil ftu = atypeFactory.treeUtil;
+            MethodInvocationTree invocationTree, AnnotatedTypeFactory atypeFactory) {
+        FormatterTreeUtil ftu = ((FormatterAnnotatedTypeFactory) atypeFactory).treeUtil;
         if (!ftu.isFormatMethodCall(invocationTree, atypeFactory)) {
             return null;
         }
@@ -219,7 +219,7 @@ public class FormatterTreeUtil {
         /** The arguments that follow the format string argument. */
         private final List<? extends ExpressionTree> args;
         /** The type factory. */
-        private final FormatterAnnotatedTypeFactory atypeFactory;
+        private final AnnotatedTypeFactory atypeFactory;
 
         /**
          * Create a new FormatCall object.
@@ -235,7 +235,7 @@ public class FormatterTreeUtil {
                 ExpressionTree formatStringTree,
                 AnnotatedTypeMirror formatStringType,
                 List<? extends ExpressionTree> args,
-                FormatterAnnotatedTypeFactory atypeFactory) {
+                AnnotatedTypeFactory atypeFactory) {
             this.invocationTree = invocationTree;
             this.formatStringTree = formatStringTree;
             this.formatStringType = formatStringType;
