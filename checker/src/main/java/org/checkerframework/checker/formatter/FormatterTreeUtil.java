@@ -190,7 +190,7 @@ public class FormatterTreeUtil {
     public class FormatCall {
         /** The call itself. */
         final MethodInvocationTree invocationTree;
-
+        /** The format string argument. */
         private final ExpressionTree formatStringTree;
         /** The type of the format string argument. */
         private final AnnotatedTypeMirror formatStringType;
