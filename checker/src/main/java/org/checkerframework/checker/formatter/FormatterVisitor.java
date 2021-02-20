@@ -48,7 +48,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             MethodTree enclosingMethod =
                     TreePathUtil.enclosingMethod(atypeFactory.getPath(fc.invocationTree));
 
-            Result<String> errMissingFormat = fc.hasFormatAnnotation();
+            Result<String> errMissingFormat = fc.errMissingFormatAnnotation();
             if (errMissingFormat != null) {
                 // The string's type has no @Format annotation.
                 if (isWrappedFormatCall(fc, enclosingMethod)) {
@@ -178,16 +178,19 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     /**
-     * Returns true if {@code fc} is within a method m, and fc's arguments are m's formal
-     * parameters. In other words, fc forwards m's arguments.
+     * Returns true if {@code invocationTree}'s arguments are {@code enclosingMethod}'s formal
+     * parameters. In other words, {@code invocationTree} forwards {@code enclosingMethod}'s
+     * arguments.
      *
-     * @param invocTree an invocation of a method
+     * <p>Only arguments from the last String formal parameter onward count.
+     *
+     * @param invocationTree an invocation of a method
      * @param enclosingMethod the method that contains the call
-     * @return true if {@code fc} is a call to a method that forwards its containing method's
-     *     arguments
+     * @return true if {@code invocationTree} is a call to a method that forwards its containing
+     *     method's arguments
      */
     private boolean forwardsArguments(
-            MethodInvocationTree invocTree, @Nullable MethodTree enclosingMethod) {
+            MethodInvocationTree invocationTree, @Nullable MethodTree enclosingMethod) {
 
         if (enclosingMethod == null) {
             return false;
@@ -195,7 +198,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         ExecutableElement enclosingMethodElement =
                 TreeUtils.elementFromDeclaration(enclosingMethod);
 
-        List<? extends ExpressionTree> args = invocTree.getArguments();
+        List<? extends ExpressionTree> args = invocationTree.getArguments();
         List<? extends VariableTree> params = enclosingMethod.getParameters();
         List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
 
