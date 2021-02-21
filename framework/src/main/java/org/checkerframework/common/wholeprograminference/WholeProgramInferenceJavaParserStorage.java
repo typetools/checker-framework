@@ -334,7 +334,7 @@ public class WholeProgramInferenceJavaParserStorage
             return;
         }
 
-        TypeElement toplevelClass = ElementUtils.toplevelEnclosingClass(element);
+        TypeElement toplevelClass = ElementUtils.toplevelEnclosingTypeElement(element);
         String path = ElementUtils.getSourceFilePath(toplevelClass);
         addSourceFile(path);
         CompilationUnitAnnos sourceAnnos = sourceToAnnos.get(path);
@@ -487,7 +487,7 @@ public class WholeProgramInferenceJavaParserStorage
             throw new BugInCF("Called addClassesForElement for non-source element: " + element);
         }
 
-        TypeElement toplevelClass = ElementUtils.toplevelEnclosingClass(element);
+        TypeElement toplevelClass = ElementUtils.toplevelEnclosingTypeElement(element);
         String path = ElementUtils.getSourceFilePath(toplevelClass);
         if (classToAnnos.containsKey(ElementUtils.getBinaryName(toplevelClass))) {
             return path;
