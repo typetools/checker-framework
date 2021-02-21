@@ -1,12 +1,15 @@
 import org.checkerframework.checker.units.qual.Area;
 import org.checkerframework.checker.units.qual.Prefix;
+import org.checkerframework.checker.units.qual.Volume;
 import org.checkerframework.checker.units.qual.degrees;
 import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.radians;
@@ -59,6 +62,15 @@ public class BasicUnits {
 
         // :: error: (assignment.type.incompatible)
         @km2 int bae1 = m * m;
+
+        @Volume int vol = m * m * m;
+        @m3 int gvol = m * m * m;
+
+        // :: error: (assignment.type.incompatible)
+        @Volume int bvol = m * m * m * m;
+
+        // :: error: (assignment.type.incompatible)
+        @km3 int bvol1 = m * m * m;
 
         @radians double rad = 20.0d * UnitsTools.rad;
         @degrees double deg = 30.0d * UnitsTools.deg;

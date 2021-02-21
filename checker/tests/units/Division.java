@@ -1,13 +1,16 @@
 import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.checker.units.util.UnitsTools;
 
@@ -37,6 +40,9 @@ public class Division {
         @mPERs int mPERs = 20 * UnitsTools.mPERs;
         @kmPERh int kmPERh = 2 * UnitsTools.kmPERh;
         @mPERs2 int mPERs2 = 30 * UnitsTools.mPERs2;
+        @m3 int m3 = 125 * UnitsTools.m3;
+        @km3 int km3 = 27 * UnitsTools.km3;
+        @mm3 int mm3 = 64 * UnitsTools.mm3;
 
         // m / s = mPERs
         @mPERs int velocitym = m / s;
@@ -62,6 +68,21 @@ public class Division {
         @mm int distancemm = mm2 / mm;
         // :: error: (assignment.type.incompatible)
         distancemm = km2 / mm;
+
+        // m3 / m2 = m
+        distancem = m3 / m2;
+        // :: error: (assignment.type.incompatible)
+        distancem = m3 / km2;
+
+        // km3 / km2 = km
+        distancekm = km3 / km2;
+        // :: error: (assignment.type.incompatible)
+        distancekm = km3 / m2;
+
+        // mm3 / mm2 = mm
+        distancemm = mm3 / mm2;
+        // :: error: (assignment.type.incompatible)
+        distancemm = km3 / mm2;
 
         // m / mPERs = s
         @s int times = m / mPERs;

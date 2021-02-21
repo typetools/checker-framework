@@ -10,20 +10,24 @@ import org.checkerframework.checker.units.qual.Mass;
 import org.checkerframework.checker.units.qual.Substance;
 import org.checkerframework.checker.units.qual.Temperature;
 import org.checkerframework.checker.units.qual.Time;
+import org.checkerframework.checker.units.qual.Volume;
 import org.checkerframework.checker.units.qual.cd;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.min;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.checker.units.util.UnitsTools;
@@ -77,6 +81,11 @@ public class SubtractionUnits {
         @km2 int bSquareKilometer = 5 * UnitsTools.km2;
         @km2 int sSquareKilometer = aSquareKilometer - bSquareKilometer;
 
+        // Cubic kilometer
+        @km3 int aCubicKilometer = 5 * UnitsTools.km3;
+        @km3 int bCubicKilometer = 5 * UnitsTools.km3;
+        @km3 int sCubicKilometer = aCubicKilometer - bCubicKilometer;
+
         // Kilometer per hour
         @kmPERh int aKilometerPerHour = 5 * UnitsTools.kmPERh;
         @kmPERh int bKilometerPerHour = 5 * UnitsTools.kmPERh;
@@ -91,6 +100,11 @@ public class SubtractionUnits {
         @m2 int aSquareMeter = 5 * UnitsTools.m2;
         @m2 int bSquareMeter = 5 * UnitsTools.m2;
         @m2 int sSquareMeter = aSquareMeter - bSquareMeter;
+
+        // Cubic meter
+        @m3 int aCubicMeter = 5 * UnitsTools.m3;
+        @m3 int bCubicMeter = 5 * UnitsTools.m3;
+        @m3 int sCubicMeter = aCubicMeter - bCubicMeter;
 
         // Meter per second
         @mPERs int aMeterPerSecond = 5 * UnitsTools.mPERs;
@@ -116,6 +130,11 @@ public class SubtractionUnits {
         @mm2 int aSquareMillimeter = 5 * UnitsTools.mm2;
         @mm2 int bSquareMillimeter = 5 * UnitsTools.mm2;
         @mm2 int sSquareMillimeter = aSquareMillimeter - bSquareMillimeter;
+
+        // Cubic millimeter
+        @mm3 int aCubicMillimeter = 5 * UnitsTools.mm3;
+        @mm3 int bCubicMillimeter = 5 * UnitsTools.mm3;
+        @mm3 int sCubicMillimeter = aCubicMillimeter - bCubicMillimeter;
 
         // Mole
         @mol int aMole = 5 * UnitsTools.mol;
@@ -169,6 +188,10 @@ public class SubtractionUnits {
         @Time int aTime = 5 * UnitsTools.min;
         @Time int bTime = 5 * UnitsTools.h;
 
+        // Volume
+        @Volume int aVolume = 5 * UnitsTools.m3;
+        @Volume int bVolume = 5 * UnitsTools.km3;
+
         // Dimensions
         // :: error: (assignment.type.incompatible)
         @Acceleration int sAcceleration = aAcceleration - bMass;
@@ -204,6 +227,10 @@ public class SubtractionUnits {
         // Time
         // :: error: (assignment.type.incompatible)
         @Time int sTime = aArea - bTime;
+
+        // Volume
+        // :: error: (assignment.type.incompatible)
+        @Volume int sVolume = aVolume - bArea;
 
         // Units
         // Amperes
@@ -242,6 +269,10 @@ public class SubtractionUnits {
         @km2 int aSquareKilometer = 5 * UnitsTools.km2;
         @km2 int bSquareKilometer = 5 * UnitsTools.km2;
 
+        // Cubic kilometer
+        @km3 int aCubicKilometer = 5 * UnitsTools.km3;
+        @km3 int bCubicKilometer = 5 * UnitsTools.km3;
+
         // Kilometer per hour
         @kmPERh int aKilometerPerHour = 5 * UnitsTools.kmPERh;
         @kmPERh int bKilometerPerHour = 5 * UnitsTools.kmPERh;
@@ -253,6 +284,10 @@ public class SubtractionUnits {
         // Square meter
         @m2 int aSquareMeter = 5 * UnitsTools.m2;
         @m2 int bSquareMeter = 5 * UnitsTools.m2;
+
+        // Cubic meter
+        @m3 int aCubicMeter = 5 * UnitsTools.m3;
+        @m3 int bCubicMeter = 5 * UnitsTools.m3;
 
         // Meter per second
         @mPERs int aMeterPerSecond = 5 * UnitsTools.mPERs;
@@ -273,6 +308,10 @@ public class SubtractionUnits {
         // Square millimeter
         @mm2 int aSquareMillimeter = 5 * UnitsTools.mm2;
         @mm2 int bSquareMillimeter = 5 * UnitsTools.mm2;
+
+        // Cubic millimeter
+        @mm3 int aCubicMillimeter = 5 * UnitsTools.mm3;
+        @mm3 int bCubicMillimeter = 5 * UnitsTools.mm3;
 
         // Mole
         @mol int aMole = 5 * UnitsTools.mol;
@@ -319,6 +358,10 @@ public class SubtractionUnits {
         // :: error: (assignment.type.incompatible)
         @km2 int sSquareKilometer = aSquareKilometer - bAmpere;
 
+        // Cubic kilometer
+        // :: error: (assignment.type.incompatible)
+        @km3 int sCubicKilometer = aCubicKilometer - bAmpere;
+
         // Kilometer per hour
         // :: error: (assignment.type.incompatible)
         @mPERs int sMeterPerSecond = aKilometerPerHour - bKilometerPerHour;
@@ -330,6 +373,10 @@ public class SubtractionUnits {
         // Square meter
         // :: error: (assignment.type.incompatible)
         @m2 int sSquareMeter = aSquareMeter - bGram;
+
+        // Cubic meter
+        // :: error: (assignment.type.incompatible)
+        @m3 int sCubicMeter = aCubicMeter - bGram;
 
         // Meter per second
         // :: error: (assignment.type.incompatible)

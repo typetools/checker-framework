@@ -4,13 +4,16 @@ import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.checker.units.util.UnitsTools;
 
@@ -88,6 +91,48 @@ public class Multiples {
         @m2 int areammbad1 = mm * mm;
         // :: error: (assignment.type.incompatible)
         @km2 int areammbad2 = mm * mm;
+
+        // m * m2 = m3
+        @m3 int volume = m * area;
+        // :: error: (assignment.type.incompatible)
+        @km3 int volumembad1 = m * area;
+        // :: error: (assignment.type.incompatible)
+        @mm3 int volumembad2 = m * area;
+
+        // km * km2 = km3
+        @km3 int kvolume = km * karea;
+        // :: error: (assignment.type.incompatible)
+        @m3 int volumekmbad1 = km * karea;
+        // :: error: (assignment.type.incompatible)
+        @mm3 int volumekmbad2 = km * karea;
+
+        // mm * mm2 = mm3
+        @mm3 int mvolume = mm * marea;
+        // :: error: (assignment.type.incompatible)
+        @m3 int volumemmbad1 = mm * marea;
+        // :: error: (assignment.type.incompatible)
+        @km3 int volumemmbad2 = mm * marea;
+
+        // m2 * m = m3
+        volume = area * m;
+        // :: error: (assignment.type.incompatible)
+        volumembad1 = area * m;
+        // :: error: (assignment.type.incompatible)
+        volumembad2 = area * m;
+
+        // km2 * km = km3
+        kvolume = karea * km;
+        // :: error: (assignment.type.incompatible)
+        volumekmbad1 = karea * km;
+        // :: error: (assignment.type.incompatible)
+        volumekmbad2 = karea * km;
+
+        // mm2 * mm = mm3
+        mvolume = marea * mm;
+        // :: error: (assignment.type.incompatible)
+        volumemmbad1 = marea * mm;
+        // :: error: (assignment.type.incompatible)
+        volumemmbad2 = marea * mm;
 
         // s * mPERs = m
         @mPERs int speedm = 10 * UnitsTools.mPERs;

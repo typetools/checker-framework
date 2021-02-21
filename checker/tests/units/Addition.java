@@ -16,14 +16,17 @@ import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.min;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.checker.units.util.UnitsTools;
@@ -77,6 +80,11 @@ public class Addition {
         @km2 int bSquareKilometer = 5 * UnitsTools.km2;
         @km2 int sSquareKilometer = aSquareKilometer + bSquareKilometer;
 
+        // Cubic kilometer
+        @km3 int aCubicKilometer = 5 * UnitsTools.km3;
+        @km3 int bCubicKilometer = 5 * UnitsTools.km3;
+        @km3 int sCubicKilometer = aCubicKilometer + bCubicKilometer;
+
         // Kilometer per hour
         @kmPERh int aKilometerPerHour = 5 * UnitsTools.kmPERh;
         @kmPERh int bKilometerPerHour = 5 * UnitsTools.kmPERh;
@@ -91,6 +99,11 @@ public class Addition {
         @m2 int aSquareMeter = 5 * UnitsTools.m2;
         @m2 int bSquareMeter = 5 * UnitsTools.m2;
         @m2 int sSquareMeter = aSquareMeter + bSquareMeter;
+
+        // Cubic meter
+        @m3 int aCubicMeter = 5 * UnitsTools.m3;
+        @m3 int bCubicMeter = 5 * UnitsTools.m3;
+        @m3 int sCubicMeter = aCubicMeter + bCubicMeter;
 
         // Meter per second
         @mPERs int aMeterPerSecond = 5 * UnitsTools.mPERs;
@@ -116,6 +129,11 @@ public class Addition {
         @mm2 int aSquareMillimeter = 5 * UnitsTools.mm2;
         @mm2 int bSquareMillimeter = 5 * UnitsTools.mm2;
         @mm2 int sSquareMillimeter = aSquareMillimeter + bSquareMillimeter;
+
+        // Cubic millimeter
+        @mm3 int aCubicMillimeter = 5 * UnitsTools.mm3;
+        @mm3 int bCubicMillimeter = 5 * UnitsTools.mm3;
+        @mm3 int sCubicMillimeter = aCubicMillimeter + bCubicMillimeter;
 
         // Mole
         @mol int aMole = 5 * UnitsTools.mol;
