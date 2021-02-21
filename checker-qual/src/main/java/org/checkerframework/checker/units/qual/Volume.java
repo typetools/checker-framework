@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Units of volumes.
+ * Units of volume.
  *
  * @checker_framework.manual #units-checker Units Checker
  */
