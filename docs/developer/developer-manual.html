@@ -234,6 +234,10 @@ necessary) revert.
 </p>
 
 <p>
+Before opening a pull request, ensure that CI passes on your branch.
+</p>
+
+<p>
 The pull request title should clearly explain the change.  It will be used
 as the commit message for your change.  If the pull request fixes an issue
 in the issue tracker, its title should end with "; fixes #NNN" where NNN is
@@ -271,9 +275,9 @@ Ernst's advice about creating GitHub pull requests</a>.
   It is good style to create a branch (in your fork of the Checker
   Framework GitHub repository) for each independent change.
   Do not make changes to your <code>master</code> branch.
-  Do not make changes to a branch of the upstream (<code>typetools</code>) repository.
-  Such a branch competes for CI resources with all pull requests.
-  Make changes on a branch of your own fork, so that both you and others get faster CI feedback.
+  If you have write access to the <code>typetools</code> repository, don't
+  work in a branch of it, because such a branch competes for CI resources
+  with all pull requests.
 </p>
 
 <p>
