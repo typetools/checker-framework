@@ -186,7 +186,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
      * parameters. In other words, {@code invocationTree} forwards {@code enclosingMethod}'s
      * arguments.
      *
-     * <p>Only arguments from the last String formal parameter onward count.
+     * <p>Only arguments from the first String formal parameter onward count. Returns false if there
+     * is no String formal parameter.
      *
      * @param invocationTree an invocation of a method
      * @param enclosingMethod the method that contains the call
@@ -204,10 +205,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                 TreeUtils.elementFromDeclaration(enclosingMethod);
         int paramIndex = formatStringIndex(enclosingMethodElement);
         if (paramIndex == -1) {
-            throw new BugInCF(
-                    "Method "
-                            + enclosingMethod
-                            + " is annotated @FormatMethod but has no String formal parameter");
+            return false;
         }
 
         ExecutableElement calledMethodElement = TreeUtils.elementFromUse(invocationTree);
