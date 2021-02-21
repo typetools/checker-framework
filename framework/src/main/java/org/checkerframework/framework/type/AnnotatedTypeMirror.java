@@ -1128,11 +1128,6 @@ public abstract class AnnotatedTypeMirror {
                     && element != null
                     && ((ExecutableType) underlyingType).getReturnType() != null) { // lazy init
                 TypeMirror aret = ((ExecutableType) underlyingType).getReturnType();
-                if (aret.getKind() == TypeKind.ERROR) {
-                    throw new BugInCF(
-                            "Input is not compilable; problem with return type of %s: %s [%s]",
-                            element, aret, aret.getClass());
-                }
                 if (((MethodSymbol) element).isConstructor()) {
                     // For constructors, the underlying return type is void.
                     // Take the type of the enclosing class instead.
