@@ -313,11 +313,13 @@ public class JavaExpressionParseUtil {
         @Override
         public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
             if (context.receiver == null) {
-                throw new ParseRuntimeException(
-                        constructJavaExpressionParseError("this", "this isn't allowed here."));
+                return null;
             }
-            // "this" is the receiver of the context
-            return context.receiver;
+            if (!context.receiver.containsUnknown()) {
+                // "this" is the receiver of the context
+                return context.receiver;
+            }
+            return new ThisReference(context.receiver.getType());
         }
 
         @Override
