@@ -262,6 +262,11 @@ allprojects {
                 options.errorprone.enabled = false
             }
         }
+
+        // Put source files in deterministic order, for debugging.
+        tasks.withType(JavaCompile) { compilationTask ->
+            compilationTask.source = compilationTask.source.sort()
+        }
     }
 }
 
