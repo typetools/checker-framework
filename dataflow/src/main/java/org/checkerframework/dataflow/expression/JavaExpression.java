@@ -348,7 +348,7 @@ public abstract class JavaExpression {
         }
 
         if (result == null) {
-            result = new Unknown(receiverNode.getType());
+            result = new Unknown(receiverNode);
         }
         return result;
     }
@@ -484,7 +484,7 @@ public abstract class JavaExpression {
         }
 
         if (result == null) {
-            result = new Unknown(TreeUtils.typeOf(tree));
+            result = new Unknown(tree);
         }
         return result;
     }
