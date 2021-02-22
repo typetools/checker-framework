@@ -560,6 +560,15 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Returns the {@link DefaultForTypeAnnotator}.
+     *
+     * @return the {@link DefaultForTypeAnnotator}
+     */
+    public DefaultForTypeAnnotator getDefaultForTypeAnnotator() {
+        return defaultForTypeAnnotator;
+    }
+
+    /**
      * Returns the appropriate flow analysis class that is used for the
      * org.checkerframework.dataflow analysis.
      *
