@@ -392,7 +392,8 @@ public class JavaExpressionParseUtil {
                 }
             }
 
-            ClassName classType = getIdentifierAsClassName(context.receiver.getType(), s);
+            ClassName classType =
+                    getIdentifierAsUnqualifiedClassName(context.receiver.getType(), s);
             if (classType != null) {
                 return classType;
             }
@@ -421,8 +422,34 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * If {@code identifier} is a class name with {@code receiverExpr} as its receiver
-         * expression, return the {@link ClassName}. If not, return null.
+         * If {@code identifier} is the simple class name of any inner class of {@code type}, return
+         * the {@link ClassName} for the inner class. If not, return null.
+         *
+         * @param type type to search for {@code identifier}
+         * @param identifier possible class name
+         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name
+         */
+        protected @Nullable ClassName getIdentifierAsInnerClassName(
+                TypeMirror type, String identifier) {
+            if (type.getKind() != TypeKind.DECLARED) {
+                return null;
+            }
+
+            Element outerClass = ((DeclaredType) type).asElement();
+            for (Element memberElement : outerClass.getEnclosedElements()) {
+                if (!(memberElement.getKind().isClass() || memberElement.getKind().isInterface())) {
+                    continue;
+                }
+                if (memberElement.getSimpleName().contentEquals(identifier)) {
+                    return new ClassName(ElementUtils.getType(memberElement));
+                }
+            }
+            return null;
+        }
+
+        /**
+         * If {@code identifier} is a class name with that can be referenced using only its simple
+         * name within {@code type}. If not, return null.
          *
          * <p>{@code identifier} may be
          *
@@ -438,8 +465,8 @@ public class JavaExpressionParseUtil {
          * @param identifier possible class name
          * @return the {@code ClassName} for {@code identifier} or null if it is not a class name
          */
-        protected @Nullable ClassName getIdentifierAsClassName(TypeMirror type, String identifier) {
-
+        protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(
+                TypeMirror type, String identifier) {
             // Is identifier an inner class of this or of any enclosing class of this?
             TypeMirror searchType = type;
             while (searchType.getKind() == TypeKind.DECLARED) {
@@ -450,15 +477,13 @@ public class JavaExpressionParseUtil {
                         .contentEquals(identifier)) {
                     return new ClassName(searchType);
                 }
-                Element classElem =
-                        resolver.findNestedClassInType(
-                                identifier, searchType, pathToCompilationUnit);
-                if (classElem != null) {
-                    TypeMirror classType = ElementUtils.getType(classElem);
-                    return new ClassName(classType);
+                ClassName className = getIdentifierAsInnerClassName(searchType, identifier);
+                if (className != null) {
+                    return className;
                 }
                 searchType = getTypeOfEnclosingClass((DeclaredType) searchType);
             }
+
             if (type.getKind() == TypeKind.DECLARED) {
                 // Is identifier in the same package as this?
                 PackageSymbol packageSymbol =
@@ -690,6 +715,7 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(FieldAccessExpr expr, JavaExpressionContext context) {
             setResolverField();
 
+            // Check for fully qualified class name.
             Symbol.PackageSymbol packageSymbol =
                     resolver.findPackage(expr.getScope().toString(), pathToCompilationUnit);
             if (packageSymbol != null) {
@@ -707,15 +733,17 @@ public class JavaExpressionParseUtil {
                                         + " inside "
                                         + expr.getScope().toString()));
             }
-            String identifier = expr.getNameAsExpression().getNameAsString();
 
+            // Check for field access expression.
+            String identifier = expr.getName().getIdentifier();
             JavaExpression receiver = expr.getScope().accept(this, context);
             FieldAccess fieldAccess = getIdentifierAsField(receiver, identifier);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
 
-            ClassName classType = getIdentifierAsClassName(receiver.getType(), identifier);
+            // Check for inner class.
+            ClassName classType = getIdentifierAsInnerClassName(receiver.getType(), identifier);
             if (classType != null) {
                 return classType;
             }
