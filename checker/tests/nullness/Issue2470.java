@@ -27,6 +27,7 @@ public class Issue2470 {
     }
 
     static void ok() {
+        // :: error:(contracts.precondition.not.satisfied)
         new Example().setS("test").print();
     }
 }

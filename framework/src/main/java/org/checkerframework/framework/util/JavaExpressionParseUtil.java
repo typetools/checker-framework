@@ -333,10 +333,6 @@ public class JavaExpressionParseUtil {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError("this", "\"this\" cannot be used here."));
             }
-            if (thisReference.containsUnknown()) {
-                // TODO: this is a bug.
-                return new ThisReference(enclosingType);
-            }
             return thisReference;
         }
 
