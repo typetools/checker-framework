@@ -41,7 +41,9 @@ import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,6 +72,7 @@ import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionVPA;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -77,7 +80,6 @@ import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
@@ -158,16 +160,7 @@ public class JavaExpressionParseUtil {
         JavaExpression result;
         try {
             ProcessingEnvironment env = context.checker.getProcessingEnvironment();
-            result =
-                    expr.accept(
-                            new ExpressionToJavaExpressionVisitor(
-                                    context.receiver.getType(),
-                                    context.receiver,
-                                    context.arguments,
-                                    localPath,
-                                    pathToCompilationUnit,
-                                    env),
-                            null);
+            result = parseImpl(context, localPath, pathToCompilationUnit, expr, env);
         } catch (ParseRuntimeException e) {
             // Convert unchecked to checked exception. Visitor methods can't throw checked
             // exceptions. They override the methods in the superclass, and a checked exception
@@ -186,6 +179,50 @@ public class JavaExpressionParseUtil {
                             result, result.getClass()));
         }
         return result;
+    }
+
+    private static JavaExpression parseImpl(
+            JavaExpressionContext context,
+            @Nullable TreePath localPath,
+            TreePath pathToCompilationUnit,
+            Expression expr,
+            ProcessingEnvironment env) {
+        Map<JavaExpression, JavaExpression> mapping = new HashMap<>();
+        TypeMirror enclosingType = context.receiver.getType();
+        ThisReference thisReference;
+        if (context.receiver != null) {
+            thisReference = new ThisReference(enclosingType);
+            mapping.put(thisReference, context.receiver);
+        } else {
+            thisReference = null;
+        }
+        List<FormalParameter> parameters;
+        if (context.arguments != null) {
+            parameters = new ArrayList<>();
+            int i = 1;
+            for (JavaExpression arg : context.arguments) {
+                // TODO: should have the elements of the parameters.
+                FormalParameter parameter = new FormalParameter(i, arg.getType());
+                parameters.add(parameter);
+                mapping.put(parameter, arg);
+                i++;
+            }
+        } else {
+            parameters = null;
+        }
+
+        JavaExpression javaExpr =
+                expr.accept(
+                        new ExpressionToJavaExpressionVisitor(
+                                enclosingType,
+                                thisReference,
+                                parameters,
+                                localPath,
+                                pathToCompilationUnit,
+                                env),
+                        null);
+        JavaExpressionVPA vpa = new JavaExpressionVPA(mapping);
+        return vpa.visit(javaExpr);
     }
 
     /**
@@ -240,11 +277,9 @@ public class JavaExpressionParseUtil {
 
         private final TypeMirror enclosingType;
 
-        // TODO: The type should be ThisReference.
-        private final @Nullable JavaExpression thisReference;
+        private final @Nullable ThisReference thisReference;
 
-        // TODO: the type should be List<FormalParameter>
-        private final @Nullable List<JavaExpression> parameters;
+        private final @Nullable List<FormalParameter> parameters;
 
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
@@ -261,8 +296,8 @@ public class JavaExpressionParseUtil {
          */
         ExpressionToJavaExpressionVisitor(
                 TypeMirror enclosingType,
-                @Nullable JavaExpression thisReference,
-                @Nullable List<JavaExpression> parameters,
+                @Nullable ThisReference thisReference,
+                @Nullable List<FormalParameter> parameters,
                 @Nullable TreePath localVarPath,
                 TreePath pathToCompilationUnit,
                 ProcessingEnvironment env) {
@@ -415,23 +450,22 @@ public class JavaExpressionParseUtil {
             }
 
             // Err if a formal parameter name is used, instead of the "#2" syntax.
-            if (parameters != null) {
-                for (int i = 0; i < parameters.size(); i++) {
-                    if (parameters.get(i) instanceof LocalVariable) {
-                        Element varElt = ((LocalVariable) parameters.get(i)).getElement();
-                        if (varElt.getKind() == ElementKind.PARAMETER
-                                && varElt.getSimpleName().contentEquals(s)) {
-                            throw new ParseRuntimeException(
-                                    constructJavaExpressionParseError(
-                                            s,
-                                            String.format(
-                                                    DependentTypesError.FORMAL_PARAM_NAME_STRING,
-                                                    i + 1,
-                                                    s)));
-                        }
-                    }
-                }
-            }
+            // TODO: uncomment.
+            //            if (parameters != null) {
+            //                for (int i = 0; i < parameters.size(); i++) {
+            //                        Element varElt =  parameters.get(i).getElement();
+            //                        if (varElt.getSimpleName().contentEquals(s)) {
+            //                            throw new ParseRuntimeException(
+            //                                    constructJavaExpressionParseError(
+            //                                            s,
+            //                                            String.format(
+            //
+            // DependentTypesError.FORMAL_PARAM_NAME_STRING,
+            //                                                    i + 1,
+            //                                                    s)));
+            //                        }
+            //                    }
+            //            }
 
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(s, "identifier not found"));

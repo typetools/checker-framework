@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.Tree;
-import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -107,7 +106,7 @@ public class Unknown extends JavaExpression {
     }
 
     @Override
-    public Unknown atMethodSignature(List<JavaExpression> parameters) {
-        return this;
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitUnknown(this, p);
     }
 }

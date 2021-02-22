@@ -1,14 +1,12 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.List;
-import java.util.Objects;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
  * A formal parameter, represented by its 1-based index.
@@ -31,6 +29,12 @@ public class FormalParameter extends JavaExpression {
 
     /** The element for this formal parameter. */
     protected final Element element;
+
+    public FormalParameter(int index, TypeMirror typeMirror) {
+        super(typeMirror);
+        this.index = index;
+        this.element = null;
+    }
 
     /**
      * Creates a FormalParameter.
@@ -86,12 +90,14 @@ public class FormalParameter extends JavaExpression {
 
     @Override
     public int hashCode() {
-        VarSymbol vs = (VarSymbol) element;
-        return Objects.hash(
-                index,
-                vs.name.toString(),
-                TypeAnnotationUtils.unannotatedType(vs.type).toString(),
-                vs.owner.toString());
+        return index;
+        ////        VarSymbol vs = (VarSymbol) element;
+        //        return Objects.hash(
+        //                index,
+        ////                vs.name.toString(),
+        //                TypeAnnotationUtils.unannotatedType(type).toString());
+        ////                vs.owner.toString());
+
     }
 
     @Override
@@ -144,7 +150,7 @@ public class FormalParameter extends JavaExpression {
     }
 
     @Override
-    public FormalParameter atMethodSignature(List<JavaExpression> parameters) {
-        return this;
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitFormalParameter(this, p);
     }
 }

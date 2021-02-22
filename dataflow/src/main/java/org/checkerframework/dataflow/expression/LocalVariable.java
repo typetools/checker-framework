@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -156,12 +155,7 @@ public class LocalVariable extends JavaExpression {
     }
 
     @Override
-    public JavaExpression atMethodSignature(List<JavaExpression> parameters) {
-        int index = parameters.indexOf(this);
-        if (index == -1) {
-            return this;
-        } else {
-            return new FormalParameter(index + 1, element);
-        }
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitLocalVariable(this, p);
     }
 }

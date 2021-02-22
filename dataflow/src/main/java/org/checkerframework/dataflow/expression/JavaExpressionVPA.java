@@ -6,10 +6,9 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.javacutil.BugInCF;
 
 @AnnotatedFor("nullness")
-public class JavaExpressionVPA {
+public class JavaExpressionVPA extends JavaExpressionVisitor<JavaExpression, Void> {
     private final Map<JavaExpression, JavaExpression> mapping;
 
     public JavaExpressionVPA(Map<JavaExpression, JavaExpression> mapping) {
@@ -20,15 +19,7 @@ public class JavaExpressionVPA {
         return mapping.get(expression);
     }
 
-    JavaExpression visit(JavaExpression expression) {
-        if (expression == null) {
-            throw new BugInCF("JavaExpression null.");
-        }
-        throw new BugInCF(
-                "Unexpected JavaExpression: %s class: %s", expression, expression.getClass());
-    }
-
-    List<@PolyNull JavaExpression> visit(List<@PolyNull JavaExpression> list) {
+    public List<@PolyNull JavaExpression> visit(List<@PolyNull JavaExpression> list) {
         List<@PolyNull JavaExpression> newList = new ArrayList<>();
         for (JavaExpression expression : list) {
             if (expression == null) {
@@ -40,7 +31,12 @@ public class JavaExpressionVPA {
         return newList;
     }
 
-    JavaExpression visit(ArrayAccess expression) {
+    public JavaExpression visit(JavaExpression expression) {
+        return expression.accept(this, null);
+    }
+
+    @Override
+    protected JavaExpression visitArrayAccess(ArrayAccess expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -48,7 +44,8 @@ public class JavaExpressionVPA {
         return new ArrayAccess(expression.type, visit(expression.array), visit(expression.index));
     }
 
-    JavaExpression visit(ArrayCreation expression) {
+    @Override
+    protected JavaExpression visitArrayCreation(ArrayCreation expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -57,7 +54,8 @@ public class JavaExpressionVPA {
                 expression.getType(), visit(expression.dimensions), visit(expression.initializers));
     }
 
-    JavaExpression visit(BinaryOperation expression) {
+    @Override
+    protected JavaExpression visitBinaryOperation(BinaryOperation expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -69,7 +67,8 @@ public class JavaExpressionVPA {
                 visit(expression.right));
     }
 
-    JavaExpression visit(ClassName expression) {
+    @Override
+    protected JavaExpression visitClassName(ClassName expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -77,7 +76,8 @@ public class JavaExpressionVPA {
         return expression;
     }
 
-    JavaExpression visit(FieldAccess expression) {
+    @Override
+    protected JavaExpression visitFieldAccess(FieldAccess expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -86,7 +86,8 @@ public class JavaExpressionVPA {
                 visit(expression.receiver), expression.getType(), expression.getField());
     }
 
-    JavaExpression visit(FormalParameter expression) {
+    @Override
+    protected JavaExpression visitFormalParameter(FormalParameter expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -94,7 +95,8 @@ public class JavaExpressionVPA {
         return expression;
     }
 
-    JavaExpression visit(LocalVariable expression) {
+    @Override
+    protected JavaExpression visitLocalVariable(LocalVariable expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -102,7 +104,8 @@ public class JavaExpressionVPA {
         return expression;
     }
 
-    JavaExpression visit(MethodCall expression) {
+    @Override
+    protected JavaExpression visitMethodCall(MethodCall expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -114,7 +117,8 @@ public class JavaExpressionVPA {
                 visit(expression.getArguments()));
     }
 
-    JavaExpression visit(ThisReference expression) {
+    @Override
+    protected JavaExpression visitThisReference(ThisReference expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -122,7 +126,8 @@ public class JavaExpressionVPA {
         return expression;
     }
 
-    JavaExpression visit(UnaryOperation expression) {
+    @Override
+    protected JavaExpression visitUnaryOperation(UnaryOperation expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -133,7 +138,8 @@ public class JavaExpressionVPA {
                 visit(expression.getOperand()));
     }
 
-    JavaExpression visit(Unknown expression) {
+    @Override
+    protected JavaExpression visitUnknown(Unknown expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;
@@ -141,7 +147,8 @@ public class JavaExpressionVPA {
         return expression;
     }
 
-    JavaExpression visit(ValueLiteral expression) {
+    @Override
+    protected JavaExpression visitValueLiteral(ValueLiteral expression, Void unused) {
         JavaExpression vpa = defaultAction(expression);
         if (vpa != null) {
             return vpa;

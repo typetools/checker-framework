@@ -179,15 +179,7 @@ public class MethodCall extends JavaExpression {
     }
 
     @Override
-    @SuppressWarnings("interning:not.interned") // test whether method returns its argument
-    public MethodCall atMethodSignature(List<JavaExpression> parameters) {
-        JavaExpression newReceiver = receiver.atMethodSignature(parameters);
-        List<JavaExpression> newArguments =
-                JavaExpression.listAtMethodSignature(arguments, parameters);
-        if (receiver == newReceiver && arguments == newArguments) {
-            return this;
-        } else {
-            return new MethodCall(type, method, newReceiver, newArguments);
-        }
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitMethodCall(this, p);
     }
 }

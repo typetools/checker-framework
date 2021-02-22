@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.expression;
 
-import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -88,7 +87,7 @@ public class ClassName extends JavaExpression {
     }
 
     @Override
-    public ClassName atMethodSignature(List<JavaExpression> parameters) {
-        return this;
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitClassName(this, p);
     }
 }
