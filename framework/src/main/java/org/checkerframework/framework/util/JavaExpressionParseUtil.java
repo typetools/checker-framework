@@ -161,8 +161,8 @@ public class JavaExpressionParseUtil {
             result =
                     expr.accept(
                             new ExpressionToJavaExpressionVisitor(
-                                    pathToCompilationUnit, localPath, env),
-                            context);
+                                    pathToCompilationUnit, localPath, env, context),
+                            null);
         } catch (ParseRuntimeException e) {
             // Convert unchecked to checked exception. Visitor methods can't throw checked
             // exceptions. They override the methods in the superclass, and a checked exception
@@ -209,7 +209,7 @@ public class JavaExpressionParseUtil {
      * A visitor class that converts a JavaParser {@link Expression} to a {@link JavaExpression}.
      */
     private static class ExpressionToJavaExpressionVisitor
-            extends GenericVisitorWithDefaults<JavaExpression, JavaExpressionContext> {
+            extends GenericVisitorWithDefaults<JavaExpression, Void> {
 
         /**
          * The underlying javac API used to convert from Strings to Elements requires a tree path
@@ -217,17 +217,24 @@ public class JavaExpressionParseUtil {
          * current CompilationUnit.
          */
         private final TreePath pathToCompilationUnit;
+
         /** If non-null, the expression is parsed as if it were written at this location. */
         private final @Nullable TreePath localVarPath;
+
         /** The processing environment. */
         private final ProcessingEnvironment env;
+
         /** The resolver. Computed from the environment, but lazily initialized. */
         private @MonotonicNonNull Resolver resolver = null;
+
         /** The type utilities. */
         private final Types types;
 
         /** The java.lang.String type. */
-        TypeMirror stringTypeMirror;
+        private final TypeMirror stringTypeMirror;
+
+        /** Context */
+        private final JavaExpressionContext context;
 
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
@@ -236,17 +243,20 @@ public class JavaExpressionParseUtil {
          * @param localVarPath if non-null, the expression is parsed as if it were written at this
          *     location
          * @param env the processing environment
+         * @param context context
          */
         ExpressionToJavaExpressionVisitor(
                 TreePath pathToCompilationUnit,
                 @Nullable TreePath localVarPath,
-                ProcessingEnvironment env) {
+                ProcessingEnvironment env,
+                JavaExpressionContext context) {
             this.pathToCompilationUnit = pathToCompilationUnit;
             this.localVarPath = localVarPath;
             this.env = env;
             this.types = env.getTypeUtils();
             this.stringTypeMirror =
                     env.getElementUtils().getTypeElement("java.lang.String").asType();
+            this.context = context;
         }
 
         /** Sets the {@code resolver} field if necessary. */
@@ -258,50 +268,49 @@ public class JavaExpressionParseUtil {
 
         /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
         @Override
-        public JavaExpression defaultAction(
-                com.github.javaparser.ast.Node n, JavaExpressionContext context) {
+        public JavaExpression defaultAction(com.github.javaparser.ast.Node n, Void aVoid) {
             String message = "is not a supported expression";
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(n.toString(), message));
         }
 
         @Override
-        public JavaExpression visit(NullLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(NullLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getNullType(), (Object) null);
         }
 
         @Override
-        public JavaExpression visit(IntegerLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(IntegerLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asNumber());
         }
 
         @Override
-        public JavaExpression visit(LongLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(LongLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asNumber());
         }
 
         @Override
-        public JavaExpression visit(CharLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(CharLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.CHAR), expr.asChar());
         }
 
         @Override
-        public JavaExpression visit(DoubleLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(DoubleLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.DOUBLE), expr.asDouble());
         }
 
         @Override
-        public JavaExpression visit(StringLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(StringLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(stringTypeMirror, expr.asString());
         }
 
         @Override
-        public JavaExpression visit(BooleanLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(BooleanLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.BOOLEAN), expr.getValue());
         }
 
         @Override
-        public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
+        public JavaExpression visit(ThisExpr n, Void aVoid) {
             if (context.receiver == null) {
                 return null;
             }
@@ -313,7 +322,7 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(SuperExpr n, JavaExpressionContext context) {
+        public JavaExpression visit(SuperExpr n, Void aVoid) {
             // super literal
             TypeMirror superclass = TypesUtils.getSuperclass(context.receiver.getType(), types);
             if (superclass == null) {
@@ -325,13 +334,13 @@ public class JavaExpressionParseUtil {
 
         // expr is an expression in parentheses.
         @Override
-        public JavaExpression visit(EnclosedExpr expr, JavaExpressionContext context) {
-            return expr.getInner().accept(this, context);
+        public JavaExpression visit(EnclosedExpr expr, Void aVoid) {
+            return expr.getInner().accept(this, null);
         }
 
         @Override
-        public JavaExpression visit(ArrayAccessExpr expr, JavaExpressionContext context) {
-            JavaExpression array = expr.getName().accept(this, context);
+        public JavaExpression visit(ArrayAccessExpr expr, Void aVoid) {
+            JavaExpression array = expr.getName().accept(this, null);
             TypeMirror arrayType = array.getType();
             if (arrayType.getKind() != TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
@@ -343,14 +352,14 @@ public class JavaExpressionParseUtil {
             }
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
 
-            JavaExpression index = expr.getIndex().accept(this, context);
+            JavaExpression index = expr.getIndex().accept(this, null);
 
             return new ArrayAccess(componentType, array, index);
         }
 
         // expr is an identifier with no dots in its name.
         @Override
-        public JavaExpression visit(NameExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(NameExpr expr, Void aVoid) {
             String s = expr.getNameAsString();
             setResolverField();
 
@@ -358,7 +367,7 @@ public class JavaExpressionParseUtil {
             if (s.startsWith(FormalParameter.PARAMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // (at the method scope) using the special #NN syntax.
-                return getParameterJavaExpression(s, context);
+                return getParameterJavaExpression(s);
             }
 
             // Local variable or parameter.
@@ -565,12 +574,12 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(MethodCallExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(MethodCallExpr expr, Void aVoid) {
             setResolverField();
 
             JavaExpression receiverExpr;
             if (expr.getScope().isPresent()) {
-                receiverExpr = expr.getScope().get().accept(this, context);
+                receiverExpr = expr.getScope().get().accept(this, null);
                 expr = expr.removeScope();
             } else {
                 receiverExpr = context.receiver;
@@ -590,9 +599,8 @@ public class JavaExpressionParseUtil {
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
             if (!expr.getArguments().isEmpty()) {
-                JavaExpressionContext argContext = context;
                 for (Expression argument : expr.getArguments()) {
-                    arguments.add(argument.accept(this, argContext));
+                    arguments.add(argument.accept(this, null));
                 }
             }
 
@@ -705,7 +713,7 @@ public class JavaExpressionParseUtil {
         // expr is a field access, a fully qualified class name, or a class name qualified with
         // another class name (e.g. {@code OuterClass.InnerClass})
         @Override
-        public JavaExpression visit(FieldAccessExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(FieldAccessExpr expr, Void aVoid) {
             setResolverField();
 
             // Check for fully qualified class name.
@@ -729,7 +737,7 @@ public class JavaExpressionParseUtil {
 
             // Check for field access expression.
             String identifier = expr.getName().getIdentifier();
-            JavaExpression receiver = expr.getScope().accept(this, context);
+            JavaExpression receiver = expr.getScope().accept(this, null);
             FieldAccess fieldAccess = getIdentifierAsField(receiver, identifier);
             if (fieldAccess != null) {
                 return fieldAccess;
@@ -749,8 +757,8 @@ public class JavaExpressionParseUtil {
 
         // expr is a Class literal
         @Override
-        public JavaExpression visit(ClassExpr expr, JavaExpressionContext context) {
-            TypeMirror result = convertTypeToTypeMirror(expr.getType(), context);
+        public JavaExpression visit(ClassExpr expr, Void aVoid) {
+            TypeMirror result = convertTypeToTypeMirror(expr.getType());
             if (result == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
@@ -760,11 +768,11 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(ArrayCreationExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
             List<JavaExpression> dimensions = new ArrayList<>();
             for (ArrayCreationLevel dimension : expr.getLevels()) {
                 if (dimension.getDimension().isPresent()) {
-                    dimensions.add(dimension.getDimension().get().accept(this, context));
+                    dimensions.add(dimension.getDimension().get().accept(this, null));
                 } else {
                     dimensions.add(null);
                 }
@@ -773,10 +781,10 @@ public class JavaExpressionParseUtil {
             List<JavaExpression> initializers = new ArrayList<>();
             if (expr.getInitializer().isPresent()) {
                 for (Expression initializer : expr.getInitializer().get().getValues()) {
-                    initializers.add(initializer.accept(this, context));
+                    initializers.add(initializer.accept(this, null));
                 }
             }
-            TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
+            TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType());
             if (arrayType == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
@@ -789,20 +797,20 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(UnaryExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(UnaryExpr expr, Void aVoid) {
             Tree.Kind treeKind = javaParserUnaryOperatorToTreeKind(expr.getOperator());
             // This performs constant-folding for + and -; it could also do so for other operations.
             switch (treeKind) {
                 case UNARY_PLUS:
-                    return expr.getExpression().accept(this, context);
+                    return expr.getExpression().accept(this, null);
                 case UNARY_MINUS:
-                    JavaExpression negatedResult = expr.getExpression().accept(this, context);
+                    JavaExpression negatedResult = expr.getExpression().accept(this, null);
                     if (negatedResult instanceof ValueLiteral) {
                         return ((ValueLiteral) negatedResult).negate();
                     }
                     return new UnaryOperation(negatedResult.getType(), treeKind, negatedResult);
                 default:
-                    JavaExpression operand = expr.getExpression().accept(this, context);
+                    JavaExpression operand = expr.getExpression().accept(this, null);
                     return new UnaryOperation(operand.getType(), treeKind, operand);
             }
         }
@@ -837,9 +845,9 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(BinaryExpr expr, JavaExpressionContext context) {
-            JavaExpression leftJe = expr.getLeft().accept(this, context);
-            JavaExpression rightJe = expr.getRight().accept(this, context);
+        public JavaExpression visit(BinaryExpr expr, Void aVoid) {
+            JavaExpression leftJe = expr.getLeft().accept(this, null);
+            JavaExpression rightJe = expr.getRight().accept(this, null);
             TypeMirror leftType = leftJe.getType();
             TypeMirror rightType = rightJe.getType();
             TypeMirror type;
@@ -850,7 +858,7 @@ public class JavaExpressionParseUtil {
                 type = leftType;
             } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
                     && (types.isSameType(leftType, stringTypeMirror)
-                            || types.isSameType(rightType, stringTypeMirror))) {
+                            || TypesUtils.isString(rightType))) {
                 type = stringTypeMirror;
             } else {
                 throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
@@ -915,15 +923,13 @@ public class JavaExpressionParseUtil {
          * handled.
          *
          * @param type a JavaParser type
-         * @param context a JavaExpressionContext
          * @return a TypeMirror corresponding to {@code type}, or null if {@code type} isn't handled
          */
-        private @Nullable TypeMirror convertTypeToTypeMirror(
-                Type type, JavaExpressionContext context) {
+        private @Nullable TypeMirror convertTypeToTypeMirror(Type type) {
             if (type.isClassOrInterfaceType()) {
                 try {
                     return StaticJavaParser.parseExpression(type.asString())
-                            .accept(this, context)
+                            .accept(this, null)
                             .getType();
                 } catch (ParseProblemException e) {
                     return null;
@@ -951,7 +957,7 @@ public class JavaExpressionParseUtil {
                 return types.getNoType(TypeKind.VOID);
             } else if (type.isArrayType()) {
                 return types.getArrayType(
-                        convertTypeToTypeMirror(type.asArrayType().getComponentType(), context));
+                        convertTypeToTypeMirror(type.asArrayType().getComponentType()));
             }
             return null;
         }
@@ -996,11 +1002,9 @@ public class JavaExpressionParseUtil {
          * context.arguments}.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
-         * @param context the context
          * @return the JavaExpression for the given parameter
          */
-        private static JavaExpression getParameterJavaExpression(
-                String s, JavaExpressionContext context) {
+        private JavaExpression getParameterJavaExpression(String s) {
             if (context.arguments == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(s, "no parameters found"));
