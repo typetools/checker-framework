@@ -1056,8 +1056,7 @@ section, or add it if it is not present.
         </plugins>
       </build>
       <properties>
-        <!-- Temporary until animal-sniffer-maven-plugin is released with https://github.com/mojohaus/animal-sniffer/pull/91.
-             Version 1.19 is broken:  https://github.com/mojohaus/animal-sniffer/issues/76. -->
+        <!-- Needed for animal-sniffer-maven-plugin version 1.19 (version 1.20 is fixed). -->
         <animal.sniffer.skip>true</animal.sniffer.skip>
       </properties>
     </profile>
