@@ -175,8 +175,10 @@ allprojects {
         }
 
         // Add standard javac options
-        tasks.withType(JavaCompile) {
+        tasks.withType(JavaCompile) { compilationTask ->
             dependsOn(':installGitHooks')
+            // Put source files in deterministic order, for debugging.
+            compilationTask.source = compilationTask.source.sort()
             sourceCompatibility = 8
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
@@ -229,7 +231,7 @@ allprojects {
 
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
             // TODO: enable Error Prone on test classes.
-            if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
+            if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone
