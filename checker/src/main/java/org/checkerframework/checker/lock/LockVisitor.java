@@ -1248,7 +1248,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         } else if (TreeUtils.isExpressionTree(tree)) {
             self = JavaExpression.fromTree((ExpressionTree) tree);
         } else {
-            self = new Unknown(tree);
+            self = new Unknown(TreeUtils.typeOf(tree));
         }
 
         List<LockExpression> lockExpressions = new ArrayList<>();

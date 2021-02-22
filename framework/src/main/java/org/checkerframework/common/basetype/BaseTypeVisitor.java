@@ -1711,7 +1711,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
             }
             if (!checkContract(exprJe, anno, inferredAnno, store)) {
-                if (exprJe != null) {
+                if (exprJe != null && !exprJe.containsUnknown()) {
                     expressionString = exprJe.toString();
                 }
                 checker.reportError(
