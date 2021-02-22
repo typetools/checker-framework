@@ -22,6 +22,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @InvisibleQualifier
-@SubtypeOf({Regex.class, org.checkerframework.checker.regex.qual.PartialRegex.class})
+@SubtypeOf({EnhancedRegex.class, org.checkerframework.checker.regex.qual.PartialRegex.class})
 @DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
 public @interface RegexBottom {}

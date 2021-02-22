@@ -1,5 +1,8 @@
 package org.checkerframework.checker.regex;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -97,9 +100,25 @@ public class RegexTransfer extends CFTransfer {
             } else {
                 groupCount = 0;
             }
-            AnnotationMirror regexAnnotation = factory.createRegexAnnotation(groupCount);
-            thenStore.insertValue(firstParam, regexAnnotation);
+            AnnotationMirror enhancedRegexAnnotation =
+                    factory.createEnhancedRegexAnnotation(
+                            new ArrayList<>(Arrays.asList(0, groupCount)));
+            if (thenStore.getValue(firstParam) != null) thenStore.clearValue(firstParam);
+            thenStore.insertValue(firstParam, enhancedRegexAnnotation);
             return newResult;
+        } else if (ElementUtils.matchesElement(
+                method, IS_REGEX_METHOD_NAME, String.class, List.class)) {
+            //            CFStore thenStore = result.getRegularStore();
+            //            CFStore elseStore = thenStore.copy();
+            //            ConditionalTransferResult<CFValue, CFStore> newResult =
+            //                    new ConditionalTransferResult<>(result.getResultValue(),
+            // thenStore, elseStore);
+            //            JavaExpression firstParam = JavaExpression.fromNode(n.getArgument(0));
+            //
+            //            // add annotation with correct group count (if possible,
+            //            // regex annotation without count otherwise)
+            //            Node node = n.getArgument(1);
+            /** TODO Not sure what type of node for Lists. Ask. */
         } else if (ElementUtils.matchesElement(
                 method, AS_REGEX_METHOD_NAME, String.class, int.class)) {
             // RegexUtil.asRegex(s, groups) method

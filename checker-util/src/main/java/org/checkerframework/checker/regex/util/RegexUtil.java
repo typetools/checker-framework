@@ -2,6 +2,10 @@
 
 package org.checkerframework.checker.regex.util;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
@@ -170,6 +174,32 @@ public final class RegexUtil {
     }
 
     /**
+     * Returns true if the argument is a syntactically valid regular expression with specified
+     * groups as definitely non-null.
+     *
+     * @param s string to check for being a regular expression
+     * @param groups list of expected non-null groups, and the number of groups as the last element.
+     * @return true iff s is a regular expression with {@code groups} groups
+     */
+    @Pure
+    @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
+    public static boolean isRegex(String s, List<Integer> groups) {
+        Pattern p;
+        try {
+            p = Pattern.compile(s);
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
+        List<Integer> nonNullGroups = getNonNullGroups(p);
+        groups.remove(Integer.valueOf(0));
+        groups.remove(Integer.valueOf(getGroupCount(p)));
+        nonNullGroups.remove(Integer.valueOf(0));
+        nonNullGroups.remove(Integer.valueOf(getGroupCount(p)));
+        if (nonNullGroups.containsAll(groups)) return true;
+        return false;
+    }
+
+    /**
      * Returns true if the argument is a syntactically valid regular expression.
      *
      * @param c char to check for being a regular expression
@@ -329,5 +359,60 @@ public final class RegexUtil {
     @Pure
     private static int getGroupCount(Pattern p) {
         return p.matcher("").groupCount();
+    }
+
+    /**
+     * Return the non-null groups in the argument.
+     *
+     * @param p pattern to be analysed.
+     * @return the groups that are non-null in the argument.
+     */
+    private static List<Integer> getNonNullGroups(Pattern p) {
+        String regexp = p.pattern();
+        int n = getGroupCount(p);
+        List<Integer> nonNullGroups = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            nonNullGroups.add(i);
+        }
+        ArrayDeque<Integer> openingIndices = new ArrayDeque<>();
+        int group = 0;
+        boolean squareBracketOpen = false;
+        boolean escaped = false;
+        boolean notCapturing = false;
+        for (int i = 0; i < regexp.length(); i++) {
+            if (!escaped && !squareBracketOpen && regexp.charAt(i) == '(') {
+                if (i != regexp.length() - 1 && regexp.charAt(i + 1) == '?') {
+                    notCapturing = true;
+                    continue;
+                }
+                group += 1;
+                if (i != 0 && regexp.charAt(i - 1) == '|') {
+                    nonNullGroups.remove((Integer) group);
+                }
+                openingIndices.push(group);
+            } else if (!escaped && !squareBracketOpen && regexp.charAt(i) == ')') {
+                if (notCapturing) {
+                    notCapturing = false;
+                    continue;
+                }
+                int popped = openingIndices.pop();
+                if (i != regexp.length() - 1
+                        && "*?|".contains(Character.toString(regexp.charAt(i + 1)))) {
+                    nonNullGroups.remove((Integer) popped);
+                }
+            } else if (!escaped && !squareBracketOpen && regexp.charAt(i) == '[') {
+                squareBracketOpen = true;
+            } else if (squareBracketOpen && regexp.charAt(i) == ']') {
+                squareBracketOpen = false;
+            }
+            if (!escaped && regexp.charAt(i) == '\\') {
+                escaped = true;
+            } else if (escaped) {
+                escaped = false;
+            }
+        }
+        nonNullGroups.add(n);
+        Collections.sort(nonNullGroups);
+        return nonNullGroups;
     }
 }
