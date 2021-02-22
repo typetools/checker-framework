@@ -30,6 +30,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1129,19 +1130,27 @@ public abstract class AnnotatedTypeMirror {
                     && ((ExecutableType) underlyingType).getReturnType() != null) { // lazy init
                 TypeMirror aret = ((ExecutableType) underlyingType).getReturnType();
                 if (aret.getKind() == TypeKind.ERROR) {
-                    throw new BugInCF(
-                            "Input is not compilable; problem with return type of %s: %s [%s]",
-                            element, aret, aret.getClass());
+                    // Maybe the input is uncompilable, or maybe the type is not completed yet (see
+                    // Issue 244).
+                    throw new ErrorTypeKindException(
+                            "Problem with return type of %s.%s: %s [%s %s]",
+                            element,
+                            element.getEnclosingElement(),
+                            aret,
+                            aret.getKind(),
+                            aret.getClass());
                 }
                 if (((MethodSymbol) element).isConstructor()) {
                     // For constructors, the underlying return type is void.
                     // Take the type of the enclosing class instead.
                     aret = element.getEnclosingElement().asType();
                     if (aret.getKind() == TypeKind.ERROR) {
-                        throw new BugInCF(
-                                "Input is not compilable; problem with constructor %s return type: %s (enclosing element = %s [%s])",
+                        throw new ErrorTypeKindException(
+                                "Input is not compilable; problem with constructor %s return type: %s [%s %s] (enclosing element = %s [%s])",
                                 element,
                                 aret,
+                                aret.getKind(),
+                                aret.getClass(),
                                 element.getEnclosingElement(),
                                 element.getEnclosingElement().getClass());
                     }
