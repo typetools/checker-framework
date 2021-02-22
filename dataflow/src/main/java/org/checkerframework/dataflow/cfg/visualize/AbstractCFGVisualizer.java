@@ -347,7 +347,6 @@ public abstract class AbstractCFGVisualizer<
         sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
         if (!isTwoStores) {
-            assert regularStore != null : "@AssumeAssertion(nullness)";
             sbStore.append(visualizeStore(regularStore));
         } else {
             assert thenStore != null : "@AssumeAssertion(nullness): invariant";

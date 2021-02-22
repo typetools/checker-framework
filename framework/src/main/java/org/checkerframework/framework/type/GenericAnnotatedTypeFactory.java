@@ -38,8 +38,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
@@ -140,7 +138,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected static boolean flowByDefault = true;
 
     /** To cache the supported monotonic type qualifiers. */
-    private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
+    private Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
@@ -894,7 +892,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the annotation on expression or null if one does not exist
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
-    public @Nullable AnnotationMirror getAnnotationFromJavaExpressionString(
+    public AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
             throws JavaExpressionParseException {
 
@@ -991,7 +989,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return an AnnotationMirror representing the type in the store at the given location from
      *     this type factory's type system, or null if one is not available
      */
-    public @Nullable AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
+    public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
             String expression, Tree tree, TreePath currentPath)
             throws JavaExpressionParseException {
         JavaExpression je = parseJavaExpressionString(expression, currentPath);
@@ -1027,7 +1025,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Note that flowResult contains analysis results for Trees from multiple classes which are
      * produced by multiple calls to performFlowAnalysis.
      */
-    protected @Nullable AnalysisResult<Value, Store> flowResult;
+    protected AnalysisResult<Value, Store> flowResult;
 
     /**
      * A mapping from methods (or other code blocks) to their regular exit store (used to check
@@ -1127,7 +1125,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param node a node whose pre-store to return
      * @return the store immediately before {@code node}
      */
-    public @Nullable Store getStoreBefore(Node node) {
+    public Store getStoreBefore(Node node) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(node);
         }
@@ -1153,7 +1151,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param tree the tree whose post-store to return
      * @return the store immediately after a given tree
      */
-    public @Nullable Store getStoreAfter(Tree tree) {
+    public Store getStoreAfter(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreAfter(tree);
         }
@@ -1167,7 +1165,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param nodes the nodes whose post-stores to LUB
      * @return the LUB of the stores store immediately after {@code nodes}
      */
-    public @Nullable Store getStoreAfter(Set<Node> nodes) {
+    public Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
         for (Node node : nodes) {
             Store s = getStoreAfter(node);
@@ -1227,7 +1225,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
      */
-    public <T extends Node> @Nullable T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
+    public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
             if (node.getClass() == kind) {
@@ -1252,7 +1250,6 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param classTree the class to analyze
      */
-    @EnsuresNonNull("flowResult")
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();

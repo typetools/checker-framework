@@ -87,7 +87,7 @@ public interface Analysis<
      * @return the store before or after {@code node} (depends on the value of {@code before}) after
      *     running the analysis
      */
-    @Nullable S runAnalysisFor(
+    S runAnalysisFor(
             Node node,
             Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> blockTransferInput,

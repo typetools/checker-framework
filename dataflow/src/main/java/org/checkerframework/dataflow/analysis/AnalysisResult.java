@@ -290,7 +290,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param block a block
      * @return the store right before the given block
      */
-    public @Nullable S getStoreBefore(Block block) {
+    public S getStoreBefore(Block block) {
         TransferInput<V, S> transferInput = stores.get(block);
         assert transferInput != null
                 : "@AssumeAssertion(nullness): transferInput should be non-null";
@@ -331,7 +331,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param block a block
      * @return the store after the given block
      */
-    public @Nullable S getStoreAfter(Block block) {
+    public S getStoreAfter(Block block) {
         TransferInput<V, S> transferInput = stores.get(block);
         assert transferInput != null
                 : "@AssumeAssertion(nullness): transferInput should be non-null";
@@ -434,7 +434,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @return the store before or after {@code node} (depends on the value of {@code before}) after
      *     running the analysis
      */
-    public static <V extends AbstractValue<V>, S extends Store<S>> @Nullable S runAnalysisFor(
+    public static <V extends AbstractValue<V>, S extends Store<S>> S runAnalysisFor(
             Node node,
             Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> transferInput,

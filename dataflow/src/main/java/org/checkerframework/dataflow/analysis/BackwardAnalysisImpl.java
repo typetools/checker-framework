@@ -314,7 +314,7 @@ public class BackwardAnalysisImpl<
     }
 
     @Override
-    public @Nullable S runAnalysisFor(
+    public S runAnalysisFor(
             @FindDistinct Node node,
             Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> blockTransferInput,
