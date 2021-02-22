@@ -161,7 +161,12 @@ public class JavaExpressionParseUtil {
             result =
                     expr.accept(
                             new ExpressionToJavaExpressionVisitor(
-                                    pathToCompilationUnit, localPath, env, context),
+                                    context.receiver.getType(),
+                                    context.receiver,
+                                    context.arguments,
+                                    localPath,
+                                    pathToCompilationUnit,
+                                    env),
                             null);
         } catch (ParseRuntimeException e) {
             // Convert unchecked to checked exception. Visitor methods can't throw checked
@@ -233,37 +238,43 @@ public class JavaExpressionParseUtil {
         /** The java.lang.String type. */
         private final TypeMirror stringTypeMirror;
 
+        private final TypeMirror enclosingType;
+
         // TODO: The type should be ThisReference.
         private final @Nullable JavaExpression thisReference;
 
-        private final TypeMirror enclosingType;
-
         // TODO: the type should be List<FormalParameter>
-        private final List<JavaExpression> arguments;
+        private final @Nullable List<JavaExpression> parameters;
 
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
          *
-         * @param pathToCompilationUnit required to use the underlying Javac API
+         * @param enclosingType type of the class that encloses the JavaExpression
+         * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
+         *     appear in the expression
+         * @param parameters list of JavaExpressions to which to parse parameters or null if
+         *     parameters should not appear in the expression
          * @param localVarPath if non-null, the expression is parsed as if it were written at this
          *     location
+         * @param pathToCompilationUnit required to use the underlying Javac API
          * @param env the processing environment
-         * @param context context
          */
         ExpressionToJavaExpressionVisitor(
-                TreePath pathToCompilationUnit,
+                TypeMirror enclosingType,
+                @Nullable JavaExpression thisReference,
+                @Nullable List<JavaExpression> parameters,
                 @Nullable TreePath localVarPath,
-                ProcessingEnvironment env,
-                JavaExpressionContext context) {
+                TreePath pathToCompilationUnit,
+                ProcessingEnvironment env) {
             this.pathToCompilationUnit = pathToCompilationUnit;
             this.localVarPath = localVarPath;
             this.env = env;
             this.types = env.getTypeUtils();
             this.stringTypeMirror =
                     env.getElementUtils().getTypeElement("java.lang.String").asType();
-            this.thisReference = context.receiver;
-            this.enclosingType = context.receiver.getType();
-            this.arguments = context.arguments;
+            this.enclosingType = enclosingType;
+            this.thisReference = thisReference;
+            this.parameters = parameters;
         }
 
         /** Sets the {@code resolver} field if necessary. */
@@ -404,10 +415,10 @@ public class JavaExpressionParseUtil {
             }
 
             // Err if a formal parameter name is used, instead of the "#2" syntax.
-            if (arguments != null) {
-                for (int i = 0; i < arguments.size(); i++) {
-                    if (arguments.get(i) instanceof LocalVariable) {
-                        Element varElt = ((LocalVariable) arguments.get(i)).getElement();
+            if (parameters != null) {
+                for (int i = 0; i < parameters.size(); i++) {
+                    if (parameters.get(i) instanceof LocalVariable) {
+                        Element varElt = ((LocalVariable) parameters.get(i)).getElement();
                         if (varElt.getKind() == ElementKind.PARAMETER
                                 && varElt.getSimpleName().contentEquals(s)) {
                             throw new ParseRuntimeException(
@@ -1008,7 +1019,7 @@ public class JavaExpressionParseUtil {
          * @return the JavaExpression for the given parameter
          */
         private JavaExpression getParameterJavaExpression(String s) {
-            if (arguments == null) {
+            if (parameters == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(s, "no parameters found"));
             }
@@ -1020,12 +1031,12 @@ public class JavaExpressionParseUtil {
                                 "#0",
                                 "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
-            if (idx > arguments.size()) {
+            if (idx > parameters.size()) {
                 throw new ParseRuntimeException(
                         new JavaExpressionParseException(
                                 "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
-            return arguments.get(idx - 1);
+            return parameters.get(idx - 1);
         }
     }
 
