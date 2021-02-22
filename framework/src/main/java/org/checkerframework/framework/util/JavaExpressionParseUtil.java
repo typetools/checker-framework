@@ -233,8 +233,13 @@ public class JavaExpressionParseUtil {
         /** The java.lang.String type. */
         private final TypeMirror stringTypeMirror;
 
-        /** Context */
-        private final JavaExpressionContext context;
+        // TODO: The type should be ThisReference.
+        private final @Nullable JavaExpression thisReference;
+
+        private final TypeMirror enclosingType;
+
+        // TODO: the type should be List<FormalParameter>
+        private final List<JavaExpression> arguments;
 
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
@@ -256,7 +261,9 @@ public class JavaExpressionParseUtil {
             this.types = env.getTypeUtils();
             this.stringTypeMirror =
                     env.getElementUtils().getTypeElement("java.lang.String").asType();
-            this.context = context;
+            this.thisReference = context.receiver;
+            this.enclosingType = context.receiver.getType();
+            this.arguments = context.arguments;
         }
 
         /** Sets the {@code resolver} field if necessary. */
@@ -311,20 +318,17 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(ThisExpr n, Void aVoid) {
-            if (context.receiver == null) {
-                return null;
+            if (thisReference == null) {
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError("this", "\"this\" cannot be used here."));
             }
-            if (!context.receiver.containsUnknown()) {
-                // "this" is the receiver of the context
-                return context.receiver;
-            }
-            return new ThisReference(context.receiver.getType());
+            return thisReference;
         }
 
         @Override
         public JavaExpression visit(SuperExpr n, Void aVoid) {
             // super literal
-            TypeMirror superclass = TypesUtils.getSuperclass(context.receiver.getType(), types);
+            TypeMirror superclass = TypesUtils.getSuperclass(enclosingType, types);
             if (superclass == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError("super", "super class not found"));
@@ -381,7 +385,7 @@ public class JavaExpressionParseUtil {
             }
 
             // Field access
-            FieldAccess fieldAccess = getIdentifierAsField(context.receiver, s);
+            FieldAccess fieldAccess = getIdentifierAsField(thisReference, s);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
@@ -394,17 +398,16 @@ public class JavaExpressionParseUtil {
                 }
             }
 
-            ClassName classType =
-                    getIdentifierAsUnqualifiedClassName(context.receiver.getType(), s);
+            ClassName classType = getIdentifierAsUnqualifiedClassName(enclosingType, s);
             if (classType != null) {
                 return classType;
             }
 
             // Err if a formal parameter name is used, instead of the "#2" syntax.
-            if (context.arguments != null) {
-                for (int i = 0; i < context.arguments.size(); i++) {
-                    if (context.arguments.get(i) instanceof LocalVariable) {
-                        Element varElt = ((LocalVariable) context.arguments.get(i)).getElement();
+            if (arguments != null) {
+                for (int i = 0; i < arguments.size(); i++) {
+                    if (arguments.get(i) instanceof LocalVariable) {
+                        Element varElt = ((LocalVariable) arguments.get(i)).getElement();
                         if (varElt.getKind() == ElementKind.PARAMETER
                                 && varElt.getSimpleName().contentEquals(s)) {
                             throw new ParseRuntimeException(
@@ -582,7 +585,7 @@ public class JavaExpressionParseUtil {
                 receiverExpr = expr.getScope().get().accept(this, null);
                 expr = expr.removeScope();
             } else {
-                receiverExpr = context.receiver;
+                receiverExpr = thisReference;
             }
 
             String methodName = expr.getNameAsString();
@@ -999,13 +1002,13 @@ public class JavaExpressionParseUtil {
 
         /**
          * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
-         * context.arguments}.
+         * arguments}.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
          * @return the JavaExpression for the given parameter
          */
         private JavaExpression getParameterJavaExpression(String s) {
-            if (context.arguments == null) {
+            if (arguments == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(s, "no parameters found"));
             }
@@ -1017,12 +1020,12 @@ public class JavaExpressionParseUtil {
                                 "#0",
                                 "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
-            if (idx > context.arguments.size()) {
+            if (idx > arguments.size()) {
                 throw new ParseRuntimeException(
                         new JavaExpressionParseException(
                                 "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
-            return context.arguments.get(idx - 1);
+            return arguments.get(idx - 1);
         }
     }
 
