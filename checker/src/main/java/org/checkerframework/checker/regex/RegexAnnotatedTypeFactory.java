@@ -21,6 +21,7 @@ import org.checkerframework.checker.regex.qual.PolyRegex;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.regex.qual.RegexBottom;
 import org.checkerframework.checker.regex.qual.UnknownRegex;
+import org.checkerframework.checker.regex.util.RegexUtil;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -94,10 +95,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The method that returns the value element of a {@code @Regex} annotation. */
     protected final ExecutableElement regexValueElement =
             TreeUtils.getMethod(
-                    org.checkerframework.checker.regex.qual.Regex.class.getCanonicalName(),
-                    "value",
-                    0,
-                    processingEnv);
+                    "org.checkerframework.checker.regex.qual.Regex", "value", 0, processingEnv);
 
     /**
      * The value method of the PartialRegex qualifier.
@@ -106,7 +104,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ExecutableElement partialRegexValue =
             TreeUtils.getMethod(
-                    org.checkerframework.checker.regex.qual.PartialRegex.class.getCanonicalName(),
+                    "org.checkerframework.checker.regex.qual.PartialRegex",
                     "value",
                     0,
                     processingEnv);
@@ -117,9 +115,13 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @see java.util.regex.Pattern#compile(String)
      */
     private final ExecutableElement patternCompile =
-            TreeUtils.getMethod(
-                    java.util.regex.Pattern.class.getCanonicalName(), "compile", 1, processingEnv);
+            TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
 
+    /**
+     * Create a new RegexAnnotatedTypeFactory.
+     *
+     * @param checker the checker
+     */
     public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -199,7 +201,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);
@@ -227,7 +230,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);

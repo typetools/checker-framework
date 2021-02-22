@@ -4,7 +4,7 @@
 import org.checkerframework.checker.builder.qual.ReturnsReceiver;
 import org.checkerframework.checker.calledmethods.qual.*;
 
-class OldInherited {
+public class OldInherited {
     @ReturnsReceiver
     OldInherited getThis() {
         return this;

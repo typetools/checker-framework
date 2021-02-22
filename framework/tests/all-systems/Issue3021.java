@@ -4,7 +4,7 @@
 // Any arbitrary annotation can be used.
 import org.checkerframework.common.aliasing.qual.MaybeAliased;
 
-class Issue3021 {
+public class Issue3021 {
     <T> void make() {
         new Lib<@MaybeAliased T>() {};
     }

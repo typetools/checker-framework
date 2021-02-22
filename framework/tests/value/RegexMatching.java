@@ -2,7 +2,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-class RegexMatching {
+public class RegexMatching {
     void stringConstants() {
         @MatchesRegex("a*") String a = "a";
         @MatchesRegex("a*") String blank = "";

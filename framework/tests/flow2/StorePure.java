@@ -4,7 +4,7 @@ import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
 // various tests about keeping information in the store about pure method calls
-class StorePure {
+public class StorePure {
 
     String f1, f2;
 

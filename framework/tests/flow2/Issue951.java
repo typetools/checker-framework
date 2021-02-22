@@ -21,14 +21,14 @@ public class Issue951 {
 
     @Pure
     public static int arbitraryExceptionArg1() {
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call.method)
-        // :: error: (purity.not.sideeffectfree.call.constructor)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call)
         throw new MyException("" + arbitraryMethod());
     }
 
     @Pure
     public static int arbitraryExceptionArg2() {
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call.method)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
         throw new MyExceptionSefConstructor("" + arbitraryMethod());
     }
 
@@ -36,8 +36,8 @@ public class Issue951 {
     public static int sefExceptionArg1() {
         // The method is safe, so this is a false positive warning;
         // in the future the Purity Checker may not issue this warning.
-        // :: error: (purity.not.deterministic.call.method)
-        // :: error: (purity.not.sideeffectfree.call.constructor)
+        // :: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.sideeffectfree.call)
         throw new MyException("" + sefMethod());
     }
 
@@ -45,26 +45,26 @@ public class Issue951 {
     public static int sefExceptionArg2() {
         // The method is safe, so this is a false positive warning;
         // in the future the Purity Checker may not issue this warning.
-        // :: error: (purity.not.deterministic.call.method)
+        // :: error: (purity.not.deterministic.call)
         throw new MyExceptionSefConstructor("" + sefMethod());
     }
 
     @Pure
     public static int detExceptionArg1() {
-        // :: error: (purity.not.sideeffectfree.call.method)
-        // :: error: (purity.not.sideeffectfree.call.constructor)
+        // :: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call)
         throw new MyException("" + detMethod());
     }
 
     @Pure
     public static int detExceptionArg2() {
-        // :: error: (purity.not.sideeffectfree.call.method)
+        // :: error: (purity.not.sideeffectfree.call)
         throw new MyExceptionSefConstructor("" + detMethod());
     }
 
     @Pure
     public static int pureExceptionArg1(int a, int b) {
-        // :: error: (purity.not.sideeffectfree.call.constructor)
+        // :: error: (purity.not.sideeffectfree.call)
         throw new MyException("" + min(a, b));
     }
 

@@ -6,7 +6,7 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.common.value.qual.MinLen;
 
-class Issue58Minimization {
+public class Issue58Minimization {
 
     void test(@GTENegativeOne int x) {
         int z;

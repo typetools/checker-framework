@@ -3,12 +3,15 @@ package org.checkerframework.checker.formatter;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.IllegalFormatException;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
+import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -22,6 +25,9 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import scenelib.annotations.Annotation;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
@@ -38,6 +44,9 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @{@link FormatBottom} annotation. */
     protected final AnnotationMirror FORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, FormatBottom.class);
+    /** The @{@link FormatMethod} annotation. */
+    protected final AnnotationMirror FORMATMETHOD =
+            AnnotationBuilder.fromClass(elements, FormatMethod.class);
 
     /** The fully-qualified name of the {@link Format} qualifier. */
     protected static final @CanonicalName String FORMAT_NAME = Format.class.getCanonicalName();
@@ -52,6 +61,11 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
+        addAliasedDeclAnnotation(
+                com.google.errorprone.annotations.FormatMethod.class,
+                FormatMethod.class,
+                FORMATMETHOD);
+
         this.postInit();
     }
 
@@ -65,7 +79,50 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new FormatterTreeAnnotator(this));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
+     * from its first argument.
+     */
+    @Override
+    public void prepareMethodForWriting(AMethod method) {
+        if (hasFormatMethodAnno(method)) {
+            AField param = method.parameters.get(0);
+            if (param != null) {
+                Set<Annotation> paramTypeAnnos = param.type.tlAnnotationsHere;
+                paramTypeAnnos.removeIf(
+                        a ->
+                                a.def.name.equals(
+                                        "org.checkerframework.checker.formatter.qual.Format"));
+            }
+        }
+    }
+
+    /**
+     * Returns true if the method has a {@code @FormatMethod} annotation.
+     *
+     * @param methodAnnos method annotations
+     * @return true if the method has a {@code @FormatMethod} annotation
+     */
+    private boolean hasFormatMethodAnno(AMethod methodAnnos) {
+        for (Annotation anno : methodAnnos.tlAnnotationsHere) {
+            String annoName = anno.def.name;
+            if (annoName.equals("org.checkerframework.checker.formatter.qual.FormatMethod")
+                    || anno.def.name.equals("com.google.errorprone.annotations.FormatMethod")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The tree annotator for the Format String Checker. */
     private class FormatterTreeAnnotator extends TreeAnnotator {
+        /**
+         * Create the tree annotator for the Format String Checker.
+         *
+         * @param atypeFactory the Format String Checker type factory
+         */
         public FormatterTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
@@ -145,7 +202,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1.isBottom()) {
                 return anno2;
             } else if (qualifierKind2.isBottom()) {
@@ -203,7 +261,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1.isTop()) {
                 return anno2;
             } else if (qualifierKind2.isTop()) {

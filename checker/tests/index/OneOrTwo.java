@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class OneOrTwo {
+public class OneOrTwo {
     @IntVal({1, 2}) int getOneOrTwo() {
         return 1;
     }

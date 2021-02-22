@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class CompoundStringAssignment {
+public class CompoundStringAssignment {
     @H1S1 @H2S1 String getSib1() {
         return null;
     }

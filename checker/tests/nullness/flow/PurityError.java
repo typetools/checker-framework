@@ -7,7 +7,7 @@ public class PurityError {
 
     @Pure
     Object method2() {
-        // :: error: (purity.not.deterministic.call.method)
+        // :: error: (purity.not.deterministic.call)
         method();
         return "";
     }

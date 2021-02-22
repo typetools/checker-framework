@@ -1,7 +1,7 @@
 // Test for Issue 293:
 // https://github.com/typetools/checker-framework/issues/293
 
-class Issue293 {
+public class Issue293 {
     void test1() {
         String s;
         try {

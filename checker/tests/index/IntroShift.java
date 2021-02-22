@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.NonNegative;
 
-class IntroShift {
+public class IntroShift {
     void test() {
         @NonNegative int a = 1 >> 1;
         // :: error: (assignment.type.incompatible)

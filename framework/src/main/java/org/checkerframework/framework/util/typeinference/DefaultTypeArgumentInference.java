@@ -52,10 +52,10 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
@@ -105,8 +105,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final boolean showInferenceSteps;
 
     public DefaultTypeArgumentInference(AnnotatedTypeFactory typeFactory) {
-        this.showInferenceSteps =
-                typeFactory.getContext().getChecker().hasOption("showInferenceSteps");
+        this.showInferenceSteps = typeFactory.getChecker().hasOption("showInferenceSteps");
     }
 
     @Override
@@ -123,7 +122,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
-        SourceChecker checker = typeFactory.getContext().getChecker();
+        SourceChecker checker = typeFactory.getChecker();
 
         if (showInferenceSteps) {
             checker.message(
@@ -136,10 +135,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
-        if (TreeUtils.enclosingNonParen(pathToExpression).first.getKind()
+        if (TreePathUtil.enclosingNonParen(pathToExpression).first.getKind()
                         == Tree.Kind.LAMBDA_EXPRESSION
                 || (assignedTo == null
-                        && TreeUtils.getAssignmentContext(pathToExpression) != null)) {
+                        && TreePathUtil.getAssignmentContext(pathToExpression) != null)) {
             // If the type of the assignment context isn't found, but the expression is assigned,
             // then don't attempt to infer type arguments, because the Java type inferred will be
             // incorrect.  The assignment type is null when it includes uninferred type arguments.
@@ -492,10 +491,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
-                    UtilPlume.joinLines(
+                    StringsPlume.joinLines(
                             "Mismatch between formal parameter count and argument count.",
-                            "paramTypes=" + UtilPlume.join(",", paramTypes),
-                            "argTypes=" + UtilPlume.join(",", argTypes)));
+                            "paramTypes=" + StringsPlume.join(",", paramTypes),
+                            "argTypes=" + StringsPlume.join(",", argTypes)));
         }
 
         final int numberOfParams = paramTypes.size();
@@ -706,7 +705,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     if (TypesUtils.isErasedSubtype(
                             equalityATM.getUnderlyingType(),
                             superATM.getUnderlyingType(),
-                            typeFactory.getContext().getTypeUtils())) {
+                            typeFactory.getChecker().getTypeUtils())) {
                         // If the underlying type of equalityATM is a subtype of the underlying
                         // type of superATM, then the call to isSubtype below will issue an error.
                         // So call asSuper so that the isSubtype call below works correctly.
@@ -754,6 +753,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
+                } else {
+                    typeFactory.addDefaultAnnotations(inferredType);
                 }
             }
         }
@@ -810,10 +811,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "All afConstraints should be irreducible before conversion.",
-                                "afConstraints=[ " + UtilPlume.join(", ", afConstraints) + " ]",
-                                "targets=[ " + UtilPlume.join(", ", targets) + "]"));
+                                "afConstraints=[ " + StringsPlume.join(", ", afConstraints) + " ]",
+                                "targets=[ " + StringsPlume.join(", ", targets) + "]"));
             }
 
             outgoing.add(afConstraint.toTUConstraint());

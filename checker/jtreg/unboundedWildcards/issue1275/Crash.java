@@ -6,7 +6,7 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Lib.java
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Crash.java
  */
-class Crash {
+public class Crash {
     void crash(Sub o) {
         Sub.SubInner<?> x = o.a().b().b();
         o.a().b().b().c();

@@ -3,7 +3,7 @@ import org.checkerframework.common.value.qual.*;
 // Test case for switch statements. Not really about the value checker (more about
 // whether the semantics of switch are correct in general), but I needed some
 // checker to try it out on.
-class Switch {
+public class Switch {
     void test1(@IntVal({1, 2, 3, 4, 5}) int x) {
 
         // easy version, no fall through

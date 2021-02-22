@@ -96,9 +96,9 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
                         node,
                         "usage",
                         node,
-                        ElementUtils.getVerboseName(loop),
+                        ElementUtils.getQualifiedName(loop),
                         loop.getKind(),
-                        ElementUtils.getVerboseName(member),
+                        ElementUtils.getQualifiedName(member),
                         member.getKind());
                 break;
             } else {
@@ -132,7 +132,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
-                checker.reportError(node, "inherit", node, ElementUtils.getVerboseName(sup));
+                checker.reportError(node, "inherit", node, ElementUtils.getQualifiedName(sup));
             }
         }
         super.processClassTree(node);
@@ -159,7 +159,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.reportError(node, "override", node, ElementUtils.getVerboseName(method));
+            checker.reportError(node, "override", node, ElementUtils.getQualifiedName(method));
         }
         return super.visitMethod(node, p);
     }
@@ -189,7 +189,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.reportError(node, "methodcall", node, ElementUtils.getVerboseName(method));
+            checker.reportError(node, "methodcall", node, ElementUtils.getQualifiedName(method));
         }
         return super.visitMethodInvocation(node, p);
     }
@@ -201,7 +201,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
         if (report) {
-            checker.reportError(node, "fieldreadwrite", node, ElementUtils.getVerboseName(member));
+            checker.reportError(
+                    node, "fieldreadwrite", node, ElementUtils.getQualifiedName(member));
         }
         return super.visitMemberSelect(node, p);
     }
@@ -212,7 +213,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
         if (report) {
-            checker.reportError(node, "fieldreadwrite", node, ElementUtils.getVerboseName(member));
+            checker.reportError(
+                    node, "fieldreadwrite", node, ElementUtils.getQualifiedName(member));
         }
         return super.visitIdentifier(node, p);
     }
@@ -223,7 +225,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportWrite.class) != null;
 
         if (report) {
-            checker.reportError(node, "fieldwrite", node, ElementUtils.getVerboseName(member));
+            checker.reportError(node, "fieldwrite", node, ElementUtils.getQualifiedName(member));
         }
         return super.visitAssignment(node, p);
     }
@@ -257,7 +259,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.reportError(node, "creation", node, ElementUtils.getVerboseName(member));
+            checker.reportError(node, "creation", node, ElementUtils.getQualifiedName(member));
         }
         return super.visitNewClass(node, p);
     }

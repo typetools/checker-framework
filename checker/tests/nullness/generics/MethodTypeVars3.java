@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 
-class MethodTypeVars3 {
+public class MethodTypeVars3 {
     public static <@KeyFor("#1") T extends @KeyFor("#1") Object> Map<T, List<T>> dominators(
             Map<T, List<T>> preds) {
         List<T> nodes = new ArrayList<>(preds.keySet());

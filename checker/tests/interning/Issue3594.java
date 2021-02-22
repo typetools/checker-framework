@@ -1,4 +1,4 @@
-class Issue3594 {
+public class Issue3594 {
 
     // Throwable is annotated with @UsesObjectEquals, which is an inherited annotation.
     // So, MyThrowable should be treated as @UsesObjectEquals, too.

@@ -5,7 +5,7 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.common.returnsreceiver.qual.*;
 
-class SpecialNames {
+public class SpecialNames {
     @This SpecialNames withFilters() {
         return this;
     }

@@ -2,7 +2,7 @@ import java.lang.annotation.Annotation;
 
 @interface Anno {}
 
-class Annotations {
+public class Annotations {
     void takeAnnotation(Annotation a) {}
 
     // test that a Tree works (source for Anno is in same compilation unit)

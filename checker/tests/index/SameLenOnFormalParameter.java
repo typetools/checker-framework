@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.index.qual.*;
 
-class SameLenOnFormalParameter {
+public class SameLenOnFormalParameter {
     public void requiresSameLen1(String x1, @SameLen("#1") String y1) {}
 
     public void requiresSameLen2(@SameLen("#2") String x2, String y2) {}

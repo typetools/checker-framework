@@ -15,7 +15,7 @@ public class Issue752 {
         return staticField;
     }
 
-    // A package name without a class name is not a valid flow expression string.
+    // A package name without a class name is not a valid JavaExpression string.
     @RequiresNonNull("java.lang")
     // :: error: (flowexpr.parse.error)
     void method1() {}
@@ -23,7 +23,7 @@ public class Issue752 {
     @RequiresNonNull("java.lang.String.class")
     void method2() {}
 
-    // A package name without a class name is not a valid flow expression string.
+    // A package name without a class name is not a valid JavaExpression string.
     @RequiresNonNull("a.b.c")
     // :: error: (flowexpr.parse.error)
     void method3() {}

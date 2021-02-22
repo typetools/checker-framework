@@ -9,8 +9,7 @@ import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -46,8 +45,7 @@ public class I18nFormatterTransfer extends CFTransfer {
             if (cats.value() == null) {
                 tu.failure(cats, "i18nformat.indirect.arguments");
             } else {
-                Receiver firstParam =
-                        FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
+                JavaExpression firstParam = JavaExpression.fromNode(node.getArgument(0));
                 AnnotationMirror anno =
                         atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 thenStore.insertValue(firstParam, anno);
@@ -61,10 +59,9 @@ public class I18nFormatterTransfer extends CFTransfer {
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-            Receiver firstParam = FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
+            JavaExpression firstParam = JavaExpression.fromNode(node.getArgument(0));
             AnnotationBuilder builder =
-                    new AnnotationBuilder(
-                            tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());
+                    new AnnotationBuilder(tu.processingEnv, I18nInvalidFormat.class);
             // No need to set a value of @I18nInvalidFormat
             builder.setValue("value", "");
             elseStore.insertValue(firstParam, builder.build());

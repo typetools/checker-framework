@@ -1,4 +1,4 @@
-class WildcardCharPrimitive {
+public class WildcardCharPrimitive {
     static interface Predicate<T> {
         boolean apply(T t);
     }

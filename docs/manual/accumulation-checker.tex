@@ -28,9 +28,6 @@ Unlike a traditional typestate analysis, an accumulation analysis does
 not require an alias analysis for soundness. It can therefore be implemented
 as a flow-sensitive type system.
 
-The Checker Framework contains a generic accumulation analysis that you can
-extend to create your own accumulation checker.
-
 The rest of this chapter assumes you have read how to create a checker
 (\chapterpageref{creating-a-checker}).
 
@@ -98,6 +95,17 @@ For example, to accumulate the names of methods called, a checker would override
 \refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferInput-} to:
 call \<super> to get a \<TransferResult>, compute the method name from the \<MethodInvocationNode>,
 and then call \<accumulate>.
+
+
+\paragraphAndLabel{Enforcing program properties}{accumulation-enforcing}
+
+At this point, your checker ensures that all annotations are consistent
+with one another and the souce code, and it flow-sensitively refines the
+annotations.
+Te enforce properties in the code being type-checked, write type rules
+(Section~\ref{creating-extending-visitor}) that are specific to your type
+system.
+
 
 % LocalWords:  SubtypeOf TestAccumulation TestAccumulationBottom
 % LocalWords:  TestAccumulationPredicate AccumulationChecker

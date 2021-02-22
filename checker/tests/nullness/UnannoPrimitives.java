@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class UnannoPrimitives {
+public class UnannoPrimitives {
     // :: error: (nullness.on.primitive)
     @Nullable int f;
 

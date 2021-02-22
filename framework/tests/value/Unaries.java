@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class Unaries {
+public class Unaries {
 
     public void complement() {
         boolean a = false;

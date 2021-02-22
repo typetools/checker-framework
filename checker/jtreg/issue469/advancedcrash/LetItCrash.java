@@ -1,6 +1,6 @@
 package advancedcrash;
 
-class LetItCrash implements SomeInterface {
+public class LetItCrash implements SomeInterface {
 
     Integer longer = 0;
 

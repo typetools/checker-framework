@@ -6,4 +6,4 @@
  * @compile/fail/ref=error.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker ClassA.java ClassB.java
  * @compile/fail/ref=error.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker ClassB.java ClassA.java
  */
-class Main {}
+public class Main {}

@@ -2,7 +2,7 @@ package com.example;
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class GenericTest11 {
+public class GenericTest11 {
     public void m(BeanManager beanManager) {
         Bean<?> bean = beanManager.getBeans(GenericTest11.class).iterator().next();
         CreationalContext<?> context = beanManager.createCreationalContext(bean);

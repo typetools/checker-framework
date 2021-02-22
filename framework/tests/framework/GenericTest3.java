@@ -1,7 +1,7 @@
 // Test case for Issue 133:
 // https://github.com/typetools/checker-framework/issues/133
 // Upper bound of wildcard depends on declared bound of type variable.
-class GenericTest3 {
+public class GenericTest3 {
     interface Foo {}
 
     interface Bar<T extends Foo> {

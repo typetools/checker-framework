@@ -11,8 +11,7 @@ import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -28,7 +27,7 @@ import org.checkerframework.framework.flow.CFValue;
 public class AccumulationTransfer extends CFTransfer {
 
     /** The type factory. */
-    protected final AccumulationAnnotatedTypeFactory typeFactory;
+    protected final AccumulationAnnotatedTypeFactory atypeFactory;
 
     /**
      * Build a new AccumulationTransfer for the given analysis.
@@ -37,7 +36,7 @@ public class AccumulationTransfer extends CFTransfer {
      */
     public AccumulationTransfer(CFAnalysis analysis) {
         super(analysis);
-        typeFactory = (AccumulationAnnotatedTypeFactory) analysis.getTypeFactory();
+        atypeFactory = (AccumulationAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     /**
@@ -76,14 +75,14 @@ public class AccumulationTransfer extends CFTransfer {
         List<String> valuesAsList = Arrays.asList(values);
         // If dataflow has already recorded information about the target, fetch it and integrate
         // it into the list of values in the new annotation.
-        Receiver target = FlowExpressions.internalReprOf(typeFactory, node);
-        if (CFAbstractStore.canInsertReceiver(target)) {
+        JavaExpression target = JavaExpression.fromNode(node);
+        if (CFAbstractStore.canInsertJavaExpression(target)) {
             CFValue flowValue = result.getRegularStore().getValue(target);
             if (flowValue != null) {
                 Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
                 assert flowAnnos.size() <= 1;
                 for (AnnotationMirror anno : flowAnnos) {
-                    if (typeFactory.isAccumulatorAnnotation(anno)) {
+                    if (atypeFactory.isAccumulatorAnnotation(anno)) {
                         List<String> oldFlowValues =
                                 ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
                         if (oldFlowValues != null) {
@@ -98,13 +97,13 @@ public class AccumulationTransfer extends CFTransfer {
             }
         }
 
-        AnnotationMirror newAnno = typeFactory.createAccumulatorAnnotation(valuesAsList);
-        insertIntoStores(result, node, newAnno);
+        AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
+        insertIntoStores(result, target, newAnno);
 
         Tree tree = node.getTree();
         if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
             Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
-            if (receiver != null && typeFactory.returnsThis((MethodInvocationTree) tree)) {
+            if (receiver != null && atypeFactory.returnsThis((MethodInvocationTree) tree)) {
                 accumulate(receiver, result, values);
             }
         }
@@ -114,20 +113,21 @@ public class AccumulationTransfer extends CFTransfer {
      * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
      *
      * @param result the TransferResult holding the stores to modify
-     * @param node the node whose value should be modified
+     * @param target the receiver whose value should be modified
      * @param newAnno the new value
      */
     private void insertIntoStores(
-            TransferResult<CFValue, CFStore> result, Node node, AnnotationMirror newAnno) {
-        Receiver receiver = FlowExpressions.internalReprOf(typeFactory, node);
+            TransferResult<CFValue, CFStore> result,
+            JavaExpression target,
+            AnnotationMirror newAnno) {
         if (result.containsTwoStores()) {
             CFStore thenStore = result.getThenStore();
             CFStore elseStore = result.getElseStore();
-            thenStore.insertValue(receiver, newAnno);
-            elseStore.insertValue(receiver, newAnno);
+            thenStore.insertValue(target, newAnno);
+            elseStore.insertValue(target, newAnno);
         } else {
             CFStore store = result.getRegularStore();
-            store.insertValue(receiver, newAnno);
+            store.insertValue(target, newAnno);
         }
     }
 }

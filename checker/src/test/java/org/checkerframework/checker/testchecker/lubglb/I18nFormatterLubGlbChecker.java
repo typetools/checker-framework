@@ -97,28 +97,27 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
         AnnotationMirror I18NFORMATBOTTOM =
                 AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
 
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class);
         builder.setValue("value", "Message");
         AnnotationMirror i18nInvalidFormatWithMessage = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class);
         builder.setValue("value", "Message2");
         AnnotationMirror i18nInvalidFormatWithMessage2 = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class);
         builder.setValue("value", "(\"Message\" or \"Message2\")");
         AnnotationMirror i18nInvalidFormatWithMessagesOred = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class);
         builder.setValue("value", "(\"Message\" and \"Message2\")");
         AnnotationMirror i18nInvalidFormatWithMessagesAnded = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, I18nFormatFor.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, I18nFormatFor.class);
         builder.setValue("value", "#1");
         AnnotationMirror i18nFormatForWithValue1 = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, I18nFormatFor.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, I18nFormatFor.class);
         builder.setValue("value", "#2");
         AnnotationMirror i18nFormatForWithValue2 = builder.build();
 

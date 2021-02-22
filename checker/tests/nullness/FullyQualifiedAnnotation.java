@@ -1,6 +1,6 @@
 import java.util.Iterator;
 
-class FullyQualifiedAnnotation {
+public class FullyQualifiedAnnotation {
 
     void client1(Iterator i) {
         @SuppressWarnings("nullness")

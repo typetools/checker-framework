@@ -1,4 +1,4 @@
-class Issue607 extends Issue607SuperClass {
+public class Issue607 extends Issue607SuperClass {
     static String simpleString = "a";
 
     Issue607() {

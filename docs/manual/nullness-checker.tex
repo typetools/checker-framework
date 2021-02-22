@@ -2,8 +2,8 @@
 \chapterAndLabel{Nullness Checker}{nullness-checker}
 
 If the Nullness Checker issues no warnings for a given program, then
-running that program will never throw a null pointer exception.  This
-guarantee enables a programmer to prevent run-time errors.
+running that program will never throw a null pointer exception.  In
+other words, the Nullness Checker prevents all \<NullPointerException>s.
 See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
@@ -79,6 +79,9 @@ The checker performs additional checks if certain \code{-Alint}
 command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
+
+Section~\ref{checker-guarantees} notes some limitations to guarantees made
+by the Checker Framework.
 
 
 \subsectionAndLabel{Nullness Checker optional warnings}{nullness-lint}
@@ -194,8 +197,8 @@ The nullness hierarchy contains these qualifiers:
   the default (see Section~\ref{null-defaults}).
 
 \item[\refqualclass{checker/nullness/qual}{PolyNull}]
-  indicates qualifier polymorphism.  For a description of
-  \refqualclass{checker/nullness/qual}{PolyNull}, see
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
   Section~\ref{method-qualifier-polymorphism}.
 
 \item[\refqualclass{checker/nullness/qual}{MonotonicNonNull}]
@@ -583,8 +586,8 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
-  \href{http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
-    checker and inferencer} of the \href{http://jastadd.org/}{JastAdd
+  \href{https://jastadd.cs.lth.se/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
+    checker and inferencer} of the \href{https://jastadd.cs.lth.se/}{JastAdd
     Extensible Compiler}.
 \end{itemize}
 
@@ -646,7 +649,7 @@ an \<assert> message (see Section~\ref{assumeassertion}).
 If you need to suppress a warning within an expression, then
 sometimes writing an assertion is not convenient.  In such a case,
 you can suppress warnings by writing a call to the
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method.
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} method.
 The rest of this section discusses the \<castNonNull> method.
 
 The Nullness Checker considers both the return value, and also the
@@ -672,7 +675,7 @@ code:
   the argument is \<null>.  However, it is not intended for general defensive
   programming; see Section~\ref{defensive-programming}.
 
-  To use the \<castNonNull> method, the \<checker-qual.jar> file
+  To use the \<castNonNull> method, the \<checker-util.jar> file
   must be on the classpath at run time.
 
 \begin{sloppypar}
@@ -1187,8 +1190,10 @@ based on previous statements in the method.
 
 Java's \<Optional> class provides utility routines to reduce clutter when
 using \<Optional>.  The Nullness Checker provides an
-\refclass{checker/nullness}{Opt} class that provides all the same methods,
+\refclass{checker/nullness/util}{Opt} class that provides all the same methods,
 but written for regular possibly-null Java references.
+To use the \refclass{checker/nullness/util}{Opt} class, the
+\<checker-util.jar> file must be on the classpath at run time.
 
 
 \sectionAndLabel{Initialization Checker}{initialization-checker}
@@ -1199,7 +1204,10 @@ treats its fields as possibly-null --- even fields annotated as
 \<@NonNull>.
 (The Initialization Checker focuses on \<@NonNull> fields, to detect null
 pointer exceptions when using them.  It does not
-currently ensure that primitives or \<@Nullable> fields are initialized.)
+currently ensure that primitives or \<@Nullable> fields are initialized.
+Use the Initialized Fields Checker
+(\chapterpageref{initialized-fields-checker}) to check initialization with
+respect to properties other than nullness.)
 
 Every object's fields start out as null.  By the time the constructor
 finishes executing, the \<@NonNull> fields have been set to a different
@@ -2012,11 +2020,11 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-warning suppression string ``initialization.''~(note the trailing period)
-or ``fbc''.  You can write \<@SuppressWarnings("initialization.")> or
-\<@SuppressWarnings("fbc")> on a field, constructor, or
+warning suppression string ``initialization''.
+You can write \<@SuppressWarnings("initialization")>
+on a field, constructor, or
 class, or pass the command-line argument
-\<-AsuppressWarnings=initialization.>~or \<-AsuppressWarnings=fbc> when
+\<-AsuppressWarnings=initialization> when
 running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
@@ -2028,9 +2036,7 @@ but does not suppress warnings issued by the Checker Framework itself, such
 as about assignments or method overriding.
 
 It is not possible to completely disable initialization checking while
-retaining nullness checking.  The ``initialization'' warning suppression
-string (without a period) has the same effect as ``nullness'':  both
-of them disable all nullness and initialization checking.  That is because
+retaining nullness checking.  That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers
 that are aggregated together.

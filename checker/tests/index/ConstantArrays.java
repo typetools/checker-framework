@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-class ConstantArrays {
+public class ConstantArrays {
     void basic_test() {
         int[] b = new int[4];
         @LTLengthOf("b") int[] a = {0, 1, 2, 3};

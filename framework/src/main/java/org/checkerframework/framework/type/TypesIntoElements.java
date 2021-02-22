@@ -115,9 +115,9 @@ public class TypesIntoElements {
         }
         {
             // receiver
-            JCTree recv = ((JCTree.JCMethodDecl) meth).getReceiverParameter();
-            if (recv != null) {
-                tapos = TypeAnnotationUtils.methodReceiverTAPosition(recv.pos);
+            JCTree receiverTree = ((JCTree.JCMethodDecl) meth).getReceiverParameter();
+            if (receiverTree != null) {
+                tapos = TypeAnnotationUtils.methodReceiverTAPosition(receiverTree.pos);
                 tcs =
                         tcs.appendList(
                                 generateTypeCompounds(

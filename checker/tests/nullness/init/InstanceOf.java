@@ -13,7 +13,7 @@ class PptTopLevel {
     class OtherPpt extends Ppt {}
 }
 
-class InstanceOf {
+public class InstanceOf {
     void foo(PptTopLevel.@UnknownInitialization(PptTopLevel.class) Ppt ppt) {
         // :: error: (method.invocation.invalid)
         ppt.method();

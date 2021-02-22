@@ -25,7 +25,7 @@ import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Generates a stub file from a single class or an entire package.
@@ -77,7 +77,7 @@ public class StubGenerator {
             return;
         }
 
-        String pkg = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
+        String pkg = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
         if (!"".equals(pkg)) {
             currentPackage = pkg;
             currentIndention = "    ";
@@ -110,7 +110,7 @@ public class StubGenerator {
             return;
         }
 
-        String newPackage = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
+        String newPackage = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
         if (!newPackage.equals("")) {
             currentPackage = newPackage;
             currentIndention = "    ";
@@ -131,7 +131,7 @@ public class StubGenerator {
         }
 
         String newPackageName =
-                ElementUtils.getVerboseName(ElementUtils.enclosingPackage(typeElement));
+                ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(typeElement));
         boolean newPackage = !newPackageName.equals(currentPackage);
         currentPackage = newPackageName;
 
@@ -375,7 +375,7 @@ public class StubGenerator {
      * @return a string representation of the list, without surrounding square brackets
      */
     private String formatList(List<?> lst) {
-        return UtilPlume.join(", ", lst);
+        return StringsPlume.join(", ", lst);
     }
 
     /** Returns true if the element is public or protected element. */

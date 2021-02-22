@@ -238,7 +238,7 @@ public class ForwardAnalysisImpl<
     @Override
     public @Nullable S runAnalysisFor(
             @FindDistinct Node node,
-            boolean before,
+            Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
@@ -275,7 +275,7 @@ public class ForwardAnalysisImpl<
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getNodes()) {
                             setCurrentNode(n);
-                            if (n == node && before) {
+                            if (n == node && preOrPost == Analysis.BeforeOrAfter.BEFORE) {
                                 return store.getRegularStore();
                             }
                             if (cache != null && cache.containsKey(n)) {
@@ -306,14 +306,23 @@ public class ForwardAnalysisImpl<
                                             + "\teb.getNode(): "
                                             + eb.getNode());
                         }
-                        if (before) {
+                        if (preOrPost == Analysis.BeforeOrAfter.BEFORE) {
                             return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
-                        TransferResult<V, S> transferResult =
-                                callTransferFunction(node, blockTransferInput.copy());
+                        TransferResult<V, S> transferResult;
+                        if (cache != null && cache.containsKey(node)) {
+                            transferResult = cache.get(node);
+                        } else {
+                            // Copy the store to avoid changing other blocks' transfer inputs in
+                            // {@link #inputs}
+                            transferResult = callTransferFunction(node, blockTransferInput.copy());
+                            if (cache != null) {
+                                cache.put(node, transferResult);
+                            }
+                        }
                         return transferResult.getRegularStore();
                     }
                 default:

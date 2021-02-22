@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-class RawTypesInit {
+public class RawTypesInit {
 
     class Bad {
         @NonNull String field;
@@ -103,9 +103,9 @@ class RawTypesInit {
         }
     }
 
-    // :: error: (initialization.fields.uninitialized)
     class C extends B {
 
+        // :: error: (initialization.field.uninitialized)
         @NonNull String[] strings;
 
         @Override
@@ -152,8 +152,8 @@ class RawTypesInit {
         public void nonRawMethod() {}
     }
 
-    // :: error: (initialization.fields.uninitialized)
     class AFSIICell {
+        // :: error: (initialization.field.uninitialized)
         AllFieldsSetInInitializer afsii;
     }
 

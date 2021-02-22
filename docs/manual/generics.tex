@@ -133,7 +133,7 @@ It is an error if the lower bound is not a subtype of the upper bound.
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a supertype of @NonNull
+  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a subtype of @NonNull
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -511,16 +511,7 @@ type signatures.  This is similar to Java's generics, but is used in
 situations where you cannot use Java generics.  If you can use generics,
 you typically do not need to use a polymorphic qualifier such as \<@PolyNull>.
 
-To \emph{use} a polymorphic qualifier, just write it on a type.
-For example, you can write \<@PolyNull> anywhere in a method that you would write
-\<@NonNull> or \<@Nullable>.
-A polymorphic qualifier can be used in a method signature or body.
-It may not be used on a class declaration.
-(It may be used on a field declaration, but it has a different meaning;
-see Section~\ref{class-qualifier-polymorphism}. Also, if it is written on a method in a class with
-a qualifier parameter, then it has a slightly different meaning, see Section~\ref{class-qual-param-method}.)
-
-A method written using a polymorphic qualifier conceptually has multiple
+A method whose signature has a polymorphic qualifier conceptually has multiple
 versions, somewhat like the generics feature of Java or a template in C++.
 In each version, each instance of the polymorphic qualifier has been
 replaced by the same other qualifier from the hierarchy.  See the examples
@@ -531,6 +522,13 @@ type-correct if it type-checks under any one of the signatures.  If a call
 matches multiple signatures, then the compiler uses the most specific
 matching signature for the purpose of type-checking.  This is the same as
 Java's rule for resolving overloaded methods.
+
+Polymorphic qualifiers are most often used in method signatures.
+They may not be used on a class declaration.
+They may be used on a field declaration, but it has a different meaning;
+see Section~\ref{class-qualifier-polymorphism}.
+Also, if it is written on a method in a class with
+a qualifier parameter, then it has a slightly different meaning, see Section~\ref{class-qual-param-method}.
 
 To \emph{define} a polymorphic qualifier, mark the definition with
 \refqualclass{framework/qual}{PolymorphicQualifier}.  For example,

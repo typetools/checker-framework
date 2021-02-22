@@ -1,6 +1,6 @@
 import org.checkerframework.checker.interning.qual.Interned;
 
-class ArrayInitializers {
+public class ArrayInitializers {
     public static final String STATIC_FIELD = "m";
     public static final @Interned String OTHER_FIELD = "n";
 

@@ -1,7 +1,7 @@
 import java.util.Collections;
 import java.util.List;
 
-class InferListParam<V> {
+public class InferListParam<V> {
     List<Integer> fieldValues;
 
     InferListParam() {

@@ -1,4 +1,4 @@
-class WildcardInvoke {
+public class WildcardInvoke {
     class Demo<T> {
         void call(T p) {}
     }

@@ -15,7 +15,7 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.BugInCF;
 
 /** A live variable store contains a set of live variables represented by nodes. */
@@ -121,7 +121,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
     }
 
     @Override
-    public boolean canAlias(Receiver a, Receiver b) {
+    public boolean canAlias(JavaExpression a, JavaExpression b) {
         return true;
     }
 

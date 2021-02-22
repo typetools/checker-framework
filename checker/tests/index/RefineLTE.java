@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
-class RefineLTE {
+public class RefineLTE {
     int[] arr = {1};
 
     void testLTL(@LTLengthOf("arr") int test) {

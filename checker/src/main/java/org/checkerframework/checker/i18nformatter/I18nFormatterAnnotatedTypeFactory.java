@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import javax.lang.model.element.AnnotationMirror;
@@ -18,6 +19,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatBottom;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat;
+import org.checkerframework.checker.i18nformatter.util.I18nFormatUtil;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -217,7 +219,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
     }
 
-    /** I18nFormatterQualifierHierarchy */
+    /** I18nFormatterQualifierHierarchy. */
     class I18nFormatterQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link I18nFormat} annotation. */
@@ -260,7 +262,9 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 return true;
             } else if ((subKind == I18NINVALIDFORMAT_KIND && superKind == I18NINVALIDFORMAT_KIND)
                     || (subKind == I18NFORMATFOR_KIND && superKind == I18NFORMATFOR_KIND)) {
-                return AnnotationUtils.sameElementValues(subAnno, superAnno);
+                return Objects.equals(
+                        treeUtil.getI18nInvalidFormatValue(subAnno),
+                        treeUtil.getI18nInvalidFormatValue(superAnno));
             }
             throw new BugInCF("Unexpected QualifierKinds: %s %s", subKind, superKind);
         }
@@ -270,7 +274,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1.isBottom()) {
                 return anno2;
             } else if (qualifierKind2.isBottom()) {
@@ -331,7 +336,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1.isTop()) {
                 return anno2;
             } else if (qualifierKind2.isTop()) {

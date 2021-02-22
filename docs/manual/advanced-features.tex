@@ -160,7 +160,7 @@ qualifier at all.
 Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
-In particular, qualifiers in method bodies are rare (except occasionally on
+particular, programmers rarely write qualifiers in method bodies (except occasionally on
 type arguments and array component types).
 
 The following steps determine the effective
@@ -218,6 +218,10 @@ rules are used in order, until one applies.
 \item
   The qualifier with a meta-annotation \<@DefaultFor(typeKinds = KIND)>, where \<KIND> is the
   \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
+\item
+  The qualifier with a meta-annotation \<@DefaultFor(names = REGEX)>, where \<REGEX>
+  matches the name of the variable being defined (if any).  For return types, the  the name of
+  the method is used. (Section~\ref{default-for-use})
 \item
   The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
   (Section~\ref{default-qualifier})
@@ -379,9 +383,30 @@ locations.
 Variables defaulted to top include local variables, resource variables in the
 try-with-resources construct, variables in \<for> statements, and \<catch>
 arguments (known as exception parameters in the Java Language Specification).
-Exception parameters need to have the top type because
-exceptions of arbitrary qualified types can be thrown and the Checker Framework
-does not provide run-time checks.
+
+Exception parameters default to the top type because they might catch an
+exception thrown anywhere in the program.
+
+An alternate design for exception parameters would be to default exception
+parameters some other type T (instead of the top type); then the Checker
+Framework would need to issue a warning at every \<throw> statement whose
+argument might not be a subtype of T\@.  A checker can implement this
+alternate design by overriding a few methods.  The alternative is not
+appropriate for all type systems.  The alternative is unsound for deep type
+systems because the JDK's annotations are trusted rather than checked.  A
+deep type system is one where the type of a field can determine the type of
+its containing instance, such as tainting, Example: a user passes a secret
+regex to the JDK, and the JDK throws a format exception that includes the
+regex.  This could be caught by a \<catch> clause in the program whose
+exception parameter is not annotated as secret.  As another example, the
+user passes a secret integer and the JDK throws a DivideByZeroException
+that reveals the value.
+
+% (An even more precise analysis would be for the Checker Framework to
+% compute the feasibility of every pair of $\langle$throw statement, catch
+% clauses$\rangle$ in the program, but such an analysis might be expensive
+% or non-modular, and it still does not address the issue of unchecked
+% library methods.)
 
 \item
 Cast types are defaulted to the same type as their argument expression.
@@ -409,7 +434,7 @@ upper bound as desired.
 
 This rule means that the upper bound of \code{class C<T>} is defaulted
 differently than the upper bound of \code{class C<T extends Object>}.
-This may seem confusing, but it is the least bad option.  The
+This is a bit unfortunate, but it is the least bad option.  The
 more confusing alternative would be for ``\code{Object}'' to be defaulted
 differently in \code{class C<T extends Object>} and in an
 instantiation \code{C<Object>}, and for the upper bounds to be defaulted
@@ -446,27 +471,44 @@ the CLIMB-to-top rule.
 
 \subsectionAndLabel{Inherited defaults}{inherited-defaults}
 
-In certain situations, it would be convenient for an annotation on a
-superclass member to be automatically inherited by subclasses that override
-it.  (An example is that programmers must add `@Nullable` to the formal
-parameter type of every implementation of the `equals()` method.)
-Such a feature would reduce annotation effort, but it would also reduce program
-comprehensibility.  In general, a program is read more often than it is
-edited/annotated, so the Checker Framework does not currently support this
-feature.  In the future, this feature may be added.
+When overriding a method, programmers must fully specify types in the overridding
+method, which duplicates information on the overridden method.
+By contrast, declaration annotations that are meta-annotated with
+\<@InheritedAnnotation> are inherited by overriding methods.
 
+An example for type annotations is that when definining an \<equals()>
+method, programmers must write the type annotation \<@Nullable>:
+
+\begin{Verbatim}
+  public boolean equals(@Nullable Object obj) {
+      ...
+  }
+\end{Verbatim}
+
+An alternate design would be for every annotation on a superclass member to
+to be automatically inherited by subclasses that override it.
+
+The alternate design would reduce annotation effort.
+
+The alternate design would reduce program comprehensibility.
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
-Computation is necessary because different annotations might be inherited
+For declaration annotations, no computation is necessary; that is why they
+may be inherited.
+Computation is necessary for type annotations because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
 annotations on overridden implementations in supertypes.  For method
 parameters, the inherited type should be the greatest lower bound of all
-annotations on overridden implementations in supertypes.  In each case, an
-error would be thrown if no such annotations existed.
+annotations on overridden implementations in supertypes.  In each case, the
+Checker Framework would need to issue an error if no such annotations existed.
+
+Because a program is read more often than it is edited/annotated, the
+Checker Framework does not currently support the alternate design.  In the
+future, this feature may be added.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
@@ -611,7 +653,6 @@ misbehave at run time.
 % external libraries.
 
 
-\newpage
 \sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
@@ -678,15 +719,18 @@ suppress the warning if the code is correct.
 
 \sectionAndLabel{Type refinement (flow-sensitive type qualifier inference)}{type-refinement}
 
-The
-checkers treat expressions within a method body as having a
-subtype of their declared or defaulted (Section~\ref{defaults})
-type.
+A checker can sometimes deduce that an expression's type is more specific
+than --- that is, a subtype of --- its declared or defaulted (Section~\ref{defaults}).
+This is called ``flow-sensitive type refinement'' or ``local type inference''.
 
-Type refinement eliminates some false positive warnings.
-Type refinement also
-reduces your burden of writing type qualifiers in your program,
-since you do not need to write type qualifiers on local variables.
+Due to local type refinement, a programmer typically
+does not have to write any qualifiers on local variables within a method body
+(except occasionally on type arguments).
+However, the programmer must write type annotations for method
+signatures (arguments and return values) and fields, unless the default
+annotations are correct.
+Local type refinement does not change the source code; it re-runs every time
+you run a checker.
 
 
 \subsectionAndLabel{Type refinement examples}{type-refinement-examples}
@@ -758,7 +802,7 @@ The checker never treats a variable as
 a supertype of its declared type.  For example, an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
 type is never treated as possibly-null, and such an assignment is always illegal.
 
-The functionality has a variety of names:  automatic type refinement,
+The functionality has a variety of names:  type refinement,
 flow-sensitive type qualifier inference, local type inference, and
 sometimes just ``flow''.
 
@@ -938,11 +982,15 @@ Type systems that cannot support a run-time test are:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{purity-checker})
+\item
+  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  fields are set in the constructor (see
+  \chapterpageref{initialization-checker})
+\item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
-  \ahrefloc{purity-checker}{Purity Checker} to identify whether
-  methods have side effects (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -1140,12 +1188,13 @@ expression as an argument include:
 \end{itemize}
 
 The set of permitted expressions is a subset of all Java expressions,
-with a few extensions, formal parameters like \<\#1> and (for some type
+with a few extensions.
+The extensions are formal parameters like \<\#1> and (for some type
 systems) \code{<self>}.
 
 \begin{itemize}
 \item
-  the receiver object, \<this>.  You can write \<this> to annotate any
+  \<this>, the receiver object.  You can write \<this> to annotate any
   variable or declaration where you could write \<this> in code.
   Notably, it cannot be used in annotations on declarations of
   static fields or methods.  For a field, \<this> is the field's
@@ -1153,7 +1202,7 @@ systems) \code{<self>}.
   method's receiver.
 
 \item
-  the receiver object as seen from the superclass, \<super>.  This can be used
+  \<super>, the receiver object as seen from the superclass.  This can be used
   to refer to fields shadowed in the subclass (although shadowing fields is
   discouraged in Java).
 
@@ -1165,36 +1214,32 @@ systems) \code{<self>}.
   referenced by \<o>.
 
 \item
-  a formal parameter, represented as \<\#> followed by the \textbf{one-based} parameter
+  a formal parameter, e.g., \<\#2>.  It is represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
   refer to the receiver object; use \<this> instead.
 
   The formal parameter syntax \<\#1> is less natural in source code
   than writing the formal parameter name.  This syntax is necessary for
-  separate compilation, when an annotated method has already been compiled
-  into a \<.class> file and a client of that method is later compiled.
-  In the \<.class> file, no formal parameter name information is available,
-  so it is necessary to use a number to indicate a formal parameter.
-  If all your annotated code is always provided to the checker in source
-  code format (this also implies that you will never provide \<.class>
-  files to clients who might want to do type-checking), then you can use
-  the formal parameter name instead of the numeric index.
-%% At some point, we will start assuming that the .class file was created
-%% by the Checker Framework and this justification, and the #n syntax
-%% itself, will not be necessary.
-% Running
-% the compiler without a checker should create legal annotations in the
-% \<.class> file, so we cannot rely on the checker to translate names to
-% indices.
+  separate compilation, because no formal parameter name information is
+  available in a \<.class> file.  Suppose an annotated method \<m> has
+  already been compiled into a \<.class> file, perhaps by a compilation
+  that did not use the Checker Framework.  When a client of \<m> is later
+  compiled, it cannot interpret a formal parameter name, but it can
+  interpret a number.
+
+  Within a method \emph{body}, you may use the formal parameter name.  The
+  formal parameter name never works within a method \emph{signature} or for
+  a contract (pre- or post-condition) annotation; in those locations, an
+  identifier is interpreted as a field name (not a formal parameter).
 
 \item
-  a local variable.  Write the variable name.  For example: \<myLocalVar>.
+  a local variable, e.g., \<myLocalVar>.
   The variable must be in scope; for example, a method annotation on method
   \<m> cannot mention a local variable that is declared inside \<m>.
 
 \item
-  a static variable.  Write the class name and the variable, as in
-  \<System.out>.
+  a static variable, e.g., \<System.out>.
+  Write the class name and the variable.
 
 \item
   a field of any expression.  For example:  \<next>,
@@ -1232,6 +1277,16 @@ systems) \code{<self>}.
 
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
+
+\item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
+  the Index Checker, for example.
+
+\item a class name expression within another expression, e.g., ``String''
+  in \<String.class> or ``pkg.MyClass'' in \<pkg.MyClass.staticField>.  The
+  class name must be fully-qualified unless it can be referenced by its
+  simple name without an \<import> statement at the location where the
+  annotation appears.  For example, an annotation in class \<C> can use the
+  simple name of a class in \<java.lang> or in the same package as \<C>.
 
 \end{itemize}
 
@@ -1504,7 +1559,7 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 % LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 % LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-% LocalWords:  computeValue AsuggestPureMethods arg myInt Anno
+% LocalWords:  computeValue AsuggestPureMethods arg myInt Anno Im
 % LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
 % LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 % LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
@@ -1514,7 +1569,7 @@ class @Marsupial-Animal {
 % LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 % LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
-% LocalWords:  EnsuresKeyFor EnsuresKeyForIf
+% LocalWords:  EnsuresKeyFor EnsuresKeyForIf DivideByZeroException
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
 % LocalWords:  Signedness MonotonicNonNull UpperBoundFor

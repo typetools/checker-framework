@@ -1,4 +1,4 @@
-class NestedArrayLengthInference {
+public class NestedArrayLengthInference {
     public void doStuff(int r) {
 
         int[] length16array = new int[16];

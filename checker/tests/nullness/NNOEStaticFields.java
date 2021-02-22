@@ -4,7 +4,7 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-class NNOEStaticFields {
+public class NNOEStaticFields {
     static @Nullable String nullable = null;
     static @Nullable String otherNullable = null;
 

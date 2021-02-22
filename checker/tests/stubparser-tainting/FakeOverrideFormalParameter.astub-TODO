@@ -1,0 +1,19 @@
+// TODO: Fake overrides only work for return types, not formal parameters yet.
+
+import org.checkerframework.checker.tainting.qual.Untainted;
+
+class FakeOverrideFPMid {
+
+    void requiresTaintedIntWithFakeOverride(@Untainted int i) {}
+
+    void requiresUntaintedIntWithFakeOverride(@Tainted int i) {}
+
+    void requiresTaintedIntegerWithFakeOverride(@Untainted Integer i) {}
+
+    void requiresUntaintedIntegerWithFakeOverride(@Tainted Integer i) {}
+
+    void requiresTaintedFqIntegerWithFakeOverride(java.lang. @Untainted Integer i) {}
+
+    void requiresUntaintedFqIntegerWithFakeOverride(java.lang. @Tainted Integer i) {}
+
+}

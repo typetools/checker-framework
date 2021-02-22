@@ -1,9 +1,6 @@
 package org.checkerframework.checker.calledmethods.builder;
 
 import com.sun.source.tree.NewClassTree;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -380,7 +377,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
             // instantiate the type variable for the Builder class
             retType =
                     AnnotatedTypes.asMemberOf(
-                                    atypeFactory.getContext().getTypeUtils(),
+                                    atypeFactory.getChecker().getTypeUtils(),
                                     atypeFactory,
                                     atypeFactory.getAnnotatedType(builderElement),
                                     method)
@@ -403,7 +400,8 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
      * @return list of all abstract methods
      */
     public List<ExecutableElement> getAllAbstractMethods(TypeElement classElement) {
-        List<Element> supertypes = getAllSupertypes((Symbol) classElement);
+        List<TypeElement> supertypes =
+                ElementUtils.getAllSupertypes(classElement, atypeFactory.getProcessingEnv());
         List<ExecutableElement> abstractMethods = new ArrayList<>();
         Set<ExecutableElement> overriddenMethods = new HashSet<>();
         for (Element t : supertypes) {
@@ -416,7 +414,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
                     continue;
                 }
                 if (modifiers.contains(Modifier.ABSTRACT)) {
-                    // Make sure it's not overridden. This only works because #getAllSupertypes
+                    // Make sure it's not overridden. This only works because ElementUtils#closure
                     // returns results in a particular order.
                     if (!overriddenMethods.contains(member)) {
                         abstractMethods.add((ExecutableElement) member);
@@ -445,20 +443,5 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     private String getAutoValuePackageName() {
         String com = "com";
         return com + "." + "google.auto.value";
-    }
-
-    /**
-     * Get all the supertypes of a given class, including that class.
-     *
-     * @param symbol symbol for a class
-     * @return list including the class and all its supertypes, with a guarantee that supertypes
-     *     (i.e. those that appear in extends clauses) appear before indirect supertypes
-     */
-    private List<Element> getAllSupertypes(Symbol symbol) {
-        Types types =
-                Types.instance(
-                        ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv())
-                                .getContext());
-        return types.closure(symbol.type).stream().map(t -> t.tsym).collect(Collectors.toList());
     }
 }

@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.index.qual.NonNegative;
 
-class Issue2334 {
+public class Issue2334 {
 
     void hasSideEffect() {}
 

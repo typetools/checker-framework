@@ -10,7 +10,7 @@ interface NNConsumerS {
     void take(String s);
 }
 
-class Shadowed {
+public class Shadowed {
 
     ConsumerS c =
             s -> {

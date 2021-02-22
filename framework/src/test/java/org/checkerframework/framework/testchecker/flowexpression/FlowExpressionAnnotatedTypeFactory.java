@@ -67,7 +67,8 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1.getName() == FEBottom.class.getCanonicalName()) {
                 return a2;
             } else if (qualifierKind2.getName() == FEBottom.class.getCanonicalName()) {
@@ -89,7 +90,8 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1.getName() == FETop.class.getCanonicalName()) {
                 return a2;
             } else if (qualifierKind2.getName() == FETop.class.getCanonicalName()) {

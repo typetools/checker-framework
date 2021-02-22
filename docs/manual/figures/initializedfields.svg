@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="12.425153cm"
+   height="5.9943547cm"
+   viewBox="358 100 342.66891 294.53207"
+   id="svg3577"
+   version="1.1"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="initializedfields.svg">
+  <metadata
+     id="metadata3693">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3691" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1446"
+     inkscape:window-height="1119"
+     id="namedview3689"
+     showgrid="false"
+     inkscape:zoom="1.6651112"
+     inkscape:cx="309.45215"
+     inkscape:cy="142.59829"
+     inkscape:window-x="1100"
+     inkscape:window-y="71"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3577"
+     inkscape:connector-spacing="5"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <text
+     font-size="12.8"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="699.48737"
+     y="256.94293"
+     id="text3619">
+    <tspan
+       x="699.48737"
+       y="256.94293"
+       id="tspan3621" />
+  </text>
+  <g
+     id="g3657"
+     transform="translate(69.711358,149.42398)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="460.5"
+       y1="200"
+       x2="460.5"
+       y2="173.73599"
+       id="line3659" />
+    <polygon
+       style="fill:#000000"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon3661" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon3663" />
+  </g>
+  <text
+     font-size="12.8"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="699.48737"
+     y="256.94293"
+     id="text3673">
+    <tspan
+       x="699.48737"
+       y="256.94293"
+       id="tspan3675" />
+  </text>
+  <text
+     font-size="15.8044"
+     style="font-style:normal;font-weight:normal;font-size:15.80440044px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
+     x="531.90643"
+     y="376.20847"
+     id="text3563">
+    <tspan
+       style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1"
+       x="531.90643"
+       y="376.20847"
+       id="tspan3565">@InitializedfieldsBottom</tspan>
+  </text>
+  <path
+     inkscape:connector-curvature="2"
+     inkscape:connector-type="polyline"
+     id="path4201"
+     d="m 612.42097,233.0249 v 0"
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41111112px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  <g
+     transform="translate(27.004371,154.98008)"
+     id="g4844">
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.09047127;stroke-miterlimit:4;stroke-dasharray:none"
+       x="197.62096"
+       y="31.041571"
+       width="297.06793"
+       height="43.294464"
+       id="rect4846" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:21.16666603px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="348.12827"
+       y="55.567112"
+       id="text4848">
+      <tspan
+         x="348.12827"
+         y="55.567112"
+         id="tspan4850"
+         style="font-size:21.16666603px">@InitializedFields(&quot;a&quot;)</tspan>
+    </text>
+  </g>
+  <g
+     id="g4330"
+     transform="translate(334.93234,154.98008)">
+    <rect
+       id="rect4332"
+       height="43.396053"
+       width="299.95517"
+       y="30.990776"
+       x="199.15279"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.09704244;stroke-miterlimit:4;stroke-dasharray:none" />
+    <text
+       id="text4334"
+       y="55.567112"
+       x="348.12827"
+       style="font-style:normal;font-weight:normal;font-size:21.16666603px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
+       font-size="15.8044">
+      <tspan
+         style="font-size:21.16666603px"
+         id="tspan4336"
+         y="55.567112"
+         x="348.12827">@Initializedfields(&quot;b&quot;)</tspan>
+    </text>
+  </g>
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41111112px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 509.35117,181.49 v 0"
+     id="path4342"
+     inkscape:connector-type="polyline"
+     inkscape:connector-curvature="2" />
+  <g
+     transform="translate(185.90891,238.88266)"
+     id="g4344">
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.51688433;stroke-miterlimit:4;stroke-dasharray:none"
+       x="152.46198"
+       y="31.188354"
+       width="390.81888"
+       height="43.000896"
+       id="rect4346" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:21.16666603px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="348.12827"
+       y="55.567112"
+       id="text4348">
+      <tspan
+         x="348.12827"
+         y="55.567112"
+         id="tspan4350"
+         style="font-size:21.16666603px">@Initializedfields({&quot;a&quot;, &quot;b&quot;})</tspan>
+    </text>
+  </g>
+  <g
+     id="g4375"
+     transform="rotate(54.593234,489.06143,173.04598)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="460.5"
+       y1="200"
+       x2="460.5"
+       y2="173.73599"
+       id="line4377" />
+    <polygon
+       style="fill:#000000"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon4379" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon4381" />
+  </g>
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.47461903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 450.54442,165.38325 -30.10954,20.41858 z"
+     id="path4397"
+     inkscape:connector-curvature="0" />
+  <g
+     id="g4427"
+     transform="matrix(-1,0,0,1,940.9986,-84.074335)">
+    <g
+       id="g4403"
+       transform="rotate(54.593234,326.46831,257.27778)">
+      <line
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+         x1="460.5"
+         y1="200"
+         x2="460.5"
+         y2="173.73599"
+         id="line4405" />
+      <polygon
+         style="fill:#000000"
+         points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+         id="polygon4407" />
+      <polygon
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+         points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+         id="polygon4409" />
+    </g>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.47461903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 453.28092,331.9049 -30.10954,20.41858 z"
+       id="path4423"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path4425"
+       d="M 451.78281,332.20452 421.67327,352.6231 Z"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.47461903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  </g>
+  <g
+     transform="translate(120.94486,-84.074335)"
+     id="g4443">
+    <g
+       transform="rotate(54.593234,326.46831,257.27778)"
+       id="g4445">
+      <line
+         id="line4447"
+         y2="173.73599"
+         x2="460.5"
+         y1="200"
+         x1="460.5"
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+      <polygon
+         id="polygon4449"
+         points="455.5,176.236 460.5,166.236 465.5,176.236 460.5,173.736 "
+         style="fill:#000000" />
+      <polygon
+         id="polygon4451"
+         points="455.5,176.236 460.5,166.236 465.5,176.236 460.5,173.736 "
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path4453"
+       d="m 453.28092,331.9049 -30.10954,20.41858 z"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.47461903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.47461903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 451.78281,332.20452 421.67327,352.6231 Z"
+       id="path4455"
+       inkscape:connector-curvature="0" />
+  </g>
+  <rect
+     style="fill:none;fill-opacity:0;stroke:#7f7f7f;stroke-width:2.50759959;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     x="374.14365"
+     y="349.59464"
+     width="318.18719"
+     height="43.68364"
+     id="rect3561" />
+  <g
+     transform="matrix(-1,0,0,1,1024.0492,-167.12518)"
+     id="g4457">
+    <g
+       transform="rotate(54.593234,326.46831,257.27778)"
+       id="g4459">
+      <line
+         id="line4461"
+         y2="173.73599"
+         x2="460.5"
+         y1="200"
+         x1="460.5"
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+      <polygon
+         id="polygon4463"
+         points="465.5,176.236 460.5,173.736 455.5,176.236 460.5,166.236 "
+         style="fill:#000000" />
+      <polygon
+         id="polygon4465"
+         points="465.5,176.236 460.5,173.736 455.5,176.236 460.5,166.236 "
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path4467"
+       d="m 453.28092,331.9049 -30.10954,20.41858 z"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.47461903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.47461903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 451.78281,332.20452 421.67327,352.6231 Z"
+       id="path4469"
+       inkscape:connector-curvature="0" />
+  </g>
+  <g
+     transform="translate(185.47803,69.558943)"
+     id="g4844-3">
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.24451447;stroke-miterlimit:4;stroke-dasharray:none"
+       x="217.2141"
+       y="31.063314"
+       width="261.54846"
+       height="43.250977"
+       id="rect4846-6" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:21.16666603px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="348.12827"
+       y="55.567112"
+       id="text4848-7">
+      <tspan
+         x="348.12827"
+         y="55.567112"
+         id="tspan4850-5"
+         style="font-size:21.16666603px">@InitializedFields()</tspan>
+    </text>
+  </g>
+</svg>

@@ -5,7 +5,7 @@ import com.amazonaws.services.ec2.model.Filter;
 import java.util.Arrays;
 import java.util.Collections;
 
-class MorePreciseFilters {
+public class MorePreciseFilters {
 
     /* TODO: handle lists
     void ownerAliasList(AmazonEC2 ec2Client) {

@@ -14,13 +14,12 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
 
 /**
  * Implements 3 refinement rules:
@@ -52,19 +51,19 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right < left
         // Refine right to @LessThan("left")
-        Receiver leftRec = FlowExpressions.internalReprOf(factory, left);
-        if (leftRec != null && leftRec.isUnassignableByOtherCode()) {
+        JavaExpression leftJe = JavaExpression.fromNode(left);
+        if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftRec)) {
-                lessThanExpressions.add(leftRec.toString());
+            if (!isDoubleOrFloatLiteral(leftJe)) {
+                lessThanExpressions.add(leftJe.toString());
             }
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
+            JavaExpression rightJe = JavaExpression.fromNode(right);
+            store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
 
@@ -84,19 +83,19 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right is less than left
         // Refine right to @LessThan("left")
-        Receiver leftRec = FlowExpressions.internalReprOf(factory, left);
-        if (leftRec != null && leftRec.isUnassignableByOtherCode()) {
+        JavaExpression leftJe = JavaExpression.fromNode(left);
+        if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftRec)) {
-                lessThanExpressions.add(leftRec.toString() + " + 1");
+            if (!isDoubleOrFloatLiteral(leftJe)) {
+                lessThanExpressions.add(incrementedExpression(leftJe));
             }
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
+            JavaExpression rightJe = JavaExpression.fromNode(right);
+            store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
 
@@ -106,8 +105,8 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
         LessThanAnnotatedTypeFactory factory =
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-        Receiver leftRec = FlowExpressions.internalReprOf(factory, n.getLeftOperand());
-        if (leftRec != null && leftRec.isUnassignableByOtherCode()) {
+        JavaExpression leftJe = JavaExpression.fromNode(n.getLeftOperand());
+        if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
             ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
             Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
             if (right != null && 0 < right) {
@@ -116,8 +115,8 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 if (expressions == null) {
                     expressions = new ArrayList<>();
                 }
-                if (!isDoubleOrFloatLiteral(leftRec)) {
-                    expressions.add(leftRec.toString());
+                if (!isDoubleOrFloatLiteral(leftJe)) {
+                    expressions.add(leftJe.toString());
                 }
                 AnnotationMirror refine = factory.createLessThanQualifier(expressions);
                 CFValue value = analysis.createSingleAnnotationValue(refine, n.getType());
@@ -143,15 +142,38 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Return true if {@code receiver} is a double or float literal, which can't be parsed by {@link
-     * FlowExpressionParseUtil}.
+     * Return true if {@code expr} is a double or float literal, which can't be parsed by {@link
+     * JavaExpressionParseUtil}.
      */
-    private boolean isDoubleOrFloatLiteral(Receiver receiver) {
-        if (receiver instanceof ValueLiteral) {
-            return receiver.getType().getKind() == TypeKind.DOUBLE
-                    || receiver.getType().getKind() == TypeKind.FLOAT;
+    private boolean isDoubleOrFloatLiteral(JavaExpression expr) {
+        if (expr instanceof ValueLiteral) {
+            return expr.getType().getKind() == TypeKind.DOUBLE
+                    || expr.getType().getKind() == TypeKind.FLOAT;
         } else {
             return false;
         }
+    }
+
+    /**
+     * Return the string representation of {@code expr + 1}.
+     *
+     * @param expr a JavaExpression
+     * @return the string representation of {@code expr + 1}
+     */
+    private String incrementedExpression(JavaExpression expr) {
+        String exprString = expr.toString();
+        if (expr instanceof ValueLiteral) {
+            try {
+                long literal = Long.parseLong(exprString);
+                // It's a literal.
+                return Long.toString(literal + 1);
+            } catch (NumberFormatException e) {
+                // It's not an integral literal.
+            }
+        }
+
+        // Could do more optimization to merge with a literal at end of `exprString`.  Is that
+        // needed?
+        return exprString + " + 1";
     }
 }

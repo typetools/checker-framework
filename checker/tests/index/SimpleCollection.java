@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-class SimpleCollection {
+public class SimpleCollection {
     private int[] values;
 
     @IndexOrHigh("values") int size() {

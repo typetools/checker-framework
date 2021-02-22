@@ -102,9 +102,9 @@ public abstract class Node implements UniqueId {
 
     /**
      * Returns the {@link Tree} in the abstract syntax tree, or {@code null} if no corresponding
-     * tree exists. For instance, this is the case for an {@link ImplicitThisLiteralNode}.
+     * tree exists. For instance, this is the case for an {@link ImplicitThisNode}.
      *
-     * @return the corresponding {@link Tree} or {@code null}.
+     * @return the corresponding {@link Tree} or {@code null}
      */
     @Pure
     public abstract @Nullable Tree getTree();

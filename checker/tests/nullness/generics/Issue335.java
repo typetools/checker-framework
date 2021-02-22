@@ -15,7 +15,7 @@ class Optional<S> {
     }
 }
 
-class Issue335 {
+public class Issue335 {
     Optional<Pair<String, String>> m(String one, String two) {
         return Optional.of(Pair.of(one, two));
     }

@@ -1,16 +1,16 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class RandomTests {
+public class JavaCopRandomTests {
     final int a;
     final int b = 1;
     final int c;
 
-    RandomTests() {
+    JavaCopRandomTests() {
         String s = null;
         a = 2;
     }
 
-    RandomTests(String s) throws Exception {
+    JavaCopRandomTests(String s) throws Exception {
         // this();
         a = 2;
         if (a > 1) {

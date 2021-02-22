@@ -58,6 +58,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -143,7 +144,7 @@ public class TypeArgInferenceUtil {
      */
     @SuppressWarnings("interning:not.interned") // AST node comparisons
     public static AnnotatedTypeMirror assignedTo(AnnotatedTypeFactory atypeFactory, TreePath path) {
-        Tree assignmentContext = TreeUtils.getAssignmentContext(path);
+        Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
         AnnotatedTypeMirror res;
         if (assignmentContext == null) {
             res = null;
@@ -199,7 +200,7 @@ public class TypeArgInferenceUtil {
                             newClassTree.getArguments());
         } else if (assignmentContext instanceof ReturnTree) {
             HashSet<Kind> kinds = new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
-            Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
+            Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
 
             if (enclosing.getKind() == Kind.METHOD) {
                 res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
@@ -230,7 +231,7 @@ public class TypeArgInferenceUtil {
             List<? extends ExpressionTree> arguments) {
         AnnotatedExecutableType method =
                 AnnotatedTypes.asMemberOf(
-                        atypeFactory.getContext().getTypeUtils(),
+                        atypeFactory.getChecker().getTypeUtils(),
                         atypeFactory,
                         receiver,
                         methodElt);

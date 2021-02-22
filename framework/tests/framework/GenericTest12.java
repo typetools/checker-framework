@@ -1,6 +1,6 @@
 import java.lang.annotation.Annotation;
 
-class GenericTest12 {
+public class GenericTest12 {
     @interface Anno {}
 
     void foo(Class<? extends Annotation> qual) {

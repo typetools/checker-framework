@@ -1,7 +1,7 @@
 import org.checkerframework.common.returnsreceiver.qual.*;
 
 // Test basic subtyping relationships for the Returns Receiver Checker.
-class SubtypeTest {
+public class SubtypingTest {
     void allSubtypingRelationships(@UnknownThis int x, @BottomThis int y) {
         @UnknownThis int a = x;
         @UnknownThis int b = y;

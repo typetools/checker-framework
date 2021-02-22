@@ -2,7 +2,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-class ValueCast2 {
+public class ValueCast2 {
     byte foo(@IntRange(from = Integer.MIN_VALUE, to = Integer.MAX_VALUE) int x) {
         return (byte) x;
     }

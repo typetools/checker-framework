@@ -110,7 +110,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *
      * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
      * @param tree the method invocation tree that has to be resolved
-     * @param origResult the original result from {@code factory.methodFromUse}.
+     * @param origResult the original result from {@code factory.methodFromUse}
+     * @return the resolved type of the call
      */
     private ParameterizedExecutableType resolveMethodCall(
             AnnotatedTypeFactory factory,
@@ -264,7 +265,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
      * @param tree the method invocation tree (representing a constructor call) that has to be
      *     resolved
-     * @param origResult the original result from {@code factory.methodFromUse}.
+     * @param origResult the original result from {@code factory.methodFromUse}
+     * @return the resolved type of the call
      */
     private ParameterizedExecutableType resolveConstructorCall(
             AnnotatedTypeFactory factory,
@@ -366,15 +368,15 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 AnnotationUtils.getElementValueArray(estimate, "className", String.class, true);
         List<String> listMethodNames =
                 AnnotationUtils.getElementValueArray(estimate, "methodName", String.class, true);
-        List<Integer> listParamLenghts =
+        List<Integer> listParamLengths =
                 AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, true);
 
         assert listClassNames.size() == listMethodNames.size()
-                && listClassNames.size() == listParamLenghts.size();
+                && listClassNames.size() == listParamLengths.size();
         for (int i = 0; i < listClassNames.size(); ++i) {
             String className = listClassNames.get(i);
             String methodName = listMethodNames.get(i);
-            int paramLength = listParamLenghts.get(i);
+            int paramLength = listParamLengths.get(i);
 
             // Get receiver, which is always the first argument of the invoke
             // method
@@ -465,13 +467,13 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<String> listClassNames =
                 AnnotationUtils.getElementValueArray(estimate, "className", String.class, true);
-        List<Integer> listParamLenghts =
+        List<Integer> listParamLengths =
                 AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, true);
 
-        assert listClassNames.size() == listParamLenghts.size();
+        assert listClassNames.size() == listParamLengths.size();
         for (int i = 0; i < listClassNames.size(); ++i) {
             String className = listClassNames.get(i);
-            int paramLength = listParamLenghts.get(i);
+            int paramLength = listParamLengths.get(i);
 
             // Resolve the Symbol for the current constructor
             for (Symbol symbol : getConstructorSymbolsfor(className, paramLength, env)) {

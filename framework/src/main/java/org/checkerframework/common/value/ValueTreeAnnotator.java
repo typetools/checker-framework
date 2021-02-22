@@ -1,7 +1,21 @@
 package org.checkerframework.common.value;
 
-import com.sun.source.tree.*;
-import java.util.*;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -83,7 +97,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             handleInitializers(initializers, (AnnotatedTypeMirror.AnnotatedArrayType) type);
 
             AnnotationMirror newQual;
-            Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
+            Class<?> clazz = TypesUtils.getClassFromType(type.getUnderlyingType());
             String stringVal = null;
             if (clazz == char[].class) {
                 stringVal = getCharArrayStringVal(initializers);
@@ -129,7 +143,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
         } else {
             RangeOrListOfValues rolv = null;
             if (atypeFactory.isIntRange(dimType)) {
-                rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(dimType));
+                rolv = new RangeOrListOfValues(atypeFactory.getRange(dimType));
             } else if (AnnotationUtils.areSameByName(
                     dimType, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
                 rolv =
@@ -191,7 +205,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
                             componentType.getAnnotation(ArrayLenRange.class);
                     Range range;
                     if (arrayLenRangeAnno != null) {
-                        range = ValueAnnotatedTypeFactory.getRange(arrayLenRangeAnno);
+                        range = atypeFactory.getRange(arrayLenRangeAnno);
                     } else {
                         range = Range.EVERYTHING;
                     }
@@ -225,7 +239,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
         StringBuilder stringVal = new StringBuilder();
         for (ExpressionTree e : initializers) {
             Range range =
-                    ValueAnnotatedTypeFactory.getRange(
+                    atypeFactory.getRange(
                             atypeFactory
                                     .getAnnotatedType(e)
                                     .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
@@ -263,9 +277,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
                 // Strings and arrays do not allow conversions
                 newAnno = oldAnno;
             } else if (atypeFactory.isIntRange(oldAnno)
-                    && (range = ValueAnnotatedTypeFactory.getRange(oldAnno))
+                    && (range = atypeFactory.getRange(oldAnno))
                             .isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
+                Class<?> newClass = TypesUtils.getClassFromType(newType);
                 if (newClass == String.class) {
                     newAnno = atypeFactory.UNKNOWNVAL;
                 } else if (newClass == Boolean.class || newClass == boolean.class) {
@@ -277,7 +291,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
                                     NumberUtils.castRange(newType, range));
                 }
             } else {
-                List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
+                List<?> values =
+                        ValueCheckerUtils.getValuesCastedToType(oldAnno, newType, atypeFactory);
                 newAnno = atypeFactory.createResultingAnnotation(atm.getUnderlyingType(), values);
             }
             atm.addMissingAnnotations(Collections.singleton(newAnno));
@@ -302,7 +317,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             // unknown.  AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
             return null;
         }
-        return ValueCheckerUtils.getValuesCastedToType(anno, castTo);
+        return ValueCheckerUtils.getValuesCastedToType(anno, castTo, atypeFactory);
     }
 
     @Override
@@ -366,11 +381,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror arg1 = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
             AnnotatedTypeMirror arg2 = atypeFactory.getAnnotatedType(tree.getArguments().get(1));
             Range rangeArg1 =
-                    ValueAnnotatedTypeFactory.getRange(
-                            arg1.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
+                    atypeFactory.getRange(arg1.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
             Range rangeArg2 =
-                    ValueAnnotatedTypeFactory.getRange(
-                            arg2.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
+                    atypeFactory.getRange(arg2.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
             if (rangeArg1 != null && rangeArg2 != null) {
                 return rangeArg1.min(rangeArg2);
             }
@@ -380,11 +393,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror arg1 = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
             AnnotatedTypeMirror arg2 = atypeFactory.getAnnotatedType(tree.getArguments().get(1));
             Range rangeArg1 =
-                    ValueAnnotatedTypeFactory.getRange(
-                            arg1.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
+                    atypeFactory.getRange(arg1.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
             Range rangeArg2 =
-                    ValueAnnotatedTypeFactory.getRange(
-                            arg2.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
+                    atypeFactory.getRange(arg2.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL));
             if (rangeArg1 != null && rangeArg2 != null) {
                 return rangeArg1.max(rangeArg2);
             }
@@ -428,6 +439,18 @@ class ValueTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
             AnnotationMirror resultAnno =
                     atypeFactory.createArrayLengthResultAnnotation(receiverType);
+            if (resultAnno != null) {
+                type.replaceAnnotation(resultAnno);
+            }
+            return null;
+        }
+
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isArrayGetLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
+            List<? extends ExpressionTree> args = tree.getArguments();
+            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(args.get(0));
+            AnnotationMirror resultAnno = atypeFactory.createArrayLengthResultAnnotation(argType);
             if (resultAnno != null) {
                 type.replaceAnnotation(resultAnno);
             }

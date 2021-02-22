@@ -20,7 +20,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An implementation of an abstract value used by the Checker Framework
@@ -78,7 +78,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 : "Encountered invalid type: "
                         + underlyingType
                         + " annotations: "
-                        + UtilPlume.join(", ", annotations);
+                        + StringsPlume.join(", ", annotations);
     }
 
     public static boolean validateSet(
@@ -133,7 +133,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * <p>To get the single annotation in a particular hierarchy, use {@link
      * QualifierHierarchy#findAnnotationInHierarchy}.
      *
-     * @return returns a set of annotations
+     * @return a set of annotations
      */
     @Pure
     public Set<AnnotationMirror> getAnnotations() {

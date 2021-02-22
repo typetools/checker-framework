@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue3443 {
+public class Issue3443 {
     static <T extends Supplier3443<@Nullable String>> Supplier3443<String> passThrough(T t) {
         // :: error: (return.type.incompatible)
         return t;

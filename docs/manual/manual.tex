@@ -4,8 +4,8 @@
 
 \title{The Checker Framework Manual: \\ Custom pluggable types for Java}
 \author{\url{https://checkerframework.org/}}
-\newcommand{\ReleaseVersion}{3.7.1}
-\newcommand{\ReleaseInfo}{3.7.1 (2 Nov 2020)}
+\newcommand{\ReleaseVersion}{3.10.0}
+\newcommand{\ReleaseInfo}{3.10.0 (1 Feb 2021)}
 \date{Version \ReleaseInfo{}}
 
 \begin{document}
@@ -45,6 +45,7 @@ describes how to \textbf{install and use} pluggable type-checkers.
 \input{introduction.tex}
 
 %% Checkers
+% If you add a new checker, also update the list at the beginning of introduction.tex .
 
 \input{nullness-checker.tex}
 \input{map-key-checker.tex}
@@ -70,11 +71,12 @@ describes how to \textbf{install and use} pluggable type-checkers.
 
 % Checkers that tend to be used as components of other checkers rather
 % than used for their own sake:
-\input{aliasing-checker.tex}
 \input{purity-checker.tex}
 \input{constant-value-checker.tex}
 \input{returns-receiver-checker.tex}
 \input{reflection-checker.tex}
+\input{initialized-fields-checker.tex}
+\input{aliasing-checker.tex}
 
 % Special subtyping checker and external checkers:
 \input{subtyping-checker.tex}

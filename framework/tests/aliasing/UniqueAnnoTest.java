@@ -1,6 +1,6 @@
 import org.checkerframework.common.aliasing.qual.*;
 
-class UniqueAnnoTest {
+public class UniqueAnnoTest {
 
     // @Unique constructor
     public @Unique UniqueAnnoTest() {}

@@ -4,7 +4,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
@@ -15,9 +14,9 @@ import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -34,10 +33,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-        MethodInvocationNode nodeNode =
-                atypeFactory.getFirstNodeOfKindForTree(tree, MethodInvocationNode.class);
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
-        I18nFormatCall fc = tu.createFormatForCall(tree, nodeNode, atypeFactory);
+        I18nFormatCall fc = tu.createFormatForCall(tree, atypeFactory);
         if (fc != null) {
             checkInvocationFormatFor(fc);
             return p;
@@ -92,7 +89,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                                     if (!fc.isValidParameter(formatCat, paramType)) {
                                         ExecutableElement method =
                                                 TreeUtils.elementFromUse(fc.getTree());
-                                        Name methodName = method.getSimpleName();
+                                        CharSequence methodName =
+                                                ElementUtils.getSimpleNameOrDescription(method);
                                         tu.failure(
                                                 param,
                                                 "argument.type.incompatible",

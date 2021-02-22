@@ -1,5 +1,6 @@
 package org.checkerframework.common.basetype;
 
+import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -86,7 +87,7 @@ import org.checkerframework.javacutil.UserError;
  *
  * @checker_framework.manual #creating-compiler-interface The checker class
  */
-public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
+public abstract class BaseTypeChecker extends SourceChecker {
 
     @Override
     public void initChecker() {
@@ -143,6 +144,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * also called from instantiateSubcheckers).
      */
     private TreePathCacher treePathCacher = null;
+
+    /**
+     * The list of suppress warnings prefixes supported by this checker or any of its subcheckers
+     * (including indirect subcheckers). Do not access this field directly; instead, use {@link
+     * #getSuppressWarningsPrefixesOfSubcheckers}.
+     */
+    private @MonotonicNonNull Collection<String> suppressWarningsPrefixesOfSubcheckers = null;
 
     @Override
     protected void setRoot(CompilationUnitTree newRoot) {
@@ -232,6 +240,16 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
+     * A public variant of {@link #createSourceVisitor}. Only use this if you know what you are
+     * doing.
+     *
+     * @return the type-checking visitor
+     */
+    public BaseTypeVisitor<?> createSourceVisitorPublic() {
+        return createSourceVisitor();
+    }
+
+    /**
      * Returns the name of a class related to a given one, by replacing "Checker" or "Subchecker" by
      * {@code replacement}.
      *
@@ -316,21 +334,15 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     @Override
-    public BaseTypeContext getContext() {
-        return this;
-    }
-
-    @Override
-    public BaseTypeChecker getChecker() {
-        return this;
-    }
-
-    @Override
     public BaseTypeVisitor<?> getVisitor() {
         return (BaseTypeVisitor<?>) super.getVisitor();
     }
 
-    @Override
+    /**
+     * Return the type factory associated with this checker.
+     *
+     * @return the type factory associated with this checker
+     */
     public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory() {
         BaseTypeVisitor<?> visitor = getVisitor();
         // Avoid NPE if this method is called during initialization.
@@ -510,10 +522,43 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a string that would suppress a warning from this checker.
+     * Like {@link SourceChecker#getSuppressWarningsPrefixes()}, but includes all prefixes supported
+     * by this checker or any of its subcheckers. Does not guarantee that the result is in any
+     * particular order. The result is immutable.
      *
-     * <p>Collects needed warning suppressions for all subcheckers.
+     * @return the suppress warnings prefixes supported by this checker or any of its subcheckers
+     */
+    public Collection<String> getSuppressWarningsPrefixesOfSubcheckers() {
+        if (this.suppressWarningsPrefixesOfSubcheckers == null) {
+            Collection<String> prefixes = getSuppressWarningsPrefixes();
+            for (BaseTypeChecker subchecker : getSubcheckers()) {
+                prefixes.addAll(subchecker.getSuppressWarningsPrefixes());
+            }
+            this.suppressWarningsPrefixesOfSubcheckers = ImmutableSet.copyOf(prefixes);
+        }
+        return this.suppressWarningsPrefixesOfSubcheckers;
+    }
+
+    /**
+     * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker
+     * that the user actually requested, i.e. the one with no parent. The ultimate parent might be
+     * this checker itself.
+     *
+     * @return the first checker in the parent checker chain with no parent checker of its own, i.e.
+     *     the ultimate parent checker
+     */
+    public BaseTypeChecker getUltimateParentChecker() {
+        BaseTypeChecker ultimateParent = this;
+        while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
+            ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
+        }
+        return ultimateParent;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation collects needed warning suppressions for all subcheckers.
      */
     @Override
     protected void warnUnneededSuppressions() {
@@ -524,18 +569,19 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (!hasOption("warnUnneededSuppressions")) {
             return;
         }
-        Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
+        Set<Element> elementsWithSuppressedWarnings =
+                new HashSet<>(this.elementsWithSuppressedWarnings);
         this.elementsWithSuppressedWarnings.clear();
         Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
         Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
-            elementsSuppress.addAll(subChecker.elementsWithSuppressedWarnings);
+            elementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
             subChecker.elementsWithSuppressedWarnings.clear();
             prefixes.addAll(subChecker.getSuppressWarningsPrefixes());
             errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
             subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
-        warnUnneededSuppressions(elementsSuppress, prefixes, errorKeys);
+        warnUnneededSuppressions(elementsWithSuppressedWarnings, prefixes, errorKeys);
 
         getVisitor().treesWithSuppressWarnings.clear();
     }

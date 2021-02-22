@@ -583,7 +583,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1.isBottom()) {
                 return a2;
             } else if (qualifierKind2.isBottom()) {
@@ -610,12 +611,13 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             return UnitsAnnotatedTypeFactory.this.BOTTOM;
         }
     }
 
-    /** UnitsQualifierKindHierarchy */
+    /** UnitsQualifierKindHierarchy. */
     @AnnotatedFor("nullness")
     protected static class UnitsQualifierKindHierarchy extends DefaultQualifierKindHierarchy {
 

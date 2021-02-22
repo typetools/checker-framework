@@ -1,6 +1,6 @@
 import android.support.annotation.IntRange;
 
-class Alias {
+public class Alias {
     public void androidIntRange() {
         // :: error: (assignment.type.incompatible)
         @IntRange(from = 0, to = 10) int j = 13;

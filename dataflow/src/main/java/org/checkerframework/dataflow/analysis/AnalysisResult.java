@@ -52,7 +52,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     /**
      * Caches of the analysis results for each input for the block of the node and each node.
      *
-     * @see #runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
+     * @see #runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput, IdentityHashMap, Map)
      */
     protected final Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
             analysisCaches;
@@ -78,7 +78,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param analysisCaches {@link #analysisCaches}
      */
     protected AnalysisResult(
-            Map<Node, V> nodeValues,
+            IdentityHashMap<Node, V> nodeValues,
             IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
@@ -103,7 +103,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param finalLocalValues {@link #finalLocalValues}
      */
     public AnalysisResult(
-            Map<Node, V> nodeValues,
+            IdentityHashMap<Node, V> nodeValues,
             IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
@@ -281,7 +281,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @return the store immediately before a given {@link Node}
      */
     public @Nullable S getStoreBefore(Node node) {
-        return runAnalysisFor(node, true);
+        return runAnalysisFor(node, Analysis.BeforeOrAfter.BEFORE);
     }
 
     /**
@@ -315,7 +315,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
                     return transferInput.getRegularStore();
                 }
                 return analysis.runAnalysisFor(
-                        firstNode, true, transferInput, nodeValues, analysisCaches);
+                        firstNode,
+                        Analysis.BeforeOrAfter.BEFORE,
+                        transferInput,
+                        nodeValues,
+                        analysisCaches);
             default:
                 throw new BugInCF("Unknown direction: " + analysis.getDirection());
         }
@@ -340,7 +344,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
                     return transferInput.getRegularStore();
                 }
                 return analysis.runAnalysisFor(
-                        lastNode, false, transferInput, nodeValues, analysisCaches);
+                        lastNode,
+                        Analysis.BeforeOrAfter.AFTER,
+                        transferInput,
+                        nodeValues,
+                        analysisCaches);
             case BACKWARD:
                 return transferInput.getRegularStore();
             default:
@@ -378,7 +386,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @return the store immediately after a given {@link Node}
      */
     public @Nullable S getStoreAfter(Node node) {
-        return runAnalysisFor(node, false);
+        return runAnalysisFor(node, Analysis.BeforeOrAfter.AFTER);
     }
 
     /**
@@ -390,20 +398,19 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * is returned.
      *
      * @param node the node to analyze
-     * @param before the boolean value to indicate which store to return (if it is true, return the
-     *     store immediately before {@code node}; otherwise, the store after {@code node} is
-     *     returned)
+     * @param preOrPost which store to return: the store immediately before {@code node} or the
+     *     store after {@code node}
      * @return the store before or after {@code node} (depends on the value of {@code before}) after
      *     running the analysis
      */
-    protected @Nullable S runAnalysisFor(Node node, boolean before) {
+    protected @Nullable S runAnalysisFor(Node node, Analysis.BeforeOrAfter preOrPost) {
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
         TransferInput<V, S> transferInput = stores.get(block);
         if (transferInput == null) {
             return null;
         }
-        return runAnalysisFor(node, before, transferInput, nodeValues, analysisCaches);
+        return runAnalysisFor(node, preOrPost, transferInput, nodeValues, analysisCaches);
     }
 
     /**
@@ -419,9 +426,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param <V> the abstract value type to be tracked by the analysis
      * @param <S> the store type used in the analysis
      * @param node the node to analyze
-     * @param before the boolean value to indicate which store to return (if it is true, return the
-     *     store immediately before {@code node}; otherwise, the store after {@code node} is
-     *     returned)
+     * @param preOrPost which store to return: the store immediately before {@code node} or the
+     *     store after {@code node}
      * @param transferInput a transfer input
      * @param nodeValues {@link #nodeValues}
      * @param analysisCaches {@link #analysisCaches}
@@ -430,7 +436,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      */
     public static <V extends AbstractValue<V>, S extends Store<S>> @Nullable S runAnalysisFor(
             Node node,
-            boolean before,
+            Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> transferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
@@ -438,7 +444,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
             throw new BugInCF("Analysis in transferInput cannot be null.");
         }
         return transferInput.analysis.runAnalysisFor(
-                node, before, transferInput, nodeValues, analysisCaches);
+                node, preOrPost, transferInput, nodeValues, analysisCaches);
     }
 
     /**

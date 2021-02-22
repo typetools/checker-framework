@@ -1,6 +1,6 @@
 import com.sun.istack.internal.Nullable;
 
-class Issue2888 {
+public class Issue2888 {
     @Nullable Object[] noa;
 
     void foo() {
@@ -24,7 +24,7 @@ class Issue2888 {
     private void bar2(@Nullable String... args) {
         if (args != null && args.length > 0) {
             @Nullable final String arg0 = args[0];
-            // :: warning: (known.nonnull)
+            // :: warning: (nulltest.redundant)
             if (arg0 != null) {
                 System.out.println("arg0: " + arg0);
             }

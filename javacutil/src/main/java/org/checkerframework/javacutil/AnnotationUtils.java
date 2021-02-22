@@ -32,11 +32,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
@@ -71,6 +74,18 @@ public class AnnotationUtils {
         @SuppressWarnings("signature:assignment.type.incompatible") // JDK needs annotations
         @CanonicalName String name = elm.getQualifiedName().toString();
         return name;
+    }
+
+    /**
+     * Returns the binary name of an annotation as a String.
+     *
+     * @param annotation the annotation whose binary name to return
+     * @return the binary name of an annotation as a String
+     */
+    public static final @BinaryName String annotationBinaryName(AnnotationMirror annotation) {
+        final DeclaredType annoType = annotation.getAnnotationType();
+        final TypeElement elm = (TypeElement) annoType.asElement();
+        return ElementUtils.getBinaryName(elm);
     }
 
     /**
@@ -145,6 +160,9 @@ public class AnnotationUtils {
 
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
+     *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#areSameByClass} or {@link #areSameByName}.
      *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
@@ -227,6 +245,9 @@ public class AnnotationUtils {
      * Checks that the collection contains the annotation. Using Collection.contains does not always
      * work, because it does not use areSame for comparison.
      *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#containsSameByClass} or {@link #containsSameByName}.
+     *
      * @param c a collection of AnnotationMirrors
      * @param anno the annotation class to search for in c
      * @return true iff c contains anno, according to areSameByClass
@@ -238,6 +259,9 @@ public class AnnotationUtils {
 
     /**
      * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
+     *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#getAnnotationByClass} or {@link #getAnnotationByName}.
      *
      * @param c a collection of AnnotationMirrors
      * @param anno the class to search for in c
@@ -334,7 +358,7 @@ public class AnnotationUtils {
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
         Set<ExecutableElement> sortedElements =
-                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleName));
+                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleSignature));
         sortedElements.addAll(
                 ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
 
@@ -534,7 +558,7 @@ public class AnnotationUtils {
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
         switch (elementType) {
             case TYPE:
-                return EnumSet.copyOf(ElementUtils.classElementKinds());
+                return EnumSet.copyOf(ElementUtils.typeElementKinds());
             case FIELD:
                 return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
             case METHOD:
@@ -669,9 +693,15 @@ public class AnnotationUtils {
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
      * is expected to have type {@code expectedType}.
      *
-     * <p>For elements of array type, use {@code getElementValueArray} instead.
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
      *
-     * <p>For elements of enum type, use {@code getElementValueEnum} instead.
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
+     * rather than this method which iterates through a map. The same comment is true of all {@code
+     * getElementValue*} methods. It is true even if the annotation has only one element/field.
+     * Using that method is possible if the type of the annotation is known (in which case the
+     * element/field's Element (called {@code someElement} in the code snippet) is available.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
@@ -807,6 +837,44 @@ public class AnnotationUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}. The element
+     * has type {@code expectedType} or array of {@code expectedType}.
+     *
+     * <p>Parameter useDefaults is used to determine whether default values should be used for
+     * annotation values. Finding defaults requires more computation, so should be false when no
+     * defaulting is needed.
+     *
+     * @param anno the annotation to disassemble
+     * @param elementName the name of the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
+     */
+    public static <T> List<T> getElementValueArrayOrSingleton(
+            AnnotationMirror anno,
+            CharSequence elementName,
+            Class<T> expectedType,
+            boolean useDefaults) {
+        for (ExecutableElement annoElement :
+                ElementFilter.methodsIn(
+                        anno.getAnnotationType().asElement().getEnclosedElements())) {
+            if (annoElement.getSimpleName().contentEquals(elementName)) {
+                TypeMirror elementType = annoElement.getReturnType();
+                if (elementType.getKind() == TypeKind.ARRAY) {
+                    return getElementValueArray(anno, elementName, expectedType, useDefaults);
+                } else {
+                    List<T> result = new ArrayList<>(1);
+                    result.add(getElementValue(anno, elementName, expectedType, useDefaults));
+                    return result;
+                }
+            }
+        }
+        throw new BugInCF("no " + elementName + " element in " + anno);
     }
 
     /**
@@ -996,5 +1064,19 @@ public class AnnotationUtils {
             result.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
         }
         return result.toString();
+    }
+
+    /**
+     * Converts an AnnotationMirror to a Class. Throws an exception if it is not able to do so.
+     *
+     * @param am an AnnotationMirror
+     * @return the Class corresponding to the given AnnotationMirror
+     */
+    public static Class<?> annotationMirrorToClass(AnnotationMirror am) {
+        try {
+            return Class.forName(AnnotationUtils.annotationBinaryName(am));
+        } catch (ClassNotFoundException e) {
+            throw new BugInCF(e);
+        }
     }
 }

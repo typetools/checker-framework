@@ -131,7 +131,8 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == qualifierKind2) {
                 // Both are Value
                 if (AnnotationUtils.areSame(a1, a2)) {
@@ -153,7 +154,8 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == qualifierKind2) {
                 // Both are Value
                 if (AnnotationUtils.areSame(a1, a2)) {

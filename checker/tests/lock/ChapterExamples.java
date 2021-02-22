@@ -1,4 +1,3 @@
-package chapter;
 // This test contains the sample code from the Lock Checker manual chapter
 // modified to fit testing instead of illustrative purposes,
 // and contains other miscellaneous Lock Checker testing.
@@ -19,7 +18,7 @@ import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class ChapterExamples {
+public class ChapterExamples {
     // This code crashed when there was a bug before issue 524 was fixed.
     // An attempt to take the LUB between 'val' in the store with type 'long'
     // and 'val' in another store with type 'none' resulted in a crash.

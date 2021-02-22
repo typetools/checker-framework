@@ -1,6 +1,6 @@
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
-class Update {
+public class Update {
 
     void test() {
         Object o1 = new Object();

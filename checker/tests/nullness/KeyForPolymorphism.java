@@ -3,7 +3,7 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
 // test related to issue 429: https://github.com/typetools/checker-framework/issues/429
-class KeyForPolymorphism {
+public class KeyForPolymorphism {
 
     Map<String, Object> m1 = new HashMap<>();
     Map<String, Object> m2 = new HashMap<>();

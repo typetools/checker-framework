@@ -1,7 +1,7 @@
 import java.util.List;
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class ForbiddenUniqueTest {
+public class ForbiddenUniqueTest {
 
     // :: error: (unique.location.forbidden)
     @Unique int field;

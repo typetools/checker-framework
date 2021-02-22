@@ -1,6 +1,6 @@
 // See gist: https://gist.github.com/JonathanBurke/6c1c1c28161a451611ad
 // for more information on what was going wrong here
-class Issue457<T extends Number> {
+public class Issue457<T extends Number> {
 
     @SuppressWarnings("unused")
     public void f(T t) {

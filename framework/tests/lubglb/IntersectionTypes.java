@@ -6,7 +6,7 @@ interface Bar {}
 
 class Baz implements Foo, Bar {}
 
-class IntersectionTypes {
+public class IntersectionTypes {
     // :: warning: (explicit.annotation.ignored)
     <S extends @B Foo & @C Bar> void call1(S p) {}
 

@@ -1,7 +1,7 @@
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
-class MapLoop {
+public class MapLoop {
     void test1(Map<String, String> map) {
         for (Map.Entry<@KeyFor("map") String, String> entry : map.entrySet()) {}
     }

@@ -5,13 +5,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-/**
- * Simple pair class for multiple returns.
- *
- * <p>TODO: as class is immutable, use @Covariant annotation.
- */
+/** Simple pair class for multiple returns. */
+// TODO: as class is immutable, use @Covariant annotation.
 public class Pair<V1, V2> {
+    /** The first element in the pair. */
     public final V1 first;
+    /** The second element in the pair. */
     public final V2 second;
 
     private Pair(V1 v1, V2 v2) {

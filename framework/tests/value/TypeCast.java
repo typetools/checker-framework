@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class TypeCast {
+public class TypeCast {
 
     public void charIntDoubleTest() {
         int a = 98;

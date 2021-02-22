@@ -4,7 +4,7 @@
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.UnknownInterned;
 
-class Issue2809 {
+public class Issue2809 {
 
     void new1(MyType<int @Interned []> t, int @Interned [] non) {
         t.self(new MyType<>(non));

@@ -2,7 +2,7 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.StringVal;
 
-class StringLenRefinement {
+public class StringLenRefinement {
 
     void refineLenRange(
             @ArrayLenRange(from = 3, to = 10) String range,

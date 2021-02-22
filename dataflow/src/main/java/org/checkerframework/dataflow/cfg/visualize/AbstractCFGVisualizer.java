@@ -26,8 +26,8 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.StringsPlume;
 import org.plumelib.util.UniqueId;
-import org.plumelib.util.UtilPlume;
 
 /**
  * This abstract class makes implementing a {@link CFGVisualizer} easier. Some of the methods in
@@ -457,7 +457,7 @@ public abstract class AbstractCFGVisualizer<
      * @return a String representation of the given process orders
      */
     protected String getProcessOrderSimpleString(List<Integer> order) {
-        return "Process order: " + UtilPlume.join(",", order);
+        return "Process order: " + StringsPlume.join(",", order);
     }
 
     /**

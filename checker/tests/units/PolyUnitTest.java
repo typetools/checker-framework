@@ -1,5 +1,7 @@
-import org.checkerframework.checker.units.*;
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.PolyUnit;
+import org.checkerframework.checker.units.qual.m;
+import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.util.UnitsTools;
 
 public class PolyUnitTest {
 

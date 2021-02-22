@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class Predicates {
+public class Predicates {
 
     void testOr1() {
         MyClass m1 = new MyClass();
@@ -161,44 +161,31 @@ class Predicates {
 
     private static class MyClass {
 
-        @TestAccumulation("a")
-        MyClass cmA;
+        @TestAccumulation("a") MyClass cmA;
 
-        @TestAccumulationPredicate("a")
-        MyClass cmpA;
+        @TestAccumulationPredicate("a") MyClass cmpA;
 
-        @TestAccumulation({"a", "b"})
-        MyClass aB;
+        @TestAccumulation({"a", "b"}) MyClass aB;
 
-        @TestAccumulationPredicate("a || b")
-        MyClass aOrB;
+        @TestAccumulationPredicate("a || b") MyClass aOrB;
 
-        @TestAccumulationPredicate("a && b")
-        MyClass aAndB;
+        @TestAccumulationPredicate("a && b") MyClass aAndB;
 
-        @TestAccumulationPredicate("a || b && c")
-        MyClass bAndCOrA;
+        @TestAccumulationPredicate("a || b && c") MyClass bAndCOrA;
 
-        @TestAccumulationPredicate("a || (b && c)")
-        MyClass bAndCOrAParens;
+        @TestAccumulationPredicate("a || (b && c)") MyClass bAndCOrAParens;
 
-        @TestAccumulationPredicate("a && b || c")
-        MyClass aAndBOrC;
+        @TestAccumulationPredicate("a && b || c") MyClass aAndBOrC;
 
-        @TestAccumulationPredicate("(a && b) || c")
-        MyClass aAndBOrCParens;
+        @TestAccumulationPredicate("(a && b) || c") MyClass aAndBOrCParens;
 
-        @TestAccumulationPredicate("(a || b) && c")
-        MyClass aOrBAndC;
+        @TestAccumulationPredicate("(a || b) && c") MyClass aOrBAndC;
 
-        @TestAccumulationPredicate("a && (b || c)")
-        MyClass bOrCAndA;
+        @TestAccumulationPredicate("a && (b || c)") MyClass bOrCAndA;
 
-        @TestAccumulationPredicate("b && c")
-        MyClass bAndC;
+        @TestAccumulationPredicate("b && c") MyClass bAndC;
 
-        @TestAccumulationPredicate("(b && c)")
-        MyClass bAndCParens;
+        @TestAccumulationPredicate("(b && c)") MyClass bAndCParens;
 
         void a() {}
 
@@ -237,32 +224,19 @@ class Predicates {
 
         void testAllAssignability() {
 
-            @TestAccumulation("a")
-            MyClass cmALocal;
-            @TestAccumulationPredicate("a")
-            MyClass cmpALocal;
-            @TestAccumulationPredicate("a || b")
-            MyClass aOrBLocal;
-            @TestAccumulation({"a", "b"})
-            MyClass aBLocal;
-            @TestAccumulationPredicate("a && b")
-            MyClass aAndBLocal;
-            @TestAccumulationPredicate("a || b && c")
-            MyClass bAndCOrALocal;
-            @TestAccumulationPredicate("a || (b && c)")
-            MyClass bAndCOrAParensLocal;
-            @TestAccumulationPredicate("a && b || c")
-            MyClass aAndBOrCLocal;
-            @TestAccumulationPredicate("(a && b) || c")
-            MyClass aAndBOrCParensLocal;
-            @TestAccumulationPredicate("(a || b) && c")
-            MyClass aOrBAndCLocal;
-            @TestAccumulationPredicate("a && (b || c)")
-            MyClass bOrCAndALocal;
-            @TestAccumulationPredicate("b && c")
-            MyClass bAndCLocal;
-            @TestAccumulationPredicate("(b && c)")
-            MyClass bAndCParensLocal;
+            @TestAccumulation("a") MyClass cmALocal;
+            @TestAccumulationPredicate("a") MyClass cmpALocal;
+            @TestAccumulationPredicate("a || b") MyClass aOrBLocal;
+            @TestAccumulation({"a", "b"}) MyClass aBLocal;
+            @TestAccumulationPredicate("a && b") MyClass aAndBLocal;
+            @TestAccumulationPredicate("a || b && c") MyClass bAndCOrALocal;
+            @TestAccumulationPredicate("a || (b && c)") MyClass bAndCOrAParensLocal;
+            @TestAccumulationPredicate("a && b || c") MyClass aAndBOrCLocal;
+            @TestAccumulationPredicate("(a && b) || c") MyClass aAndBOrCParensLocal;
+            @TestAccumulationPredicate("(a || b) && c") MyClass aOrBAndCLocal;
+            @TestAccumulationPredicate("a && (b || c)") MyClass bOrCAndALocal;
+            @TestAccumulationPredicate("b && c") MyClass bAndCLocal;
+            @TestAccumulationPredicate("(b && c)") MyClass bAndCParensLocal;
 
             cmALocal = cmA;
             cmALocal = cmpA;

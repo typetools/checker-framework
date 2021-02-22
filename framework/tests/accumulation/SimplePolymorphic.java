@@ -2,14 +2,12 @@
 
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class SimplePolymorphic {
-    @PolyTestAccumulation
-    Object id(@PolyTestAccumulation Object obj) {
+public class SimplePolymorphic {
+    @PolyTestAccumulation Object id(@PolyTestAccumulation Object obj) {
         return obj;
     }
 
-    @TestAccumulation("foo")
-    Object usePoly(@TestAccumulation("foo") Object obj) {
+    @TestAccumulation("foo") Object usePoly(@TestAccumulation("foo") Object obj) {
         return id(obj);
     }
 

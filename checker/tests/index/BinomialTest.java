@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.common.value.qual.*;
 
-class BinomialTest {
+public class BinomialTest {
 
     static final long @MinLen(1) [] factorials = {1L, 1L, 1L * 2};
 

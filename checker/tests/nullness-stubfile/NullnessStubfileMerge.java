@@ -1,6 +1,7 @@
-// warning: StubParser: Package-private method notReal(String) not found in type java.lang.String
-// warning: StubParser: Type not found: java.lang.NotARealClass
-// warning: StubParser: Type not found: not.real.NotARealClassInNotRealPackage
+// warning: stubfile1.astub:(line 16,col 6): Package-private method notReal(String) not found in
+// type java.lang.String
+// warning: stubfile1.astub:(line 19,col 1): Type not found: java.lang.NotARealClass
+// warning: stubfile1.astub:(line 21,col 1): Type not found: not.real.NotARealClassInNotRealPackage
 
 import org.checkerframework.checker.nullness.qual.*;
 

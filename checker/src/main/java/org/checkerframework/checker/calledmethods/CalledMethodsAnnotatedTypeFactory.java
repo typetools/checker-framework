@@ -83,13 +83,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                         "java.util.Collections", "singletonList", 1, getProcessingEnv());
         // Lombok generates @CalledMethods annotations using an old package name,
         // so we maintain it as an alias.
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.builder.qual.CalledMethods",
                 CalledMethods.class,
                 true);
         // Lombok also generates an @NotCalledMethods annotation, which we have no support for. We
         // therefore treat it as top.
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.builder.qual.NotCalledMethods", this.top);
         this.postInit();
     }
@@ -100,7 +100,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * arguments. Throws a UserError if the user included an unsupported framework in the list of
      * frameworks to be disabled.
      *
-     * @param disabledFrameworks the disabled builder frameworks.
+     * @param disabledFrameworks the disabled builder frameworks
      */
     private void enableFrameworks(String[] disabledFrameworks) {
         boolean enableAutoValueSupport = true;
@@ -163,7 +163,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition.
      *     Otherwise, return the first argument.
      */
-    String adjustMethodNameUsingValueChecker(
+    public String adjustMethodNameUsingValueChecker(
             final String methodName, final MethodInvocationTree tree) {
         if (!useValueChecker) {
             return methodName;
@@ -171,7 +171,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
         ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
         if (!"com.amazonaws.services.ec2.model.DescribeImagesRequest"
-                .equals(ElementUtils.enclosingClass(invokedMethod).getQualifiedName().toString())) {
+                .equals(
+                        ElementUtils.enclosingTypeElement(invokedMethod)
+                                .getQualifiedName()
+                                .toString())) {
             return methodName;
         }
 

@@ -12,7 +12,7 @@ import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDTop;
 // DefaultQualifierInHierarchy is @NTDMiddle
 // DefaultFor receivers is @NTDTop
 
-class NTDConstructorReceiverTest {
+public class NTDConstructorReceiverTest {
 
     // default method receiver is @NTDTop
     void DefaultMethodReceiver() {
@@ -36,7 +36,7 @@ class NTDConstructorReceiverTest {
         }
 
         void method() {
-            // The TypeUseLocation.RECEIVER only applies to the outer most type, so
+            // The TypeUseLocation.RECEIVER only applies to the outermost type, so
             // NTDConstructorReceiverTest.this is given the
             @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
             // :: error: (assignment.type.incompatible)

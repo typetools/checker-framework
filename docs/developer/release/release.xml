@@ -102,6 +102,17 @@
                        match="checker-qual-${release.version.regexp}{0,1}" replace="checker-qual-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-util-${release.version.regexp}{0,1}" replace="checker-util-${release.ver}"/>
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker/${release.version.regexp}{0,1}" replace="checker/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-qual/${release.version.regexp}{0,1}" replace="checker-qual/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-util/${release.version.regexp}{0,1}" replace="checker-util/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
@@ -135,19 +146,6 @@
         <update file="${cf.docs.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
-
-        <update file="${cf.docs.examples}/MavenExampleJDK11/pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava8Example/build.gradle" byline="true"
-                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
-                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
-
-        <replaceregexp file="${cf.docs.examples}/lombok/build.gradle" byline="true"
-                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
-                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
-
 
     </target>
 

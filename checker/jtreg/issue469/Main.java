@@ -12,4 +12,4 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker advancedcrash/LetItCrash.java advancedcrash/CrashyInterface.java advancedcrash/SomeInterface.java
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker advancedcrash/LetItCrash.java advancedcrash/SomeInterface.java  advancedcrash/CrashyInterface.java
  */
-class Main {}
+public class Main {}

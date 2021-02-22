@@ -1,7 +1,6 @@
-import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
-class Equal {
+public class Equal {
 
     String f1, f2, f3;
 

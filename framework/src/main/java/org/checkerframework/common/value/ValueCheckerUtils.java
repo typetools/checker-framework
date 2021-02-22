@@ -9,80 +9,35 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.BinaryOperation;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
+import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** Utility methods for the Value Checker. */
 public class ValueCheckerUtils {
-    public static Class<?> getClassFromType(TypeMirror type) {
 
-        switch (type.getKind()) {
-            case INT:
-                return int.class;
-            case LONG:
-                return long.class;
-            case SHORT:
-                return short.class;
-            case BYTE:
-                return byte.class;
-            case CHAR:
-                return char.class;
-            case DOUBLE:
-                return double.class;
-            case FLOAT:
-                return float.class;
-            case BOOLEAN:
-                return boolean.class;
-            case ARRAY:
-                return getArrayClassObject(((ArrayType) type).getComponentType());
-            case DECLARED:
-                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
-                @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-                if (typeString.equals("<nulltype>")) {
-                    return Object.class;
-                }
-
-                try {
-                    return Class.forName(typeString);
-                } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                    return Object.class;
-                }
-
-            default:
-                return Object.class;
-        }
-    }
-
-    public static Class<?> getArrayClassObject(TypeMirror componentType) {
-        switch (componentType.getKind()) {
-            case INT:
-                return int[].class;
-            case LONG:
-                return long[].class;
-            case SHORT:
-                return short[].class;
-            case BYTE:
-                return byte[].class;
-            case CHAR:
-                return char[].class;
-            case DOUBLE:
-                return double[].class;
-            case FLOAT:
-                return float[].class;
-            case BOOLEAN:
-                return boolean[].class;
-            default:
-                return Object[].class;
-        }
+    /** Do not instantiate. */
+    private ValueCheckerUtils() {
+        throw new BugInCF("do not instantiate");
     }
 
     /**
@@ -90,10 +45,12 @@ public class ValueCheckerUtils {
      *
      * @param anno the annotation that contains values
      * @param castTo the type that is casted to
+     * @param atypeFactory the type factory
      * @return a list of values after the casting
      */
-    public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
-        Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
+    public static List<?> getValuesCastedToType(
+            AnnotationMirror anno, TypeMirror castTo, ValueAnnotatedTypeFactory atypeFactory) {
+        Class<?> castType = TypesUtils.getClassFromType(castTo);
         List<?> values;
         switch (AnnotationUtils.annotationName(anno)) {
             case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
@@ -104,7 +61,7 @@ public class ValueCheckerUtils {
                 values = convertIntVal(longs, castType, castTo);
                 break;
             case ValueAnnotatedTypeFactory.INTRANGE_NAME:
-                Range range = ValueAnnotatedTypeFactory.getRange(anno);
+                Range range = atypeFactory.getRange(anno);
                 List<Long> rangeValues = getValuesFromRange(range, Long.class);
                 values = convertIntVal(rangeValues, castType, castTo);
                 break;
@@ -329,7 +286,7 @@ public class ValueCheckerUtils {
     public static Range getPossibleValues(
             AnnotatedTypeMirror valueType, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
         if (valueAnnotatedTypeFactory.isIntRange(valueType.getAnnotations())) {
-            return ValueAnnotatedTypeFactory.getRange(valueType.getAnnotation(IntRange.class));
+            return valueAnnotatedTypeFactory.getRange(valueType.getAnnotation(IntRange.class));
         } else {
             List<Long> values =
                     ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
@@ -445,5 +402,131 @@ public class ValueCheckerUtils {
     public static int getMinLen(Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
         AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
+    }
+
+    /**
+     * Optimize the given JavaExpression, using Value Checker annotations. This implementation
+     * replaces any expression that the factory has an exact value for, and does a small (not
+     * exhaustive) amount of constant-folding as well.
+     *
+     * @param je the expression to optimize
+     * @param factory the Valueannotatedtypefactory
+     * @return an optimized version of the argument, or the argument if it cannot be optimized
+     */
+    // Could use a visitor instead, but this quick-and-dirty solution works.
+    @SuppressWarnings("interning:not.interned") // ==  indicates whether `optimize` had any effect
+    public static JavaExpression optimize(JavaExpression je, ValueAnnotatedTypeFactory factory) {
+
+        if (je instanceof ArrayAccess) {
+            ArrayAccess e = (ArrayAccess) je;
+            JavaExpression optArray = optimize(e.getArray(), factory);
+            JavaExpression optIndex = optimize(e.getIndex(), factory);
+            if (e.getArray() == optArray && e.getIndex() == optIndex) {
+                return e;
+            } else {
+                return new ArrayAccess(e.getType(), optArray, optIndex);
+            }
+
+        } else if (je instanceof ArrayCreation) {
+            ArrayCreation e = (ArrayCreation) je;
+            List<JavaExpression> optDimensions = optimize(e.getDimensions(), factory);
+            List<JavaExpression> optInializers = optimize(e.getInitializers(), factory);
+            if (e.getDimensions() == optDimensions && e.getInitializers() == optInializers) {
+                return e;
+            } else {
+                return new ArrayCreation(e.getType(), optDimensions, optInializers);
+            }
+
+        } else if (je instanceof BinaryOperation) {
+            BinaryOperation e = (BinaryOperation) je;
+            JavaExpression optLeft = optimize(e.getLeft(), factory);
+            JavaExpression optRight = optimize(e.getRight(), factory);
+            if (e.getLeft() == optLeft && e.getRight() == optRight) {
+                return e;
+            } else {
+                return new BinaryOperation(e.getType(), e.getOperationKind(), optLeft, optRight);
+            }
+
+        } else if (je instanceof ClassName) {
+            return je;
+
+        } else if (je instanceof FieldAccess) {
+            FieldAccess e = (FieldAccess) je;
+            JavaExpression optReceiver = optimize(e.getReceiver(), factory);
+            if (e.getReceiver() == optReceiver) {
+                return e;
+            } else {
+                return new FieldAccess(optReceiver, e.getType(), e.getField());
+            }
+
+        } else if (je instanceof LocalVariable) {
+            LocalVariable e = (LocalVariable) je;
+            Element element = e.getElement();
+            Long exactValue = ValueCheckerUtils.getExactValue(element, factory);
+            if (exactValue != null) {
+                return new ValueLiteral(e.getType(), exactValue.intValue());
+            } else {
+                return e;
+            }
+
+        } else if (je instanceof MethodCall) {
+            MethodCall e = (MethodCall) je;
+            JavaExpression optReceiver = optimize(e.getReceiver(), factory);
+            List<JavaExpression> optArguments = optimize(e.getArguments(), factory);
+            if (e.getReceiver() == optReceiver && e.getArguments() == optArguments) {
+                return e;
+            } else {
+                return new MethodCall(e.getType(), e.getElement(), optReceiver, optArguments);
+            }
+
+        } else if (je instanceof ThisReference) {
+            ThisReference e = (ThisReference) je;
+            return e;
+
+        } else if (je instanceof UnaryOperation) {
+            UnaryOperation e = (UnaryOperation) je;
+            JavaExpression optOperand = optimize(e.getOperand(), factory);
+            if (e.getOperand() == optOperand) {
+                return e;
+            } else {
+                return new UnaryOperation(e.getType(), e.getOperationKind(), optOperand);
+            }
+
+        } else if (je instanceof Unknown) {
+            Unknown e = (Unknown) je;
+            return e;
+
+        } else if (je instanceof ValueLiteral) {
+            ValueLiteral e = (ValueLiteral) je;
+            return e;
+
+        } else {
+            throw new BugInCF("Unhandled JavaExpression %s %s", je.getClass(), je);
+        }
+    }
+
+    /**
+     * Optimize the given list of JavaExpressions, using Value Checker annotations.
+     *
+     * @param list the expressions to optimize
+     * @param factory the Valueannotatedtypefactory
+     * @return an optimized version of the argument, or the argument if nothing in it can be
+     *     optimized
+     */
+    @SuppressWarnings("interning:not.interned") // ==  indicates whether `optimize` had any effect
+    private static List<JavaExpression> optimize(
+            List<JavaExpression> list, ValueAnnotatedTypeFactory factory) {
+        boolean changed = false;
+        List<JavaExpression> result = new ArrayList<>(list.size());
+        for (JavaExpression je : list) {
+            JavaExpression opt = optimize(je, factory);
+            changed = changed || (je != opt);
+            result.add(opt);
+        }
+        if (changed) {
+            return result;
+        } else {
+            return list;
+        }
     }
 }

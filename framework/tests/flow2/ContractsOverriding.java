@@ -6,7 +6,7 @@ import org.checkerframework.framework.testchecker.util.EnsuresOddIf;
 import org.checkerframework.framework.testchecker.util.Odd;
 import org.checkerframework.framework.testchecker.util.RequiresOdd;
 
-class ContractsOverriding {
+public class ContractsOverriding {
     static class Super {
         String f, g;
 

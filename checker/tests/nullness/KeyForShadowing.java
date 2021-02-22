@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
-class KeyForShadowing {
+public class KeyForShadowing {
     public static void main(String... p) {
         Map<String, Integer> m0 = new HashMap<>();
         Map<String, Integer> m1 = new HashMap<>();
@@ -30,6 +30,7 @@ class KeyForShadowing {
 
         // :: error: (argument.type.incompatible)
         getMap1(m0, m1, k).toString();
+
         getMap4(m0, m1, k).toString();
     }
 

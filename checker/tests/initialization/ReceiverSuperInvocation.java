@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
-class ReceiverSuperInvocation {
+public class ReceiverSuperInvocation {
     void foo(@UnderInitialization(ReceiverSuperInvocation.class) ReceiverSuperInvocation this) {}
 }
 

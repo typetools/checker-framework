@@ -62,8 +62,9 @@ could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
 \refqualclass{common/value/qual}{IntRange} for integral types,
 \refqualclass{common/value/qual}{ArrayLenRange} for array types,
-\refqualclass{common/value/qual/MatchesRegex},
-\refqualclass{common/value/qual}{ArrayLen} or \refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
+\refqualclass{common/value/qual}{MatchesRegex},
+\refqualclass{common/value/qual}{ArrayLen}, or
+\refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
 The \<@ArrayLen> annotation means that at run time, the expression
 evaluates to an array or a string whose length is one of the annotation's arguments.
@@ -85,7 +86,7 @@ expressions \<A> is a subset of the set of regular expressions \<B>. An
 \<@StringVal> annotation is a subtype of an \<@MatchesRegex> annotation if
 each string matches at least one of the regular expressions.  Matching is done
 via the
-\href{https://docs.oracle.com/javase/8/docs/api/java/lang/String.html\#matches-java.lang.String-}{java.lang.String\#matches}
+\href{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html\#matches(java.lang.String)}{java.lang.String\#matches}
 method, which matches against the entire string (it does not look for a
 matching substring).
 

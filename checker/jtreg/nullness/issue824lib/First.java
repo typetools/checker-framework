@@ -1,4 +1,4 @@
-class First {
+public class First {
     public interface Supplier<T> {}
 
     public interface Callable<T> {}

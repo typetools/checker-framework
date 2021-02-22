@@ -86,20 +86,19 @@ public class FormatterLubGlbChecker extends FormatterChecker {
                         AnnotationBuilder.elementNamesValues("value", "dummy"));
         AnnotationMirror FORMATBOTTOM = AnnotationBuilder.fromClass(elements, FormatBottom.class);
 
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
         builder.setValue("value", "Message");
         AnnotationMirror invalidFormatWithMessage = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
         builder.setValue("value", "Message2");
         AnnotationMirror invalidFormatWithMessage2 = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
         builder.setValue("value", "(\"Message\" or \"Message2\")");
         AnnotationMirror invalidFormatWithMessagesOred = builder.build();
 
-        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
         builder.setValue("value", "(\"Message\" and \"Message2\")");
         AnnotationMirror invalidFormatWithMessagesAnded = builder.build();
 

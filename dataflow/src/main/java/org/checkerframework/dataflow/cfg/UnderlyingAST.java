@@ -6,8 +6,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.plumelib.util.StringsPlume;
 import org.plumelib.util.UniqueId;
-import org.plumelib.util.UtilPlume;
 
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow
@@ -48,7 +48,8 @@ public abstract class UnderlyingAST implements UniqueId {
     }
 
     /**
-     * Returns the code that corresponds to the CFG.
+     * Returns the code that corresponds to the CFG. For a method or lamdda, this returns the body.
+     * For other constructs, it returns the tree itself (a statement or expression).
      *
      * @return the code that corresponds to the CFG
      */
@@ -83,7 +84,7 @@ public abstract class UnderlyingAST implements UniqueId {
         }
 
         /**
-         * Returns the name of the method
+         * Returns the name of the method.
          *
          * @return the name of the method
          */
@@ -111,7 +112,7 @@ public abstract class UnderlyingAST implements UniqueId {
 
         @Override
         public String toString() {
-            return UtilPlume.joinLines("CFGMethod(", method, ")");
+            return StringsPlume.joinLines("CFGMethod(", method, ")");
         }
     }
 
@@ -193,11 +194,14 @@ public abstract class UnderlyingAST implements UniqueId {
 
         @Override
         public String toString() {
-            return UtilPlume.joinLines("CFGLambda(", lambda, ")");
+            return StringsPlume.joinLines("CFGLambda(", lambda, ")");
         }
     }
 
-    /** If the underlying AST is a statement or expression. */
+    /**
+     * If the underlying AST is a statement or expression. This is for field definitions (with
+     * initializers) and initializer blocks.
+     */
     public static class CFGStatement extends UnderlyingAST {
 
         protected final Tree code;
@@ -231,7 +235,7 @@ public abstract class UnderlyingAST implements UniqueId {
 
         @Override
         public String toString() {
-            return UtilPlume.joinLines("CFGStatement(", code, ")");
+            return StringsPlume.joinLines("CFGStatement(", code, ")");
         }
     }
 }

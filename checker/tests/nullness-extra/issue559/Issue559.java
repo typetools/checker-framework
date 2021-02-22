@@ -3,7 +3,7 @@
 
 import java.util.Optional;
 
-class Issue559 {
+public class Issue559 {
     void bar(Optional<String> o) {
         // With myjdk.astub the following should fail with an
         // argument.type.incompatible error.

@@ -1,7 +1,7 @@
 import org.checkerframework.framework.testchecker.util.*;
 
 // @skip-test
-class ArraySubtyping {
+public class ArraySubtyping {
     Object[] obj1 = new Object[1];
     @Odd Object[] obj2 = new @Odd Object[1];
 

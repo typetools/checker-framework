@@ -2,7 +2,7 @@ package flowexpression;
 
 import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
-class ViewPointAdaptMethods {
+public class ViewPointAdaptMethods {
     Object param1;
 
     void method1(Object param1, @FlowExp("#1") Object param2) {

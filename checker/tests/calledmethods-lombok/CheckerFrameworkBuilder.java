@@ -1,7 +1,7 @@
 // skip-idempotent
 import java.util.List;
 
-class CheckerFrameworkBuilder {
+public class CheckerFrameworkBuilder {
 
     /**
      * Most of this test was copied from

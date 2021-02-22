@@ -2,7 +2,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue326 {
+public class Issue326 {
     {
         Set<@Nullable String> local = new HashSet<>();
     }

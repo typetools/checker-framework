@@ -1,6 +1,6 @@
 import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class UseSimpleFluent {
+public class UseSimpleFluent {
     static void req(@TestAccumulation({"a", "b"}) SimpleFluent s) {}
 
     static void test() {

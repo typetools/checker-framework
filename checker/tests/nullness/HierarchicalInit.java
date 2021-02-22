@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class HierarchicalInit {
+public class HierarchicalInit {
 
     String a;
 

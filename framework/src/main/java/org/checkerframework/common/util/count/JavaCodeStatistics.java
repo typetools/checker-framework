@@ -58,6 +58,13 @@ public class JavaCodeStatistics extends SourceChecker {
      */
     int numberOfIndexWarningSuppressions = 0;
 
+    /** Creates a JavaCodeStatistics. */
+    public JavaCodeStatistics() {
+        // This checker never issues any warnings, so don't warn about
+        // @SuppressWarnings("allcheckers:...").
+        this.useAllcheckersPrefix = false;
+    }
+
     @Override
     public void typeProcessingOver() {
         Log log = getCompilerLog();

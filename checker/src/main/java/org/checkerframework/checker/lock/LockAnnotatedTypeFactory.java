@@ -35,9 +35,9 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -52,8 +52,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -102,6 +102,14 @@ public class LockAnnotatedTypeFactory
     /** The @{@link GuardSatisfied} annotation. */
     protected final AnnotationMirror GUARDSATISFIED =
             AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
+
+    /** The value() element/field of a @GuardSatisfied annotation. */
+    protected final ExecutableElement guardSatisfiedValueElement =
+            TreeUtils.getMethod(
+                    "org.checkerframework.checker.lock.qual.GuardSatisfied",
+                    "value",
+                    0,
+                    processingEnv);
 
     /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;
@@ -167,10 +175,7 @@ public class LockAnnotatedTypeFactory
 
             @Override
             protected String standardizeString(
-                    String expression,
-                    FlowExpressionContext context,
-                    TreePath localScope,
-                    boolean useLocalScope) {
+                    String expression, JavaExpressionContext context, TreePath localVarPath) {
                 if (DependentTypesError.isExpressionError(expression)) {
                     return expression;
                 }
@@ -181,11 +186,11 @@ public class LockAnnotatedTypeFactory
                 }
 
                 try {
-                    Receiver result =
-                            FlowExpressionParseUtil.parse(
-                                    expression, context, localScope, useLocalScope);
+                    JavaExpression result =
+                            JavaExpressionParseUtil.parse(expression, context, localVarPath);
                     if (result == null) {
-                        return new DependentTypesError(expression, " ").toString();
+                        return new DependentTypesError(expression, /*error message=*/ " ")
+                                .toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
@@ -194,7 +199,7 @@ public class LockAnnotatedTypeFactory
                                 .toString();
                     }
                     return result.toString();
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                     return new DependentTypesError(expression, e).toString();
                 }
             }
@@ -219,18 +224,18 @@ public class LockAnnotatedTypeFactory
      * @param expr expression
      * @return whether or not the expression is effectively final
      */
-    boolean isExpressionEffectivelyFinal(Receiver expr) {
+    boolean isExpressionEffectivelyFinal(JavaExpression expr) {
         if (expr instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) expr;
-            Receiver recv = fieldAccess.getReceiver();
+            JavaExpression receiver = fieldAccess.getReceiver();
             // Don't call fieldAccess
-            return fieldAccess.isFinal() && isExpressionEffectivelyFinal(recv);
+            return fieldAccess.isFinal() && isExpressionEffectivelyFinal(receiver);
         } else if (expr instanceof LocalVariable) {
             return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
         } else if (expr instanceof MethodCall) {
             MethodCall methodCall = (MethodCall) expr;
-            for (Receiver param : methodCall.getParameters()) {
-                if (!isExpressionEffectivelyFinal(param)) {
+            for (JavaExpression arg : methodCall.getArguments()) {
+                if (!isExpressionEffectivelyFinal(arg)) {
                     return false;
                 }
             }
@@ -273,7 +278,7 @@ public class LockAnnotatedTypeFactory
         return new LockTransfer((LockAnalysis) analysis, (LockChecker) this.checker);
     }
 
-    /** LockQualifierHierarchy */
+    /** LockQualifierHierarchy. */
     class LockQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link GuardedBy} annotation. */
@@ -324,7 +329,8 @@ public class LockAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
@@ -355,7 +361,8 @@ public class LockAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
@@ -547,7 +554,12 @@ public class LockAnnotatedTypeFactory
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
-        return AnnotationUtils.getElementValue(am, "value", Integer.class, true);
+        AnnotationValue av = am.getElementValues().get(guardSatisfiedValueElement);
+        if (av == null) {
+            return -1;
+        } else {
+            return (int) av.getValue();
+        }
     }
 
     @Override

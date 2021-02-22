@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -15,6 +15,8 @@ import org.checkerframework.javacutil.BugInCF;
  * is parsed. See {@link DependentTypesHelper} for more details.
  */
 public class DependentTypesError {
+
+    /// Static fields
 
     /** How elements of this class are formatted. */
     @SuppressWarnings("InlineFormatString") // https://github.com/google/error-prone/issues/1650
@@ -40,10 +42,14 @@ public class DependentTypesError {
             Pattern.compile(
                     "^'([a-zA-Z_$][a-zA-Z0-9_$]*)' because (Use \"#\\d+\" rather than \"\\1\")$");
 
+    /// Instance fields
+
     /** The expression that is unparseable or otherwise problematic. */
     public final String expression;
     /** An error message about that expression. */
     public final String error;
+
+    /// Constructors and methods
 
     /**
      * Create a DependentTypesError for the given expression and error message.
@@ -62,7 +68,7 @@ public class DependentTypesError {
      * @param expression the incorrect Java expression
      * @param e wraps an error message about the expression
      */
-    public DependentTypesError(String expression, FlowExpressionParseException e) {
+    public DependentTypesError(String expression, JavaExpressionParseException e) {
         this.expression = expression;
         this.error = e.getDiagMessage().getArgs()[0].toString();
     }

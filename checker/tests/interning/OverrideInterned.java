@@ -1,6 +1,6 @@
 import org.checkerframework.checker.interning.qual.Interned;
 
-class OverrideInterned {
+public class OverrideInterned {
 
     // This code is extracted from FreePastry
 

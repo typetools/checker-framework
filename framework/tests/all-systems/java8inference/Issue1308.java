@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 class Map1308<K, V> {}
 
 @SuppressWarnings("all") // check for crashes
-class Issue1308 {
+public class Issue1308 {
     void bar(Stream<Number> stream) {
         new Inner(stream.collect(transform(data -> convert(data), Function.identity())));
     }

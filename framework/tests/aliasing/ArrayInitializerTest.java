@@ -1,6 +1,6 @@
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class ArrayInitializerTest {
+public class ArrayInitializerTest {
 
     void foo() {
         @Unique Object o = new Object();

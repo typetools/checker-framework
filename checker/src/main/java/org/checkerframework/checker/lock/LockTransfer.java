@@ -16,8 +16,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.expression.ClassName;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TreeUtils;
@@ -41,15 +40,25 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
         this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
-    /** Sets a given {@link Node} to @LockHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockHeld in the given {@code store}.
+     *
+     * @param store the store to update
+     * @param node the node that should be @LockHeld
+     */
     protected void makeLockHeld(LockStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(node);
         store.insertValue(internalRepr, atypeFactory.LOCKHELD);
     }
 
-    /** Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}.
+     *
+     * @param store the store to update
+     * @param node the node that should be @LockPossiblyHeld
+     */
     protected void makeLockPossiblyHeld(LockStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(node);
 
         // insertValue cannot change an annotation to a less
         // specific type (e.g. LockHeld to LockPossiblyHeld),

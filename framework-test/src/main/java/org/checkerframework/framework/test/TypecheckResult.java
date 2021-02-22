@@ -9,7 +9,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Represents the test results from typechecking one or more Java files using the given
@@ -84,7 +84,7 @@ public class TypecheckResult {
                 errorHeaders.add(
                         numFound
                                 + " out of "
-                                + UtilPlume.nplural(numExpected, "expected diagnostic")
+                                + StringsPlume.nplural(numExpected, "expected diagnostic")
                                 + " "
                                 + (numFound == 1 ? "was" : "were")
                                 + " found.");
@@ -104,12 +104,12 @@ public class TypecheckResult {
             return "";
         }
         StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
-        summaryBuilder.add(UtilPlume.joinLines(getErrorHeaders()));
+        summaryBuilder.add(StringsPlume.joinLines(getErrorHeaders()));
 
         if (!unexpectedDiagnostics.isEmpty()) {
             int numUnexpected = unexpectedDiagnostics.size();
             summaryBuilder.add(
-                    UtilPlume.nplural(numUnexpected, "unexpected diagnostic")
+                    StringsPlume.nplural(numUnexpected, "unexpected diagnostic")
                             + " "
                             + (numUnexpected == 1 ? "was" : "were")
                             + " found:");
@@ -122,7 +122,7 @@ public class TypecheckResult {
         if (!missingDiagnostics.isEmpty()) {
             int numMissing = missingDiagnostics.size();
             summaryBuilder.add(
-                    UtilPlume.nplural(numMissing, "expected diagnostic")
+                    StringsPlume.nplural(numMissing, "expected diagnostic")
                             + " "
                             + (numMissing == 1 ? "was" : "were")
                             + " not found:");
