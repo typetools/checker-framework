@@ -85,7 +85,7 @@ public class ElementAnnotationApplier {
             new TypeVarAnnotator().visit(type, typeFactory);
         } catch (ErrorTypeKindException e) {
             // Do nothing if an ERROR TypeKind was found.
-            // This is triggered by Issue 244.
+            // This is triggered by Issue #244.
         }
     }
 
