@@ -163,4 +163,9 @@ public class ValueLiteral extends JavaExpression {
     public int hashCode() {
         return Objects.hash(value, type.toString());
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitValueLiteral(this, p);
+    }
 }

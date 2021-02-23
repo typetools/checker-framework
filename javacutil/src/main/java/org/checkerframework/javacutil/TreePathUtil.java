@@ -227,11 +227,14 @@ public final class TreePathUtil {
     }
 
     /**
-     * Returns the tree with the assignment context for the treePath leaf node. (Does not handle
-     * pseudo-assignment of an argument to a parameter or a receiver expression to a receiver.)
+     * Returns the "assignment context" for the leaf of {@code treePath}, which is often the leaf of
+     * the parent of {@code treePath}. (Does not handle pseudo-assignment of an argument to a
+     * parameter or a receiver expression to a receiver.) This is not the same as {@code
+     * org.checkerframework.dataflow.cfg.node.AssignmentContext}, which represents the left-hand
+     * side rather than the assignment itself.
      *
-     * <p>The assignment context for the {@code treePath} is the leaf of its parent, if the parent
-     * is one of the following trees:
+     * <p>The assignment context for {@code treePath} is the leaf of its parent, if that leaf is one
+     * of the following trees:
      *
      * <ul>
      *   <li>AssignmentTree
@@ -264,8 +267,13 @@ public final class TreePathUtil {
 
         Tree parent = parentPath.getLeaf();
         switch (parent.getKind()) {
-            case PARENTHESIZED:
-                return getAssignmentContext(parentPath);
+            case ASSIGNMENT: // See below for CompoundAssignmentTree.
+            case METHOD_INVOCATION:
+            case NEW_ARRAY:
+            case NEW_CLASS:
+            case RETURN:
+            case VARIABLE:
+                return parent;
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
                 @SuppressWarnings("interning:not.interned") // AST node comparison
@@ -277,13 +285,8 @@ public final class TreePathUtil {
                 }
                 // Otherwise use the context of the ConditionalExpressionTree.
                 return getAssignmentContext(parentPath);
-            case ASSIGNMENT:
-            case METHOD_INVOCATION:
-            case NEW_ARRAY:
-            case NEW_CLASS:
-            case RETURN:
-            case VARIABLE:
-                return parent;
+            case PARENTHESIZED:
+                return getAssignmentContext(parentPath);
             default:
                 // 11 Tree.Kinds are CompoundAssignmentTrees,
                 // so use instanceof rather than listing all 11.

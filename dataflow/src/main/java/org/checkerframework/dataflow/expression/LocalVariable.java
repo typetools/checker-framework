@@ -109,4 +109,9 @@ public class LocalVariable extends JavaExpression {
     public boolean isUnmodifiableByOtherCode() {
         return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitLocalVariable(this, p);
+    }
 }
