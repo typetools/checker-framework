@@ -363,18 +363,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return result;
     }
 
-    /**
-     * Given a Java expression, returns the additive inverse (the negation) as a String. Assumes
-     * that JavaExpressions do not contain multiplication.
-     *
-     * @param s a Java expression string
-     * @param context the parse context
-     * @return the string's additive inverse (its negation)
-     */
-    private String negateString(String s, JavaExpressionContext context) {
-        return Subsequence.negateString(s, context);
-    }
-
     /*
      *  Queries the Value Checker to determine if the maximum possible value of indexTree
      *  is less than the minimum possible length of arrTree, and returns true if so.
@@ -482,16 +470,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
                 JavaExpression lhsSeqExpr =
                         parseJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                JavaExpressionContext context =
-                        Subsequence.getContextFromJavaExpression(lhsSeqExpr, checker);
                 Subsequence subSeq =
-                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory, context);
+                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory);
 
                 if (subSeq != null) {
                     String from = subSeq.from;
                     String a = subSeq.array;
-
-                    if (expQual.hasSequenceWithOffset(a, negateString(from, context))) {
+                    if (expQual.hasSequenceWithOffset(a, Subsequence.negateString(from))) {
                         // This cast is safe because LTLs cannot contain duplicates.
                         // Note that this updates newLHS on each iteration from its old value,
                         // so even if there are multiple HSS arrays the result will be correct.
