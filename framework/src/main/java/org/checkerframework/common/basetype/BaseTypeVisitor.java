@@ -1682,6 +1682,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         JavaExpressionContext jeContext =
                 JavaExpressionContext.buildContextForMethodUse(tree, checker);
+        ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
 
         if (jeContext == null) {
             checker.reportError(tree, "flowexpr.parse.context.not.determined", tree);
@@ -1700,12 +1701,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             JavaExpression exprJe;
             try {
-                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
+                exprJe = JavaExpressionParseUtil.parse(expressionString, methodElement, checker);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());
                 return;
             }
+
+            exprJe = exprJe.viewpointAdapt(tree);
 
             CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
             CFAbstractValue<?> value = null;
