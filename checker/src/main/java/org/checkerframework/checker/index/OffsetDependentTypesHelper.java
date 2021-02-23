@@ -2,12 +2,15 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -57,6 +60,21 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
                         .getTypeFactoryOfSubchecker(ValueChecker.class);
         if (vatf != null) {
             result = ValueCheckerUtils.optimize(result, vatf);
+        } else {
+            if (result instanceof MethodCall) {
+                MethodCall methodCall = (MethodCall) result;
+                // Length of string literal: convert it to an integer literal.
+                if (methodCall.getElement().getSimpleName().contentEquals("length")
+                        && methodCall.getReceiver() instanceof ValueLiteral) {
+                    Object value = ((ValueLiteral) methodCall.getReceiver()).getValue();
+                    if (value instanceof String) {
+                        result =
+                                new ValueLiteral(
+                                        factory.types.getPrimitiveType(TypeKind.INT),
+                                        ((String) value).length());
+                    }
+                }
+            }
         }
 
         return result.toString();
