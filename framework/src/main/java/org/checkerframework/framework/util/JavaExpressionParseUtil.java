@@ -433,7 +433,13 @@ public class JavaExpressionParseUtil {
             }
 
             // Field access
-            FieldAccess fieldAccess = getIdentifierAsField(thisReference, s);
+            JavaExpression fieldAccessReceiver;
+            if (thisReference != null) {
+                fieldAccessReceiver = thisReference;
+            } else {
+                fieldAccessReceiver = new ClassName(enclosingType);
+            }
+            FieldAccess fieldAccess = getIdentifierAsField(fieldAccessReceiver, s);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
@@ -631,8 +637,10 @@ public class JavaExpressionParseUtil {
             if (expr.getScope().isPresent()) {
                 receiverExpr = expr.getScope().get().accept(this, null);
                 expr = expr.removeScope();
-            } else {
+            } else if (thisReference != null) {
                 receiverExpr = thisReference;
+            } else {
+                receiverExpr = new ClassName(enclosingType);
             }
 
             String methodName = expr.getNameAsString();
