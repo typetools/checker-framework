@@ -107,6 +107,7 @@ public class NullnessTransfer
                 nullnessTypeFactory.getChecker().getTypeFactoryOfSubchecker(KeyForSubchecker.class);
         this.regexTypeFactory =
                 nullnessTypeFactory.getChecker().getTypeFactoryOfSubchecker(RegexChecker.class);
+
         NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
