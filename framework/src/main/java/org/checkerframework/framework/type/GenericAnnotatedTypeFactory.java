@@ -2503,7 +2503,8 @@ public abstract class GenericAnnotatedTypeFactory<
                         preOrPost == BeforeOrAfter.BEFORE
                                 ? RequiresQualifier.class
                                 : EnsuresQualifier.class);
-        String expression = JavaExpression.fromVariableElement(fieldElement).toString();
+        String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
+        String expression = receiver + "." + fieldElement.getSimpleName();
         builder.setValue("expression", new String[] {expression});
         builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
         return builder.build();

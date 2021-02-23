@@ -500,16 +500,6 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Returns the Java expression corresponding to the given variable.
-     *
-     * @param element a variable element
-     * @return a JavaExpression for {@code element}
-     */
-    public static JavaExpression fromVariableElement(VariableElement element) {
-        return fromVariableElement(ElementUtils.getType(element), element);
-    }
-
-    /**
      * Returns the Java expression corresponding to the given variable element {@code ele}.
      *
      * @param typeOfEle the type of {@code ele}
