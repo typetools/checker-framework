@@ -641,6 +641,7 @@ public class ElementAnnotationUtil {
          * @param format format string
          * @param args arguments to the format string
          */
+        @FormatMethod
         public ErrorTypeKindException(String format, Object... args) {
             super(String.format(format, args));
         }
