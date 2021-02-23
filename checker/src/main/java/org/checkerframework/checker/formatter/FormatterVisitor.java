@@ -42,6 +42,18 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
+        if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
+            int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
+            if (formatStringIndex == -1) {
+                checker.reportError(node, "format.method.invalid", methodElement.getSimpleName());
+            }
+        }
+        return super.visitMethod(node, p);
+    }
+
+    @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil ftu = atypeFactory.treeUtil;
         FormatCall fc = ftu.create(node, atypeFactory);

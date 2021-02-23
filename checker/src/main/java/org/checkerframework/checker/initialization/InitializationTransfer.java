@@ -136,7 +136,7 @@ public class InitializationTransfer<
                 // If the type is not completed yet, we might run
                 // into trouble. Skip the field.
                 // TODO: is there a nicer solution?
-                // This was raised by Issue 244.
+                // This was raised by Issue #244.
                 continue;
             }
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);

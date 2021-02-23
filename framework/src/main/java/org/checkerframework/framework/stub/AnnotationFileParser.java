@@ -92,6 +92,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -946,11 +947,15 @@ public class AnnotationFileParser {
 
         // Return type, from declaration annotations on the method or constructor
         if (decl.isMethodDeclaration()) {
-            annotate(
-                    methodType.getReturnType(),
-                    ((MethodDeclaration) decl).getType(),
-                    decl.getAnnotations(),
-                    decl);
+            try {
+                annotate(
+                        methodType.getReturnType(),
+                        ((MethodDeclaration) decl).getType(),
+                        decl.getAnnotations(),
+                        decl);
+            } catch (ErrorTypeKindException e) {
+                // Do nothing, per Issue #244.
+            }
         } else {
             assert decl.isConstructorDeclaration();
             annotate(methodType.getReturnType(), decl.getAnnotations(), decl);
