@@ -22,107 +22,107 @@ public abstract class JavaExpressionVisitor<R, P> {
     /**
      * Visit an {@link ArrayAccess}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param arrayAccessExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code arrayAccessExpr}
      */
-    protected abstract R visitArrayAccess(ArrayAccess javaExpr, P p);
+    protected abstract R visitArrayAccess(ArrayAccess arrayAccessExpr, P p);
     /**
      * Visit an {@link ArrayCreation}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param arrayCreationExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code arrayCreationExpr}
      */
-    protected abstract R visitArrayCreation(ArrayCreation javaExpr, P p);
+    protected abstract R visitArrayCreation(ArrayCreation arrayCreationExpr, P p);
 
     /**
      * Visit a {@link BinaryOperation}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param binaryOpExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code binaryOpExpr}
      */
-    protected abstract R visitBinaryOperation(BinaryOperation javaExpr, P p);
+    protected abstract R visitBinaryOperation(BinaryOperation binaryOpExpr, P p);
 
     /**
      * Visit a {@link ClassName}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param classNameExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code classNameExpr}
      */
-    protected abstract R visitClassName(ClassName javaExpr, P p);
+    protected abstract R visitClassName(ClassName classNameExpr, P p);
 
     /**
      * Visit a {@link FieldAccess}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param fieldAccessExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code fieldAccessExpr}
      */
-    protected abstract R visitFieldAccess(FieldAccess javaExpr, P p);
+    protected abstract R visitFieldAccess(FieldAccess fieldAccessExpr, P p);
 
     /**
      * Visit a {@link FormalParameter}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param parameterExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code parameterExpr}
      */
-    protected abstract R visitFormalParameter(FormalParameter javaExpr, P p);
+    protected abstract R visitFormalParameter(FormalParameter parameterExpr, P p);
 
     /**
      * Visit a {@link LocalVariable}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param localVarExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code localVarExpr}
      */
-    protected abstract R visitLocalVariable(LocalVariable javaExpr, P p);
+    protected abstract R visitLocalVariable(LocalVariable localVarExpr, P p);
 
     /**
      * Visit a {@link MethodCall}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param methodCallExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code methodCallExpr}
      */
-    protected abstract R visitMethodCall(MethodCall javaExpr, P p);
+    protected abstract R visitMethodCall(MethodCall methodCallExpr, P p);
 
     /**
      * Visit a {@link ThisReference}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param thisExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code thisExpr}
      */
-    protected abstract R visitThisReference(ThisReference javaExpr, P p);
+    protected abstract R visitThisReference(ThisReference thisExpr, P p);
 
     /**
      * Visit an {@link UnaryOperation}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param unaryOpExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code unaryOpExpr}
      */
-    protected abstract R visitUnaryOperation(UnaryOperation javaExpr, P p);
+    protected abstract R visitUnaryOperation(UnaryOperation unaryOpExpr, P p);
 
     /**
      * Visit an {@link Unknown}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param unknownExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code unknownExpr}
      */
-    protected abstract R visitUnknown(Unknown javaExpr, P p);
+    protected abstract R visitUnknown(Unknown unknownExpr, P p);
 
     /**
      * Visit a {@link ValueLiteral}.
      *
-     * @param javaExpr the JavaExpression to visit
+     * @param literalExpr the JavaExpression to visit
      * @param p the parameter to pass to the visit method
-     * @return the result of visiting the {@code javaExpr}
+     * @return the result of visiting the {@code literalExpr}
      */
-    protected abstract R visitValueLiteral(ValueLiteral javaExpr, P p);
+    protected abstract R visitValueLiteral(ValueLiteral literalExpr, P p);
 }

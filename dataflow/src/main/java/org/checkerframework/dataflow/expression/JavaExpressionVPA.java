@@ -36,123 +36,128 @@ public class JavaExpressionVPA extends JavaExpressionVisitor<JavaExpression, Voi
     }
 
     @Override
-    protected JavaExpression visitArrayAccess(ArrayAccess expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitArrayAccess(ArrayAccess arrayAccessExpr, Void unused) {
+        JavaExpression vpa = defaultAction(arrayAccessExpr);
         if (vpa != null) {
             return vpa;
         }
-        return new ArrayAccess(expression.type, visit(expression.array), visit(expression.index));
+        return new ArrayAccess(
+                arrayAccessExpr.type, visit(arrayAccessExpr.array), visit(arrayAccessExpr.index));
     }
 
     @Override
-    protected JavaExpression visitArrayCreation(ArrayCreation expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitArrayCreation(ArrayCreation arrayCreationExpr, Void unused) {
+        JavaExpression vpa = defaultAction(arrayCreationExpr);
         if (vpa != null) {
             return vpa;
         }
         return new ArrayCreation(
-                expression.getType(), visit(expression.dimensions), visit(expression.initializers));
+                arrayCreationExpr.getType(),
+                visit(arrayCreationExpr.dimensions),
+                visit(arrayCreationExpr.initializers));
     }
 
     @Override
-    protected JavaExpression visitBinaryOperation(BinaryOperation expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitBinaryOperation(BinaryOperation binaryOpExpr, Void unused) {
+        JavaExpression vpa = defaultAction(binaryOpExpr);
         if (vpa != null) {
             return vpa;
         }
         return new BinaryOperation(
-                expression.getType(),
-                expression.operationKind,
-                visit(expression.left),
-                visit(expression.right));
+                binaryOpExpr.getType(),
+                binaryOpExpr.operationKind,
+                visit(binaryOpExpr.left),
+                visit(binaryOpExpr.right));
     }
 
     @Override
-    protected JavaExpression visitClassName(ClassName expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitClassName(ClassName classNameExpr, Void unused) {
+        JavaExpression vpa = defaultAction(classNameExpr);
         if (vpa != null) {
             return vpa;
         }
-        return expression;
+        return classNameExpr;
     }
 
     @Override
-    protected JavaExpression visitFieldAccess(FieldAccess expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitFieldAccess(FieldAccess fieldAccessExpr, Void unused) {
+        JavaExpression vpa = defaultAction(fieldAccessExpr);
         if (vpa != null) {
             return vpa;
         }
         return new FieldAccess(
-                visit(expression.receiver), expression.getType(), expression.getField());
+                visit(fieldAccessExpr.receiver),
+                fieldAccessExpr.getType(),
+                fieldAccessExpr.getField());
     }
 
     @Override
-    protected JavaExpression visitFormalParameter(FormalParameter expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitFormalParameter(FormalParameter parameterExpr, Void unused) {
+        JavaExpression vpa = defaultAction(parameterExpr);
         if (vpa != null) {
             return vpa;
         }
-        return expression;
+        return parameterExpr;
     }
 
     @Override
-    protected JavaExpression visitLocalVariable(LocalVariable expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitLocalVariable(LocalVariable localVarExpr, Void unused) {
+        JavaExpression vpa = defaultAction(localVarExpr);
         if (vpa != null) {
             return vpa;
         }
-        return expression;
+        return localVarExpr;
     }
 
     @Override
-    protected JavaExpression visitMethodCall(MethodCall expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitMethodCall(MethodCall methodCallExpr, Void unused) {
+        JavaExpression vpa = defaultAction(methodCallExpr);
         if (vpa != null) {
             return vpa;
         }
         return new MethodCall(
-                expression.getType(),
-                expression.getElement(),
-                visit(expression.getReceiver()),
-                visit(expression.getArguments()));
+                methodCallExpr.getType(),
+                methodCallExpr.getElement(),
+                visit(methodCallExpr.getReceiver()),
+                visit(methodCallExpr.getArguments()));
     }
 
     @Override
-    protected JavaExpression visitThisReference(ThisReference expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
+        JavaExpression vpa = defaultAction(thisExpr);
         if (vpa != null) {
             return vpa;
         }
-        return expression;
+        return thisExpr;
     }
 
     @Override
-    protected JavaExpression visitUnaryOperation(UnaryOperation expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitUnaryOperation(UnaryOperation unaryOpExpr, Void unused) {
+        JavaExpression vpa = defaultAction(unaryOpExpr);
         if (vpa != null) {
             return vpa;
         }
         return new UnaryOperation(
-                expression.getType(),
-                expression.getOperationKind(),
-                visit(expression.getOperand()));
+                unaryOpExpr.getType(),
+                unaryOpExpr.getOperationKind(),
+                visit(unaryOpExpr.getOperand()));
     }
 
     @Override
-    protected JavaExpression visitUnknown(Unknown expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitUnknown(Unknown unknownExpr, Void unused) {
+        JavaExpression vpa = defaultAction(unknownExpr);
         if (vpa != null) {
             return vpa;
         }
-        return expression;
+        return unknownExpr;
     }
 
     @Override
-    protected JavaExpression visitValueLiteral(ValueLiteral expression, Void unused) {
-        JavaExpression vpa = defaultAction(expression);
+    protected JavaExpression visitValueLiteral(ValueLiteral literalExpr, Void unused) {
+        JavaExpression vpa = defaultAction(literalExpr);
         if (vpa != null) {
             return vpa;
         }
-        return expression;
+        return literalExpr;
     }
 }
