@@ -78,6 +78,14 @@ public abstract class JavaExpression {
         this.type = type;
     }
 
+    public final JavaExpression viewpointAdapt(MethodTree methodTree) {
+        List<JavaExpression> parametersJe = new ArrayList<>();
+        for (VariableTree param : methodTree.getParameters()) {
+            parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));
+        }
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
+    }
+
     public TypeMirror getType() {
         return type;
     }

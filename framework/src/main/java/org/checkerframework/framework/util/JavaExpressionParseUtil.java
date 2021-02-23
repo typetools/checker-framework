@@ -114,6 +114,46 @@ public class JavaExpressionParseUtil {
      * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
      *
      * @param expression a Java expression to parse
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(
+            String expression, ExecutableElement method, SourceChecker checker)
+            throws JavaExpressionParseException {
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(method).asType();
+        ThisReference thisReference;
+        if (ElementUtils.isStatic(method)) {
+            // Can't use "this" on a static method
+            thisReference = null;
+        } else {
+            thisReference = new ThisReference(enclosingType);
+        }
+        List<FormalParameter> parameters = new ArrayList<>();
+        int oneBasedIndex = 1;
+        for (VariableElement paramEle : method.getParameters()) {
+            parameters.add(new FormalParameter(oneBasedIndex, paramEle));
+            oneBasedIndex++;
+        }
+        return parse(
+                expression,
+                enclosingType,
+                thisReference,
+                parameters,
+                null,
+                pathToCompilationUnit,
+                env);
+    }
+
+    /**
+     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
+     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
+     *
+     * @param expression a Java expression to parse
      * @param context information about any receiver and arguments; also has a reference to the
      *     checker
      * @return the JavaExpression for the given string

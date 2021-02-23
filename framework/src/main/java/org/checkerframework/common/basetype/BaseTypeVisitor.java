@@ -962,17 +962,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             JavaExpression exprJe;
             try {
-                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
+                // Parse the expressionString that was written on methodElement at the methodDecl.
+                exprJe = JavaExpressionParseUtil.parse(expressionString, methodElement, checker);
             } catch (JavaExpressionParseException e) {
-                exprJe = null;
                 checker.report(methodTree, e.getDiagMessage());
+                if (formalParamNames != null && formalParamNames.contains(expressionString)) {
+                    String locationOfExpression =
+                            contract.kind.errorKey
+                                    + " "
+                                    + contract.contractAnnotation
+                                            .getAnnotationType()
+                                            .asElement()
+                                            .getSimpleName()
+                                    + " on the declaration";
+                    checker.reportWarning(
+                            methodTree,
+                            "expression.parameter.name.invalid",
+                            locationOfExpression,
+                            methodTree.getName().toString(),
+                            expressionString,
+                            formalParamNames.indexOf(expressionString) + 1);
+                }
+                return;
             }
-            // If exprJe is null, then an error was issued above.
-            if (exprJe != null && !CFAbstractStore.canInsertJavaExpression(exprJe)) {
+            exprJe = exprJe.viewpointAdapt(methodTree);
+            if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
                 checker.reportError(methodTree, "flowexpr.parse.error", expressionString);
-                exprJe = null;
+                return;
             }
-            if (exprJe != null && !abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
+            if (!abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
                 // Check the contract, which is a postcondition.
                 // Preconditions are checked at method invocations, not declarations.
 
@@ -1001,24 +1019,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                         .asElement()
                                         .getSimpleName()
                                 + " on the declaration";
-                if (exprJe == null) {
-                    checker.reportWarning(
-                            methodTree,
-                            "expression.parameter.name.invalid",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            expressionString,
-                            formalParamNames.indexOf(expressionString) + 1);
-                } else {
-                    checker.reportWarning(
-                            methodTree,
-                            "expression.parameter.name.shadows.field",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            expressionString,
-                            expressionString,
-                            formalParamNames.indexOf(expressionString) + 1);
-                }
+                checker.reportWarning(
+                        methodTree,
+                        "expression.parameter.name.shadows.field",
+                        locationOfExpression,
+                        methodTree.getName().toString(),
+                        expressionString,
+                        expressionString,
+                        formalParamNames.indexOf(expressionString) + 1);
             }
 
             checkParametersAreEffectivelyFinal(methodTree, methodElement, expressionString);
