@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
@@ -473,6 +474,16 @@ public class ValueCheckerUtils {
             MethodCall e = (MethodCall) je;
             JavaExpression optReceiver = optimize(e.getReceiver(), factory);
             List<JavaExpression> optArguments = optimize(e.getArguments(), factory);
+            // Length of string literal: convert it to an integer literal.
+            if (e.getElement().getSimpleName().contentEquals("length")
+                    && optReceiver instanceof ValueLiteral) {
+                Object value = ((ValueLiteral) optReceiver).getValue();
+                if (value instanceof String) {
+                    return new ValueLiteral(
+                            factory.types.getPrimitiveType(TypeKind.INT),
+                            ((String) value).length());
+                }
+            }
             if (e.getReceiver() == optReceiver && e.getArguments() == optArguments) {
                 return e;
             } else {
