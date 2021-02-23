@@ -190,11 +190,13 @@ public class JavaExpressionParseUtil {
         Map<JavaExpression, JavaExpression> mapping = new HashMap<>();
         TypeMirror enclosingType = context.receiver.getType();
         ThisReference thisReference;
-        if (context.receiver != null) {
+        if (context.receiver == null) {
+            thisReference = null;
+        } else if (context.receiver instanceof ClassName) {
+            thisReference = null;
+        } else {
             thisReference = new ThisReference(enclosingType);
             mapping.put(thisReference, context.receiver);
-        } else {
-            thisReference = null;
         }
         List<FormalParameter> parameters;
         if (context.arguments != null) {
@@ -222,7 +224,7 @@ public class JavaExpressionParseUtil {
                                 env),
                         null);
         JavaExpressionVPA vpa = new JavaExpressionVPA(mapping);
-        return vpa.visit(javaExpr);
+        return vpa.convert(javaExpr);
     }
 
     /**
