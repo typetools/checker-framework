@@ -177,4 +177,9 @@ public class MethodCall extends JavaExpression {
         }
         return result.toString();
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitMethodCall(this, p);
+    }
 }

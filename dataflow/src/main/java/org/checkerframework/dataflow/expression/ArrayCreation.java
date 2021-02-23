@@ -153,4 +153,9 @@ public class ArrayCreation extends JavaExpression {
                 + " initializers="
                 + initializers;
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitArrayCreation(this, p);
+    }
 }

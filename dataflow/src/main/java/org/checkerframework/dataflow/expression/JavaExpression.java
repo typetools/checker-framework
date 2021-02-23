@@ -649,4 +649,14 @@ public abstract class JavaExpression {
             return new ThisReference(enclosingType);
         }
     }
+
+    /**
+     * Accept method of the visitor pattern.
+     *
+     * @param <R> result type of the operation
+     * @param <P> parameter type
+     * @param visitor the visitor to be applied to this JavaExpression
+     * @param p the parameter for this operation
+     */
+    public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
 }

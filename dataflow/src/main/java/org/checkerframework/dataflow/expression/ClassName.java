@@ -85,4 +85,9 @@ public class ClassName extends JavaExpression {
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // not modifiable
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitClassName(this, p);
+    }
 }
