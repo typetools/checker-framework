@@ -11,13 +11,18 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
 import org.checkerframework.checker.signature.qual.BinaryNameWithoutPackage;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.CanonicalNameAndBinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -42,6 +47,7 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.SignatureRegexes;
 
 // TODO: Does not yet handle method signature annotations, such as
@@ -65,20 +71,21 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@literal @}{@link CanonicalName} annotation. */
     protected final AnnotationMirror CANONICAL_NAME =
             AnnotationBuilder.fromClass(elements, CanonicalName.class);
+    /** The {@literal @}{@link CanonicalNameAndBinaryName} annotation. */
+    protected final AnnotationMirror CANONICAL_NAME_AND_BINARY_NAME =
+            AnnotationBuilder.fromClass(elements, CanonicalNameAndBinaryName.class);
+    /** The {@literal @}{@link PrimitiveType} annotation. */
+    protected final AnnotationMirror PRIMITIVE_TYPE =
+            AnnotationBuilder.fromClass(elements, PrimitiveType.class);
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar =
-            TreeUtils.getMethod(
-                    java.lang.String.class.getCanonicalName(),
-                    "replace",
-                    processingEnv,
-                    "char",
-                    "char");
+            TreeUtils.getMethod("java.lang.String", "replace", processingEnv, "char", "char");
 
     /** The {@link String#replace(CharSequence, CharSequence)} method. */
     private final ExecutableElement replaceCharSequenceCharSequence =
             TreeUtils.getMethod(
-                    java.lang.String.class.getCanonicalName(),
+                    "java.lang.String",
                     "replace",
                     processingEnv,
                     "java.lang.CharSequence",
@@ -86,7 +93,12 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@link Class#getName()} method. */
     private final ExecutableElement classGetName =
-            TreeUtils.getMethod(java.lang.Class.class.getCanonicalName(), "getName", processingEnv);
+            TreeUtils.getMethod("java.lang.Class", "getName", processingEnv);
+
+    /** The {@link Class#getCanonicalName()} method. */
+    private final ExecutableElement classGetCanonicalName =
+            TreeUtils.getMethod(
+                    java.lang.Class.class.getCanonicalName(), "getCanonicalName", processingEnv);
 
     /**
      * Creates a SignatureAnnotatedTypeFactory.
@@ -220,8 +232,9 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
          * </code></pre>
          *
-         * Class.getName sometimes returns a binary name (which is more specific than its
-         * annotation, which is ClassGetName:
+         * Class.getName and Class.getCanonicalName(): Cwhen called on a primitive type ,the return
+         * a {@link PrimitiveType}. When called on a non-array, non-nested, non-primitive type, they
+         * return a {@link BinaryName}:
          *
          * <pre><code>
          * {@literal @}BinaryName String binaryName = MyClass.class.getName();
@@ -264,17 +277,37 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && receiverType.getAnnotation(InternalForm.class) != null) {
                     type.replaceAnnotation(BINARY_NAME);
                 }
-            }
-
-            if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)) {
-                ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-                if (TreeUtils.isClassLiteral(receiver)) {
-                    ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
-                    if (classExpr.getKind() == Tree.Kind.IDENTIFIER
-                            || (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE
-                                    && ((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
-                                            != TypeKind.VOID)) {
-                        type.replaceAnnotation(BINARY_NAME);
+            } else {
+                boolean isClassGetName =
+                        TreeUtils.isMethodInvocation(tree, classGetName, processingEnv);
+                boolean isClassGetCanonicalName =
+                        TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv);
+                if (isClassGetName || isClassGetCanonicalName) {
+                    ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+                    if (TreeUtils.isClassLiteral(receiver)) {
+                        ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
+                        if (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                            if (((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
+                                    == TypeKind.VOID) {
+                                // do nothing
+                            } else {
+                                type.replaceAnnotation(PRIMITIVE_TYPE);
+                            }
+                        } else {
+                            // Binary name if non-array, non-primitive, non-nested.
+                            TypeMirror literalType = TreeUtils.typeOf(classExpr);
+                            if (literalType.getKind() == TypeKind.DECLARED) {
+                                TypeElement typeElt = TypesUtils.getTypeElement(literalType);
+                                Element enclosing = typeElt.getEnclosingElement();
+                                if (enclosing == null
+                                        || enclosing.getKind() == ElementKind.PACKAGE) {
+                                    type.replaceAnnotation(
+                                            isClassGetName
+                                                    ? DOT_SEPARATED_IDENTIFIERS
+                                                    : CANONICAL_NAME_AND_BINARY_NAME);
+                                }
+                            }
+                        }
                     }
                 }
             }

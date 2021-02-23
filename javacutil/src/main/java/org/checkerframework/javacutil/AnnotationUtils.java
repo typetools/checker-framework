@@ -161,6 +161,9 @@ public class AnnotationUtils {
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#areSameByClass} or {@link #areSameByName}.
+     *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
      * @return true if annoclass is the class of am
@@ -242,6 +245,9 @@ public class AnnotationUtils {
      * Checks that the collection contains the annotation. Using Collection.contains does not always
      * work, because it does not use areSame for comparison.
      *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#containsSameByClass} or {@link #containsSameByName}.
+     *
      * @param c a collection of AnnotationMirrors
      * @param anno the annotation class to search for in c
      * @return true iff c contains anno, according to areSameByClass
@@ -253,6 +259,9 @@ public class AnnotationUtils {
 
     /**
      * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
+     *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#getAnnotationByClass} or {@link #getAnnotationByName}.
      *
      * @param c a collection of AnnotationMirrors
      * @param anno the class to search for in c
@@ -684,9 +693,15 @@ public class AnnotationUtils {
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
      * is expected to have type {@code expectedType}.
      *
-     * <p>For elements of array type, use {@code getElementValueArray} instead.
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
      *
-     * <p>For elements of enum type, use {@code getElementValueEnum} instead.
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
+     * rather than this method which iterates through a map. The same comment is true of all {@code
+     * getElementValue*} methods. It is true even if the annotation has only one element/field.
+     * Using that method is possible if the type of the annotation is known (in which case the
+     * element/field's Element (called {@code someElement} in the code snippet) is available.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access

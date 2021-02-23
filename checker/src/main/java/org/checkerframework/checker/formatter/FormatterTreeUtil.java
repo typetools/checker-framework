@@ -7,7 +7,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.IllegalFormatException;
 import java.util.List;
-import java.util.Locale;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -22,6 +21,7 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -39,18 +39,26 @@ import org.checkerframework.javacutil.TypesUtils;
  * something to do with Formatters.
  */
 public class FormatterTreeUtil {
+    /** The checker. */
     public final BaseTypeChecker checker;
+    /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
+
+    /** The value() element/field of an @InvalidFormat annotation. */
+    protected final ExecutableElement invalidFormatValueElement;
 
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        invalidFormatValueElement =
+                TreeUtils.getMethod(
+                        InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        org.checkerframework.checker.formatter.qual.Format.class.getCanonicalName(),
+                        Format.class.getCanonicalName(),
                         "value",
                         0,
                         processingEnv);
@@ -152,64 +160,107 @@ public class FormatterTreeUtil {
         return new Result<>(asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
-    /** Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}. */
-    public boolean isFormatCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
+    /**
+     * Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}.
+     *
+     * @param node a method call
+     * @param atypeFactory a type factory
+     * @return true if {@code node} is a call to a method annotated with {@code @FormatMethod}
+     */
+    public boolean isFormatMethodCall(
+            MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, FormatMethod.class);
         return anno != null;
     }
 
     /**
-     * Returns true if the given ExpressionTree has type java.util.Locale.
+     * Creates a new FormatCall, or returns null.
      *
-     * @param e an expression
+     * @param invocationTree a method invocation, where the method is annotated @FormatMethod
      * @param atypeFactory the type factory
-     * @return true if the given ExpressionTree has type java.util.Locale
+     * @return a new FormatCall, or null if the invocation is of a method that is improperly
+     *     annotated @FormatMethod
      */
-    public static boolean isLocale(ExpressionTree e, AnnotatedTypeFactory atypeFactory) {
-        return (TypesUtils.getClassFromType(atypeFactory.getAnnotatedType(e).getUnderlyingType())
-                == Locale.class);
+    public @Nullable FormatCall create(
+            MethodInvocationTree invocationTree, AnnotatedTypeFactory atypeFactory) {
+        FormatterTreeUtil ftu = ((FormatterAnnotatedTypeFactory) atypeFactory).treeUtil;
+        if (!ftu.isFormatMethodCall(invocationTree, atypeFactory)) {
+            return null;
+        }
+
+        ExecutableElement methodElement = TreeUtils.elementFromUse(invocationTree);
+        int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
+        if (formatStringIndex == -1) {
+            // Reporting the error is redundant if the method was declared in source code, because
+            // the visitor will have reported it; but it is necessary if the method was declared in
+            // byte code.
+            atypeFactory
+                    .getChecker()
+                    .reportError(
+                            invocationTree, "format.method.invalid", methodElement.getSimpleName());
+            return null;
+        }
+        ExpressionTree formatStringTree = invocationTree.getArguments().get(formatStringIndex);
+        AnnotatedTypeMirror formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
+        List<? extends ExpressionTree> allArgs = invocationTree.getArguments();
+        List<? extends ExpressionTree> args =
+                allArgs.subList(formatStringIndex + 1, allArgs.size());
+
+        return new FormatCall(
+                invocationTree, formatStringTree, formatStringType, args, atypeFactory);
     }
 
     /** Represents a format method invocation in the syntax tree. */
     public class FormatCall {
-        private final AnnotatedTypeMirror formatAnno;
+        /** The call itself. */
+        final MethodInvocationTree invocationTree;
+        /** The format string argument. */
+        private final ExpressionTree formatStringTree;
+        /** The type of the format string argument. */
+        private final AnnotatedTypeMirror formatStringType;
+        /** The arguments that follow the format string argument. */
         private final List<? extends ExpressionTree> args;
-        final MethodInvocationTree node;
-        private final ExpressionTree formatArg;
+        /** The type factory. */
         private final AnnotatedTypeFactory atypeFactory;
 
-        public FormatCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
-            this.node = node;
-            // TODO figure out how to make passing of environment
-            // objects such as atypeFactory, processingEnv, ... nicer
+        /**
+         * Create a new FormatCall object.
+         *
+         * @param invocationTree the call itself
+         * @param formatStringTree the format string argument
+         * @param formatStringType the type of the format string argument
+         * @param args the arguments that follow the format string argument
+         * @param atypeFactory the type factory
+         */
+        private FormatCall(
+                MethodInvocationTree invocationTree,
+                ExpressionTree formatStringTree,
+                AnnotatedTypeMirror formatStringType,
+                List<? extends ExpressionTree> args,
+                AnnotatedTypeFactory atypeFactory) {
+            this.invocationTree = invocationTree;
+            this.formatStringTree = formatStringTree;
+            this.formatStringType = formatStringType;
+            this.args = args;
             this.atypeFactory = atypeFactory;
-            List<? extends ExpressionTree> theargs;
-
-            theargs = node.getArguments();
-            if (isLocale(theargs.get(0), atypeFactory)) {
-                // call with Locale as first argument
-                theargs = theargs.subList(1, theargs.size());
-            }
-
-            // TODO Check that the first parameter exists and is a string.
-            formatArg = theargs.get(0);
-            formatAnno = atypeFactory.getAnnotatedType(formatArg);
-            this.args = theargs.subList(1, theargs.size());
         }
 
         /**
-         * Returns null if the format-string argument's type is annotated as {@code @Format}.
-         * Returns an error description if not annotated as {@code @Format}.
+         * Returns an error description if the format-string argument's type is <em>not</em>
+         * annotated as {@code @Format}. Returns null if it is annotated.
+         *
+         * @return an error description if the format string is not annotated as {@code @Format}, or
+         *     null if it is
          */
-        public final Result<String> hasFormatAnnotation() {
-            if (!formatAnno.hasAnnotation(Format.class)) {
+        public final Result<String> errMissingFormatAnnotation() {
+            if (!formatStringType.hasAnnotation(Format.class)) {
                 String msg = "(is a @Format annotation missing?)";
-                AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
+                AnnotationMirror inv = formatStringType.getAnnotation(InvalidFormat.class);
                 if (inv != null) {
                     msg = invalidFormatAnnotationToErrorMessage(inv);
                 }
-                return new Result<>(msg, formatArg);
+                return new Result<>(msg, formatStringTree);
             }
             return null;
         }
@@ -276,7 +327,7 @@ public class FormatterTreeUtil {
                                 Void.TYPE);
             }
 
-            ExpressionTree loc = node.getMethodSelect();
+            ExpressionTree loc = invocationTree.getMethodSelect();
             if (type != InvocationType.VARARG && !args.isEmpty()) {
                 loc = args.get(0);
             }
@@ -286,10 +337,11 @@ public class FormatterTreeUtil {
         /**
          * Returns the conversion category for every parameter.
          *
+         * @return the conversion categories of all the parameters
          * @see ConversionCategory
          */
         public final ConversionCategory[] getFormatCategories() {
-            AnnotationMirror anno = formatAnno.getAnnotation(Format.class);
+            AnnotationMirror anno = formatStringType.getAnnotation(Format.class);
             return formatAnnotationToCategories(anno);
         }
 
@@ -407,11 +459,24 @@ public class FormatterTreeUtil {
     }
 
     /**
+     * Gets the value() element/field out of an InvalidFormat annotation.
+     *
+     * @param anno an InvalidFormat annotation
+     * @return its value() element/field
+     */
+    private String getInvalidFormatValue(AnnotationMirror anno) {
+        return (String) anno.getElementValues().get(invalidFormatValueElement).getValue();
+    }
+
+    /**
      * Takes a syntax tree element that represents a {@link InvalidFormat} annotation, and returns
      * its value.
+     *
+     * @param anno an InvalidFormat annotation
+     * @return its value() element/field
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
-        return "\"" + AnnotationUtils.getElementValue(anno, "value", String.class, true) + "\"";
+        return "\"" + getInvalidFormatValue(anno) + "\"";
     }
 
     /**
