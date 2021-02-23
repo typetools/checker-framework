@@ -366,7 +366,7 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(ThisExpr n, Void aVoid) {
             if (thisReference == null) {
                 throw new ParseRuntimeException(
-                        constructJavaExpressionParseError("this", "\"this\" cannot be used here."));
+                        constructJavaExpressionParseError("this", "this isn't allowed here."));
             }
             return thisReference;
         }
@@ -511,7 +511,7 @@ public class JavaExpressionParseUtil {
          *   <li>the simple name of a class in the unnamed package.
          * </ol>
          *
-         * @param type type to search for {@code identifier}
+         * @param type the type in which to search for {@code identifier}
          * @param identifier possible class name
          * @return the {@code ClassName} for {@code identifier} or null if it is not a class name
          */
@@ -578,7 +578,7 @@ public class JavaExpressionParseUtil {
          * to using that field at the given {@code context}. If {@code identifier} is not a field
          * name, this method returns null.
          *
-         * @param receiverExpr the receiver of the field; the expression used to access the field.
+         * @param receiverExpr the receiver of the field; the expression used to access the field
          * @param identifier possibly a field name
          * @return a field access, or null if {@code identifier} is not a field
          */
@@ -1014,7 +1014,7 @@ public class JavaExpressionParseUtil {
          * Returns a JavaExpression for the given field.
          *
          * @param fieldElem the field
-         * @param receiverExpr the receiver of the field; the expression used to access the field.
+         * @param receiverExpr the receiver of the field; the expression used to access the field
          * @param isOriginalReceiver whether the receiver is the original one
          * @return a JavaExpression for the given name
          */
