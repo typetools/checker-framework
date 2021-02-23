@@ -192,6 +192,9 @@ public class FormatterTreeUtil {
         ExecutableElement methodElement = TreeUtils.elementFromUse(invocationTree);
         int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
         if (formatStringIndex == -1) {
+            // Reporting the error is redundant if the method was declared in source code, because
+            // the visitor will have reported it; but it is necessary if the method was declared in
+            // byte code.
             atypeFactory
                     .getChecker()
                     .reportError(
