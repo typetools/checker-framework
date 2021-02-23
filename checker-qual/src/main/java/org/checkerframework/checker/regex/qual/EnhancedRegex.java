@@ -13,8 +13,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * some (possibly empty) part of a matching String provided that the regular expression itself
  * matched the String (i.e. group 0 has matched).
  *
- * <p>For example the regular expression {@code "(abc)?(cde)"} will be annotated with {@code
- * EnhancedRegex({0, 2, 2})}
+ * <p>For example, the regular expression {@code "(abc)?(cde)"} has type {@code @EnhancedRegex({0,
+ * 2, 2})}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
