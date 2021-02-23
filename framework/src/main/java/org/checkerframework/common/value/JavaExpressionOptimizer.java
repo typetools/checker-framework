@@ -15,14 +15,12 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
  * ValueAnnotatedTypeFactory}, this implementation replaces any expression that the factory has an
  * exact value for, and does a small (not exhaustive) amount of constant-folding as well. If the
  * factory is some other factory, less optimization occurs.
- *
- * <p>If the supplied factory is {@code ValueAnnotatedTypeFactory}, the its annotations are used
  */
 public class JavaExpressionOptimizer extends JavaExpressionConverter {
 
     /**
-     * Annotate type factory. If it is a {@code ValueAnnotatedTypeFactory}, then the more
-     * optimizations are possible.
+     * Annotated type factory. If it is a {@code ValueAnnotatedTypeFactory}, then more optimizations
+     * are possible.
      */
     private final AnnotatedTypeFactory factory;
 
@@ -37,17 +35,15 @@ public class JavaExpressionOptimizer extends JavaExpressionConverter {
 
     @Override
     protected JavaExpression visitLocalVariable(LocalVariable localVarExpr, Void unused) {
-        if (!(factory instanceof ValueAnnotatedTypeFactory)) {
-            return super.visitLocalVariable(localVarExpr, unused);
+        if (factory instanceof ValueAnnotatedTypeFactory) {
+            Element element = localVarExpr.getElement();
+            Long exactValue =
+                    ValueCheckerUtils.getExactValue(element, (ValueAnnotatedTypeFactory) factory);
+            if (exactValue != null) {
+                return new ValueLiteral(localVarExpr.getType(), exactValue.intValue());
+            }
         }
-        Element element = localVarExpr.getElement();
-        Long exactValue =
-                ValueCheckerUtils.getExactValue(element, (ValueAnnotatedTypeFactory) factory);
-        if (exactValue != null) {
-            return new ValueLiteral(localVarExpr.getType(), exactValue.intValue());
-        } else {
-            return localVarExpr;
-        }
+        return super.visitLocalVariable(localVarExpr, unused);
     }
 
     @Override
