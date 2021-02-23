@@ -19,6 +19,11 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
  * <p>If the supplied factory is {@code ValueAnnotatedTypeFactory}, the its annotations are used
  */
 public class JavaExpressionOptimizer extends JavaExpressionConverter {
+
+    /**
+     * Annotate type factory. If it is a {@code ValueAnnotatedTypeFactory}, then the more
+     * optimizations are possible.
+     */
     private final AnnotatedTypeFactory factory;
 
     /**
