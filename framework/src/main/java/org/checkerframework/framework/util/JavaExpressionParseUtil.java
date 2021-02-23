@@ -1287,15 +1287,30 @@ public class JavaExpressionParseUtil {
      */
     public static class JavaExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
+        /** The error message key. */
         private @CompilerMessageKey String errorKey;
+        /** The arguments to the error message key. */
         public final Object[] args;
 
+        /**
+         * Create a new JavaExpressionParseException.
+         *
+         * @param errorKey the error message key
+         * @param args the arguments to the error message key
+         */
         public JavaExpressionParseException(@CompilerMessageKey String errorKey, Object... args) {
             this(null, errorKey, args);
         }
 
+        /**
+         * Create a new JavaExpressionParseException.
+         *
+         * @param cause cause
+         * @param errorKey the error message key
+         * @param args the arguments to the error message key
+         */
         public JavaExpressionParseException(
-                Throwable cause, @CompilerMessageKey String errorKey, Object... args) {
+                @Nullable Throwable cause, @CompilerMessageKey String errorKey, Object... args) {
             super(cause);
             this.errorKey = errorKey;
             this.args = args;

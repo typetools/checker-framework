@@ -3,6 +3,8 @@ package org.checkerframework.framework.util.dependenttypes;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
@@ -36,7 +38,8 @@ public class DependentTypesError {
     }
 
     /** How to format warnings about use of formal parameter name. */
-    public static final String FORMAL_PARAM_NAME_STRING = "Use \"#%d\" rather than \"%s\"";
+    public static final @Format({ConversionCategory.INT, ConversionCategory.GENERAL}) String
+            FORMAL_PARAM_NAME_STRING = "Use \"#%d\" rather than \"%s\"";
     /** Matches warnings about use of formal parameter name. */
     private static final Pattern FORMAL_PARAM_NAME_PATTERN =
             Pattern.compile(

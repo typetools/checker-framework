@@ -709,6 +709,8 @@ subprojects {
 
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
+        createCheckTypeTask(project.name, 'Formatter',
+            'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
             'org.checkerframework.checker.interning.InterningChecker',
             ['-Astubs=javax-lang-model-element-name.astub'])
@@ -868,10 +870,11 @@ subprojects {
         }
 
         // Create a typecheck task per project (dogfooding the Checker Framework on itself).
-        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
+        // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
         tasks.create(name: 'typecheck', group: 'Verification') {
             description 'Run the Checker Framework on itself'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
             } else {

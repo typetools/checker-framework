@@ -59,6 +59,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -1043,6 +1044,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
+    // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+    // property key that maps to a format string for `args`.
+    // @FormatMethod
+    @SuppressWarnings("formatter:format.string.invalid") // arg is a format string or a property key
     private void report(
             Object source,
             javax.tools.Diagnostic.Kind kind,
@@ -1117,13 +1122,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param args optional arguments to substitute in the message
      * @see SourceChecker#report(Object, DiagMessage)
      */
+    @FormatMethod
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
-        String ftdmsg = String.format(msg, args);
+        message(kind, String.format(msg, args));
+    }
+
+    /**
+     * Print a non-localized message using the javac messager. This is preferable to using
+     * System.out or System.err, but should only be used for exceptional cases that don't happen in
+     * correct usage. Localized messages should be raised using {@link #reportError}, {@link
+     * #reportWarning}, etc.
+     *
+     * @param kind the kind of message to print
+     * @param msg the message text
+     * @see SourceChecker#report(Object, DiagMessage)
+     */
+    public void message(javax.tools.Diagnostic.Kind kind, String msg) {
         if (messager == null) {
             // If this method is called before initChecker() sets the field
             messager = processingEnv.getMessager();
         }
-        messager.printMessage(kind, ftdmsg);
+        messager.printMessage(kind, msg);
     }
 
     /**
