@@ -117,4 +117,9 @@ public class FieldAccess extends JavaExpression {
     public boolean isUnmodifiableByOtherCode() {
         return isUnassignableByOtherCode() && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitFieldAccess(this, p);
+    }
 }

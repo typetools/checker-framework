@@ -60,4 +60,9 @@ public class ThisReference extends JavaExpression {
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // 'this' is not modifiable
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitThisReference(this, p);
+    }
 }

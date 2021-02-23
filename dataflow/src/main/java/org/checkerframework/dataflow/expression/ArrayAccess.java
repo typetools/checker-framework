@@ -113,4 +113,9 @@ public class ArrayAccess extends JavaExpression {
         result.append("]");
         return result.toString();
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitArrayAccess(this, p);
+    }
 }

@@ -137,4 +137,9 @@ public class UnaryOperation extends JavaExpression {
                 throw new Error("Unrecognized unary operation kind " + operationKind);
         }
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitUnaryOperation(this, p);
+    }
 }

@@ -104,4 +104,9 @@ public class Unknown extends JavaExpression {
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return true;
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitUnknown(this, p);
+    }
 }
