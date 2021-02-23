@@ -2,6 +2,11 @@ Version 3.??.??, March 1, 2021
 
 **User-visible changes:**
 
+In a stub file for a class C, you may write a declaration for a method that is
+inherited by C but not defined by it.  Previously, such stub declarations were
+ignored.  For more information, see the manual's documentation of "fake
+overrides".
+
 Nullness Checker error message key changes:
  * `known.nonnull` => `nulltest.redundant`
  * `initialization.static.fields.uninitialized` => `initialization.static.field.uninitialized`,
@@ -15,6 +20,10 @@ Signature Checker supports two new type qualifiers:
  * `@CanonicalNameOrPrimitiveType`
 
 **Implementation details:**
+
+You can make a variable's default type depend on its name, or a method
+return type default depend on the method's name.  To support this feature,
+`@DefaultFor` has new elements `names` and `namesExceptions`.
 
 Changes to protected fields in `OverrideChecker`:
  * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
