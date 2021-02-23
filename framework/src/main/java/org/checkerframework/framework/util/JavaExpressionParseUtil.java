@@ -124,69 +124,34 @@ public class JavaExpressionParseUtil {
         return parse(expression, context, null);
     }
     /**
-     * Parse a string with respect to {@code localPath} and viewpoint-adapt it to the given {@code
-     * context}. Return its representation as a {@link JavaExpression}, or throw a {@link
+     * Parse a string with respect to {@code localVarPath} and viewpoint-adapt it to the given
+     * {@code context}. Return its representation as a {@link JavaExpression}, or throw a {@link
      * JavaExpressionParseException}.
      *
-     * <p>If {@code localPath} is non-null, then identifiers are parsed as if the expression was
-     * written at the location of {@code localPath}. This means identifiers will be parsed to local
-     * variables in scope at {@code localPath} when possible. If {@code localPath} is null, then no
-     * identifier can be parsed to a local variable. In either case, the parameter syntax, e.g. #1,
-     * is always parsed to the arguments in {@code context}. This is because a parameter of a lambda
-     * can refer both to local variables in scope at its declaration and to a parameter of the
-     * lambda.
+     * <p>If {@code localVarPath} is non-null, then identifiers are parsed as if the expression was
+     * written at the location of {@code localVarPath}. This means identifiers will be parsed to
+     * local variables in scope at {@code localVarPath} when possible. If {@code localVarPath} is
+     * null, then no identifier can be parsed to a local variable. In either case, the parameter
+     * syntax, e.g. #1, is always parsed to the arguments in {@code context}. This is because a
+     * parameter of a lambda can refer both to local variables in scope at its declaration and to a
+     * parameter of the lambda.
      *
      * @param expression a Java expression to parse
      * @param context information about any receiver and arguments; also has a reference to the
      *     checker
-     * @param localPath if non-null, the expression is parsed as if it were written at this location
+     * @param localVarPath if non-null, the expression is parsed as if it were written at this
+     *     location
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
     public static JavaExpression parse(
-            String expression, JavaExpressionContext context, @Nullable TreePath localPath)
+            String expression, JavaExpressionContext context, @Nullable TreePath localVarPath)
             throws JavaExpressionParseException {
         // The underlying javac API used to convert from Strings to Elements requires a tree path
         // even when the information could be deduced from elements alone.  So use the path to the
         // current CompilationUnit.
         TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
-        Expression expr;
-        try {
-            expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
-        } catch (ParseProblemException e) {
-            throw constructJavaExpressionParseError(expression, "is an invalid expression");
-        }
-
-        JavaExpression result;
-        try {
-            ProcessingEnvironment env = context.checker.getProcessingEnvironment();
-            result = parseImpl(context, localPath, pathToCompilationUnit, expr, env);
-        } catch (ParseRuntimeException e) {
-            // Convert unchecked to checked exception. Visitor methods can't throw checked
-            // exceptions. They override the methods in the superclass, and a checked exception
-            // would change the method signature.
-            throw e.getCheckedException();
-        }
-        if (result instanceof ClassName
-                && !expression.endsWith(".class")
-                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
-                // exception in that case.
-                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
-            throw constructJavaExpressionParseError(
-                    expression,
-                    String.format(
-                            "a class name cannot terminate a Java expression string, where result=%s [%s]",
-                            result, result.getClass()));
-        }
-        return result;
-    }
-
-    private static JavaExpression parseImpl(
-            JavaExpressionContext context,
-            @Nullable TreePath localPath,
-            TreePath pathToCompilationUnit,
-            Expression expr,
-            ProcessingEnvironment env) {
+        ProcessingEnvironment env = context.checker.getProcessingEnvironment();
         Map<JavaExpression, JavaExpression> mapping = new HashMap<>();
         TypeMirror enclosingType = context.receiver.getType();
         ThisReference thisReference;
@@ -214,17 +179,71 @@ public class JavaExpressionParseUtil {
         }
 
         JavaExpression javaExpr =
-                expr.accept(
-                        new ExpressionToJavaExpressionVisitor(
-                                enclosingType,
-                                thisReference,
-                                parameters,
-                                localPath,
-                                pathToCompilationUnit,
-                                env),
-                        null);
+                parse(
+                        expression,
+                        enclosingType,
+                        thisReference,
+                        parameters,
+                        localVarPath,
+                        pathToCompilationUnit,
+                        env);
         JavaExpressionVPA vpa = new JavaExpressionVPA(mapping);
-        return vpa.convert(javaExpr);
+        JavaExpression result = vpa.convert(javaExpr);
+
+        if (result instanceof ClassName
+                && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
+                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
+            throw constructJavaExpressionParseError(
+                    expression,
+                    String.format(
+                            "a class name cannot terminate a Java expression string, where result=%s [%s]",
+                            result, result.getClass()));
+        }
+        return result;
+    }
+    /**
+     * Parses {@code expression} to a {@link JavaExpression}.
+     *
+     * @param expression the string expression to parse
+     * @param enclosingType type of the class that encloses the JavaExpression
+     * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
+     *     appear in the expression
+     * @param parameters list of JavaExpressions to which to parse parameters or null if parameters
+     *     should not appear in the expression
+     * @param localVarPath if non-null, the expression is parsed as if it were written at this
+     *     location
+     * @param pathToCompilationUnit required to use the underlying Javac API
+     * @param env the processing environment
+     * @return {@code expression} as a {@code JavaExpression}
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(
+            String expression,
+            TypeMirror enclosingType,
+            @Nullable ThisReference thisReference,
+            @Nullable List<FormalParameter> parameters,
+            @Nullable TreePath localVarPath,
+            TreePath pathToCompilationUnit,
+            ProcessingEnvironment env)
+            throws JavaExpressionParseException {
+
+        Expression expr;
+        try {
+            expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
+        } catch (ParseProblemException e) {
+            throw constructJavaExpressionParseError(expression, "is an invalid expression");
+        }
+
+        return ExpressionToJavaExpressionVisitor.convert(
+                expr,
+                enclosingType,
+                thisReference,
+                parameters,
+                localVarPath,
+                pathToCompilationUnit,
+                env);
     }
 
     /**
@@ -312,6 +331,50 @@ public class JavaExpressionParseUtil {
             this.enclosingType = enclosingType;
             this.thisReference = thisReference;
             this.parameters = parameters;
+        }
+
+        /**
+         * Converts a JavaParser {@link Expression} to a {@link JavaExpression}.
+         *
+         * @param expr the JavaParser {@link Expression} to convert
+         * @param enclosingType type of the class that encloses the JavaExpression
+         * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
+         *     appear in the expression
+         * @param parameters list of JavaExpressions to which to parse parameters or null if
+         *     parameters should not appear in the expression
+         * @param localVarPath if non-null, the expression is parsed as if it were written at this
+         *     location
+         * @param pathToCompilationUnit required to use the underlying Javac API
+         * @param env the processing environment
+         * @return {@code expr} as a {@code JavaExpression}
+         * @throws JavaExpressionParseException if {@code expr} cannot be converted to a {@code
+         *     JavaExpression}
+         */
+        public static JavaExpression convert(
+                Expression expr,
+                TypeMirror enclosingType,
+                @Nullable ThisReference thisReference,
+                @Nullable List<FormalParameter> parameters,
+                @Nullable TreePath localVarPath,
+                TreePath pathToCompilationUnit,
+                ProcessingEnvironment env)
+                throws JavaExpressionParseException {
+            try {
+                return expr.accept(
+                        new ExpressionToJavaExpressionVisitor(
+                                enclosingType,
+                                thisReference,
+                                parameters,
+                                localVarPath,
+                                pathToCompilationUnit,
+                                env),
+                        null);
+            } catch (ParseRuntimeException e) {
+                // Convert unchecked to checked exception. Visitor methods can't throw checked
+                // exceptions. They override the methods in the superclass, and a checked exception
+                // would change the method signature.
+                throw e.getCheckedException();
+            }
         }
 
         /** Sets the {@code resolver} field if necessary. */
