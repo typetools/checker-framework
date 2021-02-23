@@ -20,7 +20,7 @@ public final class Issue2494 {
     };
 
     static void binomialA(
-            @NonNegative @LTLengthOf("this.factorials") int n,
+            @NonNegative @LTLengthOf("Issue2494.factorials") int n,
             @NonNegative @LessThan("#1 + 1") int k) {
         @IndexFor("factorials") int j = k;
     }
