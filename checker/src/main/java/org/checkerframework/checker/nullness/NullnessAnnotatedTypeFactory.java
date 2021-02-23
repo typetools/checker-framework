@@ -43,6 +43,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -837,7 +838,8 @@ public class NullnessAnnotatedTypeFactory
      */
     private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
-        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        String expression = JavaExpression.fromVariableElement(fieldElement).toString();
+        builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
         List<AnnotationMirror> result = new ArrayList<>(1);
         result.add(am);
