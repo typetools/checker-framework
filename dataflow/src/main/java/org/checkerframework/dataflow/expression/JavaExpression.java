@@ -653,10 +653,11 @@ public abstract class JavaExpression {
     /**
      * Accept method of the visitor pattern.
      *
-     * @param <R> result type of the operation
-     * @param <P> parameter type
      * @param visitor the visitor to be applied to this JavaExpression
      * @param p the parameter for this operation
+     * @param <R> result type of the operation
+     * @param <P> parameter type
+     * @return the result of visiting this
      */
     public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
 }

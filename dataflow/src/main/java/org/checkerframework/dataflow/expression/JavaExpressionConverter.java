@@ -28,11 +28,10 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
     }
 
     /**
-     * Converts all the expressions in {@code list} and returns the resulting {@code
-     * JavaExpression}s.
+     * Converts all the expressions in {@code list} and returns the resulting list.
      *
      * @param list the list of expressions to convert
-     * @return the converted expressions
+     * @return the list of converted expressions
      */
     public List<@PolyNull JavaExpression> convert(List<@PolyNull JavaExpression> list) {
         List<@PolyNull JavaExpression> newList = new ArrayList<>();
