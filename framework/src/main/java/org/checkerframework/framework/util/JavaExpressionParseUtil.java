@@ -273,6 +273,7 @@ public class JavaExpressionParseUtil {
         if (parametersToArgs == null || parametersToArgs.isEmpty()) {
             return javaExpr;
         }
+        // TODO: Should this happen at calls to parse rather than in this method?
         JavaExpressionVPA vpa = new JavaExpressionVPA(parametersToArgs);
         return vpa.convert(javaExpr);
     }
