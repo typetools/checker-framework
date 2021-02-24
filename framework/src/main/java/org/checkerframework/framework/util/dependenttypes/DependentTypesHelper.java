@@ -93,11 +93,7 @@ public class DependentTypesHelper {
      */
     private final ExpressionErrorChecker expressionErrorChecker;
 
-    /**
-     * A scanner that standardizes Java expression strings in dependent type annotations. Call
-     * {@code StandardizeTypeAnnotator#init(JavaExpressionContext, TreePath, boolean, boolean)}
-     * before each use.
-     */
+    /** A scanner that standardizes Java expression strings in dependent type annotations. */
     private final StandardizeTypeAnnotator standardizeTypeAnnotator;
 
     /**
@@ -680,8 +676,11 @@ public class DependentTypesHelper {
             TreePath localVarPath,
             AnnotatedTypeMirror type,
             boolean removeErroneousExpressions) {
-        this.standardizeTypeAnnotator.init(context, localVarPath, removeErroneousExpressions);
-        this.standardizeTypeAnnotator.visit(type);
+        TransformAnnotation func =
+                (anno) ->
+                        standardizeAnnotationIfDependentType(
+                                context, localVarPath, anno, removeErroneousExpressions);
+        this.standardizeTypeAnnotator.visit(type, func);
     }
 
     /**
@@ -763,48 +762,12 @@ public class DependentTypesHelper {
     }
 
     /** A scanner that standardizes Java expression strings in dependent type annotations. */
-    private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
-        /** The context. */
-        private JavaExpressionContext context;
-        /** If non-null, the expression is parsed as if it were written at this location. */
-        private @Nullable TreePath localVarPath;
-
-        /**
-         * If true, remove erroneous expressions. If false, replace them by an explanation of why
-         * they are illegal.
-         */
-        private boolean removeErroneousExpressions;
-
-        /**
-         * Constructs a {@code StandardizeTypeAnnotator} with all fields set to null. Call {@code
-         * #init(JavaExpressionContext, TreePath, boolean, boolean)} before scanning.
-         */
-        private StandardizeTypeAnnotator() {
-            this.context = null;
-            this.localVarPath = null;
-            this.removeErroneousExpressions = false;
-        }
-
-        /**
-         * Initialize the scanner to standardize with respect to the given context.
-         *
-         * @param context JavaExpressionContext
-         * @param localVarPath if non-null, the expression is parsed as if it were written at this
-         *     location
-         * @param removeErroneousExpressions removeErroneousExpressions if true, remove erroneous
-         *     expressions rather than converting them into an explanation of why they are illegal
-         */
-        private void init(
-                JavaExpressionContext context,
-                @Nullable TreePath localVarPath,
-                boolean removeErroneousExpressions) {
-            this.context = context;
-            this.localVarPath = localVarPath;
-            this.removeErroneousExpressions = removeErroneousExpressions;
-        }
+    private static class StandardizeTypeAnnotator
+            extends AnnotatedTypeScanner<Void, TransformAnnotation> {
 
         @Override
-        public Void visitTypeVariable(AnnotatedTypeMirror.AnnotatedTypeVariable type, Void aVoid) {
+        public Void visitTypeVariable(
+                AnnotatedTypeMirror.AnnotatedTypeVariable type, TransformAnnotation func) {
             if (visitedNodes.containsKey(type)) {
                 return visitedNodes.get(type);
             }
@@ -816,24 +779,22 @@ public class DependentTypesHelper {
             // the upper and lower bound before they are recursively visited.  Then add them back.
             Set<AnnotationMirror> primarys = type.getAnnotations();
             type.getLowerBound().removeAnnotations(primarys);
-            Void r = scan(type.getLowerBound(), aVoid);
+            Void r = scan(type.getLowerBound(), func);
             type.getLowerBound().addAnnotations(primarys);
             visitedNodes.put(type, r);
 
             type.getUpperBound().removeAnnotations(primarys);
-            r = scanAndReduce(type.getUpperBound(), aVoid, r);
+            r = scanAndReduce(type.getUpperBound(), func, r);
             type.getUpperBound().addAnnotations(primarys);
             visitedNodes.put(type, r);
             return r;
         }
 
         @Override
-        protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
+        protected Void scan(AnnotatedTypeMirror type, TransformAnnotation func) {
             for (AnnotationMirror anno :
                     AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
-                AnnotationMirror newAnno =
-                        standardizeAnnotationIfDependentType(
-                                context, localVarPath, anno, removeErroneousExpressions);
+                AnnotationMirror newAnno = func.transform(anno);
                 if (newAnno != null) {
                     // Standardized annotations are written into bytecode along with explicitly
                     // written nonstandard annotations. (This is a bug.)
@@ -845,8 +806,12 @@ public class DependentTypesHelper {
                     type.addAnnotation(newAnno);
                 }
             }
-            return super.scan(type, aVoid);
+            return super.scan(type, func);
         }
+    }
+
+    interface TransformAnnotation {
+        AnnotationMirror transform(AnnotationMirror anno);
     }
 
     /**
