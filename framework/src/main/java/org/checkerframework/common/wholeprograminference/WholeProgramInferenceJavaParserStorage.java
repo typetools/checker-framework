@@ -562,10 +562,10 @@ public class WholeProgramInferenceJavaParserStorage
             prepareCompilationUnitForWriting(root);
             root.transferAnnotations();
             String packageDir = AJAVA_FILES_PATH;
-            if (root.declaration.getPackageDeclaration().isPresent()) {
+            if (root.compilationUnit.getPackageDeclaration().isPresent()) {
                 packageDir +=
                         File.separator
-                                + root.declaration
+                                + root.compilationUnit
                                         .getPackageDeclaration()
                                         .get()
                                         .getNameAsString()
@@ -595,7 +595,7 @@ public class WholeProgramInferenceJavaParserStorage
                 // LexicalPreservingPrinter.print(root.declaration, writer);
 
                 PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
-                writer.write(prettyPrinter.print(root.declaration));
+                writer.write(prettyPrinter.print(root.compilationUnit));
                 writer.close();
             } catch (IOException e) {
                 throw new BugInCF("Error while writing ajava file " + outputPath, e);
@@ -644,7 +644,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
      * which is the JavaParser node representing the same type. Does nothing if {@code
-     * annotatedType} is null.
+     * annotatedType} is null (this may occur if there's no inferred annotations for the type).
      *
      * @param annotatedType type to transfer annotations from
      * @param target the JavaParser type to transfer annotation to; must represent the same type as
@@ -669,17 +669,17 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private static class CompilationUnitAnnos {
         /** Compilation unit being wrapped. */
-        public CompilationUnit declaration;
+        public CompilationUnit compilationUnit;
         /** Wrappers for classes and interfaces in {@code declaration} */
         public List<ClassOrInterfaceAnnos> types;
 
         /**
          * Constructs a wrapper around the given compilation unit.
          *
-         * @param declaration compilation unit to wrap
+         * @param compilationUnit compilation unit to wrap
          */
-        public CompilationUnitAnnos(CompilationUnit declaration) {
-            this.declaration = declaration;
+        public CompilationUnitAnnos(CompilationUnit compilationUnit) {
+            this.compilationUnit = compilationUnit;
             types = new ArrayList<>();
         }
 
@@ -688,7 +688,7 @@ public class WholeProgramInferenceJavaParserStorage
          * unit to their corresponding JavaParser locations.
          */
         public void transferAnnotations() {
-            JavaParserUtils.clearAnnotations(declaration);
+            JavaParserUtils.clearAnnotations(compilationUnit);
             for (ClassOrInterfaceAnnos typeAnnos : types) {
                 typeAnnos.transferAnnotations();
             }
@@ -701,7 +701,7 @@ public class WholeProgramInferenceJavaParserStorage
          * @return the type declaration named {@code name} in the wrapped compilation unit
          */
         public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
-            return JavaParserUtils.getTypeDeclarationByName(declaration, name);
+            return JavaParserUtils.getTypeDeclarationByName(compilationUnit, name);
         }
     }
 
