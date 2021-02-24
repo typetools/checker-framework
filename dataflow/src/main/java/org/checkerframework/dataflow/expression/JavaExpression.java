@@ -679,4 +679,15 @@ public abstract class JavaExpression {
         JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
+
+    public final JavaExpression viewpointAdapt(MethodInvocationNode invocationNode) {
+        List<JavaExpression> argumentsJe = new ArrayList<>();
+        for (Node argTree : invocationNode.getArguments()) {
+            argumentsJe.add(JavaExpression.fromNode(argTree));
+        }
+
+        Node receiver = invocationNode.getTarget().getReceiver();
+        JavaExpression receiverJe = JavaExpression.fromNode(receiver);
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+    }
 }

@@ -577,17 +577,20 @@ public abstract class CFAbstractTransfer<
             }
 
             annotation = viewpointAdaptAnnoFromContract(annotation, methodUseContext);
-
+            JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed at the declaration (i.e. here) and
                 // for every use. this could be optimized to store the result the first time. (same
                 // for other annotations)
-                JavaExpression exprJe =
-                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
-                initialStore.insertValuePermitNondeterministic(exprJe, annotation);
+                exprJe =
+                        JavaExpressionParseUtil.parse(
+                                expressionString, methodElement, analysis.checker);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
+                continue;
             }
+            exprJe = exprJe.viewpointAdapt(methodDeclTree);
+            initialStore.insertValuePermitNondeterministic(exprJe, annotation);
         }
     }
 
@@ -1216,7 +1219,11 @@ public abstract class CFAbstractTransfer<
 
             try {
                 JavaExpression je =
-                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
+                        JavaExpressionParseUtil.parse(
+                                expressionString,
+                                invocationNode.getTarget().getMethod(),
+                                analysis.checker);
+                je = je.viewpointAdapt(invocationNode);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call

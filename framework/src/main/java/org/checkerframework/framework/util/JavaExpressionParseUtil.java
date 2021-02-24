@@ -223,6 +223,7 @@ public class JavaExpressionParseUtil {
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
+    @Deprecated
     public static JavaExpression parse(String expression, JavaExpressionContext context)
             throws JavaExpressionParseException {
         return parse(expression, context, null);
