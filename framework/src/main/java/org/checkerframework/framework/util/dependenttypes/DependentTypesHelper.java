@@ -49,6 +49,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -699,6 +700,18 @@ public class DependentTypesHelper {
                 error);
     }
 
+    protected ErrorExpression createError(String expression, JavaExpressionParseException e) {
+        return new ErrorExpression(
+                TypesUtils.typeFromClass(Object.class, factory.types, factory.getElementUtils()),
+                new DependentTypesError(expression, e).toString());
+    }
+
+    protected ErrorExpression createError(String expression, String error) {
+        return new ErrorExpression(
+                TypesUtils.typeFromClass(Object.class, factory.types, factory.getElementUtils()),
+                new DependentTypesError(expression, error).toString());
+    }
+
     protected JavaExpression parseString(
             String expression, JavaExpressionContext context, @Nullable TreePath localVarPath) {
         if (DependentTypesError.isExpressionError(expression)) {
@@ -707,12 +720,11 @@ public class DependentTypesHelper {
         JavaExpression result;
         try {
             result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
-        } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-            return createError(new DependentTypesError(expression, e).toString());
+        } catch (JavaExpressionParseException e) {
+            return createError(expression, e);
         }
         if (result == null) {
-            return createError(
-                    new DependentTypesError(expression, /*error message=*/ " ").toString());
+            return createError(expression, /*error message=*/ " ");
         }
 
         return result;

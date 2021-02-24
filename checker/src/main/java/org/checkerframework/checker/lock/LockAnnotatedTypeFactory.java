@@ -39,6 +39,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -52,7 +53,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
@@ -176,34 +176,18 @@ public class LockAnnotatedTypeFactory
             @Override
             protected JavaExpression parseString(
                     String expression, JavaExpressionContext context, TreePath localVarPath) {
-                if (DependentTypesError.isExpressionError(expression)) {
-                    return createError(expression);
-                }
-
-                // Adds logic to parse <self> expression, which only the Lock Checker uses.
                 if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
+                    // There is no expression to use to replace <self> here, so just pass the
+                    // expression along.
                     return createError(expression);
                 }
-
-                try {
-                    JavaExpression result =
-                            JavaExpressionParseUtil.parse(expression, context, localVarPath);
-                    if (result == null) {
-                        return createError(
-                                new DependentTypesError(expression, /*error message=*/ " ")
-                                        .toString());
-                    }
-                    if (!isExpressionEffectivelyFinal(result)) {
-                        // If the expression isn't effectively final, then return the
-                        // NOT_EFFECTIVELY_FINAL error string.
-                        return createError(
-                                new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
-                                        .toString());
-                    }
+                JavaExpression result = super.parseString(expression, context, localVarPath);
+                if (isExpressionEffectivelyFinal(result) || result instanceof Unknown) {
                     return result;
-                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                    return createError(new DependentTypesError(expression, e).toString());
                 }
+                // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL
+                // error string.
+                return createError(expression, NOT_EFFECTIVELY_FINAL);
             }
         };
     }
