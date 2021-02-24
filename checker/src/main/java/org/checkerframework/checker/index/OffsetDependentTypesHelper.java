@@ -3,13 +3,10 @@ package org.checkerframework.checker.index;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -30,16 +27,9 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             final String expression,
             JavaExpressionContext context,
             @Nullable TreePath localVarPath) {
-
         JavaExpression result = super.parseString(expression, context, localVarPath);
 
-        // TODO: Maybe move this into the superclass parseString, then remove this class.
-        ValueAnnotatedTypeFactory vatf =
-                ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
-                        .getTypeFactoryOfSubchecker(ValueChecker.class);
-        result = ValueCheckerUtils.optimize(result, vatf != null ? vatf : factory);
-
-        return result;
+        return ValueCheckerUtils.optimize(result, factory);
     }
 
     @Override

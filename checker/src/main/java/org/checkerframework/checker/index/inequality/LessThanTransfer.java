@@ -161,19 +161,19 @@ public class LessThanTransfer extends IndexAbstractTransfer {
      * @return the string representation of {@code expr + 1}
      */
     private String incrementedExpression(JavaExpression expr) {
-        String exprString = expr.toString();
+        expr = ValueCheckerUtils.optimize(expr, analysis.getTypeFactory());
         if (expr instanceof ValueLiteral) {
-            try {
-                long literal = Long.parseLong(exprString);
-                // It's a literal.
-                return Long.toString(literal + 1);
-            } catch (NumberFormatException e) {
-                // It's not an integral literal.
+            ValueLiteral literal = (ValueLiteral) expr;
+            if (literal.getValue() instanceof Number) {
+                long longLiteral = ((Number) literal.getValue()).longValue();
+                if (longLiteral != Long.MAX_VALUE) {
+                    return (longLiteral + 1) + "L";
+                }
             }
         }
 
         // Could do more optimization to merge with a literal at end of `exprString`.  Is that
         // needed?
-        return exprString + " + 1";
+        return expr + " + 1";
     }
 }
