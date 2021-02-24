@@ -35,7 +35,6 @@ import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
-import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -716,15 +715,6 @@ public class DependentTypesHelper {
                     new DependentTypesError(expression, /*error message=*/ " ").toString());
         }
 
-        // Replace references to compile-time constant fields by the constant itself.  (This is only
-        // desirable if the name doesn't matter.  The name matters for @KeyFor and @GuardedBy, but
-        // they are not relevant to primitives.)
-        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
-            Object constant = ((FieldAccess) result).getField().getConstantValue();
-            if (constant != null && !(constant instanceof String)) {
-                return new ValueLiteral(result.getType(), constant);
-            }
-        }
         return result;
     }
 
