@@ -2,6 +2,7 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
@@ -31,14 +32,13 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     protected String standardizeString(
             final String expression,
             JavaExpressionContext context,
-            TreePath localScope,
-            boolean useLocalScope) {
+            @Nullable TreePath localVarPath) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
         JavaExpression result;
         try {
-            result = JavaExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
+            result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
@@ -55,9 +55,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         ValueAnnotatedTypeFactory vatf =
                 ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
                         .getTypeFactoryOfSubchecker(ValueChecker.class);
-        if (vatf != null) {
-            result = ValueCheckerUtils.optimize(result, vatf);
-        }
+        result = ValueCheckerUtils.optimize(result, vatf != null ? vatf : factory);
 
         return result.toString();
     }

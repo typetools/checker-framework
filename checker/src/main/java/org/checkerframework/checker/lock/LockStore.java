@@ -226,17 +226,17 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    public void insertValue(JavaExpression je, @Nullable CFValue value) {
-        if (value == null) {
-            // No need to insert a null abstract value because it represents
-            // top and top is also the default value.
+    public void insertValue(
+            JavaExpression je, @Nullable CFValue value, boolean permitNondeterministic) {
+        if (!shouldInsert(je, value, permitNondeterministic)) {
             return;
         }
+
         // Even with concurrent semantics enabled, a @LockHeld value must always be
         // stored for fields and @Pure method calls. This is sound because:
-        // -Another thread can never release the lock on the current thread, and
-        // -Locks are assumed to be effectively final, hence another thread will not
-        // side effect the lock expression that has value @LockHeld.
+        //  * Another thread can never release the lock on the current thread, and
+        //  * Locks are assumed to be effectively final, hence another thread will not
+        //    side effect the lock expression that has value @LockHeld.
         if (hasLockHeld(value)) {
             if (je instanceof FieldAccess) {
                 FieldAccess fieldAcc = (FieldAccess) je;
@@ -255,6 +255,6 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             }
         }
 
-        super.insertValue(je, value);
+        super.insertValue(je, value, permitNondeterministic);
     }
 }
