@@ -19,6 +19,11 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
     }
 
     public static JavaExpression viewpointAdapt(
+            JavaExpression javaExpr, @Nullable JavaExpression thisReference) {
+        return viewpointAdapt(javaExpr, thisReference, null);
+    }
+
+    public static JavaExpression viewpointAdapt(
             JavaExpression javaExpr,
             @Nullable JavaExpression thisReference,
             @Nullable List<JavaExpression> args) {

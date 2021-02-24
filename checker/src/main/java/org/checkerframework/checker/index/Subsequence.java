@@ -3,11 +3,13 @@ package org.checkerframework.checker.index;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -86,10 +88,7 @@ public class Subsequence {
         }
 
         FieldAccess fa = (FieldAccess) expr;
-        JavaExpressionContext context =
-                new JavaExpressionContext(fa.getReceiver(), null, factory.getChecker());
-
-        Element element = fa.getField();
+        VariableElement element = fa.getField();
         AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
         if (hasSub == null) {
             return null;
@@ -98,9 +97,9 @@ public class Subsequence {
         String to = factory.hasSubsequenceToValue(hasSub);
         String array = factory.hasSubsequenceSubsequenceValue(hasSub);
 
-        from = standardizeAndViewpointAdapt(from, context);
-        to = standardizeAndViewpointAdapt(to, context);
-        array = standardizeAndViewpointAdapt(array, context);
+        from = standardizeAndViewpointAdapt(from, fa, factory.getChecker());
+        to = standardizeAndViewpointAdapt(to, fa, factory.getChecker());
+        array = standardizeAndViewpointAdapt(array, fa, factory.getChecker());
 
         return new Subsequence(array, from, to);
     }
@@ -111,15 +110,18 @@ public class Subsequence {
      * argument.
      *
      * @param s a Java expression string
-     * @param context the parse context
      * @return the argument, standardized and viewpoint-adapted
      */
-    private static String standardizeAndViewpointAdapt(String s, JavaExpressionContext context) {
+    private static String standardizeAndViewpointAdapt(
+            String s, FieldAccess fieldAccess, SourceChecker checker) {
+        JavaExpression parseResult;
         try {
-            return JavaExpressionParseUtil.parse(s, context).toString();
+            parseResult = JavaExpressionParseUtil.parse(s, fieldAccess.getField(), checker);
         } catch (JavaExpressionParseException e) {
             return s;
         }
+        return ViewpointAdaptJavaExpression.viewpointAdapt(parseResult, fieldAccess.getReceiver())
+                .toString();
     }
 
     /**
