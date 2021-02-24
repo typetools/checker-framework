@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.dependenttypes;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -511,17 +510,7 @@ public class DependentTypesHelper {
 
             case FIELD:
             case ENUM_CONSTANT:
-                JavaExpression receiverJe;
-                if (declarationTree.getKind() == Tree.Kind.IDENTIFIER) {
-                    JavaExpression nodeJe =
-                            JavaExpression.fromTree((IdentifierTree) declarationTree);
-                    receiverJe =
-                            nodeJe instanceof FieldAccess
-                                    ? ((FieldAccess) nodeJe).getReceiver()
-                                    : nodeJe;
-                } else {
-                    receiverJe = JavaExpression.getImplicitReceiver(variableElt);
-                }
+                JavaExpression receiverJe = JavaExpression.getImplicitReceiver(variableElt);
                 JavaExpressionContext fieldContext =
                         new JavaExpressionContext(receiverJe, factory.getChecker());
                 viewpointAdaptToContext(fieldContext, type);
