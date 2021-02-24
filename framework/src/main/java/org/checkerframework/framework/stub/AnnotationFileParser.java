@@ -45,6 +45,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
@@ -74,11 +75,14 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -95,6 +99,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -239,7 +244,12 @@ public class AnnotationFileParser {
      */
     public static class AnnotationFileAnnotations {
 
-        /** Map from element to its type as declared in the annotation file. */
+        /**
+         * Map from element to its type as declared in the annotation file.
+         *
+         * <p>This is a fine-grained mapping that contains all sorts of elements; contrast with
+         * {@link #fakeOverrides}.
+         */
         public final Map<Element, AnnotatedTypeMirror> atypes = new HashMap<>();
 
         /**
@@ -251,6 +261,14 @@ public class AnnotationFileParser {
          * ElementUtils.getQualifiedName.
          */
         public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>();
+
+        /**
+         * Map from a method element to all the fake overrides of it. Given a key {@code ee}, the
+         * fake overrides are always in subtypes of {@code ee.getEnclosingElement()}, which is the
+         * same as {@code ee.getReceiverType()}.
+         */
+        public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>>
+                fakeOverrides = new HashMap<>();
     }
 
     /**
@@ -429,7 +447,7 @@ public class AnnotationFileParser {
                     if (importType == null && !importDecl.isStatic()) {
                         // Class or nested class (according to JSL), but we can't resolve
 
-                        stubWarnNotFound(importDecl, "type not found: " + imported);
+                        stubWarnNotFound(importDecl, "Imported type not found: " + imported);
                     } else if (importType == null) {
                         // static import of field or method.
 
@@ -744,7 +762,16 @@ public class AnnotationFileParser {
                     || (!hasNoAnnotationFileParserWarning(typeDecl.getAnnotations())
                             && !hasNoAnnotationFileParserWarning(packageAnnos)
                             && !warnIfNotFoundIgnoresClasses)) {
-                stubWarnNotFound(typeDecl, "Type not found: " + fqTypeName);
+                if (elements.getAllTypeElements(fqTypeName).isEmpty()) {
+                    stubWarnNotFound(typeDecl, "Type not found: " + fqTypeName);
+                } else {
+                    stubWarnNotFound(
+                            typeDecl,
+                            "Type not found uniquely: "
+                                    + fqTypeName
+                                    + " : "
+                                    + elements.getAllTypeElements(fqTypeName));
+                }
             }
             return null;
         }
@@ -788,17 +815,15 @@ public class AnnotationFileParser {
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
-        // `elementsToDecl` is for members of a single type.  It does not contain any stub
-        // declaration that does not match some member of the element.
-        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeDecl, typeElt, typeDecl);
         // If processing an ajava file, then traversal is handled by a visitor, rather than the rest
         // of this method.
         if (!isParsingStubFile) {
             return typeDeclTypeParameters;
         }
 
-        // This loop converts each JavaParser declaration into an AnnotatedTypeMirror.
-        for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
+        Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
+                getMembers(typeDecl, typeElt, typeDecl);
+        for (Map.Entry<Element, BodyDeclaration<?>> entry : members.first.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
             switch (elt.getKind()) {
@@ -828,6 +853,14 @@ public class AnnotationFileParser {
                     break;
             }
         }
+        for (Map.Entry<Element, List<BodyDeclaration<?>>> entry : members.second.entrySet()) {
+            ExecutableElement fakeOverridden = (ExecutableElement) entry.getKey();
+            List<BodyDeclaration<?>> fakeOverrideDecls = entry.getValue();
+            for (BodyDeclaration<?> bodyDecl : fakeOverrideDecls) {
+                processFakeOverride(fakeOverridden, (CallableDeclaration<?>) bodyDecl, typeElt);
+            }
+        }
+
         if (typeDeclTypeParameters != null) {
             typeParameters.removeAll(typeDeclTypeParameters);
         }
@@ -1018,11 +1051,15 @@ public class AnnotationFileParser {
 
         // Return type, from declaration annotations on the method or constructor
         if (decl.isMethodDeclaration()) {
-            annotate(
-                    methodType.getReturnType(),
-                    ((MethodDeclaration) decl).getType(),
-                    decl.getAnnotations(),
-                    decl);
+            try {
+                annotate(
+                        methodType.getReturnType(),
+                        ((MethodDeclaration) decl).getType(),
+                        decl.getAnnotations(),
+                        decl);
+            } catch (ErrorTypeKindException e) {
+                // Do nothing, per Issue #244.
+            }
         } else {
             assert decl.isConstructorDeclaration();
             annotate(methodType.getReturnType(), decl.getAnnotations(), decl);
@@ -1244,12 +1281,12 @@ public class AnnotationFileParser {
         } else {
             primaryAnnotations = typeDef.getAnnotations();
         }
-
         if (atype.getKind() != TypeKind.WILDCARD) {
             // The primary annotation on a wildcard applies to the super or extends bound and
             // are added below.
             annotate(atype, primaryAnnotations, astNode);
         }
+
         switch (atype.getKind()) {
             case DECLARED:
                 ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
@@ -1257,6 +1294,7 @@ public class AnnotationFileParser {
                     break;
                 }
                 AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
+                // Process type arguments.
                 if (declType.getTypeArguments().isPresent()
                         && !declType.getTypeArguments().get().isEmpty()
                         && !adeclType.getTypeArguments().isEmpty()) {
@@ -1429,6 +1467,8 @@ public class AnnotationFileParser {
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
             } else {
+                // TODO: Maybe always warn here.  It's so easy to forget an import statement and
+                // have an annotation silently ignored.
                 stubWarnNotFound(astNode, "Unknown annotation " + annotation);
             }
         }
@@ -1461,6 +1501,8 @@ public class AnnotationFileParser {
                     annos.add(annoMirror);
                 }
             } else {
+                // TODO: Maybe always warn here.  It's so easy to forget an import statement and
+                // have an annotation silently ignored.
                 stubWarnNotFound(astNode, String.format("Unknown annotation %s", annotation));
             }
         }
@@ -1534,52 +1576,73 @@ public class AnnotationFileParser {
     }
 
     /**
-     * For each member of the JavaParser type declaration {@code typeDecl}:
+     * Returns a pair of mappings. For each member declaration of the JavaParser type declaration
+     * {@code typeDecl}:
      *
      * <ul>
-     *   <li>If {@code typeElt} contains a member element for it, returns a mapping from the member
+     *   <li>If {@code typeElt} contains a member element for it, the first mapping maps the member
      *       element to it.
+     *   <li>If it is a fake override, the second mapping maps each element it overrides to it.
      *   <li>Otherwise, does nothing.
      * </ul>
      *
      * This method does not read or write the field {@link #annotationFileAnnos}.
      *
      * @param typeDecl a JavaParser type declaration
-     * @param typeElt the element for {@code typeDecl}
-     * @return a mapping from elements to their declaration in a stub file
+     * @param typeElt the javac element for {@code typeDecl}
+     * @return two mappings: from javac elements to their JavaParser declaration, and from javac
+     *     elements to fake overrides of them
      * @param astNode where to report errors
      */
-    private Map<Element, BodyDeclaration<?>> getMembers(
-            TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
+    private Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>>
+            getMembers(TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
+        Map<Element, List<BodyDeclaration<?>>> fakeOverrideDecls = new LinkedHashMap<>();
+
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
-            putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
+            putNewElement(
+                    elementsToDecl,
+                    fakeOverrideDecls,
+                    typeElt,
+                    member,
+                    typeDecl.getNameAsString(),
+                    astNode);
         }
         // For an enum type declaration, also add the enum constants
         if (typeDecl instanceof EnumDeclaration) {
             EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
             // getEntries() gives the list of enum constant declarations
             for (BodyDeclaration<?> member : enumDecl.getEntries()) {
-                putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString(), astNode);
+                putNewElement(
+                        elementsToDecl,
+                        fakeOverrideDecls,
+                        typeElt,
+                        member,
+                        typeDecl.getNameAsString(),
+                        astNode);
             }
         }
-        return elementsToDecl;
+
+        return Pair.of(elementsToDecl, fakeOverrideDecls);
     }
 
-    // Used only by getMembers
+    // Used only by getMembers().
     /**
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
      *
-     * <p>Does nothing if it cannot find member's element.
+     * <p>Otherwise (if there is no element for {@code member}), adds to {@code fakeOverrideDecls}
+     * zero or more mappings. Each mapping is from an element that {@code member} would override to
+     * {@code member}.
      *
      * <p>This method does not read or write field {@link annotationFileAnnos}.
      *
      * @param elementsToDecl the mapping that is side-effected by this method
+     * @param fakeOverrideDecls fake overrides, also side-effected by this method
      * @param typeElt the class in which {@code member} is declared
      * @param member the stub file declaration of a method
      * @param typeDeclName used only for debugging
@@ -1587,15 +1650,29 @@ public class AnnotationFileParser {
      */
     private void putNewElement(
             Map<Element, BodyDeclaration<?>> elementsToDecl,
+            Map<Element, List<BodyDeclaration<?>>> fakeOverrideDecls,
             TypeElement typeElt,
             BodyDeclaration<?> member,
             String typeDeclName,
             NodeWithRange<?> astNode) {
         if (member instanceof MethodDeclaration) {
             MethodDeclaration method = (MethodDeclaration) member;
-            Element elt = findElement(typeElt, method);
+            Element elt = findElement(typeElt, method, /*noWarn=*/ true);
             if (elt != null) {
                 putIfAbsent(elementsToDecl, elt, method);
+            } else {
+                ExecutableElement overriddenMethod = fakeOverriddenMethod(typeElt, method);
+                if (overriddenMethod == null) {
+                    // Didn't find the element and it isn't a fake override.  Issue a warning.
+                    findElement(typeElt, method, /*noWarn=*/ false);
+                } else {
+                    List<BodyDeclaration<?>> l = fakeOverrideDecls.get(overriddenMethod);
+                    if (l == null) {
+                        l = new ArrayList<>();
+                        fakeOverrideDecls.put(overriddenMethod, l);
+                    }
+                    l.add(member);
+                }
             }
         } else if (member instanceof ConstructorDeclaration) {
             Element elt = findElement(typeElt, (ConstructorDeclaration) member);
@@ -1630,6 +1707,171 @@ public class AnnotationFileParser {
                     String.format(
                             "Ignoring element of type %s in %s", member.getClass(), typeDeclName));
         }
+    }
+
+    /**
+     * Given a method declaration that does not correspond to an element, returns the method it
+     * directly overrides or implements. As Java does, this prefers a method in a superclass to one
+     * in an interface.
+     *
+     * <p>As with regular overrides, the parameter types must be exact matches; contravariance is
+     * not permitted.
+     *
+     * @param typeElt the type in which the method appears
+     * @param methodDecl the method declaration that does not correspond to an element
+     * @return the methods that the given method declaration would override, or null if none
+     */
+    private @Nullable ExecutableElement fakeOverriddenMethod(
+            TypeElement typeElt, MethodDeclaration methodDecl) {
+        for (Element elt : typeElt.getEnclosedElements()) {
+            if (elt.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement candidate = (ExecutableElement) elt;
+            if (!candidate.getSimpleName().contentEquals(methodDecl.getName().getIdentifier())) {
+                continue;
+            }
+            List<? extends VariableElement> candidateParams = candidate.getParameters();
+            if (sameTypes(candidateParams, methodDecl.getParameters())) {
+                return candidate;
+            }
+        }
+
+        TypeElement superType = ElementUtils.getSuperClass(typeElt);
+        if (superType != null) {
+            ExecutableElement result = fakeOverriddenMethod(superType, methodDecl);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        for (TypeMirror interfaceTypeMirror : typeElt.getInterfaces()) {
+            TypeElement interfaceElement =
+                    (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
+            ExecutableElement result = fakeOverriddenMethod(interfaceElement, methodDecl);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns true if the two signatures (represented as lists of formal parameters) are the same.
+     * No contravariance is permitted.
+     *
+     * @param javacParams parameter list in javac form
+     * @param javaParserParams parameter list in JavaParser form
+     * @return true if the two signatures are the same
+     */
+    private boolean sameTypes(
+            List<? extends VariableElement> javacParams, NodeList<Parameter> javaParserParams) {
+        if (javacParams.size() != javaParserParams.size()) {
+            return false;
+        }
+        for (int i = 0; i < javacParams.size(); i++) {
+            TypeMirror javacType = javacParams.get(i).asType();
+            Parameter javaParserParam = javaParserParams.get(i);
+            Type javaParserType = javaParserParam.getType();
+            if (javacType.getKind() == TypeKind.TYPEVAR) {
+                // TODO: Hack, need to viewpoint-adapt.
+                javacType = ((TypeVariable) javacType).getUpperBound();
+            }
+            if (!sameType(javacType, javaParserType)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if the two types are the same.
+     *
+     * @param javacType type in javac form
+     * @param javaParserType type in JavaParser form
+     * @return true if the two types are the same
+     */
+    private boolean sameType(TypeMirror javacType, Type javaParserType) {
+
+        switch (javacType.getKind()) {
+            case BOOLEAN:
+                return javaParserType.equals(PrimitiveType.booleanType());
+            case BYTE:
+                return javaParserType.equals(PrimitiveType.byteType());
+            case CHAR:
+                return javaParserType.equals(PrimitiveType.charType());
+            case DOUBLE:
+                return javaParserType.equals(PrimitiveType.doubleType());
+            case FLOAT:
+                return javaParserType.equals(PrimitiveType.floatType());
+            case INT:
+                return javaParserType.equals(PrimitiveType.intType());
+            case LONG:
+                return javaParserType.equals(PrimitiveType.longType());
+            case SHORT:
+                return javaParserType.equals(PrimitiveType.shortType());
+
+            case DECLARED:
+            case TYPEVAR:
+                if (!(javaParserType instanceof ClassOrInterfaceType)) {
+                    return false;
+                }
+                com.sun.tools.javac.code.Type javacTypeInternal =
+                        (com.sun.tools.javac.code.Type) javacType;
+                ClassOrInterfaceType javaParserClassType = (ClassOrInterfaceType) javaParserType;
+
+                // Use asString() because toString() includes annotations.
+                String javaParserString = javaParserClassType.asString();
+                Element javacElement = javacTypeInternal.asElement();
+                // Check both fully-qualified name and simple name.
+                return javacElement.toString().equals(javaParserString)
+                        || javacElement.getSimpleName().contentEquals(javaParserString);
+
+            case ARRAY:
+                return javaParserType.isArrayType()
+                        && sameType(
+                                ((ArrayType) javacType).getComponentType(),
+                                javaParserType.asArrayType().getComponentType());
+
+            default:
+                throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
+        }
+    }
+
+    /**
+     * Process a fake override: copy its annotations to the fake overrides part of {@code
+     * #annotationFileAnnos}.
+     *
+     * @param element a real element
+     * @param decl a fake override of the element
+     * @param fakeLocation where the fake override was defined
+     */
+    private void processFakeOverride(
+            ExecutableElement element, CallableDeclaration<?> decl, TypeElement fakeLocation) {
+        // This is a fresh type, which this code may side-effect.
+        AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);
+
+        // Here is a hacky solution that does not use the visitor.  It just handles the return type.
+        // TODO: Walk the type and the declaration, copying annotations from the declaration to the
+        // element.  I think PR #3977 has a visitor that does that, which I should use after it is
+        // merged.
+
+        // The annotations on the method.  These include type annotations on the return type.
+        NodeList<AnnotationExpr> annotations = decl.getAnnotations();
+        annotate(
+                methodType.getReturnType(),
+                ((MethodDeclaration) decl).getType(),
+                annotations,
+                decl);
+
+        List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
+                annotationFileAnnos.fakeOverrides.get(element);
+        if (l == null) {
+            l = new ArrayList<>();
+            annotationFileAnnos.fakeOverrides.put(element, l);
+        }
+        l.add(Pair.of(fakeLocation.asType(), methodType));
     }
 
     /**
@@ -1742,18 +1984,19 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Looks for method element in the typeElt and returns it if the element has the same signature
-     * as provided method declaration. Returns null, and possibly issues a warning, if method
-     * element is not found.
+     * Looks for a method element in {@code typeElt} that has the same name and formal parameter
+     * types as {@code methodDecl}. Returns null, and possibly issues a warning, if no such method
+     * element is found.
      *
      * @param typeElt type element where method element should be looked for
      * @param methodDecl method declaration with signature that should be found among methods in the
      *     typeElt
+     * @param noWarn if true, don't issue a warning if the element is not found
      * @return method element in typeElt with the same signature as the provided method declaration
      *     or null if method element is not found
      */
     private @Nullable ExecutableElement findElement(
-            TypeElement typeElt, MethodDeclaration methodDecl) {
+            TypeElement typeElt, MethodDeclaration methodDecl, boolean noWarn) {
         if (isJdkAsStub && methodDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private methods of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
@@ -1770,23 +2013,28 @@ public class AnnotationFileParser {
                 return method;
             }
         }
-        if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
-            // This might be a false positive warning.  The stub parser permits a stub file to omit
-            // the access specifier, but package-private methods aren't in the TypeElement.
-            stubWarnNotFound(
-                    methodDecl,
-                    "Package-private method "
-                            + wantedMethodString
-                            + " not found in type "
-                            + typeElt);
-        } else {
-            stubWarnNotFound(
-                    methodDecl, "Method " + wantedMethodString + " not found in type " + typeElt);
-            if (debugAnnotationFileParser) {
-                stubDebug(String.format("  Here are the methods of %s:", typeElt));
-                for (ExecutableElement method :
-                        ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                    stubDebug(String.format("    %s", method));
+        if (!noWarn) {
+            if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
+                // This might be a false positive warning.  The stub parser permits a stub file to
+                // omit the access specifier, but package-private methods aren't in the TypeElement.
+                stubWarnNotFound(
+                        methodDecl,
+                        "Package-private method "
+                                + wantedMethodString
+                                + " not found in type "
+                                + typeElt
+                                + System.lineSeparator()
+                                + "If the method is not package-private, add an access specifier in the stub file and use pass -AstubDebug to receive a more useful error message.");
+            } else {
+                stubWarnNotFound(
+                        methodDecl,
+                        "Method " + wantedMethodString + " not found in type " + typeElt);
+                if (debugAnnotationFileParser) {
+                    stubDebug(String.format("  Here are the methods of %s:", typeElt));
+                    for (ExecutableElement method :
+                            ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+                        stubDebug(String.format("    %s", method));
+                    }
                 }
             }
         }
@@ -2484,6 +2732,19 @@ public class AnnotationFileParser {
      * @param warning warning to print
      */
     private void stubWarnNotFound(NodeWithRange<?> astNode, String warning) {
+        stubWarnNotFound(astNode, warning, warnIfNotFound);
+    }
+
+    /**
+     * Issues the given warning about missing elements, only if it has not been previously issued
+     * and the {@code warnIfNotFound} formal parameter is true.
+     *
+     * @param astNode where to report errors
+     * @param warning warning to print
+     * @param warnIfNotFound whether to print warnings about types/members that were not found
+     */
+    private void stubWarnNotFound(
+            NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
         if ((!isJdkAsStub && warnIfNotFound) || debugAnnotationFileParser) {
             warn(astNode, warning);
         }
@@ -2510,15 +2771,27 @@ public class AnnotationFileParser {
      * @param warning a format string
      * @param args the arguments for {@code warning}
      */
+    @FormatMethod
     private void warn(@Nullable NodeWithRange<?> astNode, String warning, Object... args) {
         if (!isJdkAsStub) {
-            String formatted = String.format(warning, args);
-            if (warnings.add(formatted)) {
+            warn(astNode, String.format(warning, args));
+        }
+    }
+
+    /**
+     * Issues a warning, only if it has not been previously issued.
+     *
+     * @param astNode where to report errors
+     * @param warning a warning message
+     */
+    private void warn(@Nullable NodeWithRange<?> astNode, String warning) {
+        if (!isJdkAsStub) {
+            if (warnings.add(warning)) {
                 processingEnv
                         .getMessager()
                         .printMessage(
                                 javax.tools.Diagnostic.Kind.WARNING,
-                                fileAndLine(astNode) + formatted);
+                                fileAndLine(astNode) + warning);
             }
         }
     }

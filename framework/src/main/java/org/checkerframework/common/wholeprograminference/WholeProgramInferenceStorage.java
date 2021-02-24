@@ -190,8 +190,8 @@ public interface WholeProgramInferenceStorage<T> {
     public void setFileModified(String path);
 
     /**
-     * Performs any preparation required for inference on Elements of a class. Should be called on
-     * each top-level class declaration in a compilation unit before processing it.
+     * Performs any preparation required for inference on the elements of a class. Should be called
+     * on each top-level class declaration in a compilation unit before processing it.
      *
      * @param classTree the class to preprocess
      */

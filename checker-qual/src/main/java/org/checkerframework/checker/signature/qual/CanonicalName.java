@@ -31,9 +31,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * </blockquote>
  *
  * Given a character sequence that is a fully-qualified name, there is no way to know whether or not
- * it is a canonical name, without examining the program it refers to. Therefore, to avoid excessive
- * warnings that would have to be suppressed, sometimes a variable that holds a canonical name is
- * annotated as {@code @}{@link FullyQualifiedName}.
+ * it is a canonical name, without examining the program it refers to. Type-checking determines that
+ * a string is a {@code CanonicalName} based on provenance (what method produced the string), rather
+ * than the contents of the string.
  *
  * @see FullyQualifiedName
  * @checker_framework.manual #signature-checker Signature Checker
@@ -41,5 +41,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({FullyQualifiedName.class, CanonicalNameOrEmpty.class})
+@SubtypeOf({
+    FullyQualifiedName.class,
+    CanonicalNameOrEmpty.class,
+    CanonicalNameOrPrimitiveType.class
+})
 public @interface CanonicalName {}

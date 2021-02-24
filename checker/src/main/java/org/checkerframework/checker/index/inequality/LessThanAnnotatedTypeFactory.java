@@ -13,12 +13,12 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.LessThanBottom;
 import org.checkerframework.checker.index.qual.LessThanUnknown;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /** The type factory for the Less Than Checker. */
-public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForIndexChecker {
     /** The @LessThanBottom annotation. */
     private final AnnotationMirror LESS_THAN_BOTTOM =
             AnnotationBuilder.fromClass(elements, LessThanBottom.class);
@@ -214,7 +214,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 getValueAnnotatedTypeFactory()
                         .getAnnotationFromJavaExpression(expressionJe, tree, IntRange.class);
         if (intRange != null) {
-            return ValueAnnotatedTypeFactory.getRange(intRange).from;
+            return getValueAnnotatedTypeFactory().getRange(intRange).from;
         }
         AnnotationMirror intValue =
                 getValueAnnotatedTypeFactory()
@@ -233,7 +233,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 .getAnnotationFromJavaExpression(
                                         fieldAccess.getReceiver(), tree, ArrayLenRange.class);
                 if (arrayRange != null) {
-                    return ValueAnnotatedTypeFactory.getRange(arrayRange).from;
+                    return getValueAnnotatedTypeFactory().getRange(arrayRange).from;
                 }
                 AnnotationMirror arrayLen =
                         getValueAnnotatedTypeFactory()

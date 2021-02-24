@@ -49,9 +49,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * org.checkerframework.common.wholeprograminference.WholeProgramInference}. It uses an instance of
  * {@link WholeProgramInferenceStorage} to store annotations and to create output files.
  *
- * <p>It stores annotations using the storage class ({@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage}).
- *
  * <p>This class does not perform inference for an element if the element has explicit annotations:
  * calling an update* method on an explicitly annotated field, method return, or method parameter
  * has no effect.

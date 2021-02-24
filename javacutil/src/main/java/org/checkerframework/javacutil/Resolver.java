@@ -263,37 +263,6 @@ public class Resolver {
     }
 
     /**
-     * Finds the nested class with {@code name} in a given type.
-     *
-     * @param name the name of the class
-     * @param type the type
-     * @param path the tree path
-     * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
-     */
-    public @Nullable ClassSymbol findNestedClassInType(
-            String name, TypeMirror type, TreePath path) {
-        Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
-        try {
-            Env<AttrContext> env = getEnvForPath(path);
-            Element res =
-                    wrapInvocationOnResolveInstance(
-                            FIND_IDENT_IN_TYPE,
-                            env,
-                            type,
-                            names.fromString(name),
-                            Kinds.KindSelector.TYP);
-
-            if (ElementUtils.isTypeElement(res)) {
-                return (ClassSymbol) res;
-            } else {
-                return null;
-            }
-        } finally {
-            log.popDiagnosticHandler(discardDiagnosticHandler);
-        }
-    }
-
-    /**
      * Finds the class with name {@code name} in a given package.
      *
      * @param name the name of the class
@@ -434,12 +403,26 @@ public class Resolver {
         return f.get(receiver);
     }
 
-    /** Wrap a method invocation on the {code resolve} object. */
+    /**
+     * Wrap a method invocation on the {@code resolve} object.
+     *
+     * @param method the method to called
+     * @param args the arguments to the call
+     * @return the result of invoking the method on {@code resolve} (as the receiver) and the
+     *     arguments
+     */
     private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
         return wrapInvocation(resolve, method, args);
     }
 
-    /** Wrap a method invocation. */
+    /**
+     * Invoke a method reflectively.
+     *
+     * @param receiver the receiver
+     * @param method the method to called
+     * @param args the arguments to the call
+     * @return the result of invoking the method on the receiver and arguments
+     */
     private Symbol wrapInvocation(Object receiver, Method method, @Nullable Object... args) {
         try {
             @SuppressWarnings("nullness") // assume arguments are OK
