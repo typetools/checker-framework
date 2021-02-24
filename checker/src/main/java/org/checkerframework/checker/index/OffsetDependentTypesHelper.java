@@ -57,9 +57,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         ValueAnnotatedTypeFactory vatf =
                 ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
                         .getTypeFactoryOfSubchecker(ValueChecker.class);
-        if (vatf != null) {
-            result = ValueCheckerUtils.optimize(result, vatf);
-        }
+        result = ValueCheckerUtils.optimize(result, vatf != null ? vatf : factory);
 
         return result;
     }
