@@ -3,13 +3,10 @@ package org.checkerframework.checker.index;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
@@ -46,10 +43,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         }
 
         // TODO: Maybe move this into the superclass standardizeString, then remove this class.
-        ValueAnnotatedTypeFactory vatf =
-                ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
-                        .getTypeFactoryOfSubchecker(ValueChecker.class);
-        result = ValueCheckerUtils.optimize(result, vatf != null ? vatf : factory);
+        result = ValueCheckerUtils.optimize(result, factory);
 
         return result.toString();
     }
