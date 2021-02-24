@@ -6,7 +6,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -45,12 +44,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         if (result == null) {
             return new DependentTypesError(expression, /*error message=*/ " ").toString();
         }
-        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
-            Object constant = ((FieldAccess) result).getField().getConstantValue();
-            if (constant != null && !(constant instanceof String)) {
-                return constant.toString();
-            }
-        }
+
         // TODO: Maybe move this into the superclass standardizeString, then remove this class.
         ValueAnnotatedTypeFactory vatf =
                 ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
