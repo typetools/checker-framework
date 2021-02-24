@@ -1,13 +1,8 @@
 package org.checkerframework.framework.ajava;
 
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.VarType;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -29,12 +24,12 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
-import java.io.IOException;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.util.Position;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.BugInCF;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
@@ -67,20 +62,6 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public void defaultAction(Tree tree) {
         trees.add(tree);
-    }
-
-    @Override
-    public Void visitCompilationUnit(CompilationUnitTree tree, Void p) {
-        // When using the "var" keyword, javac replaces it with the correct type, meaning the
-        // inserted type has no corresponding javac tree. There is no way of knowing if the
-        // inserted tree is synthetic or not. The only sound solution would be to not add types
-        // on the left hand side of an assignment. This would severely decrease the usefulness
-        // of the -AcheckJavaParserVisitor check. Instead, we simply don't run the check at all
-        // on files that contain "var".
-        if (HasVarTypeVisitor.hasVarType(tree)) {
-            return null;
-        }
-        return super.visitCompilationUnit(tree, p);
     }
 
     @Override
@@ -346,6 +327,19 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         return null;
     }
 
+    @Override
+    public Void visitVariable(VariableTree tree, Void p) {
+        // Javac expands the keyword "var" in a variable declaration to its inferred type.
+        // JavaParser has a special "var" construct, so they won't match. If a javac type was
+        // generated this way, then it won't have a position in source code so in that case we don't
+        // add it.
+        if (((JCExpression) tree.getType()).pos == Position.NOPOS) {
+            return null;
+        }
+
+        return super.visitVariable(tree, p);
+    }
+
     /**
      * Calls the correct visit method for {@code tree} if {@code tree} is non-null.
      *
@@ -371,49 +365,6 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
         for (Tree tree : trees) {
             visit(tree, p);
-        }
-    }
-
-    /** Visitor that records whether it has visited a "var" keyword. */
-    private static class HasVarTypeVisitor extends VoidVisitorAdapter<Void> {
-        /** Whether a "var" keyword has been visited. */
-        public boolean hasVarType = false;
-
-        @Override
-        public void visit(ClassOrInterfaceType node, Void p) {
-            if (node.getName().asString().equals("var")) {
-                hasVarType = true;
-                return;
-            }
-
-            super.visit(node, p);
-        }
-
-        @Override
-        public void visit(VarType node, Void p) {
-            hasVarType = true;
-        }
-
-        /**
-         * Returns true if the given compilation unit contains the "var" keyword.
-         *
-         * @param javacCompilationUnit a compilation unit
-         * @return true if the given compilation unit contains the "var" keyword
-         */
-        public static boolean hasVarType(CompilationUnitTree javacCompilationUnit) {
-            com.github.javaparser.ast.CompilationUnit javaParserCompilationUnit;
-            try {
-                java.io.InputStream in = javacCompilationUnit.getSourceFile().openInputStream();
-                javaParserCompilationUnit = StaticJavaParser.parse(in);
-            } catch (IOException e) {
-                throw new BugInCF(
-                        "Unable to read source file for compilation unit "
-                                + javacCompilationUnit.getSourceFile(),
-                        e);
-            }
-            HasVarTypeVisitor varVisitor = new HasVarTypeVisitor();
-            varVisitor.visit(javaParserCompilationUnit, null);
-            return varVisitor.hasVarType;
         }
     }
 }
