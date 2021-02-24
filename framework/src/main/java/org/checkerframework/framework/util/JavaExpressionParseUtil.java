@@ -189,6 +189,35 @@ public class JavaExpressionParseUtil {
      * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
      *
      * @param expression a Java expression to parse
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(
+            String expression, TypeElement typeElement, SourceChecker checker)
+            throws JavaExpressionParseException {
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        ThisReference thisReference = new ThisReference(typeElement.asType());
+
+        List<FormalParameter> parameters = null;
+        return parse(
+                expression,
+                typeElement.asType(),
+                thisReference,
+                parameters,
+                null,
+                pathToCompilationUnit,
+                env);
+    }
+
+    /**
+     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
+     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
+     *
+     * @param expression a Java expression to parse
      * @param context information about any receiver and arguments; also has a reference to the
      *     checker
      * @return the JavaExpression for the given string

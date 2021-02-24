@@ -579,10 +579,9 @@ public abstract class CFAbstractTransfer<
             annotation = viewpointAdaptAnnoFromContract(annotation, methodUseContext);
 
             try {
-                // TODO: currently, these expressions are parsed at the
-                // declaration (i.e. here) and for every use. this could
-                // be optimized to store the result the first time.
-                // (same for other annotations)
+                // TODO: currently, these expressions are parsed at the declaration (i.e. here) and
+                // for every use. this could be optimized to store the result the first time. (same
+                // for other annotations)
                 JavaExpression exprJe =
                         JavaExpressionParseUtil.parse(expressionString, methodUseContext);
                 initialStore.insertValuePermitNondeterministic(exprJe, annotation);
