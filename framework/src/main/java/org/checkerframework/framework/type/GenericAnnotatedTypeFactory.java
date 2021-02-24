@@ -38,6 +38,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
@@ -2199,6 +2200,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param format a format string
      * @param args arguments to the format string
      */
+    @FormatMethod
     private static void log(String format, Object... args) {
         if (debug) {
             SystemPlume.sleep(1); // logging can interleave with typechecker output
