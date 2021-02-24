@@ -34,6 +34,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -54,6 +56,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -416,9 +419,10 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return annoFromContract;
         }
+        Parser parser = expression -> parseString(expression, jeContext, null);
 
         AnnotationMirror standardized =
-                standardizeAnnotationIfDependentType(jeContext, null, annoFromContract, false);
+                standardizeAnnotationIfDependentType(parser, annoFromContract);
         if (standardized == null) {
             return annoFromContract;
         }
@@ -448,7 +452,14 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, factory.getChecker());
-        standardizeAtm(context, null, atm, /*removeErroneousExpressions=*/ true);
+        TreePath localVarPath = null;
+        Parser parser =
+                expression -> {
+                    JavaExpression result = parseString(expression, context, localVarPath);
+                    return result instanceof ErrorExpression ? null : result;
+                };
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
+        this.standardizeTypeAnnotator.visit(atm, func);
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
@@ -633,7 +644,11 @@ public class DependentTypesHelper {
                         receiver,
                         JavaExpression.getParametersOfEnclosingMethod(localVarPath),
                         factory.getChecker());
-        standardizeAtm(localContext, localVarPath, type, /*removeErroneousExpressions=*/ false);
+
+        Parser parser = expression -> parseString(expression, localContext, localVarPath);
+
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
+        this.standardizeTypeAnnotator.visit(type, func);
     }
 
     /**
@@ -643,7 +658,10 @@ public class DependentTypesHelper {
      * @param type the type to viewpoint-adapt; is side-effected by this method
      */
     private void viewpointAdaptToContext(JavaExpressionContext context, AnnotatedTypeMirror type) {
-        standardizeAtm(context, null, type, /*removeErroneousExpressions=*/ false);
+        TreePath localVarPath = null;
+        Parser parser = expression -> parseString(expression, context, localVarPath);
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
+        this.standardizeTypeAnnotator.visit(type, func);
     }
 
     /**
@@ -657,84 +675,71 @@ public class DependentTypesHelper {
      */
     private void parseToPathAndViewpointAdapt(
             JavaExpressionContext context, TreePath localVarPath, AnnotatedTypeMirror type) {
-        standardizeAtm(context, localVarPath, type, /*removeErroneousExpressions=*/ false);
-    }
-
-    /**
-     * Parse the dependent types in {@code type} as if they were written at {@code localVarPath} and
-     * viewpoint-adapt to the given context.
-     *
-     * @param context JavaExpressionParseContext
-     * @param localVarPath if non-null, the expression is parsed as if it were written at this
-     *     location
-     * @param type the type to "standardize"
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
-     */
-    private void standardizeAtm(
-            JavaExpressionContext context,
-            TreePath localVarPath,
-            AnnotatedTypeMirror type,
-            boolean removeErroneousExpressions) {
-        TransformAnnotation func =
-                (anno) ->
-                        standardizeAnnotationIfDependentType(
-                                context, localVarPath, anno, removeErroneousExpressions);
+        Parser parser = expression -> parseString(expression, context, localVarPath);
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
 
-    /**
-     * Standardizes a Java expression.
-     *
-     * @param expression a Java expression
-     * @param context the context
-     * @param localVarPath if non-null, the expression is parsed as if it were written at this
-     *     location
-     * @return the standardized version of the Java expression
-     */
-    protected String standardizeString(
+    static class ErrorExpression extends Unknown {
+        public final String errorString;
+
+        public ErrorExpression(TypeMirror type, String errorString) {
+            super(type);
+            this.errorString = errorString;
+        }
+
+        @Override
+        public String toString() {
+            return errorString;
+        }
+    }
+
+    protected ErrorExpression createError(String error) {
+        return new ErrorExpression(
+                TypesUtils.typeFromClass(Object.class, factory.types, factory.getElementUtils()),
+                error);
+    }
+
+    protected JavaExpression parseString(
             String expression, JavaExpressionContext context, @Nullable TreePath localVarPath) {
         if (DependentTypesError.isExpressionError(expression)) {
-            return expression;
+            return createError(expression);
         }
         JavaExpression result;
         try {
             result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-            return new DependentTypesError(expression, e).toString();
+            return createError(new DependentTypesError(expression, e).toString());
         }
         if (result == null) {
-            return new DependentTypesError(expression, /*error message=*/ " ").toString();
+            return createError(
+                    new DependentTypesError(expression, /*error message=*/ " ").toString());
         }
+
         // Replace references to compile-time constant fields by the constant itself.  (This is only
         // desirable if the name doesn't matter.  The name matters for @KeyFor and @GuardedBy, but
         // they are not relevant to primitives.)
         if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
             Object constant = ((FieldAccess) result).getField().getConstantValue();
             if (constant != null && !(constant instanceof String)) {
-                return constant.toString();
+                return new ValueLiteral(result.getType(), constant);
             }
         }
-        return result.toString();
+        return result;
     }
 
     /**
      * Viewpoint-adapts Java expressions in an annotation. If the annotation is not a dependent type
      * annotation, returns null.
      *
-     * @param context information about any receiver and arguments
-     * @param localVarPath if non-null, the expression is parsed as if it were written at this
-     *     location
-     * @param anno the annotation to viewpoint-adapt
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
+     * <p>location
+     *
+     * @param anno the annotation to viewpoint-adapt converting them into an explanation of why they
+     *     are illegal
      * @return the viewpoint-adapted annotation, or null if no viewpoint-adaption is needed
      */
-    public AnnotationMirror standardizeAnnotationIfDependentType(
-            JavaExpressionContext context,
-            @Nullable TreePath localVarPath,
-            AnnotationMirror anno,
-            boolean removeErroneousExpressions) {
+    public @Nullable AnnotationMirror standardizeAnnotationIfDependentType(
+            Parser parser, AnnotationMirror anno) {
         if (!isExpressionAnno(anno)) {
             return null;
         }
@@ -748,17 +753,19 @@ public class DependentTypesHelper {
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
-                String standardized = standardizeString(expression, context, localVarPath);
-                if (removeErroneousExpressions
-                        && DependentTypesError.isExpressionError(standardized)) {
-                    // nothing to do
-                } else {
-                    standardizedStrings.add(standardized);
+                JavaExpression javaExpr = parser.parse(expression);
+                if (javaExpr == null) {
+                    continue;
                 }
+                standardizedStrings.add(javaExpr.toString());
             }
             builder.setValue(value, standardizedStrings);
         }
         return builder.build();
+    }
+
+    interface Parser {
+        JavaExpression parse(String s);
     }
 
     /** A scanner that standardizes Java expression strings in dependent type annotations. */
@@ -811,7 +818,7 @@ public class DependentTypesHelper {
     }
 
     interface TransformAnnotation {
-        AnnotationMirror transform(AnnotationMirror anno);
+        @Nullable AnnotationMirror transform(AnnotationMirror anno);
     }
 
     /**

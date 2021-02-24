@@ -174,33 +174,35 @@ public class LockAnnotatedTypeFactory
             }
 
             @Override
-            protected String standardizeString(
+            protected JavaExpression parseString(
                     String expression, JavaExpressionContext context, TreePath localVarPath) {
                 if (DependentTypesError.isExpressionError(expression)) {
-                    return expression;
+                    return createError(expression);
                 }
 
                 // Adds logic to parse <self> expression, which only the Lock Checker uses.
                 if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
-                    return expression;
+                    return createError(expression);
                 }
 
                 try {
                     JavaExpression result =
                             JavaExpressionParseUtil.parse(expression, context, localVarPath);
                     if (result == null) {
-                        return new DependentTypesError(expression, /*error message=*/ " ")
-                                .toString();
+                        return createError(
+                                new DependentTypesError(expression, /*error message=*/ " ")
+                                        .toString());
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
                         // NOT_EFFECTIVELY_FINAL error string.
-                        return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
-                                .toString();
+                        return createError(
+                                new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
+                                        .toString());
                     }
-                    return result.toString();
+                    return result;
                 } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                    return new DependentTypesError(expression, e).toString();
+                    return createError(new DependentTypesError(expression, e).toString());
                 }
             }
         };

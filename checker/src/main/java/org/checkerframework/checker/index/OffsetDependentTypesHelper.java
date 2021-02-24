@@ -8,6 +8,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -29,26 +30,27 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     }
 
     @Override
-    protected String standardizeString(
+    protected JavaExpression parseString(
             final String expression,
             JavaExpressionContext context,
             @Nullable TreePath localVarPath) {
         if (DependentTypesError.isExpressionError(expression)) {
-            return expression;
+            return createError(expression);
         }
         JavaExpression result;
         try {
             result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-            return new DependentTypesError(expression, e).toString();
+            return createError(new DependentTypesError(expression, e).toString());
         }
         if (result == null) {
-            return new DependentTypesError(expression, /*error message=*/ " ").toString();
+            return createError(
+                    new DependentTypesError(expression, /*error message=*/ " ").toString());
         }
         if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
             Object constant = ((FieldAccess) result).getField().getConstantValue();
             if (constant != null && !(constant instanceof String)) {
-                return constant.toString();
+                return new ValueLiteral(result.getType(), constant.toString());
             }
         }
         // TODO: Maybe move this into the superclass standardizeString, then remove this class.
@@ -59,7 +61,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             result = ValueCheckerUtils.optimize(result, vatf);
         }
 
-        return result.toString();
+        return result;
     }
 
     @Override
