@@ -228,6 +228,55 @@ public class JavaExpressionParseUtil {
             throws JavaExpressionParseException {
         return parse(expression, context, null);
     }
+
+    public static JavaExpression parse(String expression, TreePath path, SourceChecker checker)
+            throws JavaExpressionParseException {
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+
+        TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
+        ThisReference thisReference = null;
+        if (!TreePathUtil.isTreeInStaticScope(path)) {
+            thisReference = new ThisReference(enclosingType);
+        }
+        List<FormalParameter> parameters;
+        Map<JavaExpression, JavaExpression> parametersToArgs;
+        MethodTree methodTree = TreePathUtil.enclosingMethod(path);
+        if (methodTree == null) {
+            parametersToArgs = null;
+            parameters = null;
+        } else {
+            parametersToArgs = new HashMap<>();
+            parameters = new ArrayList<>();
+            int oneBasedIndex = 1;
+            for (VariableTree arg : methodTree.getParameters()) {
+                VariableElement variableElement = TreeUtils.elementFromDeclaration(arg);
+                FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
+                parametersToArgs.put(parameter, new LocalVariable(variableElement));
+                parameters.add(parameter);
+                oneBasedIndex++;
+            }
+        }
+
+        JavaExpression javaExpr =
+                parse(
+                        expression,
+                        enclosingType,
+                        thisReference,
+                        parameters,
+                        path,
+                        pathToCompilationUnit,
+                        env);
+        if (parametersToArgs == null || parametersToArgs.isEmpty()) {
+            return javaExpr;
+        }
+        JavaExpressionVPA vpa = new JavaExpressionVPA(parametersToArgs);
+        return vpa.convert(javaExpr);
+    }
+
     /**
      * Parse a string with respect to {@code localVarPath} and viewpoint-adapt it to the given
      * {@code context}. Return its representation as a {@link JavaExpression}, or throw a {@link

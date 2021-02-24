@@ -947,16 +947,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
             throws JavaExpressionParseException {
-        TypeMirror enclosingClass = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
 
-        JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
-        JavaExpressionParseUtil.JavaExpressionContext context =
-                new JavaExpressionParseUtil.JavaExpressionContext(
-                        r,
-                        JavaExpression.getParametersOfEnclosingMethod(currentPath),
-                        this.getChecker());
-
-        return JavaExpressionParseUtil.parse(expression, context, currentPath);
+        return JavaExpressionParseUtil.parse(expression, currentPath, checker);
     }
 
     /**

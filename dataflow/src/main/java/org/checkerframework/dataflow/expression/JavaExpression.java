@@ -578,7 +578,7 @@ public abstract class JavaExpression {
         }
         List<JavaExpression> internalArguments = new ArrayList<>();
         for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(fromNode(new LocalVariableNode(arg)));
+            internalArguments.add(fromVariableTree(arg));
         }
         return internalArguments;
     }
