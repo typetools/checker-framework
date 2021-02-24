@@ -3,12 +3,13 @@ package org.checkerframework.checker.index;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -50,33 +51,24 @@ public class Subsequence {
 
         Element element = TreeUtils.elementFromTree(varTree);
         AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
-        return createSubsequence(hasSub, null, factory);
+        return createSubsequence(hasSub, factory);
     }
 
     /**
      * Factory method to create a representation of a subsequence.
      *
      * @param hasSub {@link HasSubsequence} annotation or null
-     * @param context the parsing context
      * @param factory the type factory
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
-            AnnotationMirror hasSub,
-            JavaExpressionContext context,
-            BaseAnnotatedTypeFactoryForIndexChecker factory) {
+            AnnotationMirror hasSub, BaseAnnotatedTypeFactoryForIndexChecker factory) {
         if (hasSub == null) {
             return null;
         }
         String from = factory.hasSubsequenceFromValue(hasSub);
         String to = factory.hasSubsequenceToValue(hasSub);
         String array = factory.hasSubsequenceSubsequenceValue(hasSub);
-
-        if (context != null) {
-            from = standardizeAndViewpointAdapt(from, context);
-            to = standardizeAndViewpointAdapt(to, context);
-            array = standardizeAndViewpointAdapt(array, context);
-        }
 
         return new Subsequence(array, from, to);
     }
@@ -87,25 +79,29 @@ public class Subsequence {
      *
      * @param expr some tree
      * @param factory an AnnotatedTypeFactory
-     * @param context the context in which to viewpoint adapt the subsequence
      * @return null or a new Subsequence from the declaration of {@code varTree}
      */
     public static Subsequence getSubsequenceFromReceiver(
-            JavaExpression expr,
-            BaseAnnotatedTypeFactoryForIndexChecker factory,
-            JavaExpressionContext context) {
-        if (expr == null) {
+            JavaExpression expr, BaseAnnotatedTypeFactoryForIndexChecker factory) {
+        if (!(expr instanceof FieldAccess)) {
             return null;
         }
 
-        Element element;
-        if (expr instanceof FieldAccess) {
-            element = ((FieldAccess) expr).getField();
-        } else {
+        FieldAccess fa = (FieldAccess) expr;
+        VariableElement element = fa.getField();
+        AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
+        if (hasSub == null) {
             return null;
         }
-        return createSubsequence(
-                factory.getDeclAnnotation(element, HasSubsequence.class), context, factory);
+        String from = factory.hasSubsequenceFromValue(hasSub);
+        String to = factory.hasSubsequenceToValue(hasSub);
+        String array = factory.hasSubsequenceSubsequenceValue(hasSub);
+
+        from = standardizeAndViewpointAdapt(from, fa, factory.getChecker());
+        to = standardizeAndViewpointAdapt(to, fa, factory.getChecker());
+        array = standardizeAndViewpointAdapt(array, fa, factory.getChecker());
+
+        return new Subsequence(array, from, to);
     }
 
     /**
@@ -114,40 +110,18 @@ public class Subsequence {
      * argument.
      *
      * @param s a Java expression string
-     * @param context the parse context
      * @return the argument, standardized and viewpoint-adapted
      */
-    private static String standardizeAndViewpointAdapt(String s, JavaExpressionContext context) {
+    private static String standardizeAndViewpointAdapt(
+            String s, FieldAccess fieldAccess, SourceChecker checker) {
+        JavaExpression parseResult;
         try {
-            return JavaExpressionParseUtil.parse(s, context).toString();
+            parseResult = JavaExpressionParseUtil.parse(s, fieldAccess.getField(), checker);
         } catch (JavaExpressionParseException e) {
             return s;
         }
-    }
-
-    /**
-     * If the passed expression is a FieldAccess, returns the context associated with it. Otherwise
-     * returns null.
-     *
-     * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
-     *
-     * @param expr the expression from which to obtain a context
-     * @param checker the type-checker
-     * @return the expression context for the given expression and checker
-     */
-    public static JavaExpressionContext getContextFromJavaExpression(
-            JavaExpression expr, SourceChecker checker) {
-        if (expr == null) {
-            return null;
-        }
-        if (expr instanceof FieldAccess) {
-            FieldAccess fa = (FieldAccess) expr;
-            return new JavaExpressionParseUtil.JavaExpressionContext(
-                    fa.getReceiver(), null, checker);
-
-        } else {
-            return null;
-        }
+        return ViewpointAdaptJavaExpression.viewpointAdapt(parseResult, fieldAccess.getReceiver())
+                .toString();
     }
 
     /**
@@ -160,11 +134,10 @@ public class Subsequence {
      * applied.
      *
      * @param s a Java expression string
-     * @param context the parse context
      * @return the string, standardized and viewpoint-adapted
      */
-    public static String negateString(String s, JavaExpressionContext context) {
-        String original = standardizeAndViewpointAdapt(s, context);
+    public static String negateString(String s) {
+        String original = s;
         String result = "";
         if (!original.startsWith("-")) {
             result += '-';

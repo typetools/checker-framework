@@ -41,7 +41,9 @@ import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,7 +70,9 @@ import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.BinaryOperation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionVPA;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -76,7 +80,6 @@ import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
@@ -107,13 +110,108 @@ public class JavaExpressionParseUtil {
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /**
-     * Parsable replacement for parameter references. It is parseable because it is a Java
-     * identifier.
+     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
+     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
+     *
+     * @param expression a Java expression to parse
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
      */
-    private static final String PARAMETER_REPLACEMENT = "_param_";
+    public static JavaExpression parse(
+            String expression, ExecutableElement method, SourceChecker checker)
+            throws JavaExpressionParseException {
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(method).asType();
+        ThisReference thisReference;
+        if (ElementUtils.isStatic(method)) {
+            // Can't use "this" on a static method
+            thisReference = null;
+        } else {
+            thisReference = new ThisReference(enclosingType);
+        }
+        List<FormalParameter> parameters = new ArrayList<>();
+        int oneBasedIndex = 1;
+        for (VariableElement paramEle : method.getParameters()) {
+            parameters.add(new FormalParameter(oneBasedIndex, paramEle));
+            oneBasedIndex++;
+        }
+        return parse(
+                expression,
+                enclosingType,
+                thisReference,
+                parameters,
+                null,
+                pathToCompilationUnit,
+                env);
+    }
 
-    /** The length of {@link #PARAMETER_REPLACEMENT}. */
-    private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
+    /**
+     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
+     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
+     *
+     * @param expression a Java expression to parse
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(
+            String expression, VariableElement fieldElement, SourceChecker checker)
+            throws JavaExpressionParseException {
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(fieldElement).asType();
+        ThisReference thisReference;
+        if (ElementUtils.isStatic(fieldElement)) {
+            // Can't use "this" on a static fieldElement
+            thisReference = null;
+        } else {
+            thisReference = new ThisReference(enclosingType);
+        }
+        List<FormalParameter> parameters = null;
+        return parse(
+                expression,
+                enclosingType,
+                thisReference,
+                parameters,
+                null,
+                pathToCompilationUnit,
+                env);
+    }
+
+    /**
+     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
+     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
+     *
+     * @param expression a Java expression to parse
+     * @return the JavaExpression for the given string
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(
+            String expression, TypeElement typeElement, SourceChecker checker)
+            throws JavaExpressionParseException {
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        ThisReference thisReference = new ThisReference(typeElement.asType());
+
+        List<FormalParameter> parameters = null;
+        return parse(
+                expression,
+                typeElement.asType(),
+                thisReference,
+                parameters,
+                null,
+                pathToCompilationUnit,
+                env);
+    }
 
     /**
      * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
@@ -125,37 +223,167 @@ public class JavaExpressionParseUtil {
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
+    @Deprecated
     public static JavaExpression parse(String expression, JavaExpressionContext context)
             throws JavaExpressionParseException {
         return parse(expression, context, null);
     }
+
+    public static JavaExpression parse(String expression, TreePath path, SourceChecker checker)
+            throws JavaExpressionParseException {
+        // The underlying javac API used to convert from Strings to Elements requires a tree path
+        // even when the information could be deduced from elements alone.  So use the path to the
+        // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+
+        TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
+        ThisReference thisReference = null;
+        if (!TreePathUtil.isTreeInStaticScope(path)) {
+            thisReference = new ThisReference(enclosingType);
+        }
+        List<FormalParameter> parameters;
+        Map<JavaExpression, JavaExpression> parametersToArgs;
+        MethodTree methodTree = TreePathUtil.enclosingMethod(path);
+        if (methodTree == null) {
+            parametersToArgs = null;
+            parameters = null;
+        } else {
+            parametersToArgs = new HashMap<>();
+            parameters = new ArrayList<>();
+            int oneBasedIndex = 1;
+            for (VariableTree arg : methodTree.getParameters()) {
+                VariableElement variableElement = TreeUtils.elementFromDeclaration(arg);
+                FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
+                parametersToArgs.put(parameter, new LocalVariable(variableElement));
+                parameters.add(parameter);
+                oneBasedIndex++;
+            }
+        }
+
+        JavaExpression javaExpr =
+                parse(
+                        expression,
+                        enclosingType,
+                        thisReference,
+                        parameters,
+                        path,
+                        pathToCompilationUnit,
+                        env);
+        if (parametersToArgs == null || parametersToArgs.isEmpty()) {
+            return javaExpr;
+        }
+        // TODO: Should this happen at calls to parse rather than in this method?
+        JavaExpressionVPA vpa = new JavaExpressionVPA(parametersToArgs);
+        return vpa.convert(javaExpr);
+    }
+
     /**
-     * Parse a string with respect to {@code localPath} and viewpoint-adapt it to the given {@code
-     * context}. Return its representation as a {@link JavaExpression}, or throw a {@link
+     * Parse a string with respect to {@code localVarPath} and viewpoint-adapt it to the given
+     * {@code context}. Return its representation as a {@link JavaExpression}, or throw a {@link
      * JavaExpressionParseException}.
      *
-     * <p>If {@code localPath} is non-null, then identifiers are parsed as if the expression was
-     * written at the location of {@code localPath}. This means identifiers will be parsed to local
-     * variables in scope at {@code localPath} when possible. If {@code localPath} is null, then no
-     * identifier can be parsed to a local variable. In either case, the parameter syntax, e.g. #1,
-     * is always parsed to the arguments in {@code context}. This is because a parameter of a lambda
-     * can refer both to local variables in scope at its declaration and to a parameter of the
-     * lambda.
+     * <p>If {@code localVarPath} is non-null, then identifiers are parsed as if the expression was
+     * written at the location of {@code localVarPath}. This means identifiers will be parsed to
+     * local variables in scope at {@code localVarPath} when possible. If {@code localVarPath} is
+     * null, then no identifier can be parsed to a local variable. In either case, the parameter
+     * syntax, e.g. #1, is always parsed to the arguments in {@code context}. This is because a
+     * parameter of a lambda can refer both to local variables in scope at its declaration and to a
+     * parameter of the lambda.
      *
      * @param expression a Java expression to parse
      * @param context information about any receiver and arguments; also has a reference to the
      *     checker
-     * @param localPath if non-null, the expression is parsed as if it were written at this location
+     * @param localVarPath if non-null, the expression is parsed as if it were written at this
+     *     location
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
     public static JavaExpression parse(
-            String expression, JavaExpressionContext context, @Nullable TreePath localPath)
+            String expression, JavaExpressionContext context, @Nullable TreePath localVarPath)
             throws JavaExpressionParseException {
         // The underlying javac API used to convert from Strings to Elements requires a tree path
         // even when the information could be deduced from elements alone.  So use the path to the
         // current CompilationUnit.
         TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = context.checker.getProcessingEnvironment();
+        Map<JavaExpression, JavaExpression> mapping = new HashMap<>();
+        TypeMirror enclosingType = context.receiver.getType();
+        ThisReference thisReference;
+        if (context.receiver == null) {
+            thisReference = null;
+        } else if (context.receiver instanceof ClassName) {
+            thisReference = null;
+        } else {
+            thisReference = new ThisReference(enclosingType);
+            mapping.put(thisReference, context.receiver);
+        }
+        List<FormalParameter> parameters;
+        if (context.arguments != null) {
+            parameters = new ArrayList<>();
+            int i = 1;
+            for (JavaExpression arg : context.arguments) {
+                // TODO: should have the elements of the parameters.
+                FormalParameter parameter = new FormalParameter(i, arg.getType());
+                parameters.add(parameter);
+                mapping.put(parameter, arg);
+                i++;
+            }
+        } else {
+            parameters = null;
+        }
+
+        JavaExpression javaExpr =
+                parse(
+                        expression,
+                        enclosingType,
+                        thisReference,
+                        parameters,
+                        localVarPath,
+                        pathToCompilationUnit,
+                        env);
+        JavaExpressionVPA vpa = new JavaExpressionVPA(mapping);
+        JavaExpression result = vpa.convert(javaExpr);
+
+        if (result instanceof ClassName
+                && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
+                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
+            throw constructJavaExpressionParseError(
+                    expression,
+                    String.format(
+                            "a class name cannot terminate a Java expression string, where result=%s [%s]",
+                            result, result.getClass()));
+        }
+        return result;
+    }
+    /**
+     * Parses {@code expression} to a {@link JavaExpression}.
+     *
+     * @param expression the string expression to parse
+     * @param enclosingType type of the class that encloses the JavaExpression
+     * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
+     *     appear in the expression
+     * @param parameters list of JavaExpressions to which to parse parameters or null if parameters
+     *     should not appear in the expression
+     * @param localVarPath if non-null, the expression is parsed as if it were written at this
+     *     location
+     * @param pathToCompilationUnit required to use the underlying Javac API
+     * @param env the processing environment
+     * @return {@code expression} as a {@code JavaExpression}
+     * @throws JavaExpressionParseException if the string cannot be parsed
+     */
+    public static JavaExpression parse(
+            String expression,
+            TypeMirror enclosingType,
+            @Nullable ThisReference thisReference,
+            @Nullable List<FormalParameter> parameters,
+            @Nullable TreePath localVarPath,
+            TreePath pathToCompilationUnit,
+            ProcessingEnvironment env)
+            throws JavaExpressionParseException {
+
         Expression expr;
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
@@ -163,20 +391,16 @@ public class JavaExpressionParseUtil {
             throw constructJavaExpressionParseError(expression, "is an invalid expression");
         }
 
-        JavaExpression result;
-        try {
-            ProcessingEnvironment env = context.checker.getProcessingEnvironment();
-            result =
-                    expr.accept(
-                            new ExpressionToJavaExpressionVisitor(
-                                    pathToCompilationUnit, localPath, env),
-                            context);
-        } catch (ParseRuntimeException e) {
-            // Convert unchecked to checked exception. Visitor methods can't throw checked
-            // exceptions. They override the methods in the superclass, and a checked exception
-            // would change the method signature.
-            throw e.getCheckedException();
-        }
+        JavaExpression result =
+                ExpressionToJavaExpressionVisitor.convert(
+                        expr,
+                        enclosingType,
+                        thisReference,
+                        parameters,
+                        localVarPath,
+                        pathToCompilationUnit,
+                        env);
+
         if (result instanceof ClassName
                 && !expression.endsWith(".class")
                 // At a call site, "#1" may be transformed to "Something.class", so don't throw an
@@ -206,7 +430,8 @@ public class JavaExpressionParseUtil {
 
         for (Integer integer : parameterIndices(expression)) {
             updatedExpression =
-                    updatedExpression.replaceAll("#" + integer, PARAMETER_REPLACEMENT + integer);
+                    updatedExpression.replaceAll(
+                            "#" + integer, FormalParameter.PARAMETER_REPLACEMENT + integer);
         }
 
         return updatedExpression;
@@ -216,7 +441,7 @@ public class JavaExpressionParseUtil {
      * A visitor class that converts a JavaParser {@link Expression} to a {@link JavaExpression}.
      */
     private static class ExpressionToJavaExpressionVisitor
-            extends GenericVisitorWithDefaults<JavaExpression, JavaExpressionContext> {
+            extends GenericVisitorWithDefaults<JavaExpression, Void> {
 
         /**
          * The underlying javac API used to convert from Strings to Elements requires a tree path
@@ -224,29 +449,47 @@ public class JavaExpressionParseUtil {
          * current CompilationUnit.
          */
         private final TreePath pathToCompilationUnit;
+
         /** If non-null, the expression is parsed as if it were written at this location. */
         private final @Nullable TreePath localVarPath;
+
         /** The processing environment. */
         private final ProcessingEnvironment env;
+
         /** The resolver. Computed from the environment, but lazily initialized. */
         private @MonotonicNonNull Resolver resolver = null;
+
         /** The type utilities. */
         private final Types types;
 
         /** The java.lang.String type. */
-        TypeMirror stringTypeMirror;
+        private final TypeMirror stringTypeMirror;
+
+        private final TypeMirror enclosingType;
+
+        private final @Nullable ThisReference thisReference;
+
+        private final @Nullable List<FormalParameter> parameters;
 
         /**
          * Create a new ExpressionToJavaExpressionVisitor.
          *
-         * @param pathToCompilationUnit required to use the underlying Javac API
+         * @param enclosingType type of the class that encloses the JavaExpression
+         * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
+         *     appear in the expression
+         * @param parameters list of JavaExpressions to which to parse parameters or null if
+         *     parameters should not appear in the expression
          * @param localVarPath if non-null, the expression is parsed as if it were written at this
          *     location
+         * @param pathToCompilationUnit required to use the underlying Javac API
          * @param env the processing environment
          */
         ExpressionToJavaExpressionVisitor(
-                TreePath pathToCompilationUnit,
+                TypeMirror enclosingType,
+                @Nullable ThisReference thisReference,
+                @Nullable List<FormalParameter> parameters,
                 @Nullable TreePath localVarPath,
+                TreePath pathToCompilationUnit,
                 ProcessingEnvironment env) {
             this.pathToCompilationUnit = pathToCompilationUnit;
             this.localVarPath = localVarPath;
@@ -254,6 +497,53 @@ public class JavaExpressionParseUtil {
             this.types = env.getTypeUtils();
             this.stringTypeMirror =
                     env.getElementUtils().getTypeElement("java.lang.String").asType();
+            this.enclosingType = enclosingType;
+            this.thisReference = thisReference;
+            this.parameters = parameters;
+        }
+
+        /**
+         * Converts a JavaParser {@link Expression} to a {@link JavaExpression}.
+         *
+         * @param expr the JavaParser {@link Expression} to convert
+         * @param enclosingType type of the class that encloses the JavaExpression
+         * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
+         *     appear in the expression
+         * @param parameters list of JavaExpressions to which to parse parameters or null if
+         *     parameters should not appear in the expression
+         * @param localVarPath if non-null, the expression is parsed as if it were written at this
+         *     location
+         * @param pathToCompilationUnit required to use the underlying Javac API
+         * @param env the processing environment
+         * @return {@code expr} as a {@code JavaExpression}
+         * @throws JavaExpressionParseException if {@code expr} cannot be converted to a {@code
+         *     JavaExpression}
+         */
+        public static JavaExpression convert(
+                Expression expr,
+                TypeMirror enclosingType,
+                @Nullable ThisReference thisReference,
+                @Nullable List<FormalParameter> parameters,
+                @Nullable TreePath localVarPath,
+                TreePath pathToCompilationUnit,
+                ProcessingEnvironment env)
+                throws JavaExpressionParseException {
+            try {
+                return expr.accept(
+                        new ExpressionToJavaExpressionVisitor(
+                                enclosingType,
+                                thisReference,
+                                parameters,
+                                localVarPath,
+                                pathToCompilationUnit,
+                                env),
+                        null);
+            } catch (ParseRuntimeException e) {
+                // Convert unchecked to checked exception. Visitor methods can't throw checked
+                // exceptions. They override the methods in the superclass, and a checked exception
+                // would change the method signature.
+                throw e.getCheckedException();
+            }
         }
 
         /** Sets the {@code resolver} field if necessary. */
@@ -265,62 +555,60 @@ public class JavaExpressionParseUtil {
 
         /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
         @Override
-        public JavaExpression defaultAction(
-                com.github.javaparser.ast.Node n, JavaExpressionContext context) {
+        public JavaExpression defaultAction(com.github.javaparser.ast.Node n, Void aVoid) {
             String message = "is not a supported expression";
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(n.toString(), message));
         }
 
         @Override
-        public JavaExpression visit(NullLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(NullLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getNullType(), (Object) null);
         }
 
         @Override
-        public JavaExpression visit(IntegerLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(IntegerLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asNumber());
         }
 
         @Override
-        public JavaExpression visit(LongLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(LongLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asNumber());
         }
 
         @Override
-        public JavaExpression visit(CharLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(CharLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.CHAR), expr.asChar());
         }
 
         @Override
-        public JavaExpression visit(DoubleLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(DoubleLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.DOUBLE), expr.asDouble());
         }
 
         @Override
-        public JavaExpression visit(StringLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(StringLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(stringTypeMirror, expr.asString());
         }
 
         @Override
-        public JavaExpression visit(BooleanLiteralExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(BooleanLiteralExpr expr, Void aVoid) {
             return new ValueLiteral(types.getPrimitiveType(TypeKind.BOOLEAN), expr.getValue());
         }
 
         @Override
-        public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
-            if (context.receiver == null) {
+        public JavaExpression visit(ThisExpr n, Void aVoid) {
+            if (thisReference == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError("this", "this isn't allowed here."));
             }
-            // "this" is the receiver of the context
-            return context.receiver;
+            return thisReference;
         }
 
         @Override
-        public JavaExpression visit(SuperExpr n, JavaExpressionContext context) {
+        public JavaExpression visit(SuperExpr n, Void aVoid) {
             // super literal
-            TypeMirror superclass = TypesUtils.getSuperclass(context.receiver.getType(), types);
+            TypeMirror superclass = TypesUtils.getSuperclass(enclosingType, types);
             if (superclass == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError("super", "super class not found"));
@@ -330,13 +618,13 @@ public class JavaExpressionParseUtil {
 
         // expr is an expression in parentheses.
         @Override
-        public JavaExpression visit(EnclosedExpr expr, JavaExpressionContext context) {
-            return expr.getInner().accept(this, context);
+        public JavaExpression visit(EnclosedExpr expr, Void aVoid) {
+            return expr.getInner().accept(this, null);
         }
 
         @Override
-        public JavaExpression visit(ArrayAccessExpr expr, JavaExpressionContext context) {
-            JavaExpression array = expr.getName().accept(this, context);
+        public JavaExpression visit(ArrayAccessExpr expr, Void aVoid) {
+            JavaExpression array = expr.getName().accept(this, null);
             TypeMirror arrayType = array.getType();
             if (arrayType.getKind() != TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
@@ -348,22 +636,22 @@ public class JavaExpressionParseUtil {
             }
             TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
 
-            JavaExpression index = expr.getIndex().accept(this, context);
+            JavaExpression index = expr.getIndex().accept(this, null);
 
             return new ArrayAccess(componentType, array, index);
         }
 
         // expr is an identifier with no dots in its name.
         @Override
-        public JavaExpression visit(NameExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(NameExpr expr, Void aVoid) {
             String s = expr.getNameAsString();
             setResolverField();
 
             // Formal parameter, using "#2" syntax.
-            if (s.startsWith(PARAMETER_REPLACEMENT)) {
+            if (s.startsWith(FormalParameter.PARAMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // (at the method scope) using the special #NN syntax.
-                return getParameterJavaExpression(s, context);
+                return getParameterJavaExpression(s);
             }
 
             // Local variable or parameter.
@@ -377,7 +665,13 @@ public class JavaExpressionParseUtil {
             }
 
             // Field access
-            FieldAccess fieldAccess = getIdentifierAsField(context.receiver, s);
+            JavaExpression fieldAccessReceiver;
+            if (thisReference != null) {
+                fieldAccessReceiver = thisReference;
+            } else {
+                fieldAccessReceiver = new ClassName(enclosingType);
+            }
+            FieldAccess fieldAccess = getIdentifierAsField(fieldAccessReceiver, s);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
@@ -390,30 +684,28 @@ public class JavaExpressionParseUtil {
                 }
             }
 
-            ClassName classType =
-                    getIdentifierAsUnqualifiedClassName(context.receiver.getType(), s);
+            ClassName classType = getIdentifierAsUnqualifiedClassName(enclosingType, s);
             if (classType != null) {
                 return classType;
             }
 
             // Err if a formal parameter name is used, instead of the "#2" syntax.
-            if (context.arguments != null) {
-                for (int i = 0; i < context.arguments.size(); i++) {
-                    if (context.arguments.get(i) instanceof LocalVariable) {
-                        Element varElt = ((LocalVariable) context.arguments.get(i)).getElement();
-                        if (varElt.getKind() == ElementKind.PARAMETER
-                                && varElt.getSimpleName().contentEquals(s)) {
-                            throw new ParseRuntimeException(
-                                    constructJavaExpressionParseError(
-                                            s,
-                                            String.format(
-                                                    DependentTypesError.FORMAL_PARAM_NAME_STRING,
-                                                    i + 1,
-                                                    s)));
-                        }
-                    }
-                }
-            }
+            // TODO: uncomment.
+            //            if (parameters != null) {
+            //                for (int i = 0; i < parameters.size(); i++) {
+            //                        Element varElt =  parameters.get(i).getElement();
+            //                        if (varElt.getSimpleName().contentEquals(s)) {
+            //                            throw new ParseRuntimeException(
+            //                                    constructJavaExpressionParseError(
+            //                                            s,
+            //                                            String.format(
+            //
+            // DependentTypesError.FORMAL_PARAM_NAME_STRING,
+            //                                                    i + 1,
+            //                                                    s)));
+            //                        }
+            //                    }
+            //            }
 
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(s, "identifier not found"));
@@ -447,7 +739,7 @@ public class JavaExpressionParseUtil {
 
         /**
          * If {@code identifier} is a class name with that can be referenced using only its simple
-         * name within {@code type}, return it. If not, return null.
+         * name within {@code type}. If not, return null.
          *
          * <p>{@code identifier} may be
          *
@@ -570,15 +862,17 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(MethodCallExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(MethodCallExpr expr, Void aVoid) {
             setResolverField();
 
             JavaExpression receiverExpr;
             if (expr.getScope().isPresent()) {
-                receiverExpr = expr.getScope().get().accept(this, context);
+                receiverExpr = expr.getScope().get().accept(this, null);
                 expr = expr.removeScope();
+            } else if (thisReference != null) {
+                receiverExpr = thisReference;
             } else {
-                receiverExpr = context.receiver;
+                receiverExpr = new ClassName(enclosingType);
             }
 
             String methodName = expr.getNameAsString();
@@ -586,9 +880,8 @@ public class JavaExpressionParseUtil {
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
             if (!expr.getArguments().isEmpty()) {
-                JavaExpressionContext argContext = context;
                 for (Expression argument : expr.getArguments()) {
-                    arguments.add(argument.accept(this, argContext));
+                    arguments.add(argument.accept(this, null));
                 }
             }
 
@@ -701,7 +994,7 @@ public class JavaExpressionParseUtil {
         // expr is a field access, a fully qualified class name, or a class name qualified with
         // another class name (e.g. {@code OuterClass.InnerClass})
         @Override
-        public JavaExpression visit(FieldAccessExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(FieldAccessExpr expr, Void aVoid) {
             setResolverField();
 
             // Check for fully qualified class name.
@@ -725,7 +1018,7 @@ public class JavaExpressionParseUtil {
 
             // Check for field access expression.
             String identifier = expr.getName().getIdentifier();
-            JavaExpression receiver = expr.getScope().accept(this, context);
+            JavaExpression receiver = expr.getScope().accept(this, null);
             FieldAccess fieldAccess = getIdentifierAsField(receiver, identifier);
             if (fieldAccess != null) {
                 return fieldAccess;
@@ -745,8 +1038,8 @@ public class JavaExpressionParseUtil {
 
         // expr is a Class literal
         @Override
-        public JavaExpression visit(ClassExpr expr, JavaExpressionContext context) {
-            TypeMirror result = convertTypeToTypeMirror(expr.getType(), context);
+        public JavaExpression visit(ClassExpr expr, Void aVoid) {
+            TypeMirror result = convertTypeToTypeMirror(expr.getType());
             if (result == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
@@ -756,11 +1049,11 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(ArrayCreationExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
             List<JavaExpression> dimensions = new ArrayList<>();
             for (ArrayCreationLevel dimension : expr.getLevels()) {
                 if (dimension.getDimension().isPresent()) {
-                    dimensions.add(dimension.getDimension().get().accept(this, context));
+                    dimensions.add(dimension.getDimension().get().accept(this, null));
                 } else {
                     dimensions.add(null);
                 }
@@ -769,10 +1062,10 @@ public class JavaExpressionParseUtil {
             List<JavaExpression> initializers = new ArrayList<>();
             if (expr.getInitializer().isPresent()) {
                 for (Expression initializer : expr.getInitializer().get().getValues()) {
-                    initializers.add(initializer.accept(this, context));
+                    initializers.add(initializer.accept(this, null));
                 }
             }
-            TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
+            TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType());
             if (arrayType == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
@@ -785,20 +1078,20 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(UnaryExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(UnaryExpr expr, Void aVoid) {
             Tree.Kind treeKind = javaParserUnaryOperatorToTreeKind(expr.getOperator());
             // This performs constant-folding for + and -; it could also do so for other operations.
             switch (treeKind) {
                 case UNARY_PLUS:
-                    return expr.getExpression().accept(this, context);
+                    return expr.getExpression().accept(this, null);
                 case UNARY_MINUS:
-                    JavaExpression negatedResult = expr.getExpression().accept(this, context);
+                    JavaExpression negatedResult = expr.getExpression().accept(this, null);
                     if (negatedResult instanceof ValueLiteral) {
                         return ((ValueLiteral) negatedResult).negate();
                     }
                     return new UnaryOperation(negatedResult.getType(), treeKind, negatedResult);
                 default:
-                    JavaExpression operand = expr.getExpression().accept(this, context);
+                    JavaExpression operand = expr.getExpression().accept(this, null);
                     return new UnaryOperation(operand.getType(), treeKind, operand);
             }
         }
@@ -833,9 +1126,9 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(BinaryExpr expr, JavaExpressionContext context) {
-            JavaExpression leftJe = expr.getLeft().accept(this, context);
-            JavaExpression rightJe = expr.getRight().accept(this, context);
+        public JavaExpression visit(BinaryExpr expr, Void aVoid) {
+            JavaExpression leftJe = expr.getLeft().accept(this, null);
+            JavaExpression rightJe = expr.getRight().accept(this, null);
             TypeMirror leftType = leftJe.getType();
             TypeMirror rightType = rightJe.getType();
             TypeMirror type;
@@ -846,7 +1139,7 @@ public class JavaExpressionParseUtil {
                 type = leftType;
             } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
                     && (types.isSameType(leftType, stringTypeMirror)
-                            || types.isSameType(rightType, stringTypeMirror))) {
+                            || TypesUtils.isString(rightType))) {
                 type = stringTypeMirror;
             } else {
                 throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
@@ -911,15 +1204,13 @@ public class JavaExpressionParseUtil {
          * handled.
          *
          * @param type a JavaParser type
-         * @param context a JavaExpressionContext
          * @return a TypeMirror corresponding to {@code type}, or null if {@code type} isn't handled
          */
-        private @Nullable TypeMirror convertTypeToTypeMirror(
-                Type type, JavaExpressionContext context) {
+        private @Nullable TypeMirror convertTypeToTypeMirror(Type type) {
             if (type.isClassOrInterfaceType()) {
                 try {
                     return StaticJavaParser.parseExpression(type.asString())
-                            .accept(this, context)
+                            .accept(this, null)
                             .getType();
                 } catch (ParseProblemException e) {
                     return null;
@@ -947,7 +1238,7 @@ public class JavaExpressionParseUtil {
                 return types.getNoType(TypeKind.VOID);
             } else if (type.isArrayType()) {
                 return types.getArrayType(
-                        convertTypeToTypeMirror(type.asArrayType().getComponentType(), context));
+                        convertTypeToTypeMirror(type.asArrayType().getComponentType()));
             }
             return null;
         }
@@ -989,19 +1280,17 @@ public class JavaExpressionParseUtil {
 
         /**
          * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
-         * context.arguments}.
+         * arguments}.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
-         * @param context the context
          * @return the JavaExpression for the given parameter
          */
-        private static JavaExpression getParameterJavaExpression(
-                String s, JavaExpressionContext context) {
-            if (context.arguments == null) {
+        private JavaExpression getParameterJavaExpression(String s) {
+            if (parameters == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(s, "no parameters found"));
             }
-            int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
+            int idx = Integer.parseInt(s.substring(FormalParameter.PARAMETER_REPLACEMENT_LENGTH));
 
             if (idx == 0) {
                 throw new ParseRuntimeException(
@@ -1009,12 +1298,12 @@ public class JavaExpressionParseUtil {
                                 "#0",
                                 "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
             }
-            if (idx > context.arguments.size()) {
+            if (idx > parameters.size()) {
                 throw new ParseRuntimeException(
                         new JavaExpressionParseException(
                                 "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
-            return context.arguments.get(idx - 1);
+            return parameters.get(idx - 1);
         }
     }
 

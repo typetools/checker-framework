@@ -287,7 +287,7 @@ public abstract class JavaExpression {
             result = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
-            result = new LocalVariable(lv);
+            result = LocalVariable.create(lv);
         } else if (receiverNode instanceof ArrayAccessNode) {
             ArrayAccessNode a = (ArrayAccessNode) receiverNode;
             result = fromArrayAccess(a);
@@ -578,7 +578,7 @@ public abstract class JavaExpression {
         }
         List<JavaExpression> internalArguments = new ArrayList<>();
         for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(fromNode(new LocalVariableNode(arg)));
+            internalArguments.add(fromVariableTree(arg));
         }
         return internalArguments;
     }
@@ -642,6 +642,7 @@ public abstract class JavaExpression {
      * @return a new ClassName or ThisReference that is a JavaExpression object for the
      *     enclosingType
      */
+    // TODO: eventually this should be deleted.
     public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
         if (TreePathUtil.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
@@ -660,4 +661,33 @@ public abstract class JavaExpression {
      * @return the result of visiting this
      */
     public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
+
+    public final JavaExpression viewpointAdapt(MethodTree methodTree) {
+        List<JavaExpression> parametersJe = new ArrayList<>();
+        for (VariableTree param : methodTree.getParameters()) {
+            parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));
+        }
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
+    }
+
+    public final JavaExpression viewpointAdapt(MethodInvocationTree methodInvocationTree) {
+        List<JavaExpression> argumentsJe = new ArrayList<>();
+        for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
+            argumentsJe.add(JavaExpression.fromTree(argTree));
+        }
+
+        JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+    }
+
+    public final JavaExpression viewpointAdapt(MethodInvocationNode invocationNode) {
+        List<JavaExpression> argumentsJe = new ArrayList<>();
+        for (Node argTree : invocationNode.getArguments()) {
+            argumentsJe.add(JavaExpression.fromNode(argTree));
+        }
+
+        Node receiver = invocationNode.getTarget().getReceiver();
+        JavaExpression receiverJe = JavaExpression.fromNode(receiver);
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+    }
 }

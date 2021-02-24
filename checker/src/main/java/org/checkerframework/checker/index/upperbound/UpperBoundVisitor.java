@@ -31,7 +31,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -104,11 +103,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
             // check that each expression is parseable in this context
             ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-            JavaExpressionContext context =
-                    JavaExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
-            checkEffectivelyFinalAndParsable(seq, context, node);
-            checkEffectivelyFinalAndParsable(from, context, node);
-            checkEffectivelyFinalAndParsable(to, context, node);
+            checkEffectivelyFinalAndParsable(seq, enclosingClass, node);
+            checkEffectivelyFinalAndParsable(from, enclosingClass, node);
+            checkEffectivelyFinalAndParsable(to, enclosingClass, node);
         }
         return super.visitAnnotation(node, p);
     }
@@ -118,16 +115,17 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * program location.
      *
      * @param s a Java expression
-     * @param context the JavaExpression context
-     * @param tree the tree at which to possibly report an error
+     * @param whereToError the tree at which to possibly report an error
      */
     private void checkEffectivelyFinalAndParsable(
-            String s, JavaExpressionContext context, Tree tree) {
+            String s, ClassTree classTree, Tree whereToError) {
         JavaExpression je;
         try {
-            je = JavaExpressionParseUtil.parse(s, context);
+            je =
+                    JavaExpressionParseUtil.parse(
+                            s, TreeUtils.elementFromDeclaration(classTree), checker);
         } catch (JavaExpressionParseException e) {
-            checker.report(tree, e.getDiagMessage());
+            checker.report(whereToError, e.getDiagMessage());
             return;
         }
         Element element = null;
@@ -139,7 +137,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
         if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
-            checker.reportError(tree, NOT_FINAL, je);
+            checker.reportError(whereToError, NOT_FINAL, je);
         }
     }
 
@@ -363,18 +361,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return result;
     }
 
-    /**
-     * Given a Java expression, returns the additive inverse (the negation) as a String. Assumes
-     * that JavaExpressions do not contain multiplication.
-     *
-     * @param s a Java expression string
-     * @param context the parse context
-     * @return the string's additive inverse (its negation)
-     */
-    private String negateString(String s, JavaExpressionContext context) {
-        return Subsequence.negateString(s, context);
-    }
-
     /*
      *  Queries the Value Checker to determine if the maximum possible value of indexTree
      *  is less than the minimum possible length of arrTree, and returns true if so.
@@ -482,16 +468,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
                 JavaExpression lhsSeqExpr =
                         parseJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                JavaExpressionContext context =
-                        Subsequence.getContextFromJavaExpression(lhsSeqExpr, checker);
                 Subsequence subSeq =
-                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory, context);
+                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory);
 
                 if (subSeq != null) {
                     String from = subSeq.from;
                     String a = subSeq.array;
-
-                    if (expQual.hasSequenceWithOffset(a, negateString(from, context))) {
+                    if (expQual.hasSequenceWithOffset(a, Subsequence.negateString(from))) {
                         // This cast is safe because LTLs cannot contain duplicates.
                         // Note that this updates newLHS on each iteration from its old value,
                         // so even if there are multiple HSS arrays the result will be correct.
