@@ -583,15 +583,6 @@ public class JavaExpressionParseUtil {
 
             String methodName = expr.getNameAsString();
 
-            // Length of string literal: convert it to an integer literal.
-            if (methodName.equals("length") && receiverExpr instanceof ValueLiteral) {
-                Object value = ((ValueLiteral) receiverExpr).getValue();
-                if (value instanceof String) {
-                    return new ValueLiteral(
-                            types.getPrimitiveType(TypeKind.INT), ((String) value).length());
-                }
-            }
-
             // parse argument list
             List<JavaExpression> arguments = new ArrayList<>();
             if (!expr.getArguments().isEmpty()) {
