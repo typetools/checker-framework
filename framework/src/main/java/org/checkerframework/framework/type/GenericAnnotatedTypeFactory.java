@@ -2382,12 +2382,8 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotationMirror> getPreconditionAnnotations(
             WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         List<AnnotationMirror> result = new ArrayList<>();
-        if (methodAnnos.fieldToPreconditions == null) {
-            return result;
-        }
-
         for (Map.Entry<VariableElement, AnnotatedTypeMirror> entry :
-                methodAnnos.fieldToPreconditions.entrySet()) {
+                methodAnnos.getFieldToPreconditions().entrySet()) {
             result.addAll(getPreconditionAnnotation(entry.getKey(), entry.getValue()));
         }
         Collections.sort(result, Ordering.usingToString());
@@ -2407,12 +2403,8 @@ public abstract class GenericAnnotatedTypeFactory<
             WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
             List<AnnotationMirror> preconds) {
         List<AnnotationMirror> result = new ArrayList<>();
-        if (methodAnnos.fieldToPostconditions == null) {
-            return result;
-        }
-
         for (Map.Entry<VariableElement, AnnotatedTypeMirror> entry :
-                methodAnnos.fieldToPostconditions.entrySet()) {
+                methodAnnos.getFieldToPostconditions().entrySet()) {
             result.addAll(getPostconditionAnnotation(entry.getKey(), entry.getValue(), preconds));
         }
         Collections.sort(result, Ordering.usingToString());
