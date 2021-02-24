@@ -276,14 +276,28 @@ public class JavaExpressionParseUtil {
             throw constructJavaExpressionParseError(expression, "is an invalid expression");
         }
 
-        return ExpressionToJavaExpressionVisitor.convert(
-                expr,
-                enclosingType,
-                thisReference,
-                parameters,
-                localVarPath,
-                pathToCompilationUnit,
-                env);
+        JavaExpression result =
+                ExpressionToJavaExpressionVisitor.convert(
+                        expr,
+                        enclosingType,
+                        thisReference,
+                        parameters,
+                        localVarPath,
+                        pathToCompilationUnit,
+                        env);
+
+        if (result instanceof ClassName
+                && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
+                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
+            throw constructJavaExpressionParseError(
+                    expression,
+                    String.format(
+                            "a class name cannot terminate a Java expression string, where result=%s [%s]",
+                            result, result.getClass()));
+        }
+        return result;
     }
 
     /**
