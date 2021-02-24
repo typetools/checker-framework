@@ -74,7 +74,8 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
 
         for (AnnotationMirror annotation : annotatedType.getAnnotations()) {
             AnnotationExpr convertedAnnotation =
-                    AnnotationConversion.annotationMirrorToAnnotationExpr(annotation);
+                    AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                            annotation);
             target.addAnnotation(convertedAnnotation);
         }
     }
