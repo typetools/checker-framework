@@ -438,17 +438,17 @@ public class DependentTypesHelper {
         if (!hasDependentType(atm)) {
             return;
         }
-        // TODO: 1.) parameter names need to be coverted to the # index syntax.
-        // TODO: 2.) If an annotation only has expressions that cannot be delocalized, then that
-        // annotation needs to be changed to top, rather than the dependent type annotation with
-        // an empty array as a value element.
 
-        JavaExpressionContext context =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodDeclTree, factory.getChecker());
+        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodDeclTree);
+        // TODO: This is wrong.  Here's the correct algorithm:
+        //  1. Parse to local path
+        //  2. Convert LocalVariables to FormalParameters
+        //  3. if any LocalVariables remain, return null.
         Converter converter =
                 expression -> {
-                    JavaExpression result = JavaExpressionParseUtil.parse(expression, context);
+                    JavaExpression result =
+                            JavaExpressionParseUtil.parse(
+                                    expression, methodElement, factory.getChecker());
                     return result instanceof ErrorExpression ? null : result;
                 };
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
@@ -701,8 +701,6 @@ public class DependentTypesHelper {
     /**
      * If the given expression should be converted, then converted it. If
      *
-     * @param expression
-     * @param converter
      * @return the converted expression or null if no conversion exists
      */
     protected final @Nullable JavaExpression convertToJavaExpression(
