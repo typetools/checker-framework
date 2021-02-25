@@ -86,21 +86,22 @@ public class Subsequence {
         }
 
         FieldAccess fa = (FieldAccess) expr;
-        JavaExpressionContext context =
-                new JavaExpressionContext(fa.getReceiver(), null, factory.getChecker());
 
         Element element = fa.getField();
         AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
         if (hasSub == null) {
             return null;
         }
-        String from = factory.hasSubsequenceFromValue(hasSub);
-        String to = factory.hasSubsequenceToValue(hasSub);
-        String array = factory.hasSubsequenceSubsequenceValue(hasSub);
 
-        from = standardizeAndViewpointAdapt(from, context);
-        to = standardizeAndViewpointAdapt(to, context);
-        array = standardizeAndViewpointAdapt(array, context);
+        JavaExpressionContext context =
+                new JavaExpressionContext(fa.getReceiver(), null, factory.getChecker());
+
+        String array =
+                standardizeAndViewpointAdapt(
+                        factory.hasSubsequenceSubsequenceValue(hasSub), context);
+        String from =
+                standardizeAndViewpointAdapt(factory.hasSubsequenceFromValue(hasSub), context);
+        String to = standardizeAndViewpointAdapt(factory.hasSubsequenceToValue(hasSub), context);
 
         return new Subsequence(array, from, to);
     }
