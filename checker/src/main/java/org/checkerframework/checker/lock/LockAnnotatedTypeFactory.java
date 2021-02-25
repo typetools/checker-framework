@@ -179,7 +179,7 @@ public class LockAnnotatedTypeFactory
                 if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
                     // There is no expression to use to replace <self> here, so just pass the
                     // expression along.
-                    return createError(expression);
+                    return passThroughString(expression);
                 }
                 JavaExpression result = super.parseString(expression, context, localVarPath);
                 if (isExpressionEffectivelyFinal(result) || result instanceof Unknown) {

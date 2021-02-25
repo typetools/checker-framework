@@ -31,7 +31,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayCreation;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.SourceChecker;
@@ -177,8 +176,8 @@ public class DependentTypesHelper {
         JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
         JavaExpressionContext context = new JavaExpressionContext(r, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
-            viewpointAdaptToContext(context, bound.getUpperBound());
-            viewpointAdaptToContext(context, bound.getLowerBound());
+            viewpointAdaptToContext(context, bound.getUpperBound()); // parseTypeElement, no vpa.
+            viewpointAdaptToContext(context, bound.getLowerBound()); // parseTypeElement, no vpa.
         }
     }
 
@@ -255,7 +254,7 @@ public class DependentTypesHelper {
         // Then copy annotations from the viewpoint adapted type to methodType, if that annotation
         // is not on a type that was substituted for a type variable.
 
-        viewpointAdaptToContext(context, viewpointAdaptedType);
+        viewpointAdaptToContext(context, viewpointAdaptedType); // parseEE, vpa method call.
         this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
     }
 
@@ -376,7 +375,7 @@ public class DependentTypesHelper {
         JavaExpression receiverJe = JavaExpression.getImplicitReceiver(classElt);
         JavaExpressionContext classignmentContext =
                 new JavaExpressionContext(receiverJe, factory.getChecker());
-        viewpointAdaptToContext(classignmentContext, type);
+        viewpointAdaptToContext(classignmentContext, type); // parseTypeElement, no vpa.
     }
 
     /**
@@ -395,7 +394,7 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, factory.getChecker());
-        viewpointAdaptToContext(context, atm);
+        viewpointAdaptToContext(context, atm); // parseEE, vpa method decl.
     }
 
     /**
@@ -496,7 +495,7 @@ public class DependentTypesHelper {
                     JavaExpressionContext context =
                             JavaExpressionContext.buildContextForMethodDeclaration(
                                     methodDeclTree, factory.getChecker());
-                    viewpointAdaptToContext(context, type);
+                    viewpointAdaptToContext(context, type); // parseEE, vpa method decl.
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
@@ -505,7 +504,9 @@ public class DependentTypesHelper {
                     // Lambdas can use local variables defined in the enclosing method, so allow
                     // identifiers to be locals in scope at the location of the lambda.
                     parseToPathAndViewpointAdapt(
-                            parameterContext, pathToVariableDecl.getParentPath(), type);
+                            parameterContext,
+                            pathToVariableDecl.getParentPath(),
+                            type); // parse for lambda
                 }
                 break;
 
@@ -520,7 +521,7 @@ public class DependentTypesHelper {
                 JavaExpression receiverJe = JavaExpression.getImplicitReceiver(variableElt);
                 JavaExpressionContext fieldContext =
                         new JavaExpressionContext(receiverJe, factory.getChecker());
-                viewpointAdaptToContext(fieldContext, type);
+                viewpointAdaptToContext(fieldContext, type); // parseVE, no vpa
                 break;
 
             default:
@@ -550,7 +551,7 @@ public class DependentTypesHelper {
 
         JavaExpression receiver = JavaExpression.fromTree(node.getExpression());
         JavaExpressionContext context = new JavaExpressionContext(receiver, factory.getChecker());
-        viewpointAdaptToContext(context, type);
+        viewpointAdaptToContext(context, type); // parseVE, vpa field access.
     }
 
     /**
@@ -683,7 +684,7 @@ public class DependentTypesHelper {
         }
     }
 
-    protected ErrorExpression createError(String error) {
+    protected ErrorExpression passThroughString(String error) {
         return new ErrorExpression(
                 TypesUtils.typeFromClass(Object.class, factory.types, factory.getElementUtils()),
                 error);
@@ -704,7 +705,7 @@ public class DependentTypesHelper {
     protected JavaExpression parseString(
             String expression, JavaExpressionContext context, @Nullable TreePath localVarPath) {
         if (DependentTypesError.isExpressionError(expression)) {
-            return createError(expression);
+            return passThroughString(expression);
         }
         JavaExpression result;
         try {
@@ -965,7 +966,7 @@ public class DependentTypesHelper {
                 JavaExpressionContext.buildContextForMethodDeclaration(node, factory.getChecker());
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
-            viewpointAdaptToContext(context, atm);
+            viewpointAdaptToContext(context, atm); // parseEE, vpa method decl.
             checkType(atm, node.getTypeParameters().get(i));
         }
     }
