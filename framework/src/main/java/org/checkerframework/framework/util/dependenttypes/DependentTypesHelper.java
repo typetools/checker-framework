@@ -172,12 +172,10 @@ public class DependentTypesHelper {
             return;
         }
 
-        Converter converter =
-                expression ->
-                        JavaExpressionParseUtil.parse(expression, classDecl, factory.getChecker());
+        Converter converter = Converter.atClassDecl(classDecl, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
-            viewpointAdaptToContext(converter, bound.getUpperBound());
-            viewpointAdaptToContext(converter, bound.getLowerBound());
+            convertAnnotatedTypeMirror(converter, bound.getUpperBound());
+            convertAnnotatedTypeMirror(converter, bound.getLowerBound());
         }
     }
 
@@ -251,7 +249,7 @@ public class DependentTypesHelper {
         } else {
             throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
         }
-        viewpointAdaptToContext(converter, viewpointAdaptedType);
+        convertAnnotatedTypeMirror(converter, viewpointAdaptedType);
         this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
     }
 
@@ -270,22 +268,6 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardizes the Java expressions in annotations on a constructor invocation.
-     *
-     * @param tree the constructor invocation
-     * @param type the type of the expression; is side-effected by this method
-     */
-    public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
-        if (!hasDependentType(type)) {
-            return;
-        }
-
-        TreePath path = factory.getPath(tree);
-        ;
-        parseToPath(path, type);
-    }
-
-    /**
      * Standardize the Java expressions in annotations in a class declaration.
      *
      * @param node the class declaration
@@ -297,10 +279,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        Converter converter =
-                expression ->
-                        JavaExpressionParseUtil.parse(expression, classElt, factory.getChecker());
-        viewpointAdaptToContext(converter, type);
+        convertAnnotatedTypeMirror(Converter.atClassDecl(classElt, factory.getChecker()), type);
     }
 
     /**
@@ -316,9 +295,8 @@ public class DependentTypesHelper {
             return;
         }
 
-        viewpointAdaptToContext(
-                Converter.atMethodDecl(methodDeclTree, factory.getChecker()),
-                atm); // parseEE, vpa method decl.
+        convertAnnotatedTypeMirror(
+                Converter.atMethodDecl(methodDeclTree, factory.getChecker()), atm);
     }
 
     /**
@@ -375,8 +353,7 @@ public class DependentTypesHelper {
                                     expression, methodElement, factory.getChecker());
                     return result instanceof ErrorExpression ? null : result;
                 };
-        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
-        this.standardizeTypeAnnotator.visit(atm, func);
+        convertAnnotatedTypeMirror(converter, atm);
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
@@ -411,33 +388,32 @@ public class DependentTypesHelper {
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
-                    viewpointAdaptToContext(
-                            Converter.atMethodDecl(methodDeclTree, factory.getChecker()),
-                            type); // parseEE, vpa method decl.
+                    convertAnnotatedTypeMirror(
+                            Converter.atMethodDecl(methodDeclTree, factory.getChecker()), type);
                 } else {
                     // Lambdas can use local variables defined in the enclosing method, so allow
                     // identifiers to be locals in scope at the location of the lambda.
-                    parseForLambda(
-                            (LambdaExpressionTree) enclTree,
-                            pathToVariableDecl.getParentPath(),
-                            type); // parse for lambda
+                    convertAnnotatedTypeMirror(
+                            Converter.atLambdaParameter(
+                                    (LambdaExpressionTree) enclTree,
+                                    pathToVariableDecl.getParentPath(),
+                                    factory.getChecker()),
+                            type);
                 }
                 break;
 
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
-                parseToPath(pathToVariableDecl, type);
+                convertAnnotatedTypeMirror(
+                        Converter.atPath(pathToVariableDecl, factory.getChecker()), type);
                 break;
 
             case FIELD:
             case ENUM_CONSTANT:
                 VariableElement fieldEle = (VariableElement) variableElt;
-                Converter converter =
-                        expressionString ->
-                                JavaExpressionParseUtil.parse(
-                                        expressionString, fieldEle, factory.getChecker());
-                viewpointAdaptToContext(converter, type);
+                convertAnnotatedTypeMirror(
+                        Converter.atFieldDecl(fieldEle, factory.getChecker()), type);
                 break;
 
             default:
@@ -465,15 +441,8 @@ public class DependentTypesHelper {
             return;
         }
 
-        JavaExpression receiver = JavaExpression.fromTree(node.getExpression());
-        Converter converter =
-                stringExpr -> {
-                    JavaExpression javaExpr =
-                            JavaExpressionParseUtil.parse(
-                                    stringExpr, (VariableElement) ele, factory.getChecker());
-                    return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, receiver);
-                };
-        viewpointAdaptToContext(converter, type); // parseVE, vpa field access.
+        convertAnnotatedTypeMirror(
+                Converter.atFieldDecl((VariableElement) ele, factory.getChecker()), type);
     }
 
     /**
@@ -491,7 +460,7 @@ public class DependentTypesHelper {
         if (path == null) {
             return;
         }
-        parseToPath(path, annotatedType);
+        convertAnnotatedTypeMirror(Converter.atPath(path, factory.getChecker()), annotatedType);
     }
 
     /**
@@ -537,48 +506,7 @@ public class DependentTypesHelper {
         }
     }
 
-    /**
-     * Parse and standardize the expressions in dependent types in {@code type} as if they were
-     * written at {@code localVarPath}. For example, {@code @KeyFor("field") String} is changed to
-     * {@code @KeyFor("this.field")}
-     *
-     * @param localVarPath the expression is parsed as if it were written at this location
-     * @param type the type to parse; is side-effected by this method
-     */
-    private void parseToPath(TreePath localVarPath, AnnotatedTypeMirror type) {
-        Converter converter =
-                expression ->
-                        JavaExpressionParseUtil.parse(
-                                expression, localVarPath, factory.getChecker());
-
-        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
-        this.standardizeTypeAnnotator.visit(type, func);
-    }
-
-    /**
-     * Viewpoint-adapt the dependent types in {@code type} using the {@code context} provided.
-     *
-     * @param type the type to viewpoint-adapt; is side-effected by this method
-     */
-    private void viewpointAdaptToContext(Converter converter, AnnotatedTypeMirror type) {
-        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
-        this.standardizeTypeAnnotator.visit(type, func);
-    }
-
-    /**
-     * Parse the dependent types in {@code type} as if they were written at {@code localVarPath} and
-     * viewpoint-adapt to the given context. The {@code context} should be different than the
-     * context of the {@code localVarPath}.
-     *
-     * @param type the type to viewpoint-adapt; is side-effected by this method
-     */
-    private void parseForLambda(
-            LambdaExpressionTree lambdaTree, TreePath parentPath, AnnotatedTypeMirror type) {
-
-        Converter converter =
-                expression ->
-                        JavaExpressionParseUtil.parse(
-                                expression, lambdaTree, parentPath, factory.getChecker());
+    protected void convertAnnotatedTypeMirror(Converter converter, AnnotatedTypeMirror type) {
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
@@ -683,6 +611,15 @@ public class DependentTypesHelper {
             };
         }
 
+        static Converter atClassDecl(TypeElement classDecl, SourceChecker checker) {
+            return expression -> JavaExpressionParseUtil.parse(expression, classDecl, checker);
+        }
+
+        static Converter atFieldDecl(VariableElement fieldEle, SourceChecker checker) {
+            return expressionString ->
+                    JavaExpressionParseUtil.parse(expressionString, fieldEle, checker);
+        }
+
         static Converter atMethodInvocation(
                 MethodInvocationTree methodInvocationTree, SourceChecker checker) {
             ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
@@ -701,6 +638,31 @@ public class DependentTypesHelper {
                 return javaExpr.viewpointAdapt(newClassTree);
             };
         }
+
+        static Converter atFieldAccess(MemberSelectTree fieldAccess, SourceChecker checker) {
+            Element ele = TreeUtils.elementFromUse(fieldAccess);
+            if (ele.getKind() != ElementKind.FIELD || ele.getKind() != ElementKind.ENUM_CONSTANT) {
+                throw new BugInCF("Expected a field, but found %s.", ele.getKind());
+            }
+            VariableElement fieldEle = (VariableElement) ele;
+
+            JavaExpression receiver = JavaExpression.fromTree(fieldAccess.getExpression());
+            return stringExpr -> {
+                JavaExpression javaExpr =
+                        JavaExpressionParseUtil.parse(stringExpr, fieldEle, checker);
+                return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, receiver);
+            };
+        }
+
+        static Converter atLambdaParameter(
+                LambdaExpressionTree lambdaTree, TreePath parentPath, BaseTypeChecker checker) {
+            return expression ->
+                    JavaExpressionParseUtil.parse(expression, lambdaTree, parentPath, checker);
+        }
+
+        static Converter atPath(TreePath path, BaseTypeChecker checker) {
+            return expression -> JavaExpressionParseUtil.parse(expression, path, checker);
+        }
     }
 
     /**
@@ -713,7 +675,7 @@ public class DependentTypesHelper {
      *     are illegal
      * @return the viewpoint-adapted annotation, or null if no viewpoint-adaption is needed
      */
-    public @Nullable AnnotationMirror standardizeAnnotationIfDependentType(
+    protected @Nullable AnnotationMirror standardizeAnnotationIfDependentType(
             Converter converter, AnnotationMirror anno) {
         if (!isExpressionAnno(anno)) {
             return null;
@@ -956,7 +918,7 @@ public class DependentTypesHelper {
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
-            viewpointAdaptToContext(Converter.atMethodDecl(node, factory.getChecker()), atm);
+            convertAnnotatedTypeMirror(Converter.atMethodDecl(node, factory.getChecker()), atm);
             checkType(atm, node.getTypeParameters().get(i));
         }
     }

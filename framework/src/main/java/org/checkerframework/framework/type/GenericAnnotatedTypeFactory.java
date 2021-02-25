@@ -688,7 +688,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-        dependentTypesHelper.standardizeNewClassTree(newClassTree, superResult);
+        dependentTypesHelper.standardizeExpression(newClassTree, superResult);
         return superResult;
     }
 
