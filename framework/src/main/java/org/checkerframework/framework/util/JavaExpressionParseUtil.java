@@ -309,7 +309,7 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
-            if (context.receiver == null) {
+            if (context.receiver == null || context.receiver instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError("this", "this isn't allowed here."));
             }
