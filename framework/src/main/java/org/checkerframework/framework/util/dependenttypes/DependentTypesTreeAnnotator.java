@@ -9,6 +9,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -29,7 +30,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitClass(ClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-        Element ele = TreeUtils.elementFromDeclaration(node);
+        TypeElement ele = TreeUtils.elementFromDeclaration(node);
         helper.standardizeClass(node, annotatedTypeMirror, ele);
         return super.visitClass(node, annotatedTypeMirror);
     }

@@ -27,12 +27,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -175,9 +177,10 @@ public class DependentTypesHelper {
         }
         JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
         JavaExpressionContext context = new JavaExpressionContext(r, factory.getChecker());
+        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, context);
         for (AnnotatedTypeParameterBounds bound : bounds) {
-            viewpointAdaptToContext(context, bound.getUpperBound()); // parseTypeElement, no vpa.
-            viewpointAdaptToContext(context, bound.getLowerBound()); // parseTypeElement, no vpa.
+            viewpointAdaptToContext(converter, bound.getUpperBound()); // parseTypeElement, no vpa.
+            viewpointAdaptToContext(converter, bound.getLowerBound()); // parseTypeElement, no vpa.
         }
     }
 
@@ -253,8 +256,9 @@ public class DependentTypesHelper {
         // type.
         // Then copy annotations from the viewpoint adapted type to methodType, if that annotation
         // is not on a type that was substituted for a type variable.
+        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, context);
 
-        viewpointAdaptToContext(context, viewpointAdaptedType); // parseEE, vpa method call.
+        viewpointAdaptToContext(converter, viewpointAdaptedType); // parseEE, vpa method call.
         this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
     }
 
@@ -367,15 +371,15 @@ public class DependentTypesHelper {
      * @param type the type of the class declaration; is side-effected by this method
      * @param classElt the element of the class declaration
      */
-    public void standardizeClass(ClassTree node, AnnotatedTypeMirror type, Element classElt) {
+    public void standardizeClass(ClassTree node, AnnotatedTypeMirror type, TypeElement classElt) {
         if (!hasDependentType(type)) {
             return;
         }
 
-        JavaExpression receiverJe = JavaExpression.getImplicitReceiver(classElt);
-        JavaExpressionContext classignmentContext =
-                new JavaExpressionContext(receiverJe, factory.getChecker());
-        viewpointAdaptToContext(classignmentContext, type); // parseTypeElement, no vpa.
+        Converter converter =
+                expression ->
+                        JavaExpressionParseUtil.parse(expression, classElt, factory.getChecker());
+        viewpointAdaptToContext(converter, type);
     }
 
     /**
@@ -391,10 +395,9 @@ public class DependentTypesHelper {
             return;
         }
 
-        JavaExpressionContext context =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodDeclTree, factory.getChecker());
-        viewpointAdaptToContext(context, atm); // parseEE, vpa method decl.
+        viewpointAdaptToContext(
+                Converter.atMethodDecl(methodDeclTree, factory.getChecker()),
+                atm); // parseEE, vpa method decl.
     }
 
     /**
@@ -487,10 +490,9 @@ public class DependentTypesHelper {
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
-                    JavaExpressionContext context =
-                            JavaExpressionContext.buildContextForMethodDeclaration(
-                                    methodDeclTree, factory.getChecker());
-                    viewpointAdaptToContext(context, type); // parseEE, vpa method decl.
+                    viewpointAdaptToContext(
+                            Converter.atMethodDecl(methodDeclTree, factory.getChecker()),
+                            type); // parseEE, vpa method decl.
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     JavaExpressionContext parameterContext =
@@ -513,10 +515,12 @@ public class DependentTypesHelper {
 
             case FIELD:
             case ENUM_CONSTANT:
-                JavaExpression receiverJe = JavaExpression.getImplicitReceiver(variableElt);
-                JavaExpressionContext fieldContext =
-                        new JavaExpressionContext(receiverJe, factory.getChecker());
-                viewpointAdaptToContext(fieldContext, type); // parseVE, no vpa
+                VariableElement fieldEle = (VariableElement) variableElt;
+                Converter converter =
+                        expressionString ->
+                                JavaExpressionParseUtil.parse(
+                                        expressionString, fieldEle, factory.getChecker());
+                viewpointAdaptToContext(converter, type);
                 break;
 
             default:
@@ -545,8 +549,14 @@ public class DependentTypesHelper {
         }
 
         JavaExpression receiver = JavaExpression.fromTree(node.getExpression());
-        JavaExpressionContext context = new JavaExpressionContext(receiver, factory.getChecker());
-        viewpointAdaptToContext(context, type); // parseVE, vpa field access.
+        Converter converter =
+                stringExpr -> {
+                    JavaExpression javaExpr =
+                            JavaExpressionParseUtil.parse(
+                                    stringExpr, (VariableElement) ele, factory.getChecker());
+                    return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, receiver);
+                };
+        viewpointAdaptToContext(converter, type); // parseVE, vpa field access.
     }
 
     /**
@@ -638,13 +648,11 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpont-adapt the dependent types in {@code type} using the {@code context} provided.
+     * Viewpoint-adapt the dependent types in {@code type} using the {@code context} provided.
      *
-     * @param context the context
      * @param type the type to viewpoint-adapt; is side-effected by this method
      */
-    private void viewpointAdaptToContext(JavaExpressionContext context, AnnotatedTypeMirror type) {
-        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, context);
+    private void viewpointAdaptToContext(Converter converter, AnnotatedTypeMirror type) {
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
@@ -758,6 +766,14 @@ public class DependentTypesHelper {
          */
         @Nullable JavaExpression convertToJavaExpression(String stringExpr)
                 throws JavaExpressionParseException;
+
+        static Converter atMethodDecl(MethodTree methodTree, SourceChecker checker) {
+            ExecutableElement ee = TreeUtils.elementFromDeclaration(methodTree);
+            return expression -> {
+                JavaExpression javaExpr = JavaExpressionParseUtil.parse(expression, ee, checker);
+                return javaExpr.viewpointAdapt(methodTree);
+            };
+        }
     }
 
     /**
@@ -1011,11 +1027,9 @@ public class DependentTypesHelper {
      * @param methodType annotated type of the method
      */
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
-        JavaExpressionContext context =
-                JavaExpressionContext.buildContextForMethodDeclaration(node, factory.getChecker());
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
-            viewpointAdaptToContext(context, atm); // parseEE, vpa method decl.
+            viewpointAdaptToContext(Converter.atMethodDecl(node, factory.getChecker()), atm);
             checkType(atm, node.getTypeParameters().get(i));
         }
     }

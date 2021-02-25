@@ -945,26 +945,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (contracts.isEmpty()) {
             return;
         }
-
-        Converter converter =
-                expression -> {
-                    JavaExpression javaExpr =
-                            JavaExpressionParseUtil.parse(expression, methodElement, checker);
-                    return javaExpr.viewpointAdapt(methodTree);
-                };
-
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
             AnnotationMirror annotation = contract.annotation;
             annotation =
                     atypeFactory
                             .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(annotation, converter, methodTree);
+                            .viewpointAdaptQualifierFromContract(
+                                    annotation,
+                                    Converter.atMethodDecl(methodTree, checker),
+                                    methodTree);
 
             JavaExpression exprJe;
             try {
                 // Parse the expressionString that was written on methodElement at the methodDecl.
-                exprJe = converter.convertToJavaExpression(expressionString);
+                exprJe =
+                        Converter.atMethodDecl(methodTree, checker)
+                                .convertToJavaExpression(expressionString);
             } catch (JavaExpressionParseException e) {
                 checker.report(methodTree, e.getDiagMessage());
                 if (formalParamNames != null && formalParamNames.contains(expressionString)) {
