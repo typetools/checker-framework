@@ -21,7 +21,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     }
 
     @Override
-    protected @Nullable JavaExpression convert(JavaExpression javaExpr) {
+    protected @Nullable JavaExpression transform(JavaExpression javaExpr) {
         return ValueCheckerUtils.optimize(javaExpr, factory);
     }
 

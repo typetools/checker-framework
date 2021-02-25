@@ -181,7 +181,7 @@ public class LockAnnotatedTypeFactory
             }
 
             @Override
-            protected @Nullable JavaExpression convert(JavaExpression javaExpr) {
+            protected @Nullable JavaExpression transform(JavaExpression javaExpr) {
                 if (javaExpr instanceof Unknown || isExpressionEffectivelyFinal(javaExpr)) {
                     return javaExpr;
                 }

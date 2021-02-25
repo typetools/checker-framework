@@ -417,10 +417,10 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return annoFromContract;
         }
-        Parser parser = expression -> JavaExpressionParseUtil.parse(expression, jeContext);
+        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, jeContext);
 
         AnnotationMirror standardized =
-                standardizeAnnotationIfDependentType(parser, annoFromContract);
+                standardizeAnnotationIfDependentType(converter, annoFromContract);
         if (standardized == null) {
             return annoFromContract;
         }
@@ -450,12 +450,12 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, factory.getChecker());
-        Parser parser =
+        Converter converter =
                 expression -> {
                     JavaExpression result = JavaExpressionParseUtil.parse(expression, context);
                     return result instanceof ErrorExpression ? null : result;
                 };
-        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(atm, func);
     }
 
@@ -634,10 +634,10 @@ public class DependentTypesHelper {
                         JavaExpression.getParametersOfEnclosingMethod(localVarPath),
                         factory.getChecker());
 
-        Parser parser =
+        Converter converter =
                 expression -> JavaExpressionParseUtil.parse(expression, localContext, localVarPath);
 
-        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
 
@@ -648,8 +648,8 @@ public class DependentTypesHelper {
      * @param type the type to viewpoint-adapt; is side-effected by this method
      */
     private void viewpointAdaptToContext(JavaExpressionContext context, AnnotatedTypeMirror type) {
-        Parser parser = expression -> JavaExpressionParseUtil.parse(expression, context);
-        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
+        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, context);
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
 
@@ -664,9 +664,9 @@ public class DependentTypesHelper {
      */
     private void parseToPathAndViewpointAdapt(
             JavaExpressionContext context, TreePath localVarPath, AnnotatedTypeMirror type) {
-        Parser parser =
+        Converter converter =
                 expression -> JavaExpressionParseUtil.parse(expression, context, localVarPath);
-        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
+        TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
 
@@ -702,21 +702,38 @@ public class DependentTypesHelper {
                 new DependentTypesError(expression, error).toString());
     }
 
-    protected JavaExpression parseString(String expression, Parser parser) {
+    /**
+     * If the given expression should be converted, then converted it. If
+     *
+     * @param expression
+     * @param converter
+     * @return the converted expression or null if no conversion exists
+     */
+    protected final @Nullable JavaExpression convertToJavaExpression(
+            String expression, Converter converter) {
         if (!shouldParseExpression(expression)) {
             return passThroughString(expression);
         }
         JavaExpression result;
         try {
-            result = parser.parse(expression);
+            result = converter.convertToJavaExpression(expression);
         } catch (JavaExpressionParseException e) {
             result = createError(expression, e);
         }
 
-        return result == null ? null : convert(result);
+        return result == null ? null : transform(result);
     }
 
-    protected @Nullable JavaExpression convert(JavaExpression javaExpr) {
+    /**
+     * This method is for subclasses to override to change JavaExpressions in some way. This
+     * implementation returns the argument. This method is called after parsing and
+     * viewpoint-adaption have occurred. {@code javaExpr} may be an {@link ErrorExpression} that
+     * result from an {@link JavaExpressionParseException}.
+     *
+     * @param javaExpr a JavaExpression
+     * @return a transformed JavaExpression or {@code null} if no transformation exists
+     */
+    protected @Nullable JavaExpression transform(JavaExpression javaExpr) {
         return javaExpr;
     }
 
@@ -724,9 +741,31 @@ public class DependentTypesHelper {
         return !DependentTypesError.isExpressionError(expression);
     }
 
-    interface Parser {
-        JavaExpression parse(String s) throws JavaExpressionParseException;
+    /**
+     * Given an expression string, convert it to a {@link JavaExpression}. See {@link
+     * #convertToJavaExpression)}.
+     */
+    @FunctionalInterface
+    interface Converter {
+
+        /**
+         * Convert {@code stringExpr} to {@link JavaExpression}.
+         *
+         * <p>If no conversion exists, {@code null} is returned.
+         *
+         * <p>Conversion includes parsing {@code stringExpr} to a {@code JavaExpression} and
+         * optional transforming the result of parsing into an other {@code JavaExpression}..
+         *
+         * @param stringExpr an string expression
+         * @return a {@code JavaExpression} or {@code null} if no conversion from {@code stringExpr}
+         *     exists
+         * @throws JavaExpressionParseException if {@code stringExpr} cannot be parsed to a {@code
+         *     JavaExpression}
+         */
+        @Nullable JavaExpression convertToJavaExpression(String stringExpr)
+                throws JavaExpressionParseException;
     }
+
     /**
      * Viewpoint-adapts Java expressions in an annotation. If the annotation is not a dependent type
      * annotation, returns null.
@@ -738,7 +777,7 @@ public class DependentTypesHelper {
      * @return the viewpoint-adapted annotation, or null if no viewpoint-adaption is needed
      */
     public @Nullable AnnotationMirror standardizeAnnotationIfDependentType(
-            Parser parser, AnnotationMirror anno) {
+            Converter converter, AnnotationMirror anno) {
         if (!isExpressionAnno(anno)) {
             return null;
         }
@@ -750,7 +789,7 @@ public class DependentTypesHelper {
             List<JavaExpression> javaExprs = new ArrayList<>();
             map.put(value, javaExprs);
             for (String expression : expressionStrings) {
-                JavaExpression javaExpr = parseString(expression, parser);
+                JavaExpression javaExpr = convertToJavaExpression(expression, converter);
                 if (javaExpr != null) {
                     javaExprs.add(javaExpr);
                 }
