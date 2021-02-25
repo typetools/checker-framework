@@ -704,7 +704,7 @@ public class DependentTypesHelper {
 
     protected JavaExpression parseString(
             String expression, JavaExpressionContext context, @Nullable TreePath localVarPath) {
-        if (DependentTypesError.isExpressionError(expression)) {
+        if (!shouldParseExpression(expression)) {
             return passThroughString(expression);
         }
         JavaExpression result;
@@ -718,6 +718,10 @@ public class DependentTypesHelper {
         }
 
         return result;
+    }
+
+    protected boolean shouldParseExpression(String expression) {
+        return !DependentTypesError.isExpressionError(expression);
     }
 
     /**

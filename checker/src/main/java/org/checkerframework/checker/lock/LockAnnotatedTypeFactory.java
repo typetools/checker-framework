@@ -174,13 +174,16 @@ public class LockAnnotatedTypeFactory
             }
 
             @Override
+            protected boolean shouldParseExpression(String expression) {
+                // There is no expression to use to replace <self> here, so just pass the
+                // expression along.
+                return super.shouldParseExpression(expression)
+                        && !LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches();
+            }
+
+            @Override
             protected JavaExpression parseString(
                     String expression, JavaExpressionContext context, TreePath localVarPath) {
-                if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
-                    // There is no expression to use to replace <self> here, so just pass the
-                    // expression along.
-                    return passThroughString(expression);
-                }
                 JavaExpression result = super.parseString(expression, context, localVarPath);
                 if (isExpressionEffectivelyFinal(result) || result instanceof Unknown) {
                     return result;
