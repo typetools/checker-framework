@@ -5,7 +5,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +30,7 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -53,7 +53,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -182,15 +181,14 @@ public class LockAnnotatedTypeFactory
             }
 
             @Override
-            protected JavaExpression parseString(
-                    String expression, JavaExpressionContext context, TreePath localVarPath) {
-                JavaExpression result = super.parseString(expression, context, localVarPath);
-                if (isExpressionEffectivelyFinal(result) || result instanceof Unknown) {
-                    return result;
+            protected @Nullable JavaExpression convert(@Nullable JavaExpression javaExpr) {
+                if (isExpressionEffectivelyFinal(javaExpr) || javaExpr instanceof Unknown) {
+                    return javaExpr;
                 }
+
                 // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL
                 // error string.
-                return createError(expression, NOT_EFFECTIVELY_FINAL);
+                return createError(javaExpr.toString(), NOT_EFFECTIVELY_FINAL);
             }
         };
     }

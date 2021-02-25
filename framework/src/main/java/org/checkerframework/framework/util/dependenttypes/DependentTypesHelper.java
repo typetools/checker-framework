@@ -711,13 +711,14 @@ public class DependentTypesHelper {
         try {
             result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
         } catch (JavaExpressionParseException e) {
-            return createError(expression, e);
-        }
-        if (result == null) {
-            return createError(expression, /*error message=*/ " ");
+            result = createError(expression, e);
         }
 
-        return result;
+        return result == null ? null : convert(result);
+    }
+
+    protected @Nullable JavaExpression convert(JavaExpression javaExpr) {
+        return javaExpr;
     }
 
     protected boolean shouldParseExpression(String expression) {

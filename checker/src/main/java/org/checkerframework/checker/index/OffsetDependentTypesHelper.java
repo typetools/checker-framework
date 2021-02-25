@@ -1,14 +1,12 @@
 package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.util.TreePath;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
@@ -23,13 +21,8 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     }
 
     @Override
-    protected JavaExpression parseString(
-            final String expression,
-            JavaExpressionContext context,
-            @Nullable TreePath localVarPath) {
-        JavaExpression result = super.parseString(expression, context, localVarPath);
-
-        return ValueCheckerUtils.optimize(result, factory);
+    protected @Nullable JavaExpression convert(JavaExpression javaExpr) {
+        return ValueCheckerUtils.optimize(javaExpr, factory);
     }
 
     @Override
