@@ -78,6 +78,7 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
+import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.javacutil.BugInCF;
@@ -227,6 +228,55 @@ public class JavaExpressionParseUtil {
     public static JavaExpression parse(String expression, JavaExpressionContext context)
             throws JavaExpressionParseException {
         return parse(expression, context, null);
+    }
+
+    public static JavaExpression parse(
+            String expression,
+            LambdaExpressionTree lambdaTree,
+            TreePath parentPath,
+            SourceChecker checker)
+            throws JavaExpressionParseException {
+
+        TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(parentPath));
+        JavaExpression receiver = JavaExpression.getPseudoReceiver(parentPath, enclosingType);
+        ThisReference thisReference =
+                receiver instanceof ClassName ? null : (ThisReference) receiver;
+        List<JavaExpression> paramsAsLocals = new ArrayList<>();
+        List<FormalParameter> parameters = new ArrayList<>();
+        int oneBasedIndex = 1;
+        for (VariableTree arg : lambdaTree.getParameters()) {
+            LocalVariable param = (LocalVariable) JavaExpression.fromVariableTree(arg);
+            parameters.add(new FormalParameter(oneBasedIndex, param.getElement()));
+            paramsAsLocals.add(param);
+            oneBasedIndex++;
+        }
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+
+        JavaExpression javaExpr =
+                parse(
+                        expression,
+                        enclosingType,
+                        thisReference,
+                        parameters,
+                        parentPath,
+                        pathToCompilationUnit,
+                        env);
+        JavaExpression result =
+                ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
+
+        if (result instanceof ClassName
+                && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
+                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
+            throw constructJavaExpressionParseError(
+                    expression,
+                    String.format(
+                            "a class name cannot terminate a Java expression string, where result=%s [%s]",
+                            result, result.getClass()));
+        }
+        return result;
     }
 
     public static JavaExpression parse(String expression, TreePath path, SourceChecker checker)

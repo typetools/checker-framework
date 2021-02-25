@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.dependenttypes;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -416,7 +417,10 @@ public class DependentTypesHelper {
                 } else {
                     // Lambdas can use local variables defined in the enclosing method, so allow
                     // identifiers to be locals in scope at the location of the lambda.
-                    parseForLambda(pathToVariableDecl.getParentPath(), type); // parse for lambda
+                    parseForLambda(
+                            (LambdaExpressionTree) enclTree,
+                            pathToVariableDecl.getParentPath(),
+                            type); // parse for lambda
                 }
                 break;
 
@@ -568,11 +572,13 @@ public class DependentTypesHelper {
      *
      * @param type the type to viewpoint-adapt; is side-effected by this method
      */
-    private void parseForLambda(TreePath parentPath, AnnotatedTypeMirror type) {
+    private void parseForLambda(
+            LambdaExpressionTree lambdaTree, TreePath parentPath, AnnotatedTypeMirror type) {
 
         Converter converter =
                 expression ->
-                        JavaExpressionParseUtil.parse(expression, parentPath, factory.getChecker());
+                        JavaExpressionParseUtil.parse(
+                                expression, lambdaTree, parentPath, factory.getChecker());
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
