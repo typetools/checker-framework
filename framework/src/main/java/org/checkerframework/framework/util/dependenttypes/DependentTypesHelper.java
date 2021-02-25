@@ -725,6 +725,9 @@ public class DependentTypesHelper {
         return !DependentTypesError.isExpressionError(expression);
     }
 
+    interface Parser {
+        JavaExpression parse(String s);
+    }
     /**
      * Viewpoint-adapts Java expressions in an annotation. If the annotation is not a dependent type
      * annotation, returns null.
@@ -741,28 +744,37 @@ public class DependentTypesHelper {
             return null;
         }
 
-        AnnotationBuilder builder =
-                new AnnotationBuilder(
-                        factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
-
+        Map<String, List<JavaExpression>> map = new HashMap<>();
         for (String value : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
-            List<String> standardizedStrings = new ArrayList<>();
+            List<JavaExpression> javaExprs = new ArrayList<>();
+            map.put(value, javaExprs);
             for (String expression : expressionStrings) {
                 JavaExpression javaExpr = parser.parse(expression);
-                if (javaExpr == null) {
-                    continue;
+                if (javaExpr != null) {
+                    javaExprs.add(javaExpr);
                 }
-                standardizedStrings.add(javaExpr.toString());
             }
-            builder.setValue(value, standardizedStrings);
         }
-        return builder.build();
+        return buildAnnotation(anno, map);
     }
 
-    interface Parser {
-        JavaExpression parse(String s);
+    protected AnnotationMirror buildAnnotation(
+            AnnotationMirror orig, Map<String, List<JavaExpression>> map) {
+        AnnotationBuilder builder =
+                new AnnotationBuilder(
+                        factory.getProcessingEnv(), AnnotationUtils.annotationName(orig));
+
+        for (Map.Entry<String, List<JavaExpression>> entry : map.entrySet()) {
+            String value = entry.getKey();
+            List<String> strings = new ArrayList<>();
+            for (JavaExpression javaExpr : entry.getValue()) {
+                strings.add(javaExpr.toString());
+            }
+            builder.setValue(value, strings);
+        }
+        return builder.build();
     }
 
     /** A scanner that standardizes Java expression strings in dependent type annotations. */
