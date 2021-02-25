@@ -1679,13 +1679,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
-        Converter converter =
-                expression -> {
-                    JavaExpression javaExpr =
-                            JavaExpressionParseUtil.parse(expression, methodElement, checker);
-                    return javaExpr.viewpointAdapt(tree);
-                };
         for (Contract c : preconditions) {
             Precondition p = (Precondition) c;
             String expressionString = p.expressionString;
@@ -1693,11 +1686,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             anno =
                     atypeFactory
                             .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(anno, converter, tree);
+                            .viewpointAdaptQualifierFromContract(
+                                    anno, Converter.atMethodInvocation(tree, checker), tree);
 
             JavaExpression exprJe;
             try {
-                exprJe = converter.convertToJavaExpression(expressionString);
+                exprJe =
+                        Converter.atMethodInvocation(tree, checker)
+                                .convertToJavaExpression(expressionString);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());

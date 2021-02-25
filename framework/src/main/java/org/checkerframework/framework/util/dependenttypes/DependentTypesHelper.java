@@ -31,6 +31,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
@@ -175,12 +176,13 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return;
         }
-        JavaExpression r = JavaExpression.getImplicitReceiver(classDecl);
-        JavaExpressionContext context = new JavaExpressionContext(r, factory.getChecker());
-        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, context);
+
+        Converter converter =
+                expression ->
+                        JavaExpressionParseUtil.parse(expression, classDecl, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
-            viewpointAdaptToContext(converter, bound.getUpperBound()); // parseTypeElement, no vpa.
-            viewpointAdaptToContext(converter, bound.getLowerBound()); // parseTypeElement, no vpa.
+            viewpointAdaptToContext(converter, bound.getUpperBound());
+            viewpointAdaptToContext(converter, bound.getLowerBound());
         }
     }
 
@@ -236,12 +238,6 @@ public class DependentTypesHelper {
             return;
         }
 
-        JavaExpression receiver = JavaExpression.getReceiver(tree);
-        List<JavaExpression> argsJe = argumentTreesToJavaExpressions(tree, methodType, argTrees);
-
-        JavaExpressionContext context =
-                new JavaExpressionContext(receiver, argsJe, factory.getChecker());
-
         // methodType cannot be viewpoint adapted directly because it is the type post type variable
         // substitution.  Dependent type annotations on type arguments cannot be
         // viewpoint adapted along with the dependent type annotations that are on the method
@@ -256,9 +252,17 @@ public class DependentTypesHelper {
         // type.
         // Then copy annotations from the viewpoint adapted type to methodType, if that annotation
         // is not on a type that was substituted for a type variable.
-        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, context);
 
-        viewpointAdaptToContext(converter, viewpointAdaptedType); // parseEE, vpa method call.
+        Converter converter;
+        if (tree instanceof MethodInvocationTree) {
+            converter =
+                    Converter.atMethodInvocation((MethodInvocationTree) tree, factory.getChecker());
+        } else if (tree instanceof NewClassTree) {
+            converter = Converter.atNewClassTree((NewClassTree) tree, factory.getChecker());
+        } else {
+            throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
+        }
+        viewpointAdaptToContext(converter, viewpointAdaptedType);
         this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
     }
 
@@ -749,7 +753,6 @@ public class DependentTypesHelper {
      */
     @FunctionalInterface
     public interface Converter {
-
         /**
          * Convert {@code stringExpr} to {@link JavaExpression}.
          *
@@ -772,6 +775,25 @@ public class DependentTypesHelper {
             return expression -> {
                 JavaExpression javaExpr = JavaExpressionParseUtil.parse(expression, ee, checker);
                 return javaExpr.viewpointAdapt(methodTree);
+            };
+        }
+
+        static Converter atMethodInvocation(
+                MethodInvocationTree methodInvocationTree, SourceChecker checker) {
+            ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
+            return expression -> {
+                JavaExpression javaExpr =
+                        JavaExpressionParseUtil.parse(expression, methodElement, checker);
+                return javaExpr.viewpointAdapt(methodInvocationTree);
+            };
+        }
+
+        static Converter atNewClassTree(NewClassTree newClassTree, BaseTypeChecker checker) {
+            ExecutableElement methodElement = TreeUtils.elementFromUse(newClassTree);
+            return expression -> {
+                JavaExpression javaExpr =
+                        JavaExpressionParseUtil.parse(expression, methodElement, checker);
+                return javaExpr.viewpointAdapt(newClassTree);
             };
         }
     }
