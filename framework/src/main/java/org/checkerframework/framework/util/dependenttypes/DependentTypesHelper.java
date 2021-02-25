@@ -404,20 +404,16 @@ public class DependentTypesHelper {
      * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} to the given context.
      *
      * @param annoFromContract an annotation from a contract
-     * @param jeContext the context to use
      * @param errorTree if non-null, where to report any errors that occur when parsing the
      *     dependent type annotation; if null, report no errors
      * @return the viewpoint-adapted annotation, or the argument if it is not a dependant type
      *     annotation
      */
     public AnnotationMirror viewpointAdaptQualifierFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext jeContext,
-            @Nullable Tree errorTree) {
+            AnnotationMirror annoFromContract, Converter converter, @Nullable Tree errorTree) {
         if (!hasDependentAnnotations()) {
             return annoFromContract;
         }
-        Converter converter = expression -> JavaExpressionParseUtil.parse(expression, jeContext);
 
         AnnotationMirror standardized =
                 standardizeAnnotationIfDependentType(converter, annoFromContract);
@@ -746,7 +742,7 @@ public class DependentTypesHelper {
      * #convertToJavaExpression)}.
      */
     @FunctionalInterface
-    interface Converter {
+    public interface Converter {
 
         /**
          * Convert {@code stringExpr} to {@link JavaExpression}.

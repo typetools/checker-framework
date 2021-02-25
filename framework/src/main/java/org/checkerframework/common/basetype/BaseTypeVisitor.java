@@ -83,8 +83,6 @@ import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -121,8 +119,8 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper.Converter;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -948,22 +946,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodDeclaration(methodTree, checker);
+        Converter converter =
+                expression -> {
+                    JavaExpression javaExpr =
+                            JavaExpressionParseUtil.parse(expression, methodElement, checker);
+                    return javaExpr.viewpointAdapt(methodTree);
+                };
 
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
             AnnotationMirror annotation = contract.annotation;
-
             annotation =
                     atypeFactory
                             .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
+                            .viewpointAdaptQualifierFromContract(annotation, converter, methodTree);
 
             JavaExpression exprJe;
             try {
                 // Parse the expressionString that was written on methodElement at the methodDecl.
-                exprJe = JavaExpressionParseUtil.parse(expressionString, methodElement, checker);
+                exprJe = converter.convertToJavaExpression(expressionString);
             } catch (JavaExpressionParseException e) {
                 checker.report(methodTree, e.getDiagMessage());
                 if (formalParamNames != null && formalParamNames.contains(expressionString)) {
@@ -985,7 +986,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
                 return;
             }
-            exprJe = exprJe.viewpointAdapt(methodTree);
+
             if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
                 checker.reportError(methodTree, "flowexpr.parse.error", expressionString);
                 return;
@@ -1680,35 +1681,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (preconditions.isEmpty()) {
             return;
         }
-        JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodUse(tree, checker);
+
         ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
-
-        if (jeContext == null) {
-            checker.reportError(tree, "flowexpr.parse.context.not.determined", tree);
-            return;
-        }
-
+        Converter converter =
+                expression -> {
+                    JavaExpression javaExpr =
+                            JavaExpressionParseUtil.parse(expression, methodElement, checker);
+                    return javaExpr.viewpointAdapt(tree);
+                };
         for (Contract c : preconditions) {
             Precondition p = (Precondition) c;
             String expressionString = p.expressionString;
             AnnotationMirror anno = p.annotation;
-
             anno =
                     atypeFactory
                             .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(anno, jeContext, tree);
+                            .viewpointAdaptQualifierFromContract(anno, converter, tree);
 
             JavaExpression exprJe;
             try {
-                exprJe = JavaExpressionParseUtil.parse(expressionString, methodElement, checker);
+                exprJe = converter.convertToJavaExpression(expressionString);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());
                 return;
             }
-
-            exprJe = exprJe.viewpointAdapt(tree);
 
             CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
             CFAbstractValue<?> value = null;
@@ -4217,39 +4214,34 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // where the contract was defined.  For example, methodTree might be an overriding
         // definition, and the contract might be for a superclass.
         MethodTree methodTree = visitorState.getMethodTree();
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
-        ThisReference receiverJe =
-                new ThisReference(methodType.getReceiverType().getUnderlyingType());
-        List<JavaExpression> parametersJe = new ArrayList<>();
-        for (VariableElement param : methodElt.getParameters()) {
-            parametersJe.add(new LocalVariable(param));
-        }
-        JavaExpressionContext jeContext =
-                new JavaExpressionContext(receiverJe, parametersJe, checker);
+
+        Converter converter =
+                expression -> {
+                    JavaExpression javaExpr =
+                            JavaExpressionParseUtil.parse(
+                                    expression, methodType.getElement(), checker);
+                    return javaExpr.viewpointAdapt(methodTree);
+                };
 
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
-
             annotation =
                     atypeFactory
                             .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
+                            .viewpointAdaptQualifierFromContract(annotation, converter, methodTree);
             JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed many times.
                 // This could be optimized to store the result the first time.
                 // (same for other annotations)
-                exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, methodType.getElement(), checker);
+                exprJe = converter.convertToJavaExpression(expressionString);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(methodTree, e.getDiagMessage());
                 continue;
             }
-            exprJe = exprJe.viewpointAdapt(methodTree);
             result.add(Pair.of(exprJe, annotation));
         }
         return result;
