@@ -4,67 +4,46 @@ buildscript {
     }
     dependencies {
         // Create OSGI bundles
-        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:5.2.0"
+        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
     }
-}
-
-task copySources(type: Copy) {
-    description 'Copy checker-qual source from other projects.'
-    includeEmptyDirs = false
-    doFirst {
-        // Delete the directory in case a previously copied file should no longer be in checker-qual
-        delete file('src/main/java')
-    }
-
-    from files('../checker/src/main/java', '../dataflow/src/main/java', '../framework/src/main/java')
-    // Qualifiers
-    include '**/org/checkerframework/**/qual/*.java'
-    include '**/PurityUnqualified.java'    // TODO: Should we move this into a qual directory?
-    // Utility classes
-    // If you change this list, also update ../LICENSE.txt .
-    include "**/FormatUtil.java"
-    include "**/I18nFormatUtil.java"
-    include "**/NullnessUtil.java"
-    include "**/Opt.java"
-    include "**/RegexUtil.java"
-    include "**/SignednessUtil.java"
-    include "**/SignednessUtilExtra.java"
-    include "**/UnitsTools.java"
-
-    // Make files read only.
-    fileMode(0444)
-
-    into file('src/main/java')
 }
 
 apply plugin: 'biz.aQute.bnd.builder'
 
 jar {
-    dependsOn copySources
     manifest {
         attributes('Export-Package': '*')
     }
 }
 
-compileJava {
-    dependsOn copySources
-}
+apply from: rootProject.file("gradle-mvn-push.gradle")
 
-clean {
-    delete file('src/')
-}
-
-task deployArtifactsToLocalRepo(dependsOn: jar) {
-    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
-    doLast {
-        mvnDeployToLocalRepo(project, "${pomFiles}/checker-qual-pom.xml")
+/** Adds information to the publication for uploading to Maven repositories. */
+final checkerQualPom(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+    publication.pom {
+        name = 'Checker Qual'
+        description = 'checker-qual contains annotations (type qualifiers)\n' +
+                'used by the Checker Framework to type-check Java source code.\n' +
+                '\n' +
+                'Please see artifact: org.checkerframework:checker'
+        licenses {
+            license {
+                name = 'The MIT License'
+                url = 'http://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
     }
 }
-
-task deployArtifactsToSonatype {
-    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
-    dependsOn ('jar', 'sourcesJar', 'javadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/checker-qual-pom.xml")
+publishing {
+    publications {
+        checkerQual(MavenPublication) {
+            checkerQualPom it
+        }
     }
+}
+signing {
+    sign publishing.publications.checkerQual
 }

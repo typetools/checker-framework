@@ -102,6 +102,17 @@
                        match="checker-qual-${release.version.regexp}{0,1}" replace="checker-qual-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-util-${release.version.regexp}{0,1}" replace="checker-util-${release.ver}"/>
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker/${release.version.regexp}{0,1}" replace="checker/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-qual/${release.version.regexp}{0,1}" replace="checker-qual/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-util/${release.version.regexp}{0,1}" replace="checker-util/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"

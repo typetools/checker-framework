@@ -23,10 +23,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     @Override
     public SortedSet<String> getSuppressWarningsPrefixes() {
         SortedSet<String> result = super.getSuppressWarningsPrefixes();
-        // "fbc" is for backward compatibility only.  Note that the SuppressesWarnings strings
-        // "initialization" and "fbc" suppress *all* warnings, not just those related to
-        // initialization.  See manual section
-        // https://checkerframework.org/manual/#initialization-checking-suppressing-warnings .
+        // "fbc" is for backward compatibility only.
+        // Notes:
+        //   * "fbc" suppresses *all* warnings, not just those related to initialization.  See
+        //     https://checkerframework.org/manual/#initialization-checking-suppressing-warnings .
+        //   * "initialization" is not a checkername/prefix.
         result.add("fbc");
         return result;
     }

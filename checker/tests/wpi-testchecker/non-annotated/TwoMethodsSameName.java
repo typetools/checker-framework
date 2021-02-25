@@ -7,14 +7,14 @@ import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibli
 public class TwoMethodsSameName {
 
     void test(int x, int y) {
-        // :: error: assignment.type.incompatible
+        // :: warning: assignment.type.incompatible
         @Sibling1 int x1 = x;
-        // :: error: assignment.type.incompatible
+        // :: warning: assignment.type.incompatible
         @Sibling2 int y1 = y;
     }
 
     void test(int z) {
-        // :: error: assignment.type.incompatible
+        // :: warning: assignment.type.incompatible
         @Sibling2 int z1 = z;
     }
 

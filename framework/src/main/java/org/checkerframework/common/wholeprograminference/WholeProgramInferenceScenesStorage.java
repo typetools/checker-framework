@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Target;
@@ -36,7 +35,7 @@ import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.io.IndexFileParser;
 
 /**
@@ -522,9 +521,8 @@ public class WholeProgramInferenceScenesStorage {
             AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
             updateTypeElementFromATM(
                     typeToUpdate.innerTypes.getVivify(
-                            new InnerTypeLocation(
-                                    TypeAnnotationPosition.getTypePathFromBinary(
-                                            Collections.nCopies(2 * idx, 0)))),
+                            TypePathEntry.getTypePathEntryListFromBinary(
+                                    Collections.nCopies(2 * idx, 0))),
                     idx + 1,
                     defLoc,
                     newAAT.getComponentType(),

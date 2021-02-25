@@ -11,9 +11,14 @@ sourceSets {
     testannotations
 }
 
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 def versions = [
         autoValue       : "1.7.4",
-        lombok          : "1.18.16",
+        lombok          : "1.18.18",
 ]
 
 
@@ -27,20 +32,20 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
-    implementation 'org.plumelib:plume-util:1.3.0'
-    implementation 'org.plumelib:reflection-util:1.0.2'
+    implementation 'org.plumelib:plume-util:1.4.1'
+    implementation 'org.plumelib:reflection-util:1.0.3'
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
     // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
     // dependencies" section of https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
     // (It isn't at https://mvnrepository.com/artifact/org.checkerframework.annotatedlib/guava/28.2-jre, which is the bug.)
-    implementation 'com.google.errorprone:error_prone_annotations:2.3.4'
+    implementation 'com.google.errorprone:error_prone_annotations:2.5.1'
     implementation ('org.checkerframework.annotatedlib:guava:30.0-jre') {
         // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
         exclude group: 'org.checkerframework'
     }
 
-    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 

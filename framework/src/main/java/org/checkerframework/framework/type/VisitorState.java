@@ -108,6 +108,8 @@ public class VisitorState {
     /**
      * Returns the assignment context.
      *
+     * <p>NOTE: This method is known to be buggy.
+     *
      * @return the assignment context
      */
     public Pair<Tree, AnnotatedTypeMirror> getAssignmentContext() {

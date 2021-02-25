@@ -20,6 +20,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -290,7 +291,7 @@ public class ElementAnnotationUtil {
     static void annotateViaTypeAnnoPosition(
             final AnnotatedTypeMirror type, final Collection<TypeCompound> annos)
             throws UnexpectedAnnotationLocationException {
-        final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
+        final IdentityHashMap<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
             AnnotatedTypeMirror target =
@@ -454,7 +455,7 @@ public class ElementAnnotationUtil {
             TypeCompound anno,
             boolean isComponentTypeOfArray)
             throws UnexpectedAnnotationLocationException {
-        // List order by outer most type to inner most type.
+        // List order by outermost type to innermost type.
         ArrayDeque<AnnotatedDeclaredType> outerToInner = new ArrayDeque<>();
         AnnotatedDeclaredType enclosing = type;
         while (enclosing != null) {
@@ -559,7 +560,7 @@ public class ElementAnnotationUtil {
 
     /**
      * When we have an (e.g. @Odd int @NonNull []) the type-annotation position of the array
-     * annotation (@NonNull) is really the outer most type in the TypeAnnotationPosition and will
+     * annotation (@NonNull) is really the outermost type in the TypeAnnotationPosition and it will
      * NOT have TypePathEntryKind.ARRAY at the end of its position. The position of the component
      * type (@Odd) is considered deeper in the type and therefore has the TypePathEntryKind.ARRAY in
      * its position.
@@ -624,7 +625,24 @@ public class ElementAnnotationUtil {
          * @param format format string
          * @param args arguments to the format string
          */
+        @FormatMethod
         private UnexpectedAnnotationLocationException(String format, Object... args) {
+            super(String.format(format, args));
+        }
+    }
+
+    /** An ERROR TypeKind was found. */
+    @SuppressWarnings("serial")
+    public static class ErrorTypeKindException extends Error {
+
+        /**
+         * Creates an ErrorTypeKindException.
+         *
+         * @param format format string
+         * @param args arguments to the format string
+         */
+        @FormatMethod
+        public ErrorTypeKindException(String format, Object... args) {
             super(String.format(format, args));
         }
     }

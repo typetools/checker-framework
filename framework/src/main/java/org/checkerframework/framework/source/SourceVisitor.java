@@ -109,7 +109,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
     /**
      * If {@code tree} has a {@code @SuppressWarnings} add it to treesWithSuppressWarnings.
      *
-     * @param tree a declaration on which a {@code @SuppressWarnings} annotation may be placed.
+     * @param tree a declaration on which a {@code @SuppressWarnings} annotation may be placed
      */
     private void storeSuppressWarningsAnno(Tree tree) {
         if (!warnUnneededSuppressions) {

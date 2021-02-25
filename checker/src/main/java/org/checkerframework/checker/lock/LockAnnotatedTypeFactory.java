@@ -103,6 +103,14 @@ public class LockAnnotatedTypeFactory
     protected final AnnotationMirror GUARDSATISFIED =
             AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
+    /** The value() element/field of a @GuardSatisfied annotation. */
+    protected final ExecutableElement guardSatisfiedValueElement =
+            TreeUtils.getMethod(
+                    "org.checkerframework.checker.lock.qual.GuardSatisfied",
+                    "value",
+                    0,
+                    processingEnv);
+
     /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;
 
@@ -167,10 +175,7 @@ public class LockAnnotatedTypeFactory
 
             @Override
             protected String standardizeString(
-                    String expression,
-                    JavaExpressionContext context,
-                    TreePath localScope,
-                    boolean useLocalScope) {
+                    String expression, JavaExpressionContext context, TreePath localVarPath) {
                 if (DependentTypesError.isExpressionError(expression)) {
                     return expression;
                 }
@@ -182,10 +187,10 @@ public class LockAnnotatedTypeFactory
 
                 try {
                     JavaExpression result =
-                            JavaExpressionParseUtil.parse(
-                                    expression, context, localScope, useLocalScope);
+                            JavaExpressionParseUtil.parse(expression, context, localVarPath);
                     if (result == null) {
-                        return new DependentTypesError(expression, " ").toString();
+                        return new DependentTypesError(expression, /*error message=*/ " ")
+                                .toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
@@ -229,8 +234,8 @@ public class LockAnnotatedTypeFactory
             return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
         } else if (expr instanceof MethodCall) {
             MethodCall methodCall = (MethodCall) expr;
-            for (JavaExpression param : methodCall.getParameters()) {
-                if (!isExpressionEffectivelyFinal(param)) {
+            for (JavaExpression arg : methodCall.getArguments()) {
+                if (!isExpressionEffectivelyFinal(arg)) {
                     return false;
                 }
             }
@@ -549,7 +554,12 @@ public class LockAnnotatedTypeFactory
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
-        return AnnotationUtils.getElementValue(am, "value", Integer.class, true);
+        AnnotationValue av = am.getElementValues().get(guardSatisfiedValueElement);
+        if (av == null) {
+            return -1;
+        } else {
+            return (int) av.getValue();
+        }
     }
 
     @Override

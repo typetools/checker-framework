@@ -1,7 +1,7 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.checker.regex.util.RegexUtil;
 
 public class GroupCounts {
     void testGroupCount() {

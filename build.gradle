@@ -42,7 +42,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.18.0.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -54,9 +54,6 @@ ext {
     // The local git repository, typically in the .git directory, but not for worktrees.
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
-
-    // Location of pom files that are only used to add meta-data to the artifacts published to Maven.
-    pomFiles = "${rootDir}/docs/developer/release/maven-artifacts"
 }
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
 // and with text in #installation
@@ -103,7 +100,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.9.0'
+    version '3.10.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -124,6 +121,9 @@ allprojects {
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
+    configurations {
+        checkerFatJar
+    }
     dependencies {
         if (isJava8) {
             javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
@@ -132,7 +132,9 @@ allprojects {
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
         allProjects subprojects
+        checkerFatJar project(path: ':checker', configuration: 'shadow')
     }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -149,7 +151,7 @@ allprojects {
                 if (!name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
-                classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
+                classpath += rootProject.configurations.getByName('checkerFatJar').asFileTree
                 if (isJava8) {
                     classpath += configurations.javacJar
                 }
@@ -173,8 +175,10 @@ allprojects {
         }
 
         // Add standard javac options
-        tasks.withType(JavaCompile) {
+        tasks.withType(JavaCompile) { compilationTask ->
             dependsOn(':installGitHooks')
+            // Put source files in deterministic order, for debugging.
+            compilationTask.source = compilationTask.source.sort()
             sourceCompatibility = 8
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
@@ -226,9 +230,8 @@ allprojects {
             }
 
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
-            // All the classes in checker-qual are also in checker, so they are checked.
             // TODO: enable Error Prone on test classes.
-            if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
+            if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone
@@ -346,6 +349,7 @@ List<String> getJavaFilesToFormat(projectName) {
     project(':' + projectName).sourceSets.forEach { set ->
         javaFiles.addAll(set.java.files)
     }
+
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
         // If you change this, also change checker/bin-devel/git.pre-commit
@@ -356,7 +360,8 @@ List<String> getJavaFilesToFormat(projectName) {
             javaFiles.add(details.file)
         }
     }
-     // Collect all java files in jtreg directory
+
+    // Collect all java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
             javaFiles.add(details.file)
@@ -400,7 +405,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
-    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+    source(project(':checker-util').sourceSets.main.allJava, project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = configurations.allProjects
@@ -459,7 +464,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
         destinationDir = file("${rootDir}/docs/tmpapi")
         destinationDir.mkdirs()
         subprojects.forEach {
-            if (!it.name.startsWith("checker-qual")) {
+            if (!it.name.startsWith("checker-qual-android")) {
                 source += it.sourceSets.main.allJava
             }
         }
@@ -476,6 +481,15 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 }
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
+
+task manual {
+    description 'Build the manual'
+    doLast {
+        exec {
+            commandLine "make", "-C", "docs/manual", "all"
+        }
+    }
+}
 
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
@@ -578,7 +592,7 @@ task tags {
     description 'Create Emacs TAGS table'
     doLast {
         exec {
-            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+            commandLine "etags", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
         }
         exec {
             commandLine "make", "-C", "docs/manual", "tags"
@@ -599,13 +613,13 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.5.1'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
-        // checker-qual* projects have no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual') }
+        // checker-qual-android project has no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
 
         doFirst {
@@ -623,8 +637,8 @@ subprojects {
 
     task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Format the Java source code'
-        // checker-qual* projects have no source, so skip
-        onlyIf { !project.name.startsWith('checker-qual') }
+        // checker-qual-android project has no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
@@ -642,47 +656,35 @@ subprojects {
             }
         }
 
-        // These appear in annotation-file-utilities-all.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
         relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-        // relocate 'sun', 'org.checkerframework.sun'
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+        // relocate 'sun', 'org.checkerframework.sun'
         relocate 'com.google', 'org.checkerframework.com.google'
         relocate 'plume', 'org.checkerframework.plume'
     }
 
-    if (!project.name.startsWith('checker-qual')) {
+    if (!project.name.startsWith('checker-qual-android')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
             commandLine "bash", "-c", "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
         }
     }
 
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
     // Things in this block reference definitions in the subproject that do not exist,
     // until the project is evaluated.
     afterEvaluate {
-        // Create a sourcesJar task for each subproject
-        tasks.create(name: 'sourcesJar', type: Jar) {
-            description 'Creates sources jar.'
-            archiveClassifier = 'source'
-            archiveBaseName = jar.archiveBaseName
-            from sourceSets.main.java
-        }
-
-        // Create a javadocJar task for each subproject
-        tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
-            description 'Creates javadoc jar.'
-            archiveClassifier = 'javadoc'
-            archiveBaseName = jar.archiveBaseName
-            from tasks.javadoc.destinationDir
-        }
-
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
-            if (archiveFileName.get().startsWith("checker-qual")) {
+            if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                 metaInf {
                     from './LICENSE.txt'
                 }
@@ -697,7 +699,7 @@ subprojects {
                 if (! archiveFileName.get().endsWith("source.jar")) {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
                 }
-                if (archiveFileName.get().startsWith("checker-qual")) {
+                if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                     attributes("Bundle-License": "MIT")
                 } else {
                     attributes("Bundle-License": "(GPL-2.0-only WITH Classpath-exception-2.0)")
@@ -707,6 +709,8 @@ subprojects {
 
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
+        createCheckTypeTask(project.name, 'Formatter',
+            'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
             'org.checkerframework.checker.interning.InterningChecker',
             ['-Astubs=javax-lang-model-element-name.astub'])
@@ -742,7 +746,8 @@ subprojects {
                                 "-workDir:${jtregOutput}/${name}/work",
                                 "-reportDir:${jtregOutput}/${name}/report",
                                 "-verbose:error,fail",
-                                "-javacoptions:-g",
+                                // Don't add debugging information
+                                //  "-javacoptions:-g",
                                 "-keywords:!ignore",
                                 "-samevm",
                                 "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
@@ -855,7 +860,7 @@ subprojects {
                     dependsOn('jtregJdk11Tests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests')
+                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
 
             if (project.name.is('dataflow')) {
@@ -865,10 +870,11 @@ subprojects {
         }
 
         // Create a typecheck task per project (dogfooding the Checker Framework on itself).
-        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
+        // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
         tasks.create(name: 'typecheck', group: 'Verification') {
             description 'Run the Checker Framework on itself'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
             } else {
@@ -898,7 +904,7 @@ subprojects {
 assemble.dependsOn(':checker:copyJarsToDist')
 
 task checkBasicStyle(group: 'Format') {
-    description 'Check basic style guidelines.  Not related to Checkstyle tool.'
+    description 'Check basic style guidelines, mostly whitespace.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.html-tools',
@@ -910,8 +916,7 @@ task checkBasicStyle(group: 'Format') {
                                   'plume-bib',
                                   'bootstrap',
                                   'build',
-                                  'jdk',
-                                  'maven-artifacts']
+                                  'jdk']
 
     String[] ignoreFilePatterns = [
             '*.aux',
@@ -1043,99 +1048,35 @@ task releaseAndTest {
 jar.onlyIf {false}
 
 /**
- * Copies the pom file and expands any properties in the file. For example,
- * ${checkerframeworkversion} is changed to the current version.
- * @param pomFile file name of pom
- * @return file name of the copied and expanded pom file
+ * Adds the shared pom information to the given publication.
+ * @param publication MavenPublication
  */
-String copyAndExpandPomFile(String pomFile) {
-    mkdir "${buildDir}/maven"
-    copy {
-        from pomFile
-        into "${buildDir}/maven"
-        expand('checkerframeworkversion': version)
-    }
+final sharedPublicationConfiguration(publication) {
+    publication.pom {
+        url = 'https://checkerframework.org'
+        developers {
+            // These are the lead developers/maintainers, not all the developers or contributors.
+            developer {
+                id = 'mernst'
+                name = 'Michael Ernst'
+                email = 'mernst@cs.washington.edu'
+                url = 'https://homes.cs.washington.edu/~mernst/'
+                organization = 'University of Washington'
+                organizationUrl = 'https://www.cs.washington.edu/'
+            }
+            developer {
+                id = 'smillst'
+                name = 'Suzanne Millstein'
+                email = 'smillst@cs.washington.edu'
+                organization = 'University of Washington'
+                organizationUrl = 'https://www.cs.washington.edu/'
+            }
+        }
 
-    new File("${buildDir}/maven").toPath().resolve(new File(pomFile).toPath().last())
-}
-
-/**
- * Deploys the given jar file to the local Maven repository.
- * @param jar fully qualified file name of a jar file
- * @param pom filename of pom that describes the artifact
- */
-void mvnDeployToLocalRepo(String jar, String pom) {
-    String copiedFilename = copyAndExpandPomFile(pom)
-    exec {
-        executable 'mvn'
-        args += [
-                'install:install-file',
-                "-Dfile=${jar}",
-                "-DpomFile=${copiedFilename}",
-                '-DgeneratePom=true'
-
-        ]
-    }
-}
-
-/**
- * Deploys the jar file produced by the "jar" task of the given project to the local Maven repository.
- * @param project project whose jar file is deployed
- * @param pom filename of pom that describes the artifact
- */
-void mvnDeployToLocalRepo(Project project, String pomFile) {
-    String jarFile = project.tasks.getByName('jar').archiveFile.get().toString();
-    mvnDeployToLocalRepo(jarFile, pomFile)
-}
-
-/**
- * Signs and deploys the given jar file to the Sonatypes Maven repository.
- * @param jar fully qualified file name of a jar file
- * @param pom filename of pom that describes the artifact
- * @param classifier the kind of artifact; sources or javadoc; defaults to the empty string
- */
-void mvnSignAndDeployToSonatype(String jar, String pom, String classifier = "") {
-    String copiedFilename = copyAndExpandPomFile(pom)
-    String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
-    String passphrase = new File(passwordFile).readLines().get(0);
-
-    exec {
-        executable 'mvn'
-        args += [
-                'gpg:sign-and-deploy-file',
-                '-Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/',
-                '-DrepositoryId=sonatype-nexus-staging',
-                "-DpomFile=${copiedFilename}",
-                "-Dfile=${jar}",
-                '-Dgpg.keyname=checker-framework-dev@googlegroups.com',
-                "-Dgpg.passphrase=${passphrase}"
-        ]
-        if (!classifier.isEmpty()) {
-            args += ["-Dclassifier=${classifier}"]
+        scm {
+            url = 'https://github.com/typetools/checker-framework.git'
+            connection = 'scm:git:git://github.com/typetools/checker-framework.git'
+            developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
         }
     }
-}
-
-/**
- * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
- * @param classesJar class jar file
- * @param sourceJar source jar file corresponding to the classesJar
- * @param javadocJar javadoc jar file corresponding to the classesJar
- * @param pom filename of pom that describes the artifact
- */
-void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, String javadocJar, String pom) {
-    mvnSignAndDeployToSonatype(classesJar, pom)
-    mvnSignAndDeployToSonatype(sourceJar, pom, "sources")
-    mvnSignAndDeployToSonatype(javadocJar, pom, "javadoc")
-}
-
-/**
- * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
- * @param project with a jar, sourcesJar, and javadocJar tasks defined
- * @param pom filename of pom that describes the artifact
- */
-void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {
-    mvnSignAndDeployMultipleToSonatype(project.tasks.getByName('jar').archiveFile.get().toString(),
-            project.tasks.getByName('sourcesJar').archiveFile.get().toString(),
-            project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom)
 }

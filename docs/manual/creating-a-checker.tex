@@ -814,9 +814,9 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/analysis}{JavaExpressions}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{fromNode(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{fromTree(AnnotationProvider,
 ExpressionTree)} or
-\refmethodanchortext{dataflow/analysis}{JavaExpressions}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
 Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
@@ -1286,7 +1286,7 @@ The steps to customizing type refinement are:
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
-\refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-}
+\refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-}
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
@@ -1893,9 +1893,9 @@ output if it cannot parse it.)
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by
+pseudo-assignment check (\<commonAssignmentCheck>) performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
-Section~\ref{creating-extending-visitor}).
+Section~\ref{creating-extending-visitor}.
 
 \item \code{-AshowInferenceSteps}: print debugging information
 about intermediate steps in method type argument inference
@@ -1909,11 +1909,16 @@ about intermediate steps in method type argument inference
 
 \item \code{-AoutputArgsToFile}:
   This saves the final command-line parameters as passed to the compiler in a file.
-  This file can be used as a script (if the file is marked as executable on Unix, or
-  if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
-  Note that this argument cannot be included in a file containing command-line arguments
-  passed to the compiler using the @argfile syntax.
+  The file can be used as a script to re-execute the same compilation command.
+  (The script file must be marked as executable on Unix, or
+  must have a \code{.bat} extension on Windows.)
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
+
+  The \code{-AoutputArgsToFile} command-line argument is processed by
+  CheckerMain, not by the annotation processor.  That means that it can be
+  supplied only when you use the Checker Framework compiler (the ``Checker
+  Framework javac wrapper''), and it cannot be written in a file containing
+  command-line arguments passed to the compiler using the @argfile syntax.
 
 \end{itemize}
 
@@ -1930,7 +1935,7 @@ for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
 \noindent
-where the first command creates file \<someDirectory/myClass.dot> that
+where the first command creates file \<someDirectory/MyClass.dot> that
 represents the CFG, and the last command draws the CFG in a PDF file.
 The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 
@@ -2095,68 +2100,6 @@ java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" \
     src/sandbox/FileToCheck.java
 
 \end{Verbatim}
-
-% $ javac -processor org.checkerframework.checker.fenum.FenumChecker IdentityArrayList.java
-% error: GraphQualifierHierarchy found an unqualified type.  Please ensure that your implicit rules cover all cases and/or use a @DefaulQualifierInHierarchy annotation.
-% 1 error
-
-% $ javac -processor org.checkerframework.checker.fenum.FenumChecker IdentityArrayList.java
-%% error: GraphQualifierHierarchy found an unqualified type.  Please ensure that your implicit rules cover all cases and/or use a @DefaulQualifierInHierarchy annotation.
-%%   checkers.util.GraphQualifierHierarchy.checkAnnoInGraph(GraphQualifierHierarchy.java:253)
-%%   checkers.util.GraphQualifierHierarchy.isSubtype(GraphQualifierHierarchy.java:243)
-%%   checkers.fenum.FenumChecker$FenumQualifierHierarchy.isSubtype(FenumChecker.java:129)
-%%   checkers.types.QualifierHierarchy.isSubtype(QualifierHierarchy.java:78)
-%%   checkers.types.TypeHierarchy.isSubtypeImpl(TypeHierarchy.java:122)
-%%   checkers.types.TypeHierarchy.isSubtype(TypeHierarchy.java:67)
-%%   checkers.basetype.BaseTypeChecker.isSubtype(BaseTypeChecker.java:323)
-%%   checkers.basetype.BaseTypeVisitor.commonAssignmentCheck(BaseTypeVisitor.java:608)
-%%   checkers.basetype.BaseTypeVisitor.checkTypeArguments(BaseTypeVisitor.java:680)
-%%   checkers.basetype.BaseTypeVisitor.visitMethodInvocation(BaseTypeVisitor.java:299)
-%%   checkers.basetype.BaseTypeVisitor.visitMethodInvocation(BaseTypeVisitor.java:1)
-%%   com.sun.tools.javac.tree.JCTree$JCMethodInvocation.accept(JCTree.java:1351)
-%%   com.sun.source.util.TreePathScanner.scan(TreePathScanner.java:67)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:122)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:1)
-%%   com.sun.source.util.TreeScanner.visitExpressionStatement(TreeScanner.java:241)
-%%   com.sun.tools.javac.tree.JCTree$JCExpressionStatement.accept(JCTree.java:1176)
-%%   com.sun.source.util.TreePathScanner.scan(TreePathScanner.java:67)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:122)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:1)
-%%   com.sun.source.util.TreeScanner.scan(TreeScanner.java:90)
-%%   com.sun.source.util.TreeScanner.visitBlock(TreeScanner.java:160)
-%%   com.sun.tools.javac.tree.JCTree$JCBlock.accept(JCTree.java:793)
-%%   com.sun.source.util.TreePathScanner.scan(TreePathScanner.java:67)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:122)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:1)
-%%   com.sun.source.util.TreeScanner.scanAndReduce(TreeScanner.java:80)
-%%   com.sun.source.util.TreeScanner.visitMethod(TreeScanner.java:143)
-%%   checkers.basetype.BaseTypeVisitor.visitMethod(BaseTypeVisitor.java:218)
-%%   checkers.basetype.BaseTypeVisitor.visitMethod(BaseTypeVisitor.java:1)
-%%   com.sun.tools.javac.tree.JCTree$JCMethodDecl.accept(JCTree.java:693)
-%%   com.sun.source.util.TreePathScanner.scan(TreePathScanner.java:67)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:122)
-%%   checkers.basetype.BaseTypeVisitor.scan(BaseTypeVisitor.java:1)
-%%   com.sun.source.util.TreeScanner.scanAndReduce(TreeScanner.java:80)
-%%   com.sun.source.util.TreeScanner.scan(TreeScanner.java:90)
-%%   com.sun.source.util.TreeScanner.scanAndReduce(TreeScanner.java:98)
-%%   com.sun.source.util.TreeScanner.visitClass(TreeScanner.java:132)
-%%   checkers.basetype.BaseTypeVisitor.visitClass(BaseTypeVisitor.java:158)
-%%   checkers.basetype.BaseTypeVisitor.visitClass(BaseTypeVisitor.java:1)
-%%   com.sun.tools.javac.tree.JCTree$JCClassDecl.accept(JCTree.java:617)
-%%   com.sun.source.util.TreePathScanner.scan(TreePathScanner.java:49)
-%%   checkers.source.SourceChecker.typeProcess(SourceChecker.java:337)
-%%   com.sun.source.util.AbstractTypeProcessor$AttributionTaskListener.finished(AbstractTypeProcessor.java:211)
-%%   com.sun.tools.javac.main.JavaCompiler.flow(JavaCompiler.java:1272)
-%%   com.sun.tools.javac.main.JavaCompiler.flow(JavaCompiler.java:1231)
-%%   com.sun.tools.javac.main.JavaCompiler.compile2(JavaCompiler.java:885)
-%%   com.sun.tools.javac.main.JavaCompiler.compile(JavaCompiler.java:844)
-%%   com.sun.tools.javac.main.Main.compile(Main.java:419)
-%%   com.sun.tools.javac.main.Main.compile(Main.java:333)
-%%   com.sun.tools.javac.main.Main.compile(Main.java:324)
-%%   com.sun.tools.javac.Main.compile(Main.java:76)
-%%   com.sun.tools.javac.Main.main(Main.java:61)
-%% 1 error
-
 
 
 \sectionAndLabel{Documenting the checker}{creating-documenting-a-checker}

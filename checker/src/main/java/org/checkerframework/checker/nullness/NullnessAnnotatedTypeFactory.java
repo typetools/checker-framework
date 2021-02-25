@@ -21,7 +21,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +43,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -69,9 +69,9 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import scenelib.annotations.el.AField;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -238,11 +238,7 @@ public class NullnessAnnotatedTypeFactory
                 new SystemGetPropertyHandler(processingEnv, this, permitClearProperty);
 
         classGetCanonicalName =
-                TreeUtils.getMethod(
-                        java.lang.Class.class.getCanonicalName(),
-                        "getCanonicalName",
-                        0,
-                        processingEnv);
+                TreeUtils.getMethod("java.lang.Class", "getCanonicalName", 0, processingEnv);
 
         postInit();
 
@@ -566,14 +562,6 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
-        Set<Class<? extends Annotation>> l =
-                new HashSet<>(super.getInvalidConstructorReturnTypeAnnotations());
-        l.addAll(getNullnessAnnotations());
-        return l;
-    }
-
-    @Override
     public AnnotationMirror getFieldInvariantAnnotation() {
         return NONNULL;
     }
@@ -658,14 +646,15 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * Returns true if some annotation in the given list is a nullness annotation such
-     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     * Returns true if some annotation on the given type, or in the given list, is a nullness
+     * annotation such as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
      * <p>This method ignores aliases of nullness annotations that are declaration annotations,
      * because they may apply to inner types.
      *
-     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
-     *     not from such a location
+     * @param annoTrees a list of annotations that the the Java parser attached to the
+     *     variable/method declaration; null if this type is not from such a location. This is a
+     *     list of extra annotations to check, in addition to those on the type.
      * @param typeTree the type whose annotations to test
      * @return true if some annotation is a nullness annotation
      */
@@ -673,8 +662,25 @@ public class NullnessAnnotatedTypeFactory
             List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         List<? extends AnnotationTree> annos =
                 TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+        return containsNullnessAnnotation(annos);
+    }
 
-        for (AnnotationTree annoTree : annos) {
+    /**
+     * Returns true if some annotation in the given list is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * <p>This method ignores aliases of nullness annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
+     * <p>Clients that are processing a field or variable definition, or a method return type,
+     * should call {@link #containsNullnessAnnotation(List, Tree)} instead.
+     *
+     * @param annoTrees a list of annotations to check
+     * @return true if some annotation is a nullness annotation
+     * @see #containsNullnessAnnotation(List, Tree)
+     */
+    protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annoTrees) {
+        for (AnnotationTree annoTree : annoTrees) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
             if (isNullnessAnnotation(am) && !AnnotationUtils.isDeclarationAnnotation(am)) {
                 return true;
@@ -746,8 +752,8 @@ public class NullnessAnnotatedTypeFactory
             return;
         }
         TreePath lhsPath = getPath(lhsTree);
-        if (TreeUtils.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
-                && TreeUtils.inConstructor(lhsPath)) {
+        if (TreePathUtil.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
+                && TreePathUtil.inConstructor(lhsPath)) {
             rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
         }
     }
@@ -766,7 +772,8 @@ public class NullnessAnnotatedTypeFactory
     //  * check for @MonotonicNonNull
     //  * output @RequiresNonNull rather than @RequiresQualifier.
     @Override
-    public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
+    public List<AnnotationMirror> getPreconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldType) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
         // TODO: This does not handle the possibility that the user set a different default
         // annotation.
@@ -776,10 +783,9 @@ public class NullnessAnnotatedTypeFactory
             return Collections.emptyList();
         }
 
-        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
-            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
-                return requiresNonNullAnno(elt);
-            }
+        if (AnnotationUtils.containsSameByName(
+                fieldType.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return requiresNonNullAnno(elt);
         }
         return Collections.emptyList();
     }
@@ -792,7 +798,9 @@ public class NullnessAnnotatedTypeFactory
      */
     private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
-        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
+        String expression = receiver + "." + fieldElement.getSimpleName();
+        builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
         List<AnnotationMirror> result = new ArrayList<>(1);
         result.add(am);
@@ -801,7 +809,7 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public List<AnnotationMirror> getPostconditionAnnotation(
-            VariableElement elt, AField fieldAnnos, List<AnnotationMirror> preconds) {
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
         // TODO: This does not handle the possibility that the user set a different default
         // annotation.
@@ -816,10 +824,10 @@ public class NullnessAnnotatedTypeFactory
             // @MonotonicNonNull.
             return Collections.emptyList();
         }
-        for (scenelib.annotations.Annotation a : fieldAnnos.type.tlAnnotationsHere) {
-            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
-                return ensuresNonNullAnno(elt);
-            }
+        if (AnnotationUtils.containsSameByName(
+                fieldAnnos.getAnnotations(),
+                "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return ensuresNonNullAnno(elt);
         }
         return Collections.emptyList();
     }
@@ -832,7 +840,9 @@ public class NullnessAnnotatedTypeFactory
      */
     private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
-        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
+        String expression = receiver + "." + fieldElement.getSimpleName();
+        builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
         List<AnnotationMirror> result = new ArrayList<>(1);
         result.add(am);

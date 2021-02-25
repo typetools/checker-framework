@@ -127,7 +127,6 @@ checker/tests/nullness-temp/*.class
 checker/jtreg/multipleexecutions/Main.class
 
 # Source is copied from elsewhere.
-checker-qual/src
 checker-qual-android/src
 
 # Some tests produce output into the tests/ directory instead of the build/ directory.

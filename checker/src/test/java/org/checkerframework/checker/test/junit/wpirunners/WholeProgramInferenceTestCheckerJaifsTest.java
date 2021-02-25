@@ -23,7 +23,8 @@ public class WholeProgramInferenceTestCheckerJaifsTest extends CheckerFrameworkP
                 WholeProgramInferenceTestChecker.class,
                 "wpi-testchecker/non-annotated",
                 "-Anomsgtext",
-                "-Ainfer=jaifs");
+                "-Ainfer=jaifs",
+                "-Awarns");
     }
 
     @Parameters

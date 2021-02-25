@@ -151,7 +151,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Get the annotations for a class.
      *
-     * @param className the name of the class to get, in binary form
+     * @param className the name of the class, in binary form
      * @param file the path to the file that represents the class
      * @param classSymbol optionally, the ClassSymbol representing the class
      * @return the annotations for the class
@@ -165,11 +165,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * Get the annotations for a method or constructor.
      *
      * @param methodElt the method or constructor
-     * @param file the annotation file containing the method or constructor
      * @return the annotations for a method or constructor
      */
-    private AMethod getMethodAnnos(ExecutableElement methodElt, String file) {
+    private AMethod getMethodAnnos(ExecutableElement methodElt) {
         String className = getEnclosingClassName(methodElt);
+        String file = getFileForElement(methodElt);
         AClass classAnnos = getClassAnnos(className, file, ((MethodSymbol) methodElt).enclClass());
         AMethod methodAnnos =
                 classAnnos.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
@@ -180,7 +180,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Get the annotations for a formal parameter type.
      *
-     * @param methodAnnos the method or constructor annotations
+     * @param methodElt the method or constructor
      * @param i the parameter index (0-based)
      * @param paramATM the parameter type
      * @param ve the parameter variable
@@ -189,11 +189,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     @SuppressWarnings("UnusedVariable")
     private ATypeElement getParameterType(
-            AMethod methodAnnos,
+            ExecutableElement methodElt,
             int i,
             AnnotatedTypeMirror paramATM,
             VariableElement ve,
             AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElt);
         AField param =
                 methodAnnos.vivifyAndAddTypeMirrorToParameter(
                         i, paramATM.getUnderlyingType(), ve.getSimpleName());
@@ -203,48 +204,120 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Get the annotations for the receiver type.
      *
-     * @param methodAnnos the method or constructor annotations
+     * @param methodElt the method or constructor
      * @param paramATM the receiver type
      * @param atypeFactory the type factory
      * @return the annotations for the receiver type
      */
     @SuppressWarnings("UnusedVariable")
     private ATypeElement getReceiverType(
-            AMethod methodAnnos, AnnotatedTypeMirror paramATM, AnnotatedTypeFactory atypeFactory) {
+            ExecutableElement methodElt,
+            AnnotatedTypeMirror paramATM,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElt);
         return methodAnnos.receiver.type;
     }
 
     /**
      * Get the annotations for the return type.
      *
-     * @param methodAnnos the method or constructor annotations
+     * @param methodElt the method or constructor
      * @param atm the return type
      * @param atypeFactory the type factory
      * @return the annotations for the return type
      */
     @SuppressWarnings("UnusedVariable")
     private ATypeElement getReturnType(
-            AMethod methodAnnos, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory) {
+            ExecutableElement methodElt,
+            AnnotatedTypeMirror atm,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElt);
         return methodAnnos.returnType;
     }
 
     /**
      * Get the annotations for a field type.
      *
-     * @param classAnnos the class annotations
+     * @param element the element for the field
      * @param fieldName the simple field name
      * @param lhsATM the field type
      * @param atypeFactory the annotated type factory
      * @return the annotations for a field type
      */
-    public ATypeElement getFieldType(
-            AClass classAnnos,
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getFieldType(
+            Element element,
             String fieldName,
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atypeFactory) {
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
+        String file = getFileForElement(element);
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = enclosingClass.flatname.toString();
+        AClass classAnnos = getClassAnnos(className, file, enclosingClass);
         AField field = classAnnos.fields.getVivify(fieldName);
         field.setTypeMirror(lhsATM.getUnderlyingType());
         return field.type;
+    }
+
+    /**
+     * Returns the pre- or postcondition annotations for a field.
+     *
+     * @param preOrPost whether to get the precondition or postcondition
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the pre- or postcondition annotations for a field
+     */
+    private ATypeElement getPreOrPostconditionsForField(
+            Analysis.BeforeOrAfter preOrPost,
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        switch (preOrPost) {
+            case BEFORE:
+                return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
+            case AFTER:
+                return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
+            default:
+                throw new BugInCF("Unexpected " + preOrPost);
+        }
+    }
+
+    /**
+     * Returns the precondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the precondition annotations for a field
+     */
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getPreconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElement);
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+        return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror).type;
+    }
+
+    /**
+     * Returns the postcondition annotations for a field.
+     *
+     * @param methodElement the method
+     * @param fieldElement the field
+     * @param atypeFactory the type factory
+     * @return the postcondition annotations for a field
+     */
+    @SuppressWarnings("UnusedVariable")
+    private ATypeElement getPostconditionsForField(
+            ExecutableElement methodElement,
+            VariableElement fieldElement,
+            AnnotatedTypeFactory atypeFactory) {
+        AMethod methodAnnos = getMethodAnnos(methodElement);
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
+        return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror).type;
     }
 
     @Override
@@ -257,10 +330,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        String file = getFileForElement(constructorElt);
-        AMethod constructorAnnos = getMethodAnnos(constructorElt, file);
         List<Node> arguments = objectCreationNode.getArguments();
-        updateInferredExecutableParameterTypes(constructorElt, file, constructorAnnos, arguments);
+        updateInferredExecutableParameterTypes(constructorElt, arguments);
         updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
     }
 
@@ -275,11 +346,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        String file = getFileForElement(methodElt);
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
-
         List<Node> arguments = methodInvNode.getArguments();
-        updateInferredExecutableParameterTypes(methodElt, file, methodAnnos, arguments);
+        updateInferredExecutableParameterTypes(methodElt, arguments);
         updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
     }
 
@@ -287,16 +355,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * Updates inferred parameter types based on a call to a method or constructor.
      *
      * @param methodElt the element of the method or constructor being invoked
-     * @param file the annotation file containing the executable; used for marking the class as
-     *     modified (needing to be written to disk)
-     * @param executableAnnos the representation of the executable's annotations
      * @param arguments the arguments of the invocation
      */
     private void updateInferredExecutableParameterTypes(
-            ExecutableElement methodElt,
-            String file,
-            AMethod executableAnnos,
-            List<Node> arguments) {
+            ExecutableElement methodElt, List<Node> arguments) {
+
+        String file = getFileForElement(methodElt);
 
         for (int i = 0; i < arguments.size(); i++) {
             Node arg = arguments.get(i);
@@ -314,8 +378,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            ATypeElement paramType =
-                    getParameterType(executableAnnos, i, paramATM, ve, atypeFactory);
+            ATypeElement paramType = getParameterType(methodElt, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
     }
@@ -335,9 +398,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     "updateContracts(%s, %s, null) for %s",
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
-
-        String file = getFileForElement(methodElt);
-        AMethod amethod = getMethodAnnos(methodElt, file);
 
         // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
@@ -366,34 +426,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 // This field is not in the store. Add its declared type.
                 inferredType = atypeFactory.getAnnotatedType(fieldElement);
             }
-            AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
+
+            ATypeElement preOrPostConditionAnnos =
+                    getPreOrPostconditionsForField(
+                            preOrPost, methodElt, fieldElement, atypeFactory);
+
+            String file = getFileForElement(methodElt);
             updateAnnotationSet(
-                    afield.type, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
-        }
-    }
-
-    /**
-     * Obtain the AField for an expression in scope at method entry or exit.
-     *
-     * <p>This is a helper method for {@link #updateContracts}.
-     *
-     * @param amethod AFU representation of a method
-     * @param preOrPost whether to call {@code vivifyAndAddTypeMirrorToPrecondition} or {@code
-     *     vivifyAndAddTypeMirrorToPostcondition}
-     * @param fieldElement the field
-     * @return an AField representing the expression
-     */
-    private AField vivifyAndAddTypeMirrorToContract(
-            AMethod amethod, Analysis.BeforeOrAfter preOrPost, VariableElement fieldElement) {
-        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
-
-        switch (preOrPost) {
-            case BEFORE:
-                return amethod.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror);
-            case AFTER:
-                return amethod.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror);
-            default:
-                throw new BugInCF("Unexpected " + preOrPost);
+                    preOrPostConditionAnnos,
+                    TypeUseLocation.FIELD,
+                    inferredType,
+                    fieldDeclType,
+                    file,
+                    false);
         }
     }
 
@@ -422,15 +467,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
 
         String file = getFileForElement(methodElt);
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
-
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             atypeFactory.wpiAdjustForUpdateNonField(argATM);
-            ATypeElement paramType = getParameterType(methodAnnos, i, paramATM, ve, atypeFactory);
+            ATypeElement paramType = getParameterType(methodElt, i, paramATM, ve, atypeFactory);
             updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
         }
 
@@ -439,7 +482,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror paramATM =
                     atypeFactory.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                ATypeElement receiver = getReceiverType(methodAnnos, paramATM, atypeFactory);
+                ATypeElement receiver = getReceiverType(methodElt, paramATM, atypeFactory);
                 updateAnnotationSet(receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file);
             }
         }
@@ -464,15 +507,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
 
         ExecutableElement methodElt = (ExecutableElement) paramElt.getEnclosingElement();
-        String file = getFileForElement(methodElt);
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
 
         AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(paramElt);
         AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
         atypeFactory.wpiAdjustForUpdateNonField(argATM);
         int i = methodElt.getParameters().indexOf(paramElt);
         assert i != -1;
-        ATypeElement paramType = getParameterType(methodAnnos, i, paramATM, paramElt, atypeFactory);
+        ATypeElement paramType = getParameterType(methodElt, i, paramATM, paramElt, atypeFactory);
+        String file = getFileForElement(methodElt);
         updateAnnotationSet(paramType, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
 
@@ -518,12 +560,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String file = getFileForElement(element);
 
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @BinaryName String className = enclosingClass.flatname.toString();
-        AClass classAnnos = getClassAnnos(className, file, enclosingClass);
-
         AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
-        ATypeElement fieldType = getFieldType(classAnnos, fieldName, lhsATM, atypeFactory);
+        ATypeElement fieldType = getFieldType(element, fieldName, lhsATM, atypeFactory);
 
         updateAnnotationSet(fieldType, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
     }
@@ -568,19 +606,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the return type of the method methodTree in the Scene of the class with symbol
+     * Updates the return type of the method methodDeclTree in the Scene of the class with symbol
      * classSymbol. Also updates the return types of methods that this method overrides, if they are
      * available as source.
      *
-     * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
-     * type of the value passed to the return expression will be added to the return type of that
-     * method in the Scene. If the Scene previously contained an annotated return type for the
-     * method methodTree, its new type will be the LUB between the previous type and the type of the
-     * value passed to the return expression.
+     * <p>If the Scene does not contain an annotated return type for the method methodDeclTree, then
+     * the type of the value passed to the return expression will be added to the return type of
+     * that method in the Scene. If the Scene previously contained an annotated return type for the
+     * method methodDeclTree, its new type will be the LUB between the previous type and the type of
+     * the value passed to the return expression.
      *
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
-     * @param methodTree the tree of the method whose return type may be updated
+     * @param methodDeclTree the declaration of the method whose return type may be updated
      * @param overriddenMethods the methods that the given method return overrides, each indexed by
      *     the annotated type of the class that defines it
      */
@@ -588,12 +626,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
-            MethodTree methodTree,
+            MethodTree methodDeclTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
         // Don't infer types for code that isn't presented as source.
-        if (methodTree == null
+        if (methodDeclTree == null
                 || !ElementUtils.isElementFromSourceCode(
-                        TreeUtils.elementFromDeclaration(methodTree))) {
+                        TreeUtils.elementFromDeclaration(methodDeclTree))) {
             return;
         }
 
@@ -603,11 +641,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
         String file = getFileForElement(methodElt);
 
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
-        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodTree).getReturnType();
+        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodDeclTree).getReturnType();
 
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
@@ -615,11 +652,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         atypeFactory.wpiAdjustForUpdateNonField(rhsATM);
         DependentTypesHelper dependentTypesHelper =
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
-        if (dependentTypesHelper != null) {
-            dependentTypesHelper.standardizeReturnType(
-                    methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
-        }
-        ATypeElement returnTypeAnnos = getReturnType(methodAnnos, lhsATM, atypeFactory);
+        dependentTypesHelper.delocalize(methodDeclTree, rhsATM);
+        ATypeElement returnTypeAnnos = getReturnType(methodElt, lhsATM, atypeFactory);
         updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
@@ -650,12 +684,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             overriddenMethodElement);
 
             String superClassFile = getFileForElement(overriddenMethodElement);
-            AMethod overriddenMethodInSuperclass =
-                    getMethodAnnos(overriddenMethodElement, superClassFile);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
             ATypeElement storedOverriddenMethodReturnType =
                     getReturnType(
-                            overriddenMethodInSuperclass, overriddenMethodReturnType, atypeFactory);
+                            overriddenMethodElement, overriddenMethodReturnType, atypeFactory);
 
             updateAnnotationSet(
                     storedOverriddenMethodReturnType,
@@ -674,8 +706,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        String file = getFileForElement(methodElt);
-        AMethod methodAnnos = getMethodAnnos(methodElt, file);
+        AMethod methodAnnos = getMethodAnnos(methodElt);
 
         scenelib.annotations.Annotation sceneAnno =
                 AnnotationConverter.annotationMirrorToAnnotation(anno);
@@ -769,7 +800,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @return the "flatname" of the class enclosing {@code variableElement}
      */
     private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
-        return getClassName(ElementUtils.enclosingClass(variableElement));
+        return getClassName(ElementUtils.enclosingTypeElement(variableElement));
     }
 
     /**
@@ -780,7 +811,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
+        return ((ClassSymbol) ElementUtils.enclosingTypeElement(localVariableNode.getElement()))
                 .flatName()
                 .toString();
     }
@@ -793,18 +824,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *     class
      */
     private TypeElement toplevelEnclosingClass(Element element) {
-        if (ElementUtils.enclosingClass(element) == null) {
+        if (ElementUtils.enclosingTypeElement(element) == null) {
             return (TypeElement) element;
         }
 
-        TypeElement result = ElementUtils.enclosingClass(element);
-        // TODO JWAATAJA: This loop calls enclosingClass twice.  Please make it just one
-        // invocation.  You could use a local variable.
-        while (ElementUtils.enclosingClass(result) != null
-                // TODO JWAATAJA: Why is the test against equality necessary?  The contract of
-                // ElementUtils.enclosingClass() does not permit it to return its argument.
-                && !ElementUtils.enclosingClass(result).equals(result)) {
-            result = ElementUtils.enclosingClass(result);
+        TypeElement result = ElementUtils.enclosingTypeElement(element);
+        TypeElement enclosing = ElementUtils.enclosingTypeElement(result);
+        // ElementUtils.enclosingType returns its argument if it's already a class, so an Element
+        // being the same as its enclosing class is a sufficient stopping condition.
+        while (enclosing != null && !enclosing.equals(result)) {
+            result = ElementUtils.enclosingTypeElement(result);
+            enclosing = ElementUtils.enclosingTypeElement(result);
         }
 
         return result;

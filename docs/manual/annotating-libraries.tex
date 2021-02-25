@@ -414,12 +414,16 @@ is run.
 
 \sectionAndLabel{Using stub classes}{stub}
 
-A ``stub class'' is Java source code that is allowed to omit certain parts,
-such as method bodies.  (See Section~\ref{stub-format} for details
-about the stub file format.)  You use a stub file to write annotations
+You use a ``stub file'' to write annotations
 for a library, when you cannot edit and recompile the library.  A
 checker uses the annotated signatures at compile time, instead of or in
 addition to annotations that appear in the library's \<.class> files.
+
+A stub file cannot override the types of a package-private class, method, or field.
+
+A stub class is Java source code that is allowed to omit certain parts,
+such as method bodies.  Section~\ref{stub-format} describes
+the stub file format.
 
 Section~\ref{annotating-jdk} explains how you should choose between
 creating stub classes or creating an annotated library.
@@ -454,6 +458,9 @@ A checker automatically reads some of its own stub files, even without a
 \<-Astubs> command-line argument; see
 Section~\ref{creating-a-checker-annotated-jdk}.
 
+User-supplied stub files override a checker's built-in stub files and the
+annotated JDK\@.
+
 
 \subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
 
@@ -486,6 +493,7 @@ If a method appears in more than one stub file (or twice in the same
 stub file), then, for each type hierarchy, the last annotation read is used.
 
 The annotated JDK is read as a stub file.
+You can override JDK annotations by providing your own stub file.
 
 The command-line option \<-AmergeStubsWithSource> tells the checker to use
 both source files and stub files.  The checker permits only values that are
@@ -504,6 +512,62 @@ As another example, the GLB of
 \refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map2", "map3"\}} is
 \refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map1", "map2", "map3"\}}
 since the value is known to be a key for all three maps.
+
+
+\subsectionAndLabel{Stub methods in subclasses of the declaring class}{stub-fake-override}
+
+Sometimes, a method's return type is different in a subclass than in a
+superclass, even though the subclass inherits (does not define) the method.
+An example, \<SecureRandom.nextInt()>, is shown below.
+
+To express that method \<m> has a different type in subclass \<Sub> than
+where \<m> is defined, write a ``fake override'':  wiret the method in in
+class \<Sub> in a stub file.  The Checker Framework will use that type for
+\<m> at calls where the receiver's declared type is \<Sub> or lower.
+
+In a fake override of \<m>, the formal parameter Java types of the method
+must be identical to those where \<m> is defined, but you can change its
+annotations.  (The return type and the receiver type can be different.)
+If a fake override has no annotations on a given type use, that type use is
+defaulted according to the usual defaulting rules.
+
+This feature currently only works for return types.  That is, a fake
+override changes the return type at certain calls, but formal parameter
+type annotations on fake overrides have no effect.  Type annotations on
+fake overrides of fields also have no effect.  Fake overrides will be able
+to change formal parameter and field type annotations in a future release
+of the Checker Framework.
+
+
+\paragraphAndLabel{Example}{stub-fake-override-example}
+
+As an example, consider a type system that tracks whether a value is
+cryptographically secure.  \<@Secure> is a subtype of \<@Insecure>.
+Although \<SecureRandom> does not override \<Random.nextInt> (it overrides
+the source of randomness instead), you are allowed to write the following
+stub file:
+
+\begin{Verbatim}
+package java.util;
+class Random {
+  @Insecure int nextInt();
+}
+
+package java.security;
+class SecureRandom extends Random {
+  @Secure int nextInt();
+}
+\end{Verbatim}
+
+Client code behaves as follows:
+
+\begin{Verbatim}
+Random r = ...;
+SecureRandom sr = ...;
+
+@Secure int i1 = r.nextInt(); // error
+@Secure int i2 = sr.nextInt(); // OK
+\end{Verbatim}
 
 
 \subsectionAndLabel{Stub file format}{stub-format}
@@ -796,6 +860,10 @@ read whether the library's annotations are parsed.
   Sets the internal \<debugJSR308> flag, which outputs information about
   reading and writing.
 \end{description}
+
+A syntax error in a stub file or the annotated JDK can lead to the file
+being silently ignored.  A typo in an annotation name, or a missing
+\<import> statement, can lead to annotations being silently ignored.
 
 
 % LocalWords: plugin utils util dist RuntimeException NonNull TODO AFU enum
