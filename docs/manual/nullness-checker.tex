@@ -1259,7 +1259,7 @@ When a field \<f> is declared with a \refqualclass{checker/nullness/qual}{NonNul
 type, then code can depend on the fact that the field is not \<null>.
 However, this guarantee does not hold for a partially-initialized object.
 
-The Nullness Checker uses three annotations to indicate whether an object
+The Initialization Checker uses three annotations to indicate whether an object
 is initialized (all its \<@NonNull> fields have been assigned), under
 initialization (its constructor is currently executing), or its
 initialization state is unknown.
