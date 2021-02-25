@@ -128,11 +128,8 @@ public class Subsequence {
      * that the JavaExpression parser cannot parse multiplication, so it naively just changes '-' to
      * '+' and vice-versa.
      *
-     * <p>The passed String is standardized and viewpoint-adapted before this transformation is
-     * applied.
-     *
      * @param s a Java expression string
-     * @return the string, standardized and viewpoint-adapted
+     * @return the negated string
      */
     public static String negateString(String s) {
         String original = s;
