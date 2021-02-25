@@ -349,6 +349,7 @@ public class JavaExpressionParseUtil {
      * @return the JavaExpression for the given string
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
+    @Deprecated
     public static JavaExpression parse(
             String expression, JavaExpressionContext context, @Nullable TreePath localVarPath)
             throws JavaExpressionParseException {
@@ -1399,6 +1400,7 @@ public class JavaExpressionParseUtil {
      * Context used to parse and viewpoint-adapt a Java expression. It contains the JavaExpressions
      * to which {@code this} and the parameter syntax, e.g. {@code #1}, should parse.
      */
+    @Deprecated
     public static class JavaExpressionContext {
         /** The value of {@code this} in this context. */
         public final JavaExpression receiver;
