@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.dependenttypes;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -32,14 +31,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
@@ -47,14 +44,11 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -198,8 +192,7 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return;
         }
-        List<? extends ExpressionTree> args = methodInvocationTree.getArguments();
-        viewpointAdaptExecutable(methodInvocationTree, methodDeclType, args);
+        viewpointAdaptExecutable(methodInvocationTree, methodDeclType);
     }
 
     /**
@@ -214,8 +207,7 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return;
         }
-        List<? extends ExpressionTree> args = newClassTree.getArguments();
-        viewpointAdaptExecutable(newClassTree, constructorType, args);
+        viewpointAdaptExecutable(newClassTree, constructorType);
     }
 
     /**
@@ -223,12 +215,8 @@ public class DependentTypesHelper {
      *
      * @param tree invocation of the method or constructor
      * @param methodType type of the method or constructor; is side-effected by this method
-     * @param argTrees the arguments to the method or constructor; subexpressions of {@code tree}
      */
-    private void viewpointAdaptExecutable(
-            ExpressionTree tree,
-            AnnotatedExecutableType methodType,
-            List<? extends ExpressionTree> argTrees) {
+    private void viewpointAdaptExecutable(ExpressionTree tree, AnnotatedExecutableType methodType) {
         assert hasDependentAnnotations();
         Element methodElt = TreeUtils.elementFromUse(tree);
         // The annotations on `viewpointAdaptedType` will be copied to `methodType`.
@@ -264,78 +252,6 @@ public class DependentTypesHelper {
         }
         viewpointAdaptToContext(converter, viewpointAdaptedType);
         this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
-    }
-
-    /**
-     * Converts method or constructor arguments from Trees to JavaExpressions, accounting for
-     * varargs.
-     *
-     * @param tree invocation of the method or constructor
-     * @param methodType type of the method or constructor
-     * @param argTrees the arguments to the method or constructor; subexpressions of {@code tree}
-     * @return the arguments, as JavaExpressions
-     */
-    private List<JavaExpression> argumentTreesToJavaExpressions(
-            ExpressionTree tree,
-            AnnotatedExecutableType methodType,
-            List<? extends ExpressionTree> argTrees) {
-
-        if (tree.getKind() == Kind.METHOD_INVOCATION) {
-            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree) tree);
-            if (isVarArgsInvocation(method, methodType, argTrees)) {
-                List<JavaExpression> result = new ArrayList<>();
-
-                for (int i = 0; i < method.getParameters().size() - 1; i++) {
-                    result.add(JavaExpression.fromTree(argTrees.get(i)));
-                }
-                List<JavaExpression> varargArgs = new ArrayList<>();
-                for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
-                    varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
-                }
-                Element varargsElement =
-                        method.getParameters().get(method.getParameters().size() - 1);
-                TypeMirror tm = ElementUtils.getType(varargsElement);
-                result.add(new ArrayCreation(tm, Collections.emptyList(), varargArgs));
-
-                return result;
-            }
-        }
-
-        List<JavaExpression> result = new ArrayList<>();
-        for (ExpressionTree argTree : argTrees) {
-            result.add(JavaExpression.fromTree(argTree));
-        }
-        return result;
-    }
-
-    /**
-     * Returns true if method is a varargs method or constructor and its varargs arguments are not
-     * passed in an array.
-     *
-     * @param method the method or constructor
-     * @param methodType type of the method or constructor; used for determining the type of the
-     *     varargs formal parameter
-     * @param args the arguments at the call site
-     * @return true if method is a varargs method and its varargs arguments are not passed in an
-     *     array
-     */
-    private boolean isVarArgsInvocation(
-            ExecutableElement method,
-            AnnotatedExecutableType methodType,
-            List<? extends ExpressionTree> args) {
-        if (method != null && method.isVarArgs()) {
-            if (method.getParameters().size() != args.size()) {
-                return true;
-            }
-            AnnotatedTypeMirror lastArg = factory.getAnnotatedType(args.get(args.size() - 1));
-            List<AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
-            AnnotatedArrayType lastParam =
-                    (AnnotatedArrayType) paramTypes.get(paramTypes.size() - 1);
-            return lastArg.getKind() != TypeKind.ARRAY
-                    || AnnotatedTypes.getArrayDepth(lastParam)
-                            != AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArg);
-        }
-        return false;
     }
 
     ///
@@ -498,16 +414,9 @@ public class DependentTypesHelper {
                             Converter.atMethodDecl(methodDeclTree, factory.getChecker()),
                             type); // parseEE, vpa method decl.
                 } else {
-                    LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
-                    JavaExpressionContext parameterContext =
-                            JavaExpressionContext.buildContextForLambda(
-                                    lambdaTree, pathToVariableDecl, factory.getChecker());
                     // Lambdas can use local variables defined in the enclosing method, so allow
                     // identifiers to be locals in scope at the location of the lambda.
-                    parseToPathAndViewpointAdapt(
-                            parameterContext,
-                            pathToVariableDecl.getParentPath(),
-                            type); // parse for lambda
+                    parseForLambda(pathToVariableDecl.getParentPath(), type); // parse for lambda
                 }
                 break;
 
@@ -633,19 +542,10 @@ public class DependentTypesHelper {
      * @param type the type to parse; is side-effected by this method
      */
     private void parseToPath(TreePath localVarPath, AnnotatedTypeMirror type) {
-        Tree enclosingClass = TreePathUtil.enclosingClass(localVarPath);
-        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
-
-        JavaExpression receiver = JavaExpression.getPseudoReceiver(localVarPath, enclosingType);
-
-        JavaExpressionContext localContext =
-                new JavaExpressionContext(
-                        receiver,
-                        JavaExpression.getParametersOfEnclosingMethod(localVarPath),
-                        factory.getChecker());
-
         Converter converter =
-                expression -> JavaExpressionParseUtil.parse(expression, localContext, localVarPath);
+                expression ->
+                        JavaExpressionParseUtil.parse(
+                                expression, localVarPath, factory.getChecker());
 
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
@@ -666,14 +566,13 @@ public class DependentTypesHelper {
      * viewpoint-adapt to the given context. The {@code context} should be different than the
      * context of the {@code localVarPath}.
      *
-     * @param context context to use
-     * @param localVarPath the expression is parsed as if it were written at this location
      * @param type the type to viewpoint-adapt; is side-effected by this method
      */
-    private void parseToPathAndViewpointAdapt(
-            JavaExpressionContext context, TreePath localVarPath, AnnotatedTypeMirror type) {
+    private void parseForLambda(TreePath parentPath, AnnotatedTypeMirror type) {
+
         Converter converter =
-                expression -> JavaExpressionParseUtil.parse(expression, context, localVarPath);
+                expression ->
+                        JavaExpressionParseUtil.parse(expression, parentPath, factory.getChecker());
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(converter, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }

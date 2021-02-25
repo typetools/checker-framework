@@ -10,15 +10,19 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -671,10 +675,9 @@ public abstract class JavaExpression {
     }
 
     public final JavaExpression viewpointAdapt(MethodInvocationTree methodInvocationTree) {
-        List<JavaExpression> argumentsJe = new ArrayList<>();
-        for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
-            argumentsJe.add(JavaExpression.fromTree(argTree));
-        }
+        List<JavaExpression> argumentsJe =
+                argumentTreesToJavaExpressions(
+                        methodInvocationTree, methodInvocationTree.getArguments());
 
         JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
@@ -692,12 +695,83 @@ public abstract class JavaExpression {
     }
 
     public JavaExpression viewpointAdapt(NewClassTree newClassTree) {
-        List<JavaExpression> argumentsJe = new ArrayList<>();
-        for (ExpressionTree argTree : newClassTree.getArguments()) {
-            argumentsJe.add(JavaExpression.fromTree(argTree));
-        }
+        List<JavaExpression> argumentsJe =
+                argumentTreesToJavaExpressions(newClassTree, newClassTree.getArguments());
 
         JavaExpression receiverJe = JavaExpression.getReceiver(newClassTree);
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+    }
+
+    /**
+     * Converts method or constructor arguments from Trees to JavaExpressions, accounting for
+     * varargs.
+     *
+     * @param tree invocation of the method or constructor
+     * @param argTrees the arguments to the method or constructor; subexpressions of {@code tree}
+     * @return the arguments, as JavaExpressions
+     */
+    private List<JavaExpression> argumentTreesToJavaExpressions(
+            ExpressionTree tree, List<? extends ExpressionTree> argTrees) {
+
+        if (tree.getKind() == Kind.METHOD_INVOCATION) {
+            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree) tree);
+            if (isVarArgsInvocation(method, argTrees)) {
+                List<JavaExpression> result = new ArrayList<>();
+
+                for (int i = 0; i < method.getParameters().size() - 1; i++) {
+                    result.add(JavaExpression.fromTree(argTrees.get(i)));
+                }
+                List<JavaExpression> varargArgs = new ArrayList<>();
+                for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
+                    varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
+                }
+                Element varargsElement =
+                        method.getParameters().get(method.getParameters().size() - 1);
+                TypeMirror tm = ElementUtils.getType(varargsElement);
+                result.add(new ArrayCreation(tm, Collections.emptyList(), varargArgs));
+
+                return result;
+            }
+        }
+
+        List<JavaExpression> result = new ArrayList<>();
+        for (ExpressionTree argTree : argTrees) {
+            result.add(JavaExpression.fromTree(argTree));
+        }
+        return result;
+    }
+
+    /**
+     * Returns true if method is a varargs method or constructor and its varargs arguments are not
+     * passed in an array.
+     *
+     * @param method the method or constructor
+     * @param args the arguments at the call site
+     * @return true if method is a varargs method and its varargs arguments are not passed in an
+     *     array
+     */
+    private boolean isVarArgsInvocation(
+            ExecutableElement method, List<? extends ExpressionTree> args) {
+        if (method != null && method.isVarArgs()) {
+            if (method.getParameters().size() != args.size()) {
+                return true;
+            }
+            TypeMirror lastArg = TreeUtils.typeOf(args.get(args.size() - 1));
+            List<? extends VariableElement> paramTypes = method.getParameters();
+            VariableElement lastParam = paramTypes.get(paramTypes.size() - 1);
+            return lastArg.getKind() != TypeKind.ARRAY
+                    || getArrayDepth(ElementUtils.getType(lastParam)) != getArrayDepth(lastArg);
+        }
+        return false;
+    }
+
+    private static int getArrayDepth(TypeMirror array) {
+        int counter = 0;
+        TypeMirror type = array;
+        while (type.getKind() == TypeKind.ARRAY) {
+            counter++;
+            type = ((ArrayType) type).getComponentType();
+        }
+        return counter;
     }
 }
