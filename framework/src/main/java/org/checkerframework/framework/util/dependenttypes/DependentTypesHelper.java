@@ -417,7 +417,7 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return annoFromContract;
         }
-        Parser parser = expression -> parseString(expression, jeContext, null);
+        Parser parser = expression -> JavaExpressionParseUtil.parse(expression, jeContext);
 
         AnnotationMirror standardized =
                 standardizeAnnotationIfDependentType(parser, annoFromContract);
@@ -450,10 +450,9 @@ public class DependentTypesHelper {
         JavaExpressionContext context =
                 JavaExpressionContext.buildContextForMethodDeclaration(
                         methodDeclTree, factory.getChecker());
-        TreePath localVarPath = null;
         Parser parser =
                 expression -> {
-                    JavaExpression result = parseString(expression, context, localVarPath);
+                    JavaExpression result = JavaExpressionParseUtil.parse(expression, context);
                     return result instanceof ErrorExpression ? null : result;
                 };
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
@@ -635,7 +634,8 @@ public class DependentTypesHelper {
                         JavaExpression.getParametersOfEnclosingMethod(localVarPath),
                         factory.getChecker());
 
-        Parser parser = expression -> parseString(expression, localContext, localVarPath);
+        Parser parser =
+                expression -> JavaExpressionParseUtil.parse(expression, localContext, localVarPath);
 
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
         this.standardizeTypeAnnotator.visit(type, func);
@@ -648,8 +648,7 @@ public class DependentTypesHelper {
      * @param type the type to viewpoint-adapt; is side-effected by this method
      */
     private void viewpointAdaptToContext(JavaExpressionContext context, AnnotatedTypeMirror type) {
-        TreePath localVarPath = null;
-        Parser parser = expression -> parseString(expression, context, localVarPath);
+        Parser parser = expression -> JavaExpressionParseUtil.parse(expression, context);
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
@@ -665,7 +664,8 @@ public class DependentTypesHelper {
      */
     private void parseToPathAndViewpointAdapt(
             JavaExpressionContext context, TreePath localVarPath, AnnotatedTypeMirror type) {
-        Parser parser = expression -> parseString(expression, context, localVarPath);
+        Parser parser =
+                expression -> JavaExpressionParseUtil.parse(expression, context, localVarPath);
         TransformAnnotation func = (anno) -> standardizeAnnotationIfDependentType(parser, anno);
         this.standardizeTypeAnnotator.visit(type, func);
     }
@@ -702,14 +702,13 @@ public class DependentTypesHelper {
                 new DependentTypesError(expression, error).toString());
     }
 
-    protected JavaExpression parseString(
-            String expression, JavaExpressionContext context, @Nullable TreePath localVarPath) {
+    protected JavaExpression parseString(String expression, Parser parser) {
         if (!shouldParseExpression(expression)) {
             return passThroughString(expression);
         }
         JavaExpression result;
         try {
-            result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
+            result = parser.parse(expression);
         } catch (JavaExpressionParseException e) {
             result = createError(expression, e);
         }
@@ -726,7 +725,7 @@ public class DependentTypesHelper {
     }
 
     interface Parser {
-        JavaExpression parse(String s);
+        JavaExpression parse(String s) throws JavaExpressionParseException;
     }
     /**
      * Viewpoint-adapts Java expressions in an annotation. If the annotation is not a dependent type
@@ -751,7 +750,7 @@ public class DependentTypesHelper {
             List<JavaExpression> javaExprs = new ArrayList<>();
             map.put(value, javaExprs);
             for (String expression : expressionStrings) {
-                JavaExpression javaExpr = parser.parse(expression);
+                JavaExpression javaExpr = parseString(expression, parser);
                 if (javaExpr != null) {
                     javaExprs.add(javaExpr);
                 }
