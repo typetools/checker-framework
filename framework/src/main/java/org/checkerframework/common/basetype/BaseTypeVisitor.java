@@ -1,5 +1,6 @@
 package org.checkerframework.common.basetype;
 
+import com.github.javaparser.StaticJavaParser;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -44,6 +45,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
@@ -89,6 +91,9 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
+import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
+import org.checkerframework.framework.ajava.JavaParserUtils;
+import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -298,6 +303,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public void setRoot(CompilationUnitTree root) {
         atypeFactory.setRoot(root);
+        testJointJavacJavaParserVisitor();
         super.setRoot(root);
     }
 
@@ -307,6 +313,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             this.visitorState.setPath(new TreePath(getCurrentPath(), tree));
         }
         return super.scan(tree, p);
+    }
+
+    /**
+     * Test {@link org.checkerframework.framework.ajava.JointJavacJavaParserVisitor} if the checker
+     * has the "checkJavaParserVisitor" option.
+     *
+     * <p>Parse the current source file with JavaParser and check that the AST can be matched with
+     * the Tree prodoced by javac. Crash if not.
+     *
+     * <p>Subclasses may override this method to disable the test if even the option is provided.
+     */
+    protected void testJointJavacJavaParserVisitor() {
+        if (checker.hasOption("checkJavaParserVisitor") && root != null) {
+            Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
+            try {
+                java.io.InputStream reader = root.getSourceFile().openInputStream();
+                com.github.javaparser.ast.CompilationUnit javaParserRoot =
+                        StaticJavaParser.parse(reader);
+                reader.close();
+                JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
+                new JointVisitorWithDefaultAction() {
+                    @Override
+                    public void defaultAction(
+                            Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
+                        treePairs.put(javacTree, javaParserNode);
+                    }
+                }.visitCompilationUnit(root, javaParserRoot);
+                ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
+                expectedTreesVisitor.visitCompilationUnit(root, null);
+                for (Tree expected : expectedTreesVisitor.getTrees()) {
+                    if (!treePairs.containsKey(expected)) {
+                        throw new BugInCF(
+                                "Javac tree not matched to JavaParser node: %s, in file: %s",
+                                expected, root.getSourceFile().getName());
+                    }
+                }
+            } catch (IOException e) {
+                throw new BugInCF("Error reading Java source file", e);
+            }
+        }
     }
 
     /**
