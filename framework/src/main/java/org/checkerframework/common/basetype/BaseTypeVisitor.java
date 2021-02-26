@@ -945,23 +945,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (contracts.isEmpty()) {
             return;
         }
+        Converter converter = stringExpr -> Converter.atMethodBody(stringExpr, methodTree, checker);
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
             AnnotationMirror annotation = contract.annotation;
             annotation =
                     atypeFactory
                             .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(
-                                    annotation,
-                                    Converter.atMethodDecl(methodTree, checker),
-                                    methodTree);
+                            .viewpointAdaptQualifierFromContract(annotation, converter, methodTree);
 
             JavaExpression exprJe;
             try {
                 // Parse the expressionString that was written on methodElement at the methodDecl.
-                exprJe =
-                        Converter.atMethodDecl(methodTree, checker)
-                                .convertToJavaExpression(expressionString);
+                exprJe = Converter.atMethodBody(expressionString, methodTree, checker);
             } catch (JavaExpressionParseException e) {
                 checker.report(methodTree, e.getDiagMessage());
                 if (formalParamNames != null && formalParamNames.contains(expressionString)) {
@@ -1679,6 +1675,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
+        Converter converter = stringExpr -> Converter.atMethodInvocation(stringExpr, tree, checker);
         for (Contract c : preconditions) {
             Precondition p = (Precondition) c;
             String expressionString = p.expressionString;
@@ -1686,14 +1683,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             anno =
                     atypeFactory
                             .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(
-                                    anno, Converter.atMethodInvocation(tree, checker), tree);
+                            .viewpointAdaptQualifierFromContract(anno, converter, tree);
 
             JavaExpression exprJe;
             try {
-                exprJe =
-                        Converter.atMethodInvocation(tree, checker)
-                                .convertToJavaExpression(expressionString);
+                exprJe = Converter.atMethodInvocation(expressionString, tree, checker);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());

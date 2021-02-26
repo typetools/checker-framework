@@ -72,7 +72,6 @@ import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper.Converter;
 import org.checkerframework.javacutil.ElementUtils;
@@ -564,21 +563,16 @@ public abstract class CFAbstractTransfer<
         ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
         Converter converter =
-                expression -> {
-                    JavaExpression javaExpr =
-                            JavaExpressionParseUtil.parse(
-                                    expression, methodElement, analysis.checker);
-                    return javaExpr.viewpointAdapt(methodDeclTree);
-                };
+                stringExpr -> Converter.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
         for (Precondition p : preconditions) {
-            String expressionString = p.expressionString;
+            String stringExpr = p.expressionString;
             AnnotationMirror annotation = viewpointAdaptAnnoFromContract(p.annotation, converter);
             JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed at the declaration (i.e. here) and
                 // for every use. this could be optimized to store the result the first time. (same
                 // for other annotations)
-                exprJe = converter.convertToJavaExpression(expressionString);
+                exprJe = Converter.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
                 continue;
@@ -1189,14 +1183,8 @@ public abstract class CFAbstractTransfer<
             Set<? extends Contract> postconditions) {
 
         Converter converter =
-                expressionString -> {
-                    JavaExpression javaExpr =
-                            JavaExpressionParseUtil.parse(
-                                    expressionString,
-                                    invocationNode.getTarget().getMethod(),
-                                    analysis.checker);
-                    return javaExpr.viewpointAdapt(invocationNode);
-                };
+                stringExpr ->
+                        Converter.atMethodInvocation(stringExpr, invocationNode, analysis.checker);
         for (Contract p : postconditions) {
             // Viewpoint-adapt with respect to the method use (the call site).
             AnnotationMirror anno = viewpointAdaptAnnoFromContract(p.annotation, converter);

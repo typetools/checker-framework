@@ -31,7 +31,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
@@ -172,7 +172,8 @@ public class DependentTypesHelper {
             return;
         }
 
-        Converter converter = Converter.atClassDecl(classDecl, factory.getChecker());
+        Converter converter =
+                stringExpr -> Converter.atClassDecl(stringExpr, classDecl, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             convertAnnotatedTypeMirror(converter, bound.getUpperBound());
             convertAnnotatedTypeMirror(converter, bound.getLowerBound());
@@ -243,9 +244,14 @@ public class DependentTypesHelper {
         Converter converter;
         if (tree instanceof MethodInvocationTree) {
             converter =
-                    Converter.atMethodInvocation((MethodInvocationTree) tree, factory.getChecker());
+                    stringExpr ->
+                            Converter.atMethodInvocation(
+                                    stringExpr, (MethodInvocationTree) tree, factory.getChecker());
         } else if (tree instanceof NewClassTree) {
-            converter = Converter.atNewClassTree((NewClassTree) tree, factory.getChecker());
+            converter =
+                    stringExpr ->
+                            Converter.atNewClassTree(
+                                    stringExpr, (NewClassTree) tree, factory.getChecker());
         } else {
             throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
         }
@@ -279,7 +285,9 @@ public class DependentTypesHelper {
             return;
         }
 
-        convertAnnotatedTypeMirror(Converter.atClassDecl(classElt, factory.getChecker()), type);
+        convertAnnotatedTypeMirror(
+                stringExpr -> Converter.atClassDecl(stringExpr, classElt, factory.getChecker()),
+                type);
     }
 
     /**
@@ -296,7 +304,9 @@ public class DependentTypesHelper {
         }
 
         convertAnnotatedTypeMirror(
-                Converter.atMethodDecl(methodDeclTree, factory.getChecker()), atm);
+                stringExpr ->
+                        Converter.atMethodBody(stringExpr, methodDeclTree, factory.getChecker()),
+                atm);
     }
 
     /**
@@ -389,15 +399,20 @@ public class DependentTypesHelper {
                 if (enclTree.getKind() == Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
                     convertAnnotatedTypeMirror(
-                            Converter.atMethodDecl(methodDeclTree, factory.getChecker()), type);
+                            stringExpr ->
+                                    Converter.atMethodBody(
+                                            stringExpr, methodDeclTree, factory.getChecker()),
+                            type);
                 } else {
                     // Lambdas can use local variables defined in the enclosing method, so allow
                     // identifiers to be locals in scope at the location of the lambda.
                     convertAnnotatedTypeMirror(
-                            Converter.atLambdaParameter(
-                                    (LambdaExpressionTree) enclTree,
-                                    pathToVariableDecl.getParentPath(),
-                                    factory.getChecker()),
+                            stringExpr ->
+                                    Converter.atLambdaParameter(
+                                            stringExpr,
+                                            (LambdaExpressionTree) enclTree,
+                                            pathToVariableDecl.getParentPath(),
+                                            factory.getChecker()),
                             type);
                 }
                 break;
@@ -406,14 +421,19 @@ public class DependentTypesHelper {
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
                 convertAnnotatedTypeMirror(
-                        Converter.atPath(pathToVariableDecl, factory.getChecker()), type);
+                        stringExpr ->
+                                Converter.atPath(
+                                        stringExpr, pathToVariableDecl, factory.getChecker()),
+                        type);
                 break;
 
             case FIELD:
             case ENUM_CONSTANT:
                 VariableElement fieldEle = (VariableElement) variableElt;
                 convertAnnotatedTypeMirror(
-                        Converter.atFieldDecl(fieldEle, factory.getChecker()), type);
+                        stringExpr ->
+                                Converter.atFieldDecl(stringExpr, fieldEle, factory.getChecker()),
+                        type);
                 break;
 
             default:
@@ -442,7 +462,10 @@ public class DependentTypesHelper {
         }
 
         convertAnnotatedTypeMirror(
-                Converter.atFieldDecl((VariableElement) ele, factory.getChecker()), type);
+                stringExpr ->
+                        Converter.atFieldDecl(
+                                stringExpr, (VariableElement) ele, factory.getChecker()),
+                type);
     }
 
     /**
@@ -460,7 +483,9 @@ public class DependentTypesHelper {
         if (path == null) {
             return;
         }
-        convertAnnotatedTypeMirror(Converter.atPath(path, factory.getChecker()), annotatedType);
+        convertAnnotatedTypeMirror(
+                stringExpr -> Converter.atPath(stringExpr, path, factory.getChecker()),
+                annotatedType);
     }
 
     /**
@@ -603,65 +628,85 @@ public class DependentTypesHelper {
         @Nullable JavaExpression convertToJavaExpression(String stringExpr)
                 throws JavaExpressionParseException;
 
-        static Converter atMethodDecl(MethodTree methodTree, SourceChecker checker) {
+        static JavaExpression atClassDecl(
+                String expression, TypeElement classDecl, SourceChecker checker)
+                throws JavaExpressionParseException {
+            return JavaExpressionParseUtil.parse(expression, classDecl, checker);
+        }
+
+        static JavaExpression atMethodDecl(
+                String expression, ExecutableElement ee, SourceChecker checker)
+                throws JavaExpressionParseException {
+            return JavaExpressionParseUtil.parse(expression, ee, checker);
+        }
+
+        static JavaExpression atFieldDecl(
+                String expression, VariableElement fieldEle, SourceChecker checker)
+                throws JavaExpressionParseException {
+            return JavaExpressionParseUtil.parse(expression, fieldEle, checker);
+        }
+
+        static JavaExpression atMethodBody(
+                String expression, MethodTree methodTree, SourceChecker checker)
+                throws JavaExpressionParseException {
+
             ExecutableElement ee = TreeUtils.elementFromDeclaration(methodTree);
-            return expression -> {
-                JavaExpression javaExpr = JavaExpressionParseUtil.parse(expression, ee, checker);
-                return javaExpr.viewpointAdapt(methodTree);
-            };
+            JavaExpression javaExpr = Converter.atMethodDecl(expression, ee, checker);
+            return javaExpr.viewpointAdapt(methodTree);
         }
 
-        static Converter atClassDecl(TypeElement classDecl, SourceChecker checker) {
-            return expression -> JavaExpressionParseUtil.parse(expression, classDecl, checker);
+        static JavaExpression atMethodInvocation(
+                String expression, MethodInvocationTree methodInvocationTree, SourceChecker checker)
+                throws JavaExpressionParseException {
+            ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationTree);
+            JavaExpression javaExpr = Converter.atMethodDecl(expression, ee, checker);
+            return javaExpr.viewpointAdapt(methodInvocationTree);
         }
 
-        static Converter atFieldDecl(VariableElement fieldEle, SourceChecker checker) {
-            return expressionString ->
-                    JavaExpressionParseUtil.parse(expressionString, fieldEle, checker);
+        static JavaExpression atMethodInvocation(
+                String expression, MethodInvocationNode methodInvocationNode, SourceChecker checker)
+                throws JavaExpressionParseException {
+            ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationNode.getTree());
+            JavaExpression javaExpr = Converter.atMethodDecl(expression, ee, checker);
+            return javaExpr.viewpointAdapt(methodInvocationNode);
         }
 
-        static Converter atMethodInvocation(
-                MethodInvocationTree methodInvocationTree, SourceChecker checker) {
-            ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
-            return expression -> {
-                JavaExpression javaExpr =
-                        JavaExpressionParseUtil.parse(expression, methodElement, checker);
-                return javaExpr.viewpointAdapt(methodInvocationTree);
-            };
+        static JavaExpression atNewClassTree(
+                String expression, NewClassTree newClassTree, SourceChecker checker)
+                throws JavaExpressionParseException {
+            ExecutableElement ee = TreeUtils.elementFromUse(newClassTree);
+            JavaExpression javaExpr = Converter.atMethodDecl(expression, ee, checker);
+            return javaExpr.viewpointAdapt(newClassTree);
         }
 
-        static Converter atNewClassTree(NewClassTree newClassTree, BaseTypeChecker checker) {
-            ExecutableElement methodElement = TreeUtils.elementFromUse(newClassTree);
-            return expression -> {
-                JavaExpression javaExpr =
-                        JavaExpressionParseUtil.parse(expression, methodElement, checker);
-                return javaExpr.viewpointAdapt(newClassTree);
-            };
-        }
+        static JavaExpression atFieldAccess(
+                String expression, MemberSelectTree fieldAccess, SourceChecker checker)
+                throws JavaExpressionParseException {
 
-        static Converter atFieldAccess(MemberSelectTree fieldAccess, SourceChecker checker) {
             Element ele = TreeUtils.elementFromUse(fieldAccess);
             if (ele.getKind() != ElementKind.FIELD || ele.getKind() != ElementKind.ENUM_CONSTANT) {
                 throw new BugInCF("Expected a field, but found %s.", ele.getKind());
             }
             VariableElement fieldEle = (VariableElement) ele;
-
             JavaExpression receiver = JavaExpression.fromTree(fieldAccess.getExpression());
-            return stringExpr -> {
-                JavaExpression javaExpr =
-                        JavaExpressionParseUtil.parse(stringExpr, fieldEle, checker);
-                return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, receiver);
-            };
+            JavaExpression javaExpr = Converter.atFieldDecl(expression, fieldEle, checker);
+            return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, receiver);
         }
 
-        static Converter atLambdaParameter(
-                LambdaExpressionTree lambdaTree, TreePath parentPath, BaseTypeChecker checker) {
-            return expression ->
-                    JavaExpressionParseUtil.parse(expression, lambdaTree, parentPath, checker);
+        static JavaExpression atLambdaParameter(
+                String expression,
+                LambdaExpressionTree lambdaTree,
+                TreePath parentPath,
+                SourceChecker checker)
+                throws JavaExpressionParseException {
+
+            return JavaExpressionParseUtil.parse(expression, lambdaTree, parentPath, checker);
         }
 
-        static Converter atPath(TreePath path, BaseTypeChecker checker) {
-            return expression -> JavaExpressionParseUtil.parse(expression, path, checker);
+        static JavaExpression atPath(String expression, TreePath path, SourceChecker checker)
+                throws JavaExpressionParseException {
+
+            return JavaExpressionParseUtil.parse(expression, path, checker);
         }
     }
 
@@ -918,7 +963,9 @@ public class DependentTypesHelper {
     private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
-            convertAnnotatedTypeMirror(Converter.atMethodDecl(node, factory.getChecker()), atm);
+            convertAnnotatedTypeMirror(
+                    stringExpr -> Converter.atMethodBody(stringExpr, node, factory.getChecker()),
+                    atm);
             checkType(atm, node.getTypeParameters().get(i));
         }
     }
