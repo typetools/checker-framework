@@ -3,8 +3,6 @@ package org.checkerframework.framework.type;
 // The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
 
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.Node;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -29,7 +27,6 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import java.io.File;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -82,9 +79,6 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceIm
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
-import org.checkerframework.framework.ajava.JavaParserUtils;
-import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
@@ -703,58 +697,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param root the new compilation unit to use
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
-        setRoot(root, /*disableVisitorCheck=*/ false);
-    }
-
-    /**
-     * Set the CompilationUnitTree that should be used. This version allows disabling the check
-     * -AcheckJavaParserVisitor would otherwise enable. It exists because {@code setRoot} is
-     * sometimes called outside of the normal type checking process, such as in {@link
-     * org.checkerframework.common.initializedfields.InitializedFieldsAnnotatedTypeFactory#defaultValueIsOK(VariableElement)}},
-     * and needs to be disabled while still allowing the check to run when processing a file
-     * normally.
-     *
-     * @param root the new compilation unit to use
-     * @param disableVisitorCheck if true, then even if the -AcheckJavaParserVisitor option is
-     *     passed, disables running the visitor that verifies that the javac tree can be visited
-     *     with its corresponding JavaParser AST.
-     */
-    @SuppressWarnings("CatchAndPrintStackTrace")
-    public void setRoot(@Nullable CompilationUnitTree root, boolean disableVisitorCheck) {
         if (root != null && wholeProgramInference != null) {
             for (Tree typeDecl : root.getTypeDecls()) {
                 if (typeDecl.getKind() == Kind.CLASS) {
                     ClassTree classTree = (ClassTree) typeDecl;
                     wholeProgramInference.preprocessClassTree(classTree);
                 }
-            }
-        }
-
-        if (!disableVisitorCheck && checker.hasOption("checkJavaParserVisitor") && root != null) {
-            Map<Tree, Node> treePairs = new HashMap<>();
-            try {
-                java.io.InputStream reader = root.getSourceFile().openInputStream();
-                com.github.javaparser.ast.CompilationUnit javaParserRoot =
-                        StaticJavaParser.parse(reader);
-                reader.close();
-                JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
-                new JointVisitorWithDefaultAction() {
-                    @Override
-                    public void defaultAction(Tree javacTree, Node javaParserNode) {
-                        treePairs.put(javacTree, javaParserNode);
-                    }
-                }.visitCompilationUnit(root, javaParserRoot);
-                ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
-                expectedTreesVisitor.visitCompilationUnit(root, null);
-                for (Tree expected : expectedTreesVisitor.getTrees()) {
-                    if (!treePairs.containsKey(expected)) {
-                        throw new BugInCF(
-                                "Javac tree not matched to JavaParser node: %s, in file: %s",
-                                expected, root.getSourceFile().getName());
-                    }
-                }
-            } catch (IOException e) {
-                throw new BugInCF("Error reading Java source file", e);
             }
         }
 
