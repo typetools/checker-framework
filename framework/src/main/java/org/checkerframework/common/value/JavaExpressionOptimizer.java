@@ -3,6 +3,7 @@ package org.checkerframework.common.value;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -31,6 +32,18 @@ public class JavaExpressionOptimizer extends JavaExpressionConverter {
      */
     public JavaExpressionOptimizer(AnnotatedTypeFactory factory) {
         this.factory = factory;
+    }
+
+    @Override
+    protected JavaExpression visitFieldAccess(FieldAccess fieldAccessExpr, Void unused) {
+        // Replace references to compile-time constant fields by the constant itself.
+        if (fieldAccessExpr.isFinal()) {
+            Object constant = fieldAccessExpr.getField().getConstantValue();
+            if (constant != null && !(constant instanceof String)) {
+                return new ValueLiteral(fieldAccessExpr.getType(), constant);
+            }
+        }
+        return super.visitFieldAccess(fieldAccessExpr, unused);
     }
 
     @Override

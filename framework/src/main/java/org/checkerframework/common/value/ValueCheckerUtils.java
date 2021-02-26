@@ -18,6 +18,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
@@ -402,6 +403,9 @@ public class ValueCheckerUtils {
      * @return an optimized version of the argument
      */
     public static JavaExpression optimize(JavaExpression je, AnnotatedTypeFactory factory) {
-        return new JavaExpressionOptimizer(factory).convert(je);
+        ValueAnnotatedTypeFactory vatf =
+                ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
+                        .getTypeFactoryOfSubchecker(ValueChecker.class);
+        return new JavaExpressionOptimizer(vatf == null ? factory : vatf).convert(je);
     }
 }
