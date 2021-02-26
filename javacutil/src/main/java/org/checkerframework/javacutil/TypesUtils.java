@@ -176,6 +176,13 @@ public final class TypesUtils {
                 return "<nulltype>";
             case VOID:
                 return "void";
+            case WILDCARD:
+                WildcardType wildcard = (WildcardType) type;
+                TypeMirror extendsBound = wildcard.getExtendsBound();
+                TypeMirror superBound = wildcard.getSuperBound();
+                return "?"
+                        + (extendsBound != null ? " extends " + simpleTypeName(extendsBound) : "")
+                        + (superBound != null ? " super " + simpleTypeName(superBound) : "");
             default:
                 if (type.getKind().isPrimitive()) {
                     return TypeAnnotationUtils.unannotatedType(type).toString();
