@@ -303,8 +303,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public void setRoot(CompilationUnitTree root) {
         atypeFactory.setRoot(root);
-        testJointJavacJavaParserVisitor();
         super.setRoot(root);
+        testJointJavacJavaParserVisitor();
     }
 
     @Override
