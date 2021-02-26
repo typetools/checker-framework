@@ -99,13 +99,13 @@ android {
 }
 \end{Verbatim}
 
-\item Add a dependency configuration for the annotated JDK:
+\item Add a dependency configuration for the Java 9 compiler:
 
 \begin{mysmall}
 \begin{Verbatim}
 configurations {
     errorproneJavac {
-        description = 'required to run the Checker Framework.'
+        description = 'Java 9 compiler; required to run the Checker Framework under JDK 8.'
     }
 }
 
