@@ -710,8 +710,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Set the CompilationUnitTree that should be used. This version allows disabling the check
      * -AcheckJavaParserVisitor would otherwise enable. It exists because {@code setRoot} is
      * sometimes called outside of the normal type checking process, such as in {@link
-     * InitializedFieldsAnnotatedTypeFactory#defaultValueIsOK}, and needs to be disabled while still
-     * allowing the check to run when processing a file normally.
+     * org.checkerframework.common.initializedfields.InitializedFieldsAnnotatedTypeFactory#defaultValueIsOK(VariableElement)}},
+     * and needs to be disabled while still allowing the check to run when processing a file
+     * normally.
      *
      * @param root the new compilation unit to use
      * @param disableVisitorCheck if true, then even if the -AcheckJavaParserVisitor option is

@@ -718,8 +718,8 @@ public class AnnotationFileParser {
      *
      * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
      * processing an ajava file, where traversal is handled externaly by a {@link
-     * JointJavacJavaParserVisitor}, these type variables must be removed after processing the
-     * type's members. Otherwise, this method removes them.
+     * org.checkerframework.framework.ajava.JointJavacJavaParserVisitor}, these type variables must
+     * be removed after processing the type's members. Otherwise, this method removes them.
      *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
