@@ -846,9 +846,9 @@ in the version of the library you are using.
 
 \sectionAndLabel{Ajava Files}{ajava-files}
 
-Like stub files, ajava files store annotations that can be read by the
-Checker Framework.  Ajava files are mostly used as
-the output of whole program inference and not for annotating libraries.
+Ajava files are valid Java source files whose annotations can be read and used
+by the Checker Framework. They are similar to stub files, but annotations in
+anonymous and local classes are also read and used.
 
 
 \subsectionAndLabel{Using an Ajava File}{ajava-using}
@@ -867,6 +867,17 @@ For example:
 \end{Verbatim}
 \end{myxsmall}
 
+If an ajava file has an associated Java file, in order for the Checker Framework
+to match the two the ajava file must be located in a subdirectory of one of the
+arguments to \code{-Aajava} matching its package name, and it must be named
+\code{ClassName-checker.qualified.name.ajava} where
+\code{checker.qualified.name} is the fully qualified name of the checker that
+the ajava file's annotations belong to. For example, an ajava file with
+tainting annotations for a class \code{outerpackage.innerpackage.MyClass} would
+be located in a subdirectory \code{outerpackage/innerpackage} and it would be
+named
+\code{MyClass-org.checkerframework.checker.tainting.TaintingChecker.ajava}.
+
 
 \subsectionAndLabel{Contents of an Ajava file}{ajava-contents}
 
@@ -876,8 +887,8 @@ ajava file and source file must match exactly with the following exceptions:
 \begin{itemize}
   \item The two may differ in annotations.
   \item The ajava file may have explicit receivers where the source file
-    doesn't. If a source file has a method declaration \code{myMethod()},
-    the ajava file might contain \code{myMethod(MyClass this)}.
+    doesn't. If a source file has a method declaration \code{void myMethod()},
+    the ajava file might contain \code{void myMethod(MyClass this)}.
   \item The ajava file may have explicit type bounds that are implicit in the source file.
     If a source file has a type argument \<?>,
     the ajava file might contain \code{? extends Object}.
