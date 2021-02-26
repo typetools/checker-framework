@@ -240,16 +240,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final Set<@CanonicalName String> supportedQualNames;
 
-    /** Parses stub files and stores annotations from stub files. */
+    /** Parses stub files and stores annotations on public elements from stub files. */
     public final AnnotationFileElementTypes stubTypes;
 
-    /** Parses ajava files and stores annotations from ajava files. */
+    /** Parses ajava files and stores annotations on public elements from ajava files. */
     public final AnnotationFileElementTypes ajavaTypes;
 
     /**
-     * If processing a file, stores any annotations read from an ajava file for that class. Unlike
-     * {@code ajavaTypes}, which only stores annotations on public elements, this stores annotations
-     * on all element locations such as in anonymous class bodies.
+     * If type checking a Java file, stores annotations read from an ajava file for that class if
+     * one exists. Unlike {@link #ajavaTypes}, which only stores annotations on public elements,
+     * this stores annotations on all element locations such as in anonymous class bodies.
      */
     public @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
 
@@ -511,7 +511,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + inferArg
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            if (checker.getOption("infer").equals("ajava")) {
+            if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
                 wholeProgramInference =
                         new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
                                 this, new WholeProgramInferenceJavaParserStorage(this));
@@ -703,19 +703,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param root the new compilation unit to use
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
-        setRoot(root, /*shouldCheckVisitor=*/ true);
+        setRoot(root, /*disableVisitorCheck=*/ false);
     }
 
     /**
-     * Set the CompilationUnitTree that should be used.
+     * Set the CompilationUnitTree that should be used. This version allows disabling the check
+     * -AcheckJavaParserVisitor would otherwise enable. It exists because {@code setRoot} is
+     * sometimes called outside of the normal type checking process, such as in {@link
+     * InitializedFieldsAnnotatedTypeFactory#defaultValueIsOK}, and needs to be disabled while still
+     * allowing the check to run when processing a file normally.
      *
      * @param root the new compilation unit to use
-     * @param shouldCheckVisitor if true, run the visitor that verifies that the javac tree can be
-     *     visited with its corresponding JavaParser AST. The check only occurs if
-     *     -AcheckJavaParserVisitor is passed on the command line.
+     * @param disableVisitorCheck if true, then even if the -AcheckJavaParserVisitor option is
+     *     passed, disables running the visitor that verifies that the javac tree can be visited
+     *     with its corresponding JavaParser AST.
      */
     @SuppressWarnings("CatchAndPrintStackTrace")
-    public void setRoot(@Nullable CompilationUnitTree root, boolean shouldCheckVisitor) {
+    public void setRoot(@Nullable CompilationUnitTree root, boolean disableVisitorCheck) {
         if (root != null && wholeProgramInference != null) {
             for (Tree typeDecl : root.getTypeDecls()) {
                 if (typeDecl.getKind() == Kind.CLASS) {
@@ -725,7 +729,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        if (shouldCheckVisitor && checker.hasOption("checkJavaParserVisitor") && root != null) {
+        if (disableVisitorCheck && checker.hasOption("checkJavaParserVisitor") && root != null) {
             Map<Tree, Node> treePairs = new HashMap<>();
             try {
                 java.io.InputStream reader = root.getSourceFile().openInputStream();
@@ -3736,54 +3740,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        if (!ajavaTypes.isParsing()) {
-
-            // Retrieving annotations from ajava files.
-            Set<AnnotationMirror> ajavaAnnos = ajavaTypes.getDeclAnnotation(elt);
-            results.addAll(ajavaAnnos);
-
-            if (elt.getKind() == ElementKind.METHOD) {
-                // Retrieve the annotations from the overridden method's element.
-                inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
-            } else if (ElementUtils.isTypeDeclaration(elt)) {
-                inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
-            }
+        // If parsing annotation files, return only the annotations in the element.
+        if (stubTypes.isParsing()
+                || ajavaTypes.isParsing()
+                || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing())) {
+            return results;
         }
 
-        if (currentFileAjavaTypes != null && !ajavaTypes.isParsing()) {
-
-            // Retrieving annotations from current ajava file.
-            Set<AnnotationMirror> ajavaAnnos = currentFileAjavaTypes.getDeclAnnotation(elt);
-            results.addAll(ajavaAnnos);
-
-            if (elt.getKind() == ElementKind.METHOD) {
-                // Retrieve the annotations from the overridden method's element.
-                inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
-            } else if (ElementUtils.isTypeDeclaration(elt)) {
-                inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
-            }
+        // Add annotations from annotation files.
+        results.addAll(stubTypes.getDeclAnnotation(elt));
+        results.addAll(ajavaTypes.getDeclAnnotation(elt));
+        if (currentFileAjavaTypes != null) {
+            results.addAll(currentFileAjavaTypes.getDeclAnnotation(elt));
         }
 
-        // If parsing stub files, return the annotations in the element.
-        if (!stubTypes.isParsing()) {
-
-            // Retrieving annotations from stub files.
-            Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt);
-            results.addAll(stubAnnos);
-
-            if (elt.getKind() == ElementKind.METHOD) {
-                // Retrieve the annotations from the overridden method's element.
-                inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
-            } else if (ElementUtils.isTypeDeclaration(elt)) {
-                inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
-            }
+        if (elt.getKind() == ElementKind.METHOD) {
+            // Retrieve the annotations from the overridden method's element.
+            inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
+        } else if (ElementUtils.isTypeDeclaration(elt)) {
+            inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
         }
 
-        if (!stubTypes.isParsing() && !ajavaTypes.isParsing()) {
-            // Add the element and its annotations to the cache.
-            cacheDeclAnnos.put(elt, results);
-        }
-
+        // Add the element and its annotations to the cache.
+        cacheDeclAnnos.put(elt, results);
         return results;
     }
 

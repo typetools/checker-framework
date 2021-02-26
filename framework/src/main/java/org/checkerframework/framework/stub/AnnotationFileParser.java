@@ -686,7 +686,7 @@ public class AnnotationFileParser {
                 }
             }
         } else {
-            root.accept(new AjavaParserVisitor(), cu);
+            root.accept(new AjavaAnnotationCollectorVisitor(), cu);
         }
 
         packageAnnos = null;
@@ -717,9 +717,9 @@ public class AnnotationFileParser {
      * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
      *
      * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
-     * processing an ajava file, where traversal is handled externaly by a visitor, these type
-     * variables must be removed after processing the type's members. Otherwise, this method removes
-     * them.
+     * processing an ajava file, where traversal is handled externaly by a {@link
+     * JointJavacJavaParserVisitor}, these type variables must be removed after processing the
+     * type's members. Otherwise, this method removes them.
      *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
@@ -2812,11 +2812,13 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Walks the javac tree for a file, processing the JavaParser node for each program element it
-     * finds.
+     * After obtaining the JavaParser AST for an ajava file and the javac tree for its corresponding
+     * Java file, walks both in tandem. For each program construct with annotations, stores the
+     * annotations from the ajava file in {@link #annotationFileAnnos} by calling the process method
+     * corresponding to that construct, such as {@link #processCallableDeclaration} or {@link
+     * #processField}.
      */
-    @SuppressWarnings("UnusedNestedClass")
-    private class AjavaParserVisitor extends DefaultJointVisitor {
+    private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
         @Override
         public Void visitClass(ClassTree javacTree, Node javaParserNode) {
             List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
