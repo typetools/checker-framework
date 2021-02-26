@@ -809,17 +809,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             String qualifiedName = packagePrefix + className;
 
-            String ajavaPath =
-                    checker.getOption("ajava")
-                            + File.separator
-                            + qualifiedName.replaceAll("\\.", "/")
-                            + "-"
-                            + checker.getClass().getCanonicalName()
-                            + ".ajava";
-            File ajavaFile = new File(ajavaPath);
-            if (ajavaFile.exists()) {
-                currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-                currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
+            for (String ajavaLocation : checker.getOption("ajava").split(File.pathSeparator)) {
+                String ajavaPath =
+                        ajavaLocation
+                                + File.separator
+                                + qualifiedName.replaceAll("\\.", "/")
+                                + "-"
+                                + checker.getClass().getCanonicalName()
+                                + ".ajava";
+                File ajavaFile = new File(ajavaPath);
+                if (ajavaFile.exists()) {
+                    currentFileAjavaTypes = new AnnotationFileElementTypes(this);
+                    currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
+                    break;
+                }
             }
         } else {
             currentFileAjavaTypes = null;
