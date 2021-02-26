@@ -784,7 +784,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (root != null && checker.hasOption("ajava")) {
             // Search for an ajava file with annotations for the current source file and the current
-            // checker. It will be in the directory specified by the "ajava" option in a
+            // checker. It will be in a directory specified by the "ajava" option in a
             // subdirectory corresponding to this file's package. For example, a file in package
             // a.b would be in a subdirectory a/b. The filename is
             // ClassName-checker.qualified.name.ajava. If such a file exists, read its detailed
