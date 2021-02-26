@@ -29,9 +29,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +42,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -149,7 +150,7 @@ public class WholeProgramInferenceJavaParserStorage
             VariableElement ve,
             AnnotatedTypeFactory atypeFactory) {
         CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
-        return methodAnnos.getParameterType(paramATM, i, atypeFactory);
+        return methodAnnos.getParameterTypeInitialized(paramATM, i, atypeFactory);
     }
 
     @Override
@@ -238,11 +239,7 @@ public class WholeProgramInferenceJavaParserStorage
             ExecutableElement methodElt, AnnotationMirror anno) {
 
         CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
-        if (methodAnnos.declarationAnnotations == null) {
-            methodAnnos.declarationAnnotations = new LinkedHashSet<AnnotationMirror>();
-        }
-
-        boolean isNewAnnotation = methodAnnos.declarationAnnotations.add(anno);
+        boolean isNewAnnotation = methodAnnos.addDeclarationAnnotation(anno);
         if (isNewAnnotation) {
             modifiedFiles.add(getFileForElement(methodElt));
         }
@@ -754,32 +751,34 @@ public class WholeProgramInferenceJavaParserStorage
          * Inferred annotations for the return type, if the declaration represents a method.
          * Initialized on first usage.
          */
-        public @Nullable AnnotatedTypeMirror returnType;
+        private @MonotonicNonNull AnnotatedTypeMirror returnType = null;
         /**
          * Inferred annotations for the receiver type, if the declaration represents a method.
          * Initialized on first usage.
          */
-        public @Nullable AnnotatedTypeMirror receiverType;
+        private @MonotonicNonNull AnnotatedTypeMirror receiverType = null;
         /**
          * Inferred annotations for parameter types. Initialized the first time any parameter is
          * accessed and each parameter is initialized the first time it's accessed.
          */
-        public @Nullable List<@Nullable AnnotatedTypeMirror> parameterTypes;
+        private @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
         /** Annotations on the callable declaration. */
-        public @Nullable Set<AnnotationMirror> declarationAnnotations;
+        private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
         /**
          * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
          * inferred preconditions on that field.
          */
-        public @Nullable Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions;
+        private @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions =
+                null;
         /**
          * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
          * inferred postconditions on that field.
          */
-        public @Nullable Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions;
-        /** Inferred contracts for the callable declaration. */
-        public @Nullable List<AnnotationMirror> contracts;
+        private @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions =
+                null;
+        // /** Inferred contracts for the callable declaration. */
+        // private @MonotonicNonNull List<AnnotationMirror> contracts = null;
 
         /**
          * Creates a wrapper for the given method or constructor declaration.
@@ -788,13 +787,6 @@ public class WholeProgramInferenceJavaParserStorage
          */
         public CallableDeclarationAnnos(CallableDeclaration<?> declaration) {
             this.declaration = declaration;
-            this.returnType = null;
-            this.receiverType = null;
-            this.parameterTypes = null;
-            this.declarationAnnotations = null;
-            this.fieldToPreconditions = null;
-            this.fieldToPostconditions = null;
-            this.contracts = null;
         }
 
         /**
@@ -810,7 +802,7 @@ public class WholeProgramInferenceJavaParserStorage
          * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the
          *     parameter at the given index
          */
-        public AnnotatedTypeMirror getParameterType(
+        public AnnotatedTypeMirror getParameterTypeInitialized(
                 AnnotatedTypeMirror type, int index, AnnotatedTypeFactory atf) {
             if (parameterTypes == null) {
                 parameterTypes = new ArrayList<>();
@@ -829,9 +821,55 @@ public class WholeProgramInferenceJavaParserStorage
         }
 
         /**
-         * If this wrapper holds a method, returns the inferred type of the receiver type. If
-         * necessary, initializes the {@code AnnotatedTypeMirror} for that location using {@code
-         * type} and {@code atf} to a wrapper around the base type for the receiver type.
+         * Returns the inferred type for the parameter at the given index, or null if there's no
+         * parameter at the given index or there's no inferred type for that parameter.
+         *
+         * @param index index of the parameter to return the inferred annotations of
+         * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the
+         *     parameter at the given index, or null if there's no parameter at {@code index} or if
+         *     there's not inferred annotations for that parameter
+         */
+        public @Nullable AnnotatedTypeMirror getParameterType(int index) {
+            if (parameterTypes == null || index < 0 || index >= parameterTypes.size()) {
+                return null;
+            }
+
+            return parameterTypes.get(index);
+        }
+
+        /**
+         * Returns the inferred declaration annotations on this executable, or null if there are no
+         * annotations.
+         *
+         * @return the declaration annotations for this callable declaration
+         */
+        public Set<AnnotationMirror> getDeclarationAnnotations() {
+            if (declarationAnnotations == null) {
+                return Collections.emptySet();
+            }
+
+            return Collections.unmodifiableSet(declarationAnnotations);
+        }
+
+        /**
+         * Adds a declaration annotation to this callable declaration and returns whether it was a
+         * new annotation.
+         *
+         * @param annotation declaration annotation to add
+         * @return true if {@code annotation} wasn't previously stored for this callable declaration
+         */
+        public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
+            if (declarationAnnotations == null) {
+                declarationAnnotations = new HashSet<>();
+            }
+
+            return declarationAnnotations.add(annotation);
+        }
+
+        /**
+         * If this wrapper holds a method, returns the inferred type of the receiver. If necessary,
+         * initializes the {@code AnnotatedTypeMirror} for that location using {@code type} and
+         * {@code atf} to a wrapper around the base type for the receiver type.
          *
          * @param type base type for the receiver type, used for initializing the returned {@code
          *     AnnotatedTypeMirror} the first time it's accessed
@@ -871,8 +909,35 @@ public class WholeProgramInferenceJavaParserStorage
         }
 
         /**
+         * Returns the inferred preconditions for this callable declaration.
+         *
+         * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
+         *     inferred preconditions for those fields.
+         */
+        public Map<VariableElement, AnnotatedTypeMirror> getFieldToPreconditions() {
+            if (fieldToPreconditions == null) {
+                return Collections.emptyMap();
+            }
+
+            return Collections.unmodifiableMap(fieldToPreconditions);
+        }
+
+        /**
+         * Returns the inferred postconditions for this callable declaration.
+         *
+         * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
+         *     inferred postconditions for those fields.
+         */
+        public Map<VariableElement, AnnotatedTypeMirror> getFieldToPostconditions() {
+            if (fieldToPostconditions == null) {
+                return Collections.emptyMap();
+            }
+
+            return Collections.unmodifiableMap(fieldToPostconditions);
+        }
+
+        /**
          * Returns an AnnotatedTypeMirror containing the preconditions for the given field.
-         * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
          *
          * @param field VariableElement for a field in the enclosing class for this method
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
@@ -898,7 +963,6 @@ public class WholeProgramInferenceJavaParserStorage
 
         /**
          * Returns an AnnotatedTypeMirror containing the postconditions for the given field.
-         * Initializes {@code fieldToPreconditions} and the entry for the field if necessary.
          *
          * @param field VariableElement for a field in the enclosing class for this method
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
@@ -995,7 +1059,7 @@ public class WholeProgramInferenceJavaParserStorage
         /** Wrapped field declaration. */
         public VariableDeclarator declaration;
         /** Inferred type for field, initialized the first time it's accessed. */
-        public @Nullable AnnotatedTypeMirror type;
+        private @MonotonicNonNull AnnotatedTypeMirror type = null;
 
         /**
          * Creates a wrapper for the given field declaration.
@@ -1004,7 +1068,6 @@ public class WholeProgramInferenceJavaParserStorage
          */
         public FieldAnnos(VariableDeclarator declaration) {
             this.declaration = declaration;
-            type = null;
         }
 
         /**
