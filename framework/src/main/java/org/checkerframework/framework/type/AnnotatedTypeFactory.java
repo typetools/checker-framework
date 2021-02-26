@@ -730,7 +730,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        if (disableVisitorCheck && checker.hasOption("checkJavaParserVisitor") && root != null) {
+        if (!disableVisitorCheck && checker.hasOption("checkJavaParserVisitor") && root != null) {
             Map<Tree, Node> treePairs = new HashMap<>();
             try {
                 java.io.InputStream reader = root.getSourceFile().openInputStream();
