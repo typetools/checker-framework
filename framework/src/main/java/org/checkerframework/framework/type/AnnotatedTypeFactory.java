@@ -638,7 +638,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         initializeReflectionResolution();
 
         if (this.getClass() == AnnotatedTypeFactory.class) {
-            this.parseStubFiles();
+            this.parseAnnotationFiles();
         }
         TypeMirror iterableTypeMirror =
                 ElementUtils.getTypeElement(processingEnv, Iterable.class).asType();
@@ -1350,16 +1350,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
-        type = mergeStubsIntoType(type, elt, ajavaTypes);
+        type = mergeAnnotationFileAnnosIntoType(type, elt, ajavaTypes);
         if (currentFileAjavaTypes != null) {
-            type = mergeStubsIntoType(type, elt, currentFileAjavaTypes);
+            type = mergeAnnotationFileAnnosIntoType(type, elt, currentFileAjavaTypes);
         }
 
         if (checker.hasOption("mergeStubsWithSource")) {
             if (debugStubParser) {
                 System.out.printf("fromElement: mergeStubsIntoType(%s, %s)", type, elt);
             }
-            type = mergeStubsIntoType(type, elt, stubTypes);
+            type = mergeAnnotationFileAnnosIntoType(type, elt, stubTypes);
             if (debugStubParser) {
                 System.out.printf(" => %s%n", type);
             }
@@ -1392,6 +1392,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>If a VariableTree is a parameter to a lambda, this method also adds annotations from the
      * declared type of the functional interface and the executable type of its method.
      *
+     * <p>The returned AnnotatedTypeMirror also contains explicitly written annotations from any
+     * ajava file and if {@code -AmergeStubsWithSource} is passed, it also merges any explicitly
+     * written annotations from stub files.
+     *
      * @param tree MethodTree or VariableTree
      * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
      */
@@ -1406,16 +1410,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
-        result = mergeStubsIntoType(result, tree, ajavaTypes);
+        result = mergeAnnotationFileAnnosIntoType(result, tree, ajavaTypes);
         if (currentFileAjavaTypes != null) {
-            result = mergeStubsIntoType(result, tree, currentFileAjavaTypes);
+            result = mergeAnnotationFileAnnosIntoType(result, tree, currentFileAjavaTypes);
         }
 
         if (checker.hasOption("mergeStubsWithSource")) {
             if (debugStubParser) {
                 System.out.printf("fromClass: mergeStubsIntoType(%s, %s)", result, tree);
             }
-            result = mergeStubsIntoType(result, tree, stubTypes);
+            result = mergeAnnotationFileAnnosIntoType(result, tree, stubTypes);
             if (debugStubParser) {
                 System.out.printf(" => %s%n", result);
             }
@@ -1437,33 +1441,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param source storage for current annotation file annotations
      * @return the given type, side-effected to add the annotation file types
      */
-    private AnnotatedTypeMirror mergeStubsIntoType(
+    private AnnotatedTypeMirror mergeAnnotationFileAnnosIntoType(
             @Nullable AnnotatedTypeMirror type, Tree tree, AnnotationFileElementTypes source) {
         Element elt = TreeUtils.elementFromTree(tree);
-        return mergeStubsIntoType(type, elt, source);
+        return mergeAnnotationFileAnnosIntoType(type, elt, source);
     }
 
     /**
-     * Merges types from stub files for {@code elt} into {@code type} by taking the greatest lower
-     * bound of the annotations in both.
+     * Merges types from annotation files for {@code elt} into {@code type} by taking the greatest
+     * lower bound of the annotations in both.
      *
-     * @param type the type to apply stub types to
-     * @param elt the element from which to read stub types
+     * @param type the type to apply annotation file types to
+     * @param elt the element from which to read annotation file types
      * @param source storage for current annotation file annotations
-     * @return the type, side-effected to add the stub types
+     * @return the type, side-effected to add the annotation file types
      */
-    protected AnnotatedTypeMirror mergeStubsIntoType(
+    protected AnnotatedTypeMirror mergeAnnotationFileAnnosIntoType(
             @Nullable AnnotatedTypeMirror type, Element elt, AnnotationFileElementTypes source) {
-        AnnotatedTypeMirror stubType = source.getAnnotatedTypeMirror(elt);
-        if (stubType == null) {
+        AnnotatedTypeMirror typeFromFile = source.getAnnotatedTypeMirror(elt);
+        if (typeFromFile == null) {
             return type;
         }
         if (type == null) {
-            return stubType;
+            return typeFromFile;
         }
-        // Must merge (rather than only take the stub type if it is a subtype)
+        // Must merge (rather than only take the annotation file type if it is a subtype)
         // to support WPI.
-        AnnotatedTypeCombiner.combine(stubType, type, this.getQualifierHierarchy());
+        AnnotatedTypeCombiner.combine(typeFromFile, type, this.getQualifierHierarchy());
         return type;
     }
 
@@ -3556,7 +3560,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Parses the stub files in the following order:
+     * Parses all annotation files in the following order:
      *
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
@@ -3568,14 +3572,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *   <li>Stub files provide via stubs system property <br>
      *   <li>Stub files provide via stubs environment variable <br>
      *   <li>Stub files provide via stubs compiler option
+     *   <li>Ajava files provided via ajava compiler option
      * </ol>
      *
      * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub
      * file, the qualifier in the last stub file is applied.
      *
-     * <p>Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
+     * <p>The annotations are stored by side-effecting {@link #stubTypes} and {@link #ajavaTypes}.
      */
-    protected void parseStubFiles() {
+    protected void parseAnnotationFiles() {
         stubTypes.parseStubFiles();
         ajavaTypes.parseAjavaFiles();
     }

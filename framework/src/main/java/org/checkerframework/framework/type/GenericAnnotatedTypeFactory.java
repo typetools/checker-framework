@@ -386,7 +386,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.transfer = analysis.getTransferFunction();
         this.emptyStore = analysis.createEmptyStore(transfer.usesSequentialSemantics());
 
-        this.parseStubFiles();
+        this.parseAnnotationFiles();
     }
 
     /**

@@ -261,6 +261,9 @@ public class AnnotationFileElementTypes {
                                 "Could not read annotation resource: " + resource.getDescription());
                         continue;
                     }
+                    // We use parseStubFile here even for ajava files because at this stage ajava
+                    // files are parsed as stub files. The extra annotation data in an ajava file is
+                    // parsed when type checking the ajava file's corresponding Java file.
                     AnnotationFileParser.parseStubFile(
                             resource.getDescription(),
                             annotationFileStream,
