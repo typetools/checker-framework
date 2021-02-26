@@ -66,7 +66,7 @@ public class AliasingTransfer extends CFTransfer {
             return super.visitAssignment(n, in); // Do normal refinement.
         }
         // Widen the type of the rhs if the RHS's declared type wasn't @Unique.
-        JavaExpression rhsExpr = JavaExpression.fromNode(factory, rhs);
+        JavaExpression rhsExpr = JavaExpression.fromNode(rhs);
         in.getRegularStore().clearValue(rhsExpr);
         return new RegularTransferResult<>(null, in.getRegularStore());
     }
@@ -104,7 +104,7 @@ public class AliasingTransfer extends CFTransfer {
             AnnotatedTypeMirror paramType = paramTypes.get(i);
             if (!paramType.hasAnnotation(NonLeaked.class)
                     && !paramType.hasAnnotation(LeakedToResult.class)) {
-                store.clearValue(JavaExpression.fromNode(factory, arg));
+                store.clearValue(JavaExpression.fromNode(arg));
             }
         }
 
@@ -114,7 +114,7 @@ public class AliasingTransfer extends CFTransfer {
         if (receiverType != null
                 && !receiverType.hasAnnotation(LeakedToResult.class)
                 && !receiverType.hasAnnotation(NonLeaked.class)) {
-            store.clearValue(JavaExpression.fromNode(factory, receiver));
+            store.clearValue(JavaExpression.fromNode(receiver));
         }
     }
 
@@ -149,7 +149,7 @@ public class AliasingTransfer extends CFTransfer {
                 if (factory.getAnnotatedType(param).hasAnnotation(LeakedToResult.class)) {
                     // If argument can leak to result, and parent is not a
                     // single statement, remove that node from store.
-                    store.clearValue(JavaExpression.fromNode(factory, arg));
+                    store.clearValue(JavaExpression.fromNode(arg));
                 }
             }
 
@@ -158,7 +158,7 @@ public class AliasingTransfer extends CFTransfer {
             AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
             AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
             if (receiverType != null && receiverType.hasAnnotation(LeakedToResult.class)) {
-                store.clearValue(JavaExpression.fromNode(factory, receiver));
+                store.clearValue(JavaExpression.fromNode(receiver));
             }
         }
         // If parent is a statement, processPostconditions will handle the

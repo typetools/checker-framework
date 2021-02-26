@@ -6,6 +6,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /** JavaExpression for binary operations. */
 public class BinaryOperation extends JavaExpression {
@@ -77,6 +78,11 @@ public class BinaryOperation extends JavaExpression {
             return true;
         }
         return left.containsOfClass(clazz) || right.containsOfClass(clazz);
+    }
+
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return left.isDeterministic(provider) && right.isDeterministic(provider);
     }
 
     @Override
@@ -214,5 +220,10 @@ public class BinaryOperation extends JavaExpression {
             default:
                 throw new Error("unhandled " + operationKind);
         }
+    }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitBinaryOperation(this, p);
     }
 }

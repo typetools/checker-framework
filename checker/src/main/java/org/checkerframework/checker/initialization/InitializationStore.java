@@ -50,10 +50,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
      * initialized.
      */
     @Override
-    public void insertValue(JavaExpression je, V value) {
-        if (value == null) {
-            // No need to insert a null abstract value because it represents
-            // top and top is also the default value.
+    public void insertValue(JavaExpression je, V value, boolean permitNondeterministic) {
+        if (!shouldInsert(je, value, permitNondeterministic)) {
             return;
         }
 
@@ -78,7 +76,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             }
         }
 
-        super.insertValue(je, value);
+        super.insertValue(je, value, permitNondeterministic);
 
         for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {

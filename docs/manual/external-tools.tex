@@ -517,8 +517,8 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.10.0/checker-qual-3.10.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.10.0/checker-util-3.10.0.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.10.0/checker-qual-3.10.0.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.10.0/checker-util-3.10.0.jar}
 \item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.10.0/checker-3.10.0-all.jar}
 \end{itemize}
 
@@ -1056,8 +1056,7 @@ section, or add it if it is not present.
         </plugins>
       </build>
       <properties>
-        <!-- Temporary until animal-sniffer-maven-plugin is released with https://github.com/mojohaus/animal-sniffer/pull/91.
-             Version 1.19 is broken:  https://github.com/mojohaus/animal-sniffer/issues/76. -->
+        <!-- Needed for animal-sniffer-maven-plugin version 1.19 (version 1.20 is fixed). -->
         <animal.sniffer.skip>true</animal.sniffer.skip>
       </properties>
     </profile>

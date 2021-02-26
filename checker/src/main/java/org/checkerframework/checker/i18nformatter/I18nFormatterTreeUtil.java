@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -54,12 +55,37 @@ import org.checkerframework.javacutil.TreeUtils;
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
 public class I18nFormatterTreeUtil {
+    /** The checker. */
     public final BaseTypeChecker checker;
+    /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
 
+    /** The value() element/field of an @I18nInvalidFormat annotation. */
+    protected final ExecutableElement i18nInvalidFormatValueElement;
+
+    /** The value() element/field of an @I18nFormatFor annotation. */
+    protected final ExecutableElement i18nFormatForValueElement;
+
+    /**
+     * Creates a new I18nFormatterTreeUtil.
+     *
+     * @param checker the checker
+     */
     public I18nFormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        i18nInvalidFormatValueElement =
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat",
+                        "value",
+                        0,
+                        processingEnv);
+        i18nFormatForValueElement =
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.i18nformatter.qual.I18nFormatFor",
+                        "value",
+                        0,
+                        processingEnv);
     }
 
     /** Describe the format annotation type. */
@@ -92,11 +118,40 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
+     * Gets the value() element/field out of an I18nInvalidFormat annotation.
+     *
+     * @param anno an I18nInvalidFormat annotation
+     * @return its value() element/field
+     */
+    /*package-visible*/
+    @Nullable String getI18nInvalidFormatValue(AnnotationMirror anno) {
+        AnnotationValue av = anno.getElementValues().get(i18nInvalidFormatValueElement);
+        if (av == null) {
+            return null;
+        } else {
+            return (String) av.getValue();
+        }
+    }
+
+    /**
+     * Gets the value() element/field out of an I18NFormatFor annotation.
+     *
+     * @param anno an I18NFormatFor annotation
+     * @return its value() element/field
+     */
+    /*package-visible*/ String getI18nFormatForValue(AnnotationMirror anno) {
+        return (String) anno.getElementValues().get(i18nFormatForValueElement).getValue();
+    }
+
+    /**
      * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation, and
      * returns its value.
+     *
+     * @param anno an I18nInvalidFormat annotation
+     * @return its value() element/field, within double-quotes
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
-        return "\"" + AnnotationUtils.getElementValue(anno, "value", String.class, true) + "\"";
+        return "\"" + getI18nInvalidFormatValue(anno) + "\"";
     }
 
     /**
@@ -317,11 +372,7 @@ public class I18nFormatterTreeUtil {
                     }
 
                     String formatforArg =
-                            AnnotationUtils.getElementValue(
-                                    paramType.getAnnotation(I18nFormatFor.class),
-                                    "value",
-                                    String.class,
-                                    false);
+                            getI18nFormatForValue(paramType.getAnnotation(I18nFormatFor.class));
 
                     paramIndex = JavaExpressionParseUtil.parameterIndex(formatforArg);
                     if (paramIndex == -1) {
@@ -357,8 +408,7 @@ public class I18nFormatterTreeUtil {
                     invalidMessage = "(is a @I18nFormat annotation missing?)";
                     AnnotationMirror inv = formatAnno.getAnnotation(I18nInvalidFormat.class);
                     if (inv != null) {
-                        invalidMessage =
-                                AnnotationUtils.getElementValue(inv, "value", String.class, true);
+                        invalidMessage = getI18nInvalidFormatValue(inv);
                     }
                 }
             } else {

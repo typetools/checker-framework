@@ -48,7 +48,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.framework.ajava.AnnotationConversion;
+import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JavaParserUtils;
@@ -282,8 +282,7 @@ public class WholeProgramInferenceJavaParserStorage
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
             // annotated.  So instead, only insert the annotation if there is not primary annotation
-            // of the same hierarchy.  #shouldIgnore prevent annotations that are subtypes of type
-            // vars upper bound from being inserted.
+            // of the same hierarchy.
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 if (curATM.getAnnotationInHierarchy(am) != null) {
                     // Don't insert if the type is already has a primary annotation
@@ -295,8 +294,7 @@ public class WholeProgramInferenceJavaParserStorage
             }
         }
 
-        // Recursively update compound type and type variable type if they exist.
-        if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
+        if (newATM.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
             AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
             AnnotatedArrayType aatToUpdate = (AnnotatedArrayType) typeToUpdate;
@@ -319,7 +317,9 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Reads in the source file containing {@code tree} and creates a wrapper around {@code tree}.
+     * Reads in the source file containing {@code tree} and creates wrappers around all classes in
+     * the file. Stores the wrapper for the compilation unit in {@link #sourceToAnnos} and stores
+     * the wrappers of all classes in the file in {@link #classToAnnos}.
      *
      * @param tree tree for class to add
      */
@@ -342,8 +342,9 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Reads in the file at {@code path} and creates and stores a wrapper around its compilation
-     * unit.
+     * Reads in the file at {@code path} and creates a wrapper around its compilation unit. Stores
+     * the wrapper in {@link #sourceToAnnos}, but doesn't create wrappers around any classes in the
+     * file.
      *
      * @param path path to source file to read
      */
@@ -558,10 +559,10 @@ public class WholeProgramInferenceJavaParserStorage
             prepareCompilationUnitForWriting(root);
             root.transferAnnotations();
             String packageDir = AJAVA_FILES_PATH;
-            if (root.declaration.getPackageDeclaration().isPresent()) {
+            if (root.compilationUnit.getPackageDeclaration().isPresent()) {
                 packageDir +=
                         File.separator
-                                + root.declaration
+                                + root.compilationUnit
                                         .getPackageDeclaration()
                                         .get()
                                         .getNameAsString()
@@ -591,7 +592,7 @@ public class WholeProgramInferenceJavaParserStorage
                 // LexicalPreservingPrinter.print(root.declaration, writer);
 
                 PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
-                writer.write(prettyPrinter.print(root.declaration));
+                writer.write(prettyPrinter.print(root.compilationUnit));
                 writer.close();
             } catch (IOException e) {
                 throw new BugInCF("Error while writing ajava file " + outputPath, e);
@@ -608,10 +609,6 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private static void addExplicitReceiver(MethodDeclaration methodDeclaration) {
         if (methodDeclaration.getReceiverParameter().isPresent()) {
-            return;
-        }
-
-        if (!methodDeclaration.getParentNode().isPresent()) {
             return;
         }
 
@@ -644,7 +641,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
      * which is the JavaParser node representing the same type. Does nothing if {@code
-     * annotatedType} is null.
+     * annotatedType} is null (this may occur if there's no inferred annotations for the type).
      *
      * @param annotatedType type to transfer annotations from
      * @param target the JavaParser type to transfer annotation to; must represent the same type as
@@ -669,17 +666,17 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private static class CompilationUnitAnnos {
         /** Compilation unit being wrapped. */
-        public CompilationUnit declaration;
+        public CompilationUnit compilationUnit;
         /** Wrappers for classes and interfaces in {@code declaration} */
         public List<ClassOrInterfaceAnnos> types;
 
         /**
          * Constructs a wrapper around the given compilation unit.
          *
-         * @param declaration compilation unit to wrap
+         * @param compilationUnit compilation unit to wrap
          */
-        public CompilationUnitAnnos(CompilationUnit declaration) {
-            this.declaration = declaration;
+        public CompilationUnitAnnos(CompilationUnit compilationUnit) {
+            this.compilationUnit = compilationUnit;
             types = new ArrayList<>();
         }
 
@@ -688,7 +685,7 @@ public class WholeProgramInferenceJavaParserStorage
          * unit to their corresponding JavaParser locations.
          */
         public void transferAnnotations() {
-            JavaParserUtils.clearAnnotations(declaration);
+            JavaParserUtils.clearAnnotations(compilationUnit);
             for (ClassOrInterfaceAnnos typeAnnos : types) {
                 typeAnnos.transferAnnotations();
             }
@@ -701,7 +698,7 @@ public class WholeProgramInferenceJavaParserStorage
          * @return the type declaration named {@code name} in the wrapped compilation unit
          */
         public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
-            return JavaParserUtils.getTypeDeclarationByName(declaration, name);
+            return JavaParserUtils.getTypeDeclarationByName(compilationUnit, name);
         }
     }
 
@@ -1000,14 +997,16 @@ public class WholeProgramInferenceJavaParserStorage
                         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
                 for (AnnotationMirror contractAnno : genericAtf.getContractAnnotations(this)) {
                     declaration.addAnnotation(
-                            AnnotationConversion.annotationMirrorToAnnotationExpr(contractAnno));
+                            AnnotationMirrorToAnnotationExprConversion
+                                    .annotationMirrorToAnnotationExpr(contractAnno));
                 }
             }
 
             if (declarationAnnotations != null) {
                 for (AnnotationMirror annotation : declarationAnnotations) {
                     declaration.addAnnotation(
-                            AnnotationConversion.annotationMirrorToAnnotationExpr(annotation));
+                            AnnotationMirrorToAnnotationExprConversion
+                                    .annotationMirrorToAnnotationExpr(annotation));
                 }
             }
 

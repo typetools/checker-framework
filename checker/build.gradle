@@ -104,11 +104,12 @@ task allSourcesJar(type: Jar) {
     archiveFileName = "checker-source.jar"
     archiveClassifier = "sources"
     from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
-            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava,
+            project(':checker-qual').sourceSets.main.allJava, project(':checker-util').sourceSets.main.allJava)
 }
 
 task allJavadocJar(type: Jar) {
-    description 'Creates javadoc jar include Javadoc for all of the framework'
+    description 'Creates javadoc jar including Javadoc for all of the Checker Framework'
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-javadoc.jar"

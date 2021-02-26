@@ -38,6 +38,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
@@ -98,7 +99,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -563,6 +563,15 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Returns the {@link DefaultForTypeAnnotator}.
+     *
+     * @return the {@link DefaultForTypeAnnotator}
+     */
+    public DefaultForTypeAnnotator getDefaultForTypeAnnotator() {
+        return defaultForTypeAnnotator;
+    }
+
+    /**
      * Returns the appropriate flow analysis class that is used for the
      * org.checkerframework.dataflow analysis.
      *
@@ -931,10 +940,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Produces the JavaExpression associated with expression on currentPath.
+     * Produces the JavaExpression as if {@code expression} were written at {@code currentPath}.
      *
      * @param expression a Java expression
-     * @param currentPath the path to an annotation containing {@code expression}
+     * @param currentPath the current path
      * @return the JavaExpression associated with expression on currentPath
      * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
@@ -946,10 +955,10 @@ public abstract class GenericAnnotatedTypeFactory<
         JavaExpressionParseUtil.JavaExpressionContext context =
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
-                        JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
+                        JavaExpression.getParametersOfEnclosingMethod(currentPath),
                         this.getChecker());
 
-        return JavaExpressionParseUtil.parse(expression, context, currentPath, true);
+        return JavaExpressionParseUtil.parse(expression, context, currentPath);
     }
 
     /**
@@ -1114,9 +1123,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the store immediately before a given {@link Node}.
+     * Returns the store immediately before a given node.
      *
-     * @return the store immediately before a given {@link Node}
+     * @param node a node whose pre-store to return
+     * @return the store immediately before {@code node}
      */
     public Store getStoreBefore(Node node) {
         if (!analysis.isRunning()) {
@@ -1137,9 +1147,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the store immediately after a given {@link Tree}.
+     * Returns the store immediately after a given tree.
      *
-     * @return the store immediately after a given {@link Tree}
+     * <p>May return null; for example, after a {@code return} statement.
+     *
+     * @param tree the tree whose post-store to return
+     * @return the store immediately after a given tree
      */
     public Store getStoreAfter(Tree tree) {
         if (!analysis.isRunning()) {
@@ -1150,9 +1163,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the store immediately after a given set of {@link Node}s.
+     * Returns the store immediately after a given set of nodes.
      *
-     * @return the store immediately after a given set of {@link Node}s
+     * @param nodes the nodes whose post-stores to LUB
+     * @return the LUB of the stores store immediately after {@code nodes}
      */
     public Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
@@ -1206,10 +1220,10 @@ public abstract class GenericAnnotatedTypeFactory<
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
      * a {@link Node} at all.
      *
-     * @param <T> the type of node to return
-     * @param tree the tree in which to search
-     * @param kind the kind of node to return
-     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}
+     * @param <T> the class of the node to return
+     * @param tree a tree in which to search for a node of class {@code kind}
+     * @param kind the class of the node to return
+     * @return the first {@link Node} for a given {@link Tree} that has class {@code kind}
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
@@ -1236,6 +1250,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Perform a org.checkerframework.dataflow analysis over a single class tree and its nested
      * classes.
+     *
+     * @param classTree the class to analyze
      */
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
@@ -1581,7 +1597,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return AnnotatedTypeMirror of {@code lhsTree}
      */
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
-        AnnotatedTypeMirror res = null;
+        AnnotatedTypeMirror res;
         boolean oldUseFlow = useFlow;
         boolean oldShouldCache = shouldCache;
         useFlow = false;
@@ -1758,7 +1774,6 @@ public abstract class GenericAnnotatedTypeFactory<
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
-
             if (as != null) {
                 applyInferredAnnotations(type, as);
                 log(
@@ -1992,7 +2007,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f, visitorState.getPath());
+        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f);
         return f;
     }
 
@@ -2043,9 +2058,9 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Create a new CFGVisualizer.
      *
-     * @return a new CFGVisualizer
+     * @return a new CFGVisualizer, or null if none will be used on this run
      */
-    protected CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
+    protected @Nullable CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
         if (checker.hasOption("flowdotdir")) {
             String flowdotdir = checker.getOption("flowdotdir");
             if (flowdotdir.equals("")) {
@@ -2190,6 +2205,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param format a format string
      * @param args arguments to the format string
      */
+    @FormatMethod
     private static void log(String format, Object... args) {
         if (debug) {
             SystemPlume.sleep(1); // logging can interleave with typechecker output
@@ -2636,29 +2652,5 @@ public abstract class GenericAnnotatedTypeFactory<
         } else {
             return null;
         }
-    }
-
-    /**
-     * Standardize a type qualifier annotation obtained from a contract.
-     *
-     * @param annoFromContract the annotation to be standardized
-     * @param jeContext the context to use for standardization
-     * @param path the path to a use of the contract (a method call) or to the method declaration
-     * @return the standardized annotation, or the argument if it does not need standardization
-     */
-    public AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract, JavaExpressionContext jeContext, TreePath path) {
-        if (!dependentTypesHelper.hasDependentAnnotations()) {
-            return annoFromContract;
-        }
-
-        AnnotationMirror standardized =
-                dependentTypesHelper.standardizeAnnotationIfDependentType(
-                        jeContext, path, annoFromContract, false, false);
-        if (standardized != null) {
-            dependentTypesHelper.checkAnnotation(standardized, path.getLeaf());
-            return standardized;
-        }
-        return annoFromContract;
     }
 }
