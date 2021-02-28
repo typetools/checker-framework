@@ -4308,7 +4308,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Issues an error if access not allowed, based on an @Unused annotation.
      *
      * @param field the field to be accessed, whose declaration might be annotated by @Unused. It
-     *     can also be (for example) {@code this}, in which case {@code receiver} is null.
+     *     can also be (for example) {@code this}, in which case {@code receiverType} is null.
      * @param receiverType the type of the expression whose field is accessed
      * @param accessTree the access expression
      */

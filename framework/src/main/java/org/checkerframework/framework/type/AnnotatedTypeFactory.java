@@ -1873,9 +1873,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the receiver type of the expression tree, or null if it does not exist.
-     *
-     * <p>A type is returned even if the receiver is an implicit {@code this}.
+     * Returns the receiver type of the expression tree, which might be the type of an implicit
+     * {@code this}. Returns null if the expression has no explicit or implicit receiver.
      *
      * @param expression the expression for which to determine the receiver type
      * @return the type of the receiver of expression
