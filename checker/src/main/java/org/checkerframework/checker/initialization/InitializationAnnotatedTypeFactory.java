@@ -558,7 +558,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             Store store,
             TreePath path,
             boolean isStatic,
-            List<? extends AnnotationMirror> receiverAnnotations) {
+            Collection<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreePathUtil.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> uninitWithInvariantAnno = new ArrayList<>();
