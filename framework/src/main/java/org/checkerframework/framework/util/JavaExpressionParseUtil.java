@@ -41,9 +41,7 @@ import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,7 +70,6 @@ import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressionVPA;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -293,20 +290,21 @@ public class JavaExpressionParseUtil {
             thisReference = new ThisReference(enclosingType);
         }
         List<FormalParameter> parameters;
-        Map<JavaExpression, JavaExpression> parametersToArgs;
+        List<JavaExpression> paramsAsLocals;
+
         MethodTree methodTree = TreePathUtil.enclosingMethod(path);
         if (methodTree == null) {
-            parametersToArgs = null;
+            paramsAsLocals = null;
             parameters = null;
         } else {
-            parametersToArgs = new HashMap<>();
+            paramsAsLocals = new ArrayList<>();
             parameters = new ArrayList<>();
             int oneBasedIndex = 1;
             for (VariableTree arg : methodTree.getParameters()) {
                 VariableElement variableElement = TreeUtils.elementFromDeclaration(arg);
                 FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
-                parametersToArgs.put(parameter, new LocalVariable(variableElement));
                 parameters.add(parameter);
+                paramsAsLocals.add(new LocalVariable(variableElement));
                 oneBasedIndex++;
             }
         }
@@ -320,12 +318,11 @@ public class JavaExpressionParseUtil {
                         path,
                         pathToCompilationUnit,
                         env);
-        if (parametersToArgs == null || parametersToArgs.isEmpty()) {
+        if (parameters == null || parameters.isEmpty()) {
             return javaExpr;
         }
-        // TODO: Should this happen at calls to parse rather than in this method?
-        JavaExpressionVPA vpa = new JavaExpressionVPA(parametersToArgs);
-        return vpa.convert(javaExpr);
+
+        return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
     }
 
     /**
@@ -358,7 +355,6 @@ public class JavaExpressionParseUtil {
         // current CompilationUnit.
         TreePath pathToCompilationUnit = context.checker.getPathToCompilationUnit();
         ProcessingEnvironment env = context.checker.getProcessingEnvironment();
-        Map<JavaExpression, JavaExpression> mapping = new HashMap<>();
         TypeMirror enclosingType = context.receiver.getType();
         ThisReference thisReference;
         if (context.receiver == null) {
@@ -367,17 +363,14 @@ public class JavaExpressionParseUtil {
             thisReference = null;
         } else {
             thisReference = new ThisReference(enclosingType);
-            mapping.put(thisReference, context.receiver);
         }
         List<FormalParameter> parameters;
         if (context.arguments != null) {
             parameters = new ArrayList<>();
             int i = 1;
             for (JavaExpression arg : context.arguments) {
-                // TODO: should have the elements of the parameters.
                 FormalParameter parameter = new FormalParameter(i, arg.getType());
                 parameters.add(parameter);
-                mapping.put(parameter, arg);
                 i++;
             }
         } else {
@@ -393,8 +386,9 @@ public class JavaExpressionParseUtil {
                         localVarPath,
                         pathToCompilationUnit,
                         env);
-        JavaExpressionVPA vpa = new JavaExpressionVPA(mapping);
-        JavaExpression result = vpa.convert(javaExpr);
+        JavaExpression result =
+                ViewpointAdaptJavaExpression.viewpointAdapt(
+                        javaExpr, context.receiver, context.arguments);
 
         if (result instanceof ClassName
                 && !expression.endsWith(".class")
@@ -409,6 +403,7 @@ public class JavaExpressionParseUtil {
         }
         return result;
     }
+
     /**
      * Parses {@code expression} to a {@link JavaExpression}.
      *
