@@ -73,7 +73,7 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper.Converter;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -562,17 +562,22 @@ public abstract class CFAbstractTransfer<
             ExecutableElement methodElement) {
         ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
-        Converter converter =
-                stringExpr -> Converter.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
+        StringToJavaExpression stringToJavaExpr =
+                stringExpr ->
+                        StringToJavaExpression.atMethodBody(
+                                stringExpr, methodDeclTree, analysis.checker);
         for (Precondition p : preconditions) {
             String stringExpr = p.expressionString;
-            AnnotationMirror annotation = viewpointAdaptAnnoFromContract(p.annotation, converter);
+            AnnotationMirror annotation =
+                    viewpointAdaptAnnoFromContract(p.annotation, stringToJavaExpr);
             JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed at the declaration (i.e. here) and
                 // for every use. this could be optimized to store the result the first time. (same
                 // for other annotations)
-                exprJe = Converter.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
+                exprJe =
+                        StringToJavaExpression.atMethodBody(
+                                stringExpr, methodDeclTree, analysis.checker);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
                 continue;
@@ -591,10 +596,10 @@ public abstract class CFAbstractTransfer<
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     private AnnotationMirror viewpointAdaptAnnoFromContract(
-            AnnotationMirror annoFromContract, Converter converter) {
+            AnnotationMirror annoFromContract, StringToJavaExpression stringToJavaExpr) {
         // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
         return analysis.dependentTypesHelper.viewpointAdaptQualifierFromContract(
-                annoFromContract, converter, /*errorTree=*/ null);
+                annoFromContract, stringToJavaExpr, /*errorTree=*/ null);
     }
 
     /**
@@ -1182,16 +1187,17 @@ public abstract class CFAbstractTransfer<
             S elseStore,
             Set<? extends Contract> postconditions) {
 
-        Converter converter =
+        StringToJavaExpression stringToJavaExpr =
                 stringExpr ->
-                        Converter.atMethodInvocation(stringExpr, invocationNode, analysis.checker);
+                        StringToJavaExpression.atMethodInvocation(
+                                stringExpr, invocationNode, analysis.checker);
         for (Contract p : postconditions) {
             // Viewpoint-adapt with respect to the method use (the call site).
-            AnnotationMirror anno = viewpointAdaptAnnoFromContract(p.annotation, converter);
+            AnnotationMirror anno = viewpointAdaptAnnoFromContract(p.annotation, stringToJavaExpr);
 
             String expressionString = p.expressionString;
             try {
-                JavaExpression je = converter.convertToJavaExpression(expressionString);
+                JavaExpression je = stringToJavaExpr.toJavaExpression(expressionString);
 
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not

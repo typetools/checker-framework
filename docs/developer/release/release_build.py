@@ -12,6 +12,7 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 
 from release_vars import *
 from release_utils import *
+
 from distutils.dir_util import copy_tree
 
 # Turned on by the --debug command-line option.
