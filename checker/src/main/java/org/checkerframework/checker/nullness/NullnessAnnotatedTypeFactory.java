@@ -20,6 +20,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -296,7 +297,7 @@ public class NullnessAnnotatedTypeFactory
             NullnessStore store,
             TreePath path,
             boolean isStatic,
-            List<? extends AnnotationMirror> receiverAnnotations) {
+            Collection<? extends AnnotationMirror> receiverAnnotations) {
         Pair<List<VariableTree>, List<VariableTree>> result =
                 super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
         // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
