@@ -32,6 +32,10 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
+
+    // External dependencies:
+    // If you add an external dependency, you must shadow its packages.
+    // See the comment in ../build.gradle in the shadowJar bock.
     implementation 'org.plumelib:plume-util:1.4.1'
     implementation 'org.plumelib:reflection-util:1.0.3'
 

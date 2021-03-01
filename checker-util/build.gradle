@@ -1,5 +1,7 @@
 dependencies {
     implementation project(':checker-qual')
+    // Don't add implementation dependencies, because manual/code assumes that checker-util.jar
+    // has not dependencies.
 }
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
