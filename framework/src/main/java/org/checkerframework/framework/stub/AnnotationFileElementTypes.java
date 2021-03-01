@@ -277,9 +277,8 @@ public class AnnotationFileElementTypes {
                                         + (fullPath.equals(path) ? "" : (" or at " + fullPath));
                         List<String> lines = new ArrayList<>();
                         lines.add(msg);
-                        List<URI> classpath = new ClassGraph().getClasspathURIs();
                         lines.add("Classpath:");
-                        for (URI uri : classpath) {
+                        for (URI uri : new ClassGraph().getClasspathURIs()) {
                             lines.add(uri.toString());
                         }
                         checker.message(

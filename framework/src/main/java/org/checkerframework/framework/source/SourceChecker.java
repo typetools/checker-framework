@@ -15,6 +15,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import io.github.classgraph.ClassGraph;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,7 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -2550,20 +2550,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 }
 
                 if (printClasspath) {
-                    ClassLoader cl = ClassLoader.getSystemClassLoader();
-
-                    if (cl instanceof URLClassLoader) {
-                        msg.add("Classpath:");
-                        URL[] urls = ((URLClassLoader) cl).getURLs();
-                        for (URL url : urls) {
-                            msg.add(url.getFile());
-                        }
-                    } else {
-                        // TODO: Java 9+ use an internal classloader that doesn't support getting
-                        // URLs, so we will need an alternative approach to retrieve the classpath
-                        // on Java 9+.
-                        msg.add(
-                                "Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                    msg.add("Classpath:");
+                    for (URI uri : new ClassGraph().getClasspathURIs()) {
+                        msg.add(uri.toString());
                     }
                 }
             }

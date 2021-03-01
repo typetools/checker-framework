@@ -474,9 +474,8 @@ public class AnnotationClassLoader {
         }
 
         // all paths in CLASSPATH, -cp, and -classpath
-        String[] javaclassPaths = System.getProperty("java.class.path").split(File.pathSeparator);
-        processingEnv.getMessager().printMessage(Kind.NOTE, "java classpaths:");
-        for (String path : javaclassPaths) {
+        processingEnv.getMessager().printMessage(Kind.NOTE, "java.class.path property:");
+        for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
         }
 
