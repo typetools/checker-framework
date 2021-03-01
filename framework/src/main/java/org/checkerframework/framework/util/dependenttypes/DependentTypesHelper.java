@@ -464,14 +464,14 @@ public class DependentTypesHelper {
             return;
         }
         Element ele = TreeUtils.elementFromUse(node);
-        if (ele.getKind() != ElementKind.FIELD) {
+        if (ele.getKind() != ElementKind.FIELD && ele.getKind() != ElementKind.ENUM_CONSTANT) {
             return;
         }
 
         convertAnnotatedTypeMirror(
                 stringExpr ->
-                        StringToJavaExpression.atFieldDecl(
-                                stringExpr, (VariableElement) ele, factory.getChecker()),
+                        StringToJavaExpression.atFieldAccess(
+                                stringExpr, node, factory.getChecker()),
                 type);
     }
 

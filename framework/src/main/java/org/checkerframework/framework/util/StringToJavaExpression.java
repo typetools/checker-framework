@@ -113,7 +113,7 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
 
         Element ele = TreeUtils.elementFromUse(fieldAccess);
-        if (ele.getKind() != ElementKind.FIELD || ele.getKind() != ElementKind.ENUM_CONSTANT) {
+        if (ele.getKind() != ElementKind.FIELD && ele.getKind() != ElementKind.ENUM_CONSTANT) {
             throw new BugInCF("Expected a field, but found %s.", ele.getKind());
         }
         VariableElement fieldEle = (VariableElement) ele;
