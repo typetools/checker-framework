@@ -100,7 +100,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.10.1-SNAPSHOT'
+    version '3.11.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -402,7 +402,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 // To make javadoc for only one subproject, run `./gradlew javadoc`
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: "Documentation") {
-    description = 'Generates a global API documentation for all the modules'
+    description = 'Generates API documentation that includes all the modules.'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker-util').sourceSets.main.allJava, project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
@@ -443,7 +443,7 @@ dependencies {
     requireJavadoc "org.plumelib:require-javadoc:1.0.1"
 }
 task requireJavadoc(type: JavaExec) {
-    description = 'Ensures that Javadoc documentation exists.'
+    description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
     args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"

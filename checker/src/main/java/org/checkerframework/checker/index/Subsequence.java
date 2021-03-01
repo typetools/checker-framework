@@ -93,13 +93,16 @@ public class Subsequence {
         if (hasSub == null) {
             return null;
         }
-        String from = factory.hasSubsequenceFromValue(hasSub);
-        String to = factory.hasSubsequenceToValue(hasSub);
-        String array = factory.hasSubsequenceSubsequenceValue(hasSub);
 
-        from = standardizeAndViewpointAdapt(from, fa, factory.getChecker());
-        to = standardizeAndViewpointAdapt(to, fa, factory.getChecker());
-        array = standardizeAndViewpointAdapt(array, fa, factory.getChecker());
+        String array =
+                standardizeAndViewpointAdapt(
+                        factory.hasSubsequenceSubsequenceValue(hasSub), fa, factory.getChecker());
+        String from =
+                standardizeAndViewpointAdapt(
+                        factory.hasSubsequenceFromValue(hasSub), fa, factory.getChecker());
+        String to =
+                standardizeAndViewpointAdapt(
+                        factory.hasSubsequenceToValue(hasSub), fa, factory.getChecker());
 
         return new Subsequence(array, from, to);
     }
@@ -120,6 +123,7 @@ public class Subsequence {
         } catch (JavaExpressionParseException e) {
             return s;
         }
+
         return ViewpointAdaptJavaExpression.viewpointAdapt(parseResult, fieldAccess.getReceiver())
                 .toString();
     }
@@ -130,11 +134,8 @@ public class Subsequence {
      * that the JavaExpression parser cannot parse multiplication, so it naively just changes '-' to
      * '+' and vice-versa.
      *
-     * <p>The passed String is standardized and viewpoint-adapted before this transformation is
-     * applied.
-     *
      * @param s a Java expression string
-     * @return the string, standardized and viewpoint-adapted
+     * @return the negated string
      */
     public static String negateString(String s) {
         String original = s;

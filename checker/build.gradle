@@ -44,7 +44,7 @@ dependencies {
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
     // The AWS SDK is used for testing the Called Methods Checker.
-    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.923")
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.964")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
