@@ -661,9 +661,12 @@ subprojects {
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
         relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+        relocate 'io.github.classgraph', 'org.checkerframework.io.github.classgraph'
+        relocate 'nonapi.io.github.classgraph', 'nonapi.org.checkerframework.io.github.classgraph'
         // relocate 'sun', 'org.checkerframework.sun'
         relocate 'com.google', 'org.checkerframework.com.google'
         relocate 'plume', 'org.checkerframework.plume'
+        exclude '**/module-info.class'
     }
 
     if (!project.name.startsWith('checker-qual-android')) {

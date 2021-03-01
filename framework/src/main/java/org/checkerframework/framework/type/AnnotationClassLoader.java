@@ -182,6 +182,9 @@ public class AnnotationClassLoader {
      *     or null if no jar or directory contains the qual package
      */
     private final @Nullable URL getURLFromClasspaths() {
+        // TODO: This method could probably be replaced with
+        // io.github.classgraph.ClassGraph#getClasspathURIs()
+
         // Debug use, uncomment if needed to see all of the classpaths (boot
         // classpath, extension classpath, and classpath)
         // printPaths();

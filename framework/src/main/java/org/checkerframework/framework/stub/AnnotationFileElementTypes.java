@@ -267,8 +267,7 @@ public class AnnotationFileElementTypes {
                         String parentPathDescription =
                                 (parentPath == null
                                         ? "current directory"
-                                        : "directory "
-                                                + new File(path).getParentFile().getAbsolutePath());
+                                        : "directory " + parentPath.getAbsolutePath());
                         String msg =
                                 checker.getClass().getSimpleName()
                                         + " did not find annotation file "
