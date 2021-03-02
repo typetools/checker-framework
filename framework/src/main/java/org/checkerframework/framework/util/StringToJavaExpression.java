@@ -195,16 +195,19 @@ public interface StringToJavaExpression {
         }
 
         MethodTree methodTree = TreePathUtil.enclosingMethod(localVarPath);
-        ExecutableElement methodEle;
-        List<FormalParameter> parameters;
         if (methodTree == null) {
-            parameters = null;
-            methodEle = null;
-        } else {
-            methodEle = TreeUtils.elementFromDeclaration(methodTree);
-            parameters = getFormalParameters(methodEle);
+            return JavaExpressionParseUtil.parse(
+                    expression,
+                    enclosingType,
+                    thisReference,
+                    null,
+                    localVarPath,
+                    pathToCompilationUnit,
+                    env);
         }
 
+        ExecutableElement methodEle = TreeUtils.elementFromDeclaration(methodTree);
+        List<FormalParameter> parameters = getFormalParameters(methodEle);
         JavaExpression javaExpr =
                 JavaExpressionParseUtil.parse(
                         expression,
@@ -214,9 +217,6 @@ public interface StringToJavaExpression {
                         localVarPath,
                         pathToCompilationUnit,
                         env);
-        if (parameters == null || parameters.isEmpty()) {
-            return javaExpr;
-        }
         List<JavaExpression> paramsAsLocals = getParametersAsLocalVars(methodEle);
         return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
     }
