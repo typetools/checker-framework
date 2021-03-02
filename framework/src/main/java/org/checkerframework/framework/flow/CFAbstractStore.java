@@ -234,7 +234,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
      *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
      *   <li>If the method side effects few expressions (specified as annotation values of
-     *       {@code @SideEffectFree}), then information about those expressions is removed.
+     *       {@code @SideEffectsOnly}), then information about those expressions is removed.
      *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
      *       if the method {@code n} cannot modify {@code a.f} (e.g., if {@code a} is a local
      *       variable or {@code this}, and {@code f} is final).
