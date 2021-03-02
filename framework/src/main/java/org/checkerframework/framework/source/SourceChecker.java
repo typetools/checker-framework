@@ -15,6 +15,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import io.github.classgraph.ClassGraph;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,7 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -236,6 +236,9 @@ import org.plumelib.util.UtilPlume;
     // Additional stub files to use
     // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
+    // Additional ajava files to use
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parserAjavaFiles()
+    "ajava",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
     // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
@@ -381,6 +384,10 @@ import org.plumelib.util.UtilPlume;
 
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
+
+    // Whenever processing a source file, parse it with JavaParser and check that the AST can be
+    // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
+    "checkJavaParserVisitor",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
@@ -2498,9 +2505,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
         if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
             msg.add(
-                    "The JVM ran out of memory.  Run with a larger max heap size (currently "
-                            + Runtime.getRuntime().maxMemory()
-                            + " bytes).");
+                    String.format(
+                            "The JVM ran out of memory.  Run with a larger max heap size (max memory = %d, total memory = %d, free memory = %d).",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
         } else {
 
             msg.add(ce.getMessage());
@@ -2550,20 +2559,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 }
 
                 if (printClasspath) {
-                    ClassLoader cl = ClassLoader.getSystemClassLoader();
-
-                    if (cl instanceof URLClassLoader) {
-                        msg.add("Classpath:");
-                        URL[] urls = ((URLClassLoader) cl).getURLs();
-                        for (URL url : urls) {
-                            msg.add(url.getFile());
-                        }
-                    } else {
-                        // TODO: Java 9+ use an internal classloader that doesn't support getting
-                        // URLs, so we will need an alternative approach to retrieve the classpath
-                        // on Java 9+.
-                        msg.add(
-                                "Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                    msg.add("Classpath:");
+                    for (URI uri : new ClassGraph().getClasspathURIs()) {
+                        msg.add(uri.toString());
                     }
                 }
             }
