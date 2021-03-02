@@ -24,10 +24,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -40,9 +37,7 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -60,9 +55,6 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.BinaryOperation;
@@ -1306,186 +1298,6 @@ public class JavaExpressionParseUtil {
     ///////////////////////////////////////////////////////////////////////////
     /// Contexts
     ///
-
-    /**
-     * Context used to parse and viewpoint-adapt a Java expression. It contains the JavaExpressions
-     * to which {@code this} and the parameter syntax, e.g. {@code #1}, should parse.
-     */
-    @Deprecated
-    public static class JavaExpressionContext {
-        /** The value of {@code this} in this context. */
-        public final JavaExpression receiver;
-        /**
-         * In a context for a method declaration or lambda, the formals. In a context for a method
-         * invocation, the actuals. In other contexts, null.
-         */
-        public final List<JavaExpression> arguments;
-
-        /** The checker. */
-        public final SourceChecker checker;
-
-        /**
-         * Creates a context for parsing a Java expression, with "null" for arguments.
-         *
-         * @param receiver used to replace "this" in a Java expression and used to resolve
-         *     identifiers in any Java expression with an implicit "this"
-         * @param checker used to create {@link
-         *     org.checkerframework.dataflow.expression.JavaExpression}s
-         */
-        public JavaExpressionContext(JavaExpression receiver, SourceChecker checker) {
-            this(receiver, null, checker);
-        }
-
-        /**
-         * Creates a context for parsing a Java expression.
-         *
-         * @param receiver used to replace "this" in a Java expression and used to resolve
-         *     identifiers in any Java expression with an implicit "this"
-         * @param arguments used to replace parameter references, e.g. #1, in Java expressions, null
-         *     if no arguments
-         * @param checker used to create {@link JavaExpression}s
-         */
-        public JavaExpressionContext(
-                JavaExpression receiver, List<JavaExpression> arguments, SourceChecker checker) {
-            assert checker != null;
-            this.receiver = receiver;
-            this.arguments = arguments;
-            this.checker = checker;
-        }
-
-        /**
-         * Creates a {@link JavaExpressionContext} for the method declared in {@code
-         * methodDeclaration}.
-         *
-         * @param methodDeclaration used to translate parameter numbers in a Java expression to
-         *     formal parameters of the method
-         * @param checker used to build JavaExpression
-         * @return context created from {@code methodDeclaration}
-         */
-        public static JavaExpressionContext buildContextForMethodDeclaration(
-                MethodTree methodDeclaration, SourceChecker checker) {
-            ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
-            JavaExpression thisExpression = JavaExpression.getImplicitReceiver(methodElt);
-            List<JavaExpression> parametersJe = new ArrayList<>();
-            for (VariableElement param : methodElt.getParameters()) {
-                parametersJe.add(new LocalVariable(param));
-            }
-            return new JavaExpressionContext(thisExpression, parametersJe, checker);
-        }
-
-        /**
-         * Creates a {@link JavaExpressionContext} for the given lambda.
-         *
-         * @param lambdaTree a lambda
-         * @param path the path to the lambda
-         * @param checker used to build JavaExpression
-         * @return context created for {@code lambdaTree}
-         */
-        public static JavaExpressionContext buildContextForLambda(
-                LambdaExpressionTree lambdaTree, TreePath path, SourceChecker checker) {
-            TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
-            JavaExpression receiverJe = new ThisReference(enclosingType);
-            List<JavaExpression> parametersJe = new ArrayList<>();
-            for (VariableTree arg : lambdaTree.getParameters()) {
-                parametersJe.add(JavaExpression.fromVariableTree(arg));
-            }
-            return new JavaExpressionContext(receiverJe, parametersJe, checker);
-        }
-
-        /**
-         * Returns a {@link JavaExpressionContext} for the class {@code classTree} as seen at the
-         * class declaration.
-         *
-         * @param classTree a class
-         * @param checker used to build JavaExpression
-         * @return a {@link JavaExpressionContext} for the class {@code classTree} as seen at the
-         *     class declaration
-         */
-        public static JavaExpressionContext buildContextForClassDeclaration(
-                ClassTree classTree, SourceChecker checker) {
-            JavaExpression receiverJe = new ThisReference(TreeUtils.typeOf(classTree));
-            return new JavaExpressionContext(receiverJe, Collections.emptyList(), checker);
-        }
-
-        /**
-         * Returns a {@link JavaExpressionContext} for the method called by {@code
-         * methodInvocation}, as seen at the method use (i.e., at the call site).
-         *
-         * @param methodInvocation a method invocation
-         * @param checker the javac components to use
-         * @return a {@link JavaExpressionContext} for the method {@code methodInvocation}
-         */
-        public static JavaExpressionContext buildContextForMethodUse(
-                MethodInvocationNode methodInvocation, SourceChecker checker) {
-            Node receiver = methodInvocation.getTarget().getReceiver();
-            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
-            List<JavaExpression> argumentsJe = new ArrayList<>();
-            for (Node arg : methodInvocation.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(arg));
-            }
-            return new JavaExpressionContext(receiverJe, argumentsJe, checker);
-        }
-
-        /**
-         * Returns a {@link JavaExpressionContext} for the method called by {@code
-         * methodInvocation}, as seen at the method use (i.e., at the call site).
-         *
-         * @param methodInvocation a method invocation
-         * @param checker the javac components to use
-         * @return a {@link JavaExpressionContext} for the method {@code methodInvocation}
-         */
-        public static JavaExpressionContext buildContextForMethodUse(
-                MethodInvocationTree methodInvocation, SourceChecker checker) {
-            JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocation);
-
-            List<? extends ExpressionTree> args = methodInvocation.getArguments();
-            List<JavaExpression> argumentsJe = new ArrayList<>(args.size());
-            for (ExpressionTree argTree : args) {
-                argumentsJe.add(JavaExpression.fromTree(argTree));
-            }
-
-            return new JavaExpressionContext(receiverJe, argumentsJe, checker);
-        }
-
-        /**
-         * Returns a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
-         * {@link Node} as seen at the constructor use (i.e., at a "new" expression).
-         *
-         * @param n an object creation node
-         * @param checker the checker
-         * @return a {@link JavaExpressionContext} for the constructor {@code n} (represented as a
-         *     {@link Node} as seen at the constructor use (i.e., at a "new" expression)
-         */
-        public static JavaExpressionContext buildContextForNewClassUse(
-                ObjectCreationNode n, SourceChecker checker) {
-
-            // This returns an Unknown with the type set to the class in which the
-            // constructor is declared
-            JavaExpression receiverJe = JavaExpression.fromNode(n);
-
-            List<JavaExpression> argumentsJe = new ArrayList<>();
-            for (Node arg : n.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(arg));
-            }
-
-            return new JavaExpressionContext(receiverJe, argumentsJe, checker);
-        }
-
-        /**
-         * Format this object verbosely, on multiple lines but without a trailing newline.
-         *
-         * @return a verbose string representation of this
-         */
-        public String toStringDebug() {
-            StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
-            sj.add("JavaExpressionContext:");
-            sj.add("receiver=" + receiver.toStringDebug());
-            sj.add("arguments=" + arguments);
-            sj.add("checker=" + "...");
-            // sj.add("checker="+ checker);
-            return sj.toString();
-        }
-    }
 
     /**
      * Returns the type of the innermost enclosing class. Returns Type.noType if no enclosing class

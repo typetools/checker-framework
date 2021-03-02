@@ -1286,17 +1286,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     }
                     return lockExpression;
                 } else {
-                    // TODO: The proper way to do this is to call
-                    // jeContext.copyChangeToParsingMemberOfReceiver to set the receiver to
-                    // the <self> expression, and then call JavaExpressionParseUtil.parse on the
-                    // remaining expression string with the new JavaExpressionContext. However,
-                    // this currently results in a JavaExpression that has a different
-                    // hash code than if the following JavaExpression is parsed directly, which
-                    // results in our inability to check that a lock expression is held as it does
-                    // not match anything in the store due to the hash code mismatch.  For now,
-                    // convert the "<self>" portion to the node's string representation, and parse
-                    // the entire string:
-
                     lockExpression.lockExpression =
                             JavaExpressionParseUtil.parse(
                                     itself.toString() + "." + remainingExpression, path, checker);
