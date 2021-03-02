@@ -24,8 +24,7 @@ notest = False
 
 def print_usage():
     """Print usage information."""
-    print("Usage:    python3 release_build.py [projects] [options]")
-    print_projects(1, 4)
+    print("Usage:    python3 release_build.py [options]")
     print("\n  --debug  turns on debugging mode which produces verbose output")
     print("\n  --notest  disables tests to speed up scripts; for debugging only")
 
@@ -73,27 +72,18 @@ The following repositories will be cloned or updated from their origins:
         )
 
     clone_from_scratch_or_update(
-        LIVE_PLUME_SCRIPTS, PLUME_SCRIPTS, clone_from_scratch, False
+        PLUME_SCRIPTS_REPO, PLUME_SCRIPTS, clone_from_scratch, False
     )
-    clone_from_scratch_or_update(LIVE_CHECKLINK, CHECKLINK, clone_from_scratch, False)
-    clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
-    clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
+    clone_from_scratch_or_update(CHECKLINK_REPO, CHECKLINK, clone_from_scratch, False)
+    clone_from_scratch_or_update(PLUME_BIB_REPO, PLUME_BIB, clone_from_scratch, False)
+    clone_from_scratch_or_update(STUBPARSER_REPO, STUBPARSER, clone_from_scratch, False)
     # clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
 
 
-def get_afu_date(building_afu):
+def get_afu_date():
     """If the AFU is being built, return the current date, otherwise return the
     date of the last AFU release as indicated in the AFU home page."""
-    if building_afu:
-        return get_current_date()
-    else:
-        raise Exception(
-            "Do not know how to retrieve the AFU date if not building the AFU"
-        )
-        # TODO: these tags no longer exist in the AFU home page. Fix this to
-        # extract the date from the afu-version tags.
-        # afu_site = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
-        # return extract_from_site(afu_site, "<!-- afu-date -->", "<!-- /afu-date -->")
+    return get_current_date()
 
 
 def get_new_version(project_name, curr_version):
@@ -121,24 +111,22 @@ def create_dev_website_release_version_dir(project_name, version):
     """Create the directory for the given version of the given project under
     the releases directory of the dev web site."""
     if project_name in (None, "checker-framework"):
-        interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, "releases", version)
+        interm_dir = os.path.join(DEV_SITE_DIR, "releases", version)
     else:
-        interm_dir = os.path.join(
-            FILE_PATH_TO_DEV_SITE, project_name, "releases", version
-        )
+        interm_dir = os.path.join(DEV_SITE_DIR, project_name, "releases", version)
     delete_path_if_exists(interm_dir)
 
     execute("mkdir -p %s" % interm_dir, True, False)
     return interm_dir
 
 
-def create_dirs_for_dev_website_release_versions(cf_version, afu_version):
+def create_dirs_for_dev_website_release_versions(cf_version):
     """Create directories for the given versions of the CF, and AFU
     projects under the releases directory of the dev web site.
     For example,
     /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> ."""
     afu_interm_dir = create_dev_website_release_version_dir(
-        "annotation-file-utilities", afu_version
+        "annotation-file-utilities", cf_version
     )
     checker_framework_interm_dir = create_dev_website_release_version_dir(
         None, cf_version
@@ -150,7 +138,7 @@ def create_dirs_for_dev_website_release_versions(cf_version, afu_version):
 # def update_project_dev_website_symlink(project_name, release_version):
 #     """Update the \"current\" symlink in the dev web site for the given project
 #     to point to the given release of the project on the dev web site."""
-#     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+#     project_dev_site = os.path.join(DEV_SITE_DIR, project_name)
 #     link_path = os.path.join(project_dev_site, "current")
 #
 #     dev_website_relative_dir = os.path.join("releases", release_version)
@@ -163,9 +151,9 @@ def update_project_dev_website(project_name, release_version):
     """Update the dev web site for the given project
     according to the given release of the project on the dev web site."""
     if project_name == "checker-framework":
-        project_dev_site = FILE_PATH_TO_DEV_SITE
+        project_dev_site = DEV_SITE_DIR
     else:
-        project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+        project_dev_site = os.path.join(DEV_SITE_DIR, project_name)
     dev_website_relative_dir = os.path.join(
         project_dev_site, "releases", release_version
     )
@@ -208,7 +196,7 @@ def build_and_locally_deploy_maven(version):
 
 
 def build_checker_framework_release(
-    version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir
+    version, old_cf_version, afu_release_date, checker_framework_interm_dir
 ):
     """Build the release files for the Checker Framework project, including the
     manual and the zip file, and run tests on the build."""
@@ -225,7 +213,7 @@ def build_checker_framework_release(
     # update versions
     ant_props = (
         '-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date="%s"'
-        % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
+        % (checker_dir, version, version, afu_build_properties, afu_release_date)
     )
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (
@@ -311,17 +299,15 @@ def build_checker_framework_release(
     return
 
 
-def commit_to_interm_projects(cf_version, afu_version, projects_to_release):
+def commit_to_interm_projects(cf_version):
     """Commit the changes for each project from its build repo to its
     corresponding intermediate repo in preparation for running the release_push
     script, which does not read the build repos."""
     # Use project definition instead, see find project location find_project_locations
 
-    if projects_to_release[AFU_OPT]:
-        commit_tag_and_push(afu_version, ANNO_TOOLS, "")
+    commit_tag_and_push(cf_version, ANNO_TOOLS, "")
 
-    if projects_to_release[CF_OPT]:
-        commit_tag_and_push(cf_version, CHECKER_FRAMEWORK, "checker-framework-")
+    commit_tag_and_push(cf_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 
 def main(argv):
@@ -336,8 +322,6 @@ def main(argv):
 
     set_umask()
 
-    projects_to_release = read_projects(argv, print_usage)
-
     global debug
     global ant_debug
     debug = read_command_line_option(argv, "--debug")
@@ -347,9 +331,9 @@ def main(argv):
     notest = read_command_line_option(argv, "--notest")
 
     # Indicates whether to review documentation changes only and not perform a build.
-    add_project_dependencies(projects_to_release)
+    add_project_dependencies()
 
-    afu_date = get_afu_date(projects_to_release[AFU_OPT])
+    afu_date = get_afu_date()
 
     # For each project, build what is necessary but don't push
 
@@ -397,7 +381,7 @@ def main(argv):
 
     print_step("Build Step 3: Determine release versions.")  # MANUAL
 
-    old_cf_version = current_distribution_by_website(HTTP_PATH_TO_LIVE_SITE)
+    old_cf_version = current_distribution_by_website(LIVE_SITE_URL)
     cf_version = CF_VERSION
     print("Version: " + cf_version + "\n")
 
@@ -412,37 +396,6 @@ def main(argv):
         prompt_to_continue()
 
     AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
-    old_afu_version = get_afu_version_from_html(AFU_MANUAL)
-    (old_afu_version, afu_version) = get_new_version(
-        "Annotation File Utilities", old_afu_version
-    )
-
-    if old_afu_version == afu_version:
-        print(
-            (
-                "The AFU version has not changed. It is recommended to include a small bug fix or doc update in every "
-                + "AFU release so the version number can be updated, but when that is not possible, before and after running "
-                + "release_build, you must:\n"
-                + "-Ensure that you are subscribed to the AFU push notifications mailing list.\n"
-                + "-Verify that the AFU changelog has not been changed.\n"
-                + '-Grep all the AFU pages on the dev web site for the release date with patterns such as "29.*Aug" '
-                + 'and "Aug.*29" and fix them to match the previous release date.\n'
-                + "Keep in mind that in this case, the release scripts will fail in certain places and you must manually "
-                + "follow a few remaining release steps.\n"
-            )
-        )
-        prompt_to_continue()
-
-    # I don't think this should be necessary in general.  It's just to put files in place so link checking will work, and it takes a loooong time to run.
-    # print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # MANUAL
-
-    # if prompt_yes_no("Proceed with copy of live site to dev site?", True):
-    #     # ************************************************************************************************
-    #     # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
-    #     # and its work cannot be undone.  If, for example, this command were modified to accidentally make
-    #     # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-    #     execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=sparta/release/versions /cse/www2/types/ /cse/www2/types/dev")
-    #     # ************************************************************************************************
 
     print_step(
         "Build Step 4: Create directories for the current release on the dev site."
@@ -451,7 +404,7 @@ def main(argv):
     (
         afu_interm_dir,
         checker_framework_interm_dir,
-    ) = create_dirs_for_dev_website_release_versions(cf_version, afu_version)
+    ) = create_dirs_for_dev_website_release_versions(cf_version)
 
     # The projects are built in the following order:
     # Annotation File Utilities and Checker Framework. Furthermore, their
@@ -461,21 +414,17 @@ def main(argv):
     # might want to get a cup of coffee and do something else until it is done.
 
     print_step("Build Step 5: Build projects and websites.")  # AUTO
-    print(projects_to_release)
 
-    if projects_to_release[AFU_OPT]:
-        print_step("5a: Build Annotation File Utilities.")
-        build_annotation_tools_release(afu_version, afu_interm_dir)
+    print_step("5a: Build Annotation File Utilities.")
+    build_annotation_tools_release(cf_version, afu_interm_dir)
 
-    if projects_to_release[CF_OPT]:
-        print_step("5b: Build Checker Framework.")
-        build_checker_framework_release(
-            cf_version,
-            old_cf_version,
-            afu_version,
-            afu_date,
-            checker_framework_interm_dir,
-        )
+    print_step("5b: Build Checker Framework.")
+    build_checker_framework_release(
+        cf_version,
+        old_cf_version,
+        afu_date,
+        checker_framework_interm_dir,
+    )
 
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 
@@ -489,7 +438,7 @@ def main(argv):
     # scripts in the jsr308-release/scripts directory will never be checked in.
 
     print_step("Build Step 7: Commit projects to intermediate repos.")  # AUTO
-    commit_to_interm_projects(cf_version, afu_version, projects_to_release)
+    commit_to_interm_projects(cf_version)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
     # under https://checkerframework.org/dev/ These directories need group read/execute
@@ -506,7 +455,7 @@ def main(argv):
     # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
     # But as long as the processes return a zero exit status, we should be ok.
     print_step("\n\nBuild Step 9: Add group permissions to websites.")  # AUTO
-    ensure_group_access(FILE_PATH_TO_DEV_SITE)
+    ensure_group_access(DEV_SITE_DIR)
 
     create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
