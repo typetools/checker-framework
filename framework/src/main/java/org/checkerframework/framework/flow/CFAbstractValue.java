@@ -85,7 +85,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * Returns true if the set has an annotation from every hierarchy (or if it doesn't need to);
      * returns false if the set is missing an annotation from some hierarchy.
      *
-     * @param a set of annotations
+     * @param annos set of annotations
      * @param typeMirror where the annotations are written
      * @param hierarchy the qualifier hierarchy
      * @return true if no annotations are missing
