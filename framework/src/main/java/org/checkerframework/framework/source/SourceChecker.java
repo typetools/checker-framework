@@ -2498,9 +2498,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
         if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
             msg.add(
-                    "The JVM ran out of memory.  Run with a larger max heap size (currently "
-                            + Runtime.getRuntime().maxMemory()
-                            + " bytes).");
+                    String.format(
+                            "The JVM ran out of memory.  Run with a larger max heap size (max memory = %d, total memory = %d, free memory = %d).",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
         } else {
 
             msg.add(ce.getMessage());
