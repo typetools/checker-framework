@@ -4258,7 +4258,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                     expression, methodType.getElement(), checker);
                     // methodType.getElement() is not necessarily the same method as methodTree, so
                     // viewpoint adapted it to methodTree.
-                    return javaExpr.viewpointAdaptAtMethodBody(methodTree);
+                    return javaExpr.atMethodBody(methodTree);
                 };
 
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();

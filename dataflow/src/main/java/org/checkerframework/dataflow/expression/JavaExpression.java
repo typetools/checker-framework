@@ -570,21 +570,35 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Returns the formal parameters of the method in which path is enclosed.
+     * Returns the parameters of {@code methodEle} as {@link LocalVariable}s.
      *
-     * @param path TreePath that is enclosed by the method
-     * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
+     * @param methodEle the method element
+     * @return list of parameters as {@link LocalVariable}s
      */
-    public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(TreePath path) {
-        MethodTree methodTree = TreePathUtil.enclosingMethod(path);
-        if (methodTree == null) {
-            return null;
+    public static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
+        List<JavaExpression> parameters = new ArrayList<>();
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            LocalVariable parameter = new LocalVariable(variableElement);
+            parameters.add(parameter);
         }
-        List<JavaExpression> internalArguments = new ArrayList<>();
-        for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(fromVariableTree(arg));
+        return parameters;
+    }
+
+    /**
+     * Returns the parameters of {@code methodEle} as {@link FormalParameter}s.
+     *
+     * @param methodEle the method element
+     * @return list of parameters as {@link FormalParameter}s
+     */
+    public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
+        List<FormalParameter> parameters = new ArrayList<>();
+        int oneBasedIndex = 1;
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
+            parameters.add(parameter);
+            oneBasedIndex++;
         }
-        return internalArguments;
+        return parameters;
     }
 
     ///
@@ -646,7 +660,6 @@ public abstract class JavaExpression {
      * @return a new ClassName or ThisReference that is a JavaExpression object for the
      *     enclosingType
      */
-    // TODO: eventually this should be deleted.
     public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
         if (TreePathUtil.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
@@ -670,7 +683,14 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
     }
 
-    public final JavaExpression viewpointAdaptAtMethodBody(MethodTree methodTree) {
+    /**
+     * Viewpoint-adapts {@code this} to the {@code methodTree} by converting any {@code
+     * FormalParameter} into {@code LocalVariable}s.
+     *
+     * @param methodTree method declaration tree
+     * @return viewpoint-adapted version of this
+     */
+    public final JavaExpression atMethodBody(MethodTree methodTree) {
         List<JavaExpression> parametersJe = new ArrayList<>();
         for (VariableTree param : methodTree.getParameters()) {
             parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));
@@ -678,8 +698,13 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
     }
 
-    public final JavaExpression viewpointAdaptAtMethodCall(
-            MethodInvocationTree methodInvocationTree) {
+    /**
+     * Viewpoint-adapts {@code this} to the {@code methodInvocationTree}.
+     *
+     * @param methodInvocationTree method invocation
+     * @return viewpoint-adapted version of this
+     */
+    public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
         List<JavaExpression> argumentsJe =
                 argumentTreesToJavaExpressions(
                         methodInvocationTree, methodInvocationTree.getArguments());
@@ -688,7 +713,13 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
 
-    public final JavaExpression viewpointAdaptAtMethodCall(MethodInvocationNode invocationNode) {
+    /**
+     * Viewpoint-adapts {@code this} to the {@code invocationNode}.
+     *
+     * @param invocationNode method invocation
+     * @return viewpoint-adapted version of this
+     */
+    public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
         List<JavaExpression> argumentsJe = new ArrayList<>();
         for (Node argTree : invocationNode.getArguments()) {
             argumentsJe.add(JavaExpression.fromNode(argTree));
@@ -699,7 +730,13 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
 
-    public JavaExpression viewpointAdaptAtConstructorCall(NewClassTree newClassTree) {
+    /**
+     * Viewpoint-adapts {@code this} to the {@code newClassTree}.
+     *
+     * @param newClassTree constructor invocation
+     * @return viewpoint-adapted version of this
+     */
+    public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
         List<JavaExpression> argumentsJe =
                 argumentTreesToJavaExpressions(newClassTree, newClassTree.getArguments());
 
@@ -770,6 +807,12 @@ public abstract class JavaExpression {
         return false;
     }
 
+    /**
+     * Returns the depth of the array type of {@code array}.
+     *
+     * @param array the type of the array
+     * @return the depth of {@code array}
+     */
     private static int getArrayDepth(TypeMirror array) {
         int counter = 0;
         TypeMirror type = array;
@@ -778,37 +821,5 @@ public abstract class JavaExpression {
             type = ((ArrayType) type).getComponentType();
         }
         return counter;
-    }
-
-    /**
-     * Returns the parameters of {@code methodEle} as {@link LocalVariable}s.
-     *
-     * @param methodEle the method element
-     * @return list of parameters as {@link LocalVariable}s
-     */
-    public static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
-        List<JavaExpression> parameters = new ArrayList<>();
-        for (VariableElement variableElement : methodEle.getParameters()) {
-            LocalVariable parameter = new LocalVariable(variableElement);
-            parameters.add(parameter);
-        }
-        return parameters;
-    }
-
-    /**
-     * Returns the parameters of {@code methodEle} as {@link FormalParameter}s.
-     *
-     * @param methodEle the method element
-     * @return list of parameters as {@link FormalParameter}s
-     */
-    public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
-        List<FormalParameter> parameters = new ArrayList<>();
-        int oneBasedIndex = 1;
-        for (VariableElement variableElement : methodEle.getParameters()) {
-            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
-            parameters.add(parameter);
-            oneBasedIndex++;
-        }
-        return parameters;
     }
 }

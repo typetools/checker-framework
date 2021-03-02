@@ -186,7 +186,7 @@ public interface StringToJavaExpression {
 
         ExecutableElement ee = TreeUtils.elementFromDeclaration(methodTree);
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdaptAtMethodBody(methodTree);
+        return javaExpr.atMethodBody(methodTree);
     }
 
     /**
@@ -206,7 +206,7 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
         ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationTree);
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdaptAtMethodCall(methodInvocationTree);
+        return javaExpr.atMethodInvocation(methodInvocationTree);
     }
 
     /**
@@ -226,7 +226,7 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
         ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationNode.getTree());
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdaptAtMethodCall(methodInvocationNode);
+        return javaExpr.atMethodInvocation(methodInvocationNode);
     }
 
     /**
@@ -246,7 +246,7 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
         ExecutableElement ee = TreeUtils.elementFromUse(newClassTree);
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdaptAtConstructorCall(newClassTree);
+        return javaExpr.atConstructorInvocation(newClassTree);
     }
 
     /**
