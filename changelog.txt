@@ -2,6 +2,9 @@ Version 3.11.1, April 1, 2021
 
 **User-visible changes:**
 
+`-Ainfer=ajava` uses ajava files (rather than jaif files or stub files)
+internally during whole-program inference.
+
 **Implementation details:**
 
 **Closed issues:**
