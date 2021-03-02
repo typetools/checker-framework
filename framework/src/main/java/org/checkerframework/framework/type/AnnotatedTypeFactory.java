@@ -503,7 +503,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     throw new UserError(
                             "Bad argument -Ainfer="
                                     + inferArg
-                                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
+                                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
             }
             if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
                 wholeProgramInference =
