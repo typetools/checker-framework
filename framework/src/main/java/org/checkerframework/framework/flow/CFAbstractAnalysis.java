@@ -158,7 +158,7 @@ public abstract class CFAbstractAnalysis<
 
     /**
      * Returns an abstract value containing the given {@code annotations} and {@code
-     * underlyingType}.
+     * underlyingType}. Returns null if the annotation set has missing annotations.
      *
      * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
      */
