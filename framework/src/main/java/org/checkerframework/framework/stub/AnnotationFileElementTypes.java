@@ -1,10 +1,12 @@
 package org.checkerframework.framework.stub;
 
+import io.github.classgraph.ClassGraph;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -265,15 +267,22 @@ public class AnnotationFileElementTypes {
                         String parentPathDescription =
                                 (parentPath == null
                                         ? "current directory"
-                                        : "directory "
-                                                + new File(path).getParentFile().getAbsolutePath());
-                        checker.message(
-                                Kind.WARNING,
-                                "Did not find annotation file "
+                                        : "directory " + parentPath.getAbsolutePath());
+                        String msg =
+                                checker.getClass().getSimpleName()
+                                        + " did not find annotation file "
                                         + path
                                         + " on classpath or within "
                                         + parentPathDescription
-                                        + (fullPath.equals(path) ? "" : (" or at " + fullPath)));
+                                        + (fullPath.equals(path) ? "" : (" or at " + fullPath));
+                        List<String> lines = new ArrayList<>();
+                        lines.add(msg);
+                        lines.add("Classpath:");
+                        for (URI uri : new ClassGraph().getClasspathURIs()) {
+                            lines.add(uri.toString());
+                        }
+                        checker.message(
+                                Kind.WARNING, String.join(System.lineSeparator() + "  ", lines));
                     }
                 }
             }
