@@ -43,7 +43,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -365,7 +364,7 @@ public class DependentTypesHelper {
         StringToJavaExpression stringToJavaExpr =
                 expression -> {
                     JavaExpression result =
-                            JavaExpressionParseUtil.parse(
+                            StringToJavaExpression.atMethodDecl(
                                     expression, methodElement, factory.getChecker());
                     return result instanceof ErrorExpression ? null : result;
                 };

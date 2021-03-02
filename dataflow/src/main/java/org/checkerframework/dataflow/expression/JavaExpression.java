@@ -670,7 +670,7 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
     }
 
-    public final JavaExpression viewpointAdaptAtMethodDecl(MethodTree methodTree) {
+    public final JavaExpression viewpointAdaptAtMethodBody(MethodTree methodTree) {
         List<JavaExpression> parametersJe = new ArrayList<>();
         for (VariableTree param : methodTree.getParameters()) {
             parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));

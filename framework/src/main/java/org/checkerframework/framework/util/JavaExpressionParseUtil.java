@@ -24,10 +24,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -67,15 +64,11 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
-import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.source.DiagMessage;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
-import org.checkerframework.javacutil.TreePathUtil;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
@@ -99,220 +92,6 @@ public class JavaExpressionParseUtil {
 
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
-
-    /**
-     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
-     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
-     *
-     * @param expression a Java expression to parse
-     * @return the JavaExpression for the given string
-     * @throws JavaExpressionParseException if the string cannot be parsed
-     */
-    public static JavaExpression parse(
-            String expression, ExecutableElement method, SourceChecker checker)
-            throws JavaExpressionParseException {
-        // The underlying javac API used to convert from Strings to Elements requires a tree path
-        // even when the information could be deduced from elements alone.  So use the path to the
-        // current CompilationUnit.
-        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(method).asType();
-        ThisReference thisReference;
-        if (ElementUtils.isStatic(method)) {
-            // Can't use "this" on a static method
-            thisReference = null;
-        } else {
-            thisReference = new ThisReference(enclosingType);
-        }
-        List<FormalParameter> parameters = new ArrayList<>();
-        int oneBasedIndex = 1;
-        for (VariableElement paramEle : method.getParameters()) {
-            parameters.add(new FormalParameter(oneBasedIndex, paramEle));
-            oneBasedIndex++;
-        }
-        return parse(
-                expression,
-                enclosingType,
-                thisReference,
-                parameters,
-                null,
-                pathToCompilationUnit,
-                env);
-    }
-
-    /**
-     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
-     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
-     *
-     * @param expression a Java expression to parse
-     * @return the JavaExpression for the given string
-     * @throws JavaExpressionParseException if the string cannot be parsed
-     */
-    public static JavaExpression parse(
-            String expression, VariableElement fieldElement, SourceChecker checker)
-            throws JavaExpressionParseException {
-        // The underlying javac API used to convert from Strings to Elements requires a tree path
-        // even when the information could be deduced from elements alone.  So use the path to the
-        // current CompilationUnit.
-        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-        TypeMirror enclosingType = ElementUtils.enclosingTypeElement(fieldElement).asType();
-        ThisReference thisReference;
-        if (ElementUtils.isStatic(fieldElement)) {
-            // Can't use "this" on a static fieldElement
-            thisReference = null;
-        } else {
-            thisReference = new ThisReference(enclosingType);
-        }
-        List<FormalParameter> parameters = null;
-        return parse(
-                expression,
-                enclosingType,
-                thisReference,
-                parameters,
-                null,
-                pathToCompilationUnit,
-                env);
-    }
-
-    /**
-     * Parse a string and viewpoint-adapt it to the given {@code context}. Return its representation
-     * as a {@link JavaExpression}, or throw a {@link JavaExpressionParseException}.
-     *
-     * @param expression a Java expression to parse
-     * @return the JavaExpression for the given string
-     * @throws JavaExpressionParseException if the string cannot be parsed
-     */
-    public static JavaExpression parse(
-            String expression, TypeElement typeElement, SourceChecker checker)
-            throws JavaExpressionParseException {
-        // The underlying javac API used to convert from Strings to Elements requires a tree path
-        // even when the information could be deduced from elements alone.  So use the path to the
-        // current CompilationUnit.
-        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-        ThisReference thisReference = new ThisReference(typeElement.asType());
-
-        List<FormalParameter> parameters = null;
-        return parse(
-                expression,
-                typeElement.asType(),
-                thisReference,
-                parameters,
-                null,
-                pathToCompilationUnit,
-                env);
-    }
-
-    public static JavaExpression parse(
-            String expression,
-            LambdaExpressionTree lambdaTree,
-            TreePath parentPath,
-            SourceChecker checker)
-            throws JavaExpressionParseException {
-
-        TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(parentPath));
-        JavaExpression receiver = JavaExpression.getPseudoReceiver(parentPath, enclosingType);
-        ThisReference thisReference =
-                receiver instanceof ClassName ? null : (ThisReference) receiver;
-        List<JavaExpression> paramsAsLocals = new ArrayList<>();
-        List<FormalParameter> parameters = new ArrayList<>();
-        int oneBasedIndex = 1;
-        for (VariableTree arg : lambdaTree.getParameters()) {
-            LocalVariable param = (LocalVariable) JavaExpression.fromVariableTree(arg);
-            parameters.add(
-                    new FormalParameter(oneBasedIndex, (VariableElement) param.getElement()));
-            paramsAsLocals.add(param);
-            oneBasedIndex++;
-        }
-        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-
-        JavaExpression javaExpr =
-                parse(
-                        expression,
-                        enclosingType,
-                        thisReference,
-                        parameters,
-                        parentPath,
-                        pathToCompilationUnit,
-                        env);
-        JavaExpression result =
-                ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
-
-        if (result instanceof ClassName
-                && !expression.endsWith(".class")
-                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
-                // exception in that case.
-                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
-            throw constructJavaExpressionParseError(
-                    expression,
-                    String.format(
-                            "a class name cannot terminate a Java expression string, where result=%s [%s]",
-                            result, result.getClass()));
-        }
-        return result;
-    }
-
-    /**
-     * Parse a string with respect to {@code localVarPath} and return its representation as a {@link
-     * JavaExpression}, or throw a {@link JavaExpressionParseException}.
-     *
-     * @param expression a Java expression string to parse
-     * @param localVarPath the expression is parsed as if it were written at this location
-     * @return the JavaExpression for the given string
-     * @throws JavaExpressionParseException if the string cannot be parsed
-     */
-    public static JavaExpression parse(
-            String expression, TreePath localVarPath, SourceChecker checker)
-            throws JavaExpressionParseException {
-        // The underlying javac API used to convert from Strings to Elements requires a TreePath
-        // even when the information could be deduced from elements alone.  So use the TreePath to
-        // the
-        // current CompilationUnit.
-        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-
-        TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(localVarPath));
-        ThisReference thisReference = null;
-        if (!TreePathUtil.isTreeInStaticScope(localVarPath)) {
-            thisReference = new ThisReference(enclosingType);
-        }
-        List<FormalParameter> parameters;
-        List<JavaExpression> paramsAsLocals;
-
-        MethodTree methodTree = TreePathUtil.enclosingMethod(localVarPath);
-        if (methodTree == null) {
-            paramsAsLocals = null;
-            parameters = null;
-        } else {
-            paramsAsLocals = new ArrayList<>();
-            parameters = new ArrayList<>();
-            int oneBasedIndex = 1;
-            for (VariableTree arg : methodTree.getParameters()) {
-                VariableElement variableElement = TreeUtils.elementFromDeclaration(arg);
-                FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
-                parameters.add(parameter);
-                paramsAsLocals.add(new LocalVariable(variableElement));
-                oneBasedIndex++;
-            }
-        }
-
-        JavaExpression javaExpr =
-                parse(
-                        expression,
-                        enclosingType,
-                        thisReference,
-                        parameters,
-                        localVarPath,
-                        pathToCompilationUnit,
-                        env);
-        if (parameters == null || parameters.isEmpty()) {
-            return javaExpr;
-        }
-
-        return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
-    }
 
     /**
      * Parses {@code expression} to a {@link JavaExpression}.

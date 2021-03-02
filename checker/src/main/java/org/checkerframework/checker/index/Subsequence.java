@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Holds information from {@link HasSubsequence} annotations. */
@@ -118,7 +119,7 @@ public class Subsequence {
             String s, FieldAccess fieldAccess, SourceChecker checker) {
         JavaExpression parseResult;
         try {
-            parseResult = JavaExpressionParseUtil.parse(s, fieldAccess.getField(), checker);
+            parseResult = StringToJavaExpression.atFieldDecl(s, fieldAccess.getField(), checker);
         } catch (JavaExpressionParseException e) {
             return s;
         }

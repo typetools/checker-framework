@@ -4254,9 +4254,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         StringToJavaExpression stringToJavaExpr =
                 expression -> {
                     JavaExpression javaExpr =
-                            JavaExpressionParseUtil.parse(
+                            StringToJavaExpression.atMethodDecl(
                                     expression, methodType.getElement(), checker);
-                    return javaExpr.viewpointAdaptAtMethodDecl(methodTree);
+                    // methodType.getElement() is not necessarily the same method as methodTree, so
+                    // viewpoint adapted it to methodTree.
+                    return javaExpr.viewpointAdaptAtMethodBody(methodTree);
                 };
 
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
