@@ -648,14 +648,15 @@ subprojects {
     }
 
     shadowJar {
-        // Relocate packages that might conflict with user's classpath.
-        doFirst {
-            if (release) {
-                // Only relocate JavaParser during a release:
-                relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
-            }
-        }
+        // If you add an external dependency, then do the following:
+        // 1. Before adding the dependency, run ./gradlew copyJarsToDist.
+        // 2. Copy checker/dist/checker.jar elsewhere.
+        // 3. Add the dependency, then run ./gradlew clean copyJarsToDist.
+        // 4. Unzip both jars and compare the contents.
+        // 5. Add relocate lines below for the packages.
+        // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
 
+        // Relocate packages that might conflict with user's classpath.
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
@@ -667,6 +668,13 @@ subprojects {
         relocate 'com.google', 'org.checkerframework.com.google'
         relocate 'plume', 'org.checkerframework.plume'
         exclude '**/module-info.class'
+
+        doFirst {
+            if (release) {
+                // Only relocate JavaParser during a release:
+                relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
+            }
+        }
     }
 
     if (!project.name.startsWith('checker-qual-android')) {
