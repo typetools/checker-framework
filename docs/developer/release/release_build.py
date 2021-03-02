@@ -13,6 +13,7 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 from release_vars import *
 from release_utils import *
 from distutils.dir_util import copy_tree
+import datetime
 
 # Turned on by the --debug command-line option.
 debug = False
@@ -329,9 +330,6 @@ def main(argv):
         ant_debug = "-debug"
     global notest
     notest = read_command_line_option(argv, "--notest")
-
-    # Indicates whether to review documentation changes only and not perform a build.
-    add_project_dependencies()
 
     afu_date = get_afu_date()
 
