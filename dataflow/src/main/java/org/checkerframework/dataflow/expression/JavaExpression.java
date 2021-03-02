@@ -715,7 +715,7 @@ public abstract class JavaExpression {
      * @param argTrees the arguments to the method or constructor; subexpressions of {@code tree}
      * @return the arguments, as JavaExpressions
      */
-    private List<JavaExpression> argumentTreesToJavaExpressions(
+    private static List<JavaExpression> argumentTreesToJavaExpressions(
             ExpressionTree tree, List<? extends ExpressionTree> argTrees) {
 
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
@@ -755,7 +755,7 @@ public abstract class JavaExpression {
      * @return true if method is a varargs method and its varargs arguments are not passed in an
      *     array
      */
-    private boolean isVarArgsInvocation(
+    private static boolean isVarArgsInvocation(
             ExecutableElement method, List<? extends ExpressionTree> args) {
         if (method != null && method.isVarArgs()) {
             if (method.getParameters().size() != args.size()) {
@@ -778,5 +778,37 @@ public abstract class JavaExpression {
             type = ((ArrayType) type).getComponentType();
         }
         return counter;
+    }
+
+    /**
+     * Returns the parameters of {@code methodEle} as {@link LocalVariable}s.
+     *
+     * @param methodEle the method element
+     * @return list of parameters as {@link LocalVariable}s
+     */
+    public static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
+        List<JavaExpression> parameters = new ArrayList<>();
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            LocalVariable parameter = new LocalVariable(variableElement);
+            parameters.add(parameter);
+        }
+        return parameters;
+    }
+
+    /**
+     * Returns the parameters of {@code methodEle} as {@link FormalParameter}s.
+     *
+     * @param methodEle the method element
+     * @return list of parameters as {@link FormalParameter}s
+     */
+    public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
+        List<FormalParameter> parameters = new ArrayList<>();
+        int oneBasedIndex = 1;
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
+            parameters.add(parameter);
+            oneBasedIndex++;
+        }
+        return parameters;
     }
 }

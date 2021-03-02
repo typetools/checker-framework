@@ -253,7 +253,7 @@ public class DependentTypesHelper {
         } else if (tree instanceof NewClassTree) {
             stringToJavaExpr =
                     stringExpr ->
-                            StringToJavaExpression.atNewClassTree(
+                            StringToJavaExpression.atConstructorInvocation(
                                     stringExpr, (NewClassTree) tree, factory.getChecker());
         } else {
             throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
@@ -358,9 +358,7 @@ public class DependentTypesHelper {
         if (!hasDependentType(atm)) {
             return;
         }
-        if (true) {
-            throw new RuntimeException("delocalize was called.");
-        }
+
         TreePath pathToMethod = factory.getPath(methodDeclTree);
 
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodDeclTree);
@@ -370,9 +368,9 @@ public class DependentTypesHelper {
                             StringToJavaExpression.atPath(
                                     expression, pathToMethod, factory.getChecker());
                     List<FormalParameter> parameters =
-                            StringToJavaExpression.getFormalParameters(methodElement);
+                            JavaExpression.getFormalParameters(methodElement);
                     List<JavaExpression> paramsAsLocals =
-                            StringToJavaExpression.getParametersAsLocalVars(methodElement);
+                            JavaExpression.getParametersAsLocalVars(methodElement);
                     JavaExpressionConverter jec =
                             new JavaExpressionConverter() {
                                 @Override
