@@ -31,7 +31,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionConverter;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -355,18 +358,44 @@ public class DependentTypesHelper {
         if (!hasDependentType(atm)) {
             return;
         }
+        if (true) {
+            throw new RuntimeException("delocalize was called.");
+        }
+        TreePath pathToMethod = factory.getPath(methodDeclTree);
 
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodDeclTree);
-        // TODO: This is wrong.  Here's the correct algorithm:
-        //  1. Parse to local path
-        //  2. Convert LocalVariables to FormalParameters
-        //  3. if any LocalVariables remain, return null.
         StringToJavaExpression stringToJavaExpr =
                 expression -> {
                     JavaExpression result =
-                            StringToJavaExpression.atMethodDecl(
-                                    expression, methodElement, factory.getChecker());
-                    return result instanceof ErrorExpression ? null : result;
+                            StringToJavaExpression.atPath(
+                                    expression, pathToMethod, factory.getChecker());
+                    List<FormalParameter> parameters = new ArrayList<>();
+                    List<JavaExpression> paramsAsLocals = new ArrayList<>();
+                    int oneBasedIndex = 1;
+                    for (VariableElement paramEle : methodElement.getParameters()) {
+                        parameters.add(new FormalParameter(oneBasedIndex, paramEle));
+                        paramsAsLocals.add(new LocalVariable(paramEle));
+                        oneBasedIndex++;
+                    }
+                    JavaExpressionConverter jec =
+                            new JavaExpressionConverter() {
+                                @Override
+                                protected JavaExpression visitLocalVariable(
+                                        LocalVariable localVarExpr, Void unused) {
+                                    int index = paramsAsLocals.indexOf(localVarExpr);
+                                    if (index == -1) {
+                                        return new Unknown(
+                                                localVarExpr.getType(),
+                                                localVarExpr
+                                                        .getElement()
+                                                        .getSimpleName()
+                                                        .toString());
+                                    }
+                                    return parameters.get(index);
+                                }
+                            };
+                    result = jec.convert(result);
+                    return result.containsUnknown() ? null : result;
                 };
         convertAnnotatedTypeMirror(stringToJavaExpr, atm);
     }
