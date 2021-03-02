@@ -72,12 +72,7 @@ public interface StringToJavaExpression {
         } else {
             thisReference = new ThisReference(enclosingType);
         }
-        List<FormalParameter> parameters = new ArrayList<>();
-        int oneBasedIndex = 1;
-        for (VariableElement paramEle : method.getParameters()) {
-            parameters.add(new FormalParameter(oneBasedIndex, paramEle));
-            oneBasedIndex++;
-        }
+        List<FormalParameter> parameters = getFormalParameters(method);
         return JavaExpressionParseUtil.parse(
                 expression,
                 enclosingType,
@@ -198,24 +193,16 @@ public interface StringToJavaExpression {
         if (!TreePathUtil.isTreeInStaticScope(localVarPath)) {
             thisReference = new ThisReference(enclosingType);
         }
-        List<FormalParameter> parameters;
-        List<JavaExpression> paramsAsLocals;
 
         MethodTree methodTree = TreePathUtil.enclosingMethod(localVarPath);
+        ExecutableElement methodEle;
+        List<FormalParameter> parameters;
         if (methodTree == null) {
-            paramsAsLocals = null;
             parameters = null;
+            methodEle = null;
         } else {
-            paramsAsLocals = new ArrayList<>();
-            parameters = new ArrayList<>();
-            int oneBasedIndex = 1;
-            for (VariableTree arg : methodTree.getParameters()) {
-                VariableElement variableElement = TreeUtils.elementFromDeclaration(arg);
-                FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
-                parameters.add(parameter);
-                paramsAsLocals.add(new LocalVariable(variableElement));
-                oneBasedIndex++;
-            }
+            methodEle = TreeUtils.elementFromDeclaration(methodTree);
+            parameters = getFormalParameters(methodEle);
         }
 
         JavaExpression javaExpr =
@@ -230,8 +217,28 @@ public interface StringToJavaExpression {
         if (parameters == null || parameters.isEmpty()) {
             return javaExpr;
         }
-
+        List<JavaExpression> paramsAsLocals = getParametersAsLocalVars(methodEle);
         return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
+    }
+
+    static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
+        List<JavaExpression> parameters = new ArrayList<>();
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            LocalVariable parameter = new LocalVariable(variableElement);
+            parameters.add(parameter);
+        }
+        return parameters;
+    }
+
+    static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
+        List<FormalParameter> parameters = new ArrayList<>();
+        int oneBasedIndex = 1;
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
+            parameters.add(parameter);
+            oneBasedIndex++;
+        }
+        return parameters;
     }
 
     static JavaExpression atMethodBody(

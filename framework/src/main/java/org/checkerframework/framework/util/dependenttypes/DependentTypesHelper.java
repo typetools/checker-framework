@@ -369,14 +369,10 @@ public class DependentTypesHelper {
                     JavaExpression result =
                             StringToJavaExpression.atPath(
                                     expression, pathToMethod, factory.getChecker());
-                    List<FormalParameter> parameters = new ArrayList<>();
-                    List<JavaExpression> paramsAsLocals = new ArrayList<>();
-                    int oneBasedIndex = 1;
-                    for (VariableElement paramEle : methodElement.getParameters()) {
-                        parameters.add(new FormalParameter(oneBasedIndex, paramEle));
-                        paramsAsLocals.add(new LocalVariable(paramEle));
-                        oneBasedIndex++;
-                    }
+                    List<FormalParameter> parameters =
+                            StringToJavaExpression.getFormalParameters(methodElement);
+                    List<JavaExpression> paramsAsLocals =
+                            StringToJavaExpression.getParametersAsLocalVars(methodElement);
                     JavaExpressionConverter jec =
                             new JavaExpressionConverter() {
                                 @Override
