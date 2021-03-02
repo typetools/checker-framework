@@ -1,12 +1,12 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
+import java.util.Objects;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
  * A formal parameter, represented by its 1-based index.
@@ -28,25 +28,7 @@ public class FormalParameter extends JavaExpression {
     protected final int index;
 
     /** The element for this formal parameter. */
-    protected final Element element;
-
-    public FormalParameter(int index, TypeMirror typeMirror) {
-        super(typeMirror);
-        this.index = index;
-        this.element = null;
-    }
-
-    /**
-     * Creates a FormalParameter.
-     *
-     * @param index the 1-based index
-     * @param localVar a CFG local variable
-     */
-    public FormalParameter(int index, LocalVariableNode localVar) {
-        super(localVar.getType());
-        this.index = index;
-        this.element = localVar.getElement();
-    }
+    protected final VariableElement element;
 
     /**
      * Creates a FormalParameter.
@@ -54,7 +36,7 @@ public class FormalParameter extends JavaExpression {
      * @param index the 1-based index
      * @param element the element for the formal parameter
      */
-    public FormalParameter(int index, Element element) {
+    public FormalParameter(int index, VariableElement element) {
         super(ElementUtils.getType(element));
         this.index = index;
         this.element = element;
@@ -84,20 +66,18 @@ public class FormalParameter extends JavaExpression {
      *
      * @return the element for this variable
      */
-    public Element getElement() {
+    public VariableElement getElement() {
         return element;
     }
 
     @Override
     public int hashCode() {
-        return index;
-        ////        VarSymbol vs = (VarSymbol) element;
-        //        return Objects.hash(
-        //                index,
-        ////                vs.name.toString(),
-        //                TypeAnnotationUtils.unannotatedType(type).toString());
-        ////                vs.owner.toString());
-
+        VarSymbol vs = (VarSymbol) element;
+        return Objects.hash(
+                index,
+                vs.name.toString(),
+                TypeAnnotationUtils.unannotatedType(vs.type).toString(),
+                vs.owner.toString());
     }
 
     @Override

@@ -291,7 +291,7 @@ public abstract class JavaExpression {
             result = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
-            result = LocalVariable.create(lv);
+            result = new LocalVariable(lv);
         } else if (receiverNode instanceof ArrayAccessNode) {
             ArrayAccessNode a = (ArrayAccessNode) receiverNode;
             result = fromArrayAccess(a);
@@ -666,7 +666,11 @@ public abstract class JavaExpression {
      */
     public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
 
-    public final JavaExpression viewpointAdapt(MethodTree methodTree) {
+    public JavaExpression viewpointAdaptAtFieldAccess(JavaExpression receiver) {
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
+    }
+
+    public final JavaExpression viewpointAdaptAtMethodDecl(MethodTree methodTree) {
         List<JavaExpression> parametersJe = new ArrayList<>();
         for (VariableTree param : methodTree.getParameters()) {
             parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));
@@ -674,7 +678,8 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
     }
 
-    public final JavaExpression viewpointAdapt(MethodInvocationTree methodInvocationTree) {
+    public final JavaExpression viewpointAdaptAtMethodCall(
+            MethodInvocationTree methodInvocationTree) {
         List<JavaExpression> argumentsJe =
                 argumentTreesToJavaExpressions(
                         methodInvocationTree, methodInvocationTree.getArguments());
@@ -683,7 +688,7 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
 
-    public final JavaExpression viewpointAdapt(MethodInvocationNode invocationNode) {
+    public final JavaExpression viewpointAdaptAtMethodCall(MethodInvocationNode invocationNode) {
         List<JavaExpression> argumentsJe = new ArrayList<>();
         for (Node argTree : invocationNode.getArguments()) {
             argumentsJe.add(JavaExpression.fromNode(argTree));
@@ -694,7 +699,7 @@ public abstract class JavaExpression {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
 
-    public JavaExpression viewpointAdapt(NewClassTree newClassTree) {
+    public JavaExpression viewpointAdaptAtConstructorCall(NewClassTree newClassTree) {
         List<JavaExpression> argumentsJe =
                 argumentTreesToJavaExpressions(newClassTree, newClassTree.getArguments());
 

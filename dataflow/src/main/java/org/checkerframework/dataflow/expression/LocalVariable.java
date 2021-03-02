@@ -40,28 +40,6 @@ public class LocalVariable extends JavaExpression {
         this.element = element;
     }
 
-    /**
-     * Creates a LocalVariable or a FormalParameter, depending on whether the argument starts with
-     * "__param__".
-     *
-     * @param localVar a CFG node for a variable
-     * @return a LocalVariable or FormalParameter for the given CFG variable
-     */
-    public static JavaExpression create(LocalVariableNode localVar) {
-        String name = localVar.getName();
-        if (name.startsWith(FormalParameter.PARAMETER_REPLACEMENT)) {
-            try {
-                return new FormalParameter(
-                        Integer.parseInt(
-                                name.substring(FormalParameter.PARAMETER_REPLACEMENT_LENGTH)),
-                        localVar.getElement());
-            } catch (NumberFormatException e) {
-                // fallthrough
-            }
-        }
-        return new LocalVariable(localVar);
-    }
-
     @Override
     public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof LocalVariable)) {

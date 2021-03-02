@@ -7,7 +7,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -124,8 +123,7 @@ public class Subsequence {
             return s;
         }
 
-        return ViewpointAdaptJavaExpression.viewpointAdapt(parseResult, fieldAccess.getReceiver())
-                .toString();
+        return parseResult.viewpointAdaptAtFieldAccess(fieldAccess.getReceiver()).toString();
     }
 
     /**

@@ -14,7 +14,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -81,7 +80,7 @@ public interface StringToJavaExpression {
 
         ExecutableElement ee = TreeUtils.elementFromDeclaration(methodTree);
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdapt(methodTree);
+        return javaExpr.viewpointAdaptAtMethodDecl(methodTree);
     }
 
     static JavaExpression atMethodInvocation(
@@ -89,7 +88,7 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
         ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationTree);
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdapt(methodInvocationTree);
+        return javaExpr.viewpointAdaptAtMethodCall(methodInvocationTree);
     }
 
     static JavaExpression atMethodInvocation(
@@ -97,7 +96,7 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
         ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationNode.getTree());
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdapt(methodInvocationNode);
+        return javaExpr.viewpointAdaptAtMethodCall(methodInvocationNode);
     }
 
     static JavaExpression atNewClassTree(
@@ -105,7 +104,7 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
         ExecutableElement ee = TreeUtils.elementFromUse(newClassTree);
         JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-        return javaExpr.viewpointAdapt(newClassTree);
+        return javaExpr.viewpointAdaptAtConstructorCall(newClassTree);
     }
 
     static JavaExpression atFieldAccess(
@@ -119,7 +118,7 @@ public interface StringToJavaExpression {
         VariableElement fieldEle = (VariableElement) ele;
         JavaExpression receiver = JavaExpression.fromTree(fieldAccess.getExpression());
         JavaExpression javaExpr = StringToJavaExpression.atFieldDecl(expression, fieldEle, checker);
-        return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, receiver);
+        return javaExpr.viewpointAdaptAtFieldAccess(receiver);
     }
 
     static JavaExpression atLambdaParameter(

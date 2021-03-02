@@ -4210,7 +4210,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     JavaExpression javaExpr =
                             JavaExpressionParseUtil.parse(
                                     expression, methodType.getElement(), checker);
-                    return javaExpr.viewpointAdapt(methodTree);
+                    return javaExpr.viewpointAdaptAtMethodDecl(methodTree);
                 };
 
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
