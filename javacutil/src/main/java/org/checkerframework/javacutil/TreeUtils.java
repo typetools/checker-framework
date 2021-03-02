@@ -408,6 +408,30 @@ public final class TreeUtils {
     }
 
     /**
+     * Determine whether the given MethodInvocationTree has an underlying element.
+     *
+     * @param node the MethodInvocationTree to test
+     * @return whether the tree refers to an identifier, member select, or method invocation
+     */
+    @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
+    @Pure
+    public static boolean isUseOfElement(MethodInvocationTree node) {
+        return isUseOfElement((ExpressionTree) node);
+    }
+
+    /**
+     * Determine whether the given NewClassTree has an underlying element.
+     *
+     * @param node the NewClassTree to test
+     * @return whether the tree refers to an identifier, member select, or method invocation
+     */
+    @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
+    @Pure
+    public static boolean isUseOfElement(NewClassTree node) {
+        return isUseOfElement((ExpressionTree) node);
+    }
+
+    /**
      * Returns true if {@code tree} has a synthetic argument.
      *
      * <p>For some anonymous classes with an explicit enclosing expression, javac creates a
