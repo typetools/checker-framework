@@ -33,8 +33,8 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Given an expression string, convert it to a {@link JavaExpression}. See {@link #toJavaExpression
- * )}.
+ * This interface is both a functional interface, see {@link #toJavaExpression)}, and also a
+ * collection of static methods that convert a string to a JavaExpression in at common locations.
  */
 @AnnotatedFor("nullness")
 @FunctionalInterface
@@ -56,12 +56,56 @@ public interface StringToJavaExpression {
      */
     @Nullable JavaExpression toJavaExpression(String stringExpr) throws JavaExpressionParseException;
 
-    static JavaExpression atMethodDecl(
-            String expression, ExecutableElement method, SourceChecker checker)
+    /**
+     * Parses {@code expression} to a {@link JavaExpression} as if it were written at {@code
+     * typeElement}.
+     *
+     * @param expression a string expression
+     * @param typeElement type element at which {@code expression} is parsed.
+     * @param checker checker used to get the {@link
+     *     javax.annotation.processing.ProcessingEnvironment} and current {@link
+     *     com.sun.source.tree.CompilationUnitTree}
+     * @return the {@code JavaExpression} of {@code expression}
+     * @throws JavaExpressionParseException if {@code expression} cannot be parsed
+     */
+    static JavaExpression atTypeDecl(
+            String expression, TypeElement typeElement, SourceChecker checker)
             throws JavaExpressionParseException {
         // The underlying javac API used to convert from Strings to Elements requires a tree path
         // even when the information could be deduced from elements alone.  So use the path to the
         // current CompilationUnit.
+        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        ThisReference thisReference = new ThisReference(typeElement.asType());
+
+        List<FormalParameter> parameters = null;
+        return JavaExpressionParseUtil.parse(
+                expression,
+                typeElement.asType(),
+                thisReference,
+                parameters,
+                null,
+                pathToCompilationUnit,
+                env);
+    }
+
+    /**
+     * Parses {@code expression} to a {@link JavaExpression} as if it were written at {@code
+     * method}. The return {@code JavaExpression} uses {@link FormalParameter}s to representation
+     * parameter. Use {@link #atMethodBody(String, MethodTree, SourceChecker)} if parameters should
+     * be {@link LocalVariable}s instead.
+     *
+     * @param expression a string expression
+     * @param method method element at which {@code expression} is parsed.
+     * @param checker checker used to get the {@link
+     *     javax.annotation.processing.ProcessingEnvironment} and current {@link
+     *     com.sun.source.tree.CompilationUnitTree}
+     * @return the {@code JavaExpression} of {@code expression}
+     * @throws JavaExpressionParseException if {@code expression} cannot be parsed
+     */
+    static JavaExpression atMethodDecl(
+            String expression, ExecutableElement method, SourceChecker checker)
+            throws JavaExpressionParseException {
         TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         TypeMirror enclosingType = ElementUtils.enclosingTypeElement(method).asType();
@@ -83,6 +127,18 @@ public interface StringToJavaExpression {
                 env);
     }
 
+    /**
+     * Parses {@code expression} to a {@link JavaExpression} as if it were written at {@code
+     * fieldElement}.
+     *
+     * @param expression a string expression
+     * @param fieldElement variable element at which {@code expression} is parsed.
+     * @param checker checker used to get the {@link
+     *     javax.annotation.processing.ProcessingEnvironment} and current {@link
+     *     com.sun.source.tree.CompilationUnitTree}
+     * @return the {@code JavaExpression} of {@code expression}
+     * @throws JavaExpressionParseException if {@code expression} cannot be parsed
+     */
     static JavaExpression atFieldDecl(
             String expression, VariableElement fieldElement, SourceChecker checker)
             throws JavaExpressionParseException {
@@ -103,39 +159,6 @@ public interface StringToJavaExpression {
         return JavaExpressionParseUtil.parse(
                 expression,
                 enclosingType,
-                thisReference,
-                parameters,
-                null,
-                pathToCompilationUnit,
-                env);
-    }
-
-    /**
-     * Parses {@code expression} to a {@link JavaExpression} as if it were written at {@code
-     * typeElement}.
-     *
-     * @param expression a string expression
-     * @param typeElement type element at which {@code expression} is parsed.
-     * @param checker checker used to get the {@link
-     *     javax.annotation.processing.ProcessingEnvironment} and current {@link
-     *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} of {@code expression}
-     * @throws JavaExpressionParseException if {@code expression} cannot be parsed
-     */
-    static JavaExpression atClassDecl(
-            String expression, TypeElement typeElement, SourceChecker checker)
-            throws JavaExpressionParseException {
-        // The underlying javac API used to convert from Strings to Elements requires a tree path
-        // even when the information could be deduced from elements alone.  So use the path to the
-        // current CompilationUnit.
-        TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-        ThisReference thisReference = new ThisReference(typeElement.asType());
-
-        List<FormalParameter> parameters = null;
-        return JavaExpressionParseUtil.parse(
-                expression,
-                typeElement.asType(),
                 thisReference,
                 parameters,
                 null,
@@ -181,10 +204,6 @@ public interface StringToJavaExpression {
 
     static JavaExpression atPath(String expression, TreePath localVarPath, SourceChecker checker)
             throws JavaExpressionParseException {
-        // The underlying javac API used to convert from Strings to Elements requires a TreePath
-        // even when the information could be deduced from elements alone.  So use the TreePath to
-        // the
-        // current CompilationUnit.
         TreePath pathToCompilationUnit = checker.getPathToCompilationUnit();
         ProcessingEnvironment env = checker.getProcessingEnvironment();
 
@@ -219,26 +238,6 @@ public interface StringToJavaExpression {
                         env);
         List<JavaExpression> paramsAsLocals = getParametersAsLocalVars(methodEle);
         return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
-    }
-
-    static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
-        List<JavaExpression> parameters = new ArrayList<>();
-        for (VariableElement variableElement : methodEle.getParameters()) {
-            LocalVariable parameter = new LocalVariable(variableElement);
-            parameters.add(parameter);
-        }
-        return parameters;
-    }
-
-    static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
-        List<FormalParameter> parameters = new ArrayList<>();
-        int oneBasedIndex = 1;
-        for (VariableElement variableElement : methodEle.getParameters()) {
-            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
-            parameters.add(parameter);
-            oneBasedIndex++;
-        }
-        return parameters;
     }
 
     static JavaExpression atMethodBody(
@@ -286,5 +285,25 @@ public interface StringToJavaExpression {
         JavaExpression receiver = JavaExpression.fromTree(fieldAccess.getExpression());
         JavaExpression javaExpr = StringToJavaExpression.atFieldDecl(expression, fieldEle, checker);
         return javaExpr.viewpointAdaptAtFieldAccess(receiver);
+    }
+
+    static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
+        List<JavaExpression> parameters = new ArrayList<>();
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            LocalVariable parameter = new LocalVariable(variableElement);
+            parameters.add(parameter);
+        }
+        return parameters;
+    }
+
+    static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
+        List<FormalParameter> parameters = new ArrayList<>();
+        int oneBasedIndex = 1;
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
+            parameters.add(parameter);
+            oneBasedIndex++;
+        }
+        return parameters;
     }
 }

@@ -122,7 +122,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         JavaExpression je;
         try {
             je =
-                    StringToJavaExpression.atClassDecl(
+                    StringToJavaExpression.atTypeDecl(
                             s, TreeUtils.elementFromDeclaration(classTree), checker);
         } catch (JavaExpressionParseException e) {
             checker.report(whereToError, e.getDiagMessage());

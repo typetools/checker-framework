@@ -96,6 +96,9 @@ public class JavaExpressionParseUtil {
     /**
      * Parses {@code expression} to a {@link JavaExpression}.
      *
+     * <p>Clients should call one of the static methods in {@link StringToJavaExpression} rather
+     * than calling this method directly.
+     *
      * @param expression the string expression to parse
      * @param enclosingType type of the class that encloses the JavaExpression
      * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
@@ -109,6 +112,9 @@ public class JavaExpressionParseUtil {
      * @return {@code expression} as a {@code JavaExpression}
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
+    // The underlying javac API used to convert from Strings to Elements requires a TreePath even
+    // when the information could be deduced from elements alone.  So use the TreePath to the
+    // current CompilationUnit.
     public static JavaExpression parse(
             String expression,
             TypeMirror enclosingType,

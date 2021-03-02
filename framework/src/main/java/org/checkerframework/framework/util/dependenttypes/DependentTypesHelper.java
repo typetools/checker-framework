@@ -175,7 +175,7 @@ public class DependentTypesHelper {
 
         StringToJavaExpression stringToJavaExpr =
                 stringExpr ->
-                        StringToJavaExpression.atClassDecl(
+                        StringToJavaExpression.atTypeDecl(
                                 stringExpr, classDecl, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             convertAnnotatedTypeMirror(stringToJavaExpr, bound.getUpperBound());
@@ -290,7 +290,7 @@ public class DependentTypesHelper {
 
         convertAnnotatedTypeMirror(
                 stringExpr ->
-                        StringToJavaExpression.atClassDecl(
+                        StringToJavaExpression.atTypeDecl(
                                 stringExpr, classElt, factory.getChecker()),
                 type);
     }
