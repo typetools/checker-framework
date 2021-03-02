@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -93,8 +94,11 @@ public class DependentTypesHelper {
      */
     private final ExpressionErrorChecker expressionErrorChecker;
 
-    /** A scanner that standardizes Java expression strings in dependent type annotations. */
-    private final StandardizeTypeAnnotator standardizeTypeAnnotator;
+    /**
+     * A scanner that applies a function to each {@link AnnotationMirror} in a given {@code
+     * AnnotatedTypeMirror}.
+     */
+    private final AnnotatedTypeReplacer annotatedTypeReplacer;
 
     /**
      * Copies annotations that might have been viewpoint adapted from the visited type (the first
@@ -118,7 +122,7 @@ public class DependentTypesHelper {
             }
         }
         this.expressionErrorChecker = new ExpressionErrorChecker();
-        this.standardizeTypeAnnotator = new StandardizeTypeAnnotator();
+        this.annotatedTypeReplacer = new AnnotatedTypeReplacer();
         this.viewpointAdaptedCopier = new ViewpointAdaptedCopier();
     }
 
@@ -335,8 +339,7 @@ public class DependentTypesHelper {
             return annoFromContract;
         }
 
-        AnnotationMirror standardized =
-                standardizeAnnotationIfDependentType(stringToJavaExpr, annoFromContract);
+        AnnotationMirror standardized = map(stringToJavaExpr, annoFromContract);
         if (standardized == null) {
             return annoFromContract;
         }
@@ -364,9 +367,14 @@ public class DependentTypesHelper {
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodDeclTree);
         StringToJavaExpression stringToJavaExpr =
                 expression -> {
-                    JavaExpression result =
-                            StringToJavaExpression.atPath(
-                                    expression, pathToMethod, factory.getChecker());
+                    JavaExpression result;
+                    try {
+                        result =
+                                StringToJavaExpression.atPath(
+                                        expression, pathToMethod, factory.getChecker());
+                    } catch (JavaExpressionParseException ex) {
+                        return null;
+                    }
                     List<FormalParameter> parameters =
                             JavaExpression.getFormalParameters(methodElement);
                     List<JavaExpression> paramsAsLocals =
@@ -562,9 +570,7 @@ public class DependentTypesHelper {
 
     protected void convertAnnotatedTypeMirror(
             StringToJavaExpression stringToJavaExpr, AnnotatedTypeMirror type) {
-        TransformAnnotation func =
-                (anno) -> standardizeAnnotationIfDependentType(stringToJavaExpr, anno);
-        this.standardizeTypeAnnotator.visit(type, func);
+        this.annotatedTypeReplacer.visit(type, anno -> map(stringToJavaExpr, anno));
     }
 
     static class ErrorExpression extends Unknown {
@@ -637,16 +643,20 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint-adapts Java expressions in an annotation. If the annotation is not a dependent type
-     * annotation, returns null.
+     * If {@code anno} is not a dependent type annotation, {@code null} is returned. Otherwise, this
+     * method applies {@code stringToJavaExpr} to all expressions strings in {@code anno} and then
+     * calls {@link #buildAnnotation(AnnotationMirror, Map)} to build a new annotation with the
+     * {@code JavaExpression}s converted back to strings.
      *
-     * <p>location
+     * <p>If {@code stringToJavaExpr} returns {@code null}, then that expression is removed from the
+     * returned annotation.
      *
-     * @param anno the annotation to viewpoint-adapt converting them into an explanation of why they
-     *     are illegal
-     * @return the viewpoint-adapted annotation, or null if no viewpoint-adaption is needed
+     * @param stringToJavaExpr function that converts strings to {@code JavaExpression}s
+     * @param anno annotation mirror
+     * @return an annotation created by applying {@code stringToJavaExpr} to all expressions strings
+     *     in {@code anno}
      */
-    protected @Nullable AnnotationMirror standardizeAnnotationIfDependentType(
+    protected @Nullable AnnotationMirror map(
             StringToJavaExpression stringToJavaExpr, AnnotationMirror anno) {
         if (!isExpressionAnno(anno)) {
             return null;
@@ -668,13 +678,22 @@ public class DependentTypesHelper {
         return buildAnnotation(anno, map);
     }
 
+    /**
+     * Create a new annotation the same type as {@code originalAnno} using the provide {@code
+     * valueMap}.
+     *
+     * @param originalAnno the annotation passed to {@link #map(StringToJavaExpression,
+     *     AnnotationMirror)}
+     * @param valueMap a mapping of element names of {@code originalAnno} to {@code JavaExpression}s
+     * @return an annotation created from {@code valueMap}
+     */
     protected AnnotationMirror buildAnnotation(
-            AnnotationMirror orig, Map<String, List<JavaExpression>> map) {
+            AnnotationMirror originalAnno, Map<String, List<JavaExpression>> valueMap) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(
-                        factory.getProcessingEnv(), AnnotationUtils.annotationName(orig));
+                        factory.getProcessingEnv(), AnnotationUtils.annotationName(originalAnno));
 
-        for (Map.Entry<String, List<JavaExpression>> entry : map.entrySet()) {
+        for (Map.Entry<String, List<JavaExpression>> entry : valueMap.entrySet()) {
             String value = entry.getKey();
             List<String> strings = new ArrayList<>();
             for (JavaExpression javaExpr : entry.getValue()) {
@@ -685,13 +704,18 @@ public class DependentTypesHelper {
         return builder.build();
     }
 
-    /** A scanner that standardizes Java expression strings in dependent type annotations. */
-    private static class StandardizeTypeAnnotator
-            extends AnnotatedTypeScanner<Void, TransformAnnotation> {
+    /**
+     * Applies the passed function to each annotation in the given {@link AnnotatedTypeMirror}, if
+     * the function returns a nonnull annotation, then the original annotation is replaced with the
+     * result.
+     */
+    private static class AnnotatedTypeReplacer
+            extends AnnotatedTypeScanner<Void, Function<AnnotationMirror, AnnotationMirror>> {
 
         @Override
         public Void visitTypeVariable(
-                AnnotatedTypeMirror.AnnotatedTypeVariable type, TransformAnnotation func) {
+                AnnotatedTypeMirror.AnnotatedTypeVariable type,
+                Function<AnnotationMirror, AnnotationMirror> func) {
             if (visitedNodes.containsKey(type)) {
                 return visitedNodes.get(type);
             }
@@ -715,10 +739,11 @@ public class DependentTypesHelper {
         }
 
         @Override
-        protected Void scan(AnnotatedTypeMirror type, TransformAnnotation func) {
+        protected Void scan(
+                AnnotatedTypeMirror type, Function<AnnotationMirror, AnnotationMirror> func) {
             for (AnnotationMirror anno :
                     AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
-                AnnotationMirror newAnno = func.transform(anno);
+                AnnotationMirror newAnno = func.apply(anno);
                 if (newAnno != null) {
                     // Standardized annotations are written into bytecode along with explicitly
                     // written nonstandard annotations. (This is a bug.)
