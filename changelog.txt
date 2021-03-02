@@ -5,6 +5,9 @@ Version 3.11.1, April 1, 2021
 New FAQ item "How should I annotate code that uses generics?" gives
 examples of annotations on type variables, together with their meaning.
 
+`-Ainfer=ajava` uses ajava files (rather than jaif files or stub files)
+internally during whole-program inference.
+
 **Implementation details:**
 
 **Closed issues:**

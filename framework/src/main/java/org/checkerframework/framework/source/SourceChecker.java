@@ -236,6 +236,9 @@ import org.plumelib.util.UtilPlume;
     // Additional stub files to use
     // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
+    // Additional ajava files to use
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parserAjavaFiles()
+    "ajava",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
     // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
@@ -381,6 +384,10 @@ import org.plumelib.util.UtilPlume;
 
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
+
+    // Whenever processing a source file, parse it with JavaParser and check that the AST can be
+    // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
+    "checkJavaParserVisitor",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
