@@ -1,4 +1,5 @@
 // This class should be kept in sync with org.plumelib.util.RegexUtil in the plume-util project.
+// (Warning suppressions may differ.)
 
 package org.checkerframework.checker.regex.util;
 
