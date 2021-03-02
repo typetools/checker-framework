@@ -756,7 +756,9 @@ public abstract class JavaExpression {
             ExpressionTree tree, List<? extends ExpressionTree> argTrees) {
 
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
-            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree) tree);
+            MethodInvocationTree methodInvoc = (MethodInvocationTree) tree;
+            assert TreeUtils.isUseOfElement(methodInvoc) : "@AssumeAssertion(nullness): tree kind";
+            ExecutableElement method = TreeUtils.elementFromUse(methodInvoc);
             if (isVarArgsInvocation(method, argTrees)) {
                 List<JavaExpression> result = new ArrayList<>();
 
