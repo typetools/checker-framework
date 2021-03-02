@@ -294,7 +294,22 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /** Returns true if the element is a reference to a compile-time constant. */
+    /**
+     * Check if the element is an element for 'java.lang.String'
+     *
+     * @param element the type element
+     * @return true iff the element is java.lang.String element
+     */
+    public static boolean isString(TypeElement element) {
+        return element.getQualifiedName().contentEquals("java.lang.String");
+    }
+
+    /**
+     * Returns true if the element is a reference to a compile-time constant.
+     *
+     * @param elt an element
+     * @return true if the element is a reference to a compile-time constant
+     */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
@@ -508,8 +523,33 @@ public class ElementUtils {
     }
 
     /**
-     * Determine all type elements for the classes and interfaces referenced (directly or
-     * indirectly) in the extends/implements clauses of the given type element.
+     * Returns a type's superclass, or null if it does not have a superclass (it is object or an
+     * interface, or the superclass is not on the classpath).
+     *
+     * @param typeElt a type element
+     * @return the superclass of {@code typeElt}
+     */
+    public static @Nullable TypeElement getSuperClass(TypeElement typeElt) {
+        TypeMirror superTypeMirror;
+        try {
+            superTypeMirror = typeElt.getSuperclass();
+        } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+            // Looking up a supertype failed. This sometimes happens
+            // when transitive dependencies are not on the classpath.
+            // As javac didn't complain, let's also not complain.
+            return null;
+        }
+
+        if (superTypeMirror == null || superTypeMirror.getKind() == TypeKind.NONE) {
+            return null;
+        } else {
+            return (TypeElement) ((DeclaredType) superTypeMirror).asElement();
+        }
+    }
+
+    /**
+     * Determine all type elements for the supertypes of the given type element. This is the
+     * transitive closure of the extends and implements clauses.
      *
      * <p>TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
@@ -531,18 +571,8 @@ public class ElementUtils {
             // For each direct supertype of the current type element, if it
             // hasn't already been visited, push it onto the stack and
             // add it to our superelems set.
-            TypeMirror supertypecls;
-            try {
-                supertypecls = current.getSuperclass();
-            } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-                // Looking up a supertype failed. This sometimes happens
-                // when transitive dependencies are not on the classpath.
-                // As javac didn't complain, let's also not complain.
-                supertypecls = null;
-            }
-
-            if (supertypecls != null && supertypecls.getKind() != TypeKind.NONE) {
-                TypeElement supercls = (TypeElement) ((DeclaredType) supertypecls).asElement();
+            TypeElement supercls = ElementUtils.getSuperClass(current);
+            if (supercls != null) {
                 if (!superelems.contains(supercls)) {
                     stack.push(supercls);
                     superelems.add(supercls);
@@ -741,12 +771,14 @@ public class ElementUtils {
     }
 
     /**
-     * Get all the supertypes of a given type, including the type itself.
+     * Get all the supertypes of a given type, including the type itself. The result includes both
+     * superclasses and implemented interfaces.
      *
      * @param type a type
      * @param env the processing environment
-     * @return list including the type and all its supertypes, with a guarantee that supertypes
-     *     (i.e. those that appear in extends clauses) appear before indirect supertypes
+     * @return list including the type and all its supertypes, with a guarantee that direct
+     *     supertypes (i.e. those that appear in extends or implements clauses) appear before
+     *     indirect supertypes
      */
     public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();

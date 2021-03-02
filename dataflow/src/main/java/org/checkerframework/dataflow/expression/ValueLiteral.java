@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** JavaExpression for literals. */
@@ -103,6 +104,11 @@ public class ValueLiteral extends JavaExpression {
     }
 
     @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
+    }
+
+    @Override
     public boolean isUnassignableByOtherCode() {
         return true;
     }
@@ -156,5 +162,10 @@ public class ValueLiteral extends JavaExpression {
     @Override
     public int hashCode() {
         return Objects.hash(value, type.toString());
+    }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitValueLiteral(this, p);
     }
 }

@@ -83,6 +83,8 @@ import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -232,9 +234,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType =
                 atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
-        targetValueElement =
-                TreeUtils.getMethod(
-                        java.lang.annotation.Target.class.getCanonicalName(), "value", 0, env);
+        targetValueElement = TreeUtils.getMethod("java.lang.annotation.Target", "value", 0, env);
     }
 
     /**
@@ -948,24 +948,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        TreePath pathToMethodDecl = getCurrentPath();
         JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodTree, pathToMethodDecl, checker);
+                JavaExpressionContext.buildContextForMethodDeclaration(methodTree, checker);
 
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
             AnnotationMirror annotation = contract.annotation;
 
             annotation =
-                    atypeFactory.standardizeAnnotationFromContract(
-                            annotation, jeContext, getCurrentPath());
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
 
             JavaExpression exprJe;
             try {
-                exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, jeContext, getCurrentPath(), false);
+                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
                 exprJe = null;
                 checker.report(methodTree, e.getDiagMessage());
@@ -1689,14 +1686,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotationMirror anno = p.annotation;
 
             anno =
-                    atypeFactory.standardizeAnnotationFromContract(
-                            anno, jeContext, getCurrentPath());
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .viewpointAdaptQualifierFromContract(anno, jeContext, tree);
 
             JavaExpression exprJe;
             try {
-                exprJe =
-                        JavaExpressionParseUtil.parse(
-                                expressionString, jeContext, getCurrentPath(), false);
+                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());
@@ -1715,7 +1711,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
             }
             if (!checkContract(exprJe, anno, inferredAnno, store)) {
-                if (exprJe != null && !exprJe.containsUnknown()) {
+                if (exprJe != null) {
                     expressionString = exprJe.toString();
                 }
                 checker.reportError(
@@ -4206,28 +4202,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return Collections.emptySet();
         }
 
-        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         // This is the path to a place where the contract is being used, which might or might not be
         // where the contract was defined.  For example, methodTree might be an overriding
         // definition, and the contract might be for a superclass.
         MethodTree methodTree = visitorState.getMethodTree();
-        TreePath path = atypeFactory.getPath(methodTree);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        ThisReference receiverJe =
+                new ThisReference(methodType.getReceiverType().getUnderlyingType());
+        List<JavaExpression> parametersJe = new ArrayList<>();
+        for (VariableElement param : methodElt.getParameters()) {
+            parametersJe.add(new LocalVariable(param));
+        }
         JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodDeclaration(
-                        methodTree, methodType.getReceiverType().getUnderlyingType(), checker);
+                new JavaExpressionContext(receiverJe, parametersJe, checker);
+
+        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
 
             annotation =
-                    atypeFactory.standardizeAnnotationFromContract(annotation, jeContext, path);
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
 
             try {
                 // TODO: currently, these expressions are parsed many times.
                 // This could be optimized to store the result the first time.
                 // (same for other annotations)
-                JavaExpression exprJe =
-                        JavaExpressionParseUtil.parse(expressionString, jeContext, path, false);
+                JavaExpression exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
                 result.add(Pair.of(exprJe, annotation));
             } catch (JavaExpressionParseException e) {
                 // report errors here

@@ -4,6 +4,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /** An array access. */
 public class ArrayAccess extends JavaExpression {
@@ -37,6 +38,11 @@ public class ArrayAccess extends JavaExpression {
         return index.containsOfClass(clazz);
     }
 
+    @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return array.isDeterministic(provider) && index.isDeterministic(provider);
+    }
+
     /**
      * Returns the array being accessed.
      *
@@ -61,19 +67,19 @@ public class ArrayAccess extends JavaExpression {
     }
 
     @Override
-    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-        return syntacticEquals(other)
-                || array.containsSyntacticEqualJavaExpression(other)
-                || index.containsSyntacticEqualJavaExpression(other);
-    }
-
-    @Override
     public boolean syntacticEquals(JavaExpression je) {
         if (!(je instanceof ArrayAccess)) {
             return false;
         }
         ArrayAccess other = (ArrayAccess) je;
         return array.syntacticEquals(other.array) && index.syntacticEquals(other.index);
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return syntacticEquals(other)
+                || array.containsSyntacticEqualJavaExpression(other)
+                || index.containsSyntacticEqualJavaExpression(other);
     }
 
     @Override
@@ -106,5 +112,10 @@ public class ArrayAccess extends JavaExpression {
         result.append(index.toString());
         result.append("]");
         return result.toString();
+    }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitArrayAccess(this, p);
     }
 }
