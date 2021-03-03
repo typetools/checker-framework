@@ -426,12 +426,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** The source tree that is being scanned. */
     protected @InternedDistinct CompilationUnitTree currentRoot;
 
-    /**
-     * If an error is detected in a CompilationUnitTree, skip all future calls of {@link
-     * #typeProcess} with that same CompilationUnitTree.
-     */
-    private @InternedDistinct CompilationUnitTree previousErrorCompilationUnit;
-
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
 
@@ -892,6 +886,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
+    /** Whether or not a javac error was issued. */
+    protected boolean javacErrored = false;
+
     /** Output the warning about memory at most once. */
     private boolean warnedAboutGarbageCollection = false;
 
@@ -910,6 +907,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
+        if (javacErrored) {
+            // If javac issued any errors, do not type check any file, otherwise, the checker will
+            // find error types.
+            return;
+        }
         // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
             messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
@@ -944,20 +946,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
-            @SuppressWarnings("interning:assignment.type.incompatible") // will be compared with ==
-            @InternedDistinct CompilationUnitTree cu = p.getCompilationUnit();
-            previousErrorCompilationUnit = cu;
+            javacErrored = true;
             return;
         }
-        if (p.getCompilationUnit() == previousErrorCompilationUnit) {
-            // If the same compilation unit was seen with an error before,
-            // skip it. This is in particular necessary for Java errors, which
-            // show up once, but further calls to typeProcess will happen.
-            // See Issue 346.
-            return;
-        } else {
-            previousErrorCompilationUnit = null;
-        }
+
         if (visitor == null) {
             // typeProcessingStart invokes initChecker, which should
             // have set the visitor. If the field is still null, an

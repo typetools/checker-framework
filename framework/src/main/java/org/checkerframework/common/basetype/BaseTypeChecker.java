@@ -506,6 +506,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
             int errorsBeforeTypeChecking = log.nerrors;
 
             subchecker.typeProcess(element, tree);
+            if (subchecker.javacErrored) {
+                this.javacErrored = true;
+                return;
+            }
 
             int errorsAfterTypeChecking = log.nerrors;
             nerrorsOfAllPreviousCheckers += errorsAfterTypeChecking - errorsBeforeTypeChecking;

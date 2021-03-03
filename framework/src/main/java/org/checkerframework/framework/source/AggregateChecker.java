@@ -115,6 +115,10 @@ public abstract class AggregateChecker extends SourceChecker {
         for (SourceChecker checker : checkers) {
             checker.errsOnLastExit = this.errsOnLastExit;
             checker.typeProcess(element, tree);
+            if (checker.javacErrored) {
+                this.javacErrored = true;
+                return;
+            }
             this.errsOnLastExit = checker.errsOnLastExit;
         }
     }
