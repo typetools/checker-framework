@@ -389,7 +389,7 @@ public final class TreeUtils {
      * Determine whether the given ExpressionTree has an underlying element.
      *
      * @param node the ExpressionTree to test
-     * @return whether the tree refers to an identifier, member select, or method invocation
+     * @return true if the tree refers to an identifier, member select, or method invocation
      */
     @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
     @Pure
@@ -411,7 +411,7 @@ public final class TreeUtils {
      * Determine whether the given MethodInvocationTree has an underlying element.
      *
      * @param node the MethodInvocationTree to test
-     * @return whether the tree refers to an identifier, member select, or method invocation
+     * @return true if the tree refers to an identifier, member select, or method invocation
      */
     @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
     @Pure
@@ -423,7 +423,7 @@ public final class TreeUtils {
      * Determine whether the given NewClassTree has an underlying element.
      *
      * @param node the NewClassTree to test
-     * @return whether the tree refers to an identifier, member select, or method invocation
+     * @return true if the tree refers to an identifier, member select, or method invocation
      */
     @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
     @Pure
