@@ -18,13 +18,12 @@ public class InitializedFieldsValueTest extends CheckerFrameworkPerDirectoryTest
         super(
                 testFiles,
                 Arrays.asList(
-                        new String[] {
-                            "org.checkerframework.common.initializedfields.InitializedFieldsChecker",
-                            "org.checkerframework.common.value.ValueChecker"
-                        }),
+                        "org.checkerframework.common.initializedfields.InitializedFieldsChecker",
+                        "org.checkerframework.common.value.ValueChecker"),
                 "initialized-fields-value",
                 Collections.emptyList(), // classpathextra
-                "-Anomsgtext");
+                "-Anomsgtext",
+                "-AnoWarnOnTypeCheckingHalt");
     }
 
     @Parameters

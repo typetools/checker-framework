@@ -229,6 +229,10 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.framework.type.ElementAnnotationApplier.apply
     "ignoreInvalidAnnotationLocations",
 
+    // Don't issue the "Javac errored; type checking halted." warning.
+    // org.checkerframework.common.basetype.BaseTypeChecker.typeProcessingOver
+    "noWarnOnTypeCheckingHalt",
+
     ///
     /// Partially-annotated libraries
     ///

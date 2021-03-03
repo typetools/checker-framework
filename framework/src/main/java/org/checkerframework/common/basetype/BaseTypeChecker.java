@@ -762,7 +762,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         for (BaseTypeChecker checker : getSubcheckers()) {
             checker.typeProcessingOver();
         }
-        if (javacErrored && parentChecker == null) {
+        if (javacErrored && parentChecker == null && !hasOption("noWarnOnTypeCheckingHalt")) {
             messager.printMessage(Kind.WARNING, "Javac errored; type checking halted.");
         }
         super.typeProcessingOver();
