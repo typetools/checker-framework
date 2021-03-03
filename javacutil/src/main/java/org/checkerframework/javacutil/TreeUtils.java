@@ -309,38 +309,35 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for the called method, from a call. Might return null if no
-     * element was found.
+     * Returns the ExecutableElement for the called method, from a call.
      *
      * @param node a method call
      * @return the ExecutableElement for the called method
      */
     @Pure
-    public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
+    public static ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF("Method elements should not be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
-     * Gets the ExecutableElement for the called constrctor, from a constructor invocation. Might
-     * return null if no element was found.
+     * Gets the ExecutableElement for the called constructor, from a constructor invocation.
      *
      * @param node a constructor invocation
      * @return the ExecutableElement for the called constructor
      * @see #constructor(NewClassTree)
      */
     @Pure
-    public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
+    public static ExecutableElement elementFromUse(NewClassTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF(
+                    "Constructor elements should not be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
