@@ -11,7 +11,6 @@ C3.java:4: error: cannot find symbol
                      ^
   symbol:   class XXX
   location: class C3b
-C4.java:3: error: [dereference.of.nullable] dereference of possibly-null reference p
-        p.toString();
-        ^
-4 errors
+warning: Javac errored; type checking halted.
+3 errors
+1 warning
