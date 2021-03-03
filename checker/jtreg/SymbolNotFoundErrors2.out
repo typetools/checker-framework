@@ -1,2 +1,4 @@
 SymbolNotFoundErrors.java:8:5: compiler.err.cant.resolve.location: kindname.class, CCC, , , (compiler.misc.location: kindname.class, SymbolNotFoundErrors, null)
+- compiler.warn.proc.messager: Javac errored; type checking halted.
 1 error
+1 warning

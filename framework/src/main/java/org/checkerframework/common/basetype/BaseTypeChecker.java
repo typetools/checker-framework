@@ -26,6 +26,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -761,7 +762,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
         for (BaseTypeChecker checker : getSubcheckers()) {
             checker.typeProcessingOver();
         }
-
+        if (javacErrored && parentChecker == null) {
+            messager.printMessage(Kind.WARNING, "Javac errored; type checking halted.");
+        }
         super.typeProcessingOver();
     }
 

@@ -516,7 +516,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * in the case of a compound checker, the compound checker is the parent, not the checker that
      * was run prior to this one by the compound checker.
      */
-    protected SourceChecker parentChecker;
+    protected @Nullable SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
     protected List<@FullyQualifiedName String> upstreamCheckerNames;
