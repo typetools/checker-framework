@@ -886,7 +886,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
-    /** Whether or not a javac error was issued. */
+    /**
+     * If true, javac failed to compile the code or a previous run annotation processor issued an
+     * error.
+     */
     protected boolean javacErrored = false;
 
     /** Output the warning about memory at most once. */
@@ -908,7 +911,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
         if (javacErrored) {
-            reportJavacError();
+            reportJavacError(p);
             return;
         }
 
@@ -947,7 +950,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
             javacErrored = true;
-            reportJavacError();
+            reportJavacError(p);
             return;
         }
 
@@ -995,11 +998,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
     }
 
-    /** Report "type.checking.not.run" error. */
-    protected void reportJavacError() {
+    /**
+     * Report "type.checking.not.run" error.
+     *
+     * @param p error is reported at the leaf of the path
+     */
+    protected void reportJavacError(TreePath p) {
         // If javac issued any errors, do not type check any file, so that the Checker Framework
         // does not have to deal with error types.
-        reportError(currentRoot, "type.checking.not.run", getClass().getSimpleName());
+        currentRoot = p.getCompilationUnit();
+        reportError(p.getLeaf(), "type.checking.not.run", getClass().getSimpleName());
     }
 
     ///////////////////////////////////////////////////////////////////////////

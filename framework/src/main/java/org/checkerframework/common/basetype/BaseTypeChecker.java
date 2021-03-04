@@ -478,10 +478,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     @Override
-    protected void reportJavacError() {
+    protected void reportJavacError(TreePath p) {
         if (parentChecker == null) {
             // Only the parent checker should report this warning.
-            super.reportJavacError();
+            super.reportJavacError(p);
         }
     }
 
@@ -514,10 +514,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
             int errorsBeforeTypeChecking = log.nerrors;
 
             subchecker.typeProcess(element, tree);
-            if (subchecker.javacErrored) {
-                this.javacErrored = true;
-                return;
-            }
 
             int errorsAfterTypeChecking = log.nerrors;
             nerrorsOfAllPreviousCheckers += errorsAfterTypeChecking - errorsBeforeTypeChecking;
@@ -769,6 +765,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         for (BaseTypeChecker checker : getSubcheckers()) {
             checker.typeProcessingOver();
         }
+
         super.typeProcessingOver();
     }
 
