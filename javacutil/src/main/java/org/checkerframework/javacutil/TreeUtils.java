@@ -318,7 +318,7 @@ public final class TreeUtils {
     public static ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (!(el instanceof ExecutableElement)) {
-            throw new BugInCF("Method elements should not be ExecutableElement. Found: %s", el);
+            throw new BugInCF("Method elements should be ExecutableElement. Found: %s", el);
         }
         return (ExecutableElement) el;
     }
@@ -334,8 +334,7 @@ public final class TreeUtils {
     public static ExecutableElement elementFromUse(NewClassTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (!(el instanceof ExecutableElement)) {
-            throw new BugInCF(
-                    "Constructor elements should not be ExecutableElement. Found: %s", el);
+            throw new BugInCF("Constructor elements should  be ExecutableElement. Found: %s", el);
         }
         return (ExecutableElement) el;
     }
