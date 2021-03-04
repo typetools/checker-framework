@@ -32,6 +32,10 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
+
+    // External dependencies:
+    // If you add an external dependency, you must shadow its packages.
+    // See the comment in ../build.gradle in the shadowJar block.
     implementation 'org.plumelib:plume-util:1.4.1'
     implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'io.github.classgraph:classgraph:4.8.102'
@@ -41,7 +45,7 @@ dependencies {
     // dependencies" section of https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
     // (It isn't at https://mvnrepository.com/artifact/org.checkerframework.annotatedlib/guava/28.2-jre, which is the bug.)
     implementation 'com.google.errorprone:error_prone_annotations:2.5.1'
-    implementation ('org.checkerframework.annotatedlib:guava:30.0-jre') {
+    implementation ('org.checkerframework.annotatedlib:guava:30.1-jre') {
         // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
         exclude group: 'org.checkerframework'
     }

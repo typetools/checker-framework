@@ -1,3 +1,3 @@
 python-style:
-	black
+	black .
 	flake8
