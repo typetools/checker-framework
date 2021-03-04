@@ -271,9 +271,9 @@ public class DependentTypesHelper {
     ///
 
     /**
-     * Creates a TreeAnnotator that standardizes dependent type annotations.
+     * Creates a TreeAnnotator that viewpoint-adapts dependent type annotations.
      *
-     * @return a new TreeAnnotator that standardizes dependent type annotations
+     * @return a new TreeAnnotator that viewpoint-adapts dependent type annotations
      */
     public TreeAnnotator createDependentTypesTreeAnnotator() {
         assert hasDependentAnnotations();
@@ -281,13 +281,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the Java expressions in annotations in a class declaration.
+     * Viewpoint-adapts the Java expressions in annotations to a class declaration.
      *
-     * @param node the class declaration
      * @param type the type of the class declaration; is side-effected by this method
      * @param classElt the element of the class declaration
      */
-    public void standardizeClass(ClassTree node, AnnotatedTypeMirror type, TypeElement classElt) {
+    public void standardizeClass(AnnotatedTypeMirror type, TypeElement classElt) {
         if (!hasDependentType(type)) {
             return;
         }
@@ -300,9 +299,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardizes the Java expressions in annotations for a method return type. {@code atm} might
-     * come from the method declaration or from the type of the expression in a {@code return}
-     * statement.
+     * Standardizes the Java expressions in annotations for a method return type.
      *
      * @param methodDeclTree a method declaration
      * @param atm the method return type; is side-effected by this method
@@ -480,20 +477,21 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the Java expressions in annotations in a field access.
+     * Viewpoint-adapts the Java expressions in annotations written on a field declaration for the
+     * use at {@code fieldAccess}.
      *
-     * @param node a field access
+     * @param fieldAccess a field access
      * @param type its type; is side-effected by this method
      */
-    public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
+    public void viewpointAdaptFieldAccess(MemberSelectTree fieldAccess, AnnotatedTypeMirror type) {
         if (!hasDependentType(type)) {
             return;
         }
 
-        if (TreeUtils.isClassLiteral(node)) {
+        if (TreeUtils.isClassLiteral(fieldAccess)) {
             return;
         }
-        Element ele = TreeUtils.elementFromUse(node);
+        Element ele = TreeUtils.elementFromUse(fieldAccess);
         if (ele.getKind() != ElementKind.FIELD && ele.getKind() != ElementKind.ENUM_CONSTANT) {
             return;
         }
@@ -501,7 +499,7 @@ public class DependentTypesHelper {
         convertAnnotatedTypeMirror(
                 stringExpr ->
                         StringToJavaExpression.atFieldAccess(
-                                stringExpr, node, factory.getChecker()),
+                                stringExpr, fieldAccess, factory.getChecker()),
                 type);
     }
 
@@ -531,7 +529,7 @@ public class DependentTypesHelper {
      * @param type the type to standardize
      * @param elt the element whose type is {@code type}
      */
-    public void standardizeVariable(AnnotatedTypeMirror type, Element elt) {
+    public void standardizeLocalVar(AnnotatedTypeMirror type, Element elt) {
         if (!hasDependentType(type)) {
             return;
         }
@@ -562,12 +560,31 @@ public class DependentTypesHelper {
                 return;
 
             default:
-                // It's not a variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE, for
+                // It's not a local variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE,
+                // for
                 // example), so there is nothing to do.
                 break;
         }
     }
 
+    /**
+     * Applies {@code stringToJavaExpr} to all dependent type annotations in {@code type}.
+     *
+     * <p>For all annotations in {@code type} do the following:
+     *
+     * <p>If the annotation is a dependent type annotations, applies {@code stringToJavaExpr} to all
+     * expressions strings in the annotation. If {@code stringToJavaExpr} returns {@code null}, then
+     * that expression is removed from the returned annotation. A new annotation is built from the
+     * {@link JavaExpression}s by calling {@link #buildAnnotation(AnnotationMirror, Map)}. The new
+     * annotation replaces the original annotation in {@code type}.
+     *
+     * <p>Otherwise, the annotation remains unchanged.
+     *
+     * <p>
+     *
+     * @param stringToJavaExpr
+     * @param type
+     */
     protected void convertAnnotatedTypeMirror(
             StringToJavaExpression stringToJavaExpr, AnnotatedTypeMirror type) {
         this.annotatedTypeReplacer.visit(type, anno -> map(stringToJavaExpr, anno));
@@ -603,26 +620,6 @@ public class DependentTypesHelper {
         return new ErrorExpression(
                 TypesUtils.typeFromClass(Object.class, factory.types, factory.getElementUtils()),
                 new DependentTypesError(expression, error).toString());
-    }
-
-    /**
-     * If the given expression should be converted, then converted it. If
-     *
-     * @return the converted expression or null if no conversion exists
-     */
-    protected final @Nullable JavaExpression convertToJavaExpression(
-            String expression, StringToJavaExpression stringToJavaExpr) {
-        if (!shouldParseExpression(expression)) {
-            return passThroughString(expression);
-        }
-        JavaExpression result;
-        try {
-            result = stringToJavaExpr.toJavaExpression(expression);
-        } catch (JavaExpressionParseException e) {
-            result = createError(expression, e);
-        }
-
-        return result == null ? null : transform(result);
     }
 
     /**
@@ -669,9 +666,21 @@ public class DependentTypesHelper {
             List<JavaExpression> javaExprs = new ArrayList<>();
             map.put(value, javaExprs);
             for (String expression : expressionStrings) {
-                JavaExpression javaExpr = convertToJavaExpression(expression, stringToJavaExpr);
-                if (javaExpr != null) {
-                    javaExprs.add(javaExpr);
+                JavaExpression result;
+
+                if (shouldParseExpression(expression)) {
+                    try {
+                        result = stringToJavaExpr.toJavaExpression(expression);
+                    } catch (JavaExpressionParseException e) {
+                        result = createError(expression, e);
+                    }
+                } else {
+                    result = passThroughString(expression);
+                }
+
+                if (result != null) {
+                    result = transform(result);
+                    javaExprs.add(result);
                 }
             }
         }
@@ -757,10 +766,6 @@ public class DependentTypesHelper {
             }
             return super.scan(type, func);
         }
-    }
-
-    interface TransformAnnotation {
-        @Nullable AnnotationMirror transform(AnnotationMirror anno);
     }
 
     /**

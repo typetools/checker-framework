@@ -1976,7 +1976,7 @@ public abstract class GenericAnnotatedTypeFactory<
         applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
-        dependentTypesHelper.standardizeVariable(type, elt);
+        dependentTypesHelper.standardizeLocalVar(type, elt);
     }
 
     @Override

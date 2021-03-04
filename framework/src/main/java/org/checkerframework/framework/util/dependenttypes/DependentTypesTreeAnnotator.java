@@ -31,7 +31,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitClass(ClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         TypeElement ele = TreeUtils.elementFromDeclaration(node);
-        helper.standardizeClass(node, annotatedTypeMirror, ele);
+        helper.standardizeClass(annotatedTypeMirror, ele);
         return super.visitClass(node, annotatedTypeMirror);
     }
 
@@ -71,7 +71,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree node, AnnotatedTypeMirror type) {
-        helper.standardizeFieldAccess(node, type);
+        helper.viewpointAdaptFieldAccess(node, type);
         return super.visitMemberSelect(node, type);
     }
 }
