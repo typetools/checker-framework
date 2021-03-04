@@ -289,22 +289,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
                     final List<String> expressionsToRemove = sideEffectExpressions;
                     localVariableValues
-                            .entrySet()
+                            .keySet()
                             .removeIf(
                                     e ->
-                                            (expressionsToRemove.contains(e.getKey().toString())
-                                                            && !e.getKey()
-                                                                    .isUnmodifiableByOtherCode())
+                                            (expressionsToRemove.contains(e.toString())
+                                                            && !e.isUnmodifiableByOtherCode())
                                                     || (expressionsToRemove.contains("this")
-                                                            && e.getKey()
-                                                                    .toString()
+                                                            && e.toString()
                                                                     .equals(receiver.toString())
-                                                            && !e.getKey()
-                                                                    .isUnmodifiableByOtherCode()));
+                                                            && !e.isUnmodifiableByOtherCode()));
                 } else {
-                    localVariableValues
-                            .entrySet()
-                            .removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+                    localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
                 }
             }
 
@@ -324,13 +319,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 if (sideEffectExpressions != null) {
                     final List<String> expressionsToRemove = sideEffectExpressions;
                     fieldValues
-                            .entrySet()
+                            .keySet()
                             .removeIf(
                                     e ->
-                                            expressionsToRemove.contains(e.getKey().toString())
-                                                    && !e.getKey().isUnmodifiableByOtherCode());
+                                            expressionsToRemove.contains(e.toString())
+                                                    && !e.isUnmodifiableByOtherCode());
                 } else {
-                    fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+                    fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
                 }
             } else {
                 Map<FieldAccess, V> newFieldValues = new HashMap<>();
@@ -386,7 +381,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             arrayValues.clear();
 
             // update method values
-            methodValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+            methodValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
         }
 
         // store information about method call if possible
