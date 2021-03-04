@@ -195,10 +195,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         AnnotationMirror sefOnlyAnnotation =
                 atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
-        if (sefOnlyAnnotation != null) {
-            return true;
-        }
-        return false;
+        return sefOnlyAnnotation != null;
     }
 
     /**
