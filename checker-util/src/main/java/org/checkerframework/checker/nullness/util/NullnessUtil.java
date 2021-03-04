@@ -50,7 +50,7 @@ public final class NullnessUtil {
      *   // one way to use as a statement:
      *   castNonNull(possiblyNull3);
      *   possiblyNull3.toString();`
-     * }</code></pre>
+     * </code></pre>
      *
      * The {@code castNonNull} method is intended to be used in situations where the programmer
      * definitively knows that a given reference is not null, but the type system is unable to make
