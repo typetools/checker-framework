@@ -912,8 +912,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
         if (javacErrored) {
-            // If javac issued any errors, do not type check any file, otherwise, the checker will
-            // find error types.
+            // If javac issued any errors, do not type check any file, so that the Checker Framework
+            // does not have to deal with error types.
             return;
         }
         // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
