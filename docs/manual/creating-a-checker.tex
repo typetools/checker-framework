@@ -814,9 +814,9 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{fromTree(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{-com.sun.source.tree.ExpressionTree-}{fromTree(AnnotationProvider,
 ExpressionTree)} or
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
 Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
@@ -1124,9 +1124,9 @@ similar to Java subtype rules, but taking the type qualifiers into account.
   when a parameter in a method declaration is incompatible with that
   parameter in the overridden method's declaration
 
-\item invalid overriding return type (override.return.invalid) when a
-  parameter in a method declaration is incompatible with that
-  parameter in the overridden method's declaration
+\item invalid overriding return type (override.return.invalid) when the
+  return type in a method declaration is incompatible with the
+  return type in the overridden method's declaration
 
 \item invalid overriding receiver type (override.receiver.invalid)
   when a receiver in a method declaration is incompatible with that

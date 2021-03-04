@@ -205,6 +205,14 @@ public interface WholeProgramInference {
      */
     void writeResultsToFile(OutputFormat format, BaseTypeChecker checker);
 
+    /**
+     * Performs any preparation required for inference on Elements of a class. Should be called on
+     * each toplevel class declaration in a compilation unit before processing it.
+     *
+     * @param classTree the class to preprocess
+     */
+    void preprocessClassTree(ClassTree classTree);
+
     /** The kinds of output that whole-program inference can produce. */
     enum OutputFormat {
         /**
@@ -218,5 +226,11 @@ public interface WholeProgramInference {
          * Annotation File Utilities project contains code for reading and writing .jaif files.
          */
         JAIF(),
+
+        /**
+         * Output the results of whole-program inference as an ajava file that can be read in using
+         * the -Aajava option.
+         */
+        AJAVA(),
     }
 }

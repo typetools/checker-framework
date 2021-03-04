@@ -403,12 +403,26 @@ public class Resolver {
         return f.get(receiver);
     }
 
-    /** Wrap a method invocation on the {code resolve} object. */
+    /**
+     * Wrap a method invocation on the {@code resolve} object.
+     *
+     * @param method the method to called
+     * @param args the arguments to the call
+     * @return the result of invoking the method on {@code resolve} (as the receiver) and the
+     *     arguments
+     */
     private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
         return wrapInvocation(resolve, method, args);
     }
 
-    /** Wrap a method invocation. */
+    /**
+     * Invoke a method reflectively.
+     *
+     * @param receiver the receiver
+     * @param method the method to called
+     * @param args the arguments to the call
+     * @return the result of invoking the method on the receiver and arguments
+     */
     private Symbol wrapInvocation(Object receiver, Method method, @Nullable Object... args) {
         try {
             @SuppressWarnings("nullness") // assume arguments are OK

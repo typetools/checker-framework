@@ -1,6 +1,13 @@
 #!/bin/sh
 
-# Run wpi.sh on plume-lib projects and check
+# Run wpi.sh on plume-lib projects.
+# For each project:
+#  * clone it
+#  * remove its annotations
+#  * run WPI to infer annotations
+#  * type-check the annotated version
+#  * check that the output of type-checking is the same as the *.expected file in this directory
+
 
 # wpi.sh may exit with non-zero status.
 set +e

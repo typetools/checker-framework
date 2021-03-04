@@ -2,6 +2,10 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
     implementation 'org.plumelib:plume-util:1.4.1'
+
+    // External dependencies:
+    // If you add an external dependency, you must shadow its packages.
+    // See the comment in ../build.gradle in the shadowJar block.
 }
 
 shadowJar {
@@ -92,11 +96,9 @@ final dataflowShadedPom(publication) {
         name = 'Dataflow (shaded)'
         description = 'dataflow-shaded is a dataflow framework based on the javac compiler.\n' +
                 '\n' +
-                'It differs from the dataflow artifact in two ways.\n' +
-                'First, The packages in this artifact have been renamed to org.checkerframework.shaded.*.\n' +
-                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.\n' +
-                '\n' +
-                'Please see artifact: org.checkerframework:dataflow'
+                'It differs from the org.checkerframework:dataflow artifact in two ways.\n' +
+                'First, the packages in this artifact have been renamed to org.checkerframework.shaded.*.\n' +
+                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.' +
         licenses {
             license {
                 name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'

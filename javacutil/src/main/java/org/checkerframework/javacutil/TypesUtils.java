@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -26,6 +27,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -176,6 +178,19 @@ public final class TypesUtils {
                 return "<nulltype>";
             case VOID:
                 return "void";
+            case WILDCARD:
+                WildcardType wildcard = (WildcardType) type;
+                TypeMirror extendsBound = wildcard.getExtendsBound();
+                TypeMirror superBound = wildcard.getSuperBound();
+                return "?"
+                        + (extendsBound != null ? " extends " + simpleTypeName(extendsBound) : "")
+                        + (superBound != null ? " super " + simpleTypeName(superBound) : "");
+            case UNION:
+                StringJoiner sj = new StringJoiner(" | ");
+                for (TypeMirror alternative : ((UnionType) type).getAlternatives()) {
+                    sj.add(simpleTypeName(alternative));
+                }
+                return sj.toString();
             default:
                 if (type.getKind().isPrimitive()) {
                     return TypeAnnotationUtils.unannotatedType(type).toString();

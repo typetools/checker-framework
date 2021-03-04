@@ -5,6 +5,7 @@ buildscript {
     dependencies {
         // Create OSGI bundles
         classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
+        // Don't add implementation dependencies; checker-qual.jar should have no dependencies.
     }
 }
 
@@ -24,10 +25,8 @@ final checkerQualPom(publication) {
     publication.from components.java
     publication.pom {
         name = 'Checker Qual'
-        description = 'checker-qual contains annotations (type qualifiers)\n' +
-                'used by the Checker Framework to type-check Java source code.\n' +
-                '\n' +
-                'Please see artifact: org.checkerframework:checker'
+        description = 'checker-qual contains annotations (type qualifiers) that a programmer\n' +
+                        'writes to specify Java code for type-checking by the Checker Framework.\n'
         licenses {
             license {
                 name = 'The MIT License'

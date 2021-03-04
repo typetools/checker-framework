@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.dependenttypes;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -32,7 +31,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayCreation;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -511,17 +509,7 @@ public class DependentTypesHelper {
 
             case FIELD:
             case ENUM_CONSTANT:
-                JavaExpression receiverJe;
-                if (declarationTree.getKind() == Tree.Kind.IDENTIFIER) {
-                    JavaExpression nodeJe =
-                            JavaExpression.fromTree((IdentifierTree) declarationTree);
-                    receiverJe =
-                            nodeJe instanceof FieldAccess
-                                    ? ((FieldAccess) nodeJe).getReceiver()
-                                    : nodeJe;
-                } else {
-                    receiverJe = JavaExpression.getImplicitReceiver(variableElt);
-                }
+                JavaExpression receiverJe = JavaExpression.getImplicitReceiver(variableElt);
                 JavaExpressionContext fieldContext =
                         new JavaExpressionContext(receiverJe, factory.getChecker());
                 viewpointAdaptToContext(fieldContext, type);
@@ -707,15 +695,7 @@ public class DependentTypesHelper {
         if (result == null) {
             return new DependentTypesError(expression, /*error message=*/ " ").toString();
         }
-        // Replace references to compile-time constant fields by the constant itself.  (This is only
-        // desirable if the name doesn't matter.  The name matters for @KeyFor and @GuardedBy, but
-        // they are not relevant to primitives.)
-        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
-            Object constant = ((FieldAccess) result).getField().getConstantValue();
-            if (constant != null && !(constant instanceof String)) {
-                return constant.toString();
-            }
-        }
+
         return result.toString();
     }
 
