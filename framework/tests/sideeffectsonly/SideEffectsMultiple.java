@@ -2,7 +2,6 @@ package sideeffectsonly;
 
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.EnsuresQualifier;
-import org.checkerframework.framework.testchecker.sideeffectsonly.qual.Refined;
 
 public class SideEffectsMultiple {
     void test(Object x) {
@@ -15,12 +14,19 @@ public class SideEffectsMultiple {
     @EnsuresQualifier(
             expression = "#1",
             qualifier =
-                    org.checkerframework.framework.testchecker.sideeffectsonly.qual.Refined.class)
+                    org.checkerframework.framework.testchecker.sideeffectsonly.qual
+                            .SideEffectsOnlyToyBottom.class)
     // :: error: contracts.postcondition.not.satisfied
     void method(Object x) {}
 
     @SideEffectsOnly({"this", "x"})
-    void method1(@Refined Object x) {}
+    void method1(
+            @org.checkerframework.framework.testchecker.sideeffectsonly.qual
+                            .SideEffectsOnlyToyBottom
+                    Object x) {}
 
-    void method2(@Refined Object x) {}
+    void method2(
+            @org.checkerframework.framework.testchecker.sideeffectsonly.qual
+                            .SideEffectsOnlyToyBottom
+                    Object x) {}
 }
