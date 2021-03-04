@@ -4,6 +4,7 @@
 // :: error: (type.checking.not.run)
 class Before {}
 
+// :: error: (type.checking.not.run)
 class Context {
     // :: error: cannot find symbol
     Unknown f;
