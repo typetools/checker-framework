@@ -911,7 +911,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             reportJavacError();
             return;
         }
-        System.out.printf("typeProcess: %s\n", e.getSimpleName());
 
         // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
