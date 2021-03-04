@@ -11,6 +11,4 @@ C3.java:4: error: cannot find symbol
                      ^
   symbol:   class XXX
   location: class C3b
-warning: Javac errored; type checking halted.
 3 errors
-1 warning

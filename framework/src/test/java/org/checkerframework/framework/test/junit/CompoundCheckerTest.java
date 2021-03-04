@@ -16,7 +16,7 @@ public class CompoundCheckerTest extends CheckerFrameworkPerDirectoryTest {
                 CompoundChecker.class,
                 "compound-checker",
                 "-Anomsgtext",
-                "-AnoWarnOnTypeCheckingHalt");
+                "-AsuppressWarnings=type.checking.not.run");
     }
 
     @Parameters

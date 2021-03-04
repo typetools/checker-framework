@@ -1,4 +1,4 @@
-// warning: Javac errored; type checking halted.
+// :: error: (type.checking.not.run)
 
 public class UnimportedExtends2 {
     // :: error: cannot find symbol

@@ -26,7 +26,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -478,6 +477,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return treePathCacher;
     }
 
+    @Override
+    protected void reportJavacError() {
+        if (parentChecker == null) {
+            // Only the parent checker should report this warning.
+            super.reportJavacError();
+        }
+    }
+
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
@@ -761,9 +768,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
     public void typeProcessingOver() {
         for (BaseTypeChecker checker : getSubcheckers()) {
             checker.typeProcessingOver();
-        }
-        if (javacErrored && parentChecker == null && !hasOption("noWarnOnTypeCheckingHalt")) {
-            messager.printMessage(Kind.WARNING, "Javac errored; type checking halted.");
         }
         super.typeProcessingOver();
     }

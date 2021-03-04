@@ -229,10 +229,6 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.framework.type.ElementAnnotationApplier.apply
     "ignoreInvalidAnnotationLocations",
 
-    // Don't issue the "Javac errored; type checking halted." warning.
-    // org.checkerframework.common.basetype.BaseTypeChecker.typeProcessingOver
-    "noWarnOnTypeCheckingHalt",
-
     ///
     /// Partially-annotated libraries
     ///
@@ -912,10 +908,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
         if (javacErrored) {
-            // If javac issued any errors, do not type check any file, so that the Checker Framework
-            // does not have to deal with error types.
+            reportJavacError();
             return;
         }
+        System.out.printf("typeProcess: %s\n", e.getSimpleName());
+
         // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
             messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
@@ -951,6 +948,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
             javacErrored = true;
+            reportJavacError();
             return;
         }
 
@@ -996,6 +994,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             // AbstractTypeProcessor.
             this.errsOnLastExit = log.nerrors;
         }
+    }
+
+    /** Report "type.checking.not.run" error. */
+    protected void reportJavacError() {
+        // If javac issued any errors, do not type check any file, so that the Checker Framework
+        // does not have to deal with error types.
+        reportError(currentRoot, "type.checking.not.run", getClass().getSimpleName());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -2032,6 +2037,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
             throw new BugInCF(
                     "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
+        }
+        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
+            return true;
         }
 
         // trees.getPath might be slow, but this is only used in error reporting

@@ -1,4 +1,2 @@
 ClassB.java:3:17: compiler.err.cant.resolve.location: kindname.class, Nullable, , , (compiler.misc.location: kindname.class, ClassB, null)
-- compiler.warn.proc.messager: Javac errored; type checking halted.
 1 error
-1 warning

@@ -23,7 +23,7 @@ public class InitializedFieldsValueTest extends CheckerFrameworkPerDirectoryTest
                 "initialized-fields-value",
                 Collections.emptyList(), // classpathextra
                 "-Anomsgtext",
-                "-AnoWarnOnTypeCheckingHalt");
+                "-AsuppressWarnings=type.checking.not.run");
     }
 
     @Parameters
