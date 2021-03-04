@@ -245,7 +245,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
 
-        List<String> sideEffectExpressions = null;
+        // List of expressions that this method side effects (specified as annotation values of
+        // @SideEffectsOnly). If the value is null, then there is no @SideEffectsOnly annotation.
+        List<String> sideEffectsOnlyExpressions = null;
         if (isSideEffectsOnly(atypeFactory, method)) {
             Map<? extends ExecutableElement, ? extends AnnotationValue> valmap =
                     getSideEffectsOnlyValues(atypeFactory, method);
@@ -262,11 +264,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                             atypeFactory.getDeclAnnotation(
                                     method,
                                     org.checkerframework.dataflow.qual.SideEffectsOnly.class);
-                    sideEffectExpressions =
+                    sideEffectsOnlyExpressions =
                             AnnotationUtils.getElementValueArray(
                                     sefOnlyAnnotation, "value", String.class, true);
                 } else if (value instanceof String) {
-                    sideEffectExpressions = Collections.singletonList((String) value);
+                    sideEffectsOnlyExpressions = Collections.singletonList((String) value);
                 }
             }
         }
@@ -283,11 +285,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // TODO: Also remove if any element/argument to the annotation is not
             // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
             if (sideEffectsUnrefineAliases) {
-                if (sideEffectExpressions != null) {
+                if (sideEffectsOnlyExpressions != null) {
                     MethodAccessNode methodTarget = n.getTarget();
                     Node receiver = methodTarget.getReceiver();
 
-                    final List<String> expressionsToRemove = sideEffectExpressions;
+                    final List<String> expressionsToRemove = sideEffectsOnlyExpressions;
                     localVariableValues
                             .keySet()
                             .removeIf(
@@ -305,8 +307,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
             // update this value
             if (sideEffectsUnrefineAliases) {
-                if (sideEffectExpressions != null) {
-                    if (sideEffectExpressions.contains("this")) {
+                if (sideEffectsOnlyExpressions != null) {
+                    if (sideEffectsOnlyExpressions.contains("this")) {
                         thisValue = null;
                     }
                 } else {
@@ -316,8 +318,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
             // update field values
             if (sideEffectsUnrefineAliases) {
-                if (sideEffectExpressions != null) {
-                    final List<String> expressionsToRemove = sideEffectExpressions;
+                if (sideEffectsOnlyExpressions != null) {
+                    final List<String> expressionsToRemove = sideEffectsOnlyExpressions;
                     fieldValues
                             .keySet()
                             .removeIf(

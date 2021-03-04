@@ -15,5 +15,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({org.checkerframework.framework.testchecker.sideeffectsonly.qual.SideEffectsOnlyToyTop.class})
+@SubtypeOf({
+    org.checkerframework.framework.testchecker.sideeffectsonly.qual.SideEffectsOnlyToyTop.class
+})
 public @interface SideEffectsOnlyToyBottom {}
