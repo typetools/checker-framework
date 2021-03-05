@@ -24,7 +24,6 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
@@ -36,7 +35,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * This interface is both a functional interface, see {@link #toJavaExpression(String)}, and also a
  * collection of static methods that convert a string to a JavaExpression in at common locations.
  */
-@AnnotatedFor("nullness")
 @FunctionalInterface
 public interface StringToJavaExpression {
 
