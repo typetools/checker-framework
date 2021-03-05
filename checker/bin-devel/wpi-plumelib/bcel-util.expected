@@ -3,108 +3,108 @@ warning: No processor claimed any of these annotations: org.checkerframework.che
 #
 # This is in method fqBinaryNameToType, but there are no calls to it, so WPI didn't infer a type for its formal parameter.
 #
-/src/main/java/org/plumelib/bcelutil/BcelUtil.java:777: error: [argument.type.incompatible] incompatible argument for parameter typename of parseFqBinaryName.
+src/main/java/org/plumelib/bcelutil/BcelUtil.java:777: error: [argument.type.incompatible] incompatible argument for parameter typename of parseFqBinaryName.
         Signatures.ClassnameAndDimensions.parseFqBinaryName(classname);
                                                             ^
   found   : @SignatureUnknown String
   required: @FqBinaryName String
-/src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
 public final class SimpleLog {
              ^
-/src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
 public final class SimpleLog {
              ^
-/src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
 public final class SimpleLog {
              ^
-/src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
 public final class SimpleLog {
              ^
-/src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
 public final class SimpleLog {
              ^
-/src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/SimpleLog.java:18: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
 public final class SimpleLog {
              ^
-/src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
 public final class JvmUtil {
              ^
-/src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
 public final class JvmUtil {
              ^
-/src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
 public final class JvmUtil {
              ^
-/src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
 public final class JvmUtil {
              ^
-/src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
 public final class JvmUtil {
              ^
-/src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/JvmUtil.java:21: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
 public final class JvmUtil {
              ^
-/src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
 public abstract class StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
 public abstract class StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
 public abstract class StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
 public abstract class StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackMapUtils.java:51: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
 public abstract class StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
 public final class StackTypes {
              ^
-/src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
 public final class StackTypes {
              ^
-/src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
 public final class StackTypes {
              ^
-/src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
 public final class StackTypes {
              ^
-/src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
 public final class StackTypes {
              ^
-/src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackTypes.java:18: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
 public final class StackTypes {
              ^
-/src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
 public final class StackVer {
              ^
-/src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
 public final class StackVer {
              ^
-/src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
 public final class StackVer {
              ^
-/src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
 public final class StackVer {
              ^
-/src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/StackVer.java:76: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
 public final class StackVer {
              ^
-/src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] FormatterChecker did not run because of a previous error issued by javac
 public abstract class InstructionListUtils extends StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] InterningChecker did not run because of a previous error issued by javac
 public abstract class InstructionListUtils extends StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] LockChecker did not run because of a previous error issued by javac
 public abstract class InstructionListUtils extends StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] RegexChecker did not run because of a previous error issued by javac
 public abstract class InstructionListUtils extends StackMapUtils {
                 ^
-/src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
+src/main/java/org/plumelib/bcelutil/InstructionListUtils.java:111: error: [type.checking.not.run] SignatureChecker did not run because of a previous error issued by javac
 public abstract class InstructionListUtils extends StackMapUtils {
                 ^
 34 errors
