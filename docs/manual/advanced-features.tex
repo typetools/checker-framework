@@ -1007,12 +1007,10 @@ the method has no side effects, so calling it does not invalidate any
 dataflow facts.
 
 The \refqualclass{dataflow/qual}{SideEffectsOnly} annotation
-specifies the expressions that the method side effects. So expressions
-that are not specified as annotation values of
+specifies the superset of expressions that the method might side effect.
+So expressions that are not specified as annotation values of
 \refqualclass{dataflow/qual}{SideEffectsOnly} have their dataflow facts
 unaffected.
-Without this annotation, dataflow anaysis soundly assumes that all
-expressions are side-effected.
 If a method has neither \refqualclass{dataflow/qual}{SideEffectsOnly}
 nor \refqualclass{dataflow/qual}{SideEffectFree} annotation, then it is assumed
 that the method side-effects all expressions (fields and arguments).
