@@ -374,6 +374,8 @@ To run a checker, run the compiler \code{javac} as usual,
 but either pass the \code{-processor \emph{plugin\_class}} command-line
 option, or use auto-discovery as described in
 Section~\ref{checker-auto-discovery}.
+(If your project already uses auto-discovery for some annotation processor,
+such as AutoValue, then you should use auto-discovery.)
 A concrete example of using \code{-processor} to run the Nullness Checker is:
 
 \begin{Verbatim}
@@ -789,7 +791,7 @@ checker is an ``annotation processor''.
   happens; \<-proc:none>
   means to skip checking; \<-proc:only> means to do only
   checking, without any subsequent compilation; see
-  Section~\ref{checker-auto-discovery}
+  Section~\ref{checker-auto-discovery}.
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
 \item \<-J> Supply an argument to the JVM that is running javac;
@@ -806,10 +808,16 @@ when running \<javac>.
 
 \subsectionAndLabel{Checker auto-discovery}{checker-auto-discovery}
 
-``Auto-discovery'' makes the \code{javac} compiler always run a checker
-plugin, even if you do not explicitly pass the \code{-processor}
-command-line option.  This can make your command line shorter, and ensures
+``Auto-discovery'' makes the \code{javac} compiler always run an
+annotation processor, such as a checker
+plugin without explicitly passing the \code{-processor}
+command-line option.  This can make your command line shorter, and it ensures
 that your code is checked even if you forget the command-line option.
+
+If the \<javac> command line specifies any \<-processor> command-line
+option, then auto-discovery is disabled.  This means that if your project
+currently uses auto-discovery, you should use auto-discovery for the
+Checker Framework too.
 
 \begin{sloppypar}
 To enable auto-discovery, place a configuration file named
@@ -837,7 +845,8 @@ annotation processing including all pluggable type-checking.
 %% Auto-discovering all the distributed checkers by default would be
 %% problematic:  the nullness and mutability checkers would issue lots of
 %% errors for unannotated code, and that would be irritating.  So, leave it
-%% up to the user to enable auto-discovery.  1.
+%% up to the user to enable auto-discovery.
+
 
 \subsectionAndLabel{Shorthand for built-in checkers}{shorthand-for-checkers}
 
