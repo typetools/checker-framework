@@ -904,6 +904,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     protected int errsOnLastExit = 0;
 
     /**
+     * Report "type.checking.not.run" error.
+     *
+     * @param p error is reported at the leaf of the path
+     */
+    @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+    protected void reportJavacError(TreePath p) {
+        // If javac issued any errors, do not type check any file, so that the Checker Framework
+        // does not have to deal with error types.
+        currentRoot = p.getCompilationUnit();
+        reportError(p.getLeaf(), "type.checking.not.run", getClass().getSimpleName());
+    }
+
+    /**
      * Type-check the code using this checker's visitor.
      *
      * @see Processor#process(Set, RoundEnvironment)
@@ -996,18 +1009,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             // AbstractTypeProcessor.
             this.errsOnLastExit = log.nerrors;
         }
-    }
-
-    /**
-     * Report "type.checking.not.run" error.
-     *
-     * @param p error is reported at the leaf of the path
-     */
-    protected void reportJavacError(TreePath p) {
-        // If javac issued any errors, do not type check any file, so that the Checker Framework
-        // does not have to deal with error types.
-        currentRoot = p.getCompilationUnit();
-        reportError(p.getLeaf(), "type.checking.not.run", getClass().getSimpleName());
     }
 
     ///////////////////////////////////////////////////////////////////////////
