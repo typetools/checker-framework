@@ -480,7 +480,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     @Override
     protected void reportJavacError(TreePath p) {
         if (parentChecker == null) {
-            // Only the parent checker should report this warning.
+            // Only the parent checker should report the "type.checking.not.run" error.
             super.reportJavacError(p);
         }
     }
