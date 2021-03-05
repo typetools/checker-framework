@@ -37,5 +37,5 @@ public class SideEffectsOnlyTest {
     void method3(
             @org.checkerframework.framework.testchecker.sideeffectsonly.qual
                             .SideEffectsOnlyToyBottom
-                    Object x) {}
+                    Object z) {}
 }

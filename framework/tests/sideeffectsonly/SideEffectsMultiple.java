@@ -23,7 +23,7 @@ public class SideEffectsMultiple {
     void method1(
             @org.checkerframework.framework.testchecker.sideeffectsonly.qual
                             .SideEffectsOnlyToyBottom
-                    Object x) {}
+                    Object y) {}
 
     void method2(
             @org.checkerframework.framework.testchecker.sideeffectsonly.qual
