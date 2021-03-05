@@ -108,11 +108,13 @@ public class Subsequence {
     }
 
     /**
-     * Helper function to standardize and viewpoint-adapt a String given a context. Wraps {@link
-     * JavaExpressionParseUtil#parse}. If a parse exception is encountered, this returns its
+     * Helper function to standardize and viewpoint-adapt a string at a given fields access. Wraps
+     * {@link JavaExpressionParseUtil#parse}. If a parse exception is encountered, this returns its
      * argument.
      *
      * @param s a Java expression string
+     * @param fieldAccess the field access
+     * @param checker used to parse the expression
      * @return the argument, standardized and viewpoint-adapted
      */
     private static String standardizeAndViewpointAdapt(

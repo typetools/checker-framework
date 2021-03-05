@@ -503,6 +503,7 @@ public class DependentTypesHelper {
      * KeyFor} annotation with the result.
      *
      * @param annoFromContract an annotation from a contract
+     * @param stringToJavaExpr function used to convert strings to {@link JavaExpression}s
      * @param errorTree if non-null, where to report any errors that occur when parsing the
      *     dependent type annotation; if null, report no errors
      * @return the viewpoint-adapted annotation, or the argument if it is not a dependant type
@@ -667,11 +668,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Whether or not {@code expression} should be parsed.  The default implementation returns false
-     * if the {@code expression} is an expression error according to {@link DependentTypesError#isExpressionError(String).
-     * Subclass may override this method to add additional logic.
+     * Whether or not {@code expression} should be parsed. The default implementation returns false
+     * if the {@code expression} is an expression error according to {@link
+     * DependentTypesError#isExpressionError(String)}. Subclass may override this method to add
+     * additional logic.
      *
-     * If this method returns false, the {@code expression} is not parsed and will appear in the
+     * <p>If this method returns false, the {@code expression} is not parsed and will appear in the
      * dependent types annotation as is.
      *
      * @param expression an expression string in a dependent types annotation

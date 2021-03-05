@@ -61,9 +61,9 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
     private final @Nullable JavaExpression thisReference;
 
     /**
-     * Creates a {@link JavaExpressionConverter} that viewpoint-adapts using the given {
+     * Creates a {@link JavaExpressionConverter} that viewpoint-adapts using the given {@code
+     * thisReference} and {@code args}.
      *
-     * @code thisReference} and {@code args}.
      * @param thisReference the expression to replace occurrences of {@link ThisReference}; {@code
      *     null} means don't replace
      * @param args list of arguments used to replace occurrences {@link FormalParameter}s; {@code

@@ -590,9 +590,11 @@ public abstract class CFAbstractTransfer<
      * Viewpoint-adapts a type qualifier annotation obtained from a contract.
      *
      * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
-     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} to the given context.
+     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} using {@code
+     * stringToJavaExpr}.
      *
      * @param annoFromContract an annotation from a contract
+     * @param stringToJavaExpr function to use to convert the expressions string in the annotation.
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     private AnnotationMirror viewpointAdaptAnnoFromContract(

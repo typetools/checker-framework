@@ -101,7 +101,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String from = atypeFactory.hasSubsequenceFromValue(anno);
             String to = atypeFactory.hasSubsequenceToValue(anno);
 
-            // check that each expression is parseable in this context
+            // check that each expression is parseable at the declaration of this class
             ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
             checkEffectivelyFinalAndParsable(seq, enclosingClass, node);
             checkEffectivelyFinalAndParsable(from, enclosingClass, node);
@@ -111,10 +111,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Reports an error if the Java expression named by s is not effectively final at the current
-     * program location.
+     * Reports an error if the Java expression named by s is not effectively when parsed at the
+     * declaration of the given class.
      *
      * @param s a Java expression
+     * @param classTree the expression is parsed with respect to this class
      * @param whereToError the tree at which to possibly report an error
      */
     private void checkEffectivelyFinalAndParsable(

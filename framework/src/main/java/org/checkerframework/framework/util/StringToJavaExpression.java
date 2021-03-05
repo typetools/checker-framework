@@ -33,7 +33,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This interface is both a functional interface, see {@link #toJavaExpression)}, and also a
+ * This interface is both a functional interface, see {@link #toJavaExpression(String)}, and also a
  * collection of static methods that convert a string to a JavaExpression in at common locations.
  */
 @AnnotatedFor("nullness")
