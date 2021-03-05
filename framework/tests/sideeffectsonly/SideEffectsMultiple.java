@@ -19,7 +19,7 @@ public class SideEffectsMultiple {
     // :: error: contracts.postcondition.not.satisfied
     void method(Object x) {}
 
-    @SideEffectsOnly({"this", "x"})
+    @SideEffectsOnly({"this", "#1"})
     void method1(
             @org.checkerframework.framework.testchecker.sideeffectsonly.qual
                             .SideEffectsOnlyToyBottom

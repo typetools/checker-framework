@@ -1,14 +1,8 @@
 package org.checkerframework.framework.flow;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -19,7 +13,6 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -36,9 +29,11 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -198,26 +193,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return sefOnlyAnnotation != null;
     }
 
-    /**
-     * Returns the annotation values of {@code @SideEffectsOnly}.
-     *
-     * @param atypeFactory the type factory used to retrieve annotations on the method element
-     * @param method the method element
-     * @return values of annotation elements of {@code @SideEffectsOnly} if the method has this
-     *     annotation
-     */
-    protected @Nullable Map<? extends ExecutableElement, ? extends AnnotationValue>
-            getSideEffectsOnlyValues(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-        AnnotationMirror sefOnlyAnnotation =
-                atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
-        if (sefOnlyAnnotation == null) {
-            return null;
-        }
-        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
-                sefOnlyAnnotation.getElementValues();
-        return elementValues;
-    }
-
     /* --------------------------------------------------------- */
     /* Handling of fields */
     /* --------------------------------------------------------- */
@@ -247,28 +222,27 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         // List of expressions that this method side effects (specified as annotation values of
         // @SideEffectsOnly). If the value is null, then there is no @SideEffectsOnly annotation.
-        List<String> sideEffectsOnlyExpressions = null;
+        List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
         if (isSideEffectsOnly(atypeFactory, method)) {
-            Map<? extends ExecutableElement, ? extends AnnotationValue> valmap =
-                    getSideEffectsOnlyValues(atypeFactory, method);
-            if (valmap != null) {
-                Object value = null;
-                for (ExecutableElement elem : valmap.keySet()) {
-                    if (elem.getSimpleName().contentEquals("value")) {
-                        value = valmap.get(elem).getValue();
-                        break;
-                    }
-                }
-                if (value instanceof List) {
-                    AnnotationMirror sefOnlyAnnotation =
-                            atypeFactory.getDeclAnnotation(
-                                    method,
-                                    org.checkerframework.dataflow.qual.SideEffectsOnly.class);
-                    sideEffectsOnlyExpressions =
-                            AnnotationUtils.getElementValueArray(
-                                    sefOnlyAnnotation, "value", String.class, true);
-                } else if (value instanceof String) {
-                    sideEffectsOnlyExpressions = Collections.singletonList((String) value);
+            SourceChecker checker = analysis.checker;
+            JavaExpressionParseUtil.JavaExpressionContext methodUseContext =
+                    JavaExpressionParseUtil.JavaExpressionContext.buildContextForMethodUse(
+                            n, checker);
+
+            AnnotationMirror sefOnlyAnnotation =
+                    atypeFactory.getDeclAnnotation(
+                            method, org.checkerframework.dataflow.qual.SideEffectsOnly.class);
+            List<String> sideEffectsOnlyExpressionsString =
+                    AnnotationUtils.getElementValueArray(
+                            sefOnlyAnnotation, "value", String.class, true);
+
+            for (String st : sideEffectsOnlyExpressionsString) {
+                try {
+                    JavaExpression exprJe = JavaExpressionParseUtil.parse(st, methodUseContext);
+                    sideEffectsOnlyExpressions.add(exprJe);
+                } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+                    System.out.println(ex.getDiagMessage());
+                    return;
                 }
             }
         }
@@ -281,52 +255,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             boolean sideEffectsUnrefineAliases =
                     ((GenericAnnotatedTypeFactory) atypeFactory).sideEffectsUnrefineAliases;
 
-            // update local variables
             // TODO: Also remove if any element/argument to the annotation is not
             // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
             if (sideEffectsUnrefineAliases) {
-                if (sideEffectsOnlyExpressions != null) {
-                    MethodAccessNode methodTarget = n.getTarget();
-                    Node receiver = methodTarget.getReceiver();
-
-                    final List<String> expressionsToRemove = sideEffectsOnlyExpressions;
-                    localVariableValues
-                            .keySet()
-                            .removeIf(
-                                    e ->
-                                            (expressionsToRemove.contains(e.toString())
-                                                            && !e.isUnmodifiableByOtherCode())
-                                                    || (expressionsToRemove.contains("this")
-                                                            && e.toString()
-                                                                    .equals(receiver.toString())
-                                                            && !e.isUnmodifiableByOtherCode()));
-                } else {
-                    localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
-                }
-            }
-
-            // update this value
-            if (sideEffectsUnrefineAliases) {
-                if (sideEffectsOnlyExpressions != null) {
-                    if (sideEffectsOnlyExpressions.contains("this")) {
-                        thisValue = null;
+                if (!sideEffectsOnlyExpressions.isEmpty()) {
+                    for (JavaExpression e : sideEffectsOnlyExpressions) {
+                        if (!e.isUnmodifiableByOtherCode()) {
+                            // update local variables
+                            localVariableValues.keySet().remove(e);
+                            // update field values
+                            localVariableValues.keySet().remove(e);
+                        }
                     }
                 } else {
-                    thisValue = null;
-                }
-            }
-
-            // update field values
-            if (sideEffectsUnrefineAliases) {
-                if (sideEffectsOnlyExpressions != null) {
-                    final List<String> expressionsToRemove = sideEffectsOnlyExpressions;
-                    fieldValues
-                            .keySet()
-                            .removeIf(
-                                    e ->
-                                            expressionsToRemove.contains(e.toString())
-                                                    && !e.isUnmodifiableByOtherCode());
-                } else {
+                    localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
                     fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
                 }
             } else {

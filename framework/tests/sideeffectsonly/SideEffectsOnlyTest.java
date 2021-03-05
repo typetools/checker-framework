@@ -27,7 +27,7 @@ public class SideEffectsOnlyTest {
                             .SideEffectsOnlyToyBottom
                     Object x) {}
 
-    @SideEffectsOnly({"x"})
+    @SideEffectsOnly({"#1"})
     void method2(
             @org.checkerframework.framework.testchecker.sideeffectsonly.qual
                             .SideEffectsOnlyToyBottom
