@@ -690,7 +690,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-        dependentTypesHelper.standardizeExpression(newClassTree, superResult);
+        dependentTypesHelper.atExpression(newClassTree, superResult);
         return superResult;
     }
 
@@ -1677,7 +1677,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
         ParameterizedExecutableType mType = super.constructorFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.viewpointAdaptConstructor(tree, method);
+        dependentTypesHelper.atConstructorInvocation(tree, method);
         return mType;
     }
 
@@ -1690,7 +1690,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-        dependentTypesHelper.standardizeReturnType(m, returnType);
+        dependentTypesHelper.atReturnType(m, returnType);
         return returnType;
     }
 
@@ -1976,14 +1976,14 @@ public abstract class GenericAnnotatedTypeFactory<
         applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
-        dependentTypesHelper.standardizeLocalVar(type, elt);
+        dependentTypesHelper.atLocalVariable(type, elt);
     }
 
     @Override
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.viewpointAdaptMethod(tree, method);
+        dependentTypesHelper.atMethodInvocation(tree, method);
         return mType;
     }
 
@@ -1999,7 +1999,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f);
+        dependentTypesHelper.atTypeVariableBounds(element, f);
         return f;
     }
 

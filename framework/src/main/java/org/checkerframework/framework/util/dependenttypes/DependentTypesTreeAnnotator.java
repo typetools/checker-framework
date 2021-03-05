@@ -31,32 +31,32 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitClass(ClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         TypeElement ele = TreeUtils.elementFromDeclaration(node);
-        helper.standardizeClass(annotatedTypeMirror, ele);
+        helper.atClassDeclaration(annotatedTypeMirror, ele);
         return super.visitClass(node, annotatedTypeMirror);
     }
 
     @Override
     public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror annotatedType) {
-        helper.standardizeExpression(node, annotatedType);
+        helper.atExpression(node, annotatedType);
         return super.visitNewArray(node, annotatedType);
     }
 
     @Override
     public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror annotatedType) {
-        helper.standardizeExpression(node, annotatedType);
+        helper.atExpression(node, annotatedType);
         return super.visitNewClass(node, annotatedType);
     }
 
     @Override
     public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror annotatedType) {
-        helper.standardizeExpression(node, annotatedType);
+        helper.atExpression(node, annotatedType);
         return super.visitTypeCast(node, annotatedType);
     }
 
     @Override
     public Void visitVariable(VariableTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         Element ele = TreeUtils.elementFromDeclaration(node);
-        helper.standardizeVariable(node, annotatedTypeMirror, ele);
+        helper.atVariableDeclaration(node, annotatedTypeMirror, ele);
         return super.visitVariable(node, annotatedTypeMirror);
     }
 
@@ -64,14 +64,14 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         Element ele = TreeUtils.elementFromUse(node);
         if (ele.getKind() == ElementKind.FIELD || ele.getKind() == ElementKind.ENUM_CONSTANT) {
-            helper.standardizeVariable(node, annotatedTypeMirror, ele);
+            helper.atVariableDeclaration(node, annotatedTypeMirror, ele);
         }
         return super.visitIdentifier(node, annotatedTypeMirror);
     }
 
     @Override
     public Void visitMemberSelect(MemberSelectTree node, AnnotatedTypeMirror type) {
-        helper.viewpointAdaptFieldAccess(node, type);
+        helper.atFieldAccess(node, type);
         return super.visitMemberSelect(node, type);
     }
 }
