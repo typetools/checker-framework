@@ -395,8 +395,10 @@ Section~\ref{faq-cf-is-slow}.
 \begin{sloppypar}
 The compile options to javac can be long to type; for example,
 \code{javac -processor org.checkerframework.checker.nullness.NullnessChecker ...}.
-See Section~\ref{checker-auto-discovery} for a way to avoid the need for
-the \code{-processor} command-line option.
+You can use shorthand for built-in checkers, such as \code{javac -processor
+  nullness ...} (see Section~\ref{shorthand-for-checkers}), or you can use
+auto-discovery te eliminate the need for the \code{-processor} command-line
+option (see Section~\ref{checker-auto-discovery}).
 \end{sloppypar}
 
 
