@@ -272,7 +272,7 @@ public interface StringToJavaExpression {
         VariableElement fieldEle = (VariableElement) ele;
         JavaExpression receiver = JavaExpression.fromTree(fieldAccess.getExpression());
         JavaExpression javaExpr = StringToJavaExpression.atFieldDecl(expression, fieldEle, checker);
-        return javaExpr.viewpointAdaptAtFieldAccess(receiver);
+        return javaExpr.atFieldAccess(receiver);
     }
 
     /**

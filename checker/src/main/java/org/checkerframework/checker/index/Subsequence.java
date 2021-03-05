@@ -124,7 +124,7 @@ public class Subsequence {
             return s;
         }
 
-        return parseResult.viewpointAdaptAtFieldAccess(fieldAccess.getReceiver()).toString();
+        return parseResult.atFieldAccess(fieldAccess.getReceiver()).toString();
     }
 
     /**

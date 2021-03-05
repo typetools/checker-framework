@@ -679,7 +679,13 @@ public abstract class JavaExpression {
      */
     public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
 
-    public JavaExpression viewpointAdaptAtFieldAccess(JavaExpression receiver) {
+    /**
+     * Viewpoint-adapts {@code this} to a field access with receiver {@code receiver}.
+     *
+     * @param receiver receiver of the field access
+     * @return viewpoint-adapted version of this
+     */
+    public JavaExpression atFieldAccess(JavaExpression receiver) {
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
     }
 
