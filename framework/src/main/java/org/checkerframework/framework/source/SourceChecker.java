@@ -887,7 +887,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     private boolean warnedAboutSourceLevel = false;
 
     /**
-     * If true, javac failed to compile the code or a previous run annotation processor issued an
+     * If true, javac failed to compile the code or a previously-run annotation processor issued an
      * error.
      */
     protected boolean javacErrored = false;
