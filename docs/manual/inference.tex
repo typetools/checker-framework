@@ -165,8 +165,13 @@ Here is an explanation of the arguments:
 
 \item[-b EXTRA\_BUILD\_ARGS]
   Extra arguments to pass to the build script invocation. This argument
-  will be passed unmodified to the target's build system (i.e., Maven, Gradle,
-  or Ant). The default is the empty string.
+  will be passed to the build commands, such as
+  \<ant compile>, \<gradle compileJava>, or \<mvn compile>.
+  It is also passed to other build system commands, such as
+  \<ant clean>, \<gradle clean>, or \<mvn clean>.
+  % An alternative would be to permit it to be passed multiple times, and
+  % not re-tokenize it.
+  The argument may contain spaces and is re-tokenized by the shell.
 
 \item[-g GRADLECACHEDIR]
   The directory to use for the `-g` option to Gradle (the Gradle home
