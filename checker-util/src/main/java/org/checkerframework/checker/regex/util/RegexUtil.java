@@ -179,7 +179,7 @@ public final class RegexUtil {
      * groups as definitely non-null.
      *
      * @param s string to check for being a regular expression
-     * @param groups list of expected non-null groups, and the number of groups as the last element.
+     * @param groups list of expected non-null groups, and the number of groups as the last element
      * @return true iff s is a regular expression with {@code groups} groups
      */
     @Pure
@@ -365,8 +365,8 @@ public final class RegexUtil {
     /**
      * Return the non-null groups in the argument.
      *
-     * @param p pattern to be analysed.
-     * @return the groups that are non-null in the argument.
+     * @param p pattern to be analysed
+     * @return the groups that are non-null in the argument
      */
     private static List<Integer> getNonNullGroups(Pattern p) {
         String regexp = p.pattern();

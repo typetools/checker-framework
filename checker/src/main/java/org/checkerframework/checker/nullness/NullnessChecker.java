@@ -82,13 +82,6 @@ public class NullnessChecker extends InitializationChecker {
      */
     private @MonotonicNonNull Boolean regexCheckerEnabled = null;
 
-    /*
-    @Override
-    public void initChecker() {
-        super.initChecker();
-    }
-    */
-
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
@@ -113,7 +106,7 @@ public class NullnessChecker extends InitializationChecker {
     }
 
     /**
-     * Was the Regex Checker is enabled on the command line?
+     * Was the Regex Checker enabled on the command line?
      *
      * @return whether the {@code -AenableRegexChecker} option was passed on the command line
      */

@@ -178,8 +178,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns a new Enhanced Regex annotation with the given group count.
      *
-     * @param nonNullGroups List of groups that are definitely non-null and total number of groups.
-     * @return EnhancedRegex annotation.
+     * @param nonNullGroups list of groups that are definitely non-null and total number of groups
+     * @return an EnhancedRegex annotation
      */
     AnnotationMirror createEnhancedRegexAnnotation(List<Integer> nonNullGroups) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnhancedRegex.class);
@@ -197,8 +197,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns true if the method invocation is Matcher.group(int).
      *
-     * @param n the method invocation node to check.
-     * @return whether the method invocation node is Matcher.group(int).
+     * @param n the method invocation node to check
+     * @return whether the method invocation node is {@code Matcher.group(int)}
      */
     public boolean isMatcherGroup(Node n) {
         return NodeUtils.isMethodInvocation(n, group, getProcessingEnv());
@@ -422,8 +422,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Gets the list of non-null groups out of an enhanced regex annotation.
          *
-         * @param anno The annotation to extract the list from.
-         * @return The extracted list of non-null groups.
+         * @param anno the annotation to extract the list from
+         * @return the extracted list of non-null groups
          */
         private List<Integer> getEnhancedRegexValue(AnnotationMirror anno) {
             return AnnotationUtils.getElementValueArray(anno, "value", Integer.class, true);
@@ -434,8 +434,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the group count value of the given annotation or 0 if there's a problem getting the
      * group count value.
      *
-     * @param anno The annotation to extract group count from.
-     * @return Number of capturing groups as per the annotation.
+     * @param anno the annotation to extract group count from
+     * @return the number of capturing groups as per the annotation
      */
     public int getGroupCount(AnnotationMirror anno) {
         if (anno.getAnnotationType().asElement().getSimpleName().contentEquals("Regex")) {
@@ -462,11 +462,11 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the list of non-null groups from the EnhancedRegex annotation and default if
-     * annotation is not present.
+     * Returns the list of non-null groups from the EnhancedRegex annotation. Returns the default if
+     * the annotation is not present.
      *
-     * @param anno The annotation from which the list is to be extracted.
-     * @return The extracted list of non-null groups.
+     * @param anno the annotation from which the list is to be extracted
+     * @return the extracted list of non-null groups
      */
     public List<Integer> getNonNullGroups(AnnotationMirror anno) {
         return AnnotationUtils.getElementValueArray(anno, "value", Integer.class, true);
@@ -480,8 +480,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns the list of groups that are non-null in the given regex String.
      *
-     * @param regexp The string to analyse.
-     * @return A list of non-null groups and the number of groups.
+     * @param regexp the string to analyse
+     * @return a list of non-null groups and the number of groups
      */
     public static List<Integer> getNonNullGroups(@Regex String regexp) {
         // TODO check and ask for missing cases or alternate ways.
@@ -810,8 +810,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Minimum non-null groups from the annotation.
          *
-         * @param type The annotation to extract the non-null groups from.
-         * @return The list of non-null groups.
+         * @param type the annotation to extract the non-null groups from
+         * @return the list of non-null groups
          */
         private List<Integer> getMinimumNonNullGroups(final AnnotatedTypeMirror type) {
             AnnotationMirror anno = type.getAnnotation(EnhancedRegex.class);
