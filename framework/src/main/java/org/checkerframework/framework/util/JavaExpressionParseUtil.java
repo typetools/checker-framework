@@ -206,10 +206,18 @@ public class JavaExpressionParseUtil {
         /** The java.lang.String type. */
         private final TypeMirror stringTypeMirror;
 
+        /** The enclosing type. Used to look up unqualified method, field, and class names. */
         private final TypeMirror enclosingType;
 
+        /**
+         * The expression to use for "this". If {@code null}, a parse error will be thrown if "this"
+         * appears in the expression.
+         */
         private final @Nullable ThisReference thisReference;
-
+        /**
+         * The expression to use for parameters. If {@code null}, a parse error will be thrown if
+         * "#1" appears in the expression.
+         */
         private final @Nullable List<FormalParameter> parameters;
 
         /**
