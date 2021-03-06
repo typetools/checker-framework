@@ -15,6 +15,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import io.github.classgraph.ClassGraph;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,7 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -59,6 +59,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -235,6 +236,9 @@ import org.plumelib.util.UtilPlume;
     // Additional stub files to use
     // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
+    // Additional ajava files to use
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parserAjavaFiles()
+    "ajava",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
     // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
@@ -380,6 +384,10 @@ import org.plumelib.util.UtilPlume;
 
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
+
+    // Whenever processing a source file, parse it with JavaParser and check that the AST can be
+    // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
+    "checkJavaParserVisitor",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
@@ -1043,6 +1051,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
+    // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+    // property key that maps to a format string for `args`.
+    // @FormatMethod
+    @SuppressWarnings("formatter:format.string.invalid") // arg is a format string or a property key
     private void report(
             Object source,
             javax.tools.Diagnostic.Kind kind,
@@ -1117,13 +1129,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param args optional arguments to substitute in the message
      * @see SourceChecker#report(Object, DiagMessage)
      */
+    @FormatMethod
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
-        String ftdmsg = String.format(msg, args);
+        message(kind, String.format(msg, args));
+    }
+
+    /**
+     * Print a non-localized message using the javac messager. This is preferable to using
+     * System.out or System.err, but should only be used for exceptional cases that don't happen in
+     * correct usage. Localized messages should be raised using {@link #reportError}, {@link
+     * #reportWarning}, etc.
+     *
+     * @param kind the kind of message to print
+     * @param msg the message text
+     * @see SourceChecker#report(Object, DiagMessage)
+     */
+    public void message(javax.tools.Diagnostic.Kind kind, String msg) {
         if (messager == null) {
             // If this method is called before initChecker() sets the field
             messager = processingEnv.getMessager();
         }
-        messager.printMessage(kind, ftdmsg);
+        messager.printMessage(kind, msg);
     }
 
     /**
@@ -1995,7 +2021,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /**
      * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
      * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
-     * suppresses the checker's warnings.
+     * suppresses the checker's warnings. Also, returns true if the {@code errKey} matches a string
+     * in {@code -AsuppressWarnings}.
      *
      * @param tree the tree that might be a source of a warning
      * @param errKey the error key the checker is emitting
@@ -2010,6 +2037,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
             throw new BugInCF(
                     "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
+        }
+
+        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
+            // If the error key matches a warning string in the -AsuppressWarnings, then suppress
+            // the warning.
+            return true;
         }
 
         // trees.getPath might be slow, but this is only used in error reporting
@@ -2479,9 +2512,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
         if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
             msg.add(
-                    "The JVM ran out of memory.  Run with a larger max heap size (currently "
-                            + Runtime.getRuntime().maxMemory()
-                            + " bytes).");
+                    String.format(
+                            "The JVM ran out of memory.  Run with a larger max heap size (max memory = %d, total memory = %d, free memory = %d).",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
         } else {
 
             msg.add(ce.getMessage());
@@ -2531,20 +2566,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 }
 
                 if (printClasspath) {
-                    ClassLoader cl = ClassLoader.getSystemClassLoader();
-
-                    if (cl instanceof URLClassLoader) {
-                        msg.add("Classpath:");
-                        URL[] urls = ((URLClassLoader) cl).getURLs();
-                        for (URL url : urls) {
-                            msg.add(url.getFile());
-                        }
-                    } else {
-                        // TODO: Java 9+ use an internal classloader that doesn't support getting
-                        // URLs, so we will need an alternative approach to retrieve the classpath
-                        // on Java 9+.
-                        msg.add(
-                                "Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                    msg.add("Classpath:");
+                    for (URI uri : new ClassGraph().getClasspathURIs()) {
+                        msg.add(uri.toString());
                     }
                 }
             }

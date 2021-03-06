@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -26,6 +27,7 @@ public class BugInCF extends RuntimeException {
      * @param fmt the format string
      * @param args the arguments for the format string
      */
+    @FormatMethod
     public BugInCF(String fmt, @Nullable Object... args) {
         this(String.format(fmt, args), new Throwable());
     }

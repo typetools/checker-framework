@@ -32,7 +32,7 @@ public class LocalVariableNode extends Node {
     /**
      * Create a new local variable node for the given tree.
      *
-     * @param tree thre tree for the local variable: a VariableTree or an an IdentifierTree
+     * @param tree thre tree for the local variable: a VariableTree or an IdentifierTree
      */
     public LocalVariableNode(Tree tree) {
         this(tree, null);
@@ -41,7 +41,7 @@ public class LocalVariableNode extends Node {
     /**
      * Create a new local variable node for the given tree and receiver.
      *
-     * @param tree the tree for the local variable: a VariableTree or an an IdentifierTree
+     * @param tree the tree for the local variable: a VariableTree or an IdentifierTree
      * @param receiver the receiver for the local variable, or null if none
      */
     public LocalVariableNode(Tree tree, @Nullable Node receiver) {

@@ -221,4 +221,9 @@ public class BinaryOperation extends JavaExpression {
                 throw new Error("unhandled " + operationKind);
         }
     }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitBinaryOperation(this, p);
+    }
 }

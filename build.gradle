@@ -100,7 +100,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.10.1-SNAPSHOT'
+    version '3.11.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -402,7 +402,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 // To make javadoc for only one subproject, run `./gradlew javadoc`
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: "Documentation") {
-    description = 'Generates a global API documentation for all the modules'
+    description = 'Generates API documentation that includes all the modules.'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker-util').sourceSets.main.allJava, project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
@@ -443,7 +443,7 @@ dependencies {
     requireJavadoc "org.plumelib:require-javadoc:1.0.1"
 }
 task requireJavadoc(type: JavaExec) {
-    description = 'Ensures that Javadoc documentation exists.'
+    description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
     args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
@@ -648,22 +648,33 @@ subprojects {
     }
 
     shadowJar {
+        // If you add an external dependency, then do the following:
+        // 1. Before adding the dependency, run ./gradlew copyJarsToDist.
+        // 2. Copy checker/dist/checker.jar elsewhere.
+        // 3. Add the dependency, then run ./gradlew clean copyJarsToDist.
+        // 4. Unzip both jars and compare the contents.
+        // 5. Add relocate lines below for the packages.
+        // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
+
         // Relocate packages that might conflict with user's classpath.
+        relocate 'org.apache', 'org.checkerframework.org.apache'
+        relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
+        relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+        relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
+        relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+        relocate 'io.github.classgraph', 'org.checkerframework.io.github.classgraph'
+        relocate 'nonapi.io.github.classgraph', 'org.checkerframework.nonapi.io.github.classgraph'
+        // relocate 'sun', 'org.checkerframework.sun'
+        relocate 'com.google', 'org.checkerframework.com.google'
+        relocate 'plume', 'org.checkerframework.plume'
+        exclude '**/module-info.class'
+
         doFirst {
             if (release) {
                 // Only relocate JavaParser during a release:
                 relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
             }
         }
-
-        relocate 'org.apache', 'org.checkerframework.org.apache'
-        relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
-        relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
-        relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-        relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
-        // relocate 'sun', 'org.checkerframework.sun'
-        relocate 'com.google', 'org.checkerframework.com.google'
-        relocate 'plume', 'org.checkerframework.plume'
     }
 
     if (!project.name.startsWith('checker-qual-android')) {
@@ -709,6 +720,8 @@ subprojects {
 
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
+        createCheckTypeTask(project.name, 'Formatter',
+            'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
             'org.checkerframework.checker.interning.InterningChecker',
             ['-Astubs=javax-lang-model-element-name.astub'])
@@ -868,10 +881,11 @@ subprojects {
         }
 
         // Create a typecheck task per project (dogfooding the Checker Framework on itself).
-        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
+        // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
         tasks.create(name: 'typecheck', group: 'Verification') {
             description 'Run the Checker Framework on itself'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
             } else {

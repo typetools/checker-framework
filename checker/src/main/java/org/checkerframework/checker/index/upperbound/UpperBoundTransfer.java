@@ -39,7 +39,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -604,11 +603,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         return createTransferResult(n, in, leftWithOffset);
                     }
 
-                    JavaExpressionContext context =
-                            Subsequence.getContextFromJavaExpression(je, atypeFactory.getChecker());
-
                     Subsequence subsequence =
-                            Subsequence.getSubsequenceFromReceiver(je, atypeFactory, context);
+                            Subsequence.getSubsequenceFromReceiver(je, atypeFactory);
 
                     if (subsequence != null) {
                         String from = subsequence.from;

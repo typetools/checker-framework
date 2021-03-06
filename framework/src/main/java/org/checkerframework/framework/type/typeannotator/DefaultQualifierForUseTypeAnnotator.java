@@ -77,7 +77,9 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
             }
         }
         // If parsing stub files, then the annosToApply is incomplete, so don't cache them.
-        if (typeFactory.shouldCache && !typeFactory.stubTypes.isParsing()) {
+        if (typeFactory.shouldCache
+                && !typeFactory.stubTypes.isParsing()
+                && !typeFactory.ajavaTypes.isParsing()) {
             elementToDefaults.put(element, annosToApply);
         }
         return annosToApply;

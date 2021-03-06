@@ -619,11 +619,11 @@ public abstract class JavaExpression {
      *     not
      */
     public static JavaExpression getImplicitReceiver(Element ele) {
-        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(ele);
-        if (enclosingClass == null) {
-            throw new BugInCF("getImplicitReceiver's arg has no enclosing class: " + ele);
+        TypeElement enclosingTypeElement = ElementUtils.enclosingTypeElement(ele);
+        if (enclosingTypeElement == null) {
+            throw new BugInCF("getImplicitReceiver's arg has no enclosing type: " + ele);
         }
-        TypeMirror enclosingType = enclosingClass.asType();
+        TypeMirror enclosingType = enclosingTypeElement.asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
         } else {
@@ -649,4 +649,15 @@ public abstract class JavaExpression {
             return new ThisReference(enclosingType);
         }
     }
+
+    /**
+     * Accept method of the visitor pattern.
+     *
+     * @param visitor the visitor to be applied to this JavaExpression
+     * @param p the parameter for this operation
+     * @param <R> result type of the operation
+     * @param <P> parameter type
+     * @return the result of visiting this
+     */
+    public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
 }

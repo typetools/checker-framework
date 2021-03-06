@@ -103,6 +103,8 @@ public class NullnessTransfer
         super(analysis);
         this.nullnessTypeFactory = analysis.getTypeFactory();
         Elements elements = nullnessTypeFactory.getElementUtils();
+        // It is error-prone to put a type factory in a field.  It is OK here because
+        // keyForTypeFactory is used only to call methods isMapGet() and isKeyForMap().
         this.keyForTypeFactory =
                 nullnessTypeFactory.getChecker().getTypeFactoryOfSubchecker(KeyForSubchecker.class);
         this.regexTypeFactory =

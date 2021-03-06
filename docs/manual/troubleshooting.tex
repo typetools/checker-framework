@@ -486,6 +486,7 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 
 
 \item
+\label{false-positive-in-dead-code}
   The Checker Framework can issue false positive warnings in dead code.  An
   example is
 
@@ -696,8 +697,9 @@ pip3 install html5validator
 \begin{Verbatim}
 brew update
 brew install git ant hevea maven mercurial librsvg unzip make
-brew cask install java
-brew cask install mactex
+brew tap AdoptOpenJDK/openjdk
+brew install --cask adoptopenjdk11
+brew install --cask mactex
 \end{Verbatim}
 
 Make a \<latex> directory and copy \<hevea.sty> file into it (you may need to update the version number \<2.31>):
@@ -713,7 +715,7 @@ Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
 
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/
 \end{Verbatim}
 
 
