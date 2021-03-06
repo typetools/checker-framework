@@ -65,6 +65,7 @@ jar {
 }
 
 task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
+    group 'Build'
     description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
     doLast {
@@ -104,6 +105,7 @@ task printPlumeUtilJarPath {
 }
 
 task allSourcesJar(type: Jar) {
+    group 'Build'
     description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-source.jar"
@@ -114,6 +116,7 @@ task allSourcesJar(type: Jar) {
 }
 
 task allJavadocJar(type: Jar) {
+    group 'Build'
     description 'Creates javadoc jar including Javadoc for all of the Checker Framework'
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")
@@ -126,6 +129,7 @@ task allJavadocJar(type: Jar) {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+    group 'Build'
     description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
     includeEmptyDirs = false
     archivesBaseName = 'checker'
