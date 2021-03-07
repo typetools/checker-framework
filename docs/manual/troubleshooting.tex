@@ -671,6 +671,16 @@ Follow the instructions for your operating system.
 If your OS is not listed, adapt the instructions for an existing OS;
 for example, other Linux distributions will be similar to Ubuntu.
 
+% Why is this necessary?  What goes wrong if it is not set?  Can I avoid
+% the need to set it?  It's used for:
+%  * the location of tools.jar, below.
+%  * the default location of CTSYM, in checker/jdk/Makefile.
+Put the setting of the \<JAVA\_HOME> environment variable in a startup file
+such as \<.bash\_profile> or \<.bashrc>, if \<JAVA\_HOME> is not already
+set appropriately.  It must be the location of your JDK 8 or JDK 11
+installation (not the JRE installation, and not JDK 7 or earlier).
+You may need to log out and log back in for the setting to take effect.
+
 \begin{description}
 \item[Ubuntu]
   Run the following commands:
@@ -689,6 +699,20 @@ pip3 install html5validator
 \end{Verbatim}
 
   You may have to answer questions about which time zone your computer is in.
+
+In a startup file, write:
+% Can someone give a simpler command?
+% Command taken from:
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
@@ -711,9 +735,12 @@ cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/l
 
 Note: If copy permission is denied, try \<sudo>.
 
-Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
-for example,
+In a startup file, write:
 
+\begin{Verbatim}
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.11)
+\end{Verbatim}
+or
 \begin{Verbatim}
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/
 \end{Verbatim}
@@ -748,43 +775,6 @@ export CHECKERFRAMEWORK=`pwd`/checker-framework
 You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \<.bashrc> file.
 
-% Why is this necessary?  What goes wrong if it is not set?  Can I avoid
-% the need to set it?  It's used for:
-%  * the location of tools.jar, below.
-%  * the default location of CTSYM, in checker/jdk/Makefile.
-Set the \<JAVA\_HOME> environment variable to the location of your JDK
-8 or JDK 11 installation (not the JRE installation, and not JDK 7 or earlier).
-(The \<JAVA\_HOME> environment
-variable might already be set, because it is needed for Ant to work.)
-
-\begin{description}
-\item[Ubuntu]
-If you use the bash shell, put the following command in your
-\code{.bashrc} file.  (This might not work if \<java> refers to an executable
-in the JRE rather than in the JDK, but you need the JDK installed to build
-the Checker Framework anyway.)
-% Can someone give a simpler command?
-% Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\item[Mac OS X 10.5 or later]
-  Add one of the following two commands in your \code{.bash\_profile} or
-  \code{.profile} file according to the version of your JDK.
-\begin{Verbatim}
-  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-  export JAVA_HOME=$(/usr/libexec/java_home -v 1.9)
-\end{Verbatim}
-
-\end{description}
 
 \subsectionAndLabel{Build the Checker Framework}{building}
 
