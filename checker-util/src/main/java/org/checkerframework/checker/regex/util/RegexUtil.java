@@ -260,7 +260,8 @@ public final class RegexUtil {
 
     /**
      * Returns the argument as a {@code @Regex String} if it is a regex, otherwise throws an error.
-     * The purpose of this method is to suppress Regex Checker warnings. It should be very rarely
+     *
+     * <p>The purpose of this method is to suppress Regex Checker warnings. It should be very rarely
      * needed.
      *
      * @param s string to check for being a regular expression
@@ -275,8 +276,10 @@ public final class RegexUtil {
 
     /**
      * Returns the argument as a {@code @Regex(groups) String} if it is a regex with at least the
-     * given number of groups, otherwise throws an error. The purpose of this method is to suppress
-     * Regex Checker warnings. It should be very rarely needed.
+     * given number of groups, otherwise throws an error.
+     *
+     * <p>The purpose of this method is to suppress Regex Checker warnings. It should be very rarely
+     * needed.
      *
      * @param s string to check for being a regular expression
      * @param groups number of groups expected
