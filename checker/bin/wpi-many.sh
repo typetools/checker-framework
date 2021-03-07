@@ -246,14 +246,16 @@ else
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
+    # shellcheck disable=SC2046
     grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
 
     cd "${SCRIPTDIR}/.do-like-javac" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
+    # shellcheck disable=SC2046
     "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
-        "$(< "${listpath}")"
+        $(< "${listpath}")
 
     rm -f "${listpath}"
   else
