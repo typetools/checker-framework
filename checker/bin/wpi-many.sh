@@ -137,15 +137,15 @@ do
     # repos that are different but have the same name to be treated
     # as different repos, but forks with the same content to be skipped.
     # TODO: consider just using hash, to skip hard forks?
-    mkdir -p "${REPO_NAME_HASH}"
+    mkdir -p "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): mkdir -p ./${REPO_NAME_HASH}" && exit 5)
 
-    cd "${REPO_NAME_HASH}" || exit 5
+    cd "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): cd ./${REPO_NAME_HASH}" && exit 5)
 
     if [ ! -d "${REPO_NAME}" ]; then
         # see https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
         # for the inspiration for this code
-        mkdir "${REPO_NAME}"
-        cd "${REPO_NAME}" || exit 5
+        mkdir "./${REPO_NAME}" || (echo "command failed in $(pwd): mkdir ./${REPO_NAME}" && exit 5)
+        cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
         git init
         git remote add origin "${REPO}"
 
@@ -165,7 +165,7 @@ do
         rm -rf "${REPO_NAME}/dljc-out"
     fi
 
-    cd "${REPO_NAME}" || exit 5
+    cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
     git checkout "${HASH}"
 
@@ -201,7 +201,7 @@ do
     # delete it right away.
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
         echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-        rm -rf "${REPO_NAME_HASH}"
+        rm -rf "./${REPO_NAME_HASH}"
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
