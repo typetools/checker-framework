@@ -288,7 +288,7 @@ public final class RegexUtil {
      */
     @SuppressWarnings("regex") // RegexUtil
     @SideEffectFree
-    // The return type annotation is irrelevant; it is special-cased by
+    // The return type annotation is irrelevant; this method is special-cased by
     // RegexAnnotatedTypeFactory.
     public static @Regex String asRegex(String s, int groups) {
         try {
