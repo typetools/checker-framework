@@ -188,7 +188,9 @@ Here is an explanation of the arguments:
   modification.  One argument is required: \<-\relax-checker>, which indicates
   what type-checker(s) to run (in the format described in Section~\ref{shorthand-for-checkers}).
   The \ahreforurl{https://github.com/kelloggm/do-like-javac}{documentation of do-like-javac}
-  describes the other commands that its WPI tool supports.
+  describes the other commands that its WPI tool supports. Notably, to pass checker-specific
+  arguments---such as any necessary \<-A> arguments---to invocations of \<javac>,
+  use the \<-\relax-extraJavacArgs> argument to \<dljc>.
 \end{description}
 
 You may need to wait a few minutes for the command to complete.
