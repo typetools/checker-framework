@@ -375,7 +375,7 @@ public class NullnessTransfer
             AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
-                    && !hasNullableValueType(receiverType)) {
+                    && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
                 makeNonNull(result, n);
                 refineToNonNull(result);
             }
@@ -390,7 +390,7 @@ public class NullnessTransfer
      * @param mapOrSubtype the Map type, or a subtype
      * @return true if mapType's value type is @Nullable
      */
-    private boolean hasNullableValueType(AnnotatedTypeMirror mapOrSubtype) {
+    private boolean hasNullableValueType(AnnotatedDeclaredType mapOrSubtype) {
         AnnotatedDeclaredType mapType =
                 AnnotatedTypes.asSuper(nullnessTypeFactory, mapOrSubtype, MAP_TYPE);
         int numTypeArguments = mapType.getTypeArguments().size();
