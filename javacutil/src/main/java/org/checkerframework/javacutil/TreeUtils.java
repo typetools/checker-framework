@@ -415,6 +415,8 @@ public final class TreeUtils {
      */
     @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
     @Pure
+    @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied")
+    // TODO: remove this method
     public static boolean isUseOfElement(MethodInvocationTree node) {
         return isUseOfElement((ExpressionTree) node);
     }
@@ -427,6 +429,8 @@ public final class TreeUtils {
      */
     @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
     @Pure
+    @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied")
+    // TODO: remove this method
     public static boolean isUseOfElement(NewClassTree node) {
         return isUseOfElement((ExpressionTree) node);
     }
