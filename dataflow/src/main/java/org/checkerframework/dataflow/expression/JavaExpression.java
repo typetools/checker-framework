@@ -49,9 +49,9 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
-// The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
-// "#1" for formal parameters.  However, there are no special subclasses (AST nodes) for those
-// extensions.
+// The Lock Checker also supports "<self>" as a JavaExpression, but that is implemented in the Lock
+// Checker.
+// There are no special subclasses (AST nodes) for  "<self>".
 /**
  * This class represents a Java expression and its type. It does not represent all possible Java
  * expressions (for example, it does not represent a ternary conditional expression {@code ?:}; use
