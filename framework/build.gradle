@@ -138,8 +138,7 @@ task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {
 
 compileJava.dependsOn(checkDependencies)
 
-task allSourcesJar(type: Jar) {
-    group 'Build'
+task allSourcesJar(type: Jar, group: 'Build') {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "framework-source.jar"
@@ -148,8 +147,7 @@ task allSourcesJar(type: Jar) {
             project(':javacutil').sourceSets.main.allJava)
 }
 
-task allJavadocJar(type: Jar) {
-    group 'Build'
+task allJavadocJar(type: Jar, group: 'Build') {
     description 'Creates javadoc jar include Javadoc for all of the framework'
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")
