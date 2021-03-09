@@ -86,24 +86,29 @@ public class JavaExpressionParseUtil {
     /** Regular expression for a formal parameter use. */
     protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
-    /** Anchored pattern for a formal parameter use. */
+    /**
+     * Anchored pattern for a formal parameter use; matches a string that is exactly a formal
+     * parameter use.
+     */
     protected static final Pattern ANCHORED_PARAMETER_PATTERN =
             Pattern.compile("^" + PARAMETER_REGEX + "$");
 
-    /** Unanchored; can be used to find all formal parameter uses. */
+    /**
+     * Unanchored pattern for a formal parameter use; can be used to find all formal parameter uses.
+     */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /**
-     * Parses {@code expression} to a {@link JavaExpression}.
+     * Parses a string to a {@link JavaExpression}.
      *
      * <p>Clients should call one of the static methods in {@link StringToJavaExpression} rather
      * than calling this method directly.
      *
      * @param expression the string expression to parse
      * @param enclosingType type of the class that encloses the JavaExpression
-     * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
-     *     appear in the expression
-     * @param parameters list of JavaExpressions to which to parse parameters or null if parameters
+     * @param thisReference the JavaExpression to which to parse "this", or null if "this" should
+     *     not appear in the expression
+     * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
      *     should not appear in the expression
      * @param localVarPath if non-null, the expression is parsed as if it were written at this
      *     location
@@ -112,9 +117,6 @@ public class JavaExpressionParseUtil {
      * @return {@code expression} as a {@code JavaExpression}
      * @throws JavaExpressionParseException if the string cannot be parsed
      */
-    // The underlying javac API used to convert from Strings to Elements requires a TreePath even
-    // when the information could be deduced from elements alone.  So use the TreePath to the
-    // current CompilationUnit.
     public static JavaExpression parse(
             String expression,
             TypeMirror enclosingType,
@@ -157,8 +159,8 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Replaces every occurrence of "#NUMBER" with "_param_NUMBER" where NUMBER is the 1-based index
-     * of a formal parameter.
+     * Replaces every occurrence of "#NUMBER" with FormalParameter.PARAMETER_REPLACEMENT + "NUMBER"
+     * where NUMBER is the 1-based index of a formal parameter.
      *
      * <p>Note that this does replacement even within strings.
      *
@@ -215,8 +217,9 @@ public class JavaExpressionParseUtil {
          */
         private final @Nullable ThisReference thisReference;
         /**
-         * The expression to use for parameters. If {@code null}, a parse error will be thrown if
-         * "#1" appears in the expression.
+         * For each formal parameter, the expression to which to parse it. For example, the second
+         * (index 1) element of the list is what "#2" parses to. If this field is {@code null}, a
+         * parse error will be thrown if "#2" appears in the expression.
          */
         private final @Nullable List<FormalParameter> parameters;
 
@@ -224,10 +227,10 @@ public class JavaExpressionParseUtil {
          * Create a new ExpressionToJavaExpressionVisitor.
          *
          * @param enclosingType type of the class that encloses the JavaExpression
-         * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
-         *     appear in the expression
-         * @param parameters list of JavaExpressions to which to parse parameters or null if
-         *     parameters should not appear in the expression
+         * @param thisReference JavaExpression to which to parse "this", or null if "this" should
+         *     not appear in the expression
+         * @param parameters list of JavaExpressions to which to parse a formal parameter reference
+         *     such as "#2", or null if parameters should not appear in the expression
          * @param localVarPath if non-null, the expression is parsed as if it were written at this
          *     location
          * @param pathToCompilationUnit required to use the underlying Javac API
@@ -256,9 +259,9 @@ public class JavaExpressionParseUtil {
          *
          * @param expr the JavaParser {@link Expression} to convert
          * @param enclosingType type of the class that encloses the JavaExpression
-         * @param thisReference JavaExpression to which to parse "this" or null if "this" should not
-         *     appear in the expression
-         * @param parameters list of JavaExpressions to which to parse parameters or null if
+         * @param thisReference JavaExpression to which to parse "this", or null if "this" should
+         *     not appear in the expression
+         * @param parameters list of JavaExpressions to which to parse parameters, or null if
          *     parameters should not appear in the expression
          * @param localVarPath if non-null, the expression is parsed as if it were written at this
          *     location
@@ -295,7 +298,10 @@ public class JavaExpressionParseUtil {
             }
         }
 
-        /** Sets the {@code resolver} field if necessary. */
+        /**
+         * Initializes the {@code resolver} field if necessary. Does nothing on invocations after
+         * the first.
+         */
         private void setResolverField() {
             if (resolver == null) {
                 resolver = new Resolver(env);
@@ -349,7 +355,7 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(ThisExpr n, Void aVoid) {
             if (thisReference == null) {
                 throw new ParseRuntimeException(
-                        constructJavaExpressionParseError("this", "this isn't allowed here."));
+                        constructJavaExpressionParseError("this", "`this` isn't allowed here."));
             }
             return thisReference;
         }
@@ -360,7 +366,8 @@ public class JavaExpressionParseUtil {
             TypeMirror superclass = TypesUtils.getSuperclass(enclosingType, types);
             if (superclass == null) {
                 throw new ParseRuntimeException(
-                        constructJavaExpressionParseError("super", "super class not found"));
+                        constructJavaExpressionParseError(
+                                "super", "superclass of " + enclosingType + " not found"));
             }
             return new ThisReference(superclass);
         }
@@ -459,12 +466,40 @@ public class JavaExpressionParseUtil {
         }
 
         /**
+         * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
+         * arguments}.
+         *
+         * @param s a String that starts with PARAMETER_REPLACEMENT
+         * @return the JavaExpression for the given parameter
+         */
+        private JavaExpression getParameterJavaExpression(String s) {
+            if (parameters == null) {
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError(s, "no parameters found"));
+            }
+            int idx = Integer.parseInt(s.substring(FormalParameter.PARAMETER_REPLACEMENT_LENGTH));
+
+            if (idx == 0) {
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError(
+                                "#0",
+                                "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+            }
+            if (idx > parameters.size()) {
+                throw new ParseRuntimeException(
+                        new JavaExpressionParseException(
+                                "flowexpr.parse.index.too.big", Integer.toString(idx)));
+            }
+            return parameters.get(idx - 1);
+        }
+
+        /**
          * If {@code identifier} is the simple class name of any inner class of {@code type}, return
          * the {@link ClassName} for the inner class. If not, return null.
          *
          * @param type type to search for {@code identifier}
          * @param identifier possible class name
-         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name
+         * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
          */
         protected @Nullable ClassName getIdentifierAsInnerClassName(
                 TypeMirror type, String identifier) {
@@ -486,7 +521,8 @@ public class JavaExpressionParseUtil {
 
         /**
          * If {@code identifier} is a class name with that can be referenced using only its simple
-         * name within {@code type}. If not, return null.
+         * name within {@code type}, return the {@link ClassName} for the class. If not, return
+         * null.
          *
          * <p>{@code identifier} may be
          *
@@ -500,7 +536,7 @@ public class JavaExpressionParseUtil {
          *
          * @param type the type in which to search for {@code identifier}
          * @param identifier possible class name
-         * @return the {@code ClassName} for {@code identifier} or null if it is not a class name
+         * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
          */
         protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(
                 TypeMirror type, String identifier) {
@@ -565,9 +601,11 @@ public class JavaExpressionParseUtil {
          * to using that field at the given {@code context}. If {@code identifier} is not a field
          * name, this method returns null.
          *
-         * @param receiverExpr the receiver of the field; the expression used to access the field
+         * @param receiverExpr the receiver of the field access; the expression used to access the
+         *     field
          * @param identifier possibly a field name
-         * @return a field access, or null if {@code identifier} is not a field
+         * @return a field access, or null if {@code identifier} is not a field that can be accessed
+         *     via {@code receiverExpr}
          */
         protected @Nullable FieldAccess getIdentifierAsField(
                 JavaExpression receiverExpr, String identifier) {
@@ -608,6 +646,48 @@ public class JavaExpressionParseUtil {
             return null;
         }
 
+        /**
+         * Returns a JavaExpression for the given field.
+         *
+         * <p>{@code isOriginalReceiver} might be false when the user wrote "a.f" but {@code f} is
+         * not declared in the declared type of {@code a}, in which case the this method is called
+         * with {@code receiverExpr}'s type being a supertype of the declared type of {@code a}. In
+         * that case, the resulting FieldAccess's {@code receiver} field is a ThisReference of the
+         * type of {@code receiverExpr}.
+         *
+         * @param fieldElem the field
+         * @param receiverExpr the receiver of the field access; the expression used to access the
+         *     field
+         * @param isOriginalReceiver whether the receiver is the original one written in source code
+         * @return a JavaExpression for the given name
+         */
+        private static FieldAccess getFieldJavaExpression(
+                VariableElement fieldElem,
+                JavaExpression receiverExpr,
+                boolean isOriginalReceiver) {
+            TypeMirror receiverType = receiverExpr.getType();
+
+            TypeMirror fieldType = ElementUtils.getType(fieldElem);
+            if (ElementUtils.isStatic(fieldElem)) {
+                Element classElem = fieldElem.getEnclosingElement();
+                JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
+                return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
+            }
+            JavaExpression locationOfField;
+            if (isOriginalReceiver) {
+                locationOfField = receiverExpr;
+            } else {
+                locationOfField = new ThisReference(receiverType);
+            }
+            if (locationOfField instanceof ClassName) {
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError(
+                                fieldElem.getSimpleName().toString(),
+                                "a non-static field cannot have a class name as a receiver."));
+            }
+            return new FieldAccess(locationOfField, fieldType, fieldElem);
+        }
+
         @Override
         public JavaExpression visit(MethodCallExpr expr, Void aVoid) {
             setResolverField();
@@ -625,14 +705,11 @@ public class JavaExpressionParseUtil {
             String methodName = expr.getNameAsString();
 
             // parse argument list
-            List<JavaExpression> arguments = new ArrayList<>();
-            if (!expr.getArguments().isEmpty()) {
-                for (Expression argument : expr.getArguments()) {
-                    arguments.add(argument.accept(this, null));
-                }
+            List<JavaExpression> arguments = new ArrayList<>(expr.getArguments().size());
+            for (Expression argument : expr.getArguments()) {
+                arguments.add(argument.accept(this, null));
             }
 
-            // Find the method element.
             ExecutableElement methodElement;
             try {
                 methodElement =
@@ -652,9 +729,10 @@ public class JavaExpressionParseUtil {
                 TypeMirror parameterType = parameter.asType();
                 JavaExpression argument = arguments.get(i);
                 TypeMirror argumentType = argument.getType();
-                // boxing necessary
+                // is boxing necessary?
                 if (TypesUtils.isBoxedPrimitive(parameterType)
                         && TypesUtils.isPrimitive(argumentType)) {
+                    // boxing is necessary
                     MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
                     List<JavaExpression> p = new ArrayList<>();
                     p.add(argument);
@@ -744,13 +822,15 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(FieldAccessExpr expr, Void aVoid) {
             setResolverField();
 
+            Expression scope = expr.getScope();
+            String name = expr.getNameAsString();
+
             // Check for fully qualified class name.
             Symbol.PackageSymbol packageSymbol =
-                    resolver.findPackage(expr.getScope().toString(), pathToCompilationUnit);
+                    resolver.findPackage(scope.toString(), pathToCompilationUnit);
             if (packageSymbol != null) {
                 ClassSymbol classSymbol =
-                        resolver.findClassInPackage(
-                                expr.getNameAsString(), packageSymbol, pathToCompilationUnit);
+                        resolver.findClassInPackage(name, packageSymbol, pathToCompilationUnit);
                 if (classSymbol != null) {
                     return new ClassName(classSymbol.asType());
                 }
@@ -760,27 +840,27 @@ public class JavaExpressionParseUtil {
                                 "could not find class "
                                         + expr.getNameAsString()
                                         + " inside "
-                                        + expr.getScope().toString()));
+                                        + scope.toString()));
             }
 
+            JavaExpression receiver = scope.accept(this, null);
+
             // Check for field access expression.
-            String identifier = expr.getName().getIdentifier();
-            JavaExpression receiver = expr.getScope().accept(this, null);
-            FieldAccess fieldAccess = getIdentifierAsField(receiver, identifier);
+            FieldAccess fieldAccess = getIdentifierAsField(receiver, name);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
 
             // Check for inner class.
-            ClassName classType = getIdentifierAsInnerClassName(receiver.getType(), identifier);
+            ClassName classType = getIdentifierAsInnerClassName(receiver.getType(), name);
             if (classType != null) {
                 return classType;
             }
+
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(
-                            identifier,
-                            String.format(
-                                    "field or class %s not found in %s", identifier, receiver)));
+                            name,
+                            String.format("field or class %s not found in %s", name, receiver)));
         }
 
         // expr is a Class literal
@@ -825,22 +905,21 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
+        @SuppressWarnings("MissingCasesInEnumSwitch") // fallthrough for cases lacking optimization
         public JavaExpression visit(UnaryExpr expr, Void aVoid) {
             Tree.Kind treeKind = javaParserUnaryOperatorToTreeKind(expr.getOperator());
-            // This performs constant-folding for + and -; it could also do so for other operations.
+            JavaExpression operand = expr.getExpression().accept(this, null);
+            // This eliminates + and performs constant-folding for -; it could also do so for other
+            // operations.
             switch (treeKind) {
                 case UNARY_PLUS:
-                    return expr.getExpression().accept(this, null);
+                    return operand;
                 case UNARY_MINUS:
-                    JavaExpression negatedResult = expr.getExpression().accept(this, null);
-                    if (negatedResult instanceof ValueLiteral) {
-                        return ((ValueLiteral) negatedResult).negate();
+                    if (operand instanceof ValueLiteral) {
+                        return ((ValueLiteral) operand).negate();
                     }
-                    return new UnaryOperation(negatedResult.getType(), treeKind, negatedResult);
-                default:
-                    JavaExpression operand = expr.getExpression().accept(this, null);
-                    return new UnaryOperation(operand.getType(), treeKind, operand);
             }
+            return new UnaryOperation(operand.getType(), treeKind, operand);
         }
 
         /**
@@ -849,7 +928,7 @@ public class JavaExpressionParseUtil {
          * @param op a JavaParser unary operator
          * @return a TreeKind for the unary operator
          */
-        Tree.Kind javaParserUnaryOperatorToTreeKind(UnaryExpr.Operator op) {
+        private Tree.Kind javaParserUnaryOperatorToTreeKind(UnaryExpr.Operator op) {
             switch (op) {
                 case BITWISE_COMPLEMENT:
                     return Tree.Kind.BITWISE_COMPLEMENT;
@@ -879,7 +958,7 @@ public class JavaExpressionParseUtil {
             TypeMirror leftType = leftJe.getType();
             TypeMirror rightType = rightJe.getType();
             TypeMirror type;
-            // isSubtype() first does the cheaper test isSameType()
+            // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
             if (types.isSubtype(leftType, rightType)) {
                 type = rightType;
             } else if (types.isSubtype(rightType, leftType)) {
@@ -901,7 +980,7 @@ public class JavaExpressionParseUtil {
          * @param op a JavaParser binary operator
          * @return a TreeKind for the binary operator
          */
-        Tree.Kind javaParserBinaryOperatorToTreeKind(BinaryExpr.Operator op) {
+        private Tree.Kind javaParserBinaryOperatorToTreeKind(BinaryExpr.Operator op) {
             switch (op) {
                 case AND:
                     return Tree.Kind.CONDITIONAL_AND;
@@ -947,7 +1026,7 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Converts the JavaParser type to a TypeMirror. Returns null if {@code type}'s kind is not
+         * Converts the JavaParser type to a TypeMirror. Returns null if {@code type} is not
          * handled.
          *
          * @param type a JavaParser type
@@ -989,69 +1068,6 @@ public class JavaExpressionParseUtil {
             }
             return null;
         }
-
-        /**
-         * Returns a JavaExpression for the given field.
-         *
-         * @param fieldElem the field
-         * @param receiverExpr the receiver of the field; the expression used to access the field
-         * @param isOriginalReceiver whether the receiver is the original one
-         * @return a JavaExpression for the given name
-         */
-        private static FieldAccess getFieldJavaExpression(
-                VariableElement fieldElem,
-                JavaExpression receiverExpr,
-                boolean isOriginalReceiver) {
-            TypeMirror receiverType = receiverExpr.getType();
-
-            TypeMirror fieldType = ElementUtils.getType(fieldElem);
-            if (ElementUtils.isStatic(fieldElem)) {
-                Element classElem = fieldElem.getEnclosingElement();
-                JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
-                return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
-            }
-            JavaExpression locationOfField;
-            if (isOriginalReceiver) {
-                locationOfField = receiverExpr;
-            } else {
-                locationOfField = new ThisReference(receiverType);
-            }
-            if (locationOfField instanceof ClassName) {
-                throw new ParseRuntimeException(
-                        constructJavaExpressionParseError(
-                                fieldElem.getSimpleName().toString(),
-                                "a non-static field cannot have a class name as a receiver."));
-            }
-            return new FieldAccess(locationOfField, fieldType, fieldElem);
-        }
-
-        /**
-         * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
-         * arguments}.
-         *
-         * @param s a String that starts with PARAMETER_REPLACEMENT
-         * @return the JavaExpression for the given parameter
-         */
-        private JavaExpression getParameterJavaExpression(String s) {
-            if (parameters == null) {
-                throw new ParseRuntimeException(
-                        constructJavaExpressionParseError(s, "no parameters found"));
-            }
-            int idx = Integer.parseInt(s.substring(FormalParameter.PARAMETER_REPLACEMENT_LENGTH));
-
-            if (idx == 0) {
-                throw new ParseRuntimeException(
-                        constructJavaExpressionParseError(
-                                "#0",
-                                "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
-            }
-            if (idx > parameters.size()) {
-                throw new ParseRuntimeException(
-                        new JavaExpressionParseException(
-                                "flowexpr.parse.index.too.big", Integer.toString(idx)));
-            }
-            return parameters.get(idx - 1);
-        }
     }
 
     /**
@@ -1074,11 +1090,10 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Returns the 1-based index of the formal parameter that occurs in {@code s} or -1 if no formal
-     * parameter occurs.
+     * If {@code s} is exactly a formal parameter, return its 1-based index. Returns -1 otherwise.
      *
      * @param s a Java expression
-     * @return the 1-based indices of the formal parameter that occur in {@code s} or -1
+     * @return the 1-based index of the formal parameter that {@code s} represents, or -1
      */
     public static int parameterIndex(String s) {
         Matcher matcher = ANCHORED_PARAMETER_PATTERN.matcher(s);
@@ -1093,8 +1108,8 @@ public class JavaExpressionParseUtil {
     ///
 
     /**
-     * Returns the type of the innermost enclosing class. Returns Type.noType if no enclosing class
-     * is found.
+     * Returns the type of the innermost enclosing class. Returns Type.noType if the type is a
+     * top-level class.
      *
      * <p>If the innermost enclosing class is static, this method returns the type of that class. By
      * contrast, {@link DeclaredType#getEnclosingType()} returns the type of the innermost enclosing
@@ -1105,8 +1120,7 @@ public class JavaExpressionParseUtil {
      */
     private static TypeMirror getTypeOfEnclosingClass(DeclaredType type) {
         if (type instanceof ClassType) {
-            // enclClass() needs to be called on tsym.owner,
-            // otherwise it simply returns tsym.
+            // enclClass() needs to be called on tsym.owner, because tsym.enclClass() == tsym.
             Symbol sym = ((ClassType) type).tsym.owner;
 
             if (sym == null) {
@@ -1184,8 +1198,8 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Returns a {@link JavaExpressionParseException} for the expression {@code expr} with
-     * explanation {@code explanation}.
+     * Returns a {@link JavaExpressionParseException} with error key "flowexpr.parse.error" for the
+     * expression {@code expr} with explanation {@code explanation}.
      *
      * @param expr the string that could not be parsed
      * @param explanation an explanation of the parse failure
@@ -1207,8 +1221,7 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * The Runtime equivalent of {@link JavaExpressionParseException}. This class is needed to wrap
-     * this exception into an unchecked exception.
+     * The unchecked exception equivalent of checked exception {@link JavaExpressionParseException}.
      */
     private static class ParseRuntimeException extends RuntimeException {
         private static final long serialVersionUID = 2L;
