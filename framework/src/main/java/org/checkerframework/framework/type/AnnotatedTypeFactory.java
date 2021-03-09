@@ -2123,7 +2123,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
 
         if (!typeVarMapping.isEmpty()) {
-            typeVarMapping = captureMethodTypeArgs(typeVarMapping, memberType.getTypeVariables());
+            typeVarMapping =
+                    captureMethodTypeArgs(
+                            typeVarMapping, memberTypeWithOverrides.getTypeVariables());
             for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
                 if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
                     throw new BugInCF(

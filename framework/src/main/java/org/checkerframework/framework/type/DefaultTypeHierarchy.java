@@ -1226,16 +1226,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             }
         }
 
-        if (TypesUtils.isErasedSubtype(
-                subtype.getExtendsBound().getUnderlyingType(),
-                supertype.getUnderlyingType(),
-                subtype.atypeFactory.types)) {
-            return isSubtype(subtype.getExtendsBound(), supertype, currentTop);
-        }
-        // TODO: subtype is a wildcard that should have been captured, so just check the primary
-        // annotations.
-        AnnotationMirror subAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
-        AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(currentTop);
-        return qualifierHierarchy.isSubtype(subAnno, superAnno);
+        return isSubtype(subtype.getExtendsBound(), supertype, currentTop);
     }
 }
