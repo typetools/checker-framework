@@ -165,15 +165,21 @@ Here is an explanation of the arguments:
 
 \item[-b EXTRA\_BUILD\_ARGS]
   Extra arguments to pass to the build script invocation. This argument
-  will be passed unmodified to the target's build system (i.e., Maven, Gradle,
-  or Ant). The default is the empty string.
+  will be passed to the build commands, such as
+  \<ant compile>, \<gradle compileJava>, or \<mvn compile>.
+  It is also passed to other build system commands, such as
+  \<ant clean>, \<gradle clean>, or \<mvn clean>.
+  % An alternative would be to permit it to be passed multiple times, and
+  % not re-tokenize it.
+  The argument may contain spaces and is re-tokenized by the shell.
 
 \item[-g GRADLECACHEDIR]
   The directory to use for the `-g` option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
   project (i.e. each target project has its own Gradle home). This default
-  is motivated by [this Gradle issue](https://github.com/gradle/gradle/issues/1319).
+  is motivated by
+  \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
 \item[DLJC-ARGS]
   Arguments that are passed directly to
@@ -225,9 +231,9 @@ for the list of requirements.
 To run an experiment on many projects:
 \begin{enumerate}
 \item Use \<query-github.sh> to search GitHub for candidate repositories.
-File \<docs/manual/securerandom.query> is an example query, and file
-\<docs/manual/securerandom.list>
-was created by running \<query-github.sh securerandom.query 100>. If you do
+File \<docs/examples/wpi-many/securerandom.query> is an example query, and file
+\<docs/manual/securerandom.list> is the standard output
+created by running \<query-github.sh securerandom.query 100>. If you do
 not want to use GitHub, construct a file yourself that matches the format of
 the file \<securerandom.list>.
 
@@ -272,12 +278,15 @@ which \<-o> and \<-i> are mandatory:
 
 \begin{description}
 \item[-o outdir]
-  run the experiment in the ./outdir directory, and place the results in
-  the ./outdir-results directory. Both will be created if they do not
-  exist.
+  run the experiment in the \<\emph{outdir}> directory, and place the results in
+  the \<\emph{outdir}-results> directory. Both will be created if they do not
+  exist.  The directory may be specified as an absolute or relative path.
 
 \item[-i infile]
-  Read the list of repositories to use from the file infile. Each line
+  Read the list of repositories to use from the file infile.
+  % The need to be an absolute pathname is a bug in wpi-many.sh that should be fixed.
+  The file must be specified as an absolute, not relative, path.
+  Each line
   should have 2 or 3 elements, separated by whitespace:
   \begin{enumerate}
   \item
@@ -304,7 +313,8 @@ which \<-o> and \<-i> are mandatory:
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
   project (i.e. each target project has its own Gradle home). This default
-  is motivated by [this Gradle issue](https://github.com/gradle/gradle/issues/1319).
+  is motivated by
+  \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
 \end{description}
 

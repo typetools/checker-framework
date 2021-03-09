@@ -152,6 +152,7 @@ public class AnnotationBuilder {
      * @param elements the element utilities to use
      * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of the given type
+     * @throws UserError if the annotation corresponding to the class could not be loaded
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {

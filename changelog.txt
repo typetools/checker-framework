@@ -1,3 +1,87 @@
+Version 3.11.1, April 1, 2021
+
+**User-visible changes:**
+
+New FAQ item "How should I annotate code that uses generics?" gives
+examples of annotations on type variables, together with their meaning.
+
+`-Ainfer=ajava` uses ajava files (rather than jaif files or stub files)
+internally during whole-program inference.
+
+The Optional Checker supports a new annotation `@OptionalBottom` that
+stands for (only) the `null` value.
+
+**Implementation details:**
+
+**Closed issues:**
+
+---------------------------------------------------------------------------
+
+Version 3.11.0, March 1, 2021
+
+**User-visible changes:**
+
+In a stub file for a class C, you may write a declaration for a method that is
+inherited by C but not defined by it.  Previously, such stub declarations were
+ignored.  For more information, see the manual's documentation of "fake
+overrides".
+
+Nullness Checker error message key changes:
+ * `known.nonnull` => `nulltest.redundant`
+ * `initialization.static.fields.uninitialized` => `initialization.static.field.uninitialized`,
+   and it is now issued on the field rather than on the class
+ * new `initialization.field.uninitialized` is issued on the field instead of
+   `initialization.fields.uninitialized` on the class, if there is no
+   explicitly-written constructor.
+
+Signature Checker supports two new type qualifiers:
+ * `@CanonicalNameAndBinaryName`
+ * `@CanonicalNameOrPrimitiveType`
+
+**Implementation details:**
+
+You can make a variable's default type depend on its name, or a method
+return type default depend on the method's name.  To support this feature,
+`@DefaultFor` has new elements `names` and `namesExceptions`.
+
+Changes to protected fields in `OverrideChecker`:
+ * Removed `overriderMeth`, `overriderTyp`, `overriddenMeth`, `overriddenTyp`
+ * Renamed `methodReference` => `isMethodReference`
+ * Renamed `overridingType` => `overriderType`
+ * Renamed `overridingReturnType` => `overriderReturnType`
+
+Changes to JavaExpression parsing:
+ * The signatures of these methods changed; see Javadoc.
+    * `JavaExpressionParseUtil#parse`
+    * `DependentTypesHelper#standardizeString`
+ * These methods moved:
+    * `GenericAnnotatedTypeFactory#standardizeAnnotationFromContract` => `DependentTypesHelper`
+    * `JavaExpressionParseUtil#fromVariableTree` => `JavaExpression`
+
+Changes to JavaExpressionContext:
+ * New method JavaExpressionContext#buildContextForMethodDeclaration(MethodTree, SourceChecker)
+   replaces all overloads of buildContextForMethodDeclaration.
+
+Parsing a Java expression no longer requires the formal parameters
+`AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
+in `JavaExpression` with simplified signatures include
+ * `fromArrayAccess`
+ * `fromNodeFieldAccess`
+ * `fromNode`
+ * `fromTree`
+ * `getParametersOfEnclosingMethod`
+ * `getReceiver`
+
+`CFAbstractStore.insertValue` does nothing if passed a nondeterministic
+expression.  Use new method `CFAbstractStore.insertValuePermitNondeterministic`
+to map a nondeterministic expression to a value.
+
+**Closed issues:**
+#862, #3631, #3991, #4031, #4206, #4207, #4226, #4231, #4248, #4263, #4265,
+#4279, #4286, #4289.
+
+---------------------------------------------------------------------------
+
 Version 3.10.0, February 1, 2021
 
 **User-visible changes:**

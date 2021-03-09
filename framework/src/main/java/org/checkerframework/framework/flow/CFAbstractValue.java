@@ -81,6 +81,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                         + StringsPlume.join(", ", annotations);
     }
 
+    /**
+     * Returns true if the set has an annotation from every hierarchy (or if it doesn't need to);
+     * returns false if the set is missing an annotation from some hierarchy.
+     *
+     * @param annos set of annotations
+     * @param typeMirror where the annotations are written
+     * @param hierarchy the qualifier hierarchy
+     * @return true if no annotations are missing
+     */
     public static boolean validateSet(
             Set<AnnotationMirror> annos, TypeMirror typeMirror, QualifierHierarchy hierarchy) {
 
@@ -111,6 +120,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         return canBeMissingAnnotations(underlyingType);
     }
 
+    /**
+     * Returns true if it is OK for the given type mirror not to be annotated, such as for VOID,
+     * NONE, PACKAGE, TYPEVAR, and some WILDCARD.
+     *
+     * @param typeMirror a type
+     * @return true if it is OK for the given type mirror not to be annotated
+     */
     private static boolean canBeMissingAnnotations(TypeMirror typeMirror) {
         if (typeMirror == null) {
             return false;

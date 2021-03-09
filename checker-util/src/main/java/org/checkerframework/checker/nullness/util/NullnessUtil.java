@@ -50,7 +50,7 @@ public final class NullnessUtil {
      *   // one way to use as a statement:
      *   castNonNull(possiblyNull3);
      *   possiblyNull3.toString();`
-     * }</code></pre>
+     * </code></pre>
      *
      * The {@code castNonNull} method is intended to be used in situations where the programmer
      * definitively knows that a given reference is not null, but the type system is unable to make
@@ -66,8 +66,8 @@ public final class NullnessUtil {
      * @param ref a reference of @Nullable type, that is non-null at run time
      * @return the argument, casted to have the type qualifier @NonNull
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object> @NonNull T castNonNull(
-            @Nullable T ref) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T castNonNull(@Nullable T ref) {
         assert ref != null : "Misuse of castNonNull: called with a null argument";
         return (@NonNull T) ref;
     }
@@ -99,8 +99,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [] castNonNullDeep(T @Nullable [] arr) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [] castNonNullDeep(
+            T @Nullable [] arr) {
         return (@NonNull T[]) castNonNullArray(arr, null);
     }
 
@@ -116,8 +117,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [] castNonNullDeep(T @Nullable [] arr, String message) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [] castNonNullDeep(
+            T @Nullable [] arr, String message) {
         return (@NonNull T[]) castNonNullArray(arr, message);
     }
 
@@ -132,8 +134,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][] castNonNullDeep(T @Nullable [] @Nullable [] arr) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][] castNonNullDeep(
+            T @Nullable [] @Nullable [] arr) {
         return (@NonNull T[][]) castNonNullArray(arr, null);
     }
 
@@ -149,8 +152,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][] castNonNullDeep(T @Nullable [] @Nullable [] arr, String message) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][] castNonNullDeep(
+            T @Nullable [] @Nullable [] arr, String message) {
         return (@NonNull T[][]) castNonNullArray(arr, message);
     }
 
@@ -165,8 +169,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][][] castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] arr) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][][] castNonNullDeep(
+            T @Nullable [] @Nullable [] @Nullable [] arr) {
         return (@NonNull T[][][]) castNonNullArray(arr, null);
     }
 
@@ -182,9 +187,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][][] castNonNullDeep(
-                    T @Nullable [] @Nullable [] @Nullable [] arr, String message) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][][] castNonNullDeep(
+            T @Nullable [] @Nullable [] @Nullable [] arr, String message) {
         return (@NonNull T[][][]) castNonNullArray(arr, message);
     }
 
@@ -199,9 +204,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][][][] castNonNullDeep(
-                    T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][][][] castNonNullDeep(
+            T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
         return (@NonNull T[][][][]) castNonNullArray(arr, null);
     }
 
@@ -217,9 +222,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][][][] castNonNullDeep(
-                    T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr, String message) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][][][] castNonNullDeep(
+            T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr, String message) {
         return (@NonNull T[][][][]) castNonNullArray(arr, message);
     }
 
@@ -234,9 +239,9 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][][][][] castNonNullDeep(
-                    T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][][][][] castNonNullDeep(
+            T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
         return (@NonNull T[][][][][]) castNonNullArray(arr, null);
     }
 
@@ -252,10 +257,10 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
-    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
-            @NonNull T @NonNull [][][][][] castNonNullDeep(
-                    T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr,
-                    String message) {
+    @EnsuresNonNull("#1")
+    public static <T extends @Nullable Object> @NonNull T @NonNull [][][][][] castNonNullDeep(
+            T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr,
+            String message) {
         return (@NonNull T[][][][][]) castNonNullArray(arr, message);
     }
 

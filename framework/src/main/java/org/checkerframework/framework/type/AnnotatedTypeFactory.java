@@ -26,6 +26,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -74,7 +75,9 @@ import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
@@ -118,6 +121,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.ATypeElement;
 
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
@@ -231,8 +235,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final Set<@CanonicalName String> supportedQualNames;
 
-    /** Parses stub files and stores annotations from stub files. */
+    /** Parses stub files and stores annotations on public elements from stub files. */
     public final AnnotationFileElementTypes stubTypes;
+
+    /** Parses ajava files and stores annotations on public elements from ajava files. */
+    public final AnnotationFileElementTypes ajavaTypes;
+
+    /**
+     * If type checking a Java file, stores annotations read from an ajava file for that class if
+     * one exists. Unlike {@link #ajavaTypes}, which only stores annotations on public elements,
+     * this stores annotations on all element locations such as in anonymous class bodies.
+     */
+    public @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
 
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
@@ -388,7 +402,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from a Tree to its TreePath. Shared between all instances. */
     private final TreePathCacher treePathCache;
 
-    /** Mapping from CFG generated trees to their enclosing elements. */
+    /** Mapping from CFG-generated trees to their enclosing elements. */
     protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
     /**
@@ -435,6 +449,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.supportedQuals = new HashSet<>();
         this.supportedQualNames = new HashSet<>();
         this.stubTypes = new AnnotationFileElementTypes(this);
+        this.ajavaTypes = new AnnotationFileElementTypes(this);
+        this.currentFileAjavaTypes = null;
 
         this.cacheDeclAnnos = new HashMap<>();
 
@@ -481,13 +497,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 case "jaifs":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
                     break;
+                case "ajava":
+                    wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
+                    break;
                 default:
                     throw new UserError(
                             "Bad argument -Ainfer="
                                     + inferArg
-                                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
+                                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
             }
-            wholeProgramInference = new WholeProgramInferenceScenes(this);
+            if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
+                wholeProgramInference =
+                        new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
+                                this, new WholeProgramInferenceJavaParserStorage(this));
+            } else {
+                wholeProgramInference =
+                        new WholeProgramInferenceImplementation<ATypeElement>(
+                                this, new WholeProgramInferenceScenesStorage(this));
+            }
             if (!checker.hasOption("warns")) {
                 // Without -Awarns, the inference output may be incomplete, because javac halts
                 // after issuing an error.
@@ -606,7 +633,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         initializeReflectionResolution();
 
         if (this.getClass() == AnnotatedTypeFactory.class) {
-            this.parseStubFiles();
+            this.parseAnnotationFiles();
         }
         TypeMirror iterableTypeMirror =
                 ElementUtils.getTypeElement(processingEnv, Iterable.class).asType();
@@ -671,10 +698,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param root the new compilation unit to use
      */
     public void setRoot(@Nullable CompilationUnitTree root) {
+        if (root != null && wholeProgramInference != null) {
+            for (Tree typeDecl : root.getTypeDecls()) {
+                if (typeDecl.getKind() == Kind.CLASS) {
+                    ClassTree classTree = (ClassTree) typeDecl;
+                    wholeProgramInference.preprocessClassTree(classTree);
+                }
+            }
+        }
+
         this.root = root;
         // Do not clear here. Only the primary checker should clear this cache.
         // treePathCache.clear();
-        artificialTreeToEnclosingElementMap.clear();
+
+        // setRoot in a GenericAnnotatedTypeFactory will clear this;
+        // if this isn't a GenericATF, then it must clear it itself.
+        if (!(this instanceof GenericAnnotatedTypeFactory)) {
+            artificialTreeToEnclosingElementMap.clear();
+        }
 
         if (shouldCache) {
             // Clear the caches with trees because once the compilation unit changes,
@@ -688,6 +729,52 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // There is no need to clear the following cache, it is limited by cache size and it
             // contents won't change between compilation units.
             // elementCache.clear();
+        }
+
+        if (root != null && checker.hasOption("ajava")) {
+            // Search for an ajava file with annotations for the current source file and the current
+            // checker. It will be in a directory specified by the "ajava" option in a
+            // subdirectory corresponding to this file's package. For example, a file in package
+            // a.b would be in a subdirectory a/b. The filename is
+            // ClassName-checker.qualified.name.ajava. If such a file exists, read its detailed
+            // annotation data, including annotations on private elements.
+
+            String packagePrefix =
+                    root.getPackageName() != null
+                            ? TreeUtils.nameExpressionToString(root.getPackageName()) + "."
+                            : "";
+
+            // The method getName() returns a path.
+            String className = root.getSourceFile().getName();
+            // Extract the basename.
+            int lastSeparator = className.lastIndexOf(File.separator);
+            if (lastSeparator != -1) {
+                className = className.substring(lastSeparator + 1);
+            }
+            // Drop the ".java" extension.
+            if (className.endsWith(".java")) {
+                className = className.substring(0, className.length() - ".java".length());
+            }
+
+            String qualifiedName = packagePrefix + className;
+
+            for (String ajavaLocation : checker.getOption("ajava").split(File.pathSeparator)) {
+                String ajavaPath =
+                        ajavaLocation
+                                + File.separator
+                                + qualifiedName.replaceAll("\\.", "/")
+                                + "-"
+                                + checker.getClass().getCanonicalName()
+                                + ".ajava";
+                File ajavaFile = new File(ajavaPath);
+                if (ajavaFile.exists()) {
+                    currentFileAjavaTypes = new AnnotationFileElementTypes(this);
+                    currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
+                    break;
+                }
+            }
+        } else {
+            currentFileAjavaTypes = null;
         }
     }
 
@@ -1169,6 +1256,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>Does not include default qualifiers. To obtain them, use {@link
      * #getAnnotatedType(Element)}.
      *
+     * <p>Does not include fake overrides from the stub file.
+     *
      * @param elt the element
      * @return AnnotatedTypeMirror of the element with explicitly-written and stub file annotations
      */
@@ -1210,18 +1299,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
+        type = mergeAnnotationFileAnnosIntoType(type, elt, ajavaTypes);
+        if (currentFileAjavaTypes != null) {
+            type = mergeAnnotationFileAnnosIntoType(type, elt, currentFileAjavaTypes);
+        }
+
         if (checker.hasOption("mergeStubsWithSource")) {
             if (debugStubParser) {
                 System.out.printf("fromElement: mergeStubsIntoType(%s, %s)", type, elt);
             }
-            type = mergeStubsIntoType(type, elt);
+            type = mergeAnnotationFileAnnosIntoType(type, elt, stubTypes);
             if (debugStubParser) {
                 System.out.printf(" => %s%n", type);
             }
         }
-        // Caching is disabled if stub files are being parsed, because calls to this
-        // method before the stub files are fully read can return incorrect results.
-        if (shouldCache && !stubTypes.isParsing()) {
+        // Caching is disabled if annotation files are being parsed, because calls to this
+        // method before the annotation files are fully read can return incorrect results.
+        if (shouldCache
+                && !stubTypes.isParsing()
+                && !ajavaTypes.isParsing()
+                && (currentFileAjavaTypes == null || !currentFileAjavaTypes.isParsing())) {
             elementCache.put(elt, type.deepCopy());
         }
         return type;
@@ -1244,6 +1341,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>If a VariableTree is a parameter to a lambda, this method also adds annotations from the
      * declared type of the functional interface and the executable type of its method.
      *
+     * <p>The returned AnnotatedTypeMirror also contains explicitly written annotations from any
+     * ajava file and if {@code -AmergeStubsWithSource} is passed, it also merges any explicitly
+     * written annotations from stub files.
+     *
      * @param tree MethodTree or VariableTree
      * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
      */
@@ -1258,11 +1359,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
+        result = mergeAnnotationFileAnnosIntoType(result, tree, ajavaTypes);
+        if (currentFileAjavaTypes != null) {
+            result = mergeAnnotationFileAnnosIntoType(result, tree, currentFileAjavaTypes);
+        }
+
         if (checker.hasOption("mergeStubsWithSource")) {
             if (debugStubParser) {
                 System.out.printf("fromClass: mergeStubsIntoType(%s, %s)", result, tree);
             }
-            result = mergeStubsIntoType(result, tree);
+            result = mergeAnnotationFileAnnosIntoType(result, tree, stubTypes);
             if (debugStubParser) {
                 System.out.printf(" => %s%n", result);
             }
@@ -1281,33 +1387,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type the type to apply annotation file types to
      * @param tree the tree from which to read annotation file types
+     * @param source storage for current annotation file annotations
      * @return the given type, side-effected to add the annotation file types
      */
-    private AnnotatedTypeMirror mergeStubsIntoType(@Nullable AnnotatedTypeMirror type, Tree tree) {
+    private AnnotatedTypeMirror mergeAnnotationFileAnnosIntoType(
+            @Nullable AnnotatedTypeMirror type, Tree tree, AnnotationFileElementTypes source) {
         Element elt = TreeUtils.elementFromTree(tree);
-        return mergeStubsIntoType(type, elt);
+        return mergeAnnotationFileAnnosIntoType(type, elt, source);
     }
 
     /**
-     * Merges types from stub files for {@code elt} into {@code type} by taking the greatest lower
-     * bound of the annotations in both.
+     * Merges types from annotation files for {@code elt} into {@code type} by taking the greatest
+     * lower bound of the annotations in both.
      *
-     * @param type the type to apply stub types to
-     * @param elt the element from which to read stub types
-     * @return the type, side-effected to add the stub types
+     * @param type the type to apply annotation file types to
+     * @param elt the element from which to read annotation file types
+     * @param source storage for current annotation file annotations
+     * @return the type, side-effected to add the annotation file types
      */
-    protected AnnotatedTypeMirror mergeStubsIntoType(
-            @Nullable AnnotatedTypeMirror type, Element elt) {
-        AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-        if (stubType == null) {
+    protected AnnotatedTypeMirror mergeAnnotationFileAnnosIntoType(
+            @Nullable AnnotatedTypeMirror type, Element elt, AnnotationFileElementTypes source) {
+        AnnotatedTypeMirror typeFromFile = source.getAnnotatedTypeMirror(elt);
+        if (typeFromFile == null) {
             return type;
         }
         if (type == null) {
-            return stubType;
+            return typeFromFile;
         }
-        // Must merge (rather than only take the stub type if it is a subtype)
+        // Must merge (rather than only take the annotation file type if it is a subtype)
         // to support WPI.
-        AnnotatedTypeCombiner.combine(stubType, type, this.getQualifierHierarchy());
+        AnnotatedTypeCombiner.combine(typeFromFile, type, this.getQualifierHierarchy());
         return type;
     }
 
@@ -1560,7 +1669,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't found, null is
      * returned.
      *
-     * @param annoTrees trees to look
+     * @param annoTrees list of trees to search; the result is one of the list elements, or null
      * @return the AnnotationTree that is a use of one of the field invariant annotations, or null
      *     if one isn't found
      */
@@ -1867,9 +1976,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the receiver type of the expression tree, or null if it does not exist.
-     *
-     * <p>A type is returned even if the receiver is an implicit {@code this}.
+     * Returns the receiver type of the expression tree, which might be the type of an implicit
+     * {@code this}. Returns null if the expression has no explicit or implicit receiver.
      *
      * @param expression the expression for which to determine the receiver type
      * @return the type of the receiver of expression
@@ -1999,11 +2107,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
-        AnnotatedExecutableType memberType = getAnnotatedType(methodElt); // get unsubstituted type
-        methodFromUsePreSubstitution(tree, memberType);
+        AnnotatedExecutableType memberTypeWithoutOverrides =
+                getAnnotatedType(methodElt); // get unsubstituted type
+        AnnotatedExecutableType memberTypeWithOverrides =
+                (AnnotatedExecutableType)
+                        applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+        methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
 
         AnnotatedExecutableType methodType =
-                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
+                AnnotatedTypes.asMemberOf(
+                        types, this, receiverType, methodElt, memberTypeWithOverrides);
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
@@ -2089,6 +2202,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return newTypeVarMapping;
+    }
+
+    /**
+     * Given a member and its type, returns the type with fake overrides applied to it.
+     *
+     * @param receiverType the type of the class that contains member (or a subtype of it)
+     * @param member a type member, such as a method or field
+     * @param memberType the type of {@code member}
+     * @return {@code memberType}, adjusted according to fake overrides
+     */
+    private AnnotatedTypeMirror applyFakeOverrides(
+            AnnotatedTypeMirror receiverType, Element member, AnnotatedTypeMirror memberType) {
+        // Currently, handle only methods, not fields.  TODO: Handle fields.
+        if (memberType.getKind() != TypeKind.EXECUTABLE) {
+            return memberType;
+        }
+
+        AnnotationFileElementTypes afet = stubTypes;
+        AnnotatedExecutableType methodType =
+                (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
+        if (methodType == null) {
+            methodType = (AnnotatedExecutableType) memberType;
+        }
+        return methodType;
     }
 
     /**
@@ -2308,7 +2445,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns the return type of the method {@code m}.
      *
-     * @param m a tree of method
+     * @param m tree of a method declaration
      * @return the return type of the method
      */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
@@ -2317,11 +2454,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return ret;
     }
 
-    /** Returns the return type of the method {@code m} at the return statement {@code r}. */
+    /**
+     * Returns the return type of the method {@code m} at the return statement {@code r}. This
+     * implementation just calls {@link #getMethodReturnType(MethodTree)}, but subclasses may
+     * override this method to change the type based on the return statement.
+     *
+     * @param m tree of a method declaration
+     * @param r a return statement within method {@code m}
+     * @return the return type of the method {@code m} at the return statement {@code r}
+     */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        AnnotatedExecutableType methodType = getAnnotatedType(m);
-        AnnotatedTypeMirror ret = methodType.getReturnType();
-        return ret;
+        return getMethodReturnType(m);
     }
 
     /**
@@ -3381,7 +3524,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Handle an artificial tree by mapping it to the enclosing element.
+     * Adds the given mapping from a synthetic (generated) tree to its enclosing element.
      *
      * <p>See {@code
      * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
@@ -3391,11 +3534,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final void setEnclosingElementForArtificialTree(Tree tree, Element enclosing) {
         artificialTreeToEnclosingElementMap.put(tree, enclosing);
-        for (BaseTypeChecker checker : checker.getSubcheckers()) {
-            AnnotatedTypeFactory subFactory = checker.getTypeFactory();
-            subFactory.artificialTreeToEnclosingElementMap.putAll(
-                    artificialTreeToEnclosingElementMap);
-        }
     }
 
     /**
@@ -3431,7 +3569,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Parses the stub files in the following order:
+     * Parses all annotation files in the following order:
      *
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
@@ -3443,15 +3581,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *   <li>Stub files provide via stubs system property <br>
      *   <li>Stub files provide via stubs environment variable <br>
      *   <li>Stub files provide via stubs compiler option
+     *   <li>Ajava files provided via ajava compiler option
      * </ol>
      *
      * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub
      * file, the qualifier in the last stub file is applied.
      *
-     * <p>Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
+     * <p>The annotations are stored by side-effecting {@link #stubTypes} and {@link #ajavaTypes}.
      */
-    protected void parseStubFiles() {
+    protected void parseAnnotationFiles() {
         stubTypes.parseStubFiles();
+        ajavaTypes.parseAjavaFiles();
     }
 
     /**
@@ -3618,24 +3758,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        // If parsing stub files, return the annotations in the element.
-        if (!stubTypes.isParsing()) {
-
-            // Retrieving annotations from stub files.
-            Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt);
-            results.addAll(stubAnnos);
-
-            if (elt.getKind() == ElementKind.METHOD) {
-                // Retrieve the annotations from the overridden method's element.
-                inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
-            } else if (ElementUtils.isTypeDeclaration(elt)) {
-                inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
-            }
-
-            // Add the element and its annotations to the cache.
-            cacheDeclAnnos.put(elt, results);
+        // If parsing annotation files, return only the annotations in the element.
+        if (stubTypes.isParsing()
+                || ajavaTypes.isParsing()
+                || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing())) {
+            return results;
         }
 
+        // Add annotations from annotation files.
+        results.addAll(stubTypes.getDeclAnnotation(elt));
+        results.addAll(ajavaTypes.getDeclAnnotation(elt));
+        if (currentFileAjavaTypes != null) {
+            results.addAll(currentFileAjavaTypes.getDeclAnnotation(elt));
+        }
+
+        if (elt.getKind() == ElementKind.METHOD) {
+            // Retrieve the annotations from the overridden method's element.
+            inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
+        } else if (ElementUtils.isTypeDeclaration(elt)) {
+            inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
+        }
+
+        // Add the element and its annotations to the cache.
+        cacheDeclAnnos.put(elt, results);
         return results;
     }
 
@@ -4867,6 +5012,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param methodAnnos the method or constructor annotations to modify
      */
     public void prepareMethodForWriting(AMethod methodAnnos) {
+        // This implementation does nothing.
+    }
+
+    /**
+     * Side-effects the method or constructor annotations to make any desired changes before writing
+     * to an ajava file.
+     *
+     * @param methodAnnos the method or constructor annotations to modify
+     */
+    public void prepareMethodForWriting(
+            WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         // This implementation does nothing.
     }
 

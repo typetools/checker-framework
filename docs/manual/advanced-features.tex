@@ -219,6 +219,10 @@ rules are used in order, until one applies.
   The qualifier with a meta-annotation \<@DefaultFor(typeKinds = KIND)>, where \<KIND> is the
   \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
 \item
+  The qualifier with a meta-annotation \<@DefaultFor(names = REGEX)>, where \<REGEX>
+  matches the name of the variable being defined (if any).  For return types, the  the name of
+  the method is used. (Section~\ref{default-for-use})
+\item
   The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
   (Section~\ref{default-qualifier})
 \item
@@ -1276,6 +1280,13 @@ systems) \code{<self>}.
 
 \item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
   the Index Checker, for example.
+
+\item a class name expression within another expression, e.g., ``String''
+  in \<String.class> or ``pkg.MyClass'' in \<pkg.MyClass.staticField>.  The
+  class name must be fully-qualified unless it can be referenced by its
+  simple name without an \<import> statement at the location where the
+  annotation appears.  For example, an annotation in class \<C> can use the
+  simple name of a class in \<java.lang> or in the same package as \<C>.
 
 \end{itemize}
 

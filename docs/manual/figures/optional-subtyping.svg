@@ -7,12 +7,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="200.03"
-   height="95.730003"
-   viewBox="358 100 177.42344 135.08567"
+   width="144.88226"
+   height="145.84274"
+   viewBox="358 100 128.50827 205.80031"
    id="svg3577"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
    sodipodi:docname="optional-subtyping.svg">
   <metadata
      id="metadata3693">
@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -42,15 +42,20 @@
      id="namedview3689"
      showgrid="false"
      inkscape:zoom="2.3166763"
-     inkscape:cx="-20.154082"
-     inkscape:cy="35.503692"
+     inkscape:cx="-46.627506"
+     inkscape:cy="30.487617"
      inkscape:window-x="9"
      inkscape:window-y="27"
      inkscape:window-maximized="0"
-     inkscape:current-layer="svg3577" />
+     inkscape:current-layer="g3609-3"
+     inkscape:document-rotation="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <g
      id="g3589"
-     transform="translate(-14.618644,-11.921761)">
+     transform="translate(-37.864476,-19)">
     <rect
        style="fill:#ffffff"
        x="360"
@@ -67,19 +72,17 @@
        id="rect3593" />
     <text
        font-size="15.8044"
-       style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-weight:normal;font-size:15.8044px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="460.5"
        y="146.772"
-       id="text3595">
-      <tspan
+       id="text3595"><tspan
          x="460.5"
          y="146.772"
-         id="tspan3597">@MaybePresent</tspan>
-    </text>
+         id="tspan3597">@MaybePresent</tspan></text>
   </g>
   <g
      id="g3609"
-     transform="translate(-14.618644,-11.921761)">
+     transform="translate(-37.864476,-19)">
     <rect
        style="fill:#ffffff"
        x="360"
@@ -96,30 +99,26 @@
        id="rect3613" />
     <text
        font-size="15.8044"
-       style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-weight:normal;font-size:15.8044px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="460.5"
        y="226.772"
-       id="text3615">
-      <tspan
+       id="text3615"><tspan
          x="460.5"
          y="226.772"
-         id="tspan3617">@Present</tspan>
-    </text>
+         id="tspan3617">@Present</tspan></text>
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="460.5"
-     y="77.085655"
-     id="text3619">
-    <tspan
-       x="460.5"
-       y="77.085655"
-       id="tspan3621" />
-  </text>
+     style="font-style:normal;font-weight:normal;font-size:12.8px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="423.14307"
+     y="70.007416"
+     id="text3619"><tspan
+       x="423.14307"
+       y="70.007416"
+       id="tspan3621" /></text>
   <g
      id="g3657"
-     transform="translate(-14.618644,-11.921761)">
+     transform="translate(-37.864476,-19)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="460.5"
@@ -129,22 +128,66 @@
        id="line3659" />
     <polygon
        style="fill:#000000"
-       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       points="465.5,176.236 460.5,173.736 455.5,176.236 460.5,166.236 "
        id="polygon3661" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       points="465.5,176.236 460.5,173.736 455.5,176.236 460.5,166.236 "
        id="polygon3663" />
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="460.5"
-     y="77.085655"
-     id="text3673">
-    <tspan
+     style="font-style:normal;font-weight:normal;font-size:12.8px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="423.14307"
+     y="70.007416"
+     id="text3673"><tspan
+       x="423.14307"
+       y="70.007416"
+       id="tspan3675" /></text>
+  <g
+     id="g3609-3"
+     transform="translate(-39.309445,60.800322)">
+    <rect
+       style="fill:#ffffff"
+       x="360"
+       y="200"
+       width="201"
+       height="44"
+       id="rect3611-6" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="360"
+       y="200"
+       width="201"
+       height="44"
+       id="rect3613-7" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:15.8044px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="460.5"
-       y="77.085655"
-       id="tspan3675" />
-  </text>
+       y="226.772"
+       id="text3615-5"><tspan
+         x="460.5"
+         y="226.772"
+         id="tspan3617-3">@OptionalBottom</tspan></text>
+  </g>
+  <g
+     id="g3657-5"
+     transform="translate(-39.309445,60.800322)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="460.5"
+       y1="200"
+       x2="460.5"
+       y2="173.73599"
+       id="line3659-6" />
+    <polygon
+       style="fill:#000000"
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       id="polygon3661-2" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       id="polygon3663-9" />
+  </g>
 </svg>

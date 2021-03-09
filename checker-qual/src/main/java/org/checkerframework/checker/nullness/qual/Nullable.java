@@ -11,9 +11,15 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * {@link Nullable} is a type annotation that indicates that the value is not known to be non-null
- * (see {@link NonNull}). Only if an expression has a {@link Nullable} type may it be assigned
- * {@code null}.
+ * {@link Nullable} is a type annotation that makes no commitments about whether the value is {@code
+ * null}. Equivalently, the type includes the {@code null} value.
+ *
+ * <p>The Nullness Checker issues an error if {@code null} is assigned an an expression of {@link
+ * NonNull} type.
+ *
+ * <p>Programmers typically write {@code @Nullable} to indicate that the value is not known to be
+ * {@link NonNull}. However, since {@code @Nullable} is a supertype of {@code @NonNull}, an
+ * expression that never evaluates to {@code null} can have a declared type of {@code @Nullable}.
  *
  * @see NonNull
  * @see MonotonicNonNull

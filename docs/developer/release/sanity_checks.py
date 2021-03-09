@@ -11,18 +11,24 @@ Copyright (c) 2012 University of Washington
 """
 
 import zipfile
-from release_vars  import *
+from release_vars import *
 from release_utils import *
+
 
 def javac_sanity_check(checker_framework_website, release_version):
     """
-       Download the release of the Checker Framework from the development website
-       and NullnessExampleWithWarnings.java from the GitHub repository.
-       Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
-       Fails if the expected errors are not found in the output.
+    Download the release of the Checker Framework from the development website
+    and NullnessExampleWithWarnings.java from the GitHub repository.
+    Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
+    Fails if the expected errors are not found in the output.
     """
 
-    new_checkers_release_zip = os.path.join(checker_framework_website, "releases", release_version, "checker-framework-" + release_version + ".zip")
+    new_checkers_release_zip = os.path.join(
+        checker_framework_website,
+        "releases",
+        release_version,
+        "checker-framework-" + release_version + ".zip",
+    )
 
     javac_sanity_dir = os.path.join(SANITY_DIR, "javac")
 
@@ -30,13 +36,19 @@ def javac_sanity_check(checker_framework_website, release_version):
         delete_path(javac_sanity_dir)
     execute("mkdir -p " + javac_sanity_dir)
 
-    javac_sanity_zip = os.path.join(javac_sanity_dir, "checker-framework-%s.zip" % release_version)
+    javac_sanity_zip = os.path.join(
+        javac_sanity_dir, "checker-framework-%s.zip" % release_version
+    )
 
-    print("Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip))
+    print(
+        "Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip)
+    )
     download_binary(new_checkers_release_zip, javac_sanity_zip)
 
     nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
-    nullness_example = os.path.join(javac_sanity_dir, "NullnessExampleWithWarnings.java")
+    nullness_example = os.path.join(
+        javac_sanity_dir, "NullnessExampleWithWarnings.java"
+    )
 
     if os.path.isfile(nullness_example):
         delete(nullness_example)
@@ -57,27 +69,46 @@ def javac_sanity_check(checker_framework_website, release_version):
     sanity_javac = os.path.join(deploy_dir, "checker", "bin", "javac")
     nullness_output = os.path.join(deploy_dir, "output.log")
 
-    cmd = sanity_javac + " -processor org.checkerframework.checker.nullness.NullnessChecker " + nullness_example + " -Anomsgtext"
+    cmd = (
+        sanity_javac
+        + " -processor org.checkerframework.checker.nullness.NullnessChecker "
+        + nullness_example
+        + " -Anomsgtext"
+    )
     execute_write_to_file(cmd, nullness_output, False)
-    check_results("Javac sanity check", nullness_output, [
-        "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
-        "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)"
-    ])
+    check_results(
+        "Javac sanity check",
+        nullness_output,
+        [
+            "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
+            "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)",
+        ],
+    )
 
     # this is a smoke test for the built-in checker shorthand feature
     # https://checkerframework.org/manual/#shorthand-for-checkers
     nullness_shorthand_output = os.path.join(deploy_dir, "output_shorthand.log")
-    cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
+    cmd = (
+        sanity_javac
+        + " -processor NullnessChecker "
+        + nullness_example
+        + " -Anomsgtext"
+    )
     execute_write_to_file(cmd, nullness_shorthand_output, False)
-    check_results("Javac Shorthand Sanity Check", nullness_shorthand_output, [
-        "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
-        "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)"
-    ])
+    check_results(
+        "Javac Shorthand Sanity Check",
+        nullness_shorthand_output,
+        [
+            "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
+            "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)",
+        ],
+    )
+
 
 def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     """
-       Run the Maven sanity check with the local artifacts or from the repo at
-       repo_url.
+    Run the Maven sanity check with the local artifacts or from the repo at
+    repo_url.
     """
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
     maven_sanity_dir = os.path.join(SANITY_DIR, sub_sanity_dir_name)
@@ -90,25 +121,35 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     output_log = os.path.join(maven_example_dir, "output.log")
 
     ant_release_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "release.xml")
-    get_example_dir_cmd = "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s" % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
+    get_example_dir_cmd = (
+        "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s"
+        % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
+    )
 
     execute(get_example_dir_cmd)
-    path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
+    path_to_artifacts = os.path.join(
+        os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework"
+    )
     if repo_url != "":
-        print(("This script will now delete your Maven Checker Framework artifacts.\n" +
-            "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
-            "will need to be re-downloaded the next time you need them.  This will be " +
-            "done automatically by Maven next time you use the plugin."))
+        print(
+            (
+                "This script will now delete your Maven Checker Framework artifacts.\n"
+                + "See README-release-process.html#Maven-Plugin dependencies.  These artifacts "
+                + "will need to be re-downloaded the next time you need them.  This will be "
+                + "done automatically by Maven next time you use the plugin."
+            )
+        )
 
         if os.path.isdir(path_to_artifacts):
             delete_path(path_to_artifacts)
         maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
         add_repo_information(maven_example_pom, repo_url)
 
-    os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
+    os.environ["JAVA_HOME"] = os.environ["JAVA_8_HOME"]
     execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
     if repo_url != "":
         delete_path(path_to_artifacts)
+
 
 def check_results(title, output_log, expected_errors):
     """Verify the given actual output of a sanity check against the given
@@ -119,9 +160,15 @@ def check_results(title, output_log, expected_errors):
     found_errors = are_in_file(output_log, expected_errors)
 
     if not found_errors:
-        raise Exception(title + " did not work!\n" +
-                        "File: " + output_log + "\n" +
-                        "should contain the following errors: [ " + ", ".join(expected_errors))
+        raise Exception(
+            title
+            + " did not work!\n"
+            + "File: "
+            + output_log
+            + "\n"
+            + "should contain the following errors: [ "
+            + ", ".join(expected_errors)
+        )
     else:
         print("%s check: passed!\n" % title)
 
@@ -143,7 +190,10 @@ def add_repo_information(pom, repo_url):
                     <url>%s</url>
               </pluginRepository>
         </pluginRepositories>
-        """ % (repo_url, repo_url)
+        """ % (
+        repo_url,
+        repo_url,
+    )
 
     result_str = execute('grep -nm 1 "<build>" %s' % pom, True, True).decode()
     line_no_str = result_str.split(":")[0]

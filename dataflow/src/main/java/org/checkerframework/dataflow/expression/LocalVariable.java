@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -24,9 +25,14 @@ public class LocalVariable extends JavaExpression {
         this.element = localVar.getElement();
     }
 
-    public LocalVariable(Element elem) {
-        super(ElementUtils.getType(elem));
-        this.element = elem;
+    /**
+     * Creates a LocalVariable
+     *
+     * @param element the element for the local variable
+     */
+    public LocalVariable(Element element) {
+        super(ElementUtils.getType(element));
+        this.element = element;
     }
 
     @Override
@@ -76,6 +82,11 @@ public class LocalVariable extends JavaExpression {
     }
 
     @Override
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
+    }
+
+    @Override
     public boolean syntacticEquals(JavaExpression je) {
         if (!(je instanceof LocalVariable)) {
             return false;
@@ -97,5 +108,10 @@ public class LocalVariable extends JavaExpression {
     @Override
     public boolean isUnmodifiableByOtherCode() {
         return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
+    }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitLocalVariable(this, p);
     }
 }

@@ -138,7 +138,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     private AnnotatedTypeMirror errorTypeNotErasedSubtypeOfSuperType(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
         if (TypesUtils.isString(superType.getUnderlyingType())) {
-            // Any type can be converted to a String
+            // Any type can be converted to String
             return visit(atypeFactory.getStringType(type), superType, p);
         }
         if (isUninferredTypeArgument) {
@@ -361,7 +361,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     public AnnotatedTypeMirror visitDeclared_Primitive(
             AnnotatedDeclaredType type, AnnotatedPrimitiveType superType, Void p) {
         if (!TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
-            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a box primitive.");
+            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a boxed primitive.");
         }
         AnnotatedTypeMirror unboxedType = atypeFactory.getUnboxedType(type);
         return copyPrimaryAnnos(unboxedType, superType);

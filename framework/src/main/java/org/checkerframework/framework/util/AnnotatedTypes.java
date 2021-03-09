@@ -60,7 +60,7 @@ import org.plumelib.util.StringsPlume;
  * Types}.
  */
 public class AnnotatedTypes {
-    // Class cannot be instantiated.
+    /** Class cannot be instantiated. */
     private AnnotatedTypes() {
         throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
     }
@@ -472,6 +472,16 @@ public class AnnotatedTypes {
         }
     }
 
+    /**
+     * Substitute type variables.
+     *
+     * @param types type utilities
+     * @param atypeFactory the type factory
+     * @param receiverType the type of the class that contains member (or a subtype of it)
+     * @param member a type member, such as a method or field
+     * @param memberType the type of {@code member}
+     * @return {@code memberType}, substituted
+     */
     private static AnnotatedTypeMirror substituteTypeVariables(
             Types types,
             AnnotatedTypeFactory atypeFactory,
