@@ -21,7 +21,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
@@ -48,6 +47,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 // The Lock Checker also supports "<self>" as a JavaExpression, but that is implemented in the Lock
 // Checker.
@@ -814,22 +814,7 @@ public abstract class JavaExpression {
         }
         List<? extends VariableElement> paramElts = method.getParameters();
         VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
-        return getArrayDepth(ElementUtils.getType(lastParamElt)) != getArrayDepth(lastArgType);
-    }
-
-    /**
-     * Returns the depth of an array type.
-     *
-     * @param arrayType an array type
-     * @return the depth of {@code arrayType}
-     */
-    private static int getArrayDepth(TypeMirror arrayType) {
-        int counter = 0;
-        TypeMirror type = arrayType;
-        while (type.getKind() == TypeKind.ARRAY) {
-            counter++;
-            type = ((ArrayType) type).getComponentType();
-        }
-        return counter;
+        return TypesUtils.getArrayDepth(ElementUtils.getType(lastParamElt))
+                != TypesUtils.getArrayDepth(lastArgType);
     }
 }
