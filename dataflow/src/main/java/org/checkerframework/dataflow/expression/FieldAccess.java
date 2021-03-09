@@ -40,7 +40,7 @@ public class FieldAccess extends JavaExpression {
      * @param fieldElement element of the field
      */
     public FieldAccess(JavaExpression receiver, VariableElement fieldElement) {
-        this(receiver, ElementUtils.getType(fieldElement), fieldElement);
+        this(receiver, fieldElement.asType(), fieldElement);
     }
 
     /**
