@@ -594,8 +594,7 @@ public abstract class JavaExpression {
         List<FormalParameter> parameters = new ArrayList<>(methodEle.getParameters().size());
         int oneBasedIndex = 1;
         for (VariableElement variableElement : methodEle.getParameters()) {
-            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
-            parameters.add(parameter);
+            parameters.add(new FormalParameter(oneBasedIndex, variableElement));
             oneBasedIndex++;
         }
         return parameters;
@@ -803,28 +802,30 @@ public abstract class JavaExpression {
      */
     private static boolean isVarArgsInvocation(
             ExecutableElement method, List<? extends ExpressionTree> args) {
-        if (method != null && method.isVarArgs()) {
-            if (method.getParameters().size() != args.size()) {
-                return true;
-            }
-            TypeMirror lastArg = TreeUtils.typeOf(args.get(args.size() - 1));
-            List<? extends VariableElement> paramTypes = method.getParameters();
-            VariableElement lastParam = paramTypes.get(paramTypes.size() - 1);
-            return lastArg.getKind() != TypeKind.ARRAY
-                    || getArrayDepth(ElementUtils.getType(lastParam)) != getArrayDepth(lastArg);
+        if (method == null || !method.isVarArgs()) {
+            return false;
         }
-        return false;
+        if (method.getParameters().size() != args.size()) {
+            return true;
+        }
+        TypeMirror lastArgType = TreeUtils.typeOf(args.get(args.size() - 1));
+        if (lastArgType.getKind() != TypeKind.ARRAY) {
+            return false;
+        }
+        List<? extends VariableElement> paramElts = method.getParameters();
+        VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
+        return getArrayDepth(ElementUtils.getType(lastParamElt)) != getArrayDepth(lastArgType);
     }
 
     /**
-     * Returns the depth of the array type of {@code array}.
+     * Returns the depth of an array type.
      *
-     * @param array the type of the array
-     * @return the depth of {@code array}
+     * @param arrayType an array type
+     * @return the depth of {@code arrayType}
      */
-    private static int getArrayDepth(TypeMirror array) {
+    private static int getArrayDepth(TypeMirror arrayType) {
         int counter = 0;
-        TypeMirror type = array;
+        TypeMirror type = arrayType;
         while (type.getKind() == TypeKind.ARRAY) {
             counter++;
             type = ((ArrayType) type).getComponentType();
