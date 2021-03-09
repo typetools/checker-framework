@@ -351,6 +351,17 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             outsideUpperBound = ((AnnotatedWildcardType) outsideUpperBound).getExtendsBound();
         }
 
+        if (!TypesUtils.isErasedSubtype(
+                inside.getUnderlyingType(),
+                outsideUpperBound.getUnderlyingType(),
+                inside.atypeFactory.types)) {
+            // TODO: subtype is a wildcard that should have been captured, so just check the primary
+            // annotations.
+            AnnotationMirror subAnno = inside.getEffectiveAnnotationInHierarchy(currentTop);
+            AnnotationMirror superAnno = outsideUpperBound.getAnnotationInHierarchy(currentTop);
+            return qualifierHierarchy.isSubtype(subAnno, superAnno);
+        }
+
         AnnotatedTypeMirror castedInside =
                 AnnotatedTypes.castedAsSuper(inside.atypeFactory, inside, outsideUpperBound);
         if (!isSubtypeCaching(castedInside, outsideUpperBound)) {
