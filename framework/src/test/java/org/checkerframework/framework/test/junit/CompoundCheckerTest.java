@@ -11,7 +11,12 @@ public class CompoundCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public CompoundCheckerTest(List<File> testFiles) {
-        super(testFiles, CompoundChecker.class, "compound-checker", "-Anomsgtext");
+        super(
+                testFiles,
+                CompoundChecker.class,
+                "compound-checker",
+                "-Anomsgtext",
+                "-AsuppressWarnings=type.checking.not.run");
     }
 
     @Parameters
