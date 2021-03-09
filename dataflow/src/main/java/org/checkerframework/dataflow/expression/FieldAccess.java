@@ -24,15 +24,17 @@ public class FieldAccess extends JavaExpression {
     }
 
     public FieldAccess(JavaExpression receiver, FieldAccessNode node) {
-        super(node.getType());
-        this.receiver = receiver;
-        this.field = node.getElement();
+        this(receiver, node.getType(), node.getElement());
     }
 
     public FieldAccess(JavaExpression receiver, TypeMirror type, VariableElement fieldElement) {
         super(type);
         this.receiver = receiver;
         this.field = fieldElement;
+    }
+
+    public FieldAccess(JavaExpression receiver, VariableElement fieldElement) {
+        this(receiver, ElementUtils.getType(fieldElement), fieldElement);
     }
 
     public boolean isFinal() {

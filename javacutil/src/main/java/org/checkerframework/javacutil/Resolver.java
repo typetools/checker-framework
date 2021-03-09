@@ -203,7 +203,7 @@ public class Resolver {
                             names.fromString(name),
                             Kinds.KindSelector.VAR);
 
-            if (res.getKind() == ElementKind.FIELD) {
+            if (res.getKind().isField()) {
                 return (VariableElement) res;
             } else if (res.getKind() == ElementKind.OTHER && ACCESSERROR.isInstance(res)) {
                 // Return the inaccessible field that was found
