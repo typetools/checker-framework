@@ -657,8 +657,8 @@ public class DependentTypesHelper {
     /**
      * This method is for subclasses to override to change JavaExpressions in some way. This
      * implementation returns the argument. This method is called after parsing and
-     * viewpoint-adaption have occurred. {@code javaExpr} may be an {@link PassThroughExpression}
-     * that result from an {@link JavaExpressionParseException}.
+     * viewpoint-adaption have occurred. {@code javaExpr} may be a {@link PassThroughExpression}
+     * that results from an {@link JavaExpressionParseException}.
      *
      * @param javaExpr a JavaExpression
      * @return a transformed JavaExpression or {@code null} if no transformation exists
