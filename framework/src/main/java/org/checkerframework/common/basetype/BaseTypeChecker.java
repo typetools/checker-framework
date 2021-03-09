@@ -477,6 +477,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return treePathCacher;
     }
 
+    @Override
+    protected void reportJavacError(TreePath p) {
+        if (parentChecker == null) {
+            // Only the parent checker should report the "type.checking.not.run" error.
+            super.reportJavacError(p);
+        }
+    }
+
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
