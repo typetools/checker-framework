@@ -51,7 +51,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 // The Lock Checker also supports "<self>" as a JavaExpression, but that is implemented in the Lock
 // Checker.
-// There are no special subclasses (AST nodes) for  "<self>".
+// There are no special subclasses (AST nodes) for "<self>".
 /**
  * This class represents a Java expression and its type. It does not represent all possible Java
  * expressions (for example, it does not represent a ternary conditional expression {@code ?:}; use
@@ -575,8 +575,8 @@ public abstract class JavaExpression {
      * @param methodEle the method element
      * @return list of parameters as {@link LocalVariable}s
      */
-    public static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
-        List<JavaExpression> parameters = new ArrayList<>();
+    public static List<JavaExpression> getParametersAsLocalVariables(ExecutableElement methodEle) {
+        List<JavaExpression> parameters = new ArrayList<>(methodEle.getParameters().size());
         for (VariableElement variableElement : methodEle.getParameters()) {
             LocalVariable parameter = new LocalVariable(variableElement);
             parameters.add(parameter);
@@ -591,7 +591,7 @@ public abstract class JavaExpression {
      * @return list of parameters as {@link FormalParameter}s
      */
     public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
-        List<FormalParameter> parameters = new ArrayList<>();
+        List<FormalParameter> parameters = new ArrayList<>(methodEle.getParameters().size());
         int oneBasedIndex = 1;
         for (VariableElement variableElement : methodEle.getParameters()) {
             FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
@@ -697,7 +697,7 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodBody(MethodTree methodTree) {
-        List<JavaExpression> parametersJe = new ArrayList<>();
+        List<JavaExpression> parametersJe = new ArrayList<>(methodTree.getParameters().size());
         for (VariableTree param : methodTree.getParameters()) {
             parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));
         }
@@ -726,7 +726,7 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
-        List<JavaExpression> argumentsJe = new ArrayList<>();
+        List<JavaExpression> argumentsJe = new ArrayList<>(invocationNode.getArguments().size());
         for (Node argTree : invocationNode.getArguments()) {
             argumentsJe.add(JavaExpression.fromNode(argTree));
         }
@@ -766,12 +766,13 @@ public abstract class JavaExpression {
             assert TreeUtils.isUseOfElement(methodInvoc) : "@AssumeAssertion(nullness): tree kind";
             ExecutableElement method = TreeUtils.elementFromUse(methodInvoc);
             if (isVarArgsInvocation(method, argTrees)) {
-                List<JavaExpression> result = new ArrayList<>();
+                List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
 
                 for (int i = 0; i < method.getParameters().size() - 1; i++) {
                     result.add(JavaExpression.fromTree(argTrees.get(i)));
                 }
-                List<JavaExpression> varargArgs = new ArrayList<>();
+                List<JavaExpression> varargArgs =
+                        new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
                 for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
                     varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
                 }
@@ -784,7 +785,7 @@ public abstract class JavaExpression {
             }
         }
 
-        List<JavaExpression> result = new ArrayList<>();
+        List<JavaExpression> result = new ArrayList<>(argTrees.size());
         for (ExpressionTree argTree : argTrees) {
             result.add(JavaExpression.fromTree(argTree));
         }

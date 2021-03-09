@@ -298,8 +298,8 @@ public interface StringToJavaExpression {
         JavaExpression receiver = JavaExpression.getPseudoReceiver(parentPath, enclosingType);
         ThisReference thisReference =
                 receiver instanceof ClassName ? null : (ThisReference) receiver;
-        List<JavaExpression> paramsAsLocals = new ArrayList<>();
-        List<FormalParameter> parameters = new ArrayList<>();
+        List<JavaExpression> paramsAsLocals = new ArrayList<>(lambdaTree.getParameters().size());
+        List<FormalParameter> parameters = new ArrayList<>(lambdaTree.getParameters().size());
         int oneBasedIndex = 1;
         for (VariableTree arg : lambdaTree.getParameters()) {
             LocalVariable param = (LocalVariable) JavaExpression.fromVariableTree(arg);
@@ -364,7 +364,8 @@ public interface StringToJavaExpression {
                         localVarPath,
                         checker.getPathToCompilationUnit(),
                         checker.getProcessingEnvironment());
-        List<JavaExpression> paramsAsLocals = JavaExpression.getParametersAsLocalVars(methodEle);
+        List<JavaExpression> paramsAsLocals =
+                JavaExpression.getParametersAsLocalVariables(methodEle);
         return ViewpointAdaptJavaExpression.viewpointAdapt(javaExpr, paramsAsLocals);
     }
 }
