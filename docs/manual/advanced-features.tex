@@ -1007,15 +1007,17 @@ the method has no side effects, so calling it does not invalidate any
 dataflow facts.
 
 The \refqualclass{dataflow/qual}{SideEffectsOnly} annotation
-specifies the superset of expressions that the method might side effect.
-So expressions that are not specified as annotation values of
+specifies a superset of the expressions that the method might side effect.
+Expressions that are not specified as annotation values of
 \refqualclass{dataflow/qual}{SideEffectsOnly} have their dataflow facts
 unaffected.
 If a method has neither \refqualclass{dataflow/qual}{SideEffectsOnly}
-nor \refqualclass{dataflow/qual}{SideEffectFree} annotation, then it is assumed
-that the method side-effects all expressions (fields and arguments).
+nor \refqualclass{dataflow/qual}{SideEffectFree} annotation, then the Checker Framework
+assumes that the method side effects all expressions (fields and arguments).
 A method cannot be annotated with both \refqualclass{dataflow/qual}{SideEffectFree}
 and \refqualclass{dataflow/qual}{SideEffectsOnly}.
+A method annotated with \<@SideEffectsOnly(\{\})> (i.e without any annotation value)
+is equivalent to annotating it with \<@SideEffectFree>.
 
 Calling a method twice might have different results, so facts known about
 one call cannot be relied upon at another call.
