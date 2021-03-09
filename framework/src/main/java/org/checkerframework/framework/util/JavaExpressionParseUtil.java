@@ -638,36 +638,36 @@ public class JavaExpressionParseUtil {
                 Element classElem = fieldElem.getEnclosingElement();
                 JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
                 return new FieldAccess(staticClassReceiver, fieldElem);
-            }
-            // else instance field
-            if (receiverExpr instanceof ClassName) {
+            } else if (receiverExpr instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
                                 fieldElem.getSimpleName().toString(),
                                 "a non-static field cannot have a class name as a receiver."));
             }
 
+            // fieldElem is an instance field
             if (enclosingTypeOfField == receiverExpr.getType()) {
                 // Instance field declared in the type of receiverExpr
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 return new FieldAccess(receiverExpr, fieldType, fieldElem);
             }
-
-            // Instance field declared in an enclosing type of receiverExpr;
-            // enclosingTypeOfField != receiverExpr.getType()
-            JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
-
-            FieldAccess fieldAccess = new FieldAccess(locationOfField, fieldElem);
-            TypeElement scopeClassElement =
-                    TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
-            if (enclosingTypeOfField != receiverExpr.getType()
-                    && ElementUtils.isStatic(scopeClassElement)) {
+            if (!(receiverExpr instanceof ThisReference)) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
                                 identifier,
-                                "a non-static field can't be referenced from a static inner class or enum"));
+                                "field declared in an outer type cannot be accessed from an inner type"));
             }
-            return fieldAccess;
+            TypeElement receiverTypeElement = TypesUtils.getTypeElement(receiverExpr.getType());
+            if (receiverTypeElement == null || ElementUtils.isStatic(receiverTypeElement)) {
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError(
+                                identifier,
+                                "a non-static field declared in an outer class cannot be referenced from a static inner class or enum"));
+            }
+            // Instance field declared in an enclosing type of receiverExpr;
+            // enclosingTypeOfField != receiverExpr.getType()
+            JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
+            return new FieldAccess(locationOfField, fieldElem);
         }
 
         @Override
