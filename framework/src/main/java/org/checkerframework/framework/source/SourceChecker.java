@@ -2021,7 +2021,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /**
      * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
      * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
-     * suppresses the checker's warnings.
+     * suppresses the checker's warnings. Also, returns true if the {@code errKey} matches a string
+     * in {@code -AsuppressWarnings}.
      *
      * @param tree the tree that might be a source of a warning
      * @param errKey the error key the checker is emitting
@@ -2036,6 +2037,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
             throw new BugInCF(
                     "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
+        }
+
+        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
+            // If the error key matches a warning string in the -AsuppressWarnings, then suppress
+            // the warning.
+            return true;
         }
 
         // trees.getPath might be slow, but this is only used in error reporting

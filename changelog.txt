@@ -8,6 +8,9 @@ examples of annotations on type variables, together with their meaning.
 `-Ainfer=ajava` uses ajava files (rather than jaif files or stub files)
 internally during whole-program inference.
 
+The Optional Checker supports a new annotation `@OptionalBottom` that
+stands for (only) the `null` value.
+
 **Implementation details:**
 
 **Closed issues:**
