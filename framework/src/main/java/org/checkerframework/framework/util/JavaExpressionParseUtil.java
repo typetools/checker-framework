@@ -108,10 +108,10 @@ public class JavaExpressionParseUtil {
      * @param enclosingType type of the class that encloses the JavaExpression
      * @param thisReference the JavaExpression to which to parse "this", or null if "this" should
      *     not appear in the expression
-     * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
-     *     should not appear in the expression
+     * @param parameters list of JavaExpressions to which to parse formal parameter references such
+     *     as "#2", or null if formal parameter references should not appear in the expression
      * @param localVarPath if non-null, the expression is parsed as if it were written at this
-     *     location
+     *     location; affects only parsing of local variables
      * @param pathToCompilationUnit required to use the underlying Javac API
      * @param env the processing environment
      * @return {@code expression} as a {@code JavaExpression}
