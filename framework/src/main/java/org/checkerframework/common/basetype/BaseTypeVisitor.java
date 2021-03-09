@@ -4257,7 +4257,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             StringToJavaExpression.atMethodDecl(
                                     expression, methodType.getElement(), checker);
                     // methodType.getElement() is not necessarily the same method as methodTree, so
-                    // viewpoint adapted it to methodTree.
+                    // viewpoint-adapt it to methodTree.
                     return javaExpr.atMethodBody(methodTree);
                 };
 
