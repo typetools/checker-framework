@@ -6,6 +6,10 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
+DEBUG=0
+# To enable debugging, uncomment the following line.
+# DEBUG=1
+
 while getopts "o:i:u:t:g:" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
@@ -132,6 +136,14 @@ do
 
     REPO_NAME=$(echo "${REPO}" | cut -d / -f 5)
     REPO_NAME_HASH="${REPO_NAME}-${HASH}"
+
+    if [ "$DEBUG" -eq "1" ]; then
+        echo "REPOHASH=$REPOHASH"
+        echo "REPO=$REPO"
+        echo "HASH=$HASH"
+        echo "REPO_NAME=$REPO_NAME"
+        echo "REPO_NAME_HASH=$REPO_NAME_HASH"
+    fi
 
     # Use repo name and hash, but not owner.  We want
     # repos that are different but have the same name to be treated
