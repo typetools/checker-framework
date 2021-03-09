@@ -802,7 +802,7 @@ public abstract class JavaExpression {
      */
     private static boolean isVarArgsInvocation(
             ExecutableElement method, List<? extends ExpressionTree> args) {
-        if (method == null || !method.isVarArgs()) {
+        if (!method.isVarArgs()) {
             return false;
         }
         if (method.getParameters().size() != args.size()) {
@@ -810,7 +810,7 @@ public abstract class JavaExpression {
         }
         TypeMirror lastArgType = TreeUtils.typeOf(args.get(args.size() - 1));
         if (lastArgType.getKind() != TypeKind.ARRAY) {
-            return false;
+            return true;
         }
         List<? extends VariableElement> paramElts = method.getParameters();
         VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
