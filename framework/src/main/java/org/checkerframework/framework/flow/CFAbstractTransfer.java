@@ -572,9 +572,10 @@ public abstract class CFAbstractTransfer<
                     viewpointAdaptAnnoFromContract(p.annotation, stringToJavaExpr);
             JavaExpression exprJe;
             try {
-                // TODO: currently, these expressions are parsed at the declaration (i.e. here) and
-                // for every use. this could be optimized to store the result the first time. (same
-                // for other annotations)
+                // TODO: currently, these expressions are parsed at the
+                // declaration (i.e. here) and for every use. this could
+                // be optimized to store the result the first time.
+                // (same for other annotations)
                 exprJe =
                         StringToJavaExpression.atMethodBody(
                                 stringExpr, methodDeclTree, analysis.checker);
@@ -594,7 +595,7 @@ public abstract class CFAbstractTransfer<
      * stringToJavaExpr}.
      *
      * @param annoFromContract an annotation from a contract
-     * @param stringToJavaExpr function to use to convert the expressions string in the annotation.
+     * @param stringToJavaExpr function to use to convert the expressions string in the annotation
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     private AnnotationMirror viewpointAdaptAnnoFromContract(

@@ -51,7 +51,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 // The Lock Checker also supports "<self>" as a JavaExpression, but that is implemented in the Lock
 // Checker.
-// There are no special subclasses (AST nodes) for  "<self>".
+// There are no special subclasses (AST nodes) for "<self>".
 /**
  * This class represents a Java expression and its type. It does not represent all possible Java
  * expressions (for example, it does not represent a ternary conditional expression {@code ?:}; use
@@ -575,8 +575,8 @@ public abstract class JavaExpression {
      * @param methodEle the method element
      * @return list of parameters as {@link LocalVariable}s
      */
-    public static List<JavaExpression> getParametersAsLocalVars(ExecutableElement methodEle) {
-        List<JavaExpression> parameters = new ArrayList<>();
+    public static List<JavaExpression> getParametersAsLocalVariables(ExecutableElement methodEle) {
+        List<JavaExpression> parameters = new ArrayList<>(methodEle.getParameters().size());
         for (VariableElement variableElement : methodEle.getParameters()) {
             LocalVariable parameter = new LocalVariable(variableElement);
             parameters.add(parameter);
@@ -591,11 +591,10 @@ public abstract class JavaExpression {
      * @return list of parameters as {@link FormalParameter}s
      */
     public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
-        List<FormalParameter> parameters = new ArrayList<>();
+        List<FormalParameter> parameters = new ArrayList<>(methodEle.getParameters().size());
         int oneBasedIndex = 1;
         for (VariableElement variableElement : methodEle.getParameters()) {
-            FormalParameter parameter = new FormalParameter(oneBasedIndex, variableElement);
-            parameters.add(parameter);
+            parameters.add(new FormalParameter(oneBasedIndex, variableElement));
             oneBasedIndex++;
         }
         return parameters;
@@ -697,7 +696,7 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodBody(MethodTree methodTree) {
-        List<JavaExpression> parametersJe = new ArrayList<>();
+        List<JavaExpression> parametersJe = new ArrayList<>(methodTree.getParameters().size());
         for (VariableTree param : methodTree.getParameters()) {
             parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));
         }
@@ -726,7 +725,7 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
-        List<JavaExpression> argumentsJe = new ArrayList<>();
+        List<JavaExpression> argumentsJe = new ArrayList<>(invocationNode.getArguments().size());
         for (Node argTree : invocationNode.getArguments()) {
             argumentsJe.add(JavaExpression.fromNode(argTree));
         }
@@ -766,12 +765,13 @@ public abstract class JavaExpression {
             assert TreeUtils.isUseOfElement(methodInvoc) : "@AssumeAssertion(nullness): tree kind";
             ExecutableElement method = TreeUtils.elementFromUse(methodInvoc);
             if (isVarArgsInvocation(method, argTrees)) {
-                List<JavaExpression> result = new ArrayList<>();
+                List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
 
                 for (int i = 0; i < method.getParameters().size() - 1; i++) {
                     result.add(JavaExpression.fromTree(argTrees.get(i)));
                 }
-                List<JavaExpression> varargArgs = new ArrayList<>();
+                List<JavaExpression> varargArgs =
+                        new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
                 for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
                     varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
                 }
@@ -784,7 +784,7 @@ public abstract class JavaExpression {
             }
         }
 
-        List<JavaExpression> result = new ArrayList<>();
+        List<JavaExpression> result = new ArrayList<>(argTrees.size());
         for (ExpressionTree argTree : argTrees) {
             result.add(JavaExpression.fromTree(argTree));
         }
@@ -802,28 +802,30 @@ public abstract class JavaExpression {
      */
     private static boolean isVarArgsInvocation(
             ExecutableElement method, List<? extends ExpressionTree> args) {
-        if (method != null && method.isVarArgs()) {
-            if (method.getParameters().size() != args.size()) {
-                return true;
-            }
-            TypeMirror lastArg = TreeUtils.typeOf(args.get(args.size() - 1));
-            List<? extends VariableElement> paramTypes = method.getParameters();
-            VariableElement lastParam = paramTypes.get(paramTypes.size() - 1);
-            return lastArg.getKind() != TypeKind.ARRAY
-                    || getArrayDepth(ElementUtils.getType(lastParam)) != getArrayDepth(lastArg);
+        if (method == null || !method.isVarArgs()) {
+            return false;
         }
-        return false;
+        if (method.getParameters().size() != args.size()) {
+            return true;
+        }
+        TypeMirror lastArgType = TreeUtils.typeOf(args.get(args.size() - 1));
+        if (lastArgType.getKind() != TypeKind.ARRAY) {
+            return false;
+        }
+        List<? extends VariableElement> paramElts = method.getParameters();
+        VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
+        return getArrayDepth(ElementUtils.getType(lastParamElt)) != getArrayDepth(lastArgType);
     }
 
     /**
-     * Returns the depth of the array type of {@code array}.
+     * Returns the depth of an array type.
      *
-     * @param array the type of the array
-     * @return the depth of {@code array}
+     * @param arrayType an array type
+     * @return the depth of {@code arrayType}
      */
-    private static int getArrayDepth(TypeMirror array) {
+    private static int getArrayDepth(TypeMirror arrayType) {
         int counter = 0;
-        TypeMirror type = array;
+        TypeMirror type = arrayType;
         while (type.getKind() == TypeKind.ARRAY) {
             counter++;
             type = ((ArrayType) type).getComponentType();

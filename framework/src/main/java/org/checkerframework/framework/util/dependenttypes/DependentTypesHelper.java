@@ -556,7 +556,7 @@ public class DependentTypesHelper {
                     List<FormalParameter> parameters =
                             JavaExpression.getFormalParameters(methodElement);
                     List<JavaExpression> paramsAsLocals =
-                            JavaExpression.getParametersAsLocalVars(methodElement);
+                            JavaExpression.getParametersAsLocalVariables(methodElement);
                     JavaExpressionConverter jec =
                             new JavaExpressionConverter() {
                                 @Override
@@ -631,7 +631,7 @@ public class DependentTypesHelper {
         for (String value : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
-            List<JavaExpression> javaExprs = new ArrayList<>();
+            List<JavaExpression> javaExprs = new ArrayList<>(expressionStrings.size());
             map.put(value, javaExprs);
             for (String expression : expressionStrings) {
                 JavaExpression result;
@@ -700,7 +700,7 @@ public class DependentTypesHelper {
 
         for (Map.Entry<String, List<JavaExpression>> entry : valueMap.entrySet()) {
             String value = entry.getKey();
-            List<String> strings = new ArrayList<>();
+            List<String> strings = new ArrayList<>(entry.getValue().size());
             for (JavaExpression javaExpr : entry.getValue()) {
                 strings.add(javaExpr.toString());
             }

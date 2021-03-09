@@ -7,7 +7,11 @@
 #  * run WPI to infer annotations
 #  * type-check the annotated version
 #  * check that the output of type-checking is the same as the *.expected file in this directory
+# Afterward, the inferred annotations can be found in a directory named /tmp/wpi-stubs-XXXXXX .
+# The exact directory name is the last directory in the -Astubs= argument in file
+# checker-framework/checker/build/wpi-plumelib-tests/PROJECTNAME/dljc-out/typecheck.out .
 
+# This script is run by `./gradlew wpiPlumeLibTests` at the top level.
 
 # wpi.sh may exit with non-zero status.
 set +e
