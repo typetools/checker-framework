@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * This method declaration annotation can be used to specify the expressions that a method side
- * effects. In other words, the method only side effects those expressions that are supplied as
- * annotation values to {@code @SideEffectsOnly}.
+ * A method annotated with the declaration annotation {@code @SideEffectsOnly} could side effect
+ * those expressions that are supplied as annotation values to {@code @SideEffectsOnly}. The
+ * annotation values are an upper bound of all expressions that the method side-effects.
  *
  * @checker_framework.manual #type-refinement-purity Side effects only
  */
@@ -19,9 +19,11 @@ import org.checkerframework.framework.qual.JavaExpression;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface SideEffectsOnly {
     /**
-     * The expressions that this method side effects.
+     * An upper bound of the expressions that this method side effects.
      *
-     * @return Java expressions that are side-effected by this method
+     * @return Java expression(s) that represent an upper bound of expressions side-effected by this
+     *     method
+     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     @JavaExpression
     public String[] value();
