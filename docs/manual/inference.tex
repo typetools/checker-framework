@@ -190,7 +190,10 @@ Here is an explanation of the arguments:
   The \ahreforurl{https://github.com/kelloggm/do-like-javac}{documentation of do-like-javac}
   describes the other commands that its WPI tool supports. Notably, to pass checker-specific
   arguments---such as any necessary \<-A> arguments---to invocations of \<javac>,
-  use the \<-\relax-extraJavacArgs> argument to \<dljc>.
+  use the \<-\relax-extraJavacArgs> argument to \<dljc>. For example, to use the \<-AignoreRangeOverflow>
+  option for the Constant Value Checker (\chapterpageref{constant-value-checker}) when running
+  inference, you would add \<-\relax-extraJavacArgs='-AignoreRangeOverflow'> anywhere after the \<-\relax->
+  argument to \<wpi.sh>.
 \end{description}
 
 You may need to wait a few minutes for the command to complete.
