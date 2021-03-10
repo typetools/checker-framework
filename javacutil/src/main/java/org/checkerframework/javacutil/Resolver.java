@@ -298,6 +298,8 @@ public class Resolver {
      * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
      * for name resolution.
      *
+     * <p>(This method takes into account autoboxing.)
+     *
      * @param methodName name of the method to find
      * @param receiverType type of the receiver of the method
      * @param path tree path

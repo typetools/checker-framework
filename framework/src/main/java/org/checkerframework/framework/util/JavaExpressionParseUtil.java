@@ -612,9 +612,10 @@ public class JavaExpressionParseUtil {
                 TypeMirror parameterType = parameter.asType();
                 JavaExpression argument = arguments.get(i);
                 TypeMirror argumentType = argument.getType();
-                // boxing necessary
+                // is boxing necessary?
                 if (TypesUtils.isBoxedPrimitive(parameterType)
                         && TypesUtils.isPrimitive(argumentType)) {
+                    // boxing is necessary
                     MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
                     List<JavaExpression> p = new ArrayList<>();
                     p.add(argument);
@@ -650,6 +651,8 @@ public class JavaExpressionParseUtil {
 
         /**
          * Returns the ExecutableElement for a method, or throws an exception.
+         *
+         * <p>(This method takes into account autoboxing.)
          *
          * @param methodName the method name
          * @param receiverType the receiver type
