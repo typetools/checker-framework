@@ -215,7 +215,7 @@ public class TypeVisualizer {
         /** A map from Node (type) to a dot string declaring that node. */
         private final Map<Node, String> nodes = new LinkedHashMap<>();
 
-        /** list of connections between nodes. Lines will refer to identifiers in nodes.values() */
+        /** List of connections between nodes. Lines refer to identifiers in nodes.values(). */
         private final List<String> lines = new ArrayList<>();
 
         private final String graphName;

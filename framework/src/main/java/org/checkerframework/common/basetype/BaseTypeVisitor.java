@@ -4265,7 +4265,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         JavaExpressionContext jeContext =
                 new JavaExpressionContext(receiverJe, parametersJe, checker);
 
-        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
+        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>(contractSet.size());
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;

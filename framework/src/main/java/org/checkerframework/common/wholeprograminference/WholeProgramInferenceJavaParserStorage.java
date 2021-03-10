@@ -947,7 +947,7 @@ public class WholeProgramInferenceJavaParserStorage
         public AnnotatedTypeMirror getPreconditionsForField(
                 VariableElement field, AnnotatedTypeFactory atf) {
             if (fieldToPreconditions == null) {
-                fieldToPreconditions = new HashMap<>();
+                fieldToPreconditions = new HashMap<>(1);
             }
 
             if (!fieldToPreconditions.containsKey(field)) {
@@ -972,7 +972,7 @@ public class WholeProgramInferenceJavaParserStorage
         public AnnotatedTypeMirror getPostconditionsForField(
                 VariableElement field, AnnotatedTypeFactory atf) {
             if (fieldToPostconditions == null) {
-                fieldToPostconditions = new HashMap<>();
+                fieldToPostconditions = new HashMap<>(1);
             }
 
             if (!fieldToPostconditions.containsKey(field)) {

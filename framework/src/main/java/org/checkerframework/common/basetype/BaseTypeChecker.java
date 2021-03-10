@@ -187,8 +187,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * <p>This method is protected so it can be overridden, but it should only be called internally
      * by the BaseTypeChecker.
      *
-     * <p>The BaseTypeChecker will not modify the list returned by this method, but other checkers
-     * may.
+     * <p>The BaseTypeChecker will not modify the list returned by this method, but other clients do
+     * modify the list.
      *
      * @return the subchecker classes on which this checker depends
      */

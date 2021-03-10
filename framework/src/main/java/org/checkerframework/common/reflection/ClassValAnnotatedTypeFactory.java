@@ -10,6 +10,7 @@ import com.sun.tools.javac.code.Type.UnionClassType;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -103,7 +104,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (areSameByClass(anno, ClassBound.class) || areSameByClass(anno, ClassVal.class)) {
             return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
         }
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     @Override

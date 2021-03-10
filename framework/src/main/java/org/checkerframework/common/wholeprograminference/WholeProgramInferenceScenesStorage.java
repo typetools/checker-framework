@@ -483,7 +483,7 @@ public class WholeProgramInferenceScenesStorage
         }
 
         // LUB primary annotations
-        Set<AnnotationMirror> annosToReplace = new HashSet<>();
+        Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
         for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
             AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
             // amJaif only contains  annotations from the jaif, so it might be missing
@@ -586,7 +586,7 @@ public class WholeProgramInferenceScenesStorage
      * @return the annoattions supported by this object's AnnotatedTypeFactory
      */
     private Set<Annotation> getSupportedAnnosInSet(Set<Annotation> annosSet) {
-        Set<Annotation> output = new HashSet<>();
+        Set<Annotation> output = new HashSet<>(1);
         Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos =
                 atypeFactory.getSupportedTypeQualifiers();
         for (Annotation anno : annosSet) {

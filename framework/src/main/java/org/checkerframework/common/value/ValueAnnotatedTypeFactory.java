@@ -887,10 +887,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
-            List<Long> longValues = new ArrayList<>();
-            for (char value : values) {
-                longValues.add((long) value);
-            }
+            List<Long> longValues =
+                    CollectionsPlume.mapList((Character value) -> (long) value, values);
             return createIntValAnnotation(longValues);
         }
     }
@@ -912,16 +910,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 || first instanceof Short
                 || first instanceof Long
                 || first instanceof Byte) {
-            List<Long> intValues = new ArrayList<>();
-            for (Number number : values) {
-                intValues.add(number.longValue());
-            }
+            List<Long> intValues = CollectionsPlume.mapList(Number::longValue, values);
             return createIntValAnnotation(intValues);
         } else if (first instanceof Double || first instanceof Float) {
-            List<Double> intValues = new ArrayList<>();
-            for (Number number : values) {
-                intValues.add(number.doubleValue());
-            }
+            List<Double> intValues = CollectionsPlume.mapList(Number::doubleValue, values);
             return createDoubleValAnnotation(intValues);
         }
         throw new UnsupportedOperationException(
@@ -1075,10 +1067,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /* package-private */ AnnotationMirror convertStringValToMatchesRegex(
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
-        List<@Regex String> valuesAsRegexes = new ArrayList<>();
-        for (String value : values) {
-            valuesAsRegexes.add(Pattern.quote(value));
-        }
+        List<@Regex String> valuesAsRegexes = CollectionsPlume.mapList(Pattern::quote, values);
         return createMatchesRegexAnnotation(valuesAsRegexes);
     }
 
@@ -1198,14 +1187,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         List<Long> intValues =
                 AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-        TreeSet<Character> charValues = new TreeSet<>();
-        for (Long i : intValues) {
-            charValues.add((char) i.intValue());
-        }
+        List<Character> charValues =
+                CollectionsPlume.mapList((Long i) -> (char) i.intValue(), intValues);
+        Collections.sort(charValues);
         return new ArrayList<>(charValues);
     }
 
@@ -1237,14 +1225,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * constant-value annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
-     * @return a list of possible boolean values
+     * @return a singleton or empty list of possible boolean values, or null
      */
-    public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
+    public static @Nullable List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         List<Boolean> boolValues =
                 AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
+        if (boolValues.size() < 2) {
+            return boolValues;
+        }
+        // Remove duplicates.
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() > 1) {
             // boolSet={true,false};
