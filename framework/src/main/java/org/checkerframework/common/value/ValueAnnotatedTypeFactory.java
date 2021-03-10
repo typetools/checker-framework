@@ -72,6 +72,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -316,10 +317,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
         List<Integer> minlens =
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
-        List<AnnotationMirror> qualifiers = new ArrayList<>();
-        for (Integer minlen : minlens) {
-            qualifiers.add(createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE));
-        }
+        List<AnnotationMirror> qualifiers =
+                CollectionsPlume.mapList(
+                        (Integer minlen) ->
+                                createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE),
+                        minlens);
 
         FieldInvariants superInvariants = super.getFieldInvariants(element);
         return new FieldInvariants(superInvariants, fields, qualifiers);
@@ -496,17 +498,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return the values in {@code anno} casted to longs
      */
     /* package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
-        List<Long> result;
         if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
-            List<Integer> intValues = getArrayLength(anno);
-            result = new ArrayList<>(intValues.size());
-            for (Integer i : intValues) {
-                result.add(i.longValue());
-            }
+            return CollectionsPlume.mapList(Integer::longValue, getArrayLength(anno));
         } else {
-            result = getIntValues(anno);
+            return getIntValues(anno);
         }
-        return result;
     }
 
     @Override

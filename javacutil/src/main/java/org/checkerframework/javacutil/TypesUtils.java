@@ -9,7 +9,6 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +35,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
@@ -929,10 +929,7 @@ public final class TypesUtils {
      */
     private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
             List<TypeMirror> typeMirrors) {
-        List<Type> typeList = new ArrayList<>();
-        for (TypeMirror tm : typeMirrors) {
-            typeList.add((Type) tm);
-        }
+        List<Type> typeList = CollectionsPlume.mapList((TypeMirror tm) -> (Type) tm, typeMirrors);
         return com.sun.tools.javac.util.List.from(typeList);
     }
 
@@ -1027,15 +1024,13 @@ public final class TypesUtils {
             List<? extends TypeMirror> typeArgs,
             ProcessingEnvironment env) {
 
-        List<Type> newP = new ArrayList<>();
-        for (TypeMirror typeVariable : typeVariables) {
-            newP.add((Type) typeVariable);
-        }
+        List<Type> newP =
+                CollectionsPlume.mapList(
+                        (TypeMirror typeVariable) -> (Type) typeVariable, typeVariables);
 
-        List<Type> newT = new ArrayList<>();
-        for (TypeMirror typeMirror : typeArgs) {
-            newT.add((Type) typeMirror);
-        }
+        List<Type> newT =
+                CollectionsPlume.mapList((TypeMirror typeMirror) -> (Type) typeMirror, typeArgs);
+
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         com.sun.tools.javac.code.Types types =
                 com.sun.tools.javac.code.Types.instance(javacEnv.getContext());

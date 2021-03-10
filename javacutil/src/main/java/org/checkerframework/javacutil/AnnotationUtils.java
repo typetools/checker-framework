@@ -44,6 +44,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
+import org.plumelib.util.CollectionsPlume;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -897,12 +898,8 @@ public class AnnotationUtils {
             boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
-        List<T> result = new ArrayList<>(la.size());
-        for (AnnotationValue a : la) {
-            T value = Enum.valueOf(expectedType, a.getValue().toString());
-            result.add(value);
-        }
-        return result;
+        return CollectionsPlume.mapList(
+                (AnnotationValue a) -> Enum.valueOf(expectedType, a.getValue().toString()), la);
     }
 
     /**
@@ -940,11 +937,8 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-        List<@CanonicalName Name> names = new ArrayList<>();
-        for (Type.ClassType classType : la) {
-            names.add(classType.asElement().getQualifiedName());
-        }
-        return names;
+        return CollectionsPlume.mapList(
+                (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
     }
 
     // The Javadoc doesn't use @link because framework is a different project than this one

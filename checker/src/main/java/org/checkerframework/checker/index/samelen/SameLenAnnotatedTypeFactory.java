@@ -359,10 +359,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public AnnotationMirror createCombinedSameLen(
             JavaExpression expr1, JavaExpression expr2, AnnotationMirror a1, AnnotationMirror a2) {
-        List<JavaExpression> exprs = new ArrayList<>();
+        // In Java 9+, use: List.of(expr1, expr2)
+        List<JavaExpression> exprs = new ArrayList<>(2);
         exprs.add(expr1);
         exprs.add(expr2);
-        List<AnnotationMirror> annos = new ArrayList<>();
+        // In Java 9+, use: List.of(a1, a2)
+        List<AnnotationMirror> annos = new ArrayList<>(2);
         annos.add(a1);
         annos.add(a2);
         return createCombinedSameLen(exprs, annos);

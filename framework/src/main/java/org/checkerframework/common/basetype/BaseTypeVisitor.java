@@ -137,6 +137,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -789,10 +790,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     methodElement.getModifiers().contains(Modifier.ABSTRACT)
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
 
-            List<String> formalParamNames = new ArrayList<>();
-            for (VariableTree param : node.getParameters()) {
-                formalParamNames.add(param.getName().toString());
-            }
+            List<String> formalParamNames =
+                    CollectionsPlume.mapList(
+                            (VariableTree param) -> param.getName().toString(),
+                            node.getParameters());
             checkContractsAtMethodDeclaration(
                     node, methodElement, formalParamNames, abstractMethod);
 
@@ -1519,10 +1520,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
-        for (AnnotatedTypeVariable param : invokedMethod.getTypeVariables()) {
-            paramBounds.add(param.getBounds());
-        }
+        List<AnnotatedTypeParameterBounds> paramBounds =
+                CollectionsPlume.mapList(
+                        AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
 
         ExecutableElement method = invokedMethod.getElement();
         CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
@@ -1870,10 +1870,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
         checkVarargs(constructorType, node);
 
-        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
-        for (AnnotatedTypeVariable param : constructorType.getTypeVariables()) {
-            paramBounds.add(param.getBounds());
-        }
+        List<AnnotatedTypeParameterBounds> paramBounds =
+                CollectionsPlume.mapList(
+                        AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
 
         checkTypeArguments(
                 node,
@@ -4255,10 +4254,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
         ThisReference receiverJe =
                 new ThisReference(methodType.getReceiverType().getUnderlyingType());
-        List<JavaExpression> parametersJe = new ArrayList<>();
-        for (VariableElement param : methodElt.getParameters()) {
-            parametersJe.add(new LocalVariable(param));
-        }
+        List<JavaExpression> parametersJe =
+                CollectionsPlume.mapList(LocalVariable::new, methodElt.getParameters());
+
         JavaExpressionContext jeContext =
                 new JavaExpressionContext(receiverJe, parametersJe, checker);
 

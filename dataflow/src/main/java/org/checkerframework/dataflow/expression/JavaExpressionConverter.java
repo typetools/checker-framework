@@ -1,9 +1,9 @@
 package org.checkerframework.dataflow.expression;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class calls {@link #convert(JavaExpression)} on each subexpression of the {@link
@@ -34,15 +34,9 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
      * @return the list of converted expressions
      */
     public List<@PolyNull JavaExpression> convert(List<@PolyNull JavaExpression> list) {
-        List<@PolyNull JavaExpression> newList = new ArrayList<>();
-        for (JavaExpression expression : list) {
-            if (expression == null) {
-                newList.add(null);
-            } else {
-                newList.add(convert(expression));
-            }
-        }
-        return newList;
+        return CollectionsPlume.mapList(
+                (JavaExpression expression) -> expression == null ? null : convert(expression),
+                list);
     }
 
     @Override

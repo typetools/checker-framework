@@ -14,6 +14,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.CollectionsPlume;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
@@ -390,11 +391,7 @@ public class TestDiagnosticUtils {
      * individually).
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        final List<String> strings = new ArrayList<>(diagnostics.size());
-        for (TestDiagnostic diagnostic : diagnostics) {
-            strings.add(diagnostic.toString());
-        }
-        return strings;
+        return CollectionsPlume.mapList(TestDiagnostic::toString, diagnostics);
     }
 
     public static void removeDiagnosticsOfKind(

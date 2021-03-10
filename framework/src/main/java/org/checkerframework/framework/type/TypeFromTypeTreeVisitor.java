@@ -41,6 +41,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Converts type trees into AnnotatedTypeMirrors.
@@ -116,10 +117,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         ClassSymbol baseType = (ClassSymbol) TreeUtils.elementFromTree(node.getType());
         updateWildcardBounds(node.getTypeArguments(), baseType.getTypeParameters());
 
-        List<AnnotatedTypeMirror> args = new ArrayList<>(node.getTypeArguments().size());
-        for (Tree t : node.getTypeArguments()) {
-            args.add(visit(t, f));
-        }
+        List<AnnotatedTypeMirror> args =
+                CollectionsPlume.mapList((Tree t) -> visit(t, f), node.getTypeArguments());
 
         AnnotatedTypeMirror result = f.type(node); // use creator?
         AnnotatedTypeMirror atype = visit(node.getType(), f);
@@ -343,10 +342,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         // IntersectionTypeTree for a type variable bound that is an intersection.  See
         // #visitTypeParameter.
         AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(node);
-        List<AnnotatedTypeMirror> bounds = new ArrayList<>();
-        for (Tree boundTree : node.getBounds()) {
-            bounds.add(visit(boundTree, f));
-        }
+        List<AnnotatedTypeMirror> bounds =
+                CollectionsPlume.mapList((Tree boundTree) -> visit(boundTree, f), node.getBounds());
         type.setBounds(bounds);
         type.copyIntersectionBoundAnnotations();
         return type;

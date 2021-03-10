@@ -116,6 +116,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -599,13 +600,12 @@ public abstract class GenericAnnotatedTypeFactory<
             checkerClass = checkerClass.getSuperclass();
         }
 
-        // If an analysis couldn't be loaded reflectively, return the
-        // default.
-        List<Pair<VariableElement, CFValue>> tmp = new ArrayList<>();
-        for (Pair<VariableElement, Value> fieldVal : fieldValues) {
-            assert fieldVal.second instanceof CFValue;
-            tmp.add(Pair.of(fieldVal.first, (CFValue) fieldVal.second));
-        }
+        // If an analysis couldn't be loaded reflectively, return the default.
+        List<Pair<VariableElement, CFValue>> tmp =
+                CollectionsPlume.mapList(
+                        (Pair<VariableElement, Value> fieldVal) ->
+                                Pair.of(fieldVal.first, (CFValue) fieldVal.second),
+                        fieldValues);
         return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
     }
 

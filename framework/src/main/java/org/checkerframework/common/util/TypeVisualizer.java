@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -560,12 +561,12 @@ public class TypeVisualizer {
             }
 
             public String getAnnoStr(final AnnotatedTypeMirror atm) {
-                List<String> annoNames = new ArrayList<>();
+                StringJoiner sj = new StringJoiner(" ");
                 for (final AnnotationMirror anno : atm.getAnnotations()) {
                     // TODO: More comprehensive escaping
-                    annoNames.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
+                    sj.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
                 }
-                return String.join(" ", annoNames);
+                return sj.toString();
             }
 
             public boolean checkOrAdd(final AnnotatedTypeMirror atm) {

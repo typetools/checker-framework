@@ -20,6 +20,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
+import org.plumelib.util.CollectionsPlume;
 
 // TODO: large parts of this file are the same as PerDirectorySuite.java.
 // Reduce duplication by moving common parts to an abstract class.
@@ -83,10 +84,8 @@ public class PerFileSuite extends Suite {
             javaFiles = (List<File>) method.invokeExplosively(null);
         }
 
-        List<Object[]> argumentLists = new ArrayList<>();
-        for (File javaFile : javaFiles) {
-            argumentLists.add(new Object[] {javaFile});
-        }
+        List<Object[]> argumentLists =
+                CollectionsPlume.mapList((File javaFile) -> new Object[] {javaFile}, javaFiles);
 
         return argumentLists;
     }

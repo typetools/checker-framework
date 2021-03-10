@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -59,12 +60,7 @@ public class PluginUtil {
      * @return a list of File objects
      */
     public static List<File> toFiles(final List<String> fileNames) {
-        final List<File> files = new ArrayList<>(fileNames.size());
-        for (final String fn : fileNames) {
-            files.add(new File(fn));
-        }
-
-        return files;
+        return CollectionsPlume.mapList(File::new, fileNames);
     }
 
     /**
@@ -504,12 +500,7 @@ public class PluginUtil {
     }
 
     public static List<String> toJavaOpts(final List<String> opts) {
-        final List<String> outOpts = new ArrayList<>(opts.size());
-        for (final String opt : opts) {
-            outOpts.add("-J" + opt);
-        }
-
-        return outOpts;
+        return CollectionsPlume.mapList((String opt) -> "-J" + opt, opts);
     }
 
     public static List<String> getCmdArgsOnly(
