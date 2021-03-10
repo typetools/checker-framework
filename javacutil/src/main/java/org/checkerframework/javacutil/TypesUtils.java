@@ -1044,4 +1044,20 @@ public final class TypesUtils {
                 com.sun.tools.javac.util.List.from(newP),
                 com.sun.tools.javac.util.List.from(newT));
     }
+
+    /**
+     * Returns the depth of an array type.
+     *
+     * @param arrayType an array type
+     * @return the depth of {@code arrayType}
+     */
+    public static int getArrayDepth(TypeMirror arrayType) {
+        int counter = 0;
+        TypeMirror type = arrayType;
+        while (type.getKind() == TypeKind.ARRAY) {
+            counter++;
+            type = ((ArrayType) type).getComponentType();
+        }
+        return counter;
+    }
 }

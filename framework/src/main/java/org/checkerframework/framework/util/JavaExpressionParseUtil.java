@@ -39,7 +39,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -236,7 +235,7 @@ public class JavaExpressionParseUtil {
          * @param pathToCompilationUnit required to use the underlying Javac API
          * @param env the processing environment
          */
-        ExpressionToJavaExpressionVisitor(
+        private ExpressionToJavaExpressionVisitor(
                 TypeMirror enclosingType,
                 @Nullable ThisReference thisReference,
                 @Nullable List<FormalParameter> parameters,
@@ -427,7 +426,7 @@ public class JavaExpressionParseUtil {
             } else {
                 fieldAccessReceiver = new ClassName(enclosingType);
             }
-            FieldAccess fieldAccess = getIdentifierAsField(fieldAccessReceiver, s);
+            FieldAccess fieldAccess = getIdentifierAsFieldAccess(fieldAccessReceiver, s);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
@@ -440,7 +439,7 @@ public class JavaExpressionParseUtil {
                 }
             }
 
-            ClassName classType = getIdentifierAsUnqualifiedClassName(enclosingType, s);
+            ClassName classType = getIdentifierAsUnqualifiedClassName(s);
             if (classType != null) {
                 return classType;
             }
@@ -521,8 +520,8 @@ public class JavaExpressionParseUtil {
 
         /**
          * If {@code identifier} is a class name with that can be referenced using only its simple
-         * name within {@code type}, return the {@link ClassName} for the class. If not, return
-         * null.
+         * name within {@code enclosingType}, return the {@link ClassName} for the class. If not,
+         * return null.
          *
          * <p>{@code identifier} may be
          *
@@ -534,14 +533,12 @@ public class JavaExpressionParseUtil {
          *   <li>the simple name of a class in the unnamed package.
          * </ol>
          *
-         * @param type the type in which to search for {@code identifier}
          * @param identifier possible class name
          * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
          */
-        protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(
-                TypeMirror type, String identifier) {
+        protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
             // Is identifier an inner class of this or of any enclosing class of this?
-            TypeMirror searchType = type;
+            TypeMirror searchType = enclosingType;
             while (searchType.getKind() == TypeKind.DECLARED) {
                 // Is identifier the simple name of this?
                 if (((DeclaredType) searchType)
@@ -557,11 +554,12 @@ public class JavaExpressionParseUtil {
                 searchType = getTypeOfEnclosingClass((DeclaredType) searchType);
             }
 
-            if (type.getKind() == TypeKind.DECLARED) {
+            if (enclosingType.getKind() == TypeKind.DECLARED) {
                 // Is identifier in the same package as this?
                 PackageSymbol packageSymbol =
                         (PackageSymbol)
-                                ElementUtils.enclosingPackage(((DeclaredType) type).asElement());
+                                ElementUtils.enclosingPackage(
+                                        ((DeclaredType) enclosingType).asElement());
                 ClassSymbol classSymbol =
                         resolver.findClassInPackage(
                                 identifier, packageSymbol, pathToCompilationUnit);
@@ -597,9 +595,9 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * If {@code identifier} is a field name, then return the {@link FieldAccess} corresponding
-         * to using that field at the given {@code context}. If {@code identifier} is not a field
-         * name, this method returns null.
+         * Return the {@link FieldAccess} expression for the field with name {@code identifier}
+         * accessed via {@code receiverExpr}. If no such field exists, then {@code null} is
+         * returned.
          *
          * @param receiverExpr the receiver of the field access; the expression used to access the
          *     field
@@ -607,85 +605,68 @@ public class JavaExpressionParseUtil {
          * @return a field access, or null if {@code identifier} is not a field that can be accessed
          *     via {@code receiverExpr}
          */
-        protected @Nullable FieldAccess getIdentifierAsField(
+        protected @Nullable FieldAccess getIdentifierAsFieldAccess(
                 JavaExpression receiverExpr, String identifier) {
-            TypeMirror receiverType = receiverExpr.getType();
-            // isOriginalReceiver is true if receiverType has not been reassigned.
-            boolean isOriginalReceiver = true;
-            VariableElement fieldElem = null;
-            if (identifier.equals("length") && receiverType.getKind() == TypeKind.ARRAY) {
-                fieldElem = resolver.findField(identifier, receiverType, pathToCompilationUnit);
-            }
-            if (fieldElem == null) {
+            // Find the field element.
+            TypeMirror enclosingTypeOfField = receiverExpr.getType();
+            VariableElement fieldElem;
+            if (identifier.equals("length") && enclosingTypeOfField.getKind() == TypeKind.ARRAY) {
+                fieldElem =
+                        resolver.findField(identifier, enclosingTypeOfField, pathToCompilationUnit);
+            } else {
+                fieldElem = null;
                 // Search for field in each enclosing class.
-                while (receiverType.getKind() == TypeKind.DECLARED) {
-                    fieldElem = resolver.findField(identifier, receiverType, pathToCompilationUnit);
+                while (enclosingTypeOfField.getKind() == TypeKind.DECLARED) {
+                    fieldElem =
+                            resolver.findField(
+                                    identifier, enclosingTypeOfField, pathToCompilationUnit);
                     if (fieldElem != null) {
                         break;
                     }
-                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-                    isOriginalReceiver = false;
+                    enclosingTypeOfField =
+                            getTypeOfEnclosingClass((DeclaredType) enclosingTypeOfField);
                 }
             }
-            if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
-                FieldAccess fieldAccess =
-                        getFieldJavaExpression(fieldElem, receiverExpr, isOriginalReceiver);
-                TypeElement scopeClassElement =
-                        TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
-                if (!isOriginalReceiver
-                        && !ElementUtils.isStatic(fieldElem)
-                        && ElementUtils.isStatic(scopeClassElement)) {
-                    throw new ParseRuntimeException(
-                            constructJavaExpressionParseError(
-                                    identifier,
-                                    "a non-static field can't be referenced from a static inner class or enum"));
-                }
-                return fieldAccess;
+            if (fieldElem == null) {
+                // field not found.
+                return null;
             }
 
-            return null;
-        }
-
-        /**
-         * Returns a JavaExpression for the given field.
-         *
-         * <p>{@code isOriginalReceiver} might be false when the user wrote "a.f" but {@code f} is
-         * not declared in the declared type of {@code a}, in which case the this method is called
-         * with {@code receiverExpr}'s type being a supertype of the declared type of {@code a}. In
-         * that case, the resulting FieldAccess's {@code receiver} field is a ThisReference of the
-         * type of {@code receiverExpr}.
-         *
-         * @param fieldElem the field
-         * @param receiverExpr the receiver of the field access; the expression used to access the
-         *     field
-         * @param isOriginalReceiver whether the receiver is the original one written in source code
-         * @return a JavaExpression for the given name
-         */
-        private static FieldAccess getFieldJavaExpression(
-                VariableElement fieldElem,
-                JavaExpression receiverExpr,
-                boolean isOriginalReceiver) {
-            TypeMirror receiverType = receiverExpr.getType();
-
-            TypeMirror fieldType = ElementUtils.getType(fieldElem);
+            // Construct a FieldAccess expression.
             if (ElementUtils.isStatic(fieldElem)) {
                 Element classElem = fieldElem.getEnclosingElement();
                 JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
-                return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
-            }
-            JavaExpression locationOfField;
-            if (isOriginalReceiver) {
-                locationOfField = receiverExpr;
-            } else {
-                locationOfField = new ThisReference(receiverType);
-            }
-            if (locationOfField instanceof ClassName) {
+                return new FieldAccess(staticClassReceiver, fieldElem);
+            } else if (receiverExpr instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
                                 fieldElem.getSimpleName().toString(),
                                 "a non-static field cannot have a class name as a receiver."));
             }
-            return new FieldAccess(locationOfField, fieldType, fieldElem);
+
+            // fieldElem is an instance field
+            if (enclosingTypeOfField == receiverExpr.getType()) {
+                // Instance field declared in the type of receiverExpr
+                TypeMirror fieldType = ElementUtils.getType(fieldElem);
+                return new FieldAccess(receiverExpr, fieldType, fieldElem);
+            }
+            if (!(receiverExpr instanceof ThisReference)) {
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError(
+                                identifier,
+                                "field declared in an outer type cannot be accessed from an inner type"));
+            }
+            TypeElement receiverTypeElement = TypesUtils.getTypeElement(receiverExpr.getType());
+            if (receiverTypeElement == null || ElementUtils.isStatic(receiverTypeElement)) {
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError(
+                                identifier,
+                                "a non-static field declared in an outer class cannot be referenced from a static inner class or enum"));
+            }
+            // Instance field declared in an enclosing type of receiverExpr;
+            // enclosingTypeOfField != receiverExpr.getType()
+            JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
+            return new FieldAccess(locationOfField, fieldElem);
         }
 
         @Override
@@ -769,6 +750,8 @@ public class JavaExpressionParseUtil {
         /**
          * Returns the ExecutableElement for a method, or throws an exception.
          *
+         * <p>(This method takes into account autoboxing.)
+         *
          * @param methodName the method name
          * @param receiverType the receiver type
          * @param path the path
@@ -788,32 +771,27 @@ public class JavaExpressionParseUtil {
             List<TypeMirror> argumentTypes =
                     CollectionsPlume.mapList(JavaExpression::getType, arguments);
 
-            Element element = null;
-
             if (receiverType.getKind() == TypeKind.ARRAY) {
-                element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                ExecutableElement element =
+                        resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                if (element == null) {
+                    throw constructJavaExpressionParseError(methodName, "no such method");
+                }
+                return element;
             }
 
             // Search for method in each enclosing class.
-            if (element == null) {
-                while (receiverType.getKind() == TypeKind.DECLARED) {
-                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
-                    if (element.getKind() == ElementKind.METHOD) {
-                        break;
-                    }
-                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+            while (receiverType.getKind() == TypeKind.DECLARED) {
+                ExecutableElement element =
+                        resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                if (element != null) {
+                    return element;
                 }
+                receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
             }
 
-            if (element == null) {
-                throw constructJavaExpressionParseError(methodName, "no such method");
-            }
-            if (element.getKind() != ElementKind.METHOD) {
-                throw constructJavaExpressionParseError(
-                        methodName, "not a method, but a " + element.getKind());
-            }
-
-            return (ExecutableElement) element;
+            // Method not found.
+            throw constructJavaExpressionParseError(methodName, "no such method");
         }
 
         // expr is a field access, a fully qualified class name, or a class name qualified with
@@ -846,7 +824,7 @@ public class JavaExpressionParseUtil {
             JavaExpression receiver = scope.accept(this, null);
 
             // Check for field access expression.
-            FieldAccess fieldAccess = getIdentifierAsField(receiver, name);
+            FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
             if (fieldAccess != null) {
                 return fieldAccess;
             }
@@ -964,8 +942,7 @@ public class JavaExpressionParseUtil {
             } else if (types.isSubtype(rightType, leftType)) {
                 type = leftType;
             } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
-                    && (types.isSameType(leftType, stringTypeMirror)
-                            || TypesUtils.isString(rightType))) {
+                    && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
                 type = stringTypeMirror;
             } else {
                 throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
@@ -1029,6 +1006,8 @@ public class JavaExpressionParseUtil {
          * Converts the JavaParser type to a TypeMirror. Returns null if {@code type} is not
          * handled.
          *
+         * <p>This method does not handle type variables, union types, or intersection types.
+         *
          * @param type a JavaParser type
          * @return a TypeMirror corresponding to {@code type}, or null if {@code type} isn't handled
          */
@@ -1063,8 +1042,12 @@ public class JavaExpressionParseUtil {
             } else if (type.isVoidType()) {
                 return types.getNoType(TypeKind.VOID);
             } else if (type.isArrayType()) {
-                return types.getArrayType(
-                        convertTypeToTypeMirror(type.asArrayType().getComponentType()));
+                TypeMirror componentType =
+                        convertTypeToTypeMirror(type.asArrayType().getComponentType());
+                if (componentType == null) {
+                    return null;
+                }
+                return types.getArrayType(componentType);
             }
             return null;
         }

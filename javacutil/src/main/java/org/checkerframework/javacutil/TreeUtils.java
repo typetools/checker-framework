@@ -309,38 +309,34 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for the called method, from a call. Might return null if no
-     * element was found.
+     * Returns the ExecutableElement for the called method, from a call.
      *
      * @param node a method call
      * @return the ExecutableElement for the called method
      */
     @Pure
-    public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
+    public static ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF("Method elements should be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
-     * Gets the ExecutableElement for the called constrctor, from a constructor invocation. Might
-     * return null if no element was found.
+     * Gets the ExecutableElement for the called constructor, from a constructor invocation.
      *
      * @param node a constructor invocation
      * @return the ExecutableElement for the called constructor
      * @see #constructor(NewClassTree)
      */
     @Pure
-    public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
+    public static ExecutableElement elementFromUse(NewClassTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF("Constructor elements should  be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
@@ -405,34 +401,6 @@ public final class TreeUtils {
             default:
                 return false;
         }
-    }
-
-    /**
-     * Determine whether the given MethodInvocationTree has an underlying element.
-     *
-     * @param node the MethodInvocationTree to test
-     * @return whether the tree refers to an identifier, member select, or method invocation
-     */
-    @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
-    @Pure
-    @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied")
-    // TODO: remove this method
-    public static boolean isUseOfElement(MethodInvocationTree node) {
-        return isUseOfElement((ExpressionTree) node);
-    }
-
-    /**
-     * Determine whether the given NewClassTree has an underlying element.
-     *
-     * @param node the NewClassTree to test
-     * @return whether the tree refers to an identifier, member select, or method invocation
-     */
-    @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
-    @Pure
-    @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied")
-    // TODO: remove this method
-    public static boolean isUseOfElement(NewClassTree node) {
-        return isUseOfElement((ExpressionTree) node);
     }
 
     /**
