@@ -29,7 +29,9 @@ public class SystemUtil {
      * @param argFile argument file
      * @return a list of Strings, one per line of the file
      * @throws IOException when reading the argFile
+     * @deprecated use Files.readAllLines
      */
+    @Deprecated // 2021-03-10
     public static List<String> readFile(final File argFile) throws IOException {
         final BufferedReader br = new BufferedReader(new FileReader(argFile));
         String line;

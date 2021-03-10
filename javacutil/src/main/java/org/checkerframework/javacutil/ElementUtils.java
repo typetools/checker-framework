@@ -621,10 +621,11 @@ public class ElementUtils {
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
-        List<TypeElement> superelems = new ArrayList<>();
         if (type == null) {
-            return superelems;
+            return Collections.emptyList();
         }
+
+        List<TypeElement> superelems = new ArrayList<>();
 
         // Set up a stack containing type, which is our starting point.
         Deque<TypeElement> stack = new ArrayDeque<>();
@@ -663,9 +664,10 @@ public class ElementUtils {
     }
 
     /**
-     * Return all fields declared in the given type or any superclass/interface. TODO: should this
-     * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
-     * getSuperTypes?
+     * Return all fields declared in the given type or any superclass/interface.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
         List<VariableElement> fields = new ArrayList<>();
@@ -679,8 +681,10 @@ public class ElementUtils {
 
     /**
      * Return all methods declared in the given type or any superclass/interface. Note that no
-     * constructors will be returned. TODO: should this use
-     * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
+     * constructors will be returned.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
         List<ExecutableElement> meths = new ArrayList<>();

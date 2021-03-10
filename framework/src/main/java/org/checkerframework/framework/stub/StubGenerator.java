@@ -170,8 +170,6 @@ public class StubGenerator {
 
     /** helper method that outputs the index for the provided class. */
     private void printClass(TypeElement typeElement, String outerClass) {
-        List<TypeElement> innerClass = new ArrayList<>();
-
         indent();
 
         List<? extends AnnotationMirror> teannos = typeElement.getAnnotationMirrors();
@@ -224,6 +222,9 @@ public class StubGenerator {
 
         currentIndention = currentIndention + INDENTION;
 
+        // Inner classes, which the stub generator prints later.
+        List<TypeElement> innerClass = new ArrayList<>();
+        // side-effects innerClass
         printTypeMembers(typeElement.getEnclosedElements(), innerClass);
 
         currentIndention = tempIndention;

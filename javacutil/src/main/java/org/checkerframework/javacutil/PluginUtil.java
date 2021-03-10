@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,7 +159,9 @@ public class PluginUtil {
      * @param argFile argument file
      * @return a list of Strings, one per line of the file
      * @throws IOException when reading the argFile
+     * @deprecated use Files.readAllLines
      */
+    @Deprecated // 2021-03-10
     public static List<String> readFile(final File argFile) throws IOException {
         final BufferedReader br = new BufferedReader(new FileReader(argFile));
         String line;
@@ -262,7 +265,7 @@ public class PluginUtil {
         if (aSkip != null && aSkip) {
             return Arrays.asList(cmdLineArg);
         }
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     public enum CheckerProp {
@@ -275,7 +278,7 @@ public class PluginUtil {
                 if (miscOpts != null && !miscOpts.isEmpty()) {
                     return new ArrayList<>(miscOpts);
                 }
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
         },
 
@@ -405,7 +408,7 @@ public class PluginUtil {
     }
 
     public static String escapeQuotesAndSlashes(final String toEscape) {
-        final Map<String, String> replacements = new HashMap<>();
+        final Map<String, String> replacements = new HashMap<>(2);
         replacements.put("\\\\", "\\\\\\\\");
         replacements.put("\"", "\\\\\"");
 

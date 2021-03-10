@@ -885,7 +885,7 @@ public abstract class CFAbstractTransfer<
      */
     protected List<Node> splitAssignments(Node node) {
         if (node instanceof AssignmentNode) {
-            List<Node> result = new ArrayList<>();
+            List<Node> result = new ArrayList<>(2);
             AssignmentNode a = (AssignmentNode) node;
             result.add(a.getTarget());
             result.addAll(splitAssignments(a.getExpression()));
