@@ -196,6 +196,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         if (shouldResolveReflection()) {
             return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
         }
+        // The returned set will be modified by callees.
         return new LinkedHashSet<>();
     }
 

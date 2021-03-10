@@ -28,11 +28,10 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
                 value = e;
                 return true;
             case SINGLETON:
-                state = State.ANY;
-                set = new LinkedHashSet<>();
-                assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
-                set.add(value);
-                value = null;
+                if (value.equals(e)) {
+                    return false;
+                }
+                makeNonSingleton();
                 // fall through
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): set initialized before";
@@ -40,6 +39,15 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
             default:
                 throw new BugInCF("Unhandled state " + state);
         }
+    }
+
+    /** Switch the representation of this from SINGLETON to ANY. */
+    private void makeNonSingleton() {
+        state = State.ANY;
+        set = new LinkedHashSet<>();
+        assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
+        set.add(value);
+        value = null;
     }
 
     @Override

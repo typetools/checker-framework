@@ -537,18 +537,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      */
     private UBQualifier removeSequenceLengths(LessThanLengthOf i, LessThanLengthOf j) {
         List<String> lessThan = new ArrayList<>();
-        List<String> lessThanOrEqaul = new ArrayList<>();
+        List<String> lessThanOrEqual = new ArrayList<>();
         for (String sequence : i.getSequences()) {
             if (i.isLessThanLengthOf(sequence)) {
                 lessThan.add(sequence);
             } else if (i.hasSequenceWithOffset(sequence, -1)) {
-                lessThanOrEqaul.add(sequence);
+                lessThanOrEqual.add(sequence);
             }
         }
         // Creates a qualifier that is the same a j with the array.length offsets removed. If
         // an offset doesn't have an array.length, then the offset/array pair is removed. If
         // there are no such pairs, Unknown is returned.
-        UBQualifier lessThanEqQ = j.removeSequenceLengthAccess(lessThanOrEqaul);
+        UBQualifier lessThanEqQ = j.removeSequenceLengthAccess(lessThanOrEqual);
         // Creates a qualifier that is the same a j with the array.length - 1 offsets removed. If
         // an offset doesn't have an array.length, then the offset/array pair is removed. If
         // there are no such pairs, Unknown is returned.
