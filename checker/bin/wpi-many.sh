@@ -6,7 +6,7 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
-while getopts "o:i:u:t:g:" opt; do
+while getopts "o:i:u:t:g:s" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
        ;;
@@ -17,6 +17,8 @@ while getopts "o:i:u:t:g:" opt; do
     t) TIMEOUT="$OPTARG"
        ;;
     g) GRADLECACHEDIR="$OPTARG"
+       ;;
+    s) SKIP_OR_DELETE_UNUSABLE="skip"
        ;;
     \?) # the remainder of the arguments will be passed to DLJC directly
        ;;
@@ -107,6 +109,10 @@ if [ "x${GRADLECACHEDIR}" = "x" ]; then
   GRADLECACHEDIR=".gradle"
 fi
 
+if [ "x${SKIP_OR_DELETE_UNUSABLE}" = "x" ]; then
+  SKIP_OR_DELETE_UNUSABLE="delete"
+fi
+
 JAVA_HOME_BACKUP="${JAVA_HOME}"
 export JAVA_HOME="${JAVA11_HOME}"
 
@@ -191,17 +197,24 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+    if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ] && [ "${SKIP_OR_DELETE_UNUSABLE}" = "skip" ]; then
+      echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present, indicating that an earlier run of WPI failed. To try again, delete the .cannot-run-wpi file and re-run the script."
+    else
+      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+    fi
+
     rm -f "${OUTDIR}-results/wpi-out"
 
     cd "${OUTDIR}" || exit 5
 
-    # If the result is unusable (i.e. wpi cannot run),
-    # we don't need it for data analysis and we can
-    # delete it right away.
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
-        echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-        rm -rf "${REPO_NAME_HASH}"
+        # If the result is unusable (i.e. wpi cannot run),
+        # we don't need it for data analysis and we can
+        # delete it right away.
+        if [ "${SKIP_OR_DELETE_UNUSABLE}" = "delete" ]; then
+          echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
+          rm -rf "${REPO_NAME_HASH}"
+        fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
