@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.upperbound;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -520,13 +521,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Return the result of adding i to j, when expression i has type @LTLengthOf(value = "f2",
-     * offset = "f1.length") int and expression j is less than or equal to the length of f1, then
-     * the type of i + j is @LTLengthOf("f2").
+     * Return the result of adding i to j.
      *
-     * <p>Similarly, return the result of adding i to j, when expression i has type @LTLengthOf
-     * (value = "f2", offset = "f1.length - 1") int and expression j is less than the length of f1,
-     * then the type of i + j is @LTLengthOf("f2").
+     * <p>When expression i has type {@code @LTLengthOf(value = "f2", offset = "f1.length") int} and
+     * expression j is less than or equal to the length of f1, then the type of i + j
+     * is @LTLengthOf("f2").
+     *
+     * <p>When expression i has type {@code @LTLengthOf (value = "f2", offset = "f1.length - 1")
+     * int} and expression j is less than the length of f1, then the type of i + j
+     * is @LTLengthOf("f2").
      *
      * @param i the type of the expression added to j
      * @param j the type of the expression added to i
@@ -657,19 +660,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
         // Look up the SameLen type of the sequence.
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
-        List<String> sameLenSequences =
-                sameLenAnno == null
-                        ? new ArrayList<>()
-                        : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
-
-        if (!sameLenSequences.contains(sequenceJe.toString())) {
-            sameLenSequences.add(sequenceJe.toString());
+        List<String> sameLenSequences;
+        if (sameLenAnno == null) {
+            sameLenSequences = Collections.singletonList(sequenceJe.toString());
+        } else {
+            sameLenSequences =
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
+            if (!sameLenSequences.contains(sequenceJe.toString())) {
+                sameLenSequences.add(sequenceJe.toString());
+            }
         }
 
-        ArrayList<String> offsets = new ArrayList<>(sameLenSequences.size());
-        for (@SuppressWarnings("unused") String s : sameLenSequences) {
-            offsets.add("-1");
-        }
+        List<String> offsets = Collections.nCopies(sameLenSequences.size(), "-1");
 
         if (CFAbstractStore.canInsertJavaExpression(sequenceJe)) {
             UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenSequences, offsets);

@@ -179,8 +179,8 @@ public class SameLenTransfer extends CFTransfer {
      * evaluates to true. The method gives a and b SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
-        List<JavaExpression> exprs = new ArrayList<>();
-        List<AnnotationMirror> annos = new ArrayList<>();
+        List<JavaExpression> exprs = new ArrayList<>(2);
+        List<AnnotationMirror> annos = new ArrayList<>(2);
         for (Node internal : splitAssignments(left)) {
             exprs.add(JavaExpression.fromNode(internal));
             annos.add(getAnno(internal));
@@ -261,15 +261,16 @@ public class SameLenTransfer extends CFTransfer {
         super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);
 
         List<? extends VariableTree> paramTrees = methodTree.getParameters();
-        List<String> paramNames = new ArrayList<>();
-        List<AnnotatedTypeMirror> params = new ArrayList<>();
+        int numParams = paramTrees.size();
+        List<String> paramNames = new ArrayList<>(numParams);
+        List<AnnotatedTypeMirror> params = new ArrayList<>(numParams);
 
         for (VariableTree tree : paramTrees) {
             paramNames.add(tree.getName().toString());
             params.add(aTypeFactory.getAnnotatedType(tree));
         }
 
-        for (int index = 0; index < params.size(); index++) {
+        for (int index = 0; index < numParams; index++) {
 
             // if the parameter has a samelen annotation, then look
             // for other parameters in that annotation and propagate

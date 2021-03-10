@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -311,11 +310,8 @@ public class ControlFlowGraph implements UniqueId {
 
     @Override
     public String toString() {
-        Map<String, Object> args = new HashMap<>();
-        args.put("verbose", true);
-
         CFGVisualizer<?, ?, ?> viz = new StringCFGVisualizer<>();
-        viz.init(args);
+        viz.init(Collections.singletonMap("verbose", true));
         Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
         viz.shutdown();
         if (res == null) {

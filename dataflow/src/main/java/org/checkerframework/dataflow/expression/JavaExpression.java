@@ -14,6 +14,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -315,11 +316,11 @@ public abstract class JavaExpression {
             result = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            List<@Nullable JavaExpression> dimensions = new ArrayList<>();
+            List<@Nullable JavaExpression> dimensions = new ArrayList<>(an.getDimensions().size());
             for (Node dimension : an.getDimensions()) {
                 dimensions.add(fromNode(dimension));
             }
-            List<JavaExpression> initializers = new ArrayList<>();
+            List<JavaExpression> initializers = new ArrayList<>(an.getInitializers().size());
             for (Node initializer : an.getInitializers()) {
                 initializers.add(fromNode(initializer));
             }
@@ -334,7 +335,7 @@ public abstract class JavaExpression {
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
             // Note that the method might be nondeterministic.
-            List<JavaExpression> parameters = new ArrayList<>();
+            List<JavaExpression> parameters = new ArrayList<>(mn.getArguments().size());
             for (Node p : mn.getArguments()) {
                 parameters.add(fromNode(p));
             }
@@ -386,14 +387,20 @@ public abstract class JavaExpression {
 
             case NEW_ARRAY:
                 NewArrayTree newArrayTree = (NewArrayTree) tree;
-                List<@Nullable JavaExpression> dimensions = new ArrayList<>();
-                if (newArrayTree.getDimensions() != null) {
+                List<@Nullable JavaExpression> dimensions;
+                if (newArrayTree.getDimensions() == null) {
+                    dimensions = Collections.emptyList();
+                } else {
+                    dimensions = new ArrayList<>(newArrayTree.getDimensions().size());
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
                         dimensions.add(fromTree(dimension));
                     }
                 }
-                List<JavaExpression> initializers = new ArrayList<>();
-                if (newArrayTree.getInitializers() != null) {
+                List<JavaExpression> initializers;
+                if (newArrayTree.getInitializers() == null) {
+                    initializers = Collections.emptyList();
+                } else {
+                    initializers = new ArrayList<>(newArrayTree.getInitializers().size());
                     for (ExpressionTree initializer : newArrayTree.getInitializers()) {
                         initializers.add(fromTree(initializer));
                     }
@@ -408,7 +415,7 @@ public abstract class JavaExpression {
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
 
                 // Note that the method might be nondeterministic.
-                List<JavaExpression> parameters = new ArrayList<>();
+                List<JavaExpression> parameters = new ArrayList<>(mn.getArguments().size());
                 for (ExpressionTree p : mn.getArguments()) {
                     parameters.add(fromTree(p));
                 }
@@ -576,7 +583,7 @@ public abstract class JavaExpression {
         if (methodTree == null) {
             return null;
         }
-        List<JavaExpression> internalArguments = new ArrayList<>();
+        List<JavaExpression> internalArguments = new ArrayList<>(methodTree.getParameters().size());
         for (VariableTree arg : methodTree.getParameters()) {
             internalArguments.add(fromNode(new LocalVariableNode(arg)));
         }

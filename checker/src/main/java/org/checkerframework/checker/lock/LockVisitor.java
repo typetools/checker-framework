@@ -64,6 +64,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual
@@ -1251,11 +1252,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             self = new Unknown(tree);
         }
 
-        List<LockExpression> lockExpressions = new ArrayList<>();
-        for (String expression : expressions) {
-            lockExpressions.add(parseExpressionString(expression, exprContext, currentPath, self));
-        }
-        return lockExpressions;
+        return CollectionsPlume.mapList(
+                (String expression) ->
+                        parseExpressionString(expression, exprContext, currentPath, self),
+                expressions);
     }
 
     /**

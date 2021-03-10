@@ -341,9 +341,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
         } else if (AnnotationUtils.areSameByClass(annotation, LessThanUnknown.class)) {
             return new ArrayList<>();
         } else {
-            List<String> list =
-                    AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
-            return list;
+            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
         }
     }
 }

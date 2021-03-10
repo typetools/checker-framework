@@ -108,7 +108,8 @@ public class LiveVarStore implements Store<LiveVarStore> {
 
     @Override
     public LiveVarStore leastUpperBound(LiveVarStore other) {
-        Set<LiveVarValue> liveVarValueSetLub = new HashSet<>();
+        Set<LiveVarValue> liveVarValueSetLub =
+                new HashSet<>(this.liveVarValueSet.size() + other.liveVarValueSet.size());
         liveVarValueSetLub.addAll(this.liveVarValueSet);
         liveVarValueSetLub.addAll(other.liveVarValueSet);
         return new LiveVarStore(liveVarValueSetLub);

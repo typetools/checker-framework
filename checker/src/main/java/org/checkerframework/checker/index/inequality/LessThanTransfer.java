@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index.inequality;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -112,11 +111,12 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             if (right != null && 0 < right) {
                 // left - right < left iff 0 < right
                 List<String> expressions = getLessThanExpressions(n.getLeftOperand());
-                if (expressions == null) {
-                    expressions = new ArrayList<>();
-                }
                 if (!isDoubleOrFloatLiteral(leftJe)) {
-                    expressions.add(leftJe.toString());
+                    if (expressions == null) {
+                        expressions = Collections.singletonList(leftJe.toString());
+                    } else {
+                        expressions.add(leftJe.toString());
+                    }
                 }
                 AnnotationMirror refine = factory.createLessThanQualifier(expressions);
                 CFValue value = analysis.createSingleAnnotationValue(refine, n.getType());

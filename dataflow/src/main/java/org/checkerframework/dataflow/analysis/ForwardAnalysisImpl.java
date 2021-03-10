@@ -28,6 +28,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -227,12 +228,10 @@ public class ForwardAnalysisImpl<
     @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-        List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> result = new ArrayList<>();
-        for (ReturnNode returnNode : cfg.getReturnNodes()) {
-            TransferResult<V, S> store = storesAtReturnStatements.get(returnNode);
-            result.add(Pair.of(returnNode, store));
-        }
-        return result;
+        return CollectionsPlume.mapList(
+                (ReturnNode returnNode) ->
+                        Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
+                cfg.getReturnNodes());
     }
 
     @Override
@@ -373,7 +372,7 @@ public class ForwardAnalysisImpl<
         switch (underlyingAST.getKind()) {
             case METHOD:
                 MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-                result = new ArrayList<>();
+                result = new ArrayList<>(tree.getParameters().size());
                 for (VariableTree p : tree.getParameters()) {
                     LocalVariableNode var = new LocalVariableNode(p);
                     result.add(var);
@@ -382,7 +381,7 @@ public class ForwardAnalysisImpl<
                 return result;
             case LAMBDA:
                 LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-                result = new ArrayList<>();
+                result = new ArrayList<>(lambda.getParameters().size());
                 for (VariableTree p : lambda.getParameters()) {
                     LocalVariableNode var = new LocalVariableNode(p);
                     result.add(var);

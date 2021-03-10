@@ -789,7 +789,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     methodElement.getModifiers().contains(Modifier.ABSTRACT)
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
 
-            List<String> formalParamNames = new ArrayList<>();
+            List<String> formalParamNames = new ArrayList<>(node.getParameters().size());
             for (VariableTree param : node.getParameters()) {
                 formalParamNames.add(param.getName().toString());
             }
@@ -1519,7 +1519,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
+        List<AnnotatedTypeParameterBounds> paramBounds =
+                new ArrayList<>(invokedMethod.getTypeVariables().size());
         for (AnnotatedTypeVariable param : invokedMethod.getTypeVariables()) {
             paramBounds.add(param.getBounds());
         }
@@ -1870,7 +1871,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
         checkVarargs(constructorType, node);
 
-        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
+        List<AnnotatedTypeParameterBounds> paramBounds =
+                new ArrayList<>(constructorType.getTypeVariables().size());
         for (AnnotatedTypeVariable param : constructorType.getTypeVariables()) {
             paramBounds.add(param.getBounds());
         }
@@ -2004,13 +2006,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return null;
         }
 
+        List<ExecutableElement> methods = ElementFilter.methodsIn(anno.getEnclosedElements());
         // Mapping from argument simple name to its annotated type.
-        Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<>();
-        for (Element encl : ElementFilter.methodsIn(anno.getEnclosedElements())) {
-            AnnotatedExecutableType exeatm =
-                    (AnnotatedExecutableType) atypeFactory.getAnnotatedType(encl);
+        Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<>(methods.size());
+        for (ExecutableElement meth : methods) {
+            AnnotatedExecutableType exeatm = atypeFactory.getAnnotatedType(meth);
             AnnotatedTypeMirror retty = exeatm.getReturnType();
-            annoTypes.put(encl.getSimpleName().toString(), retty);
+            annoTypes.put(meth.getSimpleName().toString(), retty);
         }
 
         for (ExpressionTree arg : args) {
@@ -4132,7 +4134,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private Set<Postcondition> filterConditionalPostconditions(
             Set<ConditionalPostcondition> conditionalPostconditions, boolean b) {
-        Set<Postcondition> result = new LinkedHashSet<>();
+        if (conditionalPostconditions.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<Postcondition> result = new LinkedHashSet<>(conditionalPostconditions.size());
         for (Contract c : conditionalPostconditions) {
             ConditionalPostcondition p = (ConditionalPostcondition) c;
             if (p.resultValue == b) {
@@ -4255,7 +4261,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
         ThisReference receiverJe =
                 new ThisReference(methodType.getReceiverType().getUnderlyingType());
-        List<JavaExpression> parametersJe = new ArrayList<>();
+        List<JavaExpression> parametersJe = new ArrayList<>(methodElt.getParameters().size());
         for (VariableElement param : methodElt.getParameters()) {
             parametersJe.add(new LocalVariable(param));
         }

@@ -116,7 +116,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(exprLTAnno);
 
             if (initialAnnotations != null) {
-                List<String> updatedAnnotations = new ArrayList<>();
+                List<String> updatedAnnotations = new ArrayList<>(initialAnnotations.size());
 
                 for (String annotation : initialAnnotations) {
                     OffsetEquation updatedAnnotation =

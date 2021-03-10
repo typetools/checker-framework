@@ -209,7 +209,7 @@ public class NullnessAnnotatedTypeFactory
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
+        Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>(4);
         tempNullnessAnnos.add(NonNull.class);
         tempNullnessAnnos.add(MonotonicNonNull.class);
         tempNullnessAnnos.add(Nullable.class);

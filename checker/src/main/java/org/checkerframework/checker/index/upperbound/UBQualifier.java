@@ -146,7 +146,7 @@ public abstract class UBQualifier {
             }
         }
 
-        Map<String, Set<OffsetEquation>> map = new HashMap<>();
+        Map<String, Set<OffsetEquation>> map = new HashMap<>(sequences.size());
         if (offsets.isEmpty()) {
             for (String sequence : sequences) {
                 map.put(sequence, Collections.singleton(extraEq));
@@ -285,6 +285,12 @@ public abstract class UBQualifier {
 
     /** The less-than-length-of qualifier (@LTLengthOf). */
     public static class LessThanLengthOf extends UBQualifier {
+        // There are two representations for sequences and offsets.
+        // In source code, they are represented by two parallel arrays, as in
+        //   @LTLengthOf(value = {"a", "b", "a", "c"}, offset = {"-1", "x", "y", "0"}).
+        // In this implementation, they are represented by a single map; the above would be
+        //   { "a" : {"-1", "y"}, "b" : {"x"}, "c" : {"0"} }
+        // Code in this class transforms from one representation to the other.
         /** Maps from sequence name to offset. */
         private final Map<String, Set<OffsetEquation>> map;
 
@@ -405,12 +411,12 @@ public abstract class UBQualifier {
                 ProcessingEnvironment env, boolean buildSubstringIndexAnnotation) {
             List<String> sortedSequences = new ArrayList<>(map.keySet());
             Collections.sort(sortedSequences);
-            List<String> sequences = new ArrayList<>();
-            List<String> offsets = new ArrayList<>();
+            List<String> sequences = new ArrayList<>(1);
+            List<String> offsets = new ArrayList<>(1);
             boolean isLTEq = true;
             boolean isLTOM = true;
             for (String sequence : sortedSequences) {
-                List<String> sortOffsets = new ArrayList<>();
+                List<String> sortOffsets = new ArrayList<>(1);
                 for (OffsetEquation eq : map.get(sequence)) {
                     isLTEq = isLTEq && eq.equals(OffsetEquation.NEG_1);
                     isLTOM = isLTOM && eq.equals(OffsetEquation.ONE);
@@ -564,9 +570,9 @@ public abstract class UBQualifier {
 
             Map<String, Set<OffsetEquation>> lubMap = new HashMap<>();
             for (String sequence : sequences) {
-                Set<OffsetEquation> lub = new HashSet<>();
                 Set<OffsetEquation> offsets1 = map.get(sequence);
                 Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
+                Set<OffsetEquation> lub = new HashSet<>(offsets1.size() + offsets2.size());
                 for (OffsetEquation offset1 : offsets1) {
                     for (OffsetEquation offset2 : offsets2) {
                         if (offset2.lessThanOrEqual(offset1)) {
@@ -678,7 +684,7 @@ public abstract class UBQualifier {
             Set<String> sequences = new HashSet<>(map.keySet());
             sequences.addAll(otherLtl.map.keySet());
 
-            Map<String, Set<OffsetEquation>> glbMap = new HashMap<>();
+            Map<String, Set<OffsetEquation>> glbMap = new HashMap<>(sequences.size());
             for (String sequence : sequences) {
                 Set<OffsetEquation> glb = map.get(sequence);
                 Set<OffsetEquation> otherglb = otherLtl.map.get(sequence);
@@ -694,7 +700,7 @@ public abstract class UBQualifier {
 
         /** Keeps only the largest offset equation that is only an int value. */
         private Set<OffsetEquation> simplifyOffsets(Set<OffsetEquation> offsets) {
-            Set<OffsetEquation> newOff = new HashSet<>();
+            Set<OffsetEquation> newOff = new HashSet<>(offsets.size());
             OffsetEquation literal = null;
             for (OffsetEquation eq : offsets) {
                 if (eq.isInt()) {
@@ -936,8 +942,8 @@ public abstract class UBQualifier {
         /** Generates a new UBQualifer without the given sequence and offset. */
         public UBQualifier removeOffset(String sequence, int offset) {
             OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
-            List<String> sequences = new ArrayList<>();
-            List<String> offsets = new ArrayList<>();
+            List<String> sequences = new ArrayList<>(this.map.size());
+            List<String> offsets = new ArrayList<>(this.map.size());
             for (String seq : this.map.keySet()) {
                 Set<OffsetEquation> offsetSet = this.map.get(seq);
                 for (OffsetEquation off : offsetSet) {
