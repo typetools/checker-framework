@@ -70,13 +70,21 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         reflectionResolver = new DefaultReflectionResolver(checker, this, debug);
     }
 
-    static List<MethodSignature> getListOfMethodSignatures(AnnotationMirror anno) {
+    /**
+     * Returns the methods that a {@code @MethodValAnno} represents.
+     *
+     * @param methodValAnno a {@code @MethodValAnno} annotation
+     * @param the methods that the given {@code @MethodValAnno} represents
+     */
+    static List<MethodSignature> getListOfMethodSignatures(AnnotationMirror methodValAnno) {
         List<String> methodNames =
-                AnnotationUtils.getElementValueArray(anno, "methodName", String.class, true);
+                AnnotationUtils.getElementValueArray(
+                        methodValAnno, "methodName", String.class, true);
         List<String> classNames =
-                AnnotationUtils.getElementValueArray(anno, "className", String.class, true);
+                AnnotationUtils.getElementValueArray(
+                        methodValAnno, "className", String.class, true);
         List<Integer> params =
-                AnnotationUtils.getElementValueArray(anno, "params", Integer.class, true);
+                AnnotationUtils.getElementValueArray(methodValAnno, "params", Integer.class, true);
         List<MethodSignature> list = new ArrayList<>(methodNames.size());
         for (int i = 0; i < methodNames.size(); i++) {
             list.add(new MethodSignature(classNames.get(i), methodNames.get(i), params.get(i)));
@@ -84,6 +92,12 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return list;
     }
 
+    /**
+     * Creates a {@code @MethodVal} annotation.
+     *
+     * @param sigs the method signatures that the result should represent
+     * @return a {@code @MethodVal} annotation that represents {@code sigs}
+     */
     private AnnotationMirror createMethodVal(Set<MethodSignature> sigs) {
         int size = sigs.size();
         List<String> classNames = new ArrayList<>(size);
