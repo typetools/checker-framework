@@ -540,6 +540,10 @@ public class JavaExpressionParseUtil {
             if (identifier.equals("length") && enclosingTypeOfField.getKind() == TypeKind.ARRAY) {
                 fieldElem =
                         resolver.findField(identifier, enclosingTypeOfField, pathToCompilationUnit);
+                if (fieldElem == null) {
+                    // field not found.
+                    return null;
+                }
             } else {
                 fieldElem = null;
                 // Search for field in each enclosing class.
@@ -553,10 +557,10 @@ public class JavaExpressionParseUtil {
                     enclosingTypeOfField =
                             getTypeOfEnclosingClass((DeclaredType) enclosingTypeOfField);
                 }
-            }
-            if (fieldElem == null) {
-                // field not found.
-                return null;
+                if (fieldElem == null) {
+                    // field not found.
+                    return null;
+                }
             }
 
             // Construct a FieldAccess expression.
@@ -590,7 +594,7 @@ public class JavaExpressionParseUtil {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
                                 identifier,
-                                "a non-static field declared in an outer class cannot be referenced from a static inner class or enum"));
+                                "a non-static field declared in an outer type cannot be referenced from a member type"));
             }
             // It's an instance field declared in an enclosing type of receiverExpr, and
             // enclosingTypeOfField != receiverExpr.getType().
