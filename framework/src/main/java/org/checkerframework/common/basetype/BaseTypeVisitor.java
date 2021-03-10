@@ -1004,7 +1004,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             JavaExpression exprJe;
             try {
-                // Parse the expressionString that was written on methodElement at the methodDecl.
                 exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
             } catch (JavaExpressionParseException e) {
                 checker.report(methodTree, e.getDiagMessage());
