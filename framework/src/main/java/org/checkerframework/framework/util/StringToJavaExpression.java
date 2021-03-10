@@ -63,8 +63,6 @@ public interface StringToJavaExpression {
      */
     @Nullable JavaExpression toJavaExpression(String stringExpr) throws JavaExpressionParseException;
 
-    // TODO: "@return the" implies that there is one canonical one that will always be returned.  I
-    // suggest rewording throughout.  (The above method does not have this issue.)
     /**
      * Parses a string to a {@link JavaExpression} as if it were written at {@code typeElement}.
      *
@@ -73,7 +71,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atTypeDecl(
@@ -81,10 +79,6 @@ public interface StringToJavaExpression {
             throws JavaExpressionParseException {
         ThisReference thisReference = new ThisReference(typeElement.asType());
         List<FormalParameter> parameters = null;
-        // TODO: This call explains why JavaExpressionParseUtil.parse is not private.  I suggest it
-        // should be package-private.
-        // TODO: Should there be a variant of parse that takes a SourceChecker instead of its
-        // current two final formal parameters?  That would simplify all these calls.
         return JavaExpressionParseUtil.parse(
                 expression,
                 typeElement.asType(),
@@ -103,7 +97,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atFieldDecl(
@@ -139,7 +133,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atMethodDecl(
@@ -175,7 +169,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atMethodBody(
@@ -196,7 +190,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atMethodInvocation(
@@ -216,7 +210,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atMethodInvocation(
@@ -236,7 +230,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atConstructorInvocation(
@@ -256,7 +250,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atFieldAccess(
@@ -284,7 +278,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atLambdaParameter(
@@ -329,7 +323,7 @@ public interface StringToJavaExpression {
      * @param checker checker used to get the {@link
      *     javax.annotation.processing.ProcessingEnvironment} and current {@link
      *     com.sun.source.tree.CompilationUnitTree}
-     * @return the {@code JavaExpression} for {@code expression}
+     * @return a {@code JavaExpression} for {@code expression}
      * @throws JavaExpressionParseException if {@code expression} cannot be parsed
      */
     static JavaExpression atPath(String expression, TreePath localVarPath, SourceChecker checker)
