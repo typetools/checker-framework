@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.inequality;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +60,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 return;
             }
             if (!isDoubleOrFloatLiteral(leftJe)) {
+                lessThanExpressions = new ArrayList<>(lessThanExpressions);
                 lessThanExpressions.add(leftJe.toString());
             }
             JavaExpression rightJe = JavaExpression.fromNode(right);
@@ -91,6 +93,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 return;
             }
             if (!isDoubleOrFloatLiteral(leftJe)) {
+                lessThanExpressions = new ArrayList<>(lessThanExpressions);
                 lessThanExpressions.add(incrementedExpression(leftJe));
             }
             JavaExpression rightJe = JavaExpression.fromNode(right);
@@ -110,11 +113,14 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
             if (right != null && 0 < right) {
                 // left - right < left iff 0 < right
-                List<String> expressions = getLessThanExpressions(n.getLeftOperand());
+                List<String> expressions =
+                        new ArrayList<>(getLessThanExpressions(n.getLeftOperand()));
+                ;
                 if (!isDoubleOrFloatLiteral(leftJe)) {
                     if (expressions == null) {
                         expressions = Collections.singletonList(leftJe.toString());
                     } else {
+                        expressions = new ArrayList<>(expressions);
                         expressions.add(leftJe.toString());
                     }
                 }
