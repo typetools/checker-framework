@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** Utility methods for the Value Checker. */
 public class ValueCheckerUtils {
@@ -150,11 +151,7 @@ public class ValueCheckerUtils {
         if (origValues == null) {
             return null;
         }
-        List<String> strings = new ArrayList<>();
-        for (Object value : origValues) {
-            strings.add(value.toString());
-        }
-        return strings;
+        return CollectionsPlume.mapList(Object::toString, origValues);
     }
 
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
@@ -170,11 +167,7 @@ public class ValueCheckerUtils {
     private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
         List<String> strings = ValueAnnotatedTypeFactory.getStringValues(anno);
         if (newClass == char[].class) {
-            List<char[]> chars = new ArrayList<>();
-            for (String s : strings) {
-                chars.add(s.toCharArray());
-            }
-            return chars;
+            return CollectionsPlume.mapList(String::toCharArray, strings);
         }
         return strings;
     }
@@ -186,11 +179,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return convertToStringVal(longs);
         } else if (newClass == Character.class || newClass == char.class) {
-            List<Character> chars = new ArrayList<>();
-            for (Long l : longs) {
-                chars.add((char) l.longValue());
-            }
-            return chars;
+            return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
                     "ValueAnnotatedTypeFactory: can't convert int to boolean");
@@ -207,11 +196,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return convertToStringVal(doubles);
         } else if (newClass == Character.class || newClass == char.class) {
-            List<Character> chars = new ArrayList<>();
-            for (Double l : doubles) {
-                chars.add((char) l.doubleValue());
-            }
-            return chars;
+            return CollectionsPlume.mapList((Double l) -> (char) l.doubleValue(), doubles);
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
                     "ValueAnnotatedTypeFactory: can't convert double to boolean");
@@ -248,10 +233,7 @@ public class ValueCheckerUtils {
      * @return list of unique lengths of strings in {@code values}
      */
     public static List<Integer> getLengthsForStringValues(List<String> values) {
-        List<Integer> lengths = new ArrayList<>();
-        for (String str : values) {
-            lengths.add(str.length());
-        }
+        List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
         return ValueCheckerUtils.removeDuplicates(lengths);
     }
 

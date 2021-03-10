@@ -21,6 +21,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
@@ -711,10 +712,8 @@ public class CheckerMain {
                                     + ". This may be because you built the Checker Framework under Java 11 but are running it under Java 8.");
                 }
             }
-            List<String> missingAbsoluteFilenames = new ArrayList<>(missingFiles.size());
-            for (File missingFile : missingFiles) {
-                missingAbsoluteFilenames.add(missingFile.getAbsolutePath());
-            }
+            List<String> missingAbsoluteFilenames =
+                    CollectionsPlume.mapList(File::getAbsolutePath, missingFiles);
             throw new RuntimeException(
                     "The following files could not be located: "
                             + String.join(", ", missingAbsoluteFilenames));

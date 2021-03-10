@@ -14,7 +14,6 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
@@ -23,6 +22,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -222,15 +222,18 @@ public class ReflectiveEvaluator {
         }
     }
 
+    /**
+     * Returns the classes of the given method's formal parameters.
+     *
+     * @param ele a method or constructor
+     * @return the classes of the given method's formal parameters
+     * @throws ClassNotFoundException if the class cannot be found
+     */
     private List<Class<?>> getParameterClasses(ExecutableElement ele)
             throws ClassNotFoundException {
-        List<? extends VariableElement> paramEles = ele.getParameters();
-        List<Class<?>> paramClasses = new ArrayList<>();
-        for (Element e : paramEles) {
-            TypeMirror pType = ElementUtils.getType(e);
-            paramClasses.add(TypesUtils.getClassFromType(pType));
-        }
-        return paramClasses;
+        return CollectionsPlume.mapList(
+                (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)),
+                ele.getParameters());
     }
 
     private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
@@ -254,13 +257,16 @@ public class ReflectiveEvaluator {
         return tuples;
     }
 
+    /**
+     * Returns a depth-2 copy of the given list. In the returned value, the list and the arrays in
+     * it are new, but the elements of the arrays are shared with the argument.
+     *
+     * @param lastTuples a list of arrays
+     * @return a depth-2 copy of the given list
+     */
     private List<Object[]> copy(List<Object[]> lastTuples) {
-        List<Object[]> returnListOfLists = new ArrayList<>();
-        for (Object[] list : lastTuples) {
-            Object[] copy = Arrays.copyOf(list, list.length);
-            returnListOfLists.add(copy);
-        }
-        return returnListOfLists;
+        return CollectionsPlume.mapList(
+                (Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
     }
 
     /**

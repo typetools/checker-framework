@@ -68,6 +68,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
@@ -234,10 +235,7 @@ public class ValueTransfer extends CFTransfer {
         if (values == null) {
             return null;
         }
-        List<String> stringValues = new ArrayList<>();
-        for (Object o : values) {
-            stringValues.add(o.toString());
-        }
+        List<String> stringValues = CollectionsPlume.mapList(Object::toString, values);
         // Empty list means bottom value
         return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
     }

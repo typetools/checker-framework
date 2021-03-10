@@ -30,7 +30,6 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -757,14 +756,13 @@ public class JavaExpressionParseUtil {
 
         @Override
         public JavaExpression visit(ArrayCreationExpr expr, JavaExpressionContext context) {
-            List<JavaExpression> dimensions = new ArrayList<>();
-            for (ArrayCreationLevel dimension : expr.getLevels()) {
-                if (dimension.getDimension().isPresent()) {
-                    dimensions.add(dimension.getDimension().get().accept(this, context));
-                } else {
-                    dimensions.add(null);
-                }
-            }
+            List<JavaExpression> dimensions =
+                    CollectionsPlume.mapList(
+                            (ArrayCreationLevel dimension) ->
+                                    dimension.getDimension().isPresent()
+                                            ? dimension.getDimension().get().accept(this, context)
+                                            : null,
+                            expr.getLevels());
 
             List<JavaExpression> initializers = new ArrayList<>();
             if (expr.getInitializer().isPresent()) {
@@ -1114,10 +1112,8 @@ public class JavaExpressionParseUtil {
                 MethodTree methodDeclaration, SourceChecker checker) {
             ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
             JavaExpression thisExpression = JavaExpression.getImplicitReceiver(methodElt);
-            List<JavaExpression> parametersJe = new ArrayList<>();
-            for (VariableElement param : methodElt.getParameters()) {
-                parametersJe.add(new LocalVariable(param));
-            }
+            List<JavaExpression> parametersJe =
+                    CollectionsPlume.mapList(LocalVariable::new, methodElt.getParameters());
             return new JavaExpressionContext(thisExpression, parametersJe, checker);
         }
 
@@ -1133,10 +1129,9 @@ public class JavaExpressionParseUtil {
                 LambdaExpressionTree lambdaTree, TreePath path, SourceChecker checker) {
             TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
             JavaExpression receiverJe = new ThisReference(enclosingType);
-            List<JavaExpression> parametersJe = new ArrayList<>();
-            for (VariableTree arg : lambdaTree.getParameters()) {
-                parametersJe.add(JavaExpression.fromVariableTree(arg));
-            }
+            List<JavaExpression> parametersJe =
+                    CollectionsPlume.mapList(
+                            JavaExpression::fromVariableTree, lambdaTree.getParameters());
             return new JavaExpressionContext(receiverJe, parametersJe, checker);
         }
 
@@ -1167,10 +1162,9 @@ public class JavaExpressionParseUtil {
                 MethodInvocationNode methodInvocation, SourceChecker checker) {
             Node receiver = methodInvocation.getTarget().getReceiver();
             JavaExpression receiverJe = JavaExpression.fromNode(receiver);
-            List<JavaExpression> argumentsJe = new ArrayList<>();
-            for (Node arg : methodInvocation.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(arg));
-            }
+            List<JavaExpression> argumentsJe =
+                    CollectionsPlume.mapList(
+                            JavaExpression::fromNode, methodInvocation.getArguments());
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
 
@@ -1187,10 +1181,8 @@ public class JavaExpressionParseUtil {
             JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocation);
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
-            List<JavaExpression> argumentsJe = new ArrayList<>(args.size());
-            for (ExpressionTree argTree : args) {
-                argumentsJe.add(JavaExpression.fromTree(argTree));
-            }
+            List<JavaExpression> argumentsJe =
+                    CollectionsPlume.mapList(JavaExpression::fromTree, args);
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
@@ -1211,10 +1203,8 @@ public class JavaExpressionParseUtil {
             // constructor is declared
             JavaExpression receiverJe = JavaExpression.fromNode(n);
 
-            List<JavaExpression> argumentsJe = new ArrayList<>();
-            for (Node arg : n.getArguments()) {
-                argumentsJe.add(JavaExpression.fromNode(arg));
-            }
+            List<JavaExpression> argumentsJe =
+                    CollectionsPlume.mapList(JavaExpression::fromNode, n.getArguments());
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }

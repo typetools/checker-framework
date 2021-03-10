@@ -351,17 +351,25 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-    // In Java 9, this method can be eliminated:  it is simple enough for clients to inline, using
+    // In Java 9+, this method can be eliminated:  it is simple enough for clients to inline, using
     // List.of.
     /**
-     * Combines the given arrays and annotations into a single SameLen annotation. See {@link
-     * #createCombinedSameLen(List, List)}.
+     * Combines the given arrays and annotations into a single {@code @SameLen} annotation. See
+     * {@link #createCombinedSameLen(List, List)}.
+     *
+     * @param expr1 a JavaExpression
+     * @param expr2 a JavaExpression
+     * @param a1 an AnnotationMirror
+     * @param a2 an AnnotationMirror
+     * @return a {@code @SameLen} annotation with the given information
      */
     public AnnotationMirror createCombinedSameLen(
             JavaExpression expr1, JavaExpression expr2, AnnotationMirror a1, AnnotationMirror a2) {
+        // In Java 9+, use: List.of(expr1, expr2)
         List<JavaExpression> exprs = new ArrayList<>(2);
         exprs.add(expr1);
         exprs.add(expr2);
+        // In Java 9+, use: List.of(a1, a2)
         List<AnnotationMirror> annos = new ArrayList<>(2);
         annos.add(a1);
         annos.add(a2);

@@ -52,6 +52,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -294,11 +295,7 @@ public class DependentTypesHelper {
             }
         }
 
-        List<JavaExpression> result = new ArrayList<>();
-        for (ExpressionTree argTree : argTrees) {
-            result.add(JavaExpression.fromTree(argTree));
-        }
-        return result;
+        return CollectionsPlume.mapList(JavaExpression::fromTree, argTrees);
     }
 
     /**

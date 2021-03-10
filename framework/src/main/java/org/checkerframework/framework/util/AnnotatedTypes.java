@@ -52,6 +52,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -538,10 +539,10 @@ public class AnnotatedTypes {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
                         StringsPlume.joinLines(
-                                "Type arguments of a declaration should be type variables",
-                                "enclosingClassOfElem=" + enclosingClassOfElem,
-                                "enclosingType=" + enclosingType,
-                                "typeMirror=" + t));
+                                "Type arguments of a declaration should be type variables.",
+                                "  enclosingClassOfElem=" + enclosingClassOfElem,
+                                "  enclosingType=" + enclosingType,
+                                "  typeMirror=" + t));
             }
             ownerParams.add((AnnotatedTypeVariable) typeParam);
         }
@@ -555,14 +556,9 @@ public class AnnotatedTypes {
                             "baseType=" + base));
         }
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
-            List<AnnotatedTypeMirror> newBaseParams = new ArrayList<>();
-            for (AnnotatedTypeVariable arg : ownerParams) {
-                // If base type was raw and the type arguments are missing,
-                // set them to the erased type of the type variable.
-                // (which is the erased type of the upper bound.)
-                newBaseParams.add(arg.getErased());
-            }
-            baseParams = newBaseParams;
+            // If base type was raw and the type arguments are missing, set them to the erased type
+            // of the type variable (which is the erased type of the upper bound).
+            baseParams = CollectionsPlume.mapList(AnnotatedTypeVariable::getErased, ownerParams);
         }
 
         for (int i = 0; i < ownerParams.size(); ++i) {

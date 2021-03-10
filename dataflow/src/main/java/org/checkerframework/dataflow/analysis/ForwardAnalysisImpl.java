@@ -2,8 +2,6 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -229,8 +227,7 @@ public class ForwardAnalysisImpl<
     @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
         return CollectionsPlume.mapList(
-                (ReturnNode returnNode) ->
-                        Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
+                returnNode -> Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
                 cfg.getReturnNodes());
     }
 
@@ -368,26 +365,15 @@ public class ForwardAnalysisImpl<
      */
     @SideEffectFree
     private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
-        List<LocalVariableNode> result;
         switch (underlyingAST.getKind()) {
             case METHOD:
                 MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-                result = new ArrayList<>(tree.getParameters().size());
-                for (VariableTree p : tree.getParameters()) {
-                    LocalVariableNode var = new LocalVariableNode(p);
-                    result.add(var);
-                    // TODO: document that LocalVariableNode has no block that it belongs to
-                }
-                return result;
+                // TODO: document that LocalVariableNode has no block that it belongs to
+                return CollectionsPlume.mapList(LocalVariableNode::new, tree.getParameters());
             case LAMBDA:
                 LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-                result = new ArrayList<>(lambda.getParameters().size());
-                for (VariableTree p : lambda.getParameters()) {
-                    LocalVariableNode var = new LocalVariableNode(p);
-                    result.add(var);
-                    // TODO: document that LocalVariableNode has no block that it belongs to
-                }
-                return result;
+                // TODO: document that LocalVariableNode has no block that it belongs to
+                return CollectionsPlume.mapList(LocalVariableNode::new, lambda.getParameters());
             default:
                 return Collections.emptyList();
         }

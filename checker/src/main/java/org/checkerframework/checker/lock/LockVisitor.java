@@ -1253,8 +1253,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         return CollectionsPlume.mapList(
-                (String expression) ->
-                        parseExpressionString(expression, exprContext, currentPath, self),
+                expression -> parseExpressionString(expression, exprContext, currentPath, self),
                 expressions);
     }
 

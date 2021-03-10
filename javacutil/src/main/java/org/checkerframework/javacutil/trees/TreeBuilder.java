@@ -23,7 +23,6 @@ import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -40,6 +39,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * The TreeBuilder permits the creation of new AST Trees using the non-public Java compiler API
@@ -673,10 +673,8 @@ public class TreeBuilder {
      * @return a NewArrayTree to create a new array with initializers
      */
     public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
-        List<JCExpression> exprs = new ArrayList<>();
-        for (ExpressionTree elem : elems) {
-            exprs.add((JCExpression) elem);
-        }
+        List<JCExpression> exprs =
+                CollectionsPlume.mapList((ExpressionTree elem) -> (JCExpression) elem, elems);
 
         JCTree.JCNewArray newArray =
                 maker.NewArray(

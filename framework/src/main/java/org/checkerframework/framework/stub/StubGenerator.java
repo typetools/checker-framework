@@ -25,6 +25,7 @@ import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -212,10 +213,9 @@ public class StubGenerator {
         if (!typeElement.getInterfaces().isEmpty()) {
             final boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
             out.print(isInterface ? " extends " : " implements ");
-            List<String> ls = new ArrayList<>();
-            for (TypeMirror itf : typeElement.getInterfaces()) {
-                ls.add(formatType(itf));
-            }
+            List<String> ls =
+                    CollectionsPlume.mapList(
+                            StubGenerator::formatType, typeElement.getInterfaces());
             out.print(formatList(ls));
         }
 
@@ -353,10 +353,8 @@ public class StubGenerator {
 
         if (!method.getThrownTypes().isEmpty()) {
             out.print(" throws ");
-            List<String> ltt = new ArrayList<>();
-            for (TypeMirror tt : method.getThrownTypes()) {
-                ltt.add(formatType(tt));
-            }
+            List<String> ltt =
+                    CollectionsPlume.mapList(StubGenerator::formatType, method.getThrownTypes());
             out.print(formatList(ltt));
         }
         out.println(';');
@@ -384,8 +382,13 @@ public class StubGenerator {
                 || element.getModifiers().contains(Modifier.PROTECTED);
     }
 
-    /** Outputs the simple name of the type. */
-    private String formatType(TypeMirror typeRep) {
+    /**
+     * Returns the simple name of the type.
+     *
+     * @param typeRep a type
+     * @return the simple name of the type
+     */
+    private static String formatType(TypeMirror typeRep) {
         StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
         StringBuilder sb = new StringBuilder();
 
