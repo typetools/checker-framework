@@ -74,7 +74,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the methods that a {@code @MethodValAnno} represents.
      *
      * @param methodValAnno a {@code @MethodValAnno} annotation
-     * @param the methods that the given {@code @MethodValAnno} represents
+     * @return the methods that the given {@code @MethodValAnno} represents
      */
     static List<MethodSignature> getListOfMethodSignatures(AnnotationMirror methodValAnno) {
         List<String> methodNames =
