@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,91 +23,6 @@ public class SystemUtil {
 
     /** The system-specific line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator();
-
-    /**
-     * Return a list of Strings, one per line of the file.
-     *
-     * @param argFile argument file
-     * @return a list of Strings, one per line of the file
-     * @throws IOException when reading the argFile
-     * @deprecated use Files.readAllLines
-     */
-    @Deprecated // 2021-03-10
-    public static List<String> readFile(final File argFile) throws IOException {
-        final BufferedReader br = new BufferedReader(new FileReader(argFile));
-        String line;
-
-        List<String> lines = new ArrayList<>();
-        while ((line = br.readLine()) != null) {
-            lines.add(line);
-        }
-        br.close();
-        return lines;
-    }
-
-    /**
-     * Returns a new String composed of the string representations of the elements joined together
-     * with a copy of the specified delimiter.
-     *
-     * @param <T> the type of array elements
-     * @param delimiter the delimiter that separates each element
-     * @param objs the values whose string representations to join together
-     * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@code StringsPlume.join}
-     */
-    @Deprecated // use StringsPlume.join
-    public static <T> String join(CharSequence delimiter, T[] objs) {
-        if (objs == null) {
-            return "null";
-        }
-        return StringsPlume.join(delimiter, objs);
-    }
-
-    /**
-     * Returns a new String composed of the string representations of the elements joined together
-     * with a copy of the specified delimiter.
-     *
-     * @param delimiter the delimiter that separates each element
-     * @param values the values whose string representations to join together
-     * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@code StringsPlume.join}
-     */
-    @Deprecated // use StringsPlume.join
-    public static String join(CharSequence delimiter, Iterable<?> values) {
-        if (values == null) {
-            return "null";
-        }
-        return StringsPlume.join(delimiter, values);
-    }
-
-    /**
-     * Concatenate the string representations of the objects, placing the system-specific line
-     * separator between them.
-     *
-     * @param <T> the type of array elements
-     * @param a array of values to concatenate
-     * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@code StringsPlume.joinLines}
-     */
-    @Deprecated // use StringsPlume.joinLines
-    @SafeVarargs
-    @SuppressWarnings("varargs")
-    public static <T> String joinLines(T... a) {
-        return join(LINE_SEPARATOR, a);
-    }
-
-    /**
-     * Concatenate the string representations of the objects, placing the system-specific line
-     * separator between them.
-     *
-     * @param v list of values to concatenate
-     * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@code StringsPlume.joinLines}
-     */
-    @Deprecated // use StringsPlume.joinLines
-    public static String joinLines(Iterable<? extends Object> v) {
-        return join(LINE_SEPARATOR, v);
-    }
 
     /**
      * Return true if the system property is set to "true". Return false if the system property is
@@ -271,12 +187,135 @@ public class SystemUtil {
     }
 
     /**
+     * Concatenates two lists into a new list.
+     *
+     * @param <T> the type of the list elements
+     * @param list1 the first list
+     * @param list2 the second list
+     * @return a new list containing the contents of the given lists, in order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> concatenate(Collection<T> list1, Collection<T> list2) {
+        List<T> result = new ArrayList<>(list1.size() + list2.size());
+        result.addAll(list1);
+        result.addAll(list2);
+        return result;
+    }
+
+    /**
+     * Concatenates a list and an element into a new list.
+     *
+     * @param <T> the type of the list elements
+     * @param list the list
+     * @param lastElt the new last elemeent
+     * @return a new list containing the list elements and the last element, in that order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> append(Collection<T> list, T lastElt) {
+        List<T> result = new ArrayList<>(list.size() + 1);
+        result.addAll(list);
+        result.add(lastElt);
+        return result;
+    }
+
+    ///
+    /// Deprecated methods
+    ///
+
+    /**
+     * Return a list of Strings, one per line of the file.
+     *
+     * @param argFile argument file
+     * @return a list of Strings, one per line of the file
+     * @throws IOException when reading the argFile
+     * @deprecated use Files.readAllLines
+     */
+    @Deprecated // 2021-03-10
+    public static List<String> readFile(final File argFile) throws IOException {
+        final BufferedReader br = new BufferedReader(new FileReader(argFile));
+        String line;
+
+        List<String> lines = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            lines.add(line);
+        }
+        br.close();
+        return lines;
+    }
+
+    /**
+     * Returns a new String composed of the string representations of the elements joined together
+     * with a copy of the specified delimiter.
+     *
+     * @param <T> the type of array elements
+     * @param delimiter the delimiter that separates each element
+     * @param objs the values whose string representations to join together
+     * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code StringsPlume.join}
+     */
+    @Deprecated // 2020-12-19
+    public static <T> String join(CharSequence delimiter, T[] objs) {
+        if (objs == null) {
+            return "null";
+        }
+        return StringsPlume.join(delimiter, objs);
+    }
+
+    /**
+     * Returns a new String composed of the string representations of the elements joined together
+     * with a copy of the specified delimiter.
+     *
+     * @param delimiter the delimiter that separates each element
+     * @param values the values whose string representations to join together
+     * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code StringsPlume.join}
+     */
+    @Deprecated // 2020-12-19
+    public static String join(CharSequence delimiter, Iterable<?> values) {
+        if (values == null) {
+            return "null";
+        }
+        return StringsPlume.join(delimiter, values);
+    }
+
+    /**
+     * Concatenate the string representations of the objects, placing the system-specific line
+     * separator between them.
+     *
+     * @param <T> the type of array elements
+     * @param a array of values to concatenate
+     * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code StringsPlume.joinLines}
+     */
+    @Deprecated // 2020-12-19
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    public static <T> String joinLines(T... a) {
+        return join(LINE_SEPARATOR, a);
+    }
+
+    /**
+     * Concatenate the string representations of the objects, placing the system-specific line
+     * separator between them.
+     *
+     * @param v list of values to concatenate
+     * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code StringsPlume.joinLines}
+     */
+    @Deprecated // 2020-12-19
+    public static String joinLines(Iterable<? extends Object> v) {
+        return join(LINE_SEPARATOR, v);
+    }
+
+    /**
      * Like Thread.sleep, but does not throw any exceptions, so it is easier for clients to use.
      * Causes the currently executing thread to sleep (temporarily cease execution) for the
      * specified number of milliseconds.
      *
      * @param millis the length of time to sleep in milliseconds
+     * @deprecated use SystemPlume.sleep
      */
+    @Deprecated // 2021-03-10
     public static void sleep(long millis) {
         try {
             Thread.sleep(millis);

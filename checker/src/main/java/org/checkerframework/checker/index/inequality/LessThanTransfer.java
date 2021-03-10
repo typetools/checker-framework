@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index.inequality;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +19,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Implements 3 refinement rules:
@@ -60,8 +60,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 return;
             }
             if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions = new ArrayList<>(lessThanExpressions);
-                lessThanExpressions.add(leftJe.toString());
+                lessThanExpressions = SystemUtil.append(lessThanExpressions, leftJe.toString());
             }
             JavaExpression rightJe = JavaExpression.fromNode(right);
             store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
@@ -93,8 +92,8 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 return;
             }
             if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions = new ArrayList<>(lessThanExpressions);
-                lessThanExpressions.add(incrementedExpression(leftJe));
+                lessThanExpressions =
+                        SystemUtil.append(lessThanExpressions, incrementedExpression(leftJe));
             }
             JavaExpression rightJe = JavaExpression.fromNode(right);
             store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
@@ -113,15 +112,12 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
             if (right != null && 0 < right) {
                 // left - right < left iff 0 < right
-                List<String> expressions =
-                        new ArrayList<>(getLessThanExpressions(n.getLeftOperand()));
-                ;
+                List<String> expressions = getLessThanExpressions(n.getLeftOperand());
                 if (!isDoubleOrFloatLiteral(leftJe)) {
                     if (expressions == null) {
                         expressions = Collections.singletonList(leftJe.toString());
                     } else {
-                        expressions = new ArrayList<>(expressions);
-                        expressions.add(leftJe.toString());
+                        expressions = SystemUtil.append(expressions, leftJe.toString());
                     }
                 }
                 AnnotationMirror refine = factory.createLessThanQualifier(expressions);
