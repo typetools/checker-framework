@@ -304,6 +304,7 @@ public class Resolver {
      * @param methodName name of the method to find
      * @param receiverType type of the receiver of the method
      * @param path tree path
+     * @param argumentTypes types of arguments passed to the method call
      * @return the method element (if found)
      */
     public @Nullable ExecutableElement findMethod(

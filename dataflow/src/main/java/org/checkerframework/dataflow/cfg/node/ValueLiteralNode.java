@@ -48,9 +48,11 @@ public abstract class ValueLiteralNode extends Node {
         return String.valueOf(getValue());
     }
 
-    /** Compare the value of this nodes. */
     @Override
     public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (!(obj instanceof ValueLiteralNode)) {
             return false;
         }
