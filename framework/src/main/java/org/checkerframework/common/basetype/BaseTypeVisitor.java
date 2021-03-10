@@ -60,6 +60,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -974,6 +976,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /** Matches warnings about use of formal parameter name. */
+    public static final Pattern FORMAL_PARAM_NAME_PATTERN =
+            Pattern.compile(
+                    "^.*'([a-zA-Z_$][a-zA-Z0-9_$]*)' because Use \"#(\\d+)\" rather than \"\\1\"$");
     /**
      * Check the contracts written on a method declaration. Ensures that the postconditions hold on
      * exit, and that the contracts are well-formed.
@@ -1010,15 +1016,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             try {
                 exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
-                exprJe = null;
-                checker.report(methodTree, e.getDiagMessage());
+
+                Matcher m =
+                        FORMAL_PARAM_NAME_PATTERN.matcher(
+                                e.getDiagMessage().getArgs()[0].toString());
+                if (m.matches()) {
+                    String locationOfExpression =
+                            contract.kind.errorKey
+                                    + " "
+                                    + contract.contractAnnotation
+                                            .getAnnotationType()
+                                            .asElement()
+                                            .getSimpleName()
+                                    + " on the declaration";
+                    checker.reportError(
+                            methodTree,
+                            "expression.parameter.name.invalid",
+                            locationOfExpression,
+                            methodTree.getName().toString(),
+                            m.group(1),
+                            m.group(2));
+                } else {
+                    checker.report(methodTree, e.getDiagMessage());
+                }
+                continue;
             }
-            // If exprJe is null, then an error was issued above.
-            if (exprJe != null && !CFAbstractStore.canInsertJavaExpression(exprJe)) {
+            if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
                 checker.reportError(methodTree, "flowexpr.parse.error", expressionString);
-                exprJe = null;
+                continue;
             }
-            if (exprJe != null && !abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
+            if (!abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
                 // Check the contract, which is a postcondition.
                 // Preconditions are checked at method invocations, not declarations.
 
@@ -1047,24 +1074,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                         .asElement()
                                         .getSimpleName()
                                 + " on the declaration";
-                if (exprJe == null) {
-                    checker.reportWarning(
-                            methodTree,
-                            "expression.parameter.name.invalid",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            expressionString,
-                            formalParamNames.indexOf(expressionString) + 1);
-                } else {
-                    checker.reportWarning(
-                            methodTree,
-                            "expression.parameter.name.shadows.field",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            expressionString,
-                            expressionString,
-                            formalParamNames.indexOf(expressionString) + 1);
-                }
+                checker.reportWarning(
+                        methodTree,
+                        "expression.parameter.name.shadows.field",
+                        locationOfExpression,
+                        methodTree.getName().toString(),
+                        expressionString,
+                        expressionString,
+                        formalParamNames.indexOf(expressionString) + 1);
             }
 
             checkParametersAreEffectivelyFinal(methodTree, methodElement, expressionString);
