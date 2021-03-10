@@ -759,28 +759,29 @@ public abstract class JavaExpression {
      */
     private static List<JavaExpression> argumentTreesToJavaExpressions(
             ExpressionTree tree, List<? extends ExpressionTree> argTrees) {
-
+        ExecutableElement method;
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
             MethodInvocationTree methodInvoc = (MethodInvocationTree) tree;
-            ExecutableElement method = TreeUtils.elementFromUse(methodInvoc);
-            if (isVarArgsInvocation(method, argTrees)) {
-                List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
+            method = TreeUtils.elementFromUse(methodInvoc);
+        } else {
+            method = TreeUtils.elementFromUse((NewClassTree) tree);
+        }
+        if (isVarArgsInvocation(method, argTrees)) {
+            List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
 
-                for (int i = 0; i < method.getParameters().size() - 1; i++) {
-                    result.add(JavaExpression.fromTree(argTrees.get(i)));
-                }
-                List<JavaExpression> varargArgs =
-                        new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
-                for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
-                    varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
-                }
-                Element varargsElement =
-                        method.getParameters().get(method.getParameters().size() - 1);
-                TypeMirror tm = ElementUtils.getType(varargsElement);
-                result.add(new ArrayCreation(tm, Collections.emptyList(), varargArgs));
-
-                return result;
+            for (int i = 0; i < method.getParameters().size() - 1; i++) {
+                result.add(JavaExpression.fromTree(argTrees.get(i)));
             }
+            List<JavaExpression> varargArgs =
+                    new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
+            for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
+                varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
+            }
+            Element varargsElement = method.getParameters().get(method.getParameters().size() - 1);
+            TypeMirror tm = ElementUtils.getType(varargsElement);
+            result.add(new ArrayCreation(tm, Collections.emptyList(), varargArgs));
+
+            return result;
         }
 
         List<JavaExpression> result = new ArrayList<>(argTrees.size());
