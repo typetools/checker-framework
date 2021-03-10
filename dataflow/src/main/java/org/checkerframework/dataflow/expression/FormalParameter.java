@@ -15,15 +15,6 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  */
 public class FormalParameter extends JavaExpression {
 
-    /**
-     * Parsable replacement for parameter references. It is parseable because it is a Java
-     * identifier.
-     */
-    public static final String PARAMETER_REPLACEMENT = "__param__";
-
-    /** The length of {@link #PARAMETER_REPLACEMENT}. */
-    public static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
-
     /** The 1-based index. */
     protected final int index;
 

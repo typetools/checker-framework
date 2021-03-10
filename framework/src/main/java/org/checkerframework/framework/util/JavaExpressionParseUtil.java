@@ -98,6 +98,15 @@ public class JavaExpressionParseUtil {
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /**
+     * Parsable replacement for parameter references. It is parseable because it is a Java
+     * identifier.
+     */
+    private static final String PARAMETER_REPLACEMENT = "_param_";
+
+    /** The length of {@link #PARAMETER_REPLACEMENT}. */
+    private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
+
+    /**
      * Parses a string to a {@link JavaExpression}.
      *
      * <p>For most uses, clients should call one of the static methods in {@link
@@ -172,8 +181,7 @@ public class JavaExpressionParseUtil {
 
         for (Integer integer : parameterIndices(expression)) {
             updatedExpression =
-                    updatedExpression.replaceAll(
-                            "#" + integer, FormalParameter.PARAMETER_REPLACEMENT + integer);
+                    updatedExpression.replaceAll("#" + integer, PARAMETER_REPLACEMENT + integer);
         }
 
         return updatedExpression;
@@ -403,7 +411,7 @@ public class JavaExpressionParseUtil {
             setResolverField();
 
             // Formal parameter, using "#2" syntax.
-            if (s.startsWith(FormalParameter.PARAMETER_REPLACEMENT)) {
+            if (s.startsWith(PARAMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // (at the method scope) using the special #NN syntax.
                 return getParameterJavaExpression(s);
@@ -476,7 +484,7 @@ public class JavaExpressionParseUtil {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(s, "no parameters found"));
             }
-            int idx = Integer.parseInt(s.substring(FormalParameter.PARAMETER_REPLACEMENT_LENGTH));
+            int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
 
             if (idx == 0) {
                 throw new ParseRuntimeException(
