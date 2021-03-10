@@ -13,6 +13,8 @@ stands for (only) the `null` value.
 
 **Implementation details:**
 
+Removed deprecated `PluginUtil` class.
+
 **Closed issues:**
 
 ---------------------------------------------------------------------------
