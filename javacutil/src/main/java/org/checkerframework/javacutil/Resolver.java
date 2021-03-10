@@ -28,6 +28,7 @@ import java.util.Arrays;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -297,12 +298,15 @@ public class Resolver {
      * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
      * for name resolution.
      *
+     * <p>(This method takes into account autoboxing.)
+     *
      * @param methodName name of the method to find
      * @param receiverType type of the receiver of the method
      * @param path tree path
+     * @param argumentTypes types of arguments passed to the method call
      * @return the method element (if found)
      */
-    public Element findMethod(
+    public @Nullable ExecutableElement findMethod(
             String methodName,
             TypeMirror receiverType,
             TreePath path,
@@ -338,7 +342,11 @@ public class Resolver {
                                 allowBoxing,
                                 useVarargs);
                 setField(resolve, "currentResolutionContext", oldContext);
-                return result;
+                if (result.getKind() == ElementKind.METHOD
+                        || result.getKind() == ElementKind.CONSTRUCTOR) {
+                    return (ExecutableElement) result;
+                }
+                return null;
             } catch (Throwable t) {
                 Error err =
                         new AssertionError(
