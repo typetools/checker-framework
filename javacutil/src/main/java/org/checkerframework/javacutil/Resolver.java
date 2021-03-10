@@ -182,7 +182,8 @@ public class Resolver {
     }
 
     /**
-     * Finds the field with name {@code name} in a given type.
+     * Finds the field with name {@code name} in {@code type} or a superclass or superinterface of
+     * {@code type}.
      *
      * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
      * for name resolution.
