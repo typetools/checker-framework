@@ -677,21 +677,25 @@ public class ValueTransfer extends CFTransfer {
             // Both operands have known string values, compute set of results
             if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
+                    leftValues = new ArrayList<>(leftValues);
                     leftValues.add("null");
                 }
                 if (isNullable(rightOperand)) {
+                    rightValues = new ArrayList<>(rightValues);
                     rightValues.add("null");
                 }
             } else {
                 if (leftOperand instanceof StringConversionNode) {
                     if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
                             == TypeKind.NULL) {
+                        leftValues = new ArrayList<>(leftValues);
                         leftValues.add("null");
                     }
                 }
                 if (rightOperand instanceof StringConversionNode) {
                     if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
                             == TypeKind.NULL) {
+                        rightValues = new ArrayList<>(rightValues);
                         rightValues.add("null");
                     }
                 }
@@ -720,9 +724,11 @@ public class ValueTransfer extends CFTransfer {
             // Both operands have known lengths, compute set of result lengths
             if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
+                    leftLengths = new ArrayList<>(leftLengths);
                     leftLengths.add(4); // "null"
                 }
                 if (isNullable(rightOperand)) {
+                    rightLengths = new ArrayList<>(rightLengths);
                     rightLengths.add(4); // "null"
                 }
             }
