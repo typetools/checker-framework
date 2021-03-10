@@ -579,7 +579,7 @@ public class JavaExpressionParseUtil {
             boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
             // fieldElem is an instance field
             if (fieldDeclaredInReceiverType) {
-                // It's an instance field declared in the type of receiverExpr.
+                // It's an instance field declared in the type (or supertype) of receiverExpr.
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 return new FieldAccess(receiverExpr, fieldType, fieldElem);
             }
