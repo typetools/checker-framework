@@ -6,6 +6,10 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
+DEBUG=0
+# To enable debugging, uncomment the following line.
+# DEBUG=1
+
 while getopts "o:i:u:t:g:s" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
@@ -139,19 +143,27 @@ do
     REPO_NAME=$(echo "${REPO}" | cut -d / -f 5)
     REPO_NAME_HASH="${REPO_NAME}-${HASH}"
 
+    if [ "$DEBUG" -eq "1" ]; then
+        echo "REPOHASH=$REPOHASH"
+        echo "REPO=$REPO"
+        echo "HASH=$HASH"
+        echo "REPO_NAME=$REPO_NAME"
+        echo "REPO_NAME_HASH=$REPO_NAME_HASH"
+    fi
+
     # Use repo name and hash, but not owner.  We want
     # repos that are different but have the same name to be treated
     # as different repos, but forks with the same content to be skipped.
     # TODO: consider just using hash, to skip hard forks?
-    mkdir -p "${REPO_NAME_HASH}"
+    mkdir -p "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): mkdir -p ./${REPO_NAME_HASH}" && exit 5)
 
-    cd "${REPO_NAME_HASH}" || exit 5
+    cd "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): cd ./${REPO_NAME_HASH}" && exit 5)
 
     if [ ! -d "${REPO_NAME}" ]; then
         # see https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
         # for the inspiration for this code
-        mkdir "${REPO_NAME}"
-        cd "${REPO_NAME}" || exit 5
+        mkdir "./${REPO_NAME}" || (echo "command failed in $(pwd): mkdir ./${REPO_NAME}" && exit 5)
+        cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
         git init
         git remote add origin "${REPO}"
 
@@ -171,7 +183,7 @@ do
         rm -rf "${REPO_NAME}/dljc-out"
     fi
 
-    cd "${REPO_NAME}" || exit 5
+    cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
     git checkout "${HASH}"
 
@@ -259,14 +271,16 @@ else
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
+    # shellcheck disable=SC2046
     grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
 
     cd "${SCRIPTDIR}/.do-like-javac" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
+    # shellcheck disable=SC2046
     "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
-        "$(< "${listpath}")"
+        $(< "${listpath}")
 
     rm -f "${listpath}"
   else
