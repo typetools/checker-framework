@@ -693,13 +693,21 @@ public abstract class UBQualifier {
                 } else if (otherglb != null) {
                     glb.addAll(otherglb);
                 }
-                glbMap.put(sequence, simplifyOffsets(glb));
+                glbMap.put(sequence, removeSmallerInts(glb));
             }
             return new LessThanLengthOf(glbMap);
         }
 
-        /** Keeps only the largest offset equation that is only an int value. */
-        private Set<OffsetEquation> simplifyOffsets(Set<OffsetEquation> offsets) {
+        /**
+         * Returns a copy of the argument, but it contains just one offset equation that is an int
+         * value -- the largest one in the argument. Any non-int offset equations appear in the
+         * result. Does not side effect its argument.
+         *
+         * @param offsets a set of offset equations
+         * @return a copy of the argument with just one int value (the largest in the input) and
+         *     arbitrarily many non-ints
+         */
+        private Set<OffsetEquation> removeSmallerInts(Set<OffsetEquation> offsets) {
             Set<OffsetEquation> newOff = new HashSet<>(offsets.size());
             OffsetEquation literal = null;
             for (OffsetEquation eq : offsets) {
@@ -939,7 +947,13 @@ public abstract class UBQualifier {
             return map.keySet();
         }
 
-        /** Generates a new UBQualifer without the given sequence and offset. */
+        /**
+         * Generates a new UBQualifer without the given sequence and offset.
+         *
+         * @param sequence a Java expression representing a string
+         * @param offset an integral offset
+         * @return a new UBQualifer without the given sequence and offset
+         */
         public UBQualifier removeOffset(String sequence, int offset) {
             OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
             List<String> sequences = new ArrayList<>(this.map.size());
