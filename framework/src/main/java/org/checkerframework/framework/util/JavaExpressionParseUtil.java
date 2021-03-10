@@ -541,8 +541,7 @@ public class JavaExpressionParseUtil {
                 fieldElem =
                         resolver.findField(identifier, enclosingTypeOfField, pathToCompilationUnit);
                 if (fieldElem == null) {
-                    // field not found.
-                    return null;
+                    throw new BugInCF("length field not found for type: %s", enclosingTypeOfField);
                 }
             } else {
                 fieldElem = null;
