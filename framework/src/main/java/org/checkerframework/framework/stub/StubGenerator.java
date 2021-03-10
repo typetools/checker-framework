@@ -22,6 +22,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
@@ -168,8 +169,14 @@ public class StubGenerator {
         printClass(typeElement, null);
     }
 
-    /** helper method that outputs the index for the provided class. */
-    private void printClass(TypeElement typeElement, String outerClass) {
+    /**
+     * Helper method that prints the stub file for the provided class.
+     *
+     * @param typeElement the class to output
+     * @param outerClass the outer class of the class, or null if {@code typeElement} is a top-level
+     *     class
+     */
+    private void printClass(TypeElement typeElement, @Nullable String outerClass) {
         indent();
 
         List<? extends AnnotationMirror> teannos = typeElement.getAnnotationMirrors();

@@ -407,6 +407,12 @@ public class PluginUtil {
         return classpath;
     }
 
+    /**
+     * Escape quotes and backslashes in a string.
+     *
+     * @param toEscape the string to escape
+     * @return the escaped string
+     */
     public static String escapeQuotesAndSlashes(final String toEscape) {
         final Map<String, String> replacements = new HashMap<>(2);
         replacements.put("\\\\", "\\\\\\\\");
