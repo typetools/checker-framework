@@ -35,7 +35,6 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
                 // fall through
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): ANY => value != null";
-                ;
                 return set.add(e);
             default:
                 throw new BugInCF("Unhandled state " + state);
