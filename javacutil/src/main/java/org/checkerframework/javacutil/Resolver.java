@@ -28,6 +28,7 @@ import java.util.Arrays;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -302,7 +303,7 @@ public class Resolver {
      * @param path tree path
      * @return the method element (if found)
      */
-    public Element findMethod(
+    public @Nullable ExecutableElement findMethod(
             String methodName,
             TypeMirror receiverType,
             TreePath path,
@@ -338,7 +339,11 @@ public class Resolver {
                                 allowBoxing,
                                 useVarargs);
                 setField(resolve, "currentResolutionContext", oldContext);
-                return result;
+                if (result.getKind() == ElementKind.METHOD
+                        || result.getKind() == ElementKind.CONSTRUCTOR) {
+                    return (ExecutableElement) result;
+                }
+                return null;
             } catch (Throwable t) {
                 Error err =
                         new AssertionError(
