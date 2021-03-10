@@ -227,6 +227,7 @@ public class ReflectiveEvaluator {
      *
      * @param ele a method or constructor
      * @return the classes of the given method's formal parameters
+     * @throws ClassNotFoundException if the class cannot be found
      */
     private List<Class<?>> getParameterClasses(ExecutableElement ele)
             throws ClassNotFoundException {
