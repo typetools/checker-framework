@@ -222,6 +222,12 @@ public class ReflectiveEvaluator {
         }
     }
 
+    /**
+     * Returns the classes of the given method's formal parameters.
+     *
+     * @param ele a method or constructor
+     * @return the classes of the given method's formal parameters
+     */
     private List<Class<?>> getParameterClasses(ExecutableElement ele)
             throws ClassNotFoundException {
         return CollectionsPlume.mapList(
@@ -250,6 +256,13 @@ public class ReflectiveEvaluator {
         return tuples;
     }
 
+    /**
+     * Returns a depth-2 copy of the given list. In the returned value, the list and the arrays in
+     * it are new, but the elements of the arrays are shared with the argument.
+     *
+     * @param lastTuples a list of arrays
+     * @return a depth-2 copy of the given list
+     */
     private List<Object[]> copy(List<Object[]> lastTuples) {
         return CollectionsPlume.mapList(
                 (Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);

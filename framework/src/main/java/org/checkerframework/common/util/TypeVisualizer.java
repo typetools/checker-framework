@@ -560,6 +560,12 @@ public class TypeVisualizer {
                 return null;
             }
 
+            /**
+             * Returns a string representation of the annotations on a type.
+             *
+             * @param atm an annotated type
+             * @return a string representation of the annotations on {@code atm}
+             */
             public String getAnnoStr(final AnnotatedTypeMirror atm) {
                 StringJoiner sj = new StringJoiner(" ");
                 for (final AnnotationMirror anno : atm.getAnnotations()) {

@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -371,12 +370,12 @@ public class ForwardAnalysisImpl<
                 MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
                 return CollectionsPlume.mapList(
                         // TODO: document that LocalVariableNode has no block that it belongs to
-                        (VariableTree p) -> new LocalVariableNode(p), tree.getParameters());
+                        LocalVariableNode::new, tree.getParameters());
             case LAMBDA:
                 LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
                 return CollectionsPlume.mapList(
                         // TODO: document that LocalVariableNode has no block that it belongs to
-                        (VariableTree p) -> new LocalVariableNode(p), lambda.getParameters());
+                        LocalVariableNode::new, lambda.getParameters());
             default:
                 return Collections.emptyList();
         }

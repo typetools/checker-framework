@@ -14,6 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.plumelib.util.CollectionsPlume;
 
+/** The visitor for the Less Than Checker. */
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
 
     private static final @CompilerMessageKey String FROM_GT_TO = "from.gt.to";

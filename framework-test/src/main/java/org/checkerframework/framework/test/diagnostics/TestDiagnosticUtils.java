@@ -389,6 +389,9 @@ public class TestDiagnosticUtils {
     /**
      * Converts the given diagnostics to strings (as they would appear in a source file
      * individually).
+     *
+     * @param diagnostics a list of diagnostics
+     * @return a list of the diagnastics as they would appear in a source file
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
         return CollectionsPlume.mapList(TestDiagnostic::toString, diagnostics);
