@@ -39,7 +39,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -943,8 +942,7 @@ public class JavaExpressionParseUtil {
             } else if (types.isSubtype(rightType, leftType)) {
                 type = leftType;
             } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
-                    && (types.isSameType(leftType, stringTypeMirror)
-                            || TypesUtils.isString(rightType))) {
+                    && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
                 type = stringTypeMirror;
             } else {
                 throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
@@ -1008,6 +1006,8 @@ public class JavaExpressionParseUtil {
          * Converts the JavaParser type to a TypeMirror. Returns null if {@code type} is not
          * handled.
          *
+         * <p>This method does not handle type variables, union types, or intersection types.
+         *
          * @param type a JavaParser type
          * @return a TypeMirror corresponding to {@code type}, or null if {@code type} isn't handled
          */
@@ -1042,8 +1042,12 @@ public class JavaExpressionParseUtil {
             } else if (type.isVoidType()) {
                 return types.getNoType(TypeKind.VOID);
             } else if (type.isArrayType()) {
-                return types.getArrayType(
-                        convertTypeToTypeMirror(type.asArrayType().getComponentType()));
+                TypeMirror componentType =
+                        convertTypeToTypeMirror(type.asArrayType().getComponentType());
+                if (componentType == null) {
+                    return null;
+                }
+                return types.getArrayType(componentType);
             }
             return null;
         }
