@@ -751,6 +751,8 @@ public class JavaExpressionParseUtil {
         /**
          * Returns the ExecutableElement for a method, or throws an exception.
          *
+         * <p>(This method takes into account autoboxing.)
+         *
          * @param methodName the method name
          * @param receiverType the receiver type
          * @param path the path
@@ -770,32 +772,27 @@ public class JavaExpressionParseUtil {
             List<TypeMirror> argumentTypes =
                     CollectionsPlume.mapList(JavaExpression::getType, arguments);
 
-            Element element = null;
-
             if (receiverType.getKind() == TypeKind.ARRAY) {
-                element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                ExecutableElement element =
+                        resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                if (element == null) {
+                    throw constructJavaExpressionParseError(methodName, "no such method");
+                }
+                return element;
             }
 
             // Search for method in each enclosing class.
-            if (element == null) {
-                while (receiverType.getKind() == TypeKind.DECLARED) {
-                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
-                    if (element.getKind() == ElementKind.METHOD) {
-                        break;
-                    }
-                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+            while (receiverType.getKind() == TypeKind.DECLARED) {
+                ExecutableElement element =
+                        resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                if (element != null) {
+                    return element;
                 }
+                receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
             }
 
-            if (element == null) {
-                throw constructJavaExpressionParseError(methodName, "no such method");
-            }
-            if (element.getKind() != ElementKind.METHOD) {
-                throw constructJavaExpressionParseError(
-                        methodName, "not a method, but a " + element.getKind());
-            }
-
-            return (ExecutableElement) element;
+            // Method not found.
+            throw constructJavaExpressionParseError(methodName, "no such method");
         }
 
         // expr is a field access, a fully qualified class name, or a class name qualified with
