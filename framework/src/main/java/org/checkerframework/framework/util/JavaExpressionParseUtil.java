@@ -571,8 +571,10 @@ public class JavaExpressionParseUtil {
                                 "a non-static field cannot have a class name as a receiver."));
             }
 
+            @SuppressWarnings("interning:not.interned") // Checking for exact object
+            boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
             // fieldElem is an instance field
-            if (enclosingTypeOfField == receiverExpr.getType()) {
+            if (fieldDeclaredInReceiverType) {
                 // Instance field declared in the type of receiverExpr
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 return new FieldAccess(receiverExpr, fieldType, fieldElem);
