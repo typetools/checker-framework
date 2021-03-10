@@ -575,7 +575,7 @@ public class JavaExpressionParseUtil {
             boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
             // fieldElem is an instance field
             if (fieldDeclaredInReceiverType) {
-                // Instance field declared in the type of receiverExpr
+                // It's an instance field declared in the type of receiverExpr.
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 return new FieldAccess(receiverExpr, fieldType, fieldElem);
             }
@@ -592,8 +592,8 @@ public class JavaExpressionParseUtil {
                                 identifier,
                                 "a non-static field declared in an outer class cannot be referenced from a static inner class or enum"));
             }
-            // Instance field declared in an enclosing type of receiverExpr;
-            // enclosingTypeOfField != receiverExpr.getType()
+            // It's an instance field declared in an enclosing type of receiverExpr, and
+            // enclosingTypeOfField != receiverExpr.getType().
             JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
             return new FieldAccess(locationOfField, fieldElem);
         }
