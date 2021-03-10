@@ -4272,16 +4272,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             .getDependentTypesHelper()
                             .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
 
+            JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed many times.
                 // This could be optimized to store the result the first time.
                 // (same for other annotations)
-                JavaExpression exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
-                result.add(Pair.of(exprJe, annotation));
+                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(methodTree, e.getDiagMessage());
+                continue;
             }
+            result.add(Pair.of(exprJe, annotation));
         }
         return result;
     }
