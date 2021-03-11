@@ -83,10 +83,10 @@ public class ItselfExpressionCases {
             gsMyClass = getm();
         }
 
-        // :: error: (lock.not.held) :: error: (contracts.precondition.not.satisfied)
+        // :: error: (lock.not.held) :: error: (flowexpr.parse.error)
         o.foo();
         synchronized (o) {
-            // :: error: (contracts.precondition.not.satisfied)
+            // :: error: (flowexpr.parse.error)
             o.foo();
             synchronized (somelock) {
                 // o.foo() requires o.somelock is held, not this.somelock.

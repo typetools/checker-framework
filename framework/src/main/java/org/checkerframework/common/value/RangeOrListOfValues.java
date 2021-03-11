@@ -85,19 +85,32 @@ class RangeOrListOfValues {
     }
 
     /**
-     * To be called before addAll. Converts Longs to Ints; meant to be used with ArrayLenRange
-     * (which only handles Ints).
+     * Converts a Long to an Integer by clipping it to the int range.
+     *
+     * @param l a Long integer
+     * @return the value clipped to the Integer range
+     */
+    private static Integer convertLongToInt(Long l) {
+        if (l > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        } else if (l < Integer.MIN_VALUE) {
+            return Integer.MIN_VALUE;
+        } else {
+            return l.intValue();
+        }
+    }
+
+    /**
+     * To be called before addAll. Converts Longs to Integers by clipping them to the int range;
+     * meant to be used with ArrayLenRange (which only handles Ints).
+     *
+     * @param newValues a list of Long integers
+     * @return a list of Integers
      */
     public static List<Integer> convertLongsToInts(List<Long> newValues) {
         List<Integer> result = new ArrayList<>(newValues.size());
         for (Long l : newValues) {
-            if (l > Integer.MAX_VALUE) {
-                result.add(Integer.MAX_VALUE);
-            } else if (l < Integer.MIN_VALUE) {
-                result.add(Integer.MIN_VALUE);
-            } else {
-                result.add(l.intValue());
-            }
+            result.add(convertLongToInt(l));
         }
         return result;
     }

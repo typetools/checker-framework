@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -620,7 +621,7 @@ public class CheckerMain {
         final List<String> content = new ArrayList<>();
         for (final File file : files) {
             try {
-                content.addAll(SystemUtil.readFile(file));
+                content.addAll(Files.readAllLines(file.toPath()));
             } catch (final IOException exc) {
                 throw new RuntimeException("Could not open file: " + file.getAbsolutePath(), exc);
             }

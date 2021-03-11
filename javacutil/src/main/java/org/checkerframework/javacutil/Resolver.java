@@ -352,7 +352,7 @@ public class Resolver {
                 Error err =
                         new AssertionError(
                                 String.format(
-                                        "Unexpected Reflection error in findMethod(%s, %s, ..., %s)",
+                                        "Unexpected reflection error in findMethod(%s, %s, ..., %s)",
                                         methodName,
                                         receiverType,
                                         // path
@@ -440,7 +440,7 @@ public class Resolver {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new BugInCF(
                     String.format(
-                            "Unexpected Reflection error in wrapInvocation(%s, %s, %s)",
+                            "Unexpected reflection error in wrapInvocation(%s, %s, %s)",
                             receiver, method, Arrays.toString(args)),
                     e);
         }

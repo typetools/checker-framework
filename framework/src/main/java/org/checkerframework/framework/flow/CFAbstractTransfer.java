@@ -877,6 +877,10 @@ public abstract class CFAbstractTransfer<
      * Takes a node, and either returns the node itself again (as a singleton list), or if the node
      * is an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively
      * to the rhs -- that is, the rhs may not appear in the result, but rather its lhs and rhs may).
+     *
+     * @param node possibly an assignment node
+     * @return a list containing all the right- and left-hand sides in the given assignment node; it
+     *     contains just the node itself if it is not an assignment)
      */
     protected List<Node> splitAssignments(Node node) {
         if (node instanceof AssignmentNode) {
