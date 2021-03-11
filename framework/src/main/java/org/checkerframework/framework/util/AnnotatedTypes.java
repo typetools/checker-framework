@@ -223,24 +223,18 @@ public class AnnotatedTypes {
         }
 
         List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
-        Collections.sort(
-                orderedByDestination,
-                new Comparator<Pair<Integer, Integer>>() {
-                    @Override
-                    public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-                        return o1.second - o2.second;
-                    }
-                });
+        orderedByDestination.sort(Comparator.comparingInt(o -> o.second));
 
-        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
         if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
-            final List<? extends AnnotatedTypeMirror> subTypeArgs =
-                    declaredSubtype.getTypeArguments();
-            for (Pair<Integer, Integer> mapping : orderedByDestination) {
-                newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
-            }
+            List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+            List<AnnotatedTypeMirror> newTypeArgs =
+                    SystemUtil.mapList(
+                            mapping -> subTypeArgs.get(mapping.first).deepCopy(),
+                            orderedByDestination);
+            declaredAsSuper.setTypeArguments(newTypeArgs);
+        } else {
+            declaredAsSuper.setTypeArguments(new ArrayList<>(0));
         }
-        declaredAsSuper.setTypeArguments(newTypeArgs);
     }
 
     /** This method identifies wildcard types that are unbound. */

@@ -2909,18 +2909,18 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         List<? extends ExpressionTree> dimensions = tree.getDimensions();
         List<? extends ExpressionTree> initializers = tree.getInitializers();
-
-        List<Node> dimensionNodes = new ArrayList<>();
         assert dimensions != null;
-        for (ExpressionTree dim : dimensions) {
-            dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
-        }
 
-        List<Node> initializerNodes = new ArrayList<>();
+        List<Node> dimensionNodes =
+                SystemUtil.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
+
+        List<Node> initializerNodes;
         if (initializers != null) {
-            for (ExpressionTree init : initializers) {
-                initializerNodes.add(assignConvert(scan(init, p), elemType));
-            }
+            initializerNodes =
+                    SystemUtil.mapList(
+                            init -> assignConvert(scan(init, p), elemType), initializers);
+        } else {
+            initializerNodes = new ArrayList<>();
         }
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
