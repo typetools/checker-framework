@@ -682,8 +682,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         }
 
         /**
-         * if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
-         * length of some sequence, then (a + b) / divisor is less than the length of that sequence.
+         * If {@code numeratorTree} is "a + b" and {@code divisor} is greater than 1, and a and b
+         * are less than the length of some sequence, then "(a + b) / divisor" is less than the
+         * length of that sequence.
+         *
+         * @param divisor the divisor
+         * @param numeratorTree an addition tree that is divided by {@code divisor}
+         * @return a qualifier for the division
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
             numeratorTree = TreeUtils.withoutParens(numeratorTree);

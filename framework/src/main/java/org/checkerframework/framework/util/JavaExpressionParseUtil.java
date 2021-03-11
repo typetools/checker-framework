@@ -311,7 +311,7 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(ThisExpr n, JavaExpressionContext context) {
             if (context.receiver == null || context.receiver instanceof ClassName) {
                 throw new ParseRuntimeException(
-                        constructJavaExpressionParseError("this", "this isn't allowed here."));
+                        constructJavaExpressionParseError("this", "this isn't allowed here"));
             }
             // "this" is the receiver of the context
             return context.receiver;

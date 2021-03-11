@@ -221,8 +221,6 @@ public class AnnotatedTypes {
             return;
         }
 
-        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
-
         List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
         Collections.sort(
                 orderedByDestination,
@@ -233,8 +231,10 @@ public class AnnotatedTypes {
                     }
                 });
 
-        final List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
         if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
+            final List<? extends AnnotatedTypeMirror> subTypeArgs =
+                    declaredSubtype.getTypeArguments();
             for (Pair<Integer, Integer> mapping : orderedByDestination) {
                 newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
             }
@@ -538,10 +538,10 @@ public class AnnotatedTypes {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
                         StringsPlume.joinLines(
-                                "Type arguments of a declaration should be type variables",
-                                "enclosingClassOfElem=" + enclosingClassOfElem,
-                                "enclosingType=" + enclosingType,
-                                "typeMirror=" + t));
+                                "Type arguments of a declaration should be type variables.",
+                                "  enclosingClassOfElem=" + enclosingClassOfElem,
+                                "  enclosingType=" + enclosingType,
+                                "  typeMirror=" + t));
             }
             ownerParams.add((AnnotatedTypeVariable) typeParam);
         }
@@ -557,9 +557,8 @@ public class AnnotatedTypes {
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
             List<AnnotatedTypeMirror> newBaseParams = new ArrayList<>();
             for (AnnotatedTypeVariable arg : ownerParams) {
-                // If base type was raw and the type arguments are missing,
-                // set them to the erased type of the type variable.
-                // (which is the erased type of the upper bound.)
+                // If base type was raw and the type arguments are missing, set them to the erased
+                // type of the type variable (which is the erased type of the upper bound).
                 newBaseParams.add(arg.getErased());
             }
             baseParams = newBaseParams;

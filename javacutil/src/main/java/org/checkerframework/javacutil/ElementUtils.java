@@ -618,6 +618,10 @@ public class ElementUtils {
      *
      * <p>TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+     *
+     * @param type the type whose supertypes to return
+     * @param elements the Element utilities
+     * @return supertypes of {@code type}
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
@@ -663,9 +667,14 @@ public class ElementUtils {
     }
 
     /**
-     * Return all fields declared in the given type or any superclass/interface. TODO: should this
-     * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
-     * getSuperTypes?
+     * Return all fields declared in the given type or any superclass/interface.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose fields to return
+     * @param elements the Element utilities
+     * @return fields of {@code type}
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
         List<VariableElement> fields = new ArrayList<>();
@@ -679,8 +688,14 @@ public class ElementUtils {
 
     /**
      * Return all methods declared in the given type or any superclass/interface. Note that no
-     * constructors will be returned. TODO: should this use
-     * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
+     * constructors will be returned.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose methods to return
+     * @param elements the Element utilities
+     * @return methods of {@code type}
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
         List<ExecutableElement> meths = new ArrayList<>();
