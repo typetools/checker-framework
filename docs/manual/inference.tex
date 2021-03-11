@@ -239,7 +239,7 @@ pairs.
 Framework, use \<wpi-many.sh> directly.
 \item If you are using a checker that is not distributed with the Checker
 Framework (also known as a "custom checker"), file
-\<custom-checker-example.sh> is a no-arguments
+\<docs/examples/wpi-many/wpi-many-custom-checker-example.sh> is a no-arguments
 script that serves as an example of how to use \<wpi-many.sh>.
 \end{itemize}
 
@@ -267,8 +267,15 @@ the original.
 
 \end{enumerate}
 
+A typical invocation is
+
+\begin{Verbatim}
+wpi-many.sh -o outdir -i /path/to/repo.list -t 7200 -- --checker optional
+\end{Verbatim}
+
 The \<wpi-many.sh> script takes the following command-line arguments, of
-which \<-o> and \<-i> are mandatory:
+which \<-o> and \<-i> are mandatory, as is the trailing \<-- [DLJC-ARGS]>
+which is as for the \<wpi.sh> script.
 
 \begin{description}
 \item[-o outdir]
