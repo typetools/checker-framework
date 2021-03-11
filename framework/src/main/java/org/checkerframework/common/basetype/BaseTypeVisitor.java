@@ -977,7 +977,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /** Matches warnings about use of formal parameter name. */
-    public static final Pattern FORMAL_PARAM_NAME_PATTERN =
+    public static final Pattern FORMAL_PARAM_NAME_WARNING_PATTERN =
             Pattern.compile(
                     "^.*'([a-zA-Z_$][a-zA-Z0-9_$]*)' because Use \"#(\\d+)\" rather than \"\\1\"$");
     /**
@@ -1018,7 +1018,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             } catch (JavaExpressionParseException e) {
 
                 Matcher m =
-                        FORMAL_PARAM_NAME_PATTERN.matcher(
+                        FORMAL_PARAM_NAME_WARNING_PATTERN.matcher(
                                 e.getDiagMessage().getArgs()[0].toString());
                 if (m.matches()) {
                     String locationOfExpression =
