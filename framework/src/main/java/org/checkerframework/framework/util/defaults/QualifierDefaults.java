@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -531,7 +532,16 @@ public class QualifierDefaults {
         applyToTypeVar = false;
     }
 
-    // dq must be an AnnotationMirror that represent a @DefaultQualifier
+    /** The default {@code value} element for a @DefaultQualifier annotation. */
+    private static TypeUseLocation[] defaultQualifierValueDefault =
+            new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
+
+    /**
+     * Create a DefaultSet from a @DefaultQualifier annotation.
+     *
+     * @param dq a @DefaultQualifier annotation
+     * @return a DefaultSet corresponding to the @DefaultQualifier annotation
+     */
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
         Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
@@ -546,10 +556,15 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            TypeUseLocation[] locations =
-                    AnnotationUtils.annotationValueListToEnumArray(
-                            anno.getElementValues().get(defaultQualifierValueElement).getValue(),
-                            TypeUseLocation.class);
+            AnnotationValue av = anno.getElementValues().get(defaultQualifierValueElement);
+            TypeUseLocation[] locations;
+            if (av == null) {
+                locations = defaultQualifierValueDefault;
+            } else {
+                locations =
+                        AnnotationUtils.annotationValueListToEnumArray(
+                                av.getValue(), TypeUseLocation.class);
+            }
             DefaultSet ret = new DefaultSet();
             for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));
