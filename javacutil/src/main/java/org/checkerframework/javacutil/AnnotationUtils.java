@@ -644,7 +644,9 @@ public class AnnotationUtils {
                         am1.getAnnotationType().asElement().getEnclosedElements())) {
             AnnotationValue aval1 = vals1.get(meth);
             AnnotationValue aval2 = vals2.get(meth);
-            if (aval1 == aval2) {
+            @SuppressWarnings("interning:not.interned") // optimization via equality test
+            boolean identical = aval1 == aval2;
+            if (identical) {
                 // Handles when both aval1 and aval2 are null, and maybe other cases too.
                 continue;
             }
