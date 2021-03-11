@@ -497,9 +497,6 @@ public class FormatterTreeUtil {
         return builder.build();
     }
 
-    /** An empty array. */
-    private static ConversionCategory[] EMPTY_CONVERSION_CATEGORY_ARRAY = new ConversionCategory[0];
-
     /**
      * Returns the value of a {@code @}{@link Format} annotation.
      *

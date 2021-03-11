@@ -908,7 +908,14 @@ public class AnnotationUtils {
      * the elements are {@code Enum}s. One element of the result is expected to have type {@code
      * expectedType}.
      *
-     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
+     * <p>It is more efficient to use
+     *
+     * <pre>{@code
+     * AnnotationUtils.annotationValueListToEnumArray(
+     *   anno.getElementValues().get(someElement).getValue(),
+     *   MyEnumClass.class);
+     * }</pre>
+     *
      * rather than this method which iterates through a map. The same comment is true of all {@code
      * getElementValue*} methods. It is true even if the annotation has only one element/field.
      * Using that method is possible if the type of the annotation is known (in which case the
@@ -929,6 +936,21 @@ public class AnnotationUtils {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
         return annotationValueListToEnumArray(la, expectedType);
+    }
+
+    /**
+     * Converts a list of AnnotationValue to an array of enum.
+     *
+     * @param <T> the element type of the enum array
+     * @param la a list of AnnotationValue
+     * @param expectedType the expected type used to cast the return type
+     * @return an array of enum, converted from the input list
+     */
+    public static <T extends Enum<T>> T[] annotationValueListToEnumArray(
+            Object la, Class<T> expectedType) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> annoValues = (List<AnnotationValue>) la;
+        return annotationValueListToEnumArray(annoValues, expectedType);
     }
 
     /**

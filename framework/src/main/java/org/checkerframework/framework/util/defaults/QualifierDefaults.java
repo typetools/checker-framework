@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -79,6 +80,9 @@ public class QualifierDefaults {
 
     /** Element utilities to use. */
     private final Elements elements;
+
+    /** The value() element/field of a @DefaultQualifier annotation. */
+    protected final ExecutableElement defaultQualifierValueElement;
 
     /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
@@ -174,6 +178,12 @@ public class QualifierDefaults {
                 atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
                 atypeFactory.getChecker().useConservativeDefault("source");
+        this.defaultQualifierValueElement =
+                TreeUtils.getMethod(
+                        "org.checkerframework.framework.qual.DefaultQualifier",
+                        "value",
+                        0,
+                        atypeFactory.getProcessingEnv());
     }
 
     @Override
@@ -537,8 +547,9 @@ public class QualifierDefaults {
 
         if (atypeFactory.isSupportedQualifier(anno)) {
             TypeUseLocation[] locations =
-                    AnnotationUtils.getElementValueEnumArray(
-                            dq, "locations", TypeUseLocation.class, true);
+                    AnnotationUtils.annotationValueListToEnumArray(
+                            anno.getElementValues().get(defaultQualifierValueElement).getValue(),
+                            TypeUseLocation.class);
             DefaultSet ret = new DefaultSet();
             for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));
