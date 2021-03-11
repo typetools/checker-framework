@@ -511,10 +511,6 @@ public class FormatterTreeUtil {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> list =
                 (List<AnnotationValue>) anno.getElementValues().get(formatValueElement).getValue();
-        if (list.isEmpty()) {
-            return EMPTY_CONVERSION_CATEGORY_ARRAY;
-        } else {
-            return AnnotationUtils.annotationValueListToEnumArray(list, ConversionCategory.class);
-        }
+        return AnnotationUtils.annotationValueListToEnumArray(list, ConversionCategory.class);
     }
 }
