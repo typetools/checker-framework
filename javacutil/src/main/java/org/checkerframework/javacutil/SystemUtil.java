@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -175,7 +177,9 @@ public class SystemUtil {
      * @param array the array
      * @param lastElt the last elemeent
      * @return a new array containing first element, the array, and the last element, in that order
+     * @deprecated use PlumeUtil.concat
      */
+    @Deprecated // 2021-03-10
     @SuppressWarnings("unchecked")
     public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
         @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
@@ -216,6 +220,33 @@ public class SystemUtil {
         result.addAll(list);
         result.add(lastElt);
         return result;
+    }
+
+    /**
+     * Creates a conjunction or disjunction, like "a", "a or b", and "a, b, or c". Obeys the "serial
+     * comma" or "Oxford comma" rule and puts a comma after every element when the list has size 3
+     * or larger.
+     *
+     * @param conjunction the conjunction word, like "and" or "or"
+     * @param elements the elements of the conjunction or disjunction
+     * @return a conjunction or disjunction string
+     */
+    public static String conjunction(String conjunction, List<?> elements) {
+        int size = elements.size();
+        if (size == 0) {
+            throw new IllegalArgumentException("no elements passed to conjunction()");
+        } else if (size == 1) {
+            return Objects.toString(elements.get(0));
+        } else if (size == 2) {
+            return elements.get(0) + " " + conjunction + " " + elements.get(1);
+        }
+
+        StringJoiner sj = new StringJoiner(", ");
+        for (int i = 0; i < size - 1; i++) {
+            sj.add(Objects.toString(elements.get(i)));
+        }
+        sj.add(conjunction + " " + elements.get(size - 1));
+        return sj.toString();
     }
 
     ///
