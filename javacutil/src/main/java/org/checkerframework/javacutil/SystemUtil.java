@@ -17,7 +17,6 @@ import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -250,7 +249,14 @@ public class SystemUtil {
                     @KeyForBottom FROM extends @UnknownKeyFor Object,
                     @KeyForBottom TO extends @UnknownKeyFor Object>
             List<TO> mapList(Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
-        return c.stream().map(f).collect(Collectors.toList());
+        // This implementation uses a for loop and is likely more efficient than using streams, both
+        // because it doesn't create stream objects and because it creates an ArrayList of the
+        // appropriate size.
+        List<TO> result = new ArrayList<>(c.size());
+        for (FROM elt : c) {
+            result.add(f.apply(elt));
+        }
+        return result;
     }
 
     ///
