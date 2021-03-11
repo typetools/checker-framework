@@ -3,6 +3,9 @@
 
 package org.checkerframework.checker.regex.util;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
@@ -171,6 +174,38 @@ public final class RegexUtil {
     }
 
     /**
+     * Returns true if the argument is a syntactically valid regular expression with specified
+     * groups as definitely non-null.
+     *
+     * @param s string to check for being a regular expression
+     * @param groups minimum number of groups
+     * @param nonNullGroups groups that are guaranteed to match some part of the target string
+     *     provided it matches the (possible) regular expression {@code s}
+     * @return true iff s is a regular expression with {@code groups} groups and groups in {@code
+     *     nonNullGroups} are definitely non-null when a string matches the regex
+     */
+    @Pure
+    @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
+    public static boolean isRegex(String s, int groups, int... nonNullGroups) {
+        Pattern p;
+        try {
+            p = Pattern.compile(s);
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
+        List<Integer> computedNonNullGroups = getNonNullGroups(p.pattern(), getGroupCount(p));
+        if (groups <= getGroupCount(p)) {
+            for (int e : nonNullGroups) {
+                if (!computedNonNullGroups.contains(e)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns true if the argument is a syntactically valid regular expression.
      *
      * @param c char to check for being a regular expression
@@ -269,6 +304,8 @@ public final class RegexUtil {
      * @throws Error if argument is not a regex
      */
     @SideEffectFree
+    // The return type annotation is irrelevant; it is special-cased by
+    // RegexAnnotatedTypeFactory.
     // The return type annotation is a conservative bound.
     public static @Regex String asRegex(String s) {
         return asRegex(s, 0);
@@ -284,7 +321,7 @@ public final class RegexUtil {
      * @param s string to check for being a regular expression
      * @param groups number of groups expected
      * @return its argument
-     * @throws Error if argument is not a regex
+     * @throws Error if argument is not a regex with at least the given number of groups
      */
     @SuppressWarnings("regex") // RegexUtil
     @SideEffectFree
@@ -297,6 +334,44 @@ public final class RegexUtil {
             if (actualGroups < groups) {
                 throw new Error(regexErrorMessage(s, groups, actualGroups));
             }
+            return s;
+        } catch (PatternSyntaxException e) {
+            throw new Error(e);
+        }
+    }
+
+    /**
+     * Returns the argument as a {@code @Regex(groups) String} if it is a regex with at least the
+     * given number of groups and the groups in {@code nonNullGroups} are guaranteed to match
+     * provided that the regex matches a string, otherwise throws an error.
+     *
+     * <p>The purpose of this method is to suppress Regex Checker warnings. It should be rarely
+     * needed.
+     *
+     * @param s string to check for being a regular expression
+     * @param groups number of groups expected
+     * @param nonNullGroups groups expected to be match some (possibly empty) part of a target
+     *     string when the regex matches
+     * @return its argument
+     * @throws Error if argument is not a regex with the specified characteristics
+     */
+    @SuppressWarnings("regex")
+    @SideEffectFree
+    // The return type annotation is irrelevant; this method is special-cased by
+    // RegexAnnotatedTypeFactory.
+    public static @Regex String asRegex(String s, int groups, int... nonNullGroups) {
+        try {
+            List<Integer> actualNonNullGroups = getNonNullGroups(s, groups);
+            boolean containsAll = true;
+            int failingGroup = -1;
+            for (int e : nonNullGroups) {
+                if (!actualNonNullGroups.contains(e)) {
+                    containsAll = false;
+                    failingGroup = e;
+                    break;
+                }
+            }
+            if (!containsAll) throw new Error(regexNNGroupsErrorMessage(s, failingGroup));
             return s;
         } catch (PatternSyntaxException e) {
             throw new Error(e);
@@ -324,6 +399,24 @@ public final class RegexUtil {
     }
 
     /**
+     * Generates an error message for s when nullableGroup is expected to be definitely non-null but
+     * turns out to be nullable.
+     *
+     * @param s string to check for being a regular expression
+     * @param nullableGroup group expected to be non-null
+     * @return an error message for s when nullableGroup is expected to be definitely non-null but
+     *     turns out to be nullable.
+     */
+    private static String regexNNGroupsErrorMessage(String s, int nullableGroup) {
+        return "for regex \""
+                + s
+                + "\", call to group("
+                + nullableGroup
+                + ") can return a possibly-null string "
+                + " but is expected to return a non-null string.";
+    }
+
+    /**
      * Return the count of groups in the argument.
      *
      * @param p pattern whose groups to count
@@ -333,5 +426,160 @@ public final class RegexUtil {
     @Pure
     private static int getGroupCount(Pattern p) {
         return p.matcher("").groupCount();
+    }
+
+    /**
+     * Returns a list of groups other than 0, that are guaranteed to be non-null given that the
+     * regular expression matches the String. The String argument passed has to be a valid regular
+     * expression.
+     *
+     * @param regexp pattern to be analysed
+     * @param n number of capturing groups in the pattern
+     * @return a {@code List} of groups that are guaranteed to match some part of a string that
+     *     matches {@code regexp}
+     * @throws Error if the argument is not a regex or has less than the specified number of
+     *     capturing groups
+     */
+    public static List<Integer> getNonNullGroups(String regexp, int n) {
+        try {
+            Pattern p = Pattern.compile(regexp);
+            int actualGroups = getGroupCount(p);
+            if (actualGroups < n) {
+                throw new Error(regexErrorMessage(regexp, n, actualGroups));
+            }
+        } catch (PatternSyntaxException e) {
+            throw new Error(e);
+        }
+        // The list that will hold the groups that are guaranteed to match some part of text that
+        // matches the regex. Initially holds all the groups. The optional groups will be removed.
+        List<Integer> nonNullGroups = new ArrayList<>();
+        for (int i = 1; i <= n; i++) {
+            nonNullGroups.add(i);
+        }
+
+        // ArrayDeque here is used as a stack.
+        // We need stack functionality because brackets that were last opened during the traversal
+        // need to be closed first.
+
+        // Indices of the groups that are currently not closed. It is a ArrayDeque which is used as
+        // a stack.
+        // An element is pushed to it when we encounter a '(' which opens a capturing group.
+        // An element popped from it when a ')' is encountered which is closing a capturing group.
+        // We know ')' closes a capturing group from our boolean stack.
+        ArrayDeque<Integer> unclosedCapturingGroups = new ArrayDeque<>();
+
+        // Stores whether the last occurrence of '(' in the regex marked a capturing group (true) or
+        // a non-capturing group (false).
+        // Element is pushed to it when a '(' is encountered. If it is a capturing group (named or
+        // unnamed), push true otherwise push false.
+        // Element is popped from it when a ')' is encountered. If the popped element is true, it
+        // means that the ')' closes a capturing group (we need to pop from the Integer deque)
+        // otherwise it closes a non-capturing group.
+        ArrayDeque<Boolean> lastUnclosedWasCapturingGroup = new ArrayDeque<>();
+
+        // Number of capturing groups encountered. Used for numbering of the capturing groups.
+        // Increments every time a '(' that opens a capturing group is encountered during the
+        // traversal. This is the value that is pushed onto the Integer deque.
+        int group = 0;
+
+        // Optional group here onwards means the ith capturing group, which may not match any part
+        // of a text that matched the regular expression and thus may return null on calls to
+        // matcher.group(i).
+
+        // If you encounter '(', check the next character. If it is a '?', it is a special
+        // construct,
+        // (either pure, non-capturing groups that do not capture text and do not count towards the
+        // group total, or named-capturing group) and we need to check the next character. If the
+        // character following the '?' is a '<' the '(' represents the opening of a named-capturing
+        // group and it will be handled like a normal capturing group. If the '(' was not followed
+        // by a '?', it is a normal capturing group.
+        // In case of capturing groups, increment the group variable and push it to the
+        // unclosedCapturingGroups deque. Push true to the lastUnclosedWasCapturingGroup deque.
+        // In case of non-capturing groups, push false to the lastUnclosedWasCapturingGroup deque.
+        // We need the boolean deque so that when we encounter a ')', we can know whether it closes
+        // a capturing group (the top element is true) or a non-capturing group (the top element is
+        // false). One additional check is required. If '(' represented a capturing a group and was
+        // preceded by '|', it is an optional group.
+
+        // If you encounter ')', check the top of the lastUnclosedWasCapturingGroup deque. If it was
+        // false, do nothing otherwise remove the top element from the deque since it is now closed
+        // and check if it is followed by a '?', '*', '|' or '{0'. If it is, then it is an optional
+        // group otherwise not. If it is an optional group, remove it from the nonNullGroups list.
+
+        // If you encounter '[', traverse the regex till you find the closing '[', you may encounter
+        // more of '[' in the process, keep a track of the number of character classes that are
+        // still open. Keep on traversing till the number becomes 0. After this resume normal
+        // traversal.
+
+        // If you encounter '\', check the next character. If it is not 'Q', skip the next
+        // character. If it is 'Q', it marks the beginning of a literal quote, find the next
+        // occurrence of '\E', which marks the end of quote. Set the loop variable to the index of
+        // 'E' and resume normal traversal.
+
+        final int length = regexp.length();
+        for (int i = 0; i < length; i++) {
+            if (regexp.charAt(i) == '(') {
+                boolean isCapturingGroup = false;
+                if ((i < length - 1)
+                        && (regexp.startsWith("?<", i + 1) || regexp.charAt(i + 1) != '?')) {
+                    group += 1;
+                    unclosedCapturingGroups.push(group);
+                    isCapturingGroup = true;
+                }
+                lastUnclosedWasCapturingGroup.push(isCapturingGroup);
+                if (isCapturingGroup) {
+                    if (i > 0 && regexp.charAt(i - 1) == '|') {
+                        nonNullGroups.remove(Integer.valueOf(group));
+                    }
+                }
+            } else if (regexp.charAt(i) == ')') {
+                boolean closesCapturingGroup = lastUnclosedWasCapturingGroup.pop();
+                if (closesCapturingGroup) {
+                    Integer closedGroupIndex = unclosedCapturingGroups.pop();
+                    if ((i < length - 1 && "?*|".contains(String.valueOf(regexp.charAt(i + 1))))
+                            || (i < length - 2 && regexp.startsWith("{0", i + 1))) {
+                        nonNullGroups.remove(closedGroupIndex);
+                    }
+                }
+            } else if (regexp.charAt(i) == '[') {
+                int balance = 1, j;
+                // the loop starts from i+2 because the character class cannot be empty. "[]]" is a
+                // valid regex.
+                for (j = i + 1; j < length && balance > 0; j++) {
+                    if (regexp.charAt(j) == '[') {
+                        balance += 1;
+                    } else if (regexp.charAt(j) == ']') {
+                        // in "[]]", the first ']' is considered literally.
+                        // Similarly in "[[]]], the first ']' is considered literally.
+                        // in "[][]]]", the first and second ']' are considered literally.
+                        // Thus ']' that immediately follows a '[' does not close a character class.
+                        if (regexp.charAt(j - 1) != '[') {
+                            balance -= 1;
+                        }
+                    } else if (regexp.charAt(j) == '\\') {
+                        j = resumeFromHere(regexp, j);
+                    }
+                }
+                i = j - 1;
+            } else if (regexp.charAt(i) == '\\') {
+                i = resumeFromHere(regexp, i);
+            }
+        }
+        return nonNullGroups;
+    }
+
+    /**
+     * Returns the index till which the regex can be skipped, when '\' is encountered.
+     *
+     * @param regexp the regular expression to analyse
+     * @param st the index of the '\' which causes the skip
+     * @return the index till which the traversal can be skipped
+     */
+    private static int resumeFromHere(String regexp, int st) {
+        int length = regexp.length();
+        if (st < length - 1 && regexp.charAt(st + 1) != 'Q') {
+            return st + 1;
+        }
+        return regexp.indexOf("\\E", st) + 1;
     }
 }
