@@ -233,7 +233,7 @@ public class AnnotatedTypes {
                             orderedByDestination);
             declaredAsSuper.setTypeArguments(newTypeArgs);
         } else {
-            declaredAsSuper.setTypeArguments(new ArrayList<>(0));
+            declaredAsSuper.setTypeArguments(Collections.emptyList());
         }
     }
 

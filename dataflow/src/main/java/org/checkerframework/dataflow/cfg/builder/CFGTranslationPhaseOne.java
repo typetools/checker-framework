@@ -2920,7 +2920,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     SystemUtil.mapList(
                             init -> assignConvert(scan(init, p), elemType), initializers);
         } else {
-            initializerNodes = new ArrayList<>();
+            initializerNodes = Collections.emptyList();
         }
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
