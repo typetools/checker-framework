@@ -1222,8 +1222,6 @@ public class ValueTransfer extends CFTransfer {
             return refineIntRanges(
                     leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
-        // This is a list of all the values that the expression can evaluate to.
-        List<Boolean> resultValues = new ArrayList<>();
 
         List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
         List<? extends Number> rights = getNumericalValues(rightNode, rightAnno);
@@ -1236,6 +1234,9 @@ public class ValueTransfer extends CFTransfer {
             }
             return null;
         }
+
+        // This is a list of all the values that the expression can evaluate to.
+        List<Boolean> resultValues = new ArrayList<>();
 
         // These lists are used to refine the values in the store based on the results of the
         // comparison.
@@ -1578,7 +1579,6 @@ public class ValueTransfer extends CFTransfer {
         if (lefts == null) {
             lefts = ALL_BOOLEANS;
         }
-        List<Boolean> resultValues = new ArrayList<>();
         List<Boolean> rights = null;
         if (rightNode != null) {
             rights = getBooleanValues(rightNode, p);
@@ -1586,6 +1586,8 @@ public class ValueTransfer extends CFTransfer {
                 rights = ALL_BOOLEANS;
             }
         }
+        // This list can contain duplicates.  It is deduplicated later by createBooleanAnnotation.
+        List<Boolean> resultValues = new ArrayList<>(2);
         switch (op) {
             case NOT:
                 for (Boolean left : lefts) {
