@@ -155,8 +155,11 @@ public class KeyForAnnotatedTypeFactory
         return new KeyForTransfer((KeyForAnalysis) analysis);
     }
 
-    /*
+    /**
      * Given a string array 'values', returns an AnnotationMirror corresponding to @KeyFor(values)
+     *
+     * @param values the values for the {@code @KeyFor} annotation
+     * @return a {@code @KeyFor} annotation with the given values
      */
     public AnnotationMirror createKeyForAnnotationMirrorWithValue(LinkedHashSet<String> values) {
         // Create an AnnotationBuilder with the ArrayList
@@ -167,8 +170,11 @@ public class KeyForAnnotatedTypeFactory
         return builder.build();
     }
 
-    /*
+    /**
      * Given a string 'value', returns an AnnotationMirror corresponding to @KeyFor(value)
+     *
+     * @param value the argument to {@code @KeyFor}
+     * @return a {@code @KeyFor} annotation with the given value
      */
     public AnnotationMirror createKeyForAnnotationMirrorWithValue(String value) {
         // Create an ArrayList with the value
