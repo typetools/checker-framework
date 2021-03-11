@@ -934,8 +934,10 @@ public class AnnotationUtils {
     /**
      * Converts a list of AnnotationValue to an array of enum.
      *
+     * @param <T> the element type of the enum array
      * @param la a list of AnnotationValue
      * @param expectedType the expected type used to cast the return type
+     * @return an array of enum, converted from the input list
      */
     public static <T extends Enum<T>> T[] annotationValueListToEnumArray(
             List<AnnotationValue> la, Class<T> expectedType) {
