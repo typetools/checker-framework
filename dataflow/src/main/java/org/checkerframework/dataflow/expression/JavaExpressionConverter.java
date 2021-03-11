@@ -35,7 +35,12 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
      */
     public List<@PolyNull JavaExpression> convert(List<@PolyNull JavaExpression> list) {
         return SystemUtil.mapList(
-                (JavaExpression expression) -> expression == null ? null : convert(expression),
+                (@PolyNull JavaExpression expression) -> {
+                    if (expression == null) {
+                        return null;
+                    }
+                    return convert(expression);
+                },
                 list);
     }
 

@@ -226,7 +226,7 @@ public class ForwardAnalysisImpl<
     @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-        return SystemUtil.mapList(
+        return SystemUtil.<ReturnNode, Pair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
                 returnNode -> Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
                 cfg.getReturnNodes());
     }
