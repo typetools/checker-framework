@@ -1006,30 +1006,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             try {
                 exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
             } catch (JavaExpressionParseException e) {
-                checker.report(methodTree, e.getDiagMessage());
-                if (formalParamNames != null && formalParamNames.contains(expressionString)) {
-                    String locationOfExpression =
-                            contract.kind.errorKey
-                                    + " "
-                                    + contract.contractAnnotation
+                DiagMessage diagMessage = e.getDiagMessage();
+                if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
+                    String s =
+                            String.format(
+                                    "'%s' in the %s %s on the declaration of method '%s': ",
+                                    expressionString,
+                                    contract.kind.errorKey,
+                                    contract.contractAnnotation
                                             .getAnnotationType()
                                             .asElement()
-                                            .getSimpleName()
-                                    + " on the declaration";
-                    checker.reportWarning(
-                            methodTree,
-                            "expression.parameter.name.invalid",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            expressionString,
-                            formalParamNames.indexOf(expressionString) + 1);
+                                            .getSimpleName(),
+                                    methodTree.getName().toString());
+                    checker.reportError(
+                            methodTree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
+                } else {
+                    checker.report(methodTree, e.getDiagMessage());
                 }
-                return;
+                continue;
             }
-
             if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
                 checker.reportError(methodTree, "flowexpr.parse.error", expressionString);
-                return;
+                continue;
             }
             if (!abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
                 // Check the contract, which is a postcondition.
