@@ -536,7 +536,7 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            List<TypeUseLocation> locations =
+            TypeUseLocation[] locations =
                     AnnotationUtils.getElementValueEnumArray(
                             dq, "locations", TypeUseLocation.class, true);
             DefaultSet ret = new DefaultSet();

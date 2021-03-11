@@ -167,14 +167,14 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link I18nFormat} annotation, and returns its
-     * value.
+     * Takes an {@code @}{@link I18nFormat} annotation, and returns its {@code value} element
+     *
+     * @param anno an {@code @}{@link I18nFormat} annotation
+     * @return the {@code @}{@link I18nFormat} annotation's {@code value} element
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        List<I18nConversionCategory> list =
-                AnnotationUtils.getElementValueEnumArray(
-                        anno, "value", I18nConversionCategory.class, false);
-        return list.toArray(new I18nConversionCategory[] {});
+        return AnnotationUtils.getElementValueEnumArray(
+                anno, "value", I18nConversionCategory.class, false);
     }
 
     /**
