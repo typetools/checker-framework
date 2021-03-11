@@ -34,9 +34,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * This interface is both a functional interface, see {@link #toJavaExpression(String)}, and also a
  * collection of static methods that convert a string to a JavaExpression at common locations.
  *
- * <p>Some conversion routines merely do parsing. Other conversion routines parse and then
- * transforming the result of parsing into another {@code JavaExpression}; for all the static
- * methods, the transformation is viewpoint-adaptation.
+ * <p>Some conversion routines merely do parsing. Other conversion routines parse and then transform
+ * the result of parsing into another {@code JavaExpression}; for all the static methods, this
+ * transformation is viewpoint-adaptation.
  *
  * <p>To parse a string "at a location" means to parse it as if it were written in an annotation
  * that is written on that location.
