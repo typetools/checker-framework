@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -64,7 +65,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element.
+     * Returns the innermost type element that is, or encloses, the given element.
      *
      * <p>Note that in this code:
      *
@@ -77,7 +78,8 @@ public class ElementUtils {
      * {@code Inner} has no enclosing type, but this method returns {@code Outer}.
      *
      * @param elem the enclosed element of a class
-     * @return the innermost type element, or null if no type element encloses {@code elem}
+     * @return the innermost type element (possibly the argument itself), or null if {@code elem} is
+     *     not, and is not enclosed by, a type element
      */
     public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
         Element result = elem;
@@ -85,6 +87,68 @@ public class ElementUtils {
             result = result.getEnclosingElement();
         }
         return (TypeElement) result;
+    }
+
+    /**
+     * Returns the innermost type element enclosing the given element, that is different from the
+     * element itself. By contrast, {@link #enclosingTypeElement} returns its argument if the
+     * argument is a type element.
+     *
+     * @param elem the enclosed element of a class
+     * @return the innermost type element, or null if no type element encloses {@code elem}
+     */
+    public static @Nullable TypeElement strictEnclosingTypeElement(final Element elem) {
+        Element enclosingElement = elem.getEnclosingElement();
+        if (enclosingElement == null) {
+            return null;
+        }
+
+        return enclosingTypeElement(enclosingElement);
+    }
+
+    /**
+     * Returns the top-level type element that contains {@code element}.
+     *
+     * @param element the element whose enclosing tye element to find
+     * @return a type element containing {@code element} that isn't contained in another class
+     */
+    public static TypeElement toplevelEnclosingTypeElement(Element element) {
+        TypeElement result = enclosingTypeElement(element);
+        if (result == null) {
+            return (TypeElement) element;
+        }
+
+        TypeElement enclosing = strictEnclosingTypeElement(result);
+        while (enclosing != null) {
+            result = enclosing;
+            enclosing = strictEnclosingTypeElement(enclosing);
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns the binary name of the class enclosing {@code executableElement}.
+     *
+     * @param executableElement the ExecutableElement
+     * @return the binary name of the class enclosing {@code executableElement}
+     */
+    public static @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return getBinaryName(((MethodSymbol) executableElement).enclClass());
+    }
+
+    /**
+     * Returns the binary name of the class enclosing {@code variableElement}.
+     *
+     * @param variableElement the VariableElement
+     * @return the binary name of the class enclosing {@code variableElement}
+     */
+    public static @BinaryName String getEnclosingClassName(VariableElement variableElement) {
+        TypeElement enclosingType = enclosingTypeElement(variableElement);
+        if (enclosingType == null) {
+            throw new BugInCF("enclosingTypeElement(%s) is null", variableElement);
+        }
+        return getBinaryName(enclosingType);
     }
 
     /**
@@ -243,7 +307,8 @@ public class ElementUtils {
                 return pe.getQualifiedName() + "." + simpleName;
             }
         } else {
-            throw new BugInCF("Unexpected enclosing %s for %s", enclosing, te);
+            // This case occurs for anonymous inner classes. Fall back to the flatname method.
+            return ((ClassSymbol) te).flatName().toString();
         }
     }
 
@@ -553,6 +618,10 @@ public class ElementUtils {
      *
      * <p>TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+     *
+     * @param type the type whose supertypes to return
+     * @param elements the Element utilities
+     * @return supertypes of {@code type}
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
@@ -598,9 +667,14 @@ public class ElementUtils {
     }
 
     /**
-     * Return all fields declared in the given type or any superclass/interface. TODO: should this
-     * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
-     * getSuperTypes?
+     * Return all fields declared in the given type or any superclass/interface.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose fields to return
+     * @param elements the Element utilities
+     * @return fields of {@code type}
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
         List<VariableElement> fields = new ArrayList<>();
@@ -614,8 +688,14 @@ public class ElementUtils {
 
     /**
      * Return all methods declared in the given type or any superclass/interface. Note that no
-     * constructors will be returned. TODO: should this use
-     * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
+     * constructors will be returned.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose methods to return
+     * @param elements the Element utilities
+     * @return methods of {@code type}
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
         List<ExecutableElement> meths = new ArrayList<>();

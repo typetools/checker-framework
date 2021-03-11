@@ -22,6 +22,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
@@ -167,10 +168,14 @@ public class StubGenerator {
         printClass(typeElement, null);
     }
 
-    /** helper method that outputs the index for the provided class. */
-    private void printClass(TypeElement typeElement, String outerClass) {
-        List<TypeElement> innerClass = new ArrayList<>();
-
+    /**
+     * Helper method that prints the stub file for the provided class.
+     *
+     * @param typeElement the class to output
+     * @param outerClass the outer class of the class, or null if {@code typeElement} is a top-level
+     *     class
+     */
+    private void printClass(TypeElement typeElement, @Nullable String outerClass) {
         indent();
 
         List<? extends AnnotationMirror> teannos = typeElement.getAnnotationMirrors();
@@ -224,6 +229,9 @@ public class StubGenerator {
 
         currentIndention = currentIndention + INDENTION;
 
+        // Inner classes, which the stub generator prints later.
+        List<TypeElement> innerClass = new ArrayList<>();
+        // side-effects innerClass
         printTypeMembers(typeElement.getEnclosedElements(), innerClass);
 
         currentIndention = tempIndention;
@@ -384,8 +392,13 @@ public class StubGenerator {
                 || element.getModifiers().contains(Modifier.PROTECTED);
     }
 
-    /** Outputs the simple name of the type. */
-    private String formatType(TypeMirror typeRep) {
+    /**
+     * Returns the simple name of the type.
+     *
+     * @param typeRep a type
+     * @return the simple name of the type
+     */
+    private static String formatType(TypeMirror typeRep) {
         StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
         StringBuilder sb = new StringBuilder();
 

@@ -1,5 +1,6 @@
 package org.checkerframework.framework.stub;
 
+import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,7 +47,10 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** Holds information about types parsed from annotation files (stub files). */
+/**
+ * Holds information about types parsed from annotation files (stub files or ajava files). When
+ * using an ajava file, only holds information on public elements as with stub files.
+ */
 public class AnnotationFileElementTypes {
     /** Annotations from annotation files (but not from annotated JDK files). */
     private final AnnotationFileAnnotations annotationFileAnnos;
@@ -186,7 +190,46 @@ public class AnnotationFileElementTypes {
             Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
         }
 
-        parseAnnotationFiles(allAnnotationFiles);
+        parseAnnotationFiles(allAnnotationFiles, AnnotationFileUtil.AnnotationFileType.STUB);
+        parsing = false;
+    }
+
+    /** Parses the ajava files passed through the -Aajava command-line option. */
+    public void parseAjavaFiles() {
+        parsing = true;
+        // TODO: Error if this is called more than once?
+        SourceChecker checker = factory.getChecker();
+        List<String> ajavaFiles = new ArrayList<>();
+        String ajavaOption = checker.getOption("ajava");
+        if (ajavaOption != null) {
+            Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
+        }
+
+        parseAnnotationFiles(ajavaFiles, AnnotationFileUtil.AnnotationFileType.AJAVA);
+        parsing = false;
+    }
+
+    /**
+     * Parses the ajava file at {@code ajavaPath} assuming {@code root} represents the compilation
+     * unit of that file. Uses {@code root} to get information from javac on specific elements of
+     * {@code ajavaPath}, enabling storage of more detailed annotation information than with just
+     * the ajava file.
+     *
+     * @param ajavaPath path to an ajava file
+     * @param root javac tree for the compilation unit stored in {@code ajavaFile}
+     */
+    public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
+        parsing = true;
+        SourceChecker checker = factory.getChecker();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        try {
+            InputStream in = new FileInputStream(ajavaPath);
+            AnnotationFileParser.parseAjavaFile(
+                    ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
+        } catch (IOException e) {
+            checker.message(Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+        }
+
         parsing = false;
     }
 
@@ -196,8 +239,10 @@ public class AnnotationFileElementTypes {
      * files located in that directory (recursively).
      *
      * @param annotationFiles list of files and directories to parse
+     * @param fileType the file type of files to parse
      */
-    private void parseAnnotationFiles(List<String> annotationFiles) {
+    private void parseAnnotationFiles(
+            List<String> annotationFiles, AnnotationFileUtil.AnnotationFileType fileType) {
         SourceChecker checker = factory.getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         for (String path : annotationFiles) {
@@ -205,7 +250,8 @@ public class AnnotationFileElementTypes {
             String base = System.getProperty("test.src");
             String fullPath = (base == null) ? path : base + "/" + path;
 
-            List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(fullPath);
+            List<AnnotationFileResource> allFiles =
+                    AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
             if (allFiles != null) {
                 for (AnnotationFileResource resource : allFiles) {
                     InputStream annotationFileStream;
@@ -217,6 +263,9 @@ public class AnnotationFileElementTypes {
                                 "Could not read annotation resource: " + resource.getDescription());
                         continue;
                     }
+                    // We use parseStubFile here even for ajava files because at this stage ajava
+                    // files are parsed as stub files. The extra annotation data in an ajava file is
+                    // parsed when type checking the ajava file's corresponding Java file.
                     AnnotationFileParser.parseStubFile(
                             resource.getDescription(),
                             annotationFileStream,
@@ -275,14 +324,13 @@ public class AnnotationFileElementTypes {
                                         + " on classpath or within "
                                         + parentPathDescription
                                         + (fullPath.equals(path) ? "" : (" or at " + fullPath));
-                        List<String> lines = new ArrayList<>();
-                        lines.add(msg);
-                        lines.add("Classpath:");
+                        StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
+                        sj.add(msg);
+                        sj.add("Classpath:");
                         for (URI uri : new ClassGraph().getClasspathURIs()) {
-                            lines.add(uri.toString());
+                            sj.add(uri.toString());
                         }
-                        checker.message(
-                                Kind.WARNING, String.join(System.lineSeparator() + "  ", lines));
+                        checker.message(Kind.WARNING, sj.toString());
                     }
                 }
             }

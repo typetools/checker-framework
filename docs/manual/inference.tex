@@ -165,15 +165,21 @@ Here is an explanation of the arguments:
 
 \item[-b EXTRA\_BUILD\_ARGS]
   Extra arguments to pass to the build script invocation. This argument
-  will be passed unmodified to the target's build system (i.e., Maven, Gradle,
-  or Ant). The default is the empty string.
+  will be passed to the build commands, such as
+  \<ant compile>, \<gradle compileJava>, or \<mvn compile>.
+  It is also passed to other build system commands, such as
+  \<ant clean>, \<gradle clean>, or \<mvn clean>.
+  % An alternative would be to permit it to be passed multiple times, and
+  % not re-tokenize it.
+  The argument may contain spaces and is re-tokenized by the shell.
 
 \item[-g GRADLECACHEDIR]
   The directory to use for the `-g` option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
   project (i.e. each target project has its own Gradle home). This default
-  is motivated by [this Gradle issue](https://github.com/gradle/gradle/issues/1319).
+  is motivated by
+  \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
 \item[DLJC-ARGS]
   Arguments that are passed directly to
@@ -181,8 +187,14 @@ Here is an explanation of the arguments:
   \<dljc> program without
   modification.  One argument is required: \<-\relax-checker>, which indicates
   what type-checker(s) to run (in the format described in Section~\ref{shorthand-for-checkers}).
+
   The \ahreforurl{https://github.com/kelloggm/do-like-javac}{documentation of do-like-javac}
-  describes the other commands that its WPI tool supports.
+  describes the other commands that its WPI tool supports. Notably, to pass checker-specific
+  arguments to invocations of \<javac>,
+  use the \<-\relax-extraJavacArgs> argument to \<dljc>. For example, to use the \<-AignoreRangeOverflow>
+  option for the Constant Value Checker (\chapterpageref{constant-value-checker}) when running
+  inference, you would add \<-\relax-extraJavacArgs='-AignoreRangeOverflow'> anywhere after the \<-\relax->
+  argument to \<wpi.sh>.
 \end{description}
 
 You may need to wait a few minutes for the command to complete.
@@ -314,7 +326,8 @@ which is as for the \<wpi.sh> script.
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
   project (i.e. each target project has its own Gradle home). This default
-  is motivated by [this Gradle issue](https://github.com/gradle/gradle/issues/1319).
+  is motivated by
+  \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
 \end{description}
 

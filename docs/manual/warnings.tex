@@ -416,20 +416,16 @@ information regardless of the \<-AassumeAssertionsAreEnabled> and
 \subsectionAndLabel{Suppressing warnings and defensive programming}{defensive-programming}
 
 This section explains the distinction between two different uses for
-assertions:
-debugging a program (also known as defensive programming) versus specifying a program.
-The discussion also applies to methods like JUnit's \<Assert.assertNotNull>.
+assertions:  debugging a program (also known as defensive programming)
+versus specifying a program.  The examples use nullness annotations, but
+the concepts apply to any checker.
 
 The purpose of assertions is to aid debugging by throwing an exception
 when a program does not work correctly.  Sometimes, programmers use assertions for a
 different  purpose:  documenting how
 the program works.  By default, the Checker Framework assumes that each assertion
-is used for debugging:  the assertion might fail at run time, and the programmer
-wishes to be informed at compile time about such possible run-time errors.  On
-the other hand, if you write the \<@AssumeAssertion> string in the \<assert>
-message, then the Checker Framework assumes that you have used some other
-technique to verify that the assertion can never fail at run time, so the
-checker assumes the assertion passes and does not issue a warning.
+is used for its primary purpose of debugging:  the assertion might fail at run time, and the programmer
+wishes to be informed at compile time about such possible run-time errors.
 
 % Here is an example of an assertion used for debugging.
 Suppose that a
@@ -442,68 +438,48 @@ doing so would defeat the very purpose of the Checker Framework, which is
 to detect errors at compile time and prevent them from occurring at run
 time.
 
-On the other hand, assertions sometimes document facts that a programmer
-has independently verified to be true, and the Checker Framework can
+A non-standard use for annotations is to document facts that a programmer
+has independently verified to be true.  The Checker Framework can
 leverage these assertions in order to avoid issuing false positive
 warnings.  The programmer marks such assertions with the \<@AssumeAssertion>
-string in the \<assert> message.  Only do so if you are sure
-that the assertion always succeeds at run time.
+string in the \<assert> message (see Section~\ref{assumeassertion}.  Only
+do so if you are sure that the assertion always succeeds at run time.
 
-
-% In each case, the assertion or method indicates an application invariant --- a
-% fact that should always be true.  There are two distinct reasons a
-% programmer may have written the invariant, depending on whether the
-% programmer is 100\% sure that the application invariant holds.
-%
-% \begin{enumerate}
-% \item
-%   A programmer might write it as \textbf{defensive programming}.  This causes
-%   the program to throw an exception, which is useful for debugging because
-%   it gives an earlier run-time indication of the error.
-%   A programmer would use an assertion in this way if the programmer is not
-%   100\% sure that the application invariant holds.
-%
-%   % , or even to document what the program
-%   % is intended to do.
-%
-% \item
-%   A programmer might write it to \textbf{suppress} false positive
-%   \textbf{warning messages} from a checker.  A programmer would use an
-%   assertion this way if the programmer is 100\% sure that the application
-%   invariant holds, and the reference can never be null at run time.
-%
-% \end{enumerate}
-
-
+\label{assertion-methods}
 Methods such as
 \sunjavadoc{java.base/java/util/Objects.html\#requireNonNull(T)}{Objects.requireNonNull},
-\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-}, and
+JUnit's \<Assert.assertNotNull>, and
 Guava's \<verifyNotNull> and \<checkNotNull> are
 similar to assertions.  Just as for assertions, their intended use is as
-debugging aids, but some programmers may use them as documentation of facts
-that have been verified in some other manner.
-If you know that a particular codebase uses
-a nullness-checking method not for defensive programming but to indicate
+debugging aids, they might fail at run time, and the Checker Framework
+warns if that might happen.
+Some programmers may use assert methods as documentation of facts
+that the programmer has verified in some other manner.
+If you know that a particular codebase always uses
+an assertion method not for defensive programming but to indicate
 facts that are guaranteed to be true (that is, these assertions cannot
-fail at run time), then you can suppress
-warnings related to it.
-\begin{itemize}
-\item
-  If the method is defined in your source code,
-  annotate its definition just as
-  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is annotated (see the
-  source code for the Checker Framework).
-  Also, be sure to document the intention in the method's Javadoc, so that
-  programmers do not
-  accidentally misuse it for defensive programming.
-\item
-  If the method is defined in an external library, write a stub file that
-  changes the method's annotations, or use \<-AskipUses> to make the
-  Checker Framework ignore all calls to an entire class.
-\end{itemize}
+fail at run time), then there are two approaches to avoid false positive
+warnings:  write specifications or suppress
+warnings; see below for an explanation of each approach.
+
+The method
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is not an
+assertion method.  It is a warning suppression method.
+
+Note that some libraries have an imprecise specification of their assertion
+methods.  For example, Guava's \<Verify.verifyNotNull> is imprecisely
+specified to have a \<@Nullable> formal parameter.  In a correct execution,
+\<null> never flows there, so its type can and should be annotated as
+\<@NonNull>.  That annotation allows the Nullness Checker to warn about
+programs that crash due to passing \<null> to \<verifyNotNull>.  You can
+use a version of Guava with a small change to your build file.  Where the
+build file refers to Maven Central's \<guava> artifact, change the group
+name from ``com.google.guava'' to ``org.checkerframework.annotatedlib''.
+(The code is identical; the only difference is annotations.)
 
 
-If you are annotating a codebase that already contains precondition checks,
+\paragraphAndLabel{Option 1: Write specifications based on uses of assertion methods}{specifications-based-on-assertion-methods}
+Suppose you are annotating a codebase that already contains precondition checks,
 such as:
 
 \begin{Verbatim}
@@ -514,18 +490,31 @@ such as:
 \end{Verbatim}
 
 \noindent
-then you should mark the appropriate parameter of \<myGet> as \<@NonNull> (which is the
-default).  The checker will not issue a warning about the
-\<checkNotNull> call, but will issue a warning at incorrect calls to \<myGet>.
+Because \<key> is non-null in every correct execution, its type should be
+\<@NonNull> in \<myGet>'s signature.  (\<@NonNull> is the default, so in
+this case there is nothing to write.)  The checker will not issue a warning
+about the \<checkNotNull> call, but will issue a warning at incorrect calls
+to \<myGet>.
 
-Note that some libraries have incorrect specifications of their assertion
-methods.  For example, Guava's \<Verify.verifyNotNull> is incorrectly
-specified to have a \<@Nullable> formal parameter.  In a correct execution,
-\<null> never flows there, so its type should be \<@NonNull>.  You can use
-a version of Guava with corrected annotations by replacing the group name
-``com.google.guava'' by ``org.checkerframework.annotatedlib'' where your
-build file refers to Maven Central's \<guava> artifact.  (The code is
-identical; the only difference is annotations.)
+\paragraphAndLabel{Option 2: Suppress warnings at uses of assertion methods}{assert-method-suppress-warnings}
+
+This section explains how to suppress warnings at all uses of an assertion
+method.  As with any warning suppression, you will compromise the checker's
+guarantee that your code is correct and will not fail at run time.
+
+\begin{itemize}
+\item
+  If the method is defined in your source code, annotate its definition just as
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is
+  annotated; see its Javadoc or the source code for the Checker Framework.
+  Also, be sure to document the intention in the method's Javadoc, so that
+  programmers do not
+  accidentally misuse it for defensive programming.
+\item
+  If the method is defined in an external library, write a stub file that
+  changes the method's annotations, or use \<-AskipUses> to make the
+  Checker Framework ignore all calls to an entire class.
+\end{itemize}
 
 
 \sectionAndLabel{\code{-AsuppressWarnings} command-line option}{suppresswarnings-command-line}
@@ -863,4 +852,4 @@ annotations, those compatibility annotations are no longer necessary.
 %%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
 %%  LocalWords:  assumeassertion askipdefs alint compat substring myGet
 % LocalWords:  AcheckPurityAnnotations allcheckers requireNonNull
-% LocalWords:  verifyNotNull
+% LocalWords:  verifyNotNull subcheckers subchecker

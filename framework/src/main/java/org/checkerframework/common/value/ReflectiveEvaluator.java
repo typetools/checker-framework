@@ -82,8 +82,8 @@ public class ReflectiveEvaluator {
         }
 
         if (method.isVarArgs()) {
-            List<Object[]> newList = new ArrayList<>();
             int numberOfParameters = method.getParameterTypes().length;
+            List<Object[]> newList = new ArrayList<>();
             for (Object[] args : listOfArguments) {
                 newList.add(normalizeVararg(args, numberOfParameters));
             }
@@ -222,6 +222,13 @@ public class ReflectiveEvaluator {
         }
     }
 
+    /**
+     * Returns the classes of the given method's formal parameters.
+     *
+     * @param ele a method or constructor
+     * @return the classes of the given method's formal parameters
+     * @throws ClassNotFoundException if the class cannot be found
+     */
     private List<Class<?>> getParameterClasses(ExecutableElement ele)
             throws ClassNotFoundException {
         List<? extends VariableElement> paramEles = ele.getParameters();
@@ -254,6 +261,13 @@ public class ReflectiveEvaluator {
         return tuples;
     }
 
+    /**
+     * Returns a depth-2 copy of the given list. In the returned value, the list and the arrays in
+     * it are new, but the elements of the arrays are shared with the argument.
+     *
+     * @param lastTuples a list of arrays
+     * @return a depth-2 copy of the given list
+     */
     private List<Object[]> copy(List<Object[]> lastTuples) {
         List<Object[]> returnListOfLists = new ArrayList<>();
         for (Object[] list : lastTuples) {

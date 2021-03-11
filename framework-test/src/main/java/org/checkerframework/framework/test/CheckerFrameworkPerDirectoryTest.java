@@ -133,6 +133,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
         this.testDir = "tests" + File.separator + testDir;
         this.classpathExtra = classpathExtra;
         this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
+        this.checkerOptions.add("-AcheckJavaParserVisitor");
     }
 
     @Test

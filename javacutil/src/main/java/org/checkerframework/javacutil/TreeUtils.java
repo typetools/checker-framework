@@ -309,38 +309,34 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for the called method, from a call. Might return null if no
-     * element was found.
+     * Returns the ExecutableElement for the called method, from a call.
      *
      * @param node a method call
      * @return the ExecutableElement for the called method
      */
     @Pure
-    public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
+    public static ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF("Method elements should be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
-     * Gets the ExecutableElement for the called constrctor, from a constructor invocation. Might
-     * return null if no element was found.
+     * Gets the ExecutableElement for the called constructor, from a constructor invocation.
      *
      * @param node a constructor invocation
      * @return the ExecutableElement for the called constructor
      * @see #constructor(NewClassTree)
      */
     @Pure
-    public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
+    public static ExecutableElement elementFromUse(NewClassTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF("Constructor elements should  be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
@@ -1158,13 +1154,13 @@ public final class TreeUtils {
     /**
      * Converts the given AnnotationTrees to AnnotationMirrors.
      *
-     * @param annoTreess list of annotation trees to convert to annotation mirrors
+     * @param annoTrees list of annotation trees to convert to annotation mirrors
      * @return list of annotation mirrors that represent the given annotation trees
      */
     public static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
-            List<? extends AnnotationTree> annoTreess) {
-        List<AnnotationMirror> annotations = new ArrayList<>(annoTreess.size());
-        for (AnnotationTree anno : annoTreess) {
+            List<? extends AnnotationTree> annoTrees) {
+        List<AnnotationMirror> annotations = new ArrayList<>(annoTrees.size());
+        for (AnnotationTree anno : annoTrees) {
             annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
         }
         return annotations;
