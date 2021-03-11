@@ -23,12 +23,33 @@ public class FieldAccess extends JavaExpression {
         return field;
     }
 
+    /**
+     * Create a {@code FieldAccess}.
+     *
+     * @param receiver receiver of the field access
+     * @param node FieldAccessNode
+     */
     public FieldAccess(JavaExpression receiver, FieldAccessNode node) {
-        super(node.getType());
-        this.receiver = receiver;
-        this.field = node.getElement();
+        this(receiver, node.getType(), node.getElement());
     }
 
+    /**
+     * Create a {@code FieldAccess}.
+     *
+     * @param receiver receiver of the field access
+     * @param fieldElement element of the field
+     */
+    public FieldAccess(JavaExpression receiver, VariableElement fieldElement) {
+        this(receiver, fieldElement.asType(), fieldElement);
+    }
+
+    /**
+     * Create a {@code FieldAccess}.
+     *
+     * @param receiver receiver of the field access
+     * @param type type of the field
+     * @param fieldElement element of the field
+     */
     public FieldAccess(JavaExpression receiver, TypeMirror type, VariableElement fieldElement) {
         super(type);
         this.receiver = receiver;
