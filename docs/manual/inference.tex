@@ -181,6 +181,7 @@ Here is an explanation of the arguments:
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
+\label{DLJC-ARGS}
 \item[DLJC-ARGS]
   Arguments that are passed directly to
   \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
@@ -285,9 +286,11 @@ A typical invocation is
 wpi-many.sh -o outdir -i /path/to/repo.list -t 7200 -- --checker optional
 \end{Verbatim}
 
-The \<wpi-many.sh> script takes the following command-line arguments, of
-which \<-o> and \<-i> are mandatory, as is the trailing \<-- [DLJC-ARGS]>
-which is as for the \<wpi.sh> script.
+The \<wpi-many.sh> script takes the following command-line arguments.
+The \<-o> and \<-i> arguments are mandatory.
+An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
+\emph{DLJC-ARGS} is documented in Section~\ref{DLJC-ARGS}.
+
 
 \begin{description}
 \item[-o outdir]
