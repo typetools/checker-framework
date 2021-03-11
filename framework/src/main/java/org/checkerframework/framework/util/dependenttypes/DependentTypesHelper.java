@@ -50,9 +50,9 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -295,7 +295,7 @@ public class DependentTypesHelper {
             }
         }
 
-        return CollectionsPlume.mapList(JavaExpression::fromTree, argTrees);
+        return SystemUtil.mapList(JavaExpression::fromTree, argTrees);
     }
 
     /**

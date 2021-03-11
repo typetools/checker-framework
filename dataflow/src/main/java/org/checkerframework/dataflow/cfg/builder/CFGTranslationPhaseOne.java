@@ -169,12 +169,12 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -3105,7 +3105,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         env.getTypeUtils()));
 
         List<Pair<TypeMirror, Label>> catchLabels =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         (CatchTree c) -> {
                             TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
                             assert type != null : "exception parameters must have a type";

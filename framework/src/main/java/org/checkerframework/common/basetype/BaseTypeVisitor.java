@@ -137,7 +137,6 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -791,7 +790,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
 
             List<String> formalParamNames =
-                    CollectionsPlume.mapList(
+                    SystemUtil.mapList(
                             (VariableTree param) -> param.getName().toString(),
                             node.getParameters());
             checkContractsAtMethodDeclaration(
@@ -1521,7 +1520,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         List<AnnotatedTypeParameterBounds> paramBounds =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
 
         ExecutableElement method = invokedMethod.getElement();
@@ -1871,7 +1870,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkVarargs(constructorType, node);
 
         List<AnnotatedTypeParameterBounds> paramBounds =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
 
         checkTypeArguments(
@@ -4255,7 +4254,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ThisReference receiverJe =
                 new ThisReference(methodType.getReceiverType().getUnderlyingType());
         List<JavaExpression> parametersJe =
-                CollectionsPlume.mapList(LocalVariable::new, methodElt.getParameters());
+                SystemUtil.mapList(LocalVariable::new, methodElt.getParameters());
 
         JavaExpressionContext jeContext =
                 new JavaExpressionContext(receiverJe, parametersJe, checker);

@@ -69,10 +69,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -318,7 +318,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Integer> minlens =
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
         List<AnnotationMirror> qualifiers =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         (Integer minlen) ->
                                 createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE),
                         minlens);
@@ -499,7 +499,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     /* package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
-            return CollectionsPlume.mapList(Integer::longValue, getArrayLength(anno));
+            return SystemUtil.mapList(Integer::longValue, getArrayLength(anno));
         } else {
             return getIntValues(anno);
         }

@@ -26,7 +26,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.plumelib.util.CollectionsPlume;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -226,7 +226,7 @@ public class ForwardAnalysisImpl<
     @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-        return CollectionsPlume.mapList(
+        return SystemUtil.mapList(
                 returnNode -> Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
                 cfg.getReturnNodes());
     }
@@ -368,12 +368,12 @@ public class ForwardAnalysisImpl<
         switch (underlyingAST.getKind()) {
             case METHOD:
                 MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-                return CollectionsPlume.mapList(
+                return SystemUtil.mapList(
                         // TODO: document that LocalVariableNode has no block that it belongs to
                         LocalVariableNode::new, tree.getParameters());
             case LAMBDA:
                 LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-                return CollectionsPlume.mapList(
+                return SystemUtil.mapList(
                         // TODO: document that LocalVariableNode has no block that it belongs to
                         LocalVariableNode::new, lambda.getParameters());
             default:

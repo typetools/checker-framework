@@ -35,8 +35,8 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Represents an annotated type in the Java programming language. Types include primitive types,
@@ -917,7 +917,7 @@ public abstract class AnnotatedTypeMirror {
                     typeArgs = Collections.unmodifiableList(ts);
                 } else {
                     List<AnnotatedTypeMirror> uses =
-                            CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
+                            SystemUtil.mapList(AnnotatedTypeMirror::asUse, ts);
                     typeArgs = Collections.unmodifiableList(uses);
                 }
             }
@@ -2118,7 +2118,7 @@ public abstract class AnnotatedTypeMirror {
                 List<? extends TypeMirror> ubounds =
                         ((IntersectionType) underlyingType).getBounds();
                 List<AnnotatedTypeMirror> res =
-                        CollectionsPlume.mapList(
+                        SystemUtil.mapList(
                                 (TypeMirror bnd) -> createType(bnd, atypeFactory, false), ubounds);
                 bounds = Collections.unmodifiableList(res);
                 fixupBoundAnnotations();
@@ -2214,7 +2214,7 @@ public abstract class AnnotatedTypeMirror {
             if (alternatives == null) {
                 List<? extends TypeMirror> ualts = ((UnionType) underlyingType).getAlternatives();
                 List<AnnotatedDeclaredType> res =
-                        CollectionsPlume.mapList(
+                        SystemUtil.mapList(
                                 (TypeMirror alt) ->
                                         (AnnotatedDeclaredType)
                                                 createType(alt, atypeFactory, false),

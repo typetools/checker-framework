@@ -110,13 +110,13 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -602,7 +602,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // If an analysis couldn't be loaded reflectively, return the default.
         List<Pair<VariableElement, CFValue>> tmp =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         (Pair<VariableElement, Value> fieldVal) ->
                                 Pair.of(fieldVal.first, (CFValue) fieldVal.second),
                         fieldValues);

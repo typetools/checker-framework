@@ -3,8 +3,8 @@ package org.checkerframework.common.value.util;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /** Utility routines for manipulating numbers. */
 public class NumberUtils {
@@ -21,19 +21,19 @@ public class NumberUtils {
         }
         switch (typeKind) {
             case BYTE:
-                return CollectionsPlume.mapList(Number::byteValue, numbers);
+                return SystemUtil.mapList(Number::byteValue, numbers);
             case CHAR:
-                return CollectionsPlume.mapList(Number::intValue, numbers);
+                return SystemUtil.mapList(Number::intValue, numbers);
             case DOUBLE:
-                return CollectionsPlume.mapList(Number::doubleValue, numbers);
+                return SystemUtil.mapList(Number::doubleValue, numbers);
             case FLOAT:
-                return CollectionsPlume.mapList(Number::floatValue, numbers);
+                return SystemUtil.mapList(Number::floatValue, numbers);
             case INT:
-                return CollectionsPlume.mapList(Number::intValue, numbers);
+                return SystemUtil.mapList(Number::intValue, numbers);
             case LONG:
-                return CollectionsPlume.mapList(Number::longValue, numbers);
+                return SystemUtil.mapList(Number::longValue, numbers);
             case SHORT:
-                return CollectionsPlume.mapList(Number::shortValue, numbers);
+                return SystemUtil.mapList(Number::shortValue, numbers);
             default:
                 throw new UnsupportedOperationException(typeKind + ": " + type);
         }

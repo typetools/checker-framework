@@ -42,9 +42,9 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
 
 // The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
 // "#1" for formal parameters.  However, there are no special subclasses (AST nodes) for those
@@ -317,9 +317,9 @@ public abstract class JavaExpression {
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
             List<@Nullable JavaExpression> dimensions =
-                    CollectionsPlume.mapList(JavaExpression::fromNode, an.getDimensions());
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getDimensions());
             List<JavaExpression> initializers =
-                    CollectionsPlume.mapList(JavaExpression::fromNode, an.getInitializers());
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getInitializers());
             result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
@@ -332,7 +332,7 @@ public abstract class JavaExpression {
 
             // Note that the method might be nondeterministic.
             List<JavaExpression> parameters =
-                    CollectionsPlume.mapList(JavaExpression::fromNode, mn.getArguments());
+                    SystemUtil.mapList(JavaExpression::fromNode, mn.getArguments());
             JavaExpression methodReceiver;
             if (ElementUtils.isStatic(invokedMethod)) {
                 methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
@@ -404,7 +404,7 @@ public abstract class JavaExpression {
 
                 // Note that the method might be nondeterministic.
                 List<JavaExpression> parameters =
-                        CollectionsPlume.mapList(JavaExpression::fromTree, mn.getArguments());
+                        SystemUtil.mapList(JavaExpression::fromTree, mn.getArguments());
                 JavaExpression methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
                     methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
@@ -569,7 +569,7 @@ public abstract class JavaExpression {
         if (methodTree == null) {
             return null;
         }
-        return CollectionsPlume.mapList(
+        return SystemUtil.mapList(
                 (VariableTree arg) -> fromNode(new LocalVariableNode(arg)),
                 methodTree.getParameters());
     }
