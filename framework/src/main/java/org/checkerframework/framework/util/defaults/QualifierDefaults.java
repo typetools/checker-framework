@@ -82,8 +82,8 @@ public class QualifierDefaults {
     /** Element utilities to use. */
     private final Elements elements;
 
-    /** The value() element/field of a @DefaultQualifier annotation. */
-    protected final ExecutableElement defaultQualifierValueElement;
+    /** The locations() element/field of a @DefaultQualifier annotation. */
+    protected final ExecutableElement defaultQualifierLocationsElement;
 
     /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
@@ -179,10 +179,10 @@ public class QualifierDefaults {
                 atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
                 atypeFactory.getChecker().useConservativeDefault("source");
-        this.defaultQualifierValueElement =
+        this.defaultQualifierLocationsElement =
                 TreeUtils.getMethod(
                         "org.checkerframework.framework.qual.DefaultQualifier",
-                        "value",
+                        "locations",
                         0,
                         atypeFactory.getProcessingEnv());
     }
@@ -556,7 +556,7 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            AnnotationValue av = anno.getElementValues().get(defaultQualifierValueElement);
+            AnnotationValue av = dq.getElementValues().get(defaultQualifierLocationsElement);
             TypeUseLocation[] locations;
             if (av == null) {
                 locations = defaultQualifierValueDefault;
