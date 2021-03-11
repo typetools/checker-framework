@@ -37,8 +37,6 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // load externally declared annotations
         loader = createAnnotationClassLoader();
 
-        Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<>();
-
         String qualNames = checker.getOption("quals");
         String qualDirectories = checker.getOption("qualDirs");
 
@@ -46,6 +44,8 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             throw new UserError(
                     "SubtypingChecker: missing required option. Use -Aquals or -AqualDirs.");
         }
+
+        Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<>();
 
         // load individually named qualifiers
         if (qualNames != null) {

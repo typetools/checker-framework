@@ -84,6 +84,11 @@ public class AddAnnotatedFor {
         IndexFileWriter.write(scene, new PrintWriter(System.out, true));
     }
 
+    /**
+     * Add {@code @AnnotatedFor} annotations to each class in the given scene.
+     *
+     * @param scene an {@code @AnnotatedFor} annotation is added to each class in this scene
+     */
     public static void addAnnotatedFor(AScene scene) {
         for (AClass clazz : new HashSet<>(scene.classes.values())) {
             Set<String> annotatedFor = new HashSet<>();
@@ -100,6 +105,11 @@ public class AddAnnotatedFor {
         }
     }
 
+    /**
+     * This visitor collects the names of all the type systems, one of whose annotations is written.
+     * These need to be the arguments to an {@code AnnotatedFor} annotation on the class, so that
+     * all of the given type systems are run.
+     */
     private static ElementVisitor<Void, Set<String>> annotatedForVisitor =
             new ElementVisitor<Void, Set<String>>() {
                 @Override

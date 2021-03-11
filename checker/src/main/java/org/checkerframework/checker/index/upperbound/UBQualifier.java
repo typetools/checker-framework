@@ -285,6 +285,12 @@ public abstract class UBQualifier {
 
     /** The less-than-length-of qualifier (@LTLengthOf). */
     public static class LessThanLengthOf extends UBQualifier {
+        // There are two representations for sequences and offsets.
+        // In source code, they are represented by two parallel arrays, as in
+        //   @LTLengthOf(value = {"a", "b", "a", "c"}, offset = {"-1", "x", "y", "0"}).
+        // In this implementation, they are represented by a single map; the above would be
+        //   { "a" : {"-1", "y"}, "b" : {"x"}, "c" : {"0"} }
+        // Code in this class transforms from one representation to the other.
         /** Maps from sequence name to offset. */
         private final Map<String, Set<OffsetEquation>> map;
 
@@ -687,14 +693,22 @@ public abstract class UBQualifier {
                 } else if (otherglb != null) {
                     glb.addAll(otherglb);
                 }
-                glbMap.put(sequence, simplifyOffsets(glb));
+                glbMap.put(sequence, removeSmallerInts(glb));
             }
             return new LessThanLengthOf(glbMap);
         }
 
-        /** Keeps only the largest offset equation that is only an int value. */
-        private Set<OffsetEquation> simplifyOffsets(Set<OffsetEquation> offsets) {
-            Set<OffsetEquation> newOff = new HashSet<>();
+        /**
+         * Returns a copy of the argument, but it contains just one offset equation that is an int
+         * value -- the largest one in the argument. Any non-int offset equations appear in the
+         * result. Does not side effect its argument.
+         *
+         * @param offsets a set of offset equations
+         * @return a copy of the argument with just one int value (the largest in the input) and
+         *     arbitrarily many non-ints
+         */
+        private Set<OffsetEquation> removeSmallerInts(Set<OffsetEquation> offsets) {
+            Set<OffsetEquation> newOff = new HashSet<>(offsets.size());
             OffsetEquation literal = null;
             for (OffsetEquation eq : offsets) {
                 if (eq.isInt()) {
@@ -933,7 +947,13 @@ public abstract class UBQualifier {
             return map.keySet();
         }
 
-        /** Generates a new UBQualifer without the given sequence and offset. */
+        /**
+         * Generates a new UBQualifer without the given sequence and offset.
+         *
+         * @param sequence a Java expression representing a string
+         * @param offset an integral offset
+         * @return a new UBQualifer without the given sequence and offset
+         */
         public UBQualifier removeOffset(String sequence, int offset) {
             OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
             List<String> sequences = new ArrayList<>();
