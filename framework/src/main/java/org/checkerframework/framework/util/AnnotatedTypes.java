@@ -222,8 +222,6 @@ public class AnnotatedTypes {
             return;
         }
 
-        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
-
         List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
         Collections.sort(
                 orderedByDestination,
@@ -234,11 +232,16 @@ public class AnnotatedTypes {
                     }
                 });
 
-        final List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+        List<AnnotatedTypeMirror> newTypeArgs;
         if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
+            final List<? extends AnnotatedTypeMirror> subTypeArgs =
+                    declaredSubtype.getTypeArguments();
+            newTypeArgs = new ArrayList<>(orderedByDestination.size());
             for (Pair<Integer, Integer> mapping : orderedByDestination) {
                 newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
             }
+        } else {
+            newTypeArgs = Collections.emptyList();
         }
         declaredAsSuper.setTypeArguments(newTypeArgs);
     }

@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +89,7 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedTypeMirror> defaultAction(AnnotatedTypeMirror t, Void p) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         /**
@@ -111,7 +112,7 @@ class SupertypeFinder {
          */
         @Override
         public List<AnnotatedTypeMirror> visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
+            List<AnnotatedTypeMirror> superTypes = new ArrayList<>(1);
             Set<AnnotationMirror> annotations = type.getAnnotations();
 
             // Find Boxed type
@@ -384,16 +385,12 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedTypeMirror> visitTypeVariable(AnnotatedTypeVariable type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
-            superTypes.add(type.getUpperBound().deepCopy());
-            return superTypes;
+            return Collections.singletonList(type.getUpperBound().deepCopy());
         }
 
         @Override
         public List<AnnotatedTypeMirror> visitWildcard(AnnotatedWildcardType type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
-            superTypes.add(type.getExtendsBound().deepCopy());
-            return superTypes;
+            return Collections.singletonList(type.getExtendsBound().deepCopy());
         }
 
         /**
@@ -428,7 +425,7 @@ class SupertypeFinder {
                     scan(type.getEnclosingType(), mapping);
                 }
 
-                List<AnnotatedTypeMirror> args = new ArrayList<>();
+                List<AnnotatedTypeMirror> args = new ArrayList<>(type.getTypeArguments().size());
                 for (AnnotatedTypeMirror arg : type.getTypeArguments()) {
                     Element elem = types.asElement(arg.getUnderlyingType());
                     if ((elem != null)

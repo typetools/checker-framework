@@ -2339,7 +2339,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (TreeUtils.hasSyntheticArgument(tree)) {
             AnnotatedExecutableType t =
                     (AnnotatedExecutableType) getAnnotatedType(((JCNewClass) tree).constructor);
-            List<AnnotatedTypeMirror> p = new ArrayList<>();
+            List<AnnotatedTypeMirror> p = new ArrayList<>(con.getParameterTypes().size() + 1);
             p.add(t.getParameterTypes().get(0));
             p.addAll(1, con.getParameterTypes());
             t.setParameterTypes(p);
@@ -3929,14 +3929,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotationClass) {
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
-        Set<AnnotationMirror> annotationMirrors = AnnotationUtils.createAnnotationSet();
 
+        Set<AnnotationMirror> annotationMirrors = AnnotationUtils.createAnnotationSet();
         // Consider real annotations.
         annotationMirrors.addAll(getAnnotatedType(element).getAnnotations());
-
         // Consider declaration annotations
         annotationMirrors.addAll(getDeclAnnotations(element));
+
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
 
         // Go through all annotations found.
         for (AnnotationMirror annotation : annotationMirrors) {

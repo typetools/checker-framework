@@ -14,8 +14,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.StringsPlume;
@@ -170,27 +172,6 @@ public class SystemUtil {
     }
 
     /**
-     * Concatenates an element, an array, and an element.
-     *
-     * @param <T> the type of the array elements
-     * @param firstElt the first element
-     * @param array the array
-     * @param lastElt the last elemeent
-     * @return a new array containing first element, the array, and the last element, in that order
-     * @deprecated use PlumeUtil.concat
-     */
-    @Deprecated // 2021-03-10
-    @SuppressWarnings("unchecked")
-    public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
-        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
-        T[] result = Arrays.copyOf(array, array.length + 2);
-        result[0] = firstElt;
-        System.arraycopy(array, 0, result, 1, array.length);
-        result[result.length - 1] = lastElt;
-        return result;
-    }
-
-    /**
      * Concatenates two lists into a new list.
      *
      * @param <T> the type of the list elements
@@ -247,6 +228,25 @@ public class SystemUtil {
         }
         sj.add(conjunction + " " + elements.get(size - 1));
         return sj.toString();
+    }
+
+    /**
+     * Applies the function to each element of the given collection, producing a list of the
+     * results.
+     *
+     * <p>The point of this method is to make mapping operations more concise. Import it with
+     *
+     * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
+     *
+     * @param <FROM> the type of elements of the given collection
+     * @param <TO> the type of elements of the result list
+     * @param f a function
+     * @param c a collection
+     * @return a list of the results of applying {@code f} to the elements of {@code list}
+     */
+    public static <FROM, TO> List<TO> mapList(
+            Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
+        return c.stream().map(f).collect(Collectors.toList());
     }
 
     ///
@@ -353,5 +353,26 @@ public class SystemUtil {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * Concatenates an element, an array, and an element.
+     *
+     * @param <T> the type of the array elements
+     * @param firstElt the first element
+     * @param array the array
+     * @param lastElt the last elemeent
+     * @return a new array containing first element, the array, and the last element, in that order
+     * @deprecated use PlumeUtil.concat
+     */
+    @Deprecated // 2021-03-10
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
+        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
+        T[] result = Arrays.copyOf(array, array.length + 2);
+        result[0] = firstElt;
+        System.arraycopy(array, 0, result, 1, array.length);
+        result[result.length - 1] = lastElt;
+        return result;
     }
 }

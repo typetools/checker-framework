@@ -114,6 +114,7 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
         Map<? extends ExecutableElement, ? extends AnnotationValue> valMap =
                 anno.getElementValues();
         if (valMap.isEmpty()) {
+            // result is mutable
             return new ArrayList<>();
         } else {
             return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
