@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;

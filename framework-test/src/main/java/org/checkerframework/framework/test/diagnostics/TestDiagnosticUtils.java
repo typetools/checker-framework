@@ -14,6 +14,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
