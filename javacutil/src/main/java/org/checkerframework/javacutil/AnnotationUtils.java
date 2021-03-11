@@ -644,6 +644,10 @@ public class AnnotationUtils {
                         am1.getAnnotationType().asElement().getEnclosedElements())) {
             AnnotationValue aval1 = vals1.get(meth);
             AnnotationValue aval2 = vals2.get(meth);
+            if (aval1 == aval2) {
+                // Handles when both aval1 and aval2 are null, and maybe other cases too.
+                continue;
+            }
             if (aval1 == null) {
                 aval1 = meth.getDefaultValue();
             }
