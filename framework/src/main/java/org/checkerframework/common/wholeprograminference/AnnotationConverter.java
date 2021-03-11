@@ -64,7 +64,7 @@ public class AnnotationConverter {
             Object value = values.get(ee).getValue();
             if (value instanceof List) {
                 // If we have a List here, then it is a List of AnnotationValue.
-                // Convert each AnnotationValue to its respective Java type:
+                // Convert each AnnotationValue to its respective Java type.
                 @SuppressWarnings("unchecked")
                 List<AnnotationValue> valueList = (List<AnnotationValue>) value;
                 List<Object> newList =

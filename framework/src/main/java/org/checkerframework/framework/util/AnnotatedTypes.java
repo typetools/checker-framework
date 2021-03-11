@@ -559,8 +559,8 @@ public class AnnotatedTypes {
                             "baseType=" + base));
         }
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
-            // If base type was raw and the type arguments are missing, set them to the erased type
-            // of the type variable (which is the erased type of the upper bound).
+            // If base type was raw and the type arguments are missing, set them to the erased
+            // type of the type variable (which is the erased type of the upper bound).
             baseParams = CollectionsPlume.mapList(AnnotatedTypeVariable::getErased, ownerParams);
         }
 

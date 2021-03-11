@@ -348,7 +348,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * contents are {@code NegativeArraySizeException} and {@code OutOfMemoryError}. This list comes
      * from JLS 15.10.1 "Run-Time Evaluation of Array Creation Expressions".
      */
-    final Set<TypeMirror> newArrayExceptionTypes;;
+    final Set<TypeMirror> newArrayExceptionTypes;
 
     /**
      * @param treeBuilder builder for new AST nodes
