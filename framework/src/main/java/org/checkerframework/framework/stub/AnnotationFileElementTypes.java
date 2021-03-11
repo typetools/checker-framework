@@ -324,14 +324,13 @@ public class AnnotationFileElementTypes {
                                         + " on classpath or within "
                                         + parentPathDescription
                                         + (fullPath.equals(path) ? "" : (" or at " + fullPath));
-                        List<String> lines = new ArrayList<>();
-                        lines.add(msg);
-                        lines.add("Classpath:");
+                        StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
+                        sj.add(msg);
+                        sj.add("Classpath:");
                         for (URI uri : new ClassGraph().getClasspathURIs()) {
-                            lines.add(uri.toString());
+                            sj.add(uri.toString());
                         }
-                        checker.message(
-                                Kind.WARNING, String.join(System.lineSeparator() + "  ", lines));
+                        checker.message(Kind.WARNING, sj.toString());
                     }
                 }
             }

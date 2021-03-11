@@ -10,9 +10,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.StringsPlume;
@@ -22,89 +27,6 @@ public class SystemUtil {
 
     /** The system-specific line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator();
-
-    /**
-     * Return a list of Strings, one per line of the file.
-     *
-     * @param argFile argument file
-     * @return a list of Strings, one per line of the file
-     * @throws IOException when reading the argFile
-     */
-    public static List<String> readFile(final File argFile) throws IOException {
-        final BufferedReader br = new BufferedReader(new FileReader(argFile));
-        String line;
-
-        List<String> lines = new ArrayList<>();
-        while ((line = br.readLine()) != null) {
-            lines.add(line);
-        }
-        br.close();
-        return lines;
-    }
-
-    /**
-     * Returns a new String composed of the string representations of the elements joined together
-     * with a copy of the specified delimiter.
-     *
-     * @param <T> the type of array elements
-     * @param delimiter the delimiter that separates each element
-     * @param objs the values whose string representations to join together
-     * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@code StringsPlume.join}
-     */
-    @Deprecated // use StringsPlume.join
-    public static <T> String join(CharSequence delimiter, T[] objs) {
-        if (objs == null) {
-            return "null";
-        }
-        return StringsPlume.join(delimiter, objs);
-    }
-
-    /**
-     * Returns a new String composed of the string representations of the elements joined together
-     * with a copy of the specified delimiter.
-     *
-     * @param delimiter the delimiter that separates each element
-     * @param values the values whose string representations to join together
-     * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@code StringsPlume.join}
-     */
-    @Deprecated // use StringsPlume.join
-    public static String join(CharSequence delimiter, Iterable<?> values) {
-        if (values == null) {
-            return "null";
-        }
-        return StringsPlume.join(delimiter, values);
-    }
-
-    /**
-     * Concatenate the string representations of the objects, placing the system-specific line
-     * separator between them.
-     *
-     * @param <T> the type of array elements
-     * @param a array of values to concatenate
-     * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@code StringsPlume.joinLines}
-     */
-    @Deprecated // use StringsPlume.joinLines
-    @SafeVarargs
-    @SuppressWarnings("varargs")
-    public static <T> String joinLines(T... a) {
-        return join(LINE_SEPARATOR, a);
-    }
-
-    /**
-     * Concatenate the string representations of the objects, placing the system-specific line
-     * separator between them.
-     *
-     * @param v list of values to concatenate
-     * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@code StringsPlume.joinLines}
-     */
-    @Deprecated // use StringsPlume.joinLines
-    public static String joinLines(Iterable<? extends Object> v) {
-        return join(LINE_SEPARATOR, v);
-    }
 
     /**
      * Return true if the system property is set to "true". Return false if the system property is
@@ -250,22 +172,170 @@ public class SystemUtil {
     }
 
     /**
-     * Concatenates an element, an array, and an element.
+     * Concatenates two lists into a new list.
      *
-     * @param <T> the type of the array elements
-     * @param firstElt the first element
-     * @param array the array
-     * @param lastElt the last elemeent
-     * @return a new array containing first element, the array, and the last element, in that order
+     * @param <T> the type of the list elements
+     * @param list1 the first list
+     * @param list2 the second list
+     * @return a new list containing the contents of the given lists, in order
      */
     @SuppressWarnings("unchecked")
-    public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
-        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
-        T[] result = Arrays.copyOf(array, array.length + 2);
-        result[0] = firstElt;
-        System.arraycopy(array, 0, result, 1, array.length);
-        result[result.length - 1] = lastElt;
+    public static <T> List<T> concatenate(Collection<T> list1, Collection<T> list2) {
+        List<T> result = new ArrayList<>(list1.size() + list2.size());
+        result.addAll(list1);
+        result.addAll(list2);
         return result;
+    }
+
+    /**
+     * Concatenates a list and an element into a new list.
+     *
+     * @param <T> the type of the list elements
+     * @param list the list
+     * @param lastElt the new last elemeent
+     * @return a new list containing the list elements and the last element, in that order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> append(Collection<T> list, T lastElt) {
+        List<T> result = new ArrayList<>(list.size() + 1);
+        result.addAll(list);
+        result.add(lastElt);
+        return result;
+    }
+
+    /**
+     * Creates a conjunction or disjunction, like "a", "a or b", and "a, b, or c". Obeys the "serial
+     * comma" or "Oxford comma" rule and puts a comma after every element when the list has size 3
+     * or larger.
+     *
+     * @param conjunction the conjunction word, like "and" or "or"
+     * @param elements the elements of the conjunction or disjunction
+     * @return a conjunction or disjunction string
+     */
+    public static String conjunction(String conjunction, List<?> elements) {
+        int size = elements.size();
+        if (size == 0) {
+            throw new IllegalArgumentException("no elements passed to conjunction()");
+        } else if (size == 1) {
+            return Objects.toString(elements.get(0));
+        } else if (size == 2) {
+            return elements.get(0) + " " + conjunction + " " + elements.get(1);
+        }
+
+        StringJoiner sj = new StringJoiner(", ");
+        for (int i = 0; i < size - 1; i++) {
+            sj.add(Objects.toString(elements.get(i)));
+        }
+        sj.add(conjunction + " " + elements.get(size - 1));
+        return sj.toString();
+    }
+
+    /**
+     * Applies the function to each element of the given collection, producing a list of the
+     * results.
+     *
+     * <p>The point of this method is to make mapping operations more concise. Import it with
+     *
+     * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
+     *
+     * @param <FROM> the type of elements of the given collection
+     * @param <TO> the type of elements of the result list
+     * @param f a function
+     * @param c a collection
+     * @return a list of the results of applying {@code f} to the elements of {@code list}
+     */
+    public static <FROM, TO> List<TO> mapList(
+            Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
+        return c.stream().map(f).collect(Collectors.toList());
+    }
+
+    ///
+    /// Deprecated methods
+    ///
+
+    /**
+     * Return a list of Strings, one per line of the file.
+     *
+     * @param argFile argument file
+     * @return a list of Strings, one per line of the file
+     * @throws IOException when reading the argFile
+     * @deprecated use Files.readAllLines
+     */
+    @Deprecated // 2021-03-10
+    public static List<String> readFile(final File argFile) throws IOException {
+        final BufferedReader br = new BufferedReader(new FileReader(argFile));
+        String line;
+
+        List<String> lines = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            lines.add(line);
+        }
+        br.close();
+        return lines;
+    }
+
+    /**
+     * Returns a new String composed of the string representations of the elements joined together
+     * with a copy of the specified delimiter.
+     *
+     * @param <T> the type of array elements
+     * @param delimiter the delimiter that separates each element
+     * @param objs the values whose string representations to join together
+     * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code StringsPlume.join}
+     */
+    @Deprecated // 2020-12-19
+    public static <T> String join(CharSequence delimiter, T[] objs) {
+        if (objs == null) {
+            return "null";
+        }
+        return StringsPlume.join(delimiter, objs);
+    }
+
+    /**
+     * Returns a new String composed of the string representations of the elements joined together
+     * with a copy of the specified delimiter.
+     *
+     * @param delimiter the delimiter that separates each element
+     * @param values the values whose string representations to join together
+     * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code StringsPlume.join}
+     */
+    @Deprecated // 2020-12-19
+    public static String join(CharSequence delimiter, Iterable<?> values) {
+        if (values == null) {
+            return "null";
+        }
+        return StringsPlume.join(delimiter, values);
+    }
+
+    /**
+     * Concatenate the string representations of the objects, placing the system-specific line
+     * separator between them.
+     *
+     * @param <T> the type of array elements
+     * @param a array of values to concatenate
+     * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code StringsPlume.joinLines}
+     */
+    @Deprecated // 2020-12-19
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    public static <T> String joinLines(T... a) {
+        return join(LINE_SEPARATOR, a);
+    }
+
+    /**
+     * Concatenate the string representations of the objects, placing the system-specific line
+     * separator between them.
+     *
+     * @param v list of values to concatenate
+     * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code StringsPlume.joinLines}
+     */
+    @Deprecated // 2020-12-19
+    public static String joinLines(Iterable<? extends Object> v) {
+        return join(LINE_SEPARATOR, v);
     }
 
     /**
@@ -274,12 +344,35 @@ public class SystemUtil {
      * specified number of milliseconds.
      *
      * @param millis the length of time to sleep in milliseconds
+     * @deprecated use SystemPlume.sleep
      */
+    @Deprecated // 2021-03-10
     public static void sleep(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * Concatenates an element, an array, and an element.
+     *
+     * @param <T> the type of the array elements
+     * @param firstElt the first element
+     * @param array the array
+     * @param lastElt the last elemeent
+     * @return a new array containing first element, the array, and the last element, in that order
+     * @deprecated use PlumeUtil.concat
+     */
+    @Deprecated // 2021-03-10
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
+        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
+        T[] result = Arrays.copyOf(array, array.length + 2);
+        result[0] = firstElt;
+        System.arraycopy(array, 0, result, 1, array.length);
+        result[result.length - 1] = lastElt;
+        return result;
     }
 }

@@ -106,6 +106,10 @@ public class AnnotationClassLoader {
      */
     private final Set<Class<? extends Annotation>> supportedBundledAnnotationClasses;
 
+    /** The package separator: ".". */
+    private static final Pattern DOT_LITERAL_PATTERN =
+            Pattern.compile(Character.toString(DOT), Pattern.LITERAL);
+
     /**
      * Constructor for loading annotations defined for a checker.
      *
@@ -136,9 +140,7 @@ public class AnnotationClassLoader {
         // from the fully qualified package name, split it at every dot then add
         // to the list
         fullyQualifiedPackageNameSegments.addAll(
-                Arrays.asList(
-                        Pattern.compile(Character.toString(DOT), Pattern.LITERAL)
-                                .split(packageName)));
+                Arrays.asList(DOT_LITERAL_PATTERN.split(packageName)));
 
         classLoader = getClassLoader();
 

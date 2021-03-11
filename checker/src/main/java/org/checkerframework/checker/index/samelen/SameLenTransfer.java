@@ -177,6 +177,10 @@ public class SameLenTransfer extends CFTransfer {
     /**
      * Handles refinement of equality comparisons. Assumes "a == b" or "a.length == b.length"
      * evaluates to true. The method gives a and b SameLen of each other in the store.
+     *
+     * @param left the first argument to the equality operator
+     * @param right the second argument to the equality operator
+     * @param store the store in which to perform refinement
      */
     private void refineEq(Node left, Node right, CFStore store) {
         List<JavaExpression> exprs = new ArrayList<>();
