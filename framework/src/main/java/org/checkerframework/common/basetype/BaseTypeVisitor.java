@@ -60,8 +60,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -976,10 +974,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Matches warnings about use of formal parameter name. */
-    public static final Pattern FORMAL_PARAM_NAME_WARNING_PATTERN =
-            Pattern.compile(
-                    "^.*'([a-zA-Z_$][a-zA-Z0-9_$]*)' because Use \"#(\\d+)\" rather than \"\\1\"$");
     /**
      * Check the contracts written on a method declaration. Ensures that the postconditions hold on
      * exit, and that the contracts are well-formed.
@@ -1016,26 +1010,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             try {
                 exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
-
-                Matcher m =
-                        FORMAL_PARAM_NAME_WARNING_PATTERN.matcher(
-                                e.getDiagMessage().getArgs()[0].toString());
-                if (m.matches()) {
-                    String locationOfExpression =
-                            contract.kind.errorKey
-                                    + " "
-                                    + contract.contractAnnotation
+                DiagMessage diagMessage = e.getDiagMessage();
+                if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
+                    String s =
+                            String.format(
+                                    "'%s' in the %s %s on the declaration of method '%s': ",
+                                    expressionString,
+                                    contract.kind.errorKey,
+                                    contract.contractAnnotation
                                             .getAnnotationType()
                                             .asElement()
-                                            .getSimpleName()
-                                    + " on the declaration";
+                                            .getSimpleName(),
+                                    methodTree.getName().toString());
                     checker.reportError(
-                            methodTree,
-                            "expression.parameter.name.invalid",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            m.group(1),
-                            m.group(2));
+                            methodTree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
                 } else {
                     checker.report(methodTree, e.getDiagMessage());
                 }
