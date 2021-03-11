@@ -1195,6 +1195,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * annotation so the argument is null.
      *
      * @param intAnno an {@code @IntVal} annotation, or null
+     * @return the values represented by the given {@code @IntVal} annotation
      */
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {

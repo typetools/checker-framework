@@ -338,10 +338,17 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     final TypeMirror throwableType;
 
     /**
-     * Supertypes of all unchecked exceptions. The contents are {@code RuntimeException} and {@code
-     * Error}.
+     * Supertypes of all unchecked exceptions. The size is 2 and the contents are {@code
+     * RuntimeException} and {@code Error}.
      */
     final Set<TypeMirror> uncheckedExceptionTypes;
+
+    /**
+     * Exceptions that can be thrown by array creation "new SomeType[]". The size is 2 and the
+     * contents are {@code NegativeArraySizeException} and {@code OutOfMemoryError}. This list comes
+     * from JLS 15.10.1 "Run-Time Evaluation of Array Creation Expressions".
+     */
+    final Set<TypeMirror> newArrayExceptionTypes;
 
     /**
      * @param treeBuilder builder for new AST nodes
@@ -402,6 +409,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         uncheckedExceptionTypes = new LinkedHashSet<>();
         uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
         uncheckedExceptionTypes.add(getTypeMirror(Error.class));
+        newArrayExceptionTypes = new LinkedHashSet<>(2);
+        newArrayExceptionTypes.add(negativeArraySizeExceptionType);
+        newArrayExceptionTypes.add(outOfMemoryErrorType);
     }
 
     /**
@@ -1132,10 +1142,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         // this method first determines which conversions need to be applied
         // and then iterates over the actual arguments.
         List<? extends VariableElement> formals = method.getParameters();
+        int numFormals = formals.size();
 
         ArrayList<Node> convertedNodes = new ArrayList<>();
 
-        int numFormals = formals.size();
         int numActuals = actualExprs.size();
         if (method.isVarArgs()) {
             // Create a new array argument if the actuals outnumber
@@ -2915,13 +2925,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
 
-        Set<TypeMirror> thrownSet = new HashSet<>();
-        // List of exceptions comes from JLS 15.10.1 "Run-Time Evaluation of Array Creation
-        // Expressions".
-        thrownSet.add(negativeArraySizeExceptionType);
-        thrownSet.add(outOfMemoryErrorType);
-
-        extendWithNodeWithExceptions(node, thrownSet);
+        extendWithNodeWithExceptions(node, newArrayExceptionTypes);
         return node;
     }
 
@@ -2951,9 +2955,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
 
+        List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
         Set<TypeMirror> thrownSet = new HashSet<>();
         // Add exceptions explicitly mentioned in the throws clause.
-        List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
         thrownSet.addAll(thrownTypes);
         // Add types to account for unchecked exceptions
         thrownSet.addAll(uncheckedExceptionTypes);

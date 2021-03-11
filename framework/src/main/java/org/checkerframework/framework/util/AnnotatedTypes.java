@@ -222,8 +222,6 @@ public class AnnotatedTypes {
             return;
         }
 
-        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
-
         List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
         Collections.sort(
                 orderedByDestination,
@@ -234,8 +232,10 @@ public class AnnotatedTypes {
                     }
                 });
 
-        final List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
         if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
+            final List<? extends AnnotatedTypeMirror> subTypeArgs =
+                    declaredSubtype.getTypeArguments();
             for (Pair<Integer, Integer> mapping : orderedByDestination) {
                 newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
             }
@@ -556,8 +556,8 @@ public class AnnotatedTypes {
                             "baseType=" + base));
         }
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
-            // If base type was raw and the type arguments are missing, set them to the erased type
-            // of the type variable (which is the erased type of the upper bound).
+            // If base type was raw and the type arguments are missing, set them to the erased
+            // type of the type variable (which is the erased type of the upper bound).
             baseParams = CollectionsPlume.mapList(AnnotatedTypeVariable::getErased, ownerParams);
         }
 
