@@ -567,7 +567,8 @@ public class JavaExpressionParseUtil {
                 Element classElem = fieldElem.getEnclosingElement();
                 JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
                 return new FieldAccess(staticClassReceiver, fieldElem);
-            } else if (receiverExpr instanceof ClassName) {
+            }
+            if (receiverExpr instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
                                 fieldElem.getSimpleName().toString(),
