@@ -36,6 +36,8 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
     public List<@PolyNull JavaExpression> convert(List<@PolyNull JavaExpression> list) {
         return SystemUtil.mapList(
                 (@PolyNull JavaExpression expression) -> {
+                    // Can't use a ternary operator because of:
+                    // https://github.com/typetools/checker-framework/issues/1170
                     if (expression == null) {
                         return null;
                     }
