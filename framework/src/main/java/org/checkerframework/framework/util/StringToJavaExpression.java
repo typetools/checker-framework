@@ -30,19 +30,16 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
-// TODO: Regarding "static methods that convert", the first several are documented as "parses",
-// which implies no conversion.
-// TODO: Is there any transformation of interest other than viewpoint-adaptation?  Giving at least
-// that example will make the documentation more concrete and therefore easier to understand.  The
-// same comment applies to later documentation that mentions transformation.
-// TODO: Does "parsing at a location" inherently include transformation?
 /**
  * This interface is both a functional interface, see {@link #toJavaExpression(String)}, and also a
  * collection of static methods that convert a string to a JavaExpression at common locations.
- * Conversion includes parsing {@code stringExpr} to a {@code JavaExpression} and optionally
- * transforming the result of parsing into another {@code JavaExpression}. To parse a string "at a
- * location" means to parse it as if it were written in an annotation that is written on that
- * location.
+ *
+ * <p>Some conversion routines merely do parsing. Other conversion routines parse and then
+ * transforming the result of parsing into another {@code JavaExpression}; for all the static
+ * methods, the transformation is viewpoint-adaptation.
+ *
+ * <p>To parse a string "at a location" means to parse it as if it were written in an annotation
+ * that is written on that location.
  */
 @FunctionalInterface
 public interface StringToJavaExpression {
