@@ -187,12 +187,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * <p>This method is protected so it can be overridden, but it should only be called internally
      * by the BaseTypeChecker.
      *
-     * <p>The BaseTypeChecker will not modify the list returned by this method.
+     * <p>The BaseTypeChecker will not modify the list returned by this method, but other clients do
+     * modify the list.
+     *
+     * @return the subchecker classes on which this checker depends
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         if (shouldResolveReflection()) {
             return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
         }
+        // The returned set will be modified by callees.
         return new LinkedHashSet<>();
     }
 
@@ -475,6 +479,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
             treePathCacher = new TreePathCacher();
         }
         return treePathCacher;
+    }
+
+    @Override
+    protected void reportJavacError(TreePath p) {
+        if (parentChecker == null) {
+            // Only the parent checker should report the "type.checking.not.run" error.
+            super.reportJavacError(p);
+        }
     }
 
     // AbstractTypeProcessor delegation

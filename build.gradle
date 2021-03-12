@@ -81,6 +81,7 @@ task setLocalRepo(type:Exec) {
     }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
@@ -267,11 +268,12 @@ allprojects {
     }
 }
 
-task cloneAndBuildDependencies(type: Exec) {
+task cloneAndBuildDependencies(type: Exec, group: 'Build') {
     description 'Clones (or updates) and builds all dependencies'
     executable 'checker/bin-devel/build.sh'
 }
 task maybeCloneAndBuildDependencies(type: Exec) {
+    // No group so it does not show up in the output of `gradlew tasks`
     description 'Clones (or updates) and builds all dependencies if they are not present.'
     onlyIf {
         !file(stubparserJar).exists()
@@ -281,7 +283,7 @@ task maybeCloneAndBuildDependencies(type: Exec) {
     executable 'checker/bin-devel/build.sh'
 }
 
-task version() {
+task version(group: 'Documentation') {
     description 'Print Checker Framework version'
     doLast {
         println version
@@ -401,7 +403,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 //   It's needed to create the Javadoc jars that we release in Maven Central.
 // To make javadoc for only one subproject, run `./gradlew javadoc`
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
-task allJavadoc(type: Javadoc, group: "Documentation") {
+task allJavadoc(type: Javadoc, group: 'Documentation') {
     description = 'Generates API documentation that includes all the modules.'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
@@ -442,7 +444,7 @@ configurations {
 dependencies {
     requireJavadoc "org.plumelib:require-javadoc:1.0.1"
 }
-task requireJavadoc(type: JavaExec) {
+task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
@@ -482,7 +484,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-task manual {
+task manual(group: 'Documentation') {
     description 'Build the manual'
     doLast {
         exec {
@@ -491,6 +493,7 @@ task manual {
     }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
@@ -512,6 +515,7 @@ task downloadJtreg(type: Download) {
 }
 
 // See alternate implementation getCodeFormatScriptsInGradle below.
+// No group so it does not show up in the output of `gradlew tasks`
 task getCodeFormatScripts() {
     description 'Obtain or update the run-google-java-format scripts'
     if (file(formatScriptsHome).exists()) {
@@ -531,7 +535,8 @@ task getCodeFormatScripts() {
 }
 
 // This implementation is preferable to the above because it does work in Gradle rather than in bash.
-// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97
+// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97 .
+// No group so it does not show up in the output of `gradlew tasks`
 task getCodeFormatScriptsInGradle {
   description "Obtain the run-google-java-format scripts"
   doLast {
@@ -546,6 +551,7 @@ task getCodeFormatScriptsInGradle {
   }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task getPlumeScripts() {
     description 'Obtain or update plume-scripts'
     if (file(plumeScriptsHome).exists()) {
@@ -564,6 +570,7 @@ task getPlumeScripts() {
     }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task getHtmlTools() {
     description 'Obtain or update html-tools'
     if (file(htmlToolsHome).exists()) {
@@ -582,6 +589,7 @@ task getHtmlTools() {
     }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
   description "Check that the python3 executable is installed."
   executable = "python3"
@@ -589,6 +597,7 @@ task pythonIsInstalled(type: Exec) {
 }
 
 task tags {
+    group 'Emacs'
     description 'Create Emacs TAGS table'
     doLast {
         exec {
@@ -1026,7 +1035,7 @@ task checkBasicStyle(group: 'Format') {
     }
 }
 assemble.mustRunAfter(clean)
-task buildAll {
+task buildAll(group: 'Build') {
     description 'Build all jar files, including source and javadoc jars'
     dependsOn(allJavadoc)
     subprojects { Project subproject ->
@@ -1037,7 +1046,7 @@ task buildAll {
     dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar')
 }
 
-task releaseBuild {
+task releaseBuild(group: 'Build') {
     description 'Build everything required for a release'
     dependsOn(clean)
     doFirst {
@@ -1047,6 +1056,7 @@ task releaseBuild {
     finalizedBy(buildAll)
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task releaseAndTest {
     description 'Build everything required for a release and run allTests'
     dependsOn(releaseBuild)

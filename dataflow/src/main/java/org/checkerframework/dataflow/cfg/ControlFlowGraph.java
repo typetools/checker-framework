@@ -186,6 +186,7 @@ public class ControlFlowGraph implements UniqueId {
     public Set<Block> getAllBlocks(
             @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
+        // worklist is always a subset of visited; any block in worklist is also in visited.
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
         visited.add(entryBlock);
@@ -196,9 +197,7 @@ public class ControlFlowGraph implements UniqueId {
                 break;
             }
 
-            Collection<Block> succs = cur.getSuccessors();
-
-            for (Block b : succs) {
+            for (Block b : cur.getSuccessors()) {
                 if (!visited.contains(b)) {
                     visited.add(b);
                     worklist.add(b);
@@ -235,6 +234,7 @@ public class ControlFlowGraph implements UniqueId {
     public List<Block> getDepthFirstOrderedBlocks() {
         List<Block> dfsOrderResult = new ArrayList<>();
         Set<Block> visited = new HashSet<>();
+        // worklist can contain values that are not yet in visited.
         Deque<Block> worklist = new ArrayDeque<>();
         worklist.add(entryBlock);
         while (!worklist.isEmpty()) {
