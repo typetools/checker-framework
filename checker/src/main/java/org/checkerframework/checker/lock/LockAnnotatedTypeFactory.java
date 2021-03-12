@@ -718,7 +718,7 @@ public class LockAnnotatedTypeFactory
         List<String> lockExpressions;
         if (value instanceof List) {
             lockExpressions =
-                    AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         } else if (value instanceof String) {
             lockExpressions = Collections.singletonList((String) value);
         } else {

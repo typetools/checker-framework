@@ -255,7 +255,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
             if (anm != null) {
                 List<String> sequences =
-                        AnnotationUtils.getElementValueArray(anm, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(anm, "value", String.class, false);
                 List<String> offsets =
                         AnnotationUtils.getElementValueArray(anm, "offset", String.class, true);
                 if (sequences != null

@@ -181,6 +181,7 @@ Here is an explanation of the arguments:
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
+\label{DLJC-ARGS}
 \item[DLJC-ARGS]
   Arguments that are passed directly to
   \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
@@ -251,7 +252,7 @@ pairs.
 Framework, use \<wpi-many.sh> directly.
 \item If you are using a checker that is not distributed with the Checker
 Framework (also known as a "custom checker"), file
-\<custom-checker-example.sh> is a no-arguments
+\<docs/examples/wpi-many/wpi-many-custom-checker-example.sh> is a no-arguments
 script that serves as an example of how to use \<wpi-many.sh>.
 \end{itemize}
 
@@ -279,8 +280,17 @@ the original.
 
 \end{enumerate}
 
-The \<wpi-many.sh> script takes the following command-line arguments, of
-which \<-o> and \<-i> are mandatory:
+A typical invocation is
+
+\begin{Verbatim}
+wpi-many.sh -o outdir -i /path/to/repo.list -t 7200 -- --checker optional
+\end{Verbatim}
+
+The \<wpi-many.sh> script takes the following command-line arguments.
+The \<-o> and \<-i> arguments are mandatory.
+An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
+\emph{DLJC-ARGS} is documented in Section~\ref{DLJC-ARGS}.
+
 
 \begin{description}
 \item[-o outdir]
@@ -321,6 +331,14 @@ which \<-o> and \<-i> are mandatory:
   project (i.e. each target project has its own Gradle home). This default
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
+
+\item[-s]
+  If this flag is present, then projects which are not buildable --- for which
+  no supported build file is present or for which running the standard build
+  commands fail --- are skipped on future runs but are NOT deleted immediately
+  (such projects are deleted immediately if this flag is not present). This flag is useful
+  if you intend to run \<wpi-many.sh> several times on the same set of repositories
+  (for example, during checker development), to avoid re-downloading unusable projects.
 
 \end{description}
 
