@@ -33,8 +33,8 @@ public class OffsetEquation {
     private String error = null;
 
     private OffsetEquation() {
-        addedTerms = new ArrayList<>();
-        subtractedTerms = new ArrayList<>();
+        addedTerms = new ArrayList<>(1);
+        subtractedTerms = new ArrayList<>(1);
     }
 
     private OffsetEquation(OffsetEquation other) {
