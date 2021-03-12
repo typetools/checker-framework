@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -259,7 +260,8 @@ public class SystemUtil {
      * @return an array consisting of n copies of the specified object
      */
     public static <T> T[] nCopies(int n, T o) {
-        T[] result = (E[]) Array.newInstance(o.getClass(), capacity);
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) Array.newInstance(o.getClass(), n);
         Arrays.fill(result, o);
         return result;
     }
