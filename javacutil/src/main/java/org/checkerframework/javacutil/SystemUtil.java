@@ -249,6 +249,21 @@ public class SystemUtil {
         return c.stream().map(f).collect(Collectors.toList());
     }
 
+    /**
+     * Returns an array consisting of n copies of the specified object.
+     *
+     * @param <T> the class of the object to copy. The returned array's element type is the
+     *     <em>run-time</em> type of {@code o}.
+     * @param n the number of elements in the returned array
+     * @param o the element to appear repeatedly in the returned array
+     * @return an array consisting of n copies of the specified object
+     */
+    public static <T> T[] nCopies(int n, T o) {
+        T[] result = (E[]) Array.newInstance(o.getClass(), capacity);
+        Arrays.fill(result, o);
+        return result;
+    }
+
     ///
     /// Deprecated methods
     ///
