@@ -85,7 +85,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         methodValAnno, "className", String.class, true);
         List<Integer> params =
                 AnnotationUtils.getElementValueArrayList(
-                        methodValAnno, "params", Integer.class, true);
+                        methodValAnno, "params", Integer.class, false);
         List<MethodSignature> list = new ArrayList<>(methodNames.size());
         for (int i = 0; i < methodNames.size(); i++) {
             list.add(new MethodSignature(classNames.get(i), methodNames.get(i), params.get(i)));
@@ -132,14 +132,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (classValAnno != null) {
             classNames =
                     AnnotationUtils.getElementValueArrayList(
-                            classValAnno, "value", String.class, true);
+                            classValAnno, "value", String.class, false);
         } else if (!mustBeExact) {
             // Could be ClassBound instead of ClassVal
             AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
             if (classBoundAnno != null) {
                 classNames =
                         AnnotationUtils.getElementValueArrayList(
-                                classBoundAnno, "value", String.class, true);
+                                classBoundAnno, "value", String.class, false);
             }
         }
         return classNames;
@@ -159,7 +159,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (annotation != null) {
             methodNames =
                     AnnotationUtils.getElementValueArrayList(
-                            annotation, "value", String.class, true);
+                            annotation, "value", String.class, false);
         }
         return methodNames;
     }

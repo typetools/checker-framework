@@ -314,10 +314,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<String> fields =
                 AnnotationUtils.getElementValueArrayList(
-                        fieldInvarAnno, "field", String.class, true);
+                        fieldInvarAnno, "field", String.class, false);
         List<Integer> minlens =
                 AnnotationUtils.getElementValueArrayList(
-                        fieldInvarAnno, "minLen", Integer.class, true);
+                        fieldInvarAnno, "minLen", Integer.class, false);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Integer minlen : minlens) {
             qualifiers.add(createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE));
@@ -1154,7 +1154,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Long> list =
-                AnnotationUtils.getElementValueArrayList(intAnno, "value", Long.class, true);
+                AnnotationUtils.getElementValueArrayList(intAnno, "value", Long.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1172,7 +1172,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Double> list =
-                AnnotationUtils.getElementValueArrayList(doubleAnno, "value", Double.class, true);
+                AnnotationUtils.getElementValueArrayList(doubleAnno, "value", Double.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1190,7 +1190,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Integer> list =
-                AnnotationUtils.getElementValueArrayList(arrayAnno, "value", Integer.class, true);
+                AnnotationUtils.getElementValueArrayList(arrayAnno, "value", Integer.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1209,7 +1209,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return new ArrayList<>();
         }
         List<Long> intValues =
-                AnnotationUtils.getElementValueArrayList(intAnno, "value", Long.class, true);
+                AnnotationUtils.getElementValueArrayList(intAnno, "value", Long.class, false);
         TreeSet<Character> charValues = new TreeSet<>();
         for (Long i : intValues) {
             charValues.add((char) i.intValue());
@@ -1230,7 +1230,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Boolean> boolValues =
-                AnnotationUtils.getElementValueArrayList(boolAnno, "value", Boolean.class, true);
+                AnnotationUtils.getElementValueArrayList(boolAnno, "value", Boolean.class, false);
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() == 1) {
             return boolSet.iterator().next();
@@ -1252,7 +1252,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return new ArrayList<>();
         }
         List<Boolean> boolValues =
-                AnnotationUtils.getElementValueArrayList(boolAnno, "value", Boolean.class, true);
+                AnnotationUtils.getElementValueArrayList(boolAnno, "value", Boolean.class, false);
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() > 1) {
             // boolSet={true,false};
@@ -1274,7 +1274,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<String> list =
-                AnnotationUtils.getElementValueArrayList(stringAnno, "value", String.class, true);
+                AnnotationUtils.getElementValueArrayList(stringAnno, "value", String.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }

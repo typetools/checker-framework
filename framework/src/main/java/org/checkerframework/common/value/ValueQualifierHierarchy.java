@@ -253,6 +253,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                     newStringValues.addAll(string2Values);
                     return atypeFactory.createStringAnnotation(newStringValues);
                 default:
+                    // What cases does this default handle?  Make them explicit.
                     List<Object> object1Values =
                             AnnotationUtils.getElementValueArrayList(
                                     a1, "value", Object.class, true);

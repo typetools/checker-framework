@@ -55,10 +55,10 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 AnnotationMirror superAnno,
                 QualifierKind superKind) {
             List<String> subtypeExpressions =
-                    AnnotationUtils.getElementValueArrayList(subAnno, "value", String.class, true);
+                    AnnotationUtils.getElementValueArrayList(subAnno, "value", String.class, false);
             List<String> supertypeExpressions =
                     AnnotationUtils.getElementValueArrayList(
-                            superAnno, "value", String.class, true);
+                            superAnno, "value", String.class, false);
             return subtypeExpressions.containsAll(supertypeExpressions)
                     && supertypeExpressions.containsAll(subtypeExpressions);
         }
@@ -76,9 +76,9 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 return a1;
             }
             List<String> a1Expressions =
-                    AnnotationUtils.getElementValueArrayList(a1, "value", String.class, true);
+                    AnnotationUtils.getElementValueArrayList(a1, "value", String.class, false);
             List<String> a2Expressions =
-                    AnnotationUtils.getElementValueArrayList(a2, "value", String.class, true);
+                    AnnotationUtils.getElementValueArrayList(a2, "value", String.class, false);
             if (a1Expressions.containsAll(a2Expressions)
                     && a2Expressions.containsAll(a1Expressions)) {
                 return a1;
@@ -99,9 +99,9 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 return a1;
             }
             List<String> a1Expressions =
-                    AnnotationUtils.getElementValueArrayList(a1, "value", String.class, true);
+                    AnnotationUtils.getElementValueArrayList(a1, "value", String.class, false);
             List<String> a2Expressions =
-                    AnnotationUtils.getElementValueArrayList(a2, "value", String.class, true);
+                    AnnotationUtils.getElementValueArrayList(a2, "value", String.class, false);
             if (a1Expressions.containsAll(a2Expressions)
                     && a2Expressions.containsAll(a1Expressions)) {
                 return a1;

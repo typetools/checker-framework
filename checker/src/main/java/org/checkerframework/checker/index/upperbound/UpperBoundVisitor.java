@@ -82,7 +82,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 // If offsets are provided, there must be the same number of them as there are
                 // arrays.
                 List<String> sequences =
-                        AnnotationUtils.getElementValueArrayList(anno, "value", String.class, true);
+                        AnnotationUtils.getElementValueArrayList(
+                                anno, "value", String.class, false);
                 List<String> offsets =
                         AnnotationUtils.getElementValueArrayList(
                                 anno, "offset", String.class, true);

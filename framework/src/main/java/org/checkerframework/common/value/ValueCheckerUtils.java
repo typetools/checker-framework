@@ -167,7 +167,7 @@ public class ValueCheckerUtils {
      */
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
         List<Boolean> bools =
-                AnnotationUtils.getElementValueArrayList(anno, "value", Boolean.class, true);
+                AnnotationUtils.getElementValueArrayList(anno, "value", Boolean.class, false);
 
         if (newClass == String.class) {
             return convertToStringVal(bools);

@@ -46,7 +46,7 @@ class MethodNameValidator extends BaseTypeValidator {
                             methodVal, "className", String.class, true);
             List<Integer> params =
                     AnnotationUtils.getElementValueArrayList(
-                            methodVal, "params", Integer.class, true);
+                            methodVal, "params", Integer.class, false);
             List<String> methodNames =
                     AnnotationUtils.getElementValueArrayList(
                             methodVal, "methodName", String.class, true);
