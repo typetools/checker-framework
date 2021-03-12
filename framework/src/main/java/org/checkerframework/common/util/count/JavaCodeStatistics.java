@@ -99,7 +99,7 @@ public class JavaCodeStatistics extends SourceChecker {
                     .equals(SuppressWarnings.class.getCanonicalName())) {
                 List<String> keys =
                         AnnotationUtils.getElementValueArrayList(
-                                annotationMirror, "value", String.class, true);
+                                annotationMirror, "value", String.class, false);
                 for (String foundKey : keys) {
                     for (String indexKey : warningKeys) {
                         if (foundKey.startsWith(indexKey)) {

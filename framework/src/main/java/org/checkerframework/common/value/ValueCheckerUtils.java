@@ -161,9 +161,10 @@ public class ValueCheckerUtils {
      * Convert the values argument/element of the given annotation into a list of Boolean or a list
      * of String.
      *
-     * @param anno the annotation whos value argument/element to extract
-     * @param newClass the element type of the resulting list
-     * @return the values argument/element of the given annotation
+     * @param anno a @BoolVal annotation
+     * @param newClass if String.class, the returned list is a {@code List<String>}
+     * @return the {@code value} argument/element of a @BoolVal annotation, as a {@code
+     *     List<Boolean>} or a {@code List<String>}
      */
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
         List<Boolean> bools =
