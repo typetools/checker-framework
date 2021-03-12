@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -248,22 +247,6 @@ public class SystemUtil {
     public static <FROM, TO> List<TO> mapList(
             Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
         return c.stream().map(f).collect(Collectors.toList());
-    }
-
-    /**
-     * Returns an array consisting of n copies of the specified object.
-     *
-     * @param <T> the class of the object to copy. The returned array's element type is the
-     *     <em>run-time</em> type of {@code o}.
-     * @param n the number of elements in the returned array
-     * @param o the element to appear repeatedly in the returned array; may not be null
-     * @return an array consisting of n copies of the specified object
-     */
-    public static <T extends Object> T[] nCopies(int n, T o) {
-        @SuppressWarnings("unchecked")
-        T[] result = (T[]) Array.newInstance(o.getClass(), n);
-        Arrays.fill(result, o);
-        return result;
     }
 
     ///
