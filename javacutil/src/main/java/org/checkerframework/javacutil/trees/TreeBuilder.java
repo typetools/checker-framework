@@ -673,8 +673,7 @@ public class TreeBuilder {
      * @return a NewArrayTree to create a new array with initializers
      */
     public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
-        List<JCExpression> exprs =
-                SystemUtil.mapList((ExpressionTree elem) -> (JCExpression) elem, elems);
+        List<JCExpression> exprs = SystemUtil.mapList(JCExpression.class::cast, elems);
 
         JCTree.JCNewArray newArray =
                 maker.NewArray(
