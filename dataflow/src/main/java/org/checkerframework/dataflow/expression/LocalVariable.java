@@ -25,7 +25,7 @@ public class LocalVariable extends JavaExpression {
      *
      * @param localVar a CFG local variable
      */
-    protected LocalVariable(LocalVariableNode localVar) {
+    public LocalVariable(LocalVariableNode localVar) {
         super(localVar.getType());
         this.element = localVar.getElement();
     }
@@ -113,7 +113,6 @@ public class LocalVariable extends JavaExpression {
             return false;
         }
         LocalVariable other = (LocalVariable) je;
-        // TODO: Should this just check the element name?
         return this.equals(other);
     }
 
