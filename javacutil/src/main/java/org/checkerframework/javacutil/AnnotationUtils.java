@@ -942,7 +942,7 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-        return SystemUtil.mapList(
+        return SystemUtil.<Type.ClassType, @CanonicalName Name>mapList(
                 (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
     }
 
