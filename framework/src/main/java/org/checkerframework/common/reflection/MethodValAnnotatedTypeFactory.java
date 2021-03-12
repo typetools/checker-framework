@@ -6,7 +6,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +43,17 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror UNKNOWN_METHOD =
             AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
+    /** An arary length that represents that the length is unknown. */
     private static final int UNKNOWN_PARAM_LENGTH = -1;
+
+    /** An array conating just {@link #UNKNOWN_PARAM_LENGTH}. */
+    private static final int[] UNKNOWN_PARAM_LENGTH_ARRAY = new int[] {UNKNOWN_PARAM_LENGTH};
+
+    /** An array containing just 0. */
+    private static int[] ZERO_ARRAY = new int[] {0};
+
+    /** An array containing just 1. */
+    private static int[] ONE_ARRAY = new int[] {1};
 
     /**
      * Create a new MethodValAnnotatedTypeFactory.
@@ -271,7 +280,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
 
             String[] methodNames;
-            List<Integer> params;
+            int[] params;
             String[] classNames;
             if (isGetConstructorMethodInvocation(tree)) {
                 // method name for constructors is always <init>
@@ -305,7 +314,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // found class, method, and parameter lengths
             for (String methodName : methodNames) {
                 for (String className : classNames) {
-                    for (Integer param : params) {
+                    for (int param : params) {
                         methodSigs.add(new MethodSignature(className, methodName, param));
                     }
                 }
@@ -332,7 +341,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
         }
 
-        private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {
+        private int[] getMethodParamsLen(List<? extends ExpressionTree> args) {
             assert !args.isEmpty() : "getMethod must have at least one parameter";
 
             // Number of parameters in the created method object
@@ -340,16 +349,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (numParams == 1) {
                 return getNumberOfParameterOneArg(args.get(1));
             }
-            return Collections.singletonList(numParams);
+            return new int[numParams];
         }
 
-        private List<Integer> getConstructorParamsLen(List<? extends ExpressionTree> args) {
+        private int[] getConstructorParamsLen(List<? extends ExpressionTree> args) {
             // Number of parameters in the created method object
             int numParams = args.size();
             if (numParams == 1) {
                 return getNumberOfParameterOneArg(args.get(0));
             }
-            return Collections.singletonList(numParams);
+            return new int[numParams];
         }
 
         /**
@@ -359,12 +368,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *
          * <ul>
          *   <li>0: if the argument is null
-         *   <li>x: if the argument is an array with @ArrayLen(x)
+         *   <li>x: if the argument is an array with @ArrayLen(x); note that x might be a set rather
+         *       than a single value
          *   <li>UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
          *   <li>1: otherwise
          * </ul>
          */
-        private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
+        private int[] getNumberOfParameterOneArg(ExpressionTree argument) {
             AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
             switch (atm.getKind()) {
                 case ARRAY:
@@ -373,26 +383,25 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotatedTypeMirror valueType = valueATF.getAnnotatedType(argument);
                     AnnotationMirror arrayLenAnno = valueType.getAnnotation(ArrayLen.class);
                     if (arrayLenAnno != null) {
-                        return AnnotationUtils.getElementValueArrayList(
-                                arrayLenAnno, "value", Integer.class, false);
+                        return AnnotationUtils.getElementValueIntArray(
+                                arrayLenAnno, "value", false);
                     } else if (valueType.getAnnotation(BottomVal.class) != null) {
                         // happens in this case: (Class[]) null
-                        return Collections.singletonList(0);
+                        return ZERO_ARRAY;
                     }
                     // the argument is an array with unknown array length
-                    return Collections.singletonList(UNKNOWN_PARAM_LENGTH);
+                    return UNKNOWN_PARAM_LENGTH_ARRAY;
                 case NULL:
-                    // null is treated as the empty list of parameters, so size
-                    // is 0
-                    return Collections.singletonList(0);
+                    // null is treated as the empty list of parameters, so size is 0.
+                    return ZERO_ARRAY;
                 default:
-                    // The argument is not an array or null,
-                    // so it must be a class.
-                    return Collections.singletonList(1);
+                    // The argument is not an array or null, so it must be a class.
+                    return ONE_ARRAY;
             }
         }
     }
 }
+
 /**
  * An object that represents a the tuple that identifies a method signature: (fully qualified class
  * name, method name, number of parameters).

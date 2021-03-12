@@ -946,6 +946,72 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, where the
+     * element has an array type. One element of the result is expected to have type {@code
+     * expectedType}.
+     *
+     * <p>Parameter useDefaults is used to determine whether default values should be used for
+     * annotation values. Finding defaults requires more computation, so should be false when no
+     * defaulting is needed.
+     *
+     * @param anno the annotation to disassemble
+     * @param elementName the name of the element to access
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
+     */
+    public static int[] getElementValueIntArray(
+            AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
+        try {
+            List<?> elementAsList = getElementValue(anno, elementName, List.class, useDefaults);
+            return annotationValueListToIntArray(elementAsList);
+        } catch (BugInCF t) {
+            throw new BugInCF(
+                    String.format(
+                            "getElementValueIntArray(%n  anno=%s,%n  elementName=%s,%n  useDefaults=%s)%n",
+                            anno, elementName, useDefaults),
+                    t);
+        }
+    }
+
+    /**
+     * Converts a list of AnnotationValue to an int array.
+     *
+     * @param la a list of AnnotationValue
+     * @return an array, converted from the input list
+     */
+    public static int[] annotationValueListToIntArray(Object la) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> annoValues = (List<AnnotationValue>) la;
+        return annotationValueListToIntArray(annoValues);
+    }
+
+    /**
+     * Converts a list of AnnotationValue to an int array.
+     *
+     * @param la a list of AnnotationValue
+     * @return an array, converted from the input list
+     */
+    public static int[] annotationValueListToIntArray(List<AnnotationValue> la) {
+        int size = la.size();
+        @SuppressWarnings("unchecked")
+        int[] result = new int[size];
+        for (int i = 0; i < size; i++) {
+            AnnotationValue a = la.get(i);
+            int value;
+            try {
+                value = (int) a.getValue();
+            } catch (Throwable t) {
+                throw new BugInCF(
+                        "Error in cast: expected int a=%s [%s] a.getValue()=%s [%s]",
+                        a, a.getClass(), a.getValue(), a.getValue().getClass());
+            }
+            result[i] = value;
+        }
+        return result;
+    }
+
+    /**
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The element
      * has type {@code expectedType} or array of {@code expectedType}.
      *

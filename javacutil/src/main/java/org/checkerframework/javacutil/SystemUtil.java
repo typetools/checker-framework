@@ -287,6 +287,7 @@ public class SystemUtil {
     /**
      * Returns true if the arrays contain the same contents.
      *
+     * @param <T> the type of the array contents
      * @param arr1 an array
      * @param arr2 an array
      * @return true if the arrays contain the same contents
