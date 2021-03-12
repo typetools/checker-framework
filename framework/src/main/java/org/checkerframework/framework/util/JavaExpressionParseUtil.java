@@ -578,13 +578,13 @@ public class JavaExpressionParseUtil {
             // Is identifier a simple name for a class in java.lang?
             Symbol.PackageSymbol packageSymbol =
                     resolver.findPackage("java.lang", pathToCompilationUnit);
-            if (packageSymbol != null) {
-                ClassSymbol classSymbol =
-                        resolver.findClassInPackage(
-                                identifier, packageSymbol, pathToCompilationUnit);
-                if (classSymbol != null) {
-                    return new ClassName(classSymbol.asType());
-                }
+            if (packageSymbol == null) {
+                throw new BugInCF("Can't find java.lang package.");
+            }
+            ClassSymbol classSymbol =
+                    resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
+            if (classSymbol != null) {
+                return new ClassName(classSymbol.asType());
             }
 
             // Is identifier a class in the unnamed package?
