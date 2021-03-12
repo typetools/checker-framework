@@ -157,6 +157,14 @@ public class ValueCheckerUtils {
         return strings;
     }
 
+    /**
+     * Convert the values argument/element of the given annotation into a list of Boolean or a list
+     * of String.
+     *
+     * @param anno the annotation whos value argument/element to extract
+     * @param newClass the element type of the resulting list
+     * @return the values argument/element of the given annotation
+     */
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
         List<Boolean> bools =
                 AnnotationUtils.getElementValueArrayList(anno, "value", Boolean.class, true);

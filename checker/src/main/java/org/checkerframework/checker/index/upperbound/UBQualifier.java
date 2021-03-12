@@ -73,7 +73,13 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
-    // The argument might be a LTLengthOf or a SubstringIndexFor.
+    /**
+     * Create a UBQualifier from a LTLengthOf or SubstringIndexFor annotation.
+     *
+     * @param am a LTLengthOf or SubstringIndexFor annotation
+     * @param extraOffset offset to add to each element of offsets; may be null
+     * @return a UBQualifier created from a LTLengthOf or SubstringIndexFor annotation
+     */
     private static UBQualifier parseLTLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
                 AnnotationUtils.getElementValueArrayList(am, "value", String.class, true);
@@ -85,6 +91,13 @@ public abstract class UBQualifier {
         return createUBQualifier(sequences, offset, extraOffset);
     }
 
+    /**
+     * Create a UBQualifier from a LTEqLengthOf annotation.
+     *
+     * @param am a LTEqLengthOf annotation
+     * @param extraOffset offset to add to each element of offsets; may be null
+     * @return a UBQualifier created from a LTEqLengthOf annotation
+     */
     private static UBQualifier parseLTEqLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
                 AnnotationUtils.getElementValueArrayList(am, "value", String.class, true);
@@ -92,6 +105,13 @@ public abstract class UBQualifier {
         return createUBQualifier(sequences, offset, extraOffset);
     }
 
+    /**
+     * Create a UBQualifier from a LTOMLengthOf annotation.
+     *
+     * @param am a LTOMLengthOf annotation
+     * @param extraOffset offset to add to each element of offsets; may be null
+     * @return a UBQualifier created from a LTOMLengthOf annotation
+     */
     private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
                 AnnotationUtils.getElementValueArrayList(am, "value", String.class, true);
