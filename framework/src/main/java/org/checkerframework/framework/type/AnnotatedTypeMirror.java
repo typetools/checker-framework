@@ -605,8 +605,8 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Adds those annotations to the current type, for which no annotation from the same qualifier
-     * hierarchy is present.
+     * Adds each of the given annotations to the current type, only if no annotation from the same
+     * qualifier hierarchy is present.
      *
      * @param annotations the annotations to add
      */
