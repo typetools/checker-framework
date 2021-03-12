@@ -726,7 +726,7 @@ public class DependentTypesHelper {
 
         for (String value : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
-                    AnnotationUtils.getElementValueArray(anno, value, String.class, true);
+                    AnnotationUtils.getElementValueArrayList(anno, value, String.class, true);
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
                 String standardized = standardizeString(expression, context, localVarPath);
@@ -890,7 +890,7 @@ public class DependentTypesHelper {
 
         for (String element : getListOfExpressionElements(am)) {
             List<String> value =
-                    AnnotationUtils.getElementValueArray(am, element, String.class, true);
+                    AnnotationUtils.getElementValueArrayList(am, element, String.class, true);
             for (String v : value) {
                 if (DependentTypesError.isExpressionError(v)) {
                     errors.add(DependentTypesError.unparse(v));

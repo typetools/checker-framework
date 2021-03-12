@@ -116,7 +116,7 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
         if (valMap.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+            return AnnotationUtils.getElementValueArrayList(anno, "value", String.class, true);
         }
     }
 

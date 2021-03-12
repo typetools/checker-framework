@@ -123,7 +123,7 @@ public class ContractsFromMethod {
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractsClass);
         if (frameworkContractAnnos != null) {
             List<AnnotationMirror> frameworkContractAnnoList =
-                    AnnotationUtils.getElementValueArray(
+                    AnnotationUtils.getElementValueArrayList(
                             frameworkContractAnnos, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : frameworkContractAnnoList) {
                 result.addAll(getContract(kind, a, clazz));
@@ -181,7 +181,7 @@ public class ContractsFromMethod {
         }
         Set<T> result = new LinkedHashSet<>();
         List<String> expressions =
-                AnnotationUtils.getElementValueArray(
+                AnnotationUtils.getElementValueArrayList(
                         contractAnnotation, "expression", String.class, false);
         Collections.sort(expressions);
         Boolean annoResult =

@@ -507,7 +507,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
         if (covam != null) {
             covariantArgIndexes =
-                    AnnotationUtils.getElementValueArray(covam, "value", Integer.class, false);
+                    AnnotationUtils.getElementValueArrayList(covam, "value", Integer.class, false);
         }
 
         for (int i = 0; i < supertypeTypeArgs.size(); i++) {

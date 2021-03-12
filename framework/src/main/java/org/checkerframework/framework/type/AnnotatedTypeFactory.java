@@ -1618,7 +1618,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+                AnnotationUtils.getElementValueArrayList(
+                        fieldInvarAnno, "field", String.class, true);
         List<@CanonicalName Name> classes =
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
@@ -3858,7 +3859,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     // It might be a real contract, or a list of contracts.
                     if (isListForRepeatedAnnotation(candidate)) {
                         List<AnnotationMirror> wrappedCandidates =
-                                AnnotationUtils.getElementValueArray(
+                                AnnotationUtils.getElementValueArrayList(
                                         candidate, "value", AnnotationMirror.class, false);
                         for (AnnotationMirror wrappedCandidate : wrappedCandidates) {
                             result.add(Pair.of(wrappedCandidate, ma));
@@ -4803,7 +4804,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror anno) {
         List<String> annoForCheckers =
-                AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+                AnnotationUtils.getElementValueArrayList(anno, "value", String.class, false);
         for (String annoForChecker : annoForCheckers) {
             if (checker.getUpstreamCheckerNames().contains(annoForChecker)
                     || CheckerMain.matchesFullyQualifiedProcessor(

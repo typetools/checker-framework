@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -809,7 +810,8 @@ public class AnnotationUtils {
      * @return the value of the element with the given name; it is a new list, so it is safe for
      *     clients to side-effect
      */
-    public static <T> List<T> getElementValueArray(
+    // TODO: Remove this method
+    public static <T> List<T> getElementValueArrayList(
             AnnotationMirror anno,
             CharSequence elementName,
             Class<T> expectedType,
@@ -835,6 +837,82 @@ public class AnnotationUtils {
                                 a.getValue().getClass());
                 throw new BugInCF(err1 + "; " + err2, t);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, where the
+     * element has an array type. One element of the result is expected to have type {@code
+     * expectedType}.
+     *
+     * <p>Parameter useDefaults is used to determine whether default values should be used for
+     * annotation values. Finding defaults requires more computation, so should be false when no
+     * defaulting is needed.
+     *
+     * @param anno the annotation to disassemble
+     * @param elementName the name of the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
+     */
+    public static <T> T[] getElementValueArray(
+            AnnotationMirror anno,
+            CharSequence elementName,
+            Class<T> expectedType,
+            boolean useDefaults) {
+        try {
+            List<?> elementAsList = getElementValue(anno, elementName, List.class, useDefaults);
+            return annotationValueListToArray(elementAsList, expectedType);
+        } catch (BugInCF t) {
+            throw new BugInCF(
+                    String.format(
+                            "getElementValueArray(%n  anno=%s,%n  elementName=%s,%n  expectedType=%s,%n  useDefaults=%s)%n",
+                            anno, elementName, expectedType, useDefaults),
+                    t);
+        }
+    }
+
+    /**
+     * Converts a list of AnnotationValue to an array.
+     *
+     * @param <T> the element type of the array
+     * @param la a list of AnnotationValue
+     * @param expectedType the expected type used to cast the return type
+     * @return an array, converted from the input list
+     */
+    public static <T> T[] annotationValueListToArray(Object la, Class<T> expectedType) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> annoValues = (List<AnnotationValue>) la;
+        return annotationValueListToArray(annoValues, expectedType);
+    }
+
+    /**
+     * Converts a list of AnnotationValue to an array.
+     *
+     * @param <T> the element type of the array
+     * @param la a list of AnnotationValue
+     * @param expectedType the expected type used to cast the return type
+     * @return an array, converted from the input list
+     */
+    public static <T> T[] annotationValueListToArray(
+            List<AnnotationValue> la, Class<T> expectedType) {
+        int size = la.size();
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) Array.newInstance(expectedType, size);
+        for (int i = 0; i < size; i++) {
+            AnnotationValue a = la.get(i);
+            T value;
+            try {
+                value = expectedType.cast(a.getValue());
+            } catch (Throwable t) {
+                throw new BugInCF(
+                        "Error in cast: expectedType=%s a=%s [%s] a.getValue()=%s [%s]",
+                        expectedType, a, a.getClass(), a.getValue(), a.getValue().getClass());
+            }
+            result[i] = value;
         }
         return result;
     }
@@ -866,7 +944,7 @@ public class AnnotationUtils {
             if (annoElement.getSimpleName().contentEquals(elementName)) {
                 TypeMirror elementType = annoElement.getReturnType();
                 if (elementType.getKind() == TypeKind.ARRAY) {
-                    return getElementValueArray(anno, elementName, expectedType, useDefaults);
+                    return getElementValueArrayList(anno, elementName, expectedType, useDefaults);
                 } else {
                     List<T> result = new ArrayList<>(1);
                     result.add(getElementValue(anno, elementName, expectedType, useDefaults));
@@ -939,7 +1017,7 @@ public class AnnotationUtils {
     public static List<@CanonicalName Name> getElementValueClassNames(
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
-                getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
+                getElementValueArrayList(anno, annoElement, Type.ClassType.class, useDefaults);
         List<@CanonicalName Name> names = new ArrayList<>();
         for (Type.ClassType classType : la) {
             names.add(classType.asElement().getQualifiedName());

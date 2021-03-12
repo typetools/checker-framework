@@ -254,9 +254,11 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                     return atypeFactory.createStringAnnotation(newStringValues);
                 default:
                     List<Object> object1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
+                            AnnotationUtils.getElementValueArrayList(
+                                    a1, "value", Object.class, true);
                     List<Object> object2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
+                            AnnotationUtils.getElementValueArrayList(
+                                    a2, "value", Object.class, true);
                     TreeSet<Object> newObjectValues = new TreeSet<>();
                     newObjectValues.addAll(object1Values);
                     newObjectValues.addAll(object2Values);
@@ -424,10 +426,11 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 return superRange.contains(subRange);
             } else {
                 List<Object> superValues =
-                        AnnotationUtils.getElementValueArray(
+                        AnnotationUtils.getElementValueArrayList(
                                 superAnno, "value", Object.class, true);
                 List<Object> subValues =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArrayList(
+                                subAnno, "value", Object.class, true);
                 return superValues.containsAll(subValues);
             }
         }

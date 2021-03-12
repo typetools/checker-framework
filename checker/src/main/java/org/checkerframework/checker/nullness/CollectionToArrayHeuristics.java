@@ -174,7 +174,7 @@ public class CollectionToArrayHeuristics {
                 for (AnnotationMirror am : ams) {
                     if (atypeFactory.areSameByClass(am, ArrayLen.class)) {
                         List<Integer> lens =
-                                AnnotationUtils.getElementValueArray(
+                                AnnotationUtils.getElementValueArrayList(
                                         am, "value", Integer.class, false);
                         if (lens.size() == 1 && lens.get(0) == 0) {
                             return true;

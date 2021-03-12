@@ -614,7 +614,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
-                        AnnotationUtils.getElementValueArray(
+                        AnnotationUtils.getElementValueArrayList(
                                 ensuresLockHeldAnno, "value", String.class, false));
             }
 
@@ -623,7 +623,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             if (ensuresLockHeldIfAnno != null) {
                 expressions.addAll(
-                        AnnotationUtils.getElementValueArray(
+                        AnnotationUtils.getElementValueArrayList(
                                 ensuresLockHeldIfAnno, "expression", String.class, false));
             }
 
@@ -1228,7 +1228,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
         List<String> expressions =
-                AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
+                AnnotationUtils.getElementValueArrayList(gbAnno, "value", String.class, true);
 
         if (expressions.isEmpty()) {
             return Collections.emptyList();

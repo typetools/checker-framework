@@ -160,9 +160,10 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                 QualifierKind superKind) {
             if (subKind == SIBLING_WITH_FIELDS_KIND && superKind == SIBLING_WITH_FIELDS_KIND) {
                 List<String> subVal1 =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                        AnnotationUtils.getElementValueArrayList(
+                                subAnno, "value", String.class, true);
                 List<String> supVal1 =
-                        AnnotationUtils.getElementValueArray(
+                        AnnotationUtils.getElementValueArrayList(
                                 superAnno, "value", String.class, true);
                 String subVal2 =
                         AnnotationUtils.getElementValue(subAnno, "value2", String.class, true);

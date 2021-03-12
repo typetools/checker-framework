@@ -313,10 +313,11 @@ public class LockAnnotatedTypeFactory
                 QualifierKind superKind) {
             if (subKind == GUARDEDBY_KIND && superKind == GUARDEDBY_KIND) {
                 List<String> subLocks =
-                        AnnotationUtils.getElementValueArray(
+                        AnnotationUtils.getElementValueArrayList(
                                 superAnno, "value", String.class, true);
                 List<String> superLocks =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                        AnnotationUtils.getElementValueArrayList(
+                                subAnno, "value", String.class, true);
                 return subLocks.containsAll(superLocks) && superLocks.containsAll(subLocks);
             } else if (subKind == GUARDSATISFIED_KIND && superKind == GUARDSATISFIED_KIND) {
                 return AnnotationUtils.areSame(superAnno, subAnno);
@@ -333,9 +334,9 @@ public class LockAnnotatedTypeFactory
                 QualifierKind lubKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
-                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                        AnnotationUtils.getElementValueArrayList(a1, "value", String.class, true);
                 List<String> locks2 =
-                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                        AnnotationUtils.getElementValueArrayList(a2, "value", String.class, true);
                 if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
                     return a1;
                 } else {
@@ -365,9 +366,9 @@ public class LockAnnotatedTypeFactory
                 QualifierKind glbKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
-                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                        AnnotationUtils.getElementValueArrayList(a1, "value", String.class, true);
                 List<String> locks2 =
-                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                        AnnotationUtils.getElementValueArrayList(a2, "value", String.class, true);
                 if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
                     return a1;
                 } else {
@@ -731,7 +732,7 @@ public class LockAnnotatedTypeFactory
         List<String> lockExpressions;
         if (value instanceof List) {
             lockExpressions =
-                    AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+                    AnnotationUtils.getElementValueArrayList(anno, "value", String.class, true);
         } else if (value instanceof String) {
             lockExpressions = Collections.singletonList((String) value);
         } else {

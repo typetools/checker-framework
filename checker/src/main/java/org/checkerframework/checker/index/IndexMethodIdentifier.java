@@ -3,6 +3,7 @@ package org.checkerframework.checker.index;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -107,9 +108,8 @@ public class IndexMethodIdentifier {
         if (len == null) {
             return false;
         }
-        List<String> values =
-                AnnotationUtils.getElementValueArray(len, "value", String.class, false);
-        return values.contains("this");
+        String[] values = AnnotationUtils.getElementValueArray(len, "value", String.class, false);
+        return Arrays.asList(values).contains("this");
     }
 
     /**

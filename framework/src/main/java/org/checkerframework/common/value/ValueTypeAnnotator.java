@@ -154,7 +154,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
             // (Double, etc).
             // Therefore we extract its values in a generic way to check its size.
             List<Object> values =
-                    AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
+                    AnnotationUtils.getElementValueArrayList(anno, "value", Object.class, false);
             if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
                 atm.replaceAnnotation(typeFactory.UNKNOWNVAL);
             }

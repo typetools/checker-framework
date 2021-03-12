@@ -101,7 +101,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
         if (areSameByClass(anno, ClassBound.class) || areSameByClass(anno, ClassVal.class)) {
-            return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+            return AnnotationUtils.getElementValueArrayList(anno, "value", String.class, true);
         }
         return new ArrayList<>();
     }
@@ -297,7 +297,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (annotation == null) {
                 return null;
             }
-            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
+            return AnnotationUtils.getElementValueArrayList(
+                    annotation, "value", String.class, true);
         }
 
         // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type

@@ -42,12 +42,13 @@ class MethodNameValidator extends BaseTypeValidator {
         AnnotationMirror methodVal = type.getAnnotation(MethodVal.class);
         if (methodVal != null) {
             List<String> classNames =
-                    AnnotationUtils.getElementValueArray(
+                    AnnotationUtils.getElementValueArrayList(
                             methodVal, "className", String.class, true);
             List<Integer> params =
-                    AnnotationUtils.getElementValueArray(methodVal, "params", Integer.class, true);
+                    AnnotationUtils.getElementValueArrayList(
+                            methodVal, "params", Integer.class, true);
             List<String> methodNames =
-                    AnnotationUtils.getElementValueArray(
+                    AnnotationUtils.getElementValueArrayList(
                             methodVal, "methodName", String.class, true);
             if (!(params.size() == methodNames.size() && params.size() == classNames.size())) {
                 checker.reportError(tree, "invalid.methodval", methodVal);

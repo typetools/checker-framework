@@ -76,9 +76,9 @@ public abstract class UBQualifier {
 
     private static UBQualifier parseLTLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArrayList(am, "value", String.class, true);
         List<String> offset =
-                AnnotationUtils.getElementValueArray(am, "offset", String.class, true);
+                AnnotationUtils.getElementValueArrayList(am, "offset", String.class, true);
         if (offset.isEmpty()) {
             offset = Collections.nCopies(sequences.size(), "");
         }
@@ -87,14 +87,14 @@ public abstract class UBQualifier {
 
     private static UBQualifier parseLTEqLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArrayList(am, "value", String.class, true);
         List<String> offset = Collections.nCopies(sequences.size(), "-1");
         return createUBQualifier(sequences, offset, extraOffset);
     }
 
     private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArrayList(am, "value", String.class, true);
         List<String> offset = Collections.nCopies(sequences.size(), "1");
         return createUBQualifier(sequences, offset, extraOffset);
     }

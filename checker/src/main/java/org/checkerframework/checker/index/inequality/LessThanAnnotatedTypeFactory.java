@@ -342,7 +342,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
             return new ArrayList<>();
         } else {
             List<String> list =
-                    AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
+                    AnnotationUtils.getElementValueArrayList(
+                            annotation, "value", String.class, true);
             return list;
         }
     }

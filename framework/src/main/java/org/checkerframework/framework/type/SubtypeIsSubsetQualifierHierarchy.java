@@ -117,7 +117,7 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
             // result is mutable
             return new ArrayList<>();
         } else {
-            return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+            return AnnotationUtils.getElementValueArrayList(anno, "value", String.class, true);
         }
     }
 
