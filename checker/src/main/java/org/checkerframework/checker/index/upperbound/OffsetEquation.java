@@ -39,6 +39,11 @@ public class OffsetEquation {
         subtractedTerms = new ArrayList<>();
     }
 
+    /**
+     * Create a new OffsetEquation that is a copy of the given one.
+     *
+     * @param other the OffsetEquation to copy
+     */
     protected OffsetEquation(OffsetEquation other) {
         this.addedTerms = new ArrayList<>(other.addedTerms);
         this.subtractedTerms = new ArrayList<>(other.subtractedTerms);

@@ -360,6 +360,8 @@ public abstract class UBQualifier {
          * Given the map representation, returns parallel-arrays representation.
          *
          * @param map the internal representation of LessThanLengthOf
+         * @param buildSubstringIndexAnnotation if true, the annoClass in the result is
+         *     ubstringIndexFor.class
          * @return the external representation
          */
         private static SequencesOffsetsAndClass mapToSequencesAndOffsets(
@@ -399,6 +401,11 @@ public abstract class UBQualifier {
 
         // End of code for manipulating the representation
 
+        /**
+         * Create a new LessThanLengthOf, from the internal representation.
+         *
+         * @param map a map from sequence name to offse
+         */
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {
             assert !map.isEmpty();
             this.map = map;
@@ -855,9 +862,22 @@ public abstract class UBQualifier {
             return plusOrMinusOffset(node, factory, '-');
         }
 
+        /**
+         * Adds node as a positive or negative offset to a copy of this qualifier. This is done by
+         * creating an offset equation for node and then adding or subtracting that equation to
+         * every offset equation in a copy of this object.
+         *
+         * @param node a Node
+         * @param factory an AnnotatedTypeFactory
+         * @param op either '-' or '+'
+         * @return a copy of this qualifier with node add as an offset
+         */
         private UBQualifier plusOrMinusOffset(
                 Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
             assert op == '-' || op == '+';
+
+            // Try treating the offset as both an OffsetEquation and as a value.
+            // Use whichever is not null, or glb the two.
 
             OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, op);
             LessThanLengthOf nodeOffsetQualifier = null;
