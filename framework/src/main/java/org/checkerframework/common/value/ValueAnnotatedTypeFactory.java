@@ -313,9 +313,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
         List<Integer> minlens =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
+                AnnotationUtils.getElementValueArray(
+                        fieldInvarAnno, "minLen", Integer.class, false);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Integer minlen : minlens) {
             qualifiers.add(createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE));
@@ -1151,7 +1152,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (intAnno == null) {
             return null;
         }
-        List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+        List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }

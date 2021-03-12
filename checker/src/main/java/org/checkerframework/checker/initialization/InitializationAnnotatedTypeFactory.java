@@ -271,7 +271,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
         TypeMirror name =
-                AnnotationUtils.getElementValue(annotation, "value", TypeMirror.class, true);
+                AnnotationUtils.getElementValue(annotation, "value", TypeMirror.class, false);
         return name;
     }
 
