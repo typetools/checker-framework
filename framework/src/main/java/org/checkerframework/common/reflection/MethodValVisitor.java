@@ -1,7 +1,6 @@
 package org.checkerframework.common.reflection;
 
 import com.sun.source.tree.Tree;
-import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -41,16 +40,15 @@ class MethodNameValidator extends BaseTypeValidator {
     public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
         AnnotationMirror methodVal = type.getAnnotation(MethodVal.class);
         if (methodVal != null) {
-            List<String> classNames =
-                    AnnotationUtils.getElementValueArrayList(
+            String[] classNames =
+                    AnnotationUtils.getElementValueArray(
                             methodVal, "className", String.class, false);
-            List<Integer> params =
-                    AnnotationUtils.getElementValueArrayList(
-                            methodVal, "params", Integer.class, false);
-            List<String> methodNames =
-                    AnnotationUtils.getElementValueArrayList(
+            Integer[] params =
+                    AnnotationUtils.getElementValueArray(methodVal, "params", Integer.class, false);
+            String[] methodNames =
+                    AnnotationUtils.getElementValueArray(
                             methodVal, "methodName", String.class, false);
-            if (!(params.size() == methodNames.size() && params.size() == classNames.size())) {
+            if (!(params.length == methodNames.length && params.length == classNames.length)) {
                 checker.reportError(tree, "invalid.methodval", methodVal);
             }
 
