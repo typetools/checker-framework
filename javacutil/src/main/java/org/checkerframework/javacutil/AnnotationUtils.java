@@ -698,11 +698,12 @@ public class AnnotationUtils {
      *
      * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
      *
-     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
-     * rather than this method which iterates through a map. The same comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
@@ -751,11 +752,12 @@ public class AnnotationUtils {
      * Get the element with the name {@code elementName} of the annotation {@code anno}, or return
      * null if no such element exists.
      *
-     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
-     * rather than this method which iterates through a map. The same comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
@@ -782,11 +784,12 @@ public class AnnotationUtils {
      * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
      * enum of type {@code T}.
      *
-     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
-     * rather than this method which iterates through a map. The same comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -814,11 +817,12 @@ public class AnnotationUtils {
      * annotation values. Finding defaults requires more computation, so should be false when no
      * defaulting is needed.
      *
-     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
-     * rather than this method which iterates through a map. The same comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -866,11 +870,12 @@ public class AnnotationUtils {
      * annotation values. Finding defaults requires more computation, so should be false when no
      * defaulting is needed.
      *
-     * <p>It is more efficient to use {@code anno.getElementValues().get(someElement).getValue();}
-     * rather than this method which iterates through a map. The same comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -908,7 +913,7 @@ public class AnnotationUtils {
      * the elements are {@code Enum}s. One element of the result is expected to have type {@code
      * expectedType}.
      *
-     * <p>It is more efficient to use
+     * <p>This method is intended only for use by the framework. A checker implementation should use
      *
      * <pre>{@code
      * AnnotationUtils.annotationValueListToEnumArray(
@@ -916,7 +921,7 @@ public class AnnotationUtils {
      *   MyEnumClass.class);
      * }</pre>
      *
-     * rather than this method which iterates through a map. The same comment is true of all {@code
+     * rather than this method which iterates through a map. A similar comment is true of all {@code
      * getElementValue*} methods. It is true even if the annotation has only one element/field.
      * Using that method is possible if the type of the annotation is known (in which case the
      * element/field's Element (called {@code someElement} in the code snippet) is available.
@@ -981,9 +986,9 @@ public class AnnotationUtils {
      * getElementValue(anno, elementName, ClassType.class).getQualifiedName()}, but this method
      * ensures consistent use of the qualified name.
      *
-     * <p>It is more efficient to use {@code
-     * anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();} rather
-     * than this method which iterates through a map. The same comment is true of all {@code
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}
+     * rather than this method which iterates through a map. A similar comment is true of all {@code
      * getElementValue*} methods. It is true even if the annotation has only one element/field.
      * Using that method is possible if the type of the annotation is known (in which case the
      * element/field's Element (called {@code someElement} in the code snippet) is available.
@@ -1007,9 +1012,9 @@ public class AnnotationUtils {
      * fails if the class wasn't found. Like {@link #getElementValueClassNames}, but returns classes
      * rather than names.
      *
-     * <p>It is more efficient to use {@code
-     * anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();} rather
-     * than this method which iterates through a map. The same comment is true of all {@code
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}
+     * rather than this method which iterates through a map. A similar comment is true of all {@code
      * getElementValue*} methods. It is true even if the annotation has only one element/field.
      * Using that method is possible if the type of the annotation is known (in which case the
      * element/field's Element (called {@code someElement} in the code snippet) is available.
