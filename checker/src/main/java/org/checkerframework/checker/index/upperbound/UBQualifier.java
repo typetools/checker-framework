@@ -550,7 +550,9 @@ public abstract class UBQualifier {
             } else if (annoClass == LTLengthOf.class) {
                 builder.setValue("value", sequences);
                 builder.setValue("offset", offsets);
-            } else throw new BugInCF("What annoClass? " + annoClass);
+            } else {
+                throw new BugInCF("What annoClass? " + annoClass);
+            }
             return builder.build();
         }
 
