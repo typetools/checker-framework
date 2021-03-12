@@ -181,14 +181,21 @@ Here is an explanation of the arguments:
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
+\label{DLJC-ARGS}
 \item[DLJC-ARGS]
   Arguments that are passed directly to
   \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
   \<dljc> program without
   modification.  One argument is required: \<-\relax-checker>, which indicates
   what type-checker(s) to run (in the format described in Section~\ref{shorthand-for-checkers}).
+
   The \ahreforurl{https://github.com/kelloggm/do-like-javac}{documentation of do-like-javac}
-  describes the other commands that its WPI tool supports.
+  describes the other commands that its WPI tool supports. Notably, to pass checker-specific
+  arguments to invocations of \<javac>,
+  use the \<-\relax-extraJavacArgs> argument to \<dljc>. For example, to use the \<-AignoreRangeOverflow>
+  option for the Constant Value Checker (\chapterpageref{constant-value-checker}) when running
+  inference, you would add \<-\relax-extraJavacArgs='-AignoreRangeOverflow'> anywhere after the \<-\relax->
+  argument to \<wpi.sh>.
 \end{description}
 
 You may need to wait a few minutes for the command to complete.
@@ -245,7 +252,7 @@ pairs.
 Framework, use \<wpi-many.sh> directly.
 \item If you are using a checker that is not distributed with the Checker
 Framework (also known as a "custom checker"), file
-\<custom-checker-example.sh> is a no-arguments
+\<docs/examples/wpi-many/wpi-many-custom-checker-example.sh> is a no-arguments
 script that serves as an example of how to use \<wpi-many.sh>.
 \end{itemize}
 
@@ -273,8 +280,17 @@ the original.
 
 \end{enumerate}
 
-The \<wpi-many.sh> script takes the following command-line arguments, of
-which \<-o> and \<-i> are mandatory:
+A typical invocation is
+
+\begin{Verbatim}
+wpi-many.sh -o outdir -i /path/to/repo.list -t 7200 -- --checker optional
+\end{Verbatim}
+
+The \<wpi-many.sh> script takes the following command-line arguments.
+The \<-o> and \<-i> arguments are mandatory.
+An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
+\emph{DLJC-ARGS} is documented in Section~\ref{DLJC-ARGS}.
+
 
 \begin{description}
 \item[-o outdir]

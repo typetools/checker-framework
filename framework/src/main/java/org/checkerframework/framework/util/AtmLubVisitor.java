@@ -176,15 +176,11 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             }
         }
 
-        List<AnnotatedTypeMirror> lubTypArgs = new ArrayList<>();
         for (int i = 0; i < type1.getTypeArguments().size(); i++) {
             AnnotatedTypeMirror type1TypeArg = type1.getTypeArguments().get(i);
             AnnotatedTypeMirror type2TypeArg = type2.getTypeArguments().get(i);
             AnnotatedTypeMirror lubTypeArg = castedLub.getTypeArguments().get(i);
             lubTypeArgument(type1TypeArg, type2TypeArg, lubTypeArg);
-        }
-        if (!lubTypArgs.isEmpty()) {
-            castedLub.setTypeArguments(lubTypArgs);
         }
         return null;
     }
@@ -258,9 +254,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             AnnotationMirror anno1 = type1LowerBound.getAnnotationInHierarchy(top);
             AnnotationMirror anno2 = type2LowerBound.getAnnotationInHierarchy(top);
 
-            AnnotationMirror glb = null;
             if (anno1 != null && anno2 != null) {
-                glb = qualifierHierarchy.greatestLowerBound(anno1, anno2);
+                AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(anno1, anno2);
                 lubLowerBound.replaceAnnotation(glb);
             }
         }

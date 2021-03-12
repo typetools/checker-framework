@@ -20,8 +20,8 @@ import org.checkerframework.javacutil.BugInCF;
 public class FieldInvariants {
 
     /**
-     * A list of simple field names. A field may appear more than once in this list. In a
-     * well-formed FieldInvariants, has the same length as {@code qualifiers}.
+     * A list of simple field names. A field may appear more than once in this list. This list has
+     * the same length as {@code qualifiers}.
      */
     private final List<String> fields;
 

@@ -136,8 +136,12 @@ public class QualifierUpperBounds {
     }
 
     /**
-     * Adds {@code missing} to {@code annos}, for which no annotation from the same qualifier
-     * hierarchy is present.
+     * Adds each annotation in {@code missing} to {@code annos}, for which no annotation from the
+     * same qualifier hierarchy is present.
+     *
+     * @param annos an annotation set to side-effect
+     * @param missing annotations to add to {@code annos}, if {@code annos} does not have an
+     *     annotation from the same qualifier hierarchy
      */
     private void addMissingAnnotations(
             AnnotationMirrorSet annos, Set<? extends AnnotationMirror> missing) {
