@@ -209,8 +209,11 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ] && [ "${SKIP_OR_DELETE_UNUSABLE}" = "skip" ]; then
-      echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present, indicating that an earlier run of WPI failed. To try again, delete the .cannot-run-wpi file and re-run the script."
+    if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
+      if [ "${SKIP_OR_DELETE_UNUSABLE}" = "skip" ]; then
+        echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present, indicating that an earlier run of WPI failed. To try again, delete the .cannot-run-wpi file and re-run the script."
+      fi
+      # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
     fi
