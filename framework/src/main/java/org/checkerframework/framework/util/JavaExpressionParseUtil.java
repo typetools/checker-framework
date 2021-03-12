@@ -79,11 +79,11 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -702,8 +702,7 @@ public class JavaExpressionParseUtil {
                 Resolver resolver)
                 throws JavaExpressionParseException {
 
-            List<TypeMirror> argumentTypes =
-                    CollectionsPlume.mapList(JavaExpression::getType, arguments);
+            List<TypeMirror> argumentTypes = SystemUtil.mapList(JavaExpression::getType, arguments);
 
             if (receiverType.getKind() == TypeKind.ARRAY) {
                 ExecutableElement element =
@@ -788,7 +787,7 @@ public class JavaExpressionParseUtil {
         @Override
         public JavaExpression visit(ArrayCreationExpr expr, JavaExpressionContext context) {
             List<JavaExpression> dimensions =
-                    CollectionsPlume.mapList(
+                    SystemUtil.mapList(
                             (ArrayCreationLevel dimension) ->
                                     dimension.getDimension().isPresent()
                                             ? dimension.getDimension().get().accept(this, context)
@@ -1109,7 +1108,7 @@ public class JavaExpressionParseUtil {
             ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclaration);
             JavaExpression thisExpression = JavaExpression.getImplicitReceiver(methodElt);
             List<JavaExpression> parametersJe =
-                    CollectionsPlume.mapList(LocalVariable::new, methodElt.getParameters());
+                    SystemUtil.mapList(LocalVariable::new, methodElt.getParameters());
             return new JavaExpressionContext(thisExpression, parametersJe, checker);
         }
 
@@ -1126,7 +1125,7 @@ public class JavaExpressionParseUtil {
             TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(path));
             JavaExpression receiverJe = new ThisReference(enclosingType);
             List<JavaExpression> parametersJe =
-                    CollectionsPlume.mapList(
+                    SystemUtil.mapList(
                             JavaExpression::fromVariableTree, lambdaTree.getParameters());
             return new JavaExpressionContext(receiverJe, parametersJe, checker);
         }
@@ -1159,8 +1158,7 @@ public class JavaExpressionParseUtil {
             Node receiver = methodInvocation.getTarget().getReceiver();
             JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             List<JavaExpression> argumentsJe =
-                    CollectionsPlume.mapList(
-                            JavaExpression::fromNode, methodInvocation.getArguments());
+                    SystemUtil.mapList(JavaExpression::fromNode, methodInvocation.getArguments());
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
 
@@ -1177,8 +1175,7 @@ public class JavaExpressionParseUtil {
             JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocation);
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
-            List<JavaExpression> argumentsJe =
-                    CollectionsPlume.mapList(JavaExpression::fromTree, args);
+            List<JavaExpression> argumentsJe = SystemUtil.mapList(JavaExpression::fromTree, args);
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }
@@ -1200,7 +1197,7 @@ public class JavaExpressionParseUtil {
             JavaExpression receiverJe = JavaExpression.fromNode(n);
 
             List<JavaExpression> argumentsJe =
-                    CollectionsPlume.mapList(JavaExpression::fromNode, n.getArguments());
+                    SystemUtil.mapList(JavaExpression::fromNode, n.getArguments());
 
             return new JavaExpressionContext(receiverJe, argumentsJe, checker);
         }

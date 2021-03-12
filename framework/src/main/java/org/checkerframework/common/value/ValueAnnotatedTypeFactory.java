@@ -69,10 +69,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -318,7 +318,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Integer> minlens =
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
         List<AnnotationMirror> qualifiers =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         (Integer minlen) ->
                                 createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE),
                         minlens);
@@ -499,7 +499,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     /* package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
-            return CollectionsPlume.mapList(Integer::longValue, getArrayLength(anno));
+            return SystemUtil.mapList(Integer::longValue, getArrayLength(anno));
         } else {
             return getIntValues(anno);
         }
@@ -887,8 +887,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
-            List<Long> longValues =
-                    CollectionsPlume.mapList((Character value) -> (long) value, values);
+            List<Long> longValues = SystemUtil.mapList((Character value) -> (long) value, values);
             return createIntValAnnotation(longValues);
         }
     }
@@ -910,10 +909,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 || first instanceof Short
                 || first instanceof Long
                 || first instanceof Byte) {
-            List<Long> intValues = CollectionsPlume.mapList(Number::longValue, values);
+            List<Long> intValues = SystemUtil.mapList(Number::longValue, values);
             return createIntValAnnotation(intValues);
         } else if (first instanceof Double || first instanceof Float) {
-            List<Double> intValues = CollectionsPlume.mapList(Number::doubleValue, values);
+            List<Double> intValues = SystemUtil.mapList(Number::doubleValue, values);
             return createDoubleValAnnotation(intValues);
         }
         throw new UnsupportedOperationException(
@@ -1067,7 +1066,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /* package-private */ AnnotationMirror convertStringValToMatchesRegex(
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
-        List<@Regex String> valuesAsRegexes = CollectionsPlume.mapList(Pattern::quote, values);
+        List<@Regex String> valuesAsRegexes = SystemUtil.mapList(Pattern::quote, values);
         return createMatchesRegexAnnotation(valuesAsRegexes);
     }
 
@@ -1192,8 +1191,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Long> intValues =
                 AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-        List<Character> charValues =
-                CollectionsPlume.mapList((Long i) -> (char) i.intValue(), intValues);
+        List<Character> charValues = SystemUtil.mapList((Long i) -> (char) i.intValue(), intValues);
         Collections.sort(charValues);
         // TODO: Should this be an unmodifiable list?
         return new ArrayList<>(charValues);

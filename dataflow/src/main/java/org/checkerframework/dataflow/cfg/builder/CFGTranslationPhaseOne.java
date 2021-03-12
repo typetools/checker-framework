@@ -169,12 +169,12 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -2914,21 +2914,18 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         List<? extends ExpressionTree> dimensions = tree.getDimensions();
         List<? extends ExpressionTree> initializers = tree.getInitializers();
-
         assert dimensions != null;
-        List<Node> dimensionNodes = new ArrayList<>(dimensions.size());
-        for (ExpressionTree dim : dimensions) {
-            dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
-        }
+
+        List<Node> dimensionNodes =
+                SystemUtil.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
 
         List<Node> initializerNodes;
         if (initializers == null) {
             initializerNodes = Collections.emptyList();
         } else {
-            initializerNodes = new ArrayList<>(initializers.size());
-            for (ExpressionTree init : initializers) {
-                initializerNodes.add(assignConvert(scan(init, p), elemType));
-            }
+            initializerNodes =
+                    SystemUtil.mapList(
+                            init -> assignConvert(scan(init, p), elemType), initializers);
         }
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
@@ -3114,7 +3111,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         env.getTypeUtils()));
 
         List<Pair<TypeMirror, Label>> catchLabels =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         (CatchTree c) -> {
                             return Pair.of(
                                     TreeUtils.typeOf(c.getParameter().getType()), new Label());

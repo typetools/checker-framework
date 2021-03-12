@@ -17,9 +17,10 @@ import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.plumelib.util.StringsPlume;
 
 /** This file contains basic utility functions. */
@@ -244,9 +245,18 @@ public class SystemUtil {
      * @param c a collection
      * @return a list of the results of applying {@code f} to the elements of {@code list}
      */
-    public static <FROM, TO> List<TO> mapList(
-            Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
-        return c.stream().map(f).collect(Collectors.toList());
+    public static <
+                    @KeyForBottom FROM extends @UnknownKeyFor Object,
+                    @KeyForBottom TO extends @UnknownKeyFor Object>
+            List<TO> mapList(Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
+        // This implementation uses a for loop and is likely more efficient than using streams, both
+        // because it doesn't create stream objects and because it creates an ArrayList of the
+        // appropriate size.
+        List<TO> result = new ArrayList<>(c.size());
+        for (FROM elt : c) {
+            result.add(f.apply(elt));
+        }
+        return result;
     }
 
     ///

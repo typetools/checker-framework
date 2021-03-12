@@ -44,7 +44,6 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
-import org.plumelib.util.CollectionsPlume;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -898,7 +897,7 @@ public class AnnotationUtils {
             boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
-        return CollectionsPlume.mapList(
+        return SystemUtil.mapList(
                 (AnnotationValue a) -> Enum.valueOf(expectedType, a.getValue().toString()), la);
     }
 
@@ -937,7 +936,7 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-        return CollectionsPlume.mapList(
+        return SystemUtil.mapList(
                 (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
     }
 

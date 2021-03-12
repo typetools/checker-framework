@@ -120,7 +120,6 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
-import org.plumelib.util.CollectionsPlume;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.ATypeElement;
 
@@ -1623,7 +1622,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<@CanonicalName Name> classes =
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         (Name name) ->
                                 // Calling AnnotationBuilder.fromName (which ignores
                                 // elements/fields) is acceptable because @FieldInvariant does not

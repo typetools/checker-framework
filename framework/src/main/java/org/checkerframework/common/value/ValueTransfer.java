@@ -66,9 +66,9 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
@@ -235,7 +235,7 @@ public class ValueTransfer extends CFTransfer {
         if (values == null) {
             return null;
         }
-        List<String> stringValues = CollectionsPlume.mapList(Object::toString, values);
+        List<String> stringValues = SystemUtil.mapList(Object::toString, values);
         // Empty list means bottom value
         return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
     }
@@ -1594,7 +1594,7 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues = new ArrayList<>(2);
         switch (op) {
             case NOT:
-                return CollectionsPlume.mapList((Boolean left) -> !left, lefts);
+                return SystemUtil.mapList((Boolean left) -> !left, lefts);
             case OR:
                 for (Boolean left : lefts) {
                     for (Boolean right : rights) {

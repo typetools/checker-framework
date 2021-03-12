@@ -20,9 +20,9 @@ import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -82,11 +82,9 @@ public class ReflectiveEvaluator {
 
         if (method.isVarArgs()) {
             int numberOfParameters = method.getParameterTypes().length;
-            List<Object[]> newList = new ArrayList<>(listOfArguments.size());
-            for (Object[] args : listOfArguments) {
-                newList.add(normalizeVararg(args, numberOfParameters));
-            }
-            listOfArguments = newList;
+            listOfArguments =
+                    SystemUtil.mapList(
+                            args -> normalizeVararg(args, numberOfParameters), listOfArguments);
         }
 
         List<Object> results = new ArrayList<>(listOfArguments.size());
@@ -230,7 +228,7 @@ public class ReflectiveEvaluator {
      */
     private List<Class<?>> getParameterClasses(ExecutableElement ele)
             throws ClassNotFoundException {
-        return CollectionsPlume.mapList(
+        return SystemUtil.mapList(
                 (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)),
                 ele.getParameters());
     }
@@ -264,8 +262,7 @@ public class ReflectiveEvaluator {
      * @return a depth-2 copy of the given list
      */
     private List<Object[]> copy(List<Object[]> lastTuples) {
-        return CollectionsPlume.mapList(
-                (Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
+        return SystemUtil.mapList((Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
     }
 
     /**

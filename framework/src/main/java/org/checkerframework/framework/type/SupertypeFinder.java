@@ -29,9 +29,9 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
@@ -280,7 +280,7 @@ class SupertypeFinder {
                         && classTree.getSimpleName().contentEquals("")) {
                     // classTree is an anonymous class with a diamond.
                     List<AnnotatedTypeMirror> args =
-                            CollectionsPlume.mapList(
+                            SystemUtil.mapList(
                                     (TypeParameterElement element) -> {
                                         AnnotatedTypeMirror arg =
                                                 AnnotatedTypeMirror.createType(

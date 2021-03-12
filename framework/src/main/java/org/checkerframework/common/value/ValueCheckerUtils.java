@@ -22,8 +22,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /** Utility methods for the Value Checker. */
 public class ValueCheckerUtils {
@@ -152,7 +152,7 @@ public class ValueCheckerUtils {
         if (origValues == null) {
             return null;
         }
-        return CollectionsPlume.mapList(Object::toString, origValues);
+        return SystemUtil.mapList(Object::toString, origValues);
     }
 
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
@@ -168,7 +168,7 @@ public class ValueCheckerUtils {
     private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
         List<String> strings = ValueAnnotatedTypeFactory.getStringValues(anno);
         if (newClass == char[].class) {
-            return CollectionsPlume.mapList(String::toCharArray, strings);
+            return SystemUtil.mapList(String::toCharArray, strings);
         }
         return strings;
     }
@@ -180,7 +180,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return convertToStringVal(longs);
         } else if (newClass == Character.class || newClass == char.class) {
-            return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
+            return SystemUtil.mapList((Long l) -> (char) l.longValue(), longs);
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
                     "ValueAnnotatedTypeFactory: can't convert int to boolean");
@@ -197,7 +197,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return convertToStringVal(doubles);
         } else if (newClass == Character.class || newClass == char.class) {
-            return CollectionsPlume.mapList((Double l) -> (char) l.doubleValue(), doubles);
+            return SystemUtil.mapList((Double l) -> (char) l.doubleValue(), doubles);
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
                     "ValueAnnotatedTypeFactory: can't convert double to boolean");
@@ -234,7 +234,7 @@ public class ValueCheckerUtils {
      * @return list of unique lengths of strings in {@code values}
      */
     public static List<Integer> getLengthsForStringValues(List<String> values) {
-        List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
+        List<Integer> lengths = SystemUtil.mapList(String::length, values);
         return ValueCheckerUtils.removeDuplicates(lengths);
     }
 
