@@ -9,6 +9,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.NullType;
@@ -44,6 +45,9 @@ public class FormatterTreeUtil {
     /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
 
+    /** The value() element/field of an @Format annotation. */
+    protected final ExecutableElement formatValueElement;
+
     /** The value() element/field of an @InvalidFormat annotation. */
     protected final ExecutableElement invalidFormatValueElement;
 
@@ -52,6 +56,8 @@ public class FormatterTreeUtil {
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        formatValueElement =
+                TreeUtils.getMethod(Format.class.getCanonicalName(), "value", 0, processingEnv);
         invalidFormatValueElement =
                 TreeUtils.getMethod(
                         InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
@@ -492,13 +498,16 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link Format} annotation, and returns its
-     * value.
+     * Returns the value of a {@code @}{@link Format} annotation.
+     *
+     * @param anno a {@code @}{@link Format} annotation
+     * @return the annotation's {@code value} element
      */
+    @SuppressWarnings("GetClassOnEnum")
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        List<ConversionCategory> list =
-                AnnotationUtils.getElementValueEnumArray(
-                        anno, "value", ConversionCategory.class, false);
-        return list.toArray(new ConversionCategory[] {});
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> list =
+                (List<AnnotationValue>) anno.getElementValues().get(formatValueElement).getValue();
+        return AnnotationUtils.annotationValueListToEnumArray(list, ConversionCategory.class);
     }
 }
