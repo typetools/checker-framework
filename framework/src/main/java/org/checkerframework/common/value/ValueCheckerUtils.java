@@ -157,9 +157,17 @@ public class ValueCheckerUtils {
         return strings;
     }
 
+    /**
+     * Convert the {@code value} argument/element of a @BoolVal annotation into a list.
+     *
+     * @param anno a @BoolVal annotation
+     * @param newClass if String.class, the returned list is a {@code List<String>}
+     * @return the {@code value} of a @BoolVal annotation, as a {@code List<Boolean>} or a {@code
+     *     List<String>}
+     */
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
         List<Boolean> bools =
-                AnnotationUtils.getElementValueArray(anno, "value", Boolean.class, true);
+                AnnotationUtils.getElementValueArray(anno, "value", Boolean.class, false);
 
         if (newClass == String.class) {
             return convertToStringVal(bools);

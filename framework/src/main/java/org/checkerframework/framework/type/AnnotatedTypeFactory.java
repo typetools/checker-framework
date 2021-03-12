@@ -1618,9 +1618,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
         List<@CanonicalName Name> classes =
-                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
+                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Name name : classes) {
             // Calling AnnotationBuilder.fromName (which ignores elements/fields) is acceptable
