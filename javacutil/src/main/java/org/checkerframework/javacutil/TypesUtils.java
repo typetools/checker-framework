@@ -928,7 +928,7 @@ public final class TypesUtils {
      */
     private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
             List<TypeMirror> typeMirrors) {
-        List<Type> typeList = SystemUtil.mapList((TypeMirror tm) -> (Type) tm, typeMirrors);
+        List<Type> typeList = SystemUtil.mapList(Type.class::cast, typeMirrors);
         return com.sun.tools.javac.util.List.from(typeList);
     }
 
@@ -1023,11 +1023,9 @@ public final class TypesUtils {
             List<? extends TypeMirror> typeArgs,
             ProcessingEnvironment env) {
 
-        List<Type> newP =
-                SystemUtil.mapList((TypeMirror typeVariable) -> (Type) typeVariable, typeVariables);
+        List<Type> newP = SystemUtil.mapList(Type.class::cast, typeVariables);
 
-        List<Type> newT =
-                SystemUtil.mapList((TypeMirror typeMirror) -> (Type) typeMirror, typeArgs);
+        List<Type> newT = SystemUtil.mapList(Type.class::cast, typeArgs);
 
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         com.sun.tools.javac.code.Types types =

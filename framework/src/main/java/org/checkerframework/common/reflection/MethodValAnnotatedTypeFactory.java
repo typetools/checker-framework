@@ -245,12 +245,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     : "Unexpected annotation in MethodVal";
             List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
             List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
-            for (MethodSignature sig : subSignatures) {
-                if (!superSignatures.contains(sig)) {
-                    return false;
-                }
-            }
-            return true;
+            return superSignatures.containsAll(subSignatures);
         }
     }
 
