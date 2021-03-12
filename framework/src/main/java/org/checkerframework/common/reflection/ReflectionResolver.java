@@ -17,6 +17,13 @@ public interface ReflectionResolver {
     public static final String INIT = "<init>";
 
     /**
+     * An array containing just the "method name" of constructors. Clients must not modify this
+     * list.
+     */
+    @SuppressWarnings("MutablePublicArray")
+    public static final String[] INIT_ARRAY = new String[] {INIT};
+
+    /**
      * Determines whether the given tree represents a reflective method or constructor call.
      *
      * @return {@code true} iff tree is a reflective method invocation, {@code false} otherwise

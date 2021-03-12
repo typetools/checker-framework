@@ -76,21 +76,21 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param methodValAnno a {@code @MethodVal} annotation
      * @return the methods that the given {@code @MethodVal} represents
      */
-    static List<MethodSignature> getListOfMethodSignatures(AnnotationMirror methodValAnno) {
-        List<String> methodNames =
-                AnnotationUtils.getElementValueArrayList(
+    static MethodSignature[] getMethodSignatures(AnnotationMirror methodValAnno) {
+        String[] methodNames =
+                AnnotationUtils.getElementValueArray(
                         methodValAnno, "methodName", String.class, false);
-        List<String> classNames =
-                AnnotationUtils.getElementValueArrayList(
+        String[] classNames =
+                AnnotationUtils.getElementValueArray(
                         methodValAnno, "className", String.class, false);
-        List<Integer> params =
-                AnnotationUtils.getElementValueArrayList(
-                        methodValAnno, "params", Integer.class, false);
-        List<MethodSignature> list = new ArrayList<>(methodNames.size());
-        for (int i = 0; i < methodNames.size(); i++) {
-            list.add(new MethodSignature(classNames.get(i), methodNames.get(i), params.get(i)));
+        Integer[] params =
+                AnnotationUtils.getElementValueArray(methodValAnno, "params", Integer.class, false);
+        int size = methodNames.length;
+        MethodSignature[] result = new MethodSignature[size];
+        for (int i = 0; i < size; i++) {
+            result[i] = new MethodSignature(classNames[i], methodNames[i], params[i]);
         }
-        return list;
+        return result;
     }
 
     /**
@@ -114,6 +114,10 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         builder.setValue("params", params);
         return builder.build();
     }
+
+    /** An empty String array. */
+    private static String[] EMPTY_STRING_ARRAY = new String[0];
+
     /**
      * Returns a list of class names for the given tree using the Class Val Checker.
      *
@@ -122,27 +126,22 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *     only @ClassVal may be read
      * @return list of class names or the empty list if no class names were found
      */
-    private List<String> getClassNamesFromClassValChecker(
-            ExpressionTree tree, boolean mustBeExact) {
+    private String[] getClassNamesFromClassValChecker(ExpressionTree tree, boolean mustBeExact) {
         ClassValAnnotatedTypeFactory classValATF =
                 getTypeFactoryOfSubchecker(ClassValChecker.class);
         AnnotatedTypeMirror classAnno = classValATF.getAnnotatedType(tree);
-        List<String> classNames = new ArrayList<>();
         AnnotationMirror classValAnno = classAnno.getAnnotation(ClassVal.class);
         if (classValAnno != null) {
-            classNames =
-                    AnnotationUtils.getElementValueArrayList(
-                            classValAnno, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(classValAnno, "value", String.class, false);
         } else if (!mustBeExact) {
             // Could be ClassBound instead of ClassVal
             AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
             if (classBoundAnno != null) {
-                classNames =
-                        AnnotationUtils.getElementValueArrayList(
-                                classBoundAnno, "value", String.class, false);
+                return AnnotationUtils.getElementValueArray(
+                        classBoundAnno, "value", String.class, false);
             }
         }
-        return classNames;
+        return EMPTY_STRING_ARRAY;
     }
     /**
      * Returns the string values for the argument passed. The String Values are estimated using the
@@ -151,17 +150,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param arg ExpressionTree whose string values are sought
      * @return string values of arg or the empty list if no values were found
      */
-    private List<String> getMethodNamesFromStringArg(ExpressionTree arg) {
-        List<String> methodNames = new ArrayList<>();
+    private String[] getMethodNamesFromStringArg(ExpressionTree arg) {
         ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
         AnnotatedTypeMirror valueAnno = valueATF.getAnnotatedType(arg);
         AnnotationMirror annotation = valueAnno.getAnnotation(StringVal.class);
         if (annotation != null) {
-            methodNames =
-                    AnnotationUtils.getElementValueArrayList(
-                            annotation, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
         }
-        return methodNames;
+        return EMPTY_STRING_ARRAY;
     }
 
     @Override
@@ -198,8 +194,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a1;
             } else if (AnnotationUtils.areSameByName(a1, a2)) {
-                List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
-                List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
+                List<MethodSignature> a1Sigs = Arrays.asList(getMethodSignatures(a1));
+                List<MethodSignature> a2Sigs = Arrays.asList(getMethodSignatures(a2));
 
                 Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
                 lubSigs.addAll(a2Sigs);
@@ -220,8 +216,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else if (AnnotationUtils.areSameByName(a1, a2)) {
-                List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
-                List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
+                List<MethodSignature> a1Sigs = Arrays.asList(getMethodSignatures(a1));
+                List<MethodSignature> a2Sigs = Arrays.asList(getMethodSignatures(a2));
 
                 Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
                 lubSigs.retainAll(a2Sigs);
@@ -246,14 +242,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             assert areSameByClass(subAnno, MethodVal.class)
                             && areSameByClass(superAnno, MethodVal.class)
                     : "Unexpected annotation in MethodVal";
-            List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
-            List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
-            for (MethodSignature sig : subSignatures) {
-                if (!superSignatures.contains(sig)) {
-                    return false;
-                }
-            }
-            return true;
+            List<MethodSignature> subSignatures = Arrays.asList(getMethodSignatures(subAnno));
+            List<MethodSignature> superSignatures = Arrays.asList(getMethodSignatures(superAnno));
+            return superSignatures.containsAll(subSignatures);
         }
     }
 
@@ -279,12 +270,12 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
 
-            List<String> methodNames;
+            String[] methodNames;
             List<Integer> params;
-            List<String> classNames;
+            String[] classNames;
             if (isGetConstructorMethodInvocation(tree)) {
                 // method name for constructors is always <init>
-                methodNames = Arrays.asList(ReflectionResolver.INIT);
+                methodNames = ReflectionResolver.INIT_ARRAY;
                 params = getConstructorParamsLen(tree.getArguments());
                 classNames =
                         getClassNamesFromClassValChecker(TreeUtils.getReceiverTree(tree), true);
@@ -301,7 +292,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             // Create MethodVal
-            if (methodNames.isEmpty() || classNames.isEmpty()) {
+            if (methodNames.length == 0 || classNames.length == 0) {
                 // No method name or classname is found, it could be any
                 // class or method, so, return @UnknownMethod.
                 type.replaceAnnotation(UNKNOWN_METHOD);
