@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -159,17 +158,16 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                 AnnotationMirror superAnno,
                 QualifierKind superKind) {
             if (subKind == SIBLING_WITH_FIELDS_KIND && superKind == SIBLING_WITH_FIELDS_KIND) {
-                List<String> subVal1 =
-                        AnnotationUtils.getElementValueArrayList(
-                                subAnno, "value", String.class, true);
-                List<String> supVal1 =
-                        AnnotationUtils.getElementValueArrayList(
+                String[] subVal1 =
+                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                String[] supVal1 =
+                        AnnotationUtils.getElementValueArray(
                                 superAnno, "value", String.class, true);
                 String subVal2 =
                         AnnotationUtils.getElementValue(subAnno, "value2", String.class, true);
                 String supVal2 =
                         AnnotationUtils.getElementValue(superAnno, "value2", String.class, true);
-                return subVal1.equals(supVal1) && subVal2.equals(supVal2);
+                return SystemUtil.sameContents(subVal1, supVal1) && subVal2.equals(supVal2);
             }
             throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);
         }

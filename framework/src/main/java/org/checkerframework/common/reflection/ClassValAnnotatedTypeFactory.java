@@ -92,6 +92,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /** An empty string array. */
+    private String[] EMPTY_STRING_ARRAY = new String[0];
+
     /**
      * Returns the list of classnames from {@code @ClassBound} or {@code @ClassVal} if anno is
      * {@code @ClassBound} or {@code @ClassVal}, otherwise returns an empty list.
@@ -99,11 +102,11 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno any AnnotationMirror
      * @return list of classnames in anno
      */
-    public List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
+    public String[] getClassNamesFromAnnotation(AnnotationMirror anno) {
         if (areSameByClass(anno, ClassBound.class) || areSameByClass(anno, ClassVal.class)) {
-            return AnnotationUtils.getElementValueArrayList(anno, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         }
-        return new ArrayList<>();
+        return EMPTY_STRING_ARRAY;
     }
 
     @Override
@@ -139,17 +142,18 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a1;
             } else {
-                List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
-                List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-                Set<String> lubClassNames = new TreeSet<>();
-                lubClassNames.addAll(a1ClassNames);
-                lubClassNames.addAll(a2ClassNames);
+                String[] a1ClassNames = getClassNamesFromAnnotation(a1);
+                String[] a2ClassNames = getClassNamesFromAnnotation(a2);
+                Set<String> lubClassNamesSet = new TreeSet<>();
+                lubClassNamesSet.addAll(Arrays.asList(a1ClassNames));
+                lubClassNamesSet.addAll(Arrays.asList(a2ClassNames));
+                List<String> lubClassNames = new ArrayList<>(lubClassNamesSet);
 
                 // If either annotation is a ClassBound, the lub must also be a class bound.
                 if (areSameByClass(a1, ClassBound.class) || areSameByClass(a2, ClassBound.class)) {
-                    return createClassBound(new ArrayList<>(lubClassNames));
+                    return createClassBound(lubClassNames);
                 } else {
-                    return createClassVal(new ArrayList<>(lubClassNames));
+                    return createClassVal(lubClassNames);
                 }
             }
         }
@@ -163,20 +167,21 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else {
-                List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
-                List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-                Set<String> glbClassNames = new TreeSet<>();
-                glbClassNames.addAll(a1ClassNames);
-                glbClassNames.retainAll(a2ClassNames);
+                String[] a1ClassNames = getClassNamesFromAnnotation(a1);
+                String[] a2ClassNames = getClassNamesFromAnnotation(a2);
+                Set<String> glbClassNamesSet = new TreeSet<>();
+                glbClassNamesSet.addAll(Arrays.asList(a1ClassNames));
+                glbClassNamesSet.retainAll(Arrays.asList(a2ClassNames));
+                List<String> glbClassNames = new ArrayList<>(glbClassNamesSet);
 
                 // If either annotation is a ClassVal, the glb must also be a ClassVal.
                 // For example:
                 // GLB( @ClassVal(a,b), @ClassBound(a,c)) is @ClassVal(a)
                 // because @ClassBound(a) is not a subtype of @ClassVal(a,b)
                 if (areSameByClass(a1, ClassVal.class) || areSameByClass(a2, ClassVal.class)) {
-                    return createClassVal(new ArrayList<>(glbClassNames));
+                    return createClassVal(glbClassNames);
                 } else {
-                    return createClassBound(new ArrayList<>(glbClassNames));
+                    return createClassBound(glbClassNames);
                 }
             }
         }
@@ -205,10 +210,10 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // if super: ClassVal && sub is ClassVal
             // if super: ClassBound && (sub is ClassBound or ClassVal)
 
-            List<String> supValues = getClassNamesFromAnnotation(superAnno);
-            List<String> subValues = getClassNamesFromAnnotation(subAnno);
+            String[] supValues = getClassNamesFromAnnotation(superAnno);
+            String[] subValues = getClassNamesFromAnnotation(subAnno);
 
-            return supValues.containsAll(subValues);
+            return Arrays.asList(supValues).containsAll(Arrays.asList(subValues));
         }
     }
 

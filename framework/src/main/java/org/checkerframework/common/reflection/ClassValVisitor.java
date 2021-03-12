@@ -1,7 +1,6 @@
 package org.checkerframework.common.reflection;
 
 import com.sun.source.tree.Tree;
-import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -52,7 +51,7 @@ class ClassNameValidator extends BaseTypeValidator {
         AnnotationMirror classVal = type.getAnnotation(ClassVal.class);
         classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
         if (classVal != null) {
-            List<String> classNames =
+            String[] classNames =
                     ((ClassValAnnotatedTypeFactory) atypeFactory)
                             .getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {

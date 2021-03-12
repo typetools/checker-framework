@@ -364,21 +364,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         debugReflection("MethodVal type system annotations: " + estimate);
 
-        List<String> listClassNames =
-                AnnotationUtils.getElementValueArrayList(
-                        estimate, "className", String.class, false);
-        List<String> listMethodNames =
-                AnnotationUtils.getElementValueArrayList(
-                        estimate, "methodName", String.class, false);
-        List<Integer> listParamLengths =
-                AnnotationUtils.getElementValueArrayList(estimate, "params", Integer.class, false);
+        String[] classNames =
+                AnnotationUtils.getElementValueArray(estimate, "className", String.class, false);
+        String[] methodNames =
+                AnnotationUtils.getElementValueArray(estimate, "methodName", String.class, false);
+        Integer[] paramLengths =
+                AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, false);
 
-        assert listClassNames.size() == listMethodNames.size()
-                && listClassNames.size() == listParamLengths.size();
-        for (int i = 0; i < listClassNames.size(); ++i) {
-            String className = listClassNames.get(i);
-            String methodName = listMethodNames.get(i);
-            int paramLength = listParamLengths.get(i);
+        int size = classNames.length;
+        assert methodNames.length == size && paramLengths.length == size;
+        for (int i = 0; i < size; ++i) {
+            String className = classNames[i];
+            String methodName = methodNames[i];
+            int paramLength = paramLengths[i];
 
             // Get receiver, which is always the first argument of the invoke
             // method
@@ -467,16 +465,16 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         debugReflection("MethodVal type system annotations: " + estimate);
 
-        List<String> listClassNames =
-                AnnotationUtils.getElementValueArrayList(
-                        estimate, "className", String.class, false);
-        List<Integer> listParamLengths =
-                AnnotationUtils.getElementValueArrayList(estimate, "params", Integer.class, false);
+        String[] classNames =
+                AnnotationUtils.getElementValueArray(estimate, "className", String.class, false);
+        Integer[] paramLengths =
+                AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, false);
 
-        assert listClassNames.size() == listParamLengths.size();
-        for (int i = 0; i < listClassNames.size(); ++i) {
-            String className = listClassNames.get(i);
-            int paramLength = listParamLengths.get(i);
+        int size = classNames.length;
+        assert paramLengths.length == size;
+        for (int i = 0; i < size; ++i) {
+            String className = classNames[i];
+            int paramLength = paramLengths[i];
 
             // Resolve the Symbol for the current constructor
             for (Symbol symbol : getConstructorSymbolsfor(className, paramLength, env)) {
