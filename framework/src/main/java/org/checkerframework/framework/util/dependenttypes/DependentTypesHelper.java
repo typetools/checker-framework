@@ -890,7 +890,7 @@ public class DependentTypesHelper {
 
         for (String element : getListOfExpressionElements(am)) {
             List<String> value =
-                    AnnotationUtils.getElementValueArray(am, element, String.class, true);
+                    AnnotationUtils.getElementValueArray(am, element, String.class, false);
             for (String v : value) {
                 if (DependentTypesError.isExpressionError(v)) {
                     errors.add(DependentTypesError.unparse(v));
