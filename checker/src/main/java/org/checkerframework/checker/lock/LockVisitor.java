@@ -1227,10 +1227,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private List<LockExpression> getLockExpressions(
             boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
-        List<String> expressions =
-                AnnotationUtils.getElementValueArrayList(gbAnno, "value", String.class, true);
+        String[] expressions =
+                AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
 
-        if (expressions.isEmpty()) {
+        if (expressions.length == 0) {
             return Collections.emptyList();
         }
 

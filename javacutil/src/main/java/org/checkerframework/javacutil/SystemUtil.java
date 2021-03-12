@@ -157,6 +157,35 @@ public class SystemUtil {
     }
 
     /**
+     * Creates a conjunction or disjunction, like "a", "a or b", and "a, b, or c". Obeys the "serial
+     * comma" or "Oxford comma" rule and puts a comma after every element when the list has size 3
+     * or larger.
+     *
+     * @param conjunction the conjunction word, like "and" or "or"
+     * @param elements the elements of the conjunction or disjunction
+     * @return a conjunction or disjunction string
+     */
+    public static String conjunction(String conjunction, List<?> elements) {
+        int size = elements.size();
+        if (size == 0) {
+            throw new IllegalArgumentException("no elements passed to conjunction()");
+        } else if (size == 1) {
+            return Objects.toString(elements.get(0));
+        } else if (size == 2) {
+            return elements.get(0) + " " + conjunction + " " + elements.get(1);
+        }
+
+        StringJoiner sj = new StringJoiner(", ");
+        for (int i = 0; i < size - 1; i++) {
+            sj.add(Objects.toString(elements.get(i)));
+        }
+        sj.add(conjunction + " " + elements.get(size - 1));
+        return sj.toString();
+    }
+
+    // Array and collection methods
+
+    /**
      * Concatenates two arrays. Can be invoked varargs-style.
      *
      * @param <T> the type of the array elements
@@ -202,33 +231,6 @@ public class SystemUtil {
         result.addAll(list);
         result.add(lastElt);
         return result;
-    }
-
-    /**
-     * Creates a conjunction or disjunction, like "a", "a or b", and "a, b, or c". Obeys the "serial
-     * comma" or "Oxford comma" rule and puts a comma after every element when the list has size 3
-     * or larger.
-     *
-     * @param conjunction the conjunction word, like "and" or "or"
-     * @param elements the elements of the conjunction or disjunction
-     * @return a conjunction or disjunction string
-     */
-    public static String conjunction(String conjunction, List<?> elements) {
-        int size = elements.size();
-        if (size == 0) {
-            throw new IllegalArgumentException("no elements passed to conjunction()");
-        } else if (size == 1) {
-            return Objects.toString(elements.get(0));
-        } else if (size == 2) {
-            return elements.get(0) + " " + conjunction + " " + elements.get(1);
-        }
-
-        StringJoiner sj = new StringJoiner(", ");
-        for (int i = 0; i < size - 1; i++) {
-            sj.add(Objects.toString(elements.get(i)));
-        }
-        sj.add(conjunction + " " + elements.get(size - 1));
-        return sj.toString();
     }
 
     /**
@@ -280,6 +282,25 @@ public class SystemUtil {
         T[] result = Arrays.copyOf(array, array.length + 1);
         result[array.length] = lastElt;
         return result;
+    }
+
+    /**
+     * Returns true if the arrays contain the same contents.
+     *
+     * @param arr1 an array
+     * @param arr2 an array
+     * @return true if the arrays contain the same contents
+     */
+    public static <T> boolean sameContents(T[] arr1, T[] arr2) {
+        List<T> list1 = Arrays.asList(arr1);
+        List<T> list2 = Arrays.asList(arr2);
+        return list1.containsAll(list2) && list2.containsAll(list1);
+
+        // // Alterate implementation, which is more efficient if the arrays are be large:
+        // Note: this sorts the arrays as a side effect.
+        // Arrays.sort(arr1);
+        // Arrays.sort(arr2);
+        // return Arrays.equals(arr1, arr2);
     }
 
     ///

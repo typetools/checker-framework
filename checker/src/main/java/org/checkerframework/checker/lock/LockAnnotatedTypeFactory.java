@@ -10,7 +10,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -94,8 +94,7 @@ public class LockAnnotatedTypeFactory
     protected final AnnotationMirror GUARDEDBYUNKNOWN =
             AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
     /** The @{@link GuardedByBottom} annotation. */
-    protected final AnnotationMirror GUARDEDBY =
-            createGuardedByAnnotationMirror(new ArrayList<String>());
+    protected final AnnotationMirror GUARDEDBY = createGuardedByAnnotationMirror(new String[0]);
     /** The @{@link GuardedByBottom} annotation. */
     protected final AnnotationMirror GUARDEDBYBOTTOM =
             AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
@@ -312,13 +311,12 @@ public class LockAnnotatedTypeFactory
                 AnnotationMirror superAnno,
                 QualifierKind superKind) {
             if (subKind == GUARDEDBY_KIND && superKind == GUARDEDBY_KIND) {
-                List<String> subLocks =
-                        AnnotationUtils.getElementValueArrayList(
+                String[] subLocks =
+                        AnnotationUtils.getElementValueArray(
                                 superAnno, "value", String.class, true);
-                List<String> superLocks =
-                        AnnotationUtils.getElementValueArrayList(
-                                subAnno, "value", String.class, true);
-                return subLocks.containsAll(superLocks) && superLocks.containsAll(subLocks);
+                String[] superLocks =
+                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                return SystemUtil.sameContents(subLocks, superLocks);
             } else if (subKind == GUARDSATISFIED_KIND && superKind == GUARDSATISFIED_KIND) {
                 return AnnotationUtils.areSame(superAnno, subAnno);
             }
@@ -333,11 +331,11 @@ public class LockAnnotatedTypeFactory
                 QualifierKind qualifierKind2,
                 QualifierKind lubKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
-                List<String> locks1 =
-                        AnnotationUtils.getElementValueArrayList(a1, "value", String.class, true);
-                List<String> locks2 =
-                        AnnotationUtils.getElementValueArrayList(a2, "value", String.class, true);
-                if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
+                String[] locks1 =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                String[] locks2 =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                if (SystemUtil.sameContents(locks1, locks2)) {
                     return a1;
                 } else {
                     return GUARDEDBYUNKNOWN;
@@ -365,11 +363,11 @@ public class LockAnnotatedTypeFactory
                 QualifierKind qualifierKind2,
                 QualifierKind glbKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
-                List<String> locks1 =
-                        AnnotationUtils.getElementValueArrayList(a1, "value", String.class, true);
-                List<String> locks2 =
-                        AnnotationUtils.getElementValueArrayList(a2, "value", String.class, true);
-                if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
+                String[] locks1 =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                String[] locks2 =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                if (SystemUtil.sameContents(locks1, locks2)) {
                     return a1;
                 } else {
                     return GUARDEDBYBOTTOM;
@@ -729,17 +727,17 @@ public class LockAnnotatedTypeFactory
                 break;
             }
         }
-        List<String> lockExpressions;
+        String[] lockExpressions;
         if (value instanceof List) {
             lockExpressions =
-                    AnnotationUtils.getElementValueArrayList(anno, "value", String.class, false);
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         } else if (value instanceof String) {
-            lockExpressions = Collections.singletonList((String) value);
+            lockExpressions = new String[] {(String) value};
         } else {
             return;
         }
 
-        if (lockExpressions.isEmpty()) {
+        if (lockExpressions.length == 0) {
             atm.addAnnotation(GUARDEDBY);
         } else {
             atm.addAnnotation(createGuardedByAnnotationMirror(lockExpressions));
@@ -750,9 +748,9 @@ public class LockAnnotatedTypeFactory
      * @param values a list of lock expressions
      * @return an AnnotationMirror corresponding to @GuardedBy(values)
      */
-    private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
+    private AnnotationMirror createGuardedByAnnotationMirror(String[] values) {
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
-        builder.setValue("value", values.toArray());
+        builder.setValue("value", values);
 
         // Return the resulting AnnotationMirror
         return builder.build();

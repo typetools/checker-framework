@@ -173,10 +173,10 @@ public class CollectionToArrayHeuristics {
                 List<? extends AnnotationMirror> ams = t.getAnnotationMirrors();
                 for (AnnotationMirror am : ams) {
                     if (atypeFactory.areSameByClass(am, ArrayLen.class)) {
-                        List<Integer> lens =
-                                AnnotationUtils.getElementValueArrayList(
+                        Integer[] lens =
+                                AnnotationUtils.getElementValueArray(
                                         am, "value", Integer.class, false);
-                        if (lens.size() == 1 && lens.get(0) == 0) {
+                        if (lens.length == 1 && lens[0] == 0) {
                             return true;
                         }
                     }
