@@ -501,7 +501,12 @@ public class CheckerMain {
         }
     }
 
-    /** Return all the .jar and .JAR files in the given directory. */
+    /**
+     * Returns all the .jar and .JAR files in the given directory.
+     *
+     * @param directory a directory
+     * @return all the .jar and .JAR files in the given directory
+     */
     private List<String> jarFiles(String directory) {
         File dir = new File(directory);
         return Arrays.asList(dir.list((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR")));
