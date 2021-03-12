@@ -256,10 +256,10 @@ public class SystemUtil {
      * @param <T> the class of the object to copy. The returned array's element type is the
      *     <em>run-time</em> type of {@code o}.
      * @param n the number of elements in the returned array
-     * @param o the element to appear repeatedly in the returned array
+     * @param o the element to appear repeatedly in the returned array; may not be null
      * @return an array consisting of n copies of the specified object
      */
-    public static <T> T[] nCopies(int n, T o) {
+    public static <T extends Object> T[] nCopies(int n, T o) {
         @SuppressWarnings("unchecked")
         T[] result = (T[]) Array.newInstance(o.getClass(), n);
         Arrays.fill(result, o);
