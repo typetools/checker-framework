@@ -205,7 +205,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             case ValueAnnotatedTypeFactory.INTVAL_NAME:
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 List<Object> values =
-                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
 
                 if (values.isEmpty()) {
                     checker.reportWarning(node, "no.values.given");

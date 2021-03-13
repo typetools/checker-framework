@@ -122,7 +122,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isUnitsMultiple(metaAnno)) {
                 // retrieve the Class of the base unit annotation
                 Name baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", false);
 
                 // retrieve the SI Prefix of the aliased annotation
                 Prefix prefix =
@@ -311,7 +311,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // TODO: does every alias have to have Prefix?
                 // Retrieve the base unit annotation.
                 Name baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", false);
                 return baseUnitAnnoClass;
             }
         }
@@ -340,7 +340,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (areSameByClass(ama, unitsRelationsAnnoClass)) {
                 String theclassname =
-                        AnnotationUtils.getElementValueClassName(ama, "value", true).toString();
+                        AnnotationUtils.getElementValueClassName(ama, "value", false).toString();
                 if (!Signatures.isClassGetName(theclassname)) {
                     throw new UserError(
                             "Malformed class name \"%s\" should be in ClassGetName format in annotation %s",

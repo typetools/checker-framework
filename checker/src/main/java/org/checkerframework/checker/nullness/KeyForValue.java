@@ -52,7 +52,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
                 && (underlyingType.getKind() == TypeKind.TYPEVAR
                         || underlyingType.getKind() == TypeKind.WILDCARD)) {
             List<String> list =
-                    AnnotationUtils.getElementValueArray(keyfor, "value", String.class, true);
+                    AnnotationUtils.getElementValueArray(keyfor, "value", String.class, false);
             keyForMaps = new LinkedHashSet<>(list.size());
             keyForMaps.addAll(list);
         } else {

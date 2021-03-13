@@ -59,9 +59,10 @@ public abstract class UBQualifier {
             return UpperBoundUnknownQualifier.UNKNOWN;
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
-        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)
-                || AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
+        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
             return parseLTLengthOf(am, offset);
+        } else if (AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
+            return parseSubstringIndexFor(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
             return parseLTEqLengthOf(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
@@ -74,9 +75,16 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
+    /**
+     * Create a UBQualifier from a @LTLengthOf annotation.
+     *
+     * @param am a @LTLengthOf annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @LTLengthOf annotation
+     */
     private static UBQualifier parseLTLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
         List<String> offset =
                 AnnotationUtils.getElementValueArray(am, "offset", String.class, true);
         if (offset.isEmpty()) {
@@ -85,16 +93,48 @@ public abstract class UBQualifier {
         return createUBQualifier(sequences, offset, extraOffset);
     }
 
+    /**
+     * Create a UBQualifier from a @SubstringIndexFor annotation.
+     *
+     * @param am a @SubstringIndexFor annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @SubstringIndexFor annotation
+     */
+    private static UBQualifier parseSubstringIndexFor(AnnotationMirror am, String extraOffset) {
+        List<String> sequences =
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+        List<String> offset =
+                AnnotationUtils.getElementValueArray(am, "offset", String.class, false);
+        if (offset.isEmpty()) {
+            offset = Collections.nCopies(sequences.size(), "");
+        }
+        return createUBQualifier(sequences, offset, extraOffset);
+    }
+
+    /**
+     * Create a UBQualifier from a @LTEqLengthOf annotation.
+     *
+     * @param am a @LTEqLengthOf annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @LTEqLengthOf annotation
+     */
     private static UBQualifier parseLTEqLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
         List<String> offset = Collections.nCopies(sequences.size(), "-1");
         return createUBQualifier(sequences, offset, extraOffset);
     }
 
+    /**
+     * Create a UBQualifier from a @LTOMLengthOf annotation.
+     *
+     * @param am a @LTOMLengthOf annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @LTOMLengthOf annotation
+     */
     private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
         List<String> offset = Collections.nCopies(sequences.size(), "1");
         return createUBQualifier(sequences, offset, extraOffset);
     }
