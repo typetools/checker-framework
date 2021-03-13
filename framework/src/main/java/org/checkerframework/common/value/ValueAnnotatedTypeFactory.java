@@ -69,6 +69,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -313,13 +314,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
         List<Integer> minlens =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
-        List<AnnotationMirror> qualifiers = new ArrayList<>();
-        for (Integer minlen : minlens) {
-            qualifiers.add(createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE));
-        }
+                AnnotationUtils.getElementValueArray(
+                        fieldInvarAnno, "minLen", Integer.class, false);
+        List<AnnotationMirror> qualifiers =
+                SystemUtil.mapList(
+                        (Integer minlen) ->
+                                createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE),
+                        minlens);
 
         FieldInvariants superInvariants = super.getFieldInvariants(element);
         return new FieldInvariants(superInvariants, fields, qualifiers);
@@ -496,17 +499,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return the values in {@code anno} casted to longs
      */
     /* package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
-        List<Long> result;
         if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
-            List<Integer> intValues = getArrayLength(anno);
-            result = new ArrayList<>(intValues.size());
-            for (Integer i : intValues) {
-                result.add(i.longValue());
-            }
+            return SystemUtil.mapList(Integer::longValue, getArrayLength(anno));
         } else {
-            result = getIntValues(anno);
+            return getIntValues(anno);
         }
-        return result;
     }
 
     @Override
@@ -1151,7 +1148,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (intAnno == null) {
             return null;
         }
-        List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+        List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1169,7 +1166,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Double> list =
-                AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
+                AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1187,7 +1184,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Integer> list =
-                AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
+                AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1199,13 +1196,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * annotation so the argument is null.
      *
      * @param intAnno an {@code @IntVal} annotation, or null
+     * @return the values represented by the given {@code @IntVal} annotation
      */
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
             return new ArrayList<>();
         }
         List<Long> intValues =
-                AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+                AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
         TreeSet<Character> charValues = new TreeSet<>();
         for (Long i : intValues) {
             charValues.add((char) i.intValue());
@@ -1226,7 +1224,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Boolean> boolValues =
-                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
+                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, false);
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() == 1) {
             return boolSet.iterator().next();
@@ -1248,7 +1246,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return new ArrayList<>();
         }
         List<Boolean> boolValues =
-                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
+                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, false);
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() > 1) {
             // boolSet={true,false};
@@ -1270,7 +1268,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<String> list =
-                AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, true);
+                AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, false);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }

@@ -1,9 +1,9 @@
 package org.checkerframework.common.value.util;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
 
 /** Utility routines for manipulating numbers. */
@@ -21,47 +21,19 @@ public class NumberUtils {
         }
         switch (typeKind) {
             case BYTE:
-                List<Byte> bytes = new ArrayList<>();
-                for (Number l : numbers) {
-                    bytes.add(l.byteValue());
-                }
-                return bytes;
+                return SystemUtil.mapList(Number::byteValue, numbers);
             case CHAR:
-                List<Integer> chars = new ArrayList<>();
-                for (Number l : numbers) {
-                    chars.add(l.intValue());
-                }
-                return chars;
+                return SystemUtil.mapList(Number::intValue, numbers);
             case DOUBLE:
-                List<Double> doubles = new ArrayList<>();
-                for (Number l : numbers) {
-                    doubles.add(l.doubleValue());
-                }
-                return doubles;
+                return SystemUtil.mapList(Number::doubleValue, numbers);
             case FLOAT:
-                List<Float> floats = new ArrayList<>();
-                for (Number l : numbers) {
-                    floats.add(l.floatValue());
-                }
-                return floats;
+                return SystemUtil.mapList(Number::floatValue, numbers);
             case INT:
-                List<Integer> ints = new ArrayList<>();
-                for (Number l : numbers) {
-                    ints.add(l.intValue());
-                }
-                return ints;
+                return SystemUtil.mapList(Number::intValue, numbers);
             case LONG:
-                List<Long> longs = new ArrayList<>();
-                for (Number l : numbers) {
-                    longs.add(l.longValue());
-                }
-                return longs;
+                return SystemUtil.mapList(Number::longValue, numbers);
             case SHORT:
-                List<Short> shorts = new ArrayList<>();
-                for (Number l : numbers) {
-                    shorts.add(l.shortValue());
-                }
-                return shorts;
+                return SystemUtil.mapList(Number::shortValue, numbers);
             default:
                 throw new UnsupportedOperationException(typeKind + ": " + type);
         }

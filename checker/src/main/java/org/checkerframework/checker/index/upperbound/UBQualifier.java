@@ -59,9 +59,10 @@ public abstract class UBQualifier {
             return UpperBoundUnknownQualifier.UNKNOWN;
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
-        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)
-                || AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
+        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
             return parseLTLengthOf(am, offset);
+        } else if (AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
+            return parseSubstringIndexFor(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
             return parseLTEqLengthOf(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
@@ -74,9 +75,16 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
+    /**
+     * Create a UBQualifier from a @LTLengthOf annotation.
+     *
+     * @param am a @LTLengthOf annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @LTLengthOf annotation
+     */
     private static UBQualifier parseLTLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
         List<String> offset =
                 AnnotationUtils.getElementValueArray(am, "offset", String.class, true);
         if (offset.isEmpty()) {
@@ -85,16 +93,48 @@ public abstract class UBQualifier {
         return createUBQualifier(sequences, offset, extraOffset);
     }
 
+    /**
+     * Create a UBQualifier from a @SubstringIndexFor annotation.
+     *
+     * @param am a @SubstringIndexFor annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @SubstringIndexFor annotation
+     */
+    private static UBQualifier parseSubstringIndexFor(AnnotationMirror am, String extraOffset) {
+        List<String> sequences =
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+        List<String> offset =
+                AnnotationUtils.getElementValueArray(am, "offset", String.class, false);
+        if (offset.isEmpty()) {
+            offset = Collections.nCopies(sequences.size(), "");
+        }
+        return createUBQualifier(sequences, offset, extraOffset);
+    }
+
+    /**
+     * Create a UBQualifier from a @LTEqLengthOf annotation.
+     *
+     * @param am a @LTEqLengthOf annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @LTEqLengthOf annotation
+     */
     private static UBQualifier parseLTEqLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
         List<String> offset = Collections.nCopies(sequences.size(), "-1");
         return createUBQualifier(sequences, offset, extraOffset);
     }
 
+    /**
+     * Create a UBQualifier from a @LTOMLengthOf annotation.
+     *
+     * @param am a @LTOMLengthOf annotation
+     * @param extraOffset the extra offset
+     * @return a UBQualifier created from the @LTOMLengthOf annotation
+     */
     private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
         List<String> offset = Collections.nCopies(sequences.size(), "1");
         return createUBQualifier(sequences, offset, extraOffset);
     }
@@ -285,6 +325,12 @@ public abstract class UBQualifier {
 
     /** The less-than-length-of qualifier (@LTLengthOf). */
     public static class LessThanLengthOf extends UBQualifier {
+        // There are two representations for sequences and offsets.
+        // In source code, they are represented by two parallel arrays, as in
+        //   @LTLengthOf(value = {"a", "b", "a", "c"}, offset = {"-1", "x", "y", "0"}).
+        // In this implementation, they are represented by a single map; the above would be
+        //   { "a" : {"-1", "y"}, "b" : {"x"}, "c" : {"0"} }
+        // Code in this class transforms from one representation to the other.
         /** Maps from sequence name to offset. */
         private final Map<String, Set<OffsetEquation>> map;
 
@@ -687,14 +733,22 @@ public abstract class UBQualifier {
                 } else if (otherglb != null) {
                     glb.addAll(otherglb);
                 }
-                glbMap.put(sequence, simplifyOffsets(glb));
+                glbMap.put(sequence, removeSmallerInts(glb));
             }
             return new LessThanLengthOf(glbMap);
         }
 
-        /** Keeps only the largest offset equation that is only an int value. */
-        private Set<OffsetEquation> simplifyOffsets(Set<OffsetEquation> offsets) {
-            Set<OffsetEquation> newOff = new HashSet<>();
+        /**
+         * Returns a copy of the argument, but it contains just one offset equation that is an int
+         * value -- the largest one in the argument. Any non-int offset equations appear in the
+         * result. Does not side effect its argument.
+         *
+         * @param offsets a set of offset equations
+         * @return a copy of the argument with just one int value (the largest in the input) and
+         *     arbitrarily many non-ints
+         */
+        private Set<OffsetEquation> removeSmallerInts(Set<OffsetEquation> offsets) {
+            Set<OffsetEquation> newOff = new HashSet<>(offsets.size());
             OffsetEquation literal = null;
             for (OffsetEquation eq : offsets) {
                 if (eq.isInt()) {
@@ -933,7 +987,13 @@ public abstract class UBQualifier {
             return map.keySet();
         }
 
-        /** Generates a new UBQualifer without the given sequence and offset. */
+        /**
+         * Generates a new UBQualifer without the given sequence and offset.
+         *
+         * @param sequence a Java expression representing a string
+         * @param offset an integral offset
+         * @return a new UBQualifer without the given sequence and offset
+         */
         public UBQualifier removeOffset(String sequence, int offset) {
             OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
             List<String> sequences = new ArrayList<>();

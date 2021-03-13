@@ -21,6 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Utility methods for the Value Checker. */
@@ -150,16 +151,20 @@ public class ValueCheckerUtils {
         if (origValues == null) {
             return null;
         }
-        List<String> strings = new ArrayList<>();
-        for (Object value : origValues) {
-            strings.add(value.toString());
-        }
-        return strings;
+        return SystemUtil.mapList(Object::toString, origValues);
     }
 
+    /**
+     * Convert the {@code value} argument/element of a @BoolVal annotation into a list.
+     *
+     * @param anno a @BoolVal annotation
+     * @param newClass if String.class, the returned list is a {@code List<String>}
+     * @return the {@code value} of a @BoolVal annotation, as a {@code List<Boolean>} or a {@code
+     *     List<String>}
+     */
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
         List<Boolean> bools =
-                AnnotationUtils.getElementValueArray(anno, "value", Boolean.class, true);
+                AnnotationUtils.getElementValueArray(anno, "value", Boolean.class, false);
 
         if (newClass == String.class) {
             return convertToStringVal(bools);
@@ -170,11 +175,7 @@ public class ValueCheckerUtils {
     private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
         List<String> strings = ValueAnnotatedTypeFactory.getStringValues(anno);
         if (newClass == char[].class) {
-            List<char[]> chars = new ArrayList<>();
-            for (String s : strings) {
-                chars.add(s.toCharArray());
-            }
-            return chars;
+            return SystemUtil.mapList(String::toCharArray, strings);
         }
         return strings;
     }
@@ -186,11 +187,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return convertToStringVal(longs);
         } else if (newClass == Character.class || newClass == char.class) {
-            List<Character> chars = new ArrayList<>();
-            for (Long l : longs) {
-                chars.add((char) l.longValue());
-            }
-            return chars;
+            return SystemUtil.mapList((Long l) -> (char) l.longValue(), longs);
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
                     "ValueAnnotatedTypeFactory: can't convert int to boolean");
@@ -207,11 +204,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return convertToStringVal(doubles);
         } else if (newClass == Character.class || newClass == char.class) {
-            List<Character> chars = new ArrayList<>();
-            for (Double l : doubles) {
-                chars.add((char) l.doubleValue());
-            }
-            return chars;
+            return SystemUtil.mapList((Double l) -> (char) l.doubleValue(), doubles);
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
                     "ValueAnnotatedTypeFactory: can't convert double to boolean");
@@ -248,10 +241,7 @@ public class ValueCheckerUtils {
      * @return list of unique lengths of strings in {@code values}
      */
     public static List<Integer> getLengthsForStringValues(List<String> values) {
-        List<Integer> lengths = new ArrayList<>();
-        for (String str : values) {
-            lengths.add(str.length());
-        }
+        List<Integer> lengths = SystemUtil.mapList(String::length, values);
         return ValueCheckerUtils.removeDuplicates(lengths);
     }
 

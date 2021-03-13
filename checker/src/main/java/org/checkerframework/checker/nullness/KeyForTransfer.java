@@ -69,13 +69,18 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         return result;
     }
 
-    /** @return the String value of a KeyFor, this will throw an exception */
+    /**
+     * Returns the elements/arguments of a {@code @KeyFor} annotation.
+     *
+     * @param keyFor a {@code @KeyFor} annotation
+     * @return the elements/arguments of a {@code @KeyFor} annotation
+     */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
         if (keyFor.getElementValues().isEmpty()) {
             return new LinkedHashSet<>();
         }
 
         return new LinkedHashSet<>(
-                AnnotationUtils.getElementValueArray(keyFor, "value", String.class, true));
+                AnnotationUtils.getElementValueArray(keyFor, "value", String.class, false));
     }
 }

@@ -789,10 +789,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     methodElement.getModifiers().contains(Modifier.ABSTRACT)
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
 
-            List<String> formalParamNames = new ArrayList<>();
-            for (VariableTree param : node.getParameters()) {
-                formalParamNames.add(param.getName().toString());
-            }
+            List<String> formalParamNames =
+                    SystemUtil.mapList(
+                            (VariableTree param) -> param.getName().toString(),
+                            node.getParameters());
             checkContractsAtMethodDeclaration(
                     node, methodElement, formalParamNames, abstractMethod);
 
@@ -1010,15 +1010,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             try {
                 exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
             } catch (JavaExpressionParseException e) {
-                exprJe = null;
-                checker.report(methodTree, e.getDiagMessage());
+                DiagMessage diagMessage = e.getDiagMessage();
+                if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
+                    String s =
+                            String.format(
+                                    "'%s' in the %s %s on the declaration of method '%s': ",
+                                    expressionString,
+                                    contract.kind.errorKey,
+                                    contract.contractAnnotation
+                                            .getAnnotationType()
+                                            .asElement()
+                                            .getSimpleName(),
+                                    methodTree.getName().toString());
+                    checker.reportError(
+                            methodTree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
+                } else {
+                    checker.report(methodTree, e.getDiagMessage());
+                }
+                continue;
             }
-            // If exprJe is null, then an error was issued above.
-            if (exprJe != null && !CFAbstractStore.canInsertJavaExpression(exprJe)) {
+            if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
                 checker.reportError(methodTree, "flowexpr.parse.error", expressionString);
-                exprJe = null;
+                continue;
             }
-            if (exprJe != null && !abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
+            if (!abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
                 // Check the contract, which is a postcondition.
                 // Preconditions are checked at method invocations, not declarations.
 
@@ -1047,24 +1062,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                         .asElement()
                                         .getSimpleName()
                                 + " on the declaration";
-                if (exprJe == null) {
-                    checker.reportWarning(
-                            methodTree,
-                            "expression.parameter.name.invalid",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            expressionString,
-                            formalParamNames.indexOf(expressionString) + 1);
-                } else {
-                    checker.reportWarning(
-                            methodTree,
-                            "expression.parameter.name.shadows.field",
-                            locationOfExpression,
-                            methodTree.getName().toString(),
-                            expressionString,
-                            expressionString,
-                            formalParamNames.indexOf(expressionString) + 1);
-                }
+                checker.reportWarning(
+                        methodTree,
+                        "expression.parameter.name.shadows.field",
+                        locationOfExpression,
+                        methodTree.getName().toString(),
+                        expressionString,
+                        expressionString,
+                        formalParamNames.indexOf(expressionString) + 1);
             }
 
             checkParametersAreEffectivelyFinal(methodTree, methodElement, expressionString);
@@ -1519,10 +1524,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
-        for (AnnotatedTypeVariable param : invokedMethod.getTypeVariables()) {
-            paramBounds.add(param.getBounds());
-        }
+        List<AnnotatedTypeParameterBounds> paramBounds =
+                SystemUtil.mapList(
+                        AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
 
         ExecutableElement method = invokedMethod.getElement();
         CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
@@ -1870,10 +1874,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
         checkVarargs(constructorType, node);
 
-        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
-        for (AnnotatedTypeVariable param : constructorType.getTypeVariables()) {
-            paramBounds.add(param.getBounds());
-        }
+        List<AnnotatedTypeParameterBounds> paramBounds =
+                SystemUtil.mapList(
+                        AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
 
         checkTypeArguments(
                 node,
@@ -4255,10 +4258,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
         ThisReference receiverJe =
                 new ThisReference(methodType.getReceiverType().getUnderlyingType());
-        List<JavaExpression> parametersJe = new ArrayList<>();
-        for (VariableElement param : methodElt.getParameters()) {
-            parametersJe.add(new LocalVariable(param));
-        }
+        List<JavaExpression> parametersJe =
+                SystemUtil.mapList(LocalVariable::new, methodElt.getParameters());
+
         JavaExpressionContext jeContext =
                 new JavaExpressionContext(receiverJe, parametersJe, checker);
 

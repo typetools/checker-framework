@@ -1154,16 +1154,12 @@ public final class TreeUtils {
     /**
      * Converts the given AnnotationTrees to AnnotationMirrors.
      *
-     * @param annoTreess list of annotation trees to convert to annotation mirrors
+     * @param annoTrees list of annotation trees to convert to annotation mirrors
      * @return list of annotation mirrors that represent the given annotation trees
      */
     public static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
-            List<? extends AnnotationTree> annoTreess) {
-        List<AnnotationMirror> annotations = new ArrayList<>(annoTreess.size());
-        for (AnnotationTree anno : annoTreess) {
-            annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
-        }
-        return annotations;
+            List<? extends AnnotationTree> annoTrees) {
+        return SystemUtil.mapList(TreeUtils::annotationFromAnnotationTree, annoTrees);
     }
 
     /**

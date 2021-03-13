@@ -112,6 +112,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
@@ -540,32 +541,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
             // Check @Target values
-            ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
-            List<ElementType> otherElementTypes = new ArrayList<>();
-            for (ElementType element : elements) {
+            ElementType[] targetValues = annotationClass.getAnnotation(Target.class).value();
+            List<ElementType> badTargetValues = new ArrayList<>();
+            for (ElementType element : targetValues) {
                 if (!(element == ElementType.TYPE_USE || element == ElementType.TYPE_PARAMETER)) {
                     // if there's an ElementType with an enumerated value of something other
                     // than TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
-                    otherElementTypes.add(element);
+                    badTargetValues.add(element);
                 }
             }
-            if (!otherElementTypes.isEmpty()) {
-                StringBuilder buf =
-                        new StringBuilder("The @Target meta-annotation on type qualifier ");
-                buf.append(annotationClass.toString());
-                buf.append(" must not contain ");
-                for (int i = 0; i < otherElementTypes.size(); i++) {
-                    if (i == 1 && otherElementTypes.size() == 2) {
-                        buf.append(" or ");
-                    } else if (i == otherElementTypes.size() - 1) {
-                        buf.append(", or ");
-                    } else if (i != 0) {
-                        buf.append(", ");
-                    }
-                    buf.append(otherElementTypes.get(i));
-                }
-                buf.append(".");
-                throw new TypeSystemError(buf.toString());
+            if (!badTargetValues.isEmpty()) {
+                String msg =
+                        "The @Target meta-annotation on type qualifier "
+                                + annotationClass.toString()
+                                + " must not contain "
+                                + SystemUtil.conjunction("or", badTargetValues)
+                                + ".";
+                throw new TypeSystemError(msg);
             }
         }
     }
@@ -1626,15 +1618,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
         List<@CanonicalName Name> classes =
-                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
-        List<AnnotationMirror> qualifiers = new ArrayList<>();
-        for (Name name : classes) {
-            // Calling AnnotationBuilder.fromName (which ignores elements/fields) is acceptable
-            // because @FieldInvariant does not handle classes with elements/fields.
-            qualifiers.add(AnnotationBuilder.fromName(elements, name));
-        }
+                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
+        List<AnnotationMirror> qualifiers =
+                SystemUtil.mapList(
+                        (Name name) ->
+                                // Calling AnnotationBuilder.fromName (which ignores
+                                // elements/fields) is acceptable because @FieldInvariant does not
+                                // handle classes with elements/fields.
+                                AnnotationBuilder.fromName(elements, name),
+                        classes);
         if (qualifiers.size() == 1) {
             while (fields.size() > qualifiers.size()) {
                 qualifiers.add(qualifiers.get(0));
@@ -1648,19 +1642,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Only keep qualifiers that are supported by this checker.  (The other qualifiers cannot
         // be checked by this checker, so they must be ignored.)
-        List<String> supportFields = new ArrayList<>();
+        List<String> annotatedFields = new ArrayList<>();
         List<AnnotationMirror> supportedQualifiers = new ArrayList<>();
         for (int i = 0; i < fields.size(); i++) {
             if (isSupportedQualifier(qualifiers.get(i))) {
+                annotatedFields.add(fields.get(i));
                 supportedQualifiers.add(qualifiers.get(i));
-                supportFields.add(fields.get(i));
             }
         }
-        if (supportFields.isEmpty() && qualifiers.isEmpty()) {
+        if (annotatedFields.isEmpty()) {
             return null;
         }
 
-        return new FieldInvariants(supportFields, supportedQualifiers);
+        return new FieldInvariants(annotatedFields, supportedQualifiers);
     }
 
     /**
@@ -3934,14 +3928,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotationClass) {
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
-        Set<AnnotationMirror> annotationMirrors = AnnotationUtils.createAnnotationSet();
 
+        Set<AnnotationMirror> annotationMirrors = AnnotationUtils.createAnnotationSet();
         // Consider real annotations.
         annotationMirrors.addAll(getAnnotatedType(element).getAnnotations());
-
         // Consider declaration annotations
         annotationMirrors.addAll(getDeclAnnotations(element));
+
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
 
         // Go through all annotations found.
         for (AnnotationMirror annotation : annotationMirrors) {
