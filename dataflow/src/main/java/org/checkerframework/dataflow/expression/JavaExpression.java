@@ -10,7 +10,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -576,12 +575,7 @@ public abstract class JavaExpression {
      * @return list of parameters as {@link LocalVariable}s
      */
     public static List<JavaExpression> getParametersAsLocalVariables(ExecutableElement methodEle) {
-        List<JavaExpression> parameters = new ArrayList<>(methodEle.getParameters().size());
-        for (VariableElement variableElement : methodEle.getParameters()) {
-            LocalVariable parameter = new LocalVariable(variableElement);
-            parameters.add(parameter);
-        }
-        return parameters;
+        return SystemUtil.mapList(variableElement -> LocalVariable::new, methodEle.getParameters());
     }
 
     /**
@@ -696,10 +690,11 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodBody(MethodTree methodTree) {
-        List<JavaExpression> parametersJe = new ArrayList<>(methodTree.getParameters().size());
-        for (VariableTree param : methodTree.getParameters()) {
-            parametersJe.add(new LocalVariable(TreeUtils.elementFromDeclaration(param)));
-        }
+        List<JavaExpression> parametersJe =
+                SystemUtil.mapList(
+                        (VariableTree param) ->
+                                new LocalVariable(TreeUtils.elementFromDeclaration(param)),
+                        methodTree.getParameters());
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
     }
 
@@ -710,11 +705,11 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
+        JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
         List<JavaExpression> argumentsJe =
                 argumentTreesToJavaExpressions(
-                        methodInvocationTree, methodInvocationTree.getArguments());
-
-        JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
+                        TreeUtils.elementFromUse(methodInvocationTree),
+                        methodInvocationTree.getArguments());
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
 
@@ -725,13 +720,10 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
-        List<JavaExpression> argumentsJe = new ArrayList<>(invocationNode.getArguments().size());
-        for (Node argTree : invocationNode.getArguments()) {
-            argumentsJe.add(JavaExpression.fromNode(argTree));
-        }
-
-        Node receiver = invocationNode.getTarget().getReceiver();
-        JavaExpression receiverJe = JavaExpression.fromNode(receiver);
+        JavaExpression receiverJe =
+                JavaExpression.fromNode(invocationNode.getTarget().getReceiver());
+        List<JavaExpression> argumentsJe =
+                SystemUtil.mapList(JavaExpression::fromNode, invocationNode.getArguments());
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
 
@@ -742,10 +734,10 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
-        List<JavaExpression> argumentsJe =
-                argumentTreesToJavaExpressions(newClassTree, newClassTree.getArguments());
-
         JavaExpression receiverJe = JavaExpression.getReceiver(newClassTree);
+        List<JavaExpression> argumentsJe =
+                argumentTreesToJavaExpressions(
+                        TreeUtils.elementFromUse(newClassTree), newClassTree.getArguments());
         return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
     }
 
@@ -753,25 +745,18 @@ public abstract class JavaExpression {
      * Converts method or constructor arguments from Trees to JavaExpressions, accounting for
      * varargs.
      *
-     * @param tree invocation of the method or constructor
-     * @param argTrees the arguments to the method or constructor; subexpressions of {@code tree}
+     * @param method the method or constructor being invoked
+     * @param argTrees the arguments to the method or constructor
      * @return the arguments, as JavaExpressions
      */
     private static List<JavaExpression> argumentTreesToJavaExpressions(
-            ExpressionTree tree, List<? extends ExpressionTree> argTrees) {
-        ExecutableElement method;
-        if (tree.getKind() == Kind.METHOD_INVOCATION) {
-            MethodInvocationTree methodInvoc = (MethodInvocationTree) tree;
-            method = TreeUtils.elementFromUse(methodInvoc);
-        } else {
-            method = TreeUtils.elementFromUse((NewClassTree) tree);
-        }
+            ExecutableElement method, List<? extends ExpressionTree> argTrees) {
         if (isVarArgsInvocation(method, argTrees)) {
             List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
-
             for (int i = 0; i < method.getParameters().size() - 1; i++) {
                 result.add(JavaExpression.fromTree(argTrees.get(i)));
             }
+
             List<JavaExpression> varargArgs =
                     new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
             for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
@@ -784,11 +769,7 @@ public abstract class JavaExpression {
             return result;
         }
 
-        List<JavaExpression> result = new ArrayList<>(argTrees.size());
-        for (ExpressionTree argTree : argTrees) {
-            result.add(JavaExpression.fromTree(argTree));
-        }
-        return result;
+        return SystemUtil.mapList(JavaExpression.fromTree, argTrees);
     }
 
     /**
