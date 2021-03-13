@@ -169,6 +169,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
@@ -2908,18 +2909,18 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         List<? extends ExpressionTree> dimensions = tree.getDimensions();
         List<? extends ExpressionTree> initializers = tree.getInitializers();
-
-        List<Node> dimensionNodes = new ArrayList<>();
         assert dimensions != null;
-        for (ExpressionTree dim : dimensions) {
-            dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
-        }
 
-        List<Node> initializerNodes = new ArrayList<>();
+        List<Node> dimensionNodes =
+                SystemUtil.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
+
+        List<Node> initializerNodes;
         if (initializers != null) {
-            for (ExpressionTree init : initializers) {
-                initializerNodes.add(assignConvert(scan(init, p), elemType));
-            }
+            initializerNodes =
+                    SystemUtil.mapList(
+                            init -> assignConvert(scan(init, p), elemType), initializers);
+        } else {
+            initializerNodes = Collections.emptyList();
         }
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
@@ -3103,12 +3104,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         "start of try statement #" + TreeUtils.treeUids.get(tree),
                         env.getTypeUtils()));
 
-        List<Pair<TypeMirror, Label>> catchLabels = new ArrayList<>();
-        for (CatchTree c : catches) {
-            TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
-            assert type != null : "exception parameters must have a type";
-            catchLabels.add(Pair.of(type, new Label()));
-        }
+        List<Pair<TypeMirror, Label>> catchLabels =
+                SystemUtil.mapList(
+                        (CatchTree c) -> {
+                            TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
+                            assert type != null : "exception parameters must have a type";
+                            return Pair.of(type, new Label());
+                        },
+                        catches);
 
         // Store return/break/continue labels, just in case we need them for a finally block.
         TryFinallyScopeCell oldReturnTargetL = returnTargetL;

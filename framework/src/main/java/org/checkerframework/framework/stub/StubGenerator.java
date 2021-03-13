@@ -217,10 +217,8 @@ public class StubGenerator {
         if (!typeElement.getInterfaces().isEmpty()) {
             final boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
             out.print(isInterface ? " extends " : " implements ");
-            List<String> ls = new ArrayList<>();
-            for (TypeMirror itf : typeElement.getInterfaces()) {
-                ls.add(formatType(itf));
-            }
+            List<String> ls =
+                    SystemUtil.mapList(StubGenerator::formatType, typeElement.getInterfaces());
             out.print(formatList(ls));
         }
 
@@ -361,10 +359,8 @@ public class StubGenerator {
 
         if (!method.getThrownTypes().isEmpty()) {
             out.print(" throws ");
-            List<String> ltt = new ArrayList<>();
-            for (TypeMirror tt : method.getThrownTypes()) {
-                ltt.add(formatType(tt));
-            }
+            List<String> ltt =
+                    SystemUtil.mapList(StubGenerator::formatType, method.getThrownTypes());
             out.print(formatList(ltt));
         }
         out.println(';');

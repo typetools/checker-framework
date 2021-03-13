@@ -805,10 +805,9 @@ public class WholeProgramInferenceJavaParserStorage
         public AnnotatedTypeMirror getParameterTypeInitialized(
                 AnnotatedTypeMirror type, int index, AnnotatedTypeFactory atf) {
             if (parameterTypes == null) {
-                parameterTypes = new ArrayList<>();
-                for (int i = 0; i < declaration.getParameters().size(); i++) {
-                    parameterTypes.add(null);
-                }
+                parameterTypes =
+                        new ArrayList<>(
+                                Collections.nCopies(declaration.getParameters().size(), null));
             }
 
             if (parameterTypes.get(index) == null) {

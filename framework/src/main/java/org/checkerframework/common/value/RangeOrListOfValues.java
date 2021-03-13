@@ -8,6 +8,7 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -108,11 +109,7 @@ class RangeOrListOfValues {
      * @return a list of Integers
      */
     public static List<Integer> convertLongsToInts(List<Long> newValues) {
-        List<Integer> result = new ArrayList<>(newValues.size());
-        for (Long l : newValues) {
-            result.add(convertLongToInt(l));
-        }
-        return result;
+        return SystemUtil.mapList(RangeOrListOfValues::convertLongToInt, newValues);
     }
 
     /**

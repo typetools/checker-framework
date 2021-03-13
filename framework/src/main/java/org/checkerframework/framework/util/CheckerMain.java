@@ -501,16 +501,15 @@ public class CheckerMain {
         }
     }
 
-    /** Return all the .jar and .JAR files in the given directory. */
+    /**
+     * Returns all the .jar and .JAR files in the given directory.
+     *
+     * @param directory a directory
+     * @return all the .jar and .JAR files in the given directory
+     */
     private List<String> jarFiles(String directory) {
         File dir = new File(directory);
-        File[] jarFiles =
-                dir.listFiles((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
-        List<String> result = new ArrayList<>(jarFiles.length);
-        for (File jarFile : jarFiles) {
-            result.add(jarFile.toString());
-        }
-        return result;
+        return Arrays.asList(dir.list((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR")));
     }
 
     /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
@@ -712,10 +711,8 @@ public class CheckerMain {
                                     + ". This may be because you built the Checker Framework under Java 11 but are running it under Java 8.");
                 }
             }
-            List<String> missingAbsoluteFilenames = new ArrayList<>(missingFiles.size());
-            for (File missingFile : missingFiles) {
-                missingAbsoluteFilenames.add(missingFile.getAbsolutePath());
-            }
+            List<String> missingAbsoluteFilenames =
+                    SystemUtil.mapList(File::getAbsolutePath, missingFiles);
             throw new RuntimeException(
                     "The following files could not be located: "
                             + String.join(", ", missingAbsoluteFilenames));

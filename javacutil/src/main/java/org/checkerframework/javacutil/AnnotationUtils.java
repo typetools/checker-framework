@@ -1034,11 +1034,8 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-        List<@CanonicalName Name> names = new ArrayList<>();
-        for (Type.ClassType classType : la) {
-            names.add(classType.asElement().getQualifiedName());
-        }
-        return names;
+        return SystemUtil.<Type.ClassType, @CanonicalName Name>mapList(
+                (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
     }
 
     // The Javadoc doesn't use @link because framework is a different project than this one
