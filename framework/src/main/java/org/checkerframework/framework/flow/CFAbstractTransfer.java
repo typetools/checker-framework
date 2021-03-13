@@ -595,7 +595,7 @@ public abstract class CFAbstractTransfer<
      * stringToJavaExpr}.
      *
      * @param annoFromContract an annotation from a contract
-     * @param stringToJavaExpr function to use to convert the expressions string in the annotation
+     * @param stringToJavaExpr function to use to convert the expression string in the annotation
      * @return the standardized annotation, or the argument if it does not need standardization
      */
     private AnnotationMirror viewpointAdaptAnnoFromContract(
@@ -1199,7 +1199,7 @@ public abstract class CFAbstractTransfer<
                         StringToJavaExpression.atMethodInvocation(
                                 stringExpr, invocationNode, analysis.checker);
         for (Contract p : postconditions) {
-            // Viewpoint-adapt with respect to the method use (the call site).
+            // Viewpoint-adapt to the method use (the call site).
             AnnotationMirror anno = viewpointAdaptAnnoFromContract(p.annotation, stringToJavaExpr);
 
             String expressionString = p.expressionString;
