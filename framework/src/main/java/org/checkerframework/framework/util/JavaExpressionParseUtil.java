@@ -106,7 +106,7 @@ public class JavaExpressionParseUtil {
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /**
-     * Parsable replacement for parameter references. It is parseable because it is a Java
+     * Parsable replacement for parameter references. It is parsable because it is a Java
      * identifier.
      */
     private static final String PARAMETER_REPLACEMENT = "_param_";

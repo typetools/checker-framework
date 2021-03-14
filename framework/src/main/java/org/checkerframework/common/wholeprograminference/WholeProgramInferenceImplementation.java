@@ -388,7 +388,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // names. For example, compiler-generated temporary variables will
         // have invalid names. Recording facts about fields with
         // invalid names causes jaif-based WPI to crash when reading the .jaif
-        // file, and stub-based WPI to generate unparseable stub files.
+        // file, and stub-based WPI to generate unparsable stub files.
         // See https://github.com/typetools/checker-framework/issues/3442
         if (!SourceVersion.isIdentifier(fieldName)) {
             return true;
