@@ -242,7 +242,7 @@ public class TestDiagnosticUtils {
         }
         DiagnosticKind categoryEnum = DiagnosticKind.fromParseString(category);
         if (categoryEnum == null) {
-            throw new Error("Unparseable category: " + category);
+            throw new Error("Unparsable category: " + category);
         }
 
         return Pair.of(categoryEnum, isFixable);
