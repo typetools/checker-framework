@@ -3,6 +3,7 @@ package org.checkerframework.checker.units.util;
 import org.checkerframework.checker.units.qual.A;
 import org.checkerframework.checker.units.qual.C;
 import org.checkerframework.checker.units.qual.K;
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.cd;
 import org.checkerframework.checker.units.qual.degrees;
 import org.checkerframework.checker.units.qual.g;
@@ -95,6 +96,9 @@ public class UnitsTools {
   public static @g int fromKiloGramToGram(@kg int kg) {
     return kg * 1000;
   }
+
+  // Force
+  public static final @N int N = 1;
 
   // Speed
   public static final @mPERs int mPERs = 1;

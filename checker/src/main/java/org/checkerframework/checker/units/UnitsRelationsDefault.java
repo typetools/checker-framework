@@ -4,8 +4,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.Prefix;
+import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km2;
 import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
@@ -22,7 +25,24 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 /** Default relations between SI units. */
 public class UnitsRelationsDefault implements UnitsRelations {
   /** SI units. */
-  protected AnnotationMirror m, km, mm, m2, km2, mm2, m3, km3, mm3, s, h, mPERs, kmPERh, mPERs2;
+  protected AnnotationMirror m,
+      km,
+      mm,
+      m2,
+      km2,
+      mm2,
+      m3,
+      km3,
+      mm3,
+      s,
+      h,
+      mPERs,
+      kmPERh,
+      mPERs2,
+      g,
+      kg,
+      N;
+
   /** The Element Utilities from the Units Checker's processing environment. */
   protected Elements elements;
 
@@ -53,6 +73,10 @@ public class UnitsRelationsDefault implements UnitsRelations {
     kmPERh = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, kmPERh.class);
 
     mPERs2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mPERs2.class);
+
+    g = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, g.class);
+    kg = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, g.class, Prefix.kilo);
+    N = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, N.class);
 
     return this;
   }
@@ -105,6 +129,9 @@ public class UnitsRelationsDefault implements UnitsRelations {
     } else if (havePairOfUnitsIgnoringOrder(lht, h, rht, kmPERh)) {
       // h * kmPERh or kmPERh * h => km
       return km;
+    } else if (havePairOfUnitsIgnoringOrder(lht, kg, rht, mPERs2)) {
+      // kg * mPERs2 or mPERs2 * kg = N
+      return N;
     } else {
       return null;
     }
@@ -161,6 +188,15 @@ public class UnitsRelationsDefault implements UnitsRelations {
     } else if (havePairOfUnits(lht, mPERs, rht, mPERs2)) {
       // mPERs / mPERs2 => s  (velocity / acceleration == time)
       return s;
+    } else if (UnitsRelationsTools.hasSpecificUnit(lht, N)) {
+      if (UnitsRelationsTools.hasSpecificUnit(rht, kg)) {
+        // N / kg => mPERs2
+        return mPERs2;
+      } else if (UnitsRelationsTools.hasSpecificUnit(rht, mPERs2)) {
+        // N / mPERs2 => kg
+        return kg;
+      }
+      return null;
     } else {
       return null;
     }

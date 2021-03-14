@@ -1,4 +1,6 @@
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
 import org.checkerframework.checker.units.qual.km3;
@@ -43,6 +45,8 @@ public class Division {
     @m3 int m3 = 125 * UnitsTools.m3;
     @km3 int km3 = 27 * UnitsTools.km3;
     @mm3 int mm3 = 64 * UnitsTools.mm3;
+    @kg int kg = 11 * UnitsTools.kg;
+    @N int N = 7 * UnitsTools.N;
 
     // m / s = mPERs
     @mPERs int velocitym = m / s;
@@ -103,6 +107,16 @@ public class Division {
     @s int times2 = mPERs / mPERs2;
     // :: error: (assignment.type.incompatible)
     times2 = kmPERh / mPERs2;
+
+    // mPERs2 = N / kg
+    @mPERs2 int accel2 = N / kg;
+    // :: error: (assignment.type.incompatible)
+    accel2 = N / km;
+
+    // kg = N / mPERs2
+    @kg int mass = N / mPERs2;
+    // :: error: (assignment.type.incompatible)
+    mass = s / mPERs2;
   }
 
   void SpeedOfSoundTests() {

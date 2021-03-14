@@ -1,3 +1,4 @@
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
@@ -158,6 +159,14 @@ public class Multiples {
     @m int lengthkmbad1 = h * speedkm;
     // :: error: (assignment.type.incompatible)
     @mm int lengthkmbad2 = h * speedkm;
+
+    // kg * mPERs2 = N
+    @kg int mass = 40 * UnitsTools.kg;
+    @mPERs2 int accel = 50 * UnitsTools.mPERs2;
+    @N int force = mass * accel;
+
+    // mPERs2 * kg = N
+    @N int alsoforce = accel * mass;
 
     // s * s * mPERs2 = m
     // TODO: fix checker so it is insensitive to order of operations as long as final results'

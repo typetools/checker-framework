@@ -3,10 +3,12 @@ import org.checkerframework.checker.units.qual.Acceleration;
 import org.checkerframework.checker.units.qual.Area;
 import org.checkerframework.checker.units.qual.C;
 import org.checkerframework.checker.units.qual.Current;
+import org.checkerframework.checker.units.qual.Force;
 import org.checkerframework.checker.units.qual.K;
 import org.checkerframework.checker.units.qual.Length;
 import org.checkerframework.checker.units.qual.Luminance;
 import org.checkerframework.checker.units.qual.Mass;
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.Substance;
 import org.checkerframework.checker.units.qual.Temperature;
 import org.checkerframework.checker.units.qual.Time;
@@ -141,6 +143,11 @@ public class SubtractionUnits {
     @mol int bMole = 5 * UnitsTools.mol;
     @mol int sMole = aMole - bMole;
 
+    // Newton
+    @N int aNewton = 5 * UnitsTools.N;
+    @N int bNewton = 5 * UnitsTools.N;
+    @N int sNewton = aNewton - bNewton;
+
     // Second
     @s int aSecond = 5 * UnitsTools.s;
     @s int bSecond = 5 * UnitsTools.s;
@@ -162,6 +169,10 @@ public class SubtractionUnits {
     // Current
     @Current int aCurrent = 5 * UnitsTools.A;
     @Current int bCurrent = 5 * UnitsTools.A;
+
+    // Force
+    @Force int aForce = 5 * UnitsTools.N;
+    @Force int bForce = 5 * UnitsTools.N;
 
     // Length
     @Length int aLength = 5 * UnitsTools.m;
@@ -230,6 +241,10 @@ public class SubtractionUnits {
     // Volume
     // :: error: (assignment.type.incompatible)
     @Volume int sVolume = aVolume - bArea;
+
+    // Force
+    // :: error: (assignment.type.incompatible)
+    sMass = aForce - bForce;
 
     // Units
     // Amperes
@@ -320,6 +335,10 @@ public class SubtractionUnits {
     @s int aSecond = 5 * UnitsTools.s;
     @s int bSecond = 5 * UnitsTools.s;
 
+    // Newton
+    @N int aNewton = 5 * UnitsTools.N;
+    @N int bNewton = 5 * UnitsTools.N;
+
     // Units
     // Amperes
     // :: error: (assignment.type.incompatible)
@@ -404,5 +423,9 @@ public class SubtractionUnits {
     // Second
     // :: error: (assignment.type.incompatible)
     @s int sSecond = aSecond - bSquareKilometer;
+
+    // Newton
+    // :: error: (assignment.type.incompatible)
+    sKilogram = aNewton - bNewton;
   }
 }
