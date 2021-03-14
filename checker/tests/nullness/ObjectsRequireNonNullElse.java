@@ -7,12 +7,12 @@ import static java.util.Objects.requireNonNullElse;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class ObjectsRequireNonNullElse {
-    public static void main(String[] args) {
-        @NonNull String value = requireNonNullElse(null, "Something");
-        System.err.println(requireNonNullElse(null, "Something"));
+  public static void main(String[] args) {
+    @NonNull String value = requireNonNullElse(null, "Something");
+    System.err.println(requireNonNullElse(null, "Something"));
 
-        // This should fail typechecks, because it fails at run time.
-        // :: error: (argument.type.incompatible)
-        System.err.println((Object) requireNonNullElse(null, null));
-    }
+    // This should fail typechecks, because it fails at run time.
+    // :: error: (argument.type.incompatible)
+    System.err.println((Object) requireNonNullElse(null, null));
+  }
 }

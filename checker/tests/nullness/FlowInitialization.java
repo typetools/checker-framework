@@ -4,51 +4,51 @@ import org.checkerframework.framework.qual.EnsuresQualifier;
 
 public class FlowInitialization {
 
-    @NonNull String f;
-    @Nullable String g;
+  @NonNull String f;
+  @Nullable String g;
 
-    // :: error: (initialization.fields.uninitialized)
-    public FlowInitialization() {}
+  // :: error: (initialization.fields.uninitialized)
+  public FlowInitialization() {}
 
-    public FlowInitialization(long l) {
-        g = "";
-        f = g;
+  public FlowInitialization(long l) {
+    g = "";
+    f = g;
+  }
+
+  // :: error: (initialization.fields.uninitialized)
+  public FlowInitialization(boolean b) {
+    if (b) {
+      f = "";
     }
+  }
 
-    // :: error: (initialization.fields.uninitialized)
-    public FlowInitialization(boolean b) {
-        if (b) {
-            f = "";
-        }
+  // :: error: (initialization.fields.uninitialized)
+  public FlowInitialization(int i) {
+    if (i == 0) {
+      throw new RuntimeException();
     }
+  }
 
-    // :: error: (initialization.fields.uninitialized)
-    public FlowInitialization(int i) {
-        if (i == 0) {
-            throw new RuntimeException();
-        }
+  // :: error: (initialization.fields.uninitialized)
+  public FlowInitialization(char c) {
+    if (c == 'c') {
+      return;
     }
+    f = "";
+  }
 
-    // :: error: (initialization.fields.uninitialized)
-    public FlowInitialization(char c) {
-        if (c == 'c') {
-            return;
-        }
-        f = "";
-    }
+  public FlowInitialization(double d) {
+    setField();
+  }
 
-    public FlowInitialization(double d) {
-        setField();
-    }
-
-    @EnsuresQualifier(expression = "f", qualifier = NonNull.class)
-    public void setField(@UnknownInitialization FlowInitialization this) {
-        f = "";
-    }
+  @EnsuresQualifier(expression = "f", qualifier = NonNull.class)
+  public void setField(@UnknownInitialization FlowInitialization this) {
+    f = "";
+  }
 }
 
 class FlowPrimitives {
-    boolean b;
-    int t;
-    char c;
+  boolean b;
+  int t;
+  char c;
 }

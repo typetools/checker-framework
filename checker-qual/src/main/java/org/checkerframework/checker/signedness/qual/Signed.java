@@ -21,23 +21,23 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSignedness.class})
 @DefaultFor(
-        typeKinds = {
-            TypeKind.BYTE,
-            TypeKind.INT,
-            TypeKind.LONG,
-            TypeKind.SHORT,
-            TypeKind.FLOAT,
-            TypeKind.DOUBLE
-        },
-        types = {
-            java.lang.Byte.class,
-            java.lang.Integer.class,
-            java.lang.Long.class,
-            java.lang.Short.class,
-            java.lang.Float.class,
-            java.lang.Double.class
-        })
+    typeKinds = {
+      TypeKind.BYTE,
+      TypeKind.INT,
+      TypeKind.LONG,
+      TypeKind.SHORT,
+      TypeKind.FLOAT,
+      TypeKind.DOUBLE
+    },
+    types = {
+      java.lang.Byte.class,
+      java.lang.Integer.class,
+      java.lang.Long.class,
+      java.lang.Short.class,
+      java.lang.Float.class,
+      java.lang.Double.class
+    })
 @UpperBoundFor(
-        typeKinds = {TypeKind.FLOAT, TypeKind.DOUBLE},
-        types = {java.lang.Float.class, java.lang.Double.class})
+    typeKinds = {TypeKind.FLOAT, TypeKind.DOUBLE},
+    types = {java.lang.Float.class, java.lang.Double.class})
 public @interface Signed {}

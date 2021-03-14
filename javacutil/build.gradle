@@ -3,11 +3,15 @@ repositories {
 }
 
 dependencies {
+    implementation project(':checker-qual')
+
     // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
     // https://mvnrepository.com/artifact/org.plumelib/plume-util
-    implementation 'org.plumelib:plume-util:1.4.1'
+    implementation 'org.plumelib:plume-util:1.5.1'
 
-    implementation project(':checker-qual')
+    // External dependencies:
+    // If you add an external dependency, you must shadow its packages.
+    // See the comment in ../build.gradle in the shadowJar block.
 }
 
 apply from: rootProject.file("gradle-mvn-push.gradle")

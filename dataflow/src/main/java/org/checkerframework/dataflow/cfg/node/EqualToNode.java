@@ -14,40 +14,40 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class EqualToNode extends BinaryOperationNode {
 
-    /**
-     * Create a new EqualToNode object.
-     *
-     * @param tree the tree for this node
-     * @param left the first argument
-     * @param right the second argument
-     */
-    public EqualToNode(BinaryTree tree, Node left, Node right) {
-        super(tree, left, right);
-        assert tree.getKind() == Kind.EQUAL_TO;
-    }
+  /**
+   * Create a new EqualToNode object.
+   *
+   * @param tree the tree for this node
+   * @param left the first argument
+   * @param right the second argument
+   */
+  public EqualToNode(BinaryTree tree, Node left, Node right) {
+    super(tree, left, right);
+    assert tree.getKind() == Kind.EQUAL_TO;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitEqualTo(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitEqualTo(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " == " + getRightOperand() + ")";
-    }
+  @Override
+  public String toString() {
+    return "(" + getLeftOperand() + " == " + getRightOperand() + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof EqualToNode)) {
-            return false;
-        }
-        EqualToNode other = (EqualToNode) obj;
-        return getLeftOperand().equals(other.getLeftOperand())
-                && getRightOperand().equals(other.getRightOperand());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof EqualToNode)) {
+      return false;
     }
+    EqualToNode other = (EqualToNode) obj;
+    return getLeftOperand().equals(other.getLeftOperand())
+        && getRightOperand().equals(other.getRightOperand());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getLeftOperand(), getRightOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getLeftOperand(), getRightOperand());
+  }
 }

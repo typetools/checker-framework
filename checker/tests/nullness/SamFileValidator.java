@@ -5,9 +5,9 @@ import java.util.Map;
 
 public class SamFileValidator {
 
-    private class Codec {
-        public Map.Entry<String, String> decode() {
-            return new AbstractMap.SimpleEntry("hello", "goodbye");
-        }
+  private class Codec {
+    public Map.Entry<String, String> decode() {
+      return new AbstractMap.SimpleEntry("hello", "goodbye");
     }
+  }
 }

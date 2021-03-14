@@ -14,33 +14,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class NumericalAdditionNode extends BinaryOperationNode {
 
-    public NumericalAdditionNode(BinaryTree tree, Node left, Node right) {
-        super(tree, left, right);
-        assert tree.getKind() == Kind.PLUS || tree.getKind() == Kind.PLUS_ASSIGNMENT;
-    }
+  public NumericalAdditionNode(BinaryTree tree, Node left, Node right) {
+    super(tree, left, right);
+    assert tree.getKind() == Kind.PLUS || tree.getKind() == Kind.PLUS_ASSIGNMENT;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitNumericalAddition(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitNumericalAddition(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " + " + getRightOperand() + ")";
-    }
+  @Override
+  public String toString() {
+    return "(" + getLeftOperand() + " + " + getRightOperand() + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof NumericalAdditionNode)) {
-            return false;
-        }
-        NumericalAdditionNode other = (NumericalAdditionNode) obj;
-        return getLeftOperand().equals(other.getLeftOperand())
-                && getRightOperand().equals(other.getRightOperand());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof NumericalAdditionNode)) {
+      return false;
     }
+    NumericalAdditionNode other = (NumericalAdditionNode) obj;
+    return getLeftOperand().equals(other.getLeftOperand())
+        && getRightOperand().equals(other.getRightOperand());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getLeftOperand(), getRightOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getLeftOperand(), getRightOperand());
+  }
 }

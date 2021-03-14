@@ -23,93 +23,93 @@ import org.checkerframework.javacutil.TreeUtils;
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
 
-    /** The tree for the local variable. */
-    protected final Tree tree;
+  /** The tree for the local variable. */
+  protected final Tree tree;
 
-    /** The receiver node for the local variable, {@code null} otherwise. */
-    protected final @Nullable Node receiver;
+  /** The receiver node for the local variable, {@code null} otherwise. */
+  protected final @Nullable Node receiver;
 
-    /**
-     * Create a new local variable node for the given tree.
-     *
-     * @param tree thre tree for the local variable: a VariableTree or an an IdentifierTree
-     */
-    public LocalVariableNode(Tree tree) {
-        this(tree, null);
+  /**
+   * Create a new local variable node for the given tree.
+   *
+   * @param tree thre tree for the local variable: a VariableTree or an IdentifierTree
+   */
+  public LocalVariableNode(Tree tree) {
+    this(tree, null);
+  }
+
+  /**
+   * Create a new local variable node for the given tree and receiver.
+   *
+   * @param tree the tree for the local variable: a VariableTree or an IdentifierTree
+   * @param receiver the receiver for the local variable, or null if none
+   */
+  public LocalVariableNode(Tree tree, @Nullable Node receiver) {
+    super(TreeUtils.typeOf(tree));
+    // IdentifierTree for normal uses of the local variable or parameter,
+    // and VariableTree for declarations or the translation of an initializer block
+    assert tree != null;
+    assert tree instanceof IdentifierTree || tree instanceof VariableTree;
+    this.tree = tree;
+    this.receiver = receiver;
+  }
+
+  public Element getElement() {
+    Element el;
+    if (tree instanceof IdentifierTree) {
+      IdentifierTree itree = (IdentifierTree) tree;
+      assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
+      el = TreeUtils.elementFromUse(itree);
+    } else {
+      assert tree instanceof VariableTree;
+      el = TreeUtils.elementFromDeclaration((VariableTree) tree);
     }
+    return el;
+  }
 
-    /**
-     * Create a new local variable node for the given tree and receiver.
-     *
-     * @param tree the tree for the local variable: a VariableTree or an an IdentifierTree
-     * @param receiver the receiver for the local variable, or null if none
-     */
-    public LocalVariableNode(Tree tree, @Nullable Node receiver) {
-        super(TreeUtils.typeOf(tree));
-        // IdentifierTree for normal uses of the local variable or parameter,
-        // and VariableTree for declarations or the translation of an initializer block
-        assert tree != null;
-        assert tree instanceof IdentifierTree || tree instanceof VariableTree;
-        this.tree = tree;
-        this.receiver = receiver;
-    }
+  /** The receiver node for the local variable, {@code null} otherwise. */
+  public @Nullable Node getReceiver() {
+    return receiver;
+  }
 
-    public Element getElement() {
-        Element el;
-        if (tree instanceof IdentifierTree) {
-            IdentifierTree itree = (IdentifierTree) tree;
-            assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
-            el = TreeUtils.elementFromUse(itree);
-        } else {
-            assert tree instanceof VariableTree;
-            el = TreeUtils.elementFromDeclaration((VariableTree) tree);
-        }
-        return el;
+  public String getName() {
+    if (tree instanceof IdentifierTree) {
+      return ((IdentifierTree) tree).getName().toString();
     }
+    return ((VariableTree) tree).getName().toString();
+  }
 
-    /** The receiver node for the local variable, {@code null} otherwise. */
-    public @Nullable Node getReceiver() {
-        return receiver;
-    }
+  @Override
+  public Tree getTree() {
+    return tree;
+  }
 
-    public String getName() {
-        if (tree instanceof IdentifierTree) {
-            return ((IdentifierTree) tree).getName().toString();
-        }
-        return ((VariableTree) tree).getName().toString();
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitLocalVariable(this, p);
+  }
 
-    @Override
-    public Tree getTree() {
-        return tree;
-    }
+  @Override
+  public String toString() {
+    return getName().toString();
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitLocalVariable(this, p);
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof LocalVariableNode)) {
+      return false;
     }
+    LocalVariableNode other = (LocalVariableNode) obj;
+    return getName().equals(other.getName());
+  }
 
-    @Override
-    public String toString() {
-        return getName().toString();
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getName());
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof LocalVariableNode)) {
-            return false;
-        }
-        LocalVariableNode other = (LocalVariableNode) obj;
-        return getName().equals(other.getName());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getName());
-    }
-
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.emptyList();
-    }
+  @Override
+  public Collection<Node> getOperands() {
+    return Collections.emptyList();
+  }
 }

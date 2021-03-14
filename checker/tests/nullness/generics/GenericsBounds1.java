@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 interface GBList<E extends @Nullable Object> {
-    void add(E p);
+  void add(E p);
 }
 
 /*
@@ -10,18 +10,18 @@ interface GBList<E extends @Nullable Object> {
  * annotation on the type variable itself.
  */
 public class GenericsBounds1<X extends @Nullable Object> {
-    void m1(@NonNull GBList<X> g1, @NonNull GBList<@Nullable X> g2) {
-        // :: error: (assignment.type.incompatible)
-        g1 = null;
-        // :: error: (argument.type.incompatible)
-        g1.add(null);
+  void m1(@NonNull GBList<X> g1, @NonNull GBList<@Nullable X> g2) {
+    // :: error: (assignment.type.incompatible)
+    g1 = null;
+    // :: error: (argument.type.incompatible)
+    g1.add(null);
 
-        // :: error: (assignment.type.incompatible)
-        g2 = null;
-        g2.add(null);
+    // :: error: (assignment.type.incompatible)
+    g2 = null;
+    g2.add(null);
 
-        // :: error: (assignment.type.incompatible)
-        g2 = g1;
-        g2.add(null);
-    }
+    // :: error: (assignment.type.incompatible)
+    g2 = g1;
+    g2.add(null);
+  }
 }

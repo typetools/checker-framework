@@ -16,6 +16,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * both {@code a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have
  * different lengths.
  *
+ * <p>{@code @LTEqLengthOf({"a"})} = {@code @LTLengthOf(value={"a"}, offset=-1)}, and<br>
+ * {@code @LTEqLengthOf(value={"a"}, offset=x)} = {@code @LTLengthOf(value={"a"}, offset=x-1)} for
+ * any x.
+ *
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
@@ -23,7 +27,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UpperBoundUnknown.class)
 public @interface LTEqLengthOf {
-    /** Sequences, each of which is at least as long as the annotated expression's value. */
-    @JavaExpression
-    public String[] value();
+  /** Sequences, each of which is at least as long as the annotated expression's value. */
+  @JavaExpression
+  public String[] value();
 }

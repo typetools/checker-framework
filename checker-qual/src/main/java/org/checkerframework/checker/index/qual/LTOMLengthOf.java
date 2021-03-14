@@ -19,6 +19,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>In the annotation's name, "LTOM" stands for "less than one minus".
  *
+ * <p>{@code @LTOMLengthOf({"a"})} = {@code @LTLengthOf(value={"a"}, offset=1)}, and<br>
+ * {@code @LTOMLengthOf(value={"a"}, offset=x)} = {@code @LTLengthOf(value={"a"}, offset=x+1)} for
+ * any x.
+ *
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
@@ -26,9 +30,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(LTLengthOf.class)
 public @interface LTOMLengthOf {
-    /**
-     * Sequences, each of whose lengths is at least 1 larger than the annotated expression's value.
-     */
-    @JavaExpression
-    public String[] value();
+  /**
+   * Sequences, each of whose lengths is at least 1 larger than the annotated expression's value.
+   */
+  @JavaExpression
+  public String[] value();
 }

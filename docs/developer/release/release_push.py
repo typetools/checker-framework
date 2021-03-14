@@ -14,7 +14,7 @@ import os
 from os.path import expanduser
 from release_vars import *
 from release_utils import *
-from sanity_checks import *
+from sanity_checks import javac_sanity_check, maven_sanity_check
 
 
 def check_release_version(previous_release, new_release):
@@ -72,27 +72,24 @@ def promote_release(path_to_releases, release_version):
 
 def copy_htaccess():
     "Copy the .htaccess file from the dev site to the live site."
-    LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
+    LIVE_HTACCESS = os.path.join(LIVE_SITE_DIR, ".htaccess")
     execute(
-        "rsync --times %s %s"
-        % (os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess"), LIVE_HTACCESS)
+        "rsync --times %s %s" % (os.path.join(DEV_SITE_DIR, ".htaccess"), LIVE_HTACCESS)
     )
     ensure_group_access(LIVE_HTACCESS)
 
 
-def copy_releases_to_live_site(checker_version, afu_version):
+def copy_releases_to_live_site(cf_version):
     """Copy the new releases of the AFU and the Checker
     Framework from the dev site to the live site."""
-    CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "releases")
-    copy_release_dir(
-        CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version
-    )
-    promote_release(CHECKER_LIVE_RELEASES_DIR, checker_version)
+    CHECKER_INTERM_RELEASES_DIR = os.path.join(DEV_SITE_DIR, "releases")
+    copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, cf_version)
+    promote_release(CHECKER_LIVE_RELEASES_DIR, cf_version)
     AFU_INTERM_RELEASES_DIR = os.path.join(
-        FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases"
+        DEV_SITE_DIR, "annotation-file-utilities", "releases"
     )
-    copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
-    promote_release(AFU_LIVE_RELEASES_DIR, afu_version)
+    copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, cf_version)
+    promote_release(AFU_LIVE_RELEASES_DIR, cf_version)
 
 
 def ensure_group_access_to_releases():
@@ -103,7 +100,7 @@ def ensure_group_access_to_releases():
     ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
 
 
-def stage_maven_artifacts_in_maven_central(new_checker_version):
+def stage_maven_artifacts_in_maven_central(new_cf_version):
     """Stages the Checker Framework artifacts on Maven Central. After the
     artifacts are staged, the user can then close them, which makes them
     available for testing purposes but does not yet release them on Maven
@@ -167,22 +164,22 @@ def check_all_links(
     checker_website,
     suffix,
     test_mode,
-    checker_version_of_broken_link_to_suppress="",
+    cf_version_of_broken_link_to_suppress="",
 ):
     """Checks all links on the given web sites for the AFU
     and the Checker Framework. The suffix parameter should be \"dev\" for the
     dev web site and \"live\" for the live web site. test_mode indicates
     whether this script is being run in release or in test mode. The
-    checker_version_of_broken_link_to_suppress parameter should be set to the
+    cf_version_of_broken_link_to_suppress parameter should be set to the
     new Checker Framework version and should only be passed when checking links
     for the dev web site (to prevent reporting of a broken link to the
     not-yet-live zip file for the new release)."""
     afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
-    if checker_version_of_broken_link_to_suppress != "":
+    if cf_version_of_broken_link_to_suppress != "":
         additional_param = (
             "--suppress-broken 404:https://checkerframework.org/checker-framework-"
-            + checker_version_of_broken_link_to_suppress
+            + cf_version_of_broken_link_to_suppress
             + ".zip"
         )
     checkerCheck = run_link_checker(
@@ -295,33 +292,25 @@ def main(argv):
     # The release script checks that the new release version is greater than the previous release version.
 
     print_step("Push Step 1: Checking release versions")  # SEMIAUTO
-    dev_afu_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "annotation-file-utilities")
-    live_afu_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
+    dev_afu_website = os.path.join(DEV_SITE_URL, "annotation-file-utilities")
+    live_afu_website = os.path.join(LIVE_SITE_URL, "annotation-file-utilities")
 
-    dev_checker_website = HTTP_PATH_TO_DEV_SITE
-    live_checker_website = HTTP_PATH_TO_LIVE_SITE
-    current_checker_version = current_distribution_by_website(live_checker_website)
-    new_checker_version = CF_VERSION
-    check_release_version(current_checker_version, new_checker_version)
+    dev_checker_website = DEV_SITE_URL
+    live_checker_website = LIVE_SITE_URL
+    current_cf_version = current_distribution_by_website(live_checker_website)
+    new_cf_version = CF_VERSION
+    check_release_version(current_cf_version, new_cf_version)
 
-    # note, get_afu_version_from_html uses the file path not the web url
     dev_afu_website_file = os.path.join(
-        FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "index.html"
+        DEV_SITE_DIR, "annotation-file-utilities", "index.html"
     )
     live_afu_website_file = os.path.join(
-        FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities", "index.html"
+        LIVE_SITE_DIR, "annotation-file-utilities", "index.html"
     )
-    current_afu_version = get_afu_version_from_html(live_afu_website_file)
-    new_afu_version = get_afu_version_from_html(dev_afu_website_file)
-    check_release_version(current_afu_version, new_afu_version)
 
     print(
-        "Checker Framework:  current-version=%s    new-version=%s"
-        % (current_checker_version, new_checker_version)
-    )
-    print(
-        "AFU:                       current-version=%s    new-version=%s"
-        % (current_afu_version, new_afu_version)
+        "Checker Framework and AFU:  current-version=%s    new-version=%s"
+        % (current_cf_version, new_cf_version)
     )
 
     # Runs the link the checker on all websites at:
@@ -338,7 +327,7 @@ def main(argv):
 
     if prompt_yes_no("Run link checker on DEV site?", True):
         check_all_links(
-            dev_afu_website, dev_checker_website, "dev", test_mode, new_checker_version
+            dev_afu_website, dev_checker_website, "dev", test_mode, new_cf_version
         )
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
@@ -349,11 +338,11 @@ def main(argv):
 
         print_step("3a: Run javac sanity test on development release.")
         if prompt_yes_no("Run javac sanity test on development release?", True):
-            javac_sanity_check(dev_checker_website, new_checker_version)
+            javac_sanity_check(dev_checker_website, new_cf_version)
 
         print_step("3b: Run Maven sanity test on development release.")
         if prompt_yes_no("Run Maven sanity test on development repo?", True):
-            maven_sanity_check("maven-dev", "", new_checker_version)
+            maven_sanity_check("maven-dev", "", new_cf_version)
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
     # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
@@ -375,7 +364,7 @@ def main(argv):
     if (not test_mode) or prompt_yes_no(
         "Stage Maven artifacts in Maven Central?", not test_mode
     ):
-        stage_maven_artifacts_in_maven_central(new_checker_version)
+        stage_maven_artifacts_in_maven_central(new_cf_version)
 
         print_step("4b: Close staged artifacts at Maven central.")
         continue_or_exit(
@@ -386,21 +375,19 @@ def main(argv):
             + " * In the top pane, click on orgcheckerframework-XXXX\n"
             + ' * Click "close" at the top\n'
             + " * For the close message, enter:  Checker Framework release "
-            + new_checker_version
+            + new_cf_version
             + "\n"
             + " * Click the Refresh button near the top of the page until the bottom pane has:\n"
             + '   "Activity   Last operation completed successfully".\n'
             + " * Copy the URL of the closed artifacts (in the bottom pane) for use in the next step\n"
-            "(You can also see the instructions at: "
-            + SONATYPE_CLOSING_DIRECTIONS_URL
-            + ")\n"
+            "(You can also see the instructions at: http://central.sonatype.org/pages/releasing-the-deployment.html)\n"
         )
 
         print_step("4c: Run Maven sanity test on Maven central artifacts.")
         if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
             repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
-            maven_sanity_check("maven-staging", repo_url, new_checker_version)
+            maven_sanity_check("maven-staging", repo_url, new_cf_version)
 
     # This step copies the development release directories to the live release directories.
     # It then adds the appropriate permissions to the release. Symlinks need to be updated to point
@@ -413,10 +400,9 @@ def main(argv):
     if not test_mode:
         if prompt_yes_no("Copy release to the live website?"):
             print("Copying to live site")
-            copy_releases_to_live_site(new_checker_version, new_afu_version)
+            copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
             ensure_group_access_to_releases()
-            # update_release_symlinks(new_checker_version, new_afu_version)
     else:
         print("Test mode: Skipping copy to live site!")
 
@@ -426,13 +412,13 @@ def main(argv):
     print_step("Push Step 6: Run javac sanity tests on the live release.")  # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Run javac sanity test on live release?", True):
-            javac_sanity_check(live_checker_website, new_checker_version)
+            javac_sanity_check(live_checker_website, new_cf_version)
             SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
                 execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
             execute(
-                "sh " + sanity_test_script + " " + new_checker_version,
+                "sh " + sanity_test_script + " " + new_cf_version,
                 True,
                 False,
                 SANITY_TEST_CHECKER_FRAMEWORK_DIR,
@@ -484,7 +470,7 @@ def main(argv):
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
             + "To drop, log into https://oss.sonatype.org using your "
             + "Sonatype credentials and follow the 'DROP' instructions at: "
-            + SONATYPE_DROPPING_DIRECTIONS_URL
+            + "http://central.sonatype.org/pages/releasing-the-deployment.html"
         )
     else:
         msg = (
@@ -495,7 +481,7 @@ def main(argv):
             + "Finally, click on the Release button at the top of the page. In the dialog box that pops up, "
             + 'leave the "Automatically drop" box checked. For the description, write '
             + "Checker Framework release "
-            + new_checker_version
+            + new_cf_version
             + "\n\n"
         )
 
@@ -517,37 +503,37 @@ def main(argv):
             + "* Download the following files to your local machine."
             + "\n"
             + "https://checkerframework.org/checker-framework-"
-            + new_checker_version
+            + new_cf_version
             + ".zip\n"
             + "https://checkerframework.org/annotation-file-utilities/annotation-tools-"
-            + new_afu_version
+            + new_cf_version
             + ".zip\n"
             + "\n"
             + "To post the Checker Framework release on GitHub:\n"
             + "\n"
             + "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-"
-            + new_checker_version
+            + new_cf_version
             + "\n"
             + "* For the release title, enter: Checker Framework "
-            + new_checker_version
+            + new_cf_version
             + "\n"
             + "* For the description, insert the latest Checker Framework changelog entry (available at https://checkerframework.org/changelog.txt). Please include the first line with the release version and date.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." Click on "selecting them" and upload checker-framework-'
-            + new_checker_version
+            + new_cf_version
             + ".zip from your machine.\n"
             + '* Click on the green "Publish release" button.\n'
             + "\n"
             + "To post the Annotation File Utilities release on GitHub:\n"
             + "\n"
             + "* Go to https://github.com/typetools/annotation-tools/releases/new?tag="
-            + new_afu_version
+            + new_cf_version
             + "\n"
             + "* For the release title, enter: Annotation File Utilities "
-            + new_afu_version
+            + new_cf_version
             + "\n"
             + "* For the description, insert the latest Annotation File Utilities changelog entry (available at https://checkerframework.org/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." Click on "selecting them" and upload annotation-tools-'
-            + new_afu_version
+            + new_cf_version
             + ".zip from your machine.\n"
             + '* Click on the green "Publish release" button.\n'
         )
@@ -557,7 +543,7 @@ def main(argv):
         print_step("Push Step 11. Announce the release.")  # MANUAL
         continue_or_exit(
             "Please announce the release using the email structure below.\n"
-            + get_announcement_email(new_checker_version)
+            + get_announcement_email(new_cf_version)
         )
 
         print_step(

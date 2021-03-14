@@ -4,16 +4,16 @@
 
 plugins {
     id 'java'
-    id 'net.ltgt.errorprone' version '1.2.1'
+    id 'net.ltgt.errorprone' version '2.0.1'
     // Checker Framework pluggable type-checking
-    id 'org.checkerframework' version '0.5.14'
+    id 'org.checkerframework' version '0.5.17'
 }
 
 apply plugin: 'org.checkerframework'
 
 dependencies {
     // Must use at least version 2.4.0 of Error Prone.
-    errorprone 'com.google.errorprone:error_prone_core:2.5.1'
+    errorprone 'com.google.errorprone:error_prone_core:2.6.0'
 }
 
 repositories {

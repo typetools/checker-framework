@@ -25,97 +25,6 @@ from release_vars import *
 # Parse Args Utils # TODO: Perhaps use argparse module
 
 
-def match_arg(arg):
-    """Check if the given command-line argument matches one of the following
-    strings, and returns the matching project if it does:
-    annotation-file-utilities, checker-framework, afu, cf"""
-    matched_project = None
-    for project in PROJECTS_TO_SHORTNAMES:
-        if arg == project[0] or arg == project[1]:
-            matched_project = project
-    return matched_project
-
-
-def read_projects(argv, error_call_back):
-    """Returns a map from project-name to boolean.
-    Determine which of the AFU and Checker Framework
-    projects to build based on the command-line arguments to release_build.
-    \"all\" indicates that all 3 projects are to be built. If the arguments
-    are incorrect, the error_call_back function is called and  the script
-    execution is terminated."""
-    matched_projects = {AFU_OPT: False, CF_OPT: False}
-
-    arg_length = len(sys.argv)
-
-    if arg_length < 2:
-        print("You  must select at least one project!")
-        error_call_back()
-        sys.exit(1)
-
-    error = False
-    for index in range(1, arg_length):
-        arg = argv[index]
-
-        if arg == ALL_OPT:
-            for project in PROJECTS_TO_SHORTNAMES:
-                matched_projects[project[0]] = True
-            return matched_projects
-
-        matched_project = match_arg(argv[index])
-        if matched_project is None:
-            print("Unmatched project: " + argv[index])
-            error = True
-        else:
-            matched_projects[matched_project[0]] = True
-
-    if error:
-        error_call_back()
-        sys.exit(1)
-
-    return matched_projects
-
-
-def add_project_dependencies(matched_projects):
-    """Given the projects the user indicated need to be build, ensure that any
-    projects it depends on are also built. That is:
-    If building the Checker Framework release, ensure that the AFU is also built."""
-    if matched_projects[CF_OPT]:
-        matched_projects[AFU_OPT] = True
-
-
-def print_projects(indent_level, indent_size):
-    "Print the projects that can be built by release_build."
-    indentation = duplicate(duplicate(" ", indent_size), indent_level)
-    project_to_short_cols = 27
-
-    print(
-        'projects:   You must specify at least one of the following projects or "all"'
-    )
-
-    print(indentation + pad_to("project", " ", project_to_short_cols) + "short-name")
-
-    for project in PROJECTS_TO_SHORTNAMES:
-        print(indentation + pad_to(project[0], " ", project_to_short_cols) + project[1])
-
-    print(indentation + ALL_OPT)
-
-
-def duplicate(string, times):
-    """Returns a string that is the concatenation of the given string repeated the
-    given number of times."""
-    result = ""
-    for dummy in range(0, times):
-        result += string
-    return result
-
-
-def pad_to(original_str, filler, size):
-    """Return a string of the given size that is the given string padded with 0 or
-    more repetitions of the given filler character."""
-    missing = size - len(original_str)
-    return original_str + duplicate(filler, missing)
-
-
 def read_command_line_option(argv, argument):
     """Returns True if the given command line arguments contain the specified
     argument, False otherwise."""
@@ -249,12 +158,6 @@ def version_number_to_array(version_num):
     return [int(x) for x in version_num.split(".")]
 
 
-def version_array_to_string(version_array):
-    """Given an array of numbers representing a version, such as [1,2,3], returns
-    a string representation of the version, such as \"1.2.3\" """
-    return ".".join(str(x) for x in version_array)
-
-
 def increment_version(version_num):
     """
     Returns the next incremental version after the argument.
@@ -262,7 +165,7 @@ def increment_version(version_num):
     # Drop the fourth and subsequent parts if present
     version_array = version_number_to_array(version_num)[:3]
     version_array[-1] = version_array[-1] + 1
-    return version_array_to_string(version_array)
+    return ".".join(str(x) for x in version_array)
 
 
 def test_increment_version():
@@ -299,88 +202,8 @@ def current_distribution_by_website(site):
     return result.group(1)
 
 
-def current_distribution(checker_framework_dir):
-    """
-    Reads the checker framework version from build-common.properties
-    returns the version of the current release.
-    """
-    ver_re = re.compile(r"""build.version = (\d+\.\d+\.\d+(?:\.\d+){0,1})""")
-    build_props_location = os.path.join(
-        checker_framework_dir, "build-common.properties"
-    )
-    build_props = open(build_props_location)
-
-    for line in build_props:
-        match = ver_re.search(line)
-        if match:
-            return match.group(1)
-
-    print("Couldn't find checker framework version in file: " + build_props_location)
-    sys.exit(1)
-
-
-def extract_from_site(site, open_tag, close_tag):
-    """
-    Reads a string from between open and close tag at the given url
-    """
-    regex_str = open_tag + "(.*)" + close_tag
-
-    ver_re = re.compile(regex_str)
-    text = urllib.request.urlopen(url=site).read()
-    result = ver_re.search(text)
-    return result.group(1)
-
-
-def get_afu_version_from_html(html_file_path):
-    """Retrieve the AFU version from within the afu-version tags in the given HTML
-    file on the filesystem."""
-    version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d*),.*<!-- /afu-version -->"
-    version = find_first_instance(version_regex, html_file_path)
-    if version is None:
-        raise Exception(
-            "Could not detect Annotation File Utilities version in file "
-            + html_file_path
-        )
-
-    return version
-
-
 # =========================================================================================
-# Git/Mercurial Utils
-
-
-def is_git(repo_root):
-    """Returns true if a (bare or non-bare) git repo exists at the given
-    filesystem path, false if a Mercurial repo exists at that path. Throws an
-    exception if neither a git not a Mercurial repository exists at the given
-    path."""
-    return is_git_private(repo_root, True)
-
-
-def is_git_not_bare(repo_root):
-    """Returns true if a non-bare git repo exists at the given filesystem path,
-    false if a bare git or a Mercurial repo exists at that path. Throws an
-    exception if neither a git not a Mercurial repository exists at the given
-    path."""
-    return is_git_private(repo_root, False)
-
-
-def is_git_private(repo_root, return_value_on_bare):
-    """If a git bare repo exists at the given filesystem path, returns the value
-    specified in the return_value_on_bare parameter. Returns true if a non-bare
-    git repo exists at the given path, and false if a Mercurial repo exists at
-    that path. Throws an exception if neither a git not a Mercurial repository
-    exists at the given path.
-    Not meant to be called directly - use is_git or is_git_not_bare instead."""
-    if git_bare_repo_exists_at_path(repo_root):
-        return return_value_on_bare
-    if git_repo_exists_at_path(repo_root):
-        return True
-    if hg_repo_exists_at_path(repo_root):
-        return False
-    raise Exception(
-        repo_root + " is not recognized as a git, git bare, or hg repository"
-    )
+# Git Utils
 
 
 def git_bare_repo_exists_at_path(
@@ -398,24 +221,15 @@ def git_repo_exists_at_path(repo_root):
     return os.path.isdir(repo_root + "/.git") or git_bare_repo_exists_at_path(repo_root)
 
 
-def hg_repo_exists_at_path(repo_root):
-    """Returns whether a Mercurial repository exists at the given filesystem
-    path."""
-    return os.path.isdir(repo_root + "/.hg")
-
-
 def push_changes_prompt_if_fail(repo_root):
     """Attempt to push changes, including tags, that were committed to the
     repository at the given filesystem path. In case of failure, ask the user
     if they would like to try again. Loop until pushing changes succeeds or the
     user answers opts to not try again."""
     while True:
-        if is_git(repo_root):
-            cmd = "(cd %s && git push --tags)" % repo_root
-            result = os.system(cmd)
-            cmd = "(cd %s && git push origin master)" % repo_root
-        else:
-            cmd = "hg -R %s push" % repo_root
+        cmd = "(cd %s && git push --tags)" % repo_root
+        result = os.system(cmd)
+        cmd = "(cd %s && git push origin master)" % repo_root
         result = os.system(cmd)
         if result == 0:
             break
@@ -439,34 +253,24 @@ def push_changes_prompt_if_fail(repo_root):
 def push_changes(repo_root):
     """Pushes changes, including tags, that were committed to the repository at
     the given filesystem path."""
-    if is_git(repo_root):
-        execute("git push --tags", working_dir=repo_root)
-        execute("git push origin master", working_dir=repo_root)
-    else:
-        execute("hg -R %s push" % repo_root)
+    execute("git push --tags", working_dir=repo_root)
+    execute("git push origin master", working_dir=repo_root)
 
 
 def update_repo(path, bareflag):
     """Pull the latest changes to the given repo and update. The bareflag
     parameter indicates whether the updated repo must be a bare git repo."""
-    if is_git(path):
-        if bareflag:
-            execute("git fetch origin master:master", working_dir=path)
-        else:
-            execute("git pull", working_dir=path)
+    if bareflag:
+        execute("git fetch origin master:master", working_dir=path)
     else:
-        execute("hg -R %s pull -u" % path)
+        execute("git pull", working_dir=path)
 
 
 def commit_tag_and_push(version, path, tag_prefix):
     """Commit the changes made for this release, add a tag for this release, and
     push these changes."""
-    if is_git(path):
-        execute('git commit -a -m "new release %s"' % (version), working_dir=path)
-        execute("git tag %s%s" % (tag_prefix, version), working_dir=path)
-    else:
-        execute('hg -R %s commit -m "new release %s"' % (path, version))
-        execute("hg -R %s tag %s%s" % (path, tag_prefix, version))
+    execute('git commit -a -m "new release %s"' % (version), working_dir=path)
+    execute("git tag %s%s" % (tag_prefix, version), working_dir=path)
     push_changes(path)
 
 
@@ -500,22 +304,10 @@ def clone(src_repo, dst_repo, bareflag):
     """Clone the given git or Mercurial repo from scratch into the filesystem
     path specified by dst_repo. The bareflag parameter indicates whether the
     cloned repo must be a bare git repo."""
-    isGitRepo = False
-    if "http" in src_repo:
-        if "git" in src_repo:
-            isGitRepo = True
-    elif "git@github.com:" in src_repo:
-        isGitRepo = True
-    elif is_git(src_repo):
-        isGitRepo = True
-
-    if isGitRepo:
-        flags = ""
-        if bareflag:
-            flags = "--bare"
-        execute("git clone --quiet %s %s %s" % (flags, src_repo, dst_repo))
-    else:
-        execute("hg clone --quiet %s %s" % (src_repo, dst_repo))
+    flags = ""
+    if bareflag:
+        flags = "--bare"
+    execute("git clone --quiet %s %s %s" % (flags, src_repo, dst_repo))
 
 
 def is_repo_cleaned_and_updated(repo):
@@ -526,45 +318,29 @@ def is_repo_cleaned_and_updated(repo):
     Returns whether the repository at the given filesystem path is clean (i.e.
     there are no committed changes and no untracked files in the working tree)
     and up-to-date with respect to the repository it was cloned from."""
-    if is_git(repo):
-        # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
-        if git_bare_repo_exists_at_path(repo):
-            execute("git fetch origin", working_dir=repo)
-            is_updated = not execute(
-                "git diff master..FETCH_HEAD", working_dir=repo, capture_output=True
-            )
-            return is_updated
-        else:
-            # Could add "--untracked-files=no" to this command
-            is_clean = not execute(
-                "git status --porcelain", working_dir=repo, capture_output=True
-            )
-            execute("git fetch origin", working_dir=repo)
-            is_updated = not execute(
-                "git diff origin/master..master", working_dir=repo, capture_output=True
-            )
-            return is_clean and is_updated
+    # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
+    if git_bare_repo_exists_at_path(repo):
+        execute("git fetch origin", working_dir=repo)
+        is_updated = not execute(
+            "git diff master..FETCH_HEAD", working_dir=repo, capture_output=True
+        )
+        return is_updated
     else:
-        summary = execute("hg -R %s summary --remote" % (repo), capture_output=True)
-        if "commit: (clean)" not in summary:
-            return False
-        if "update: (current)" not in summary:
-            return False
-        if "remote: (synced)" not in summary:
-            return False
-        return True
-
-
-def repo_exists(repo_root):
-    """Returns whether a (bare or non-bare) git repository or a Mercurial
-    repository exists at the given filesystem path."""
-    return git_repo_exists_at_path(repo_root) or hg_repo_exists_at_path(repo_root)
+        # Could add "--untracked-files=no" to this command
+        is_clean = not execute(
+            "git status --porcelain", working_dir=repo, capture_output=True
+        )
+        execute("git fetch origin", working_dir=repo)
+        is_updated = not execute(
+            "git diff origin/master..master", working_dir=repo, capture_output=True
+        )
+        return is_clean and is_updated
 
 
 def check_repos(repos, fail_on_error, is_intermediate_repo_list):
     """Fail if the repository is not clean and up to date."""
     for repo in repos:
-        if repo_exists(repo):
+        if git_repo_exists_at_path(repo):
             if not is_repo_cleaned_and_updated(repo):
                 if is_intermediate_repo_list:
                     print(
@@ -607,8 +383,6 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
     tag prefix strings if provided. For example, given an array of tag prefixes
     [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
     tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\" are sought."""
-    if not is_git(repo_file_path):
-        raise Exception("get_commit_for_tag is only defined for git repositories")
 
     # assume the first is the most recent
     tags = execute(
@@ -631,38 +405,6 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
     return commit
 
 
-def get_hash_for_tag(revision, repo_file_path, tag_prefixes):
-    """Get the revision hash for the tag matching the given project revision of
-    the Mercurial repository at the given filesystem path. Uses the given array
-    of tag prefix strings if provided. For example, given an array of tag
-    prefixes [\"checker-framework-\", \"checkers-\"] and project revision
-    \"2.0.0\", the tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\"
-    are sought."""
-    if is_git(repo_file_path):
-        raise Exception("get_hash_for_tag is not defined for git repositories")
-    tags = execute("hg tags -R " + repo_file_path, True, True)
-    lines = tags.split("\n")
-
-    target = get_tag_line(lines, revision, tag_prefixes)
-    if target is None:
-        msg = "Could not find revision %s in repo %s using tags %s " % (
-            revision,
-            repo_file_path,
-            ",".join(tag_prefixes),
-        )
-        raise Exception(msg)
-
-    tokens = target.split()
-    result = tokens[1].split(":")[1]
-    return result
-
-
-def get_tip_hash(repository):
-    """Get the revision hash for the \"tip\" tag of the Mercurial repository at
-    the given filesystem path."""
-    return get_hash_for_tag("tip", repository, [""])
-
-
 def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, outfile):
     """Retrieves the changes under the given directory/path for the project
     at the given repository path since the given old version. The changes are
@@ -672,13 +414,8 @@ def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, outfile)
     version of the project \"2.0.0\", the tags named \"checker-framework-2.0.0\"
     and \"checkers-2.0.0\" are sought, and changes made since the located tag
     was pushed are retrieved."""
-    if is_git(repository):
-        old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
-        cmd = "git diff -w %s.. %s" % (old_tag, dir_path)
-    else:
-        old_tag = get_hash_for_tag(old_version, repository, tag_prefixes)
-        tip_tag = get_tip_hash(repository)
-        cmd = "hg diff -w -r%s:%s %s" % (old_tag, tip_tag, dir_path)
+    old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
+    cmd = "git diff -w %s.. %s" % (old_tag, dir_path)
     execute_write_to_file(cmd, outfile, working_dir=repository)
 
 

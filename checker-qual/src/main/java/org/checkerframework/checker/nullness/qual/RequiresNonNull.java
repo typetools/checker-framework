@@ -7,10 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
-// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:
-// Every prefix expression must also be non-null; for example, {@code
-// @RequiresNonNull(expression="a.b.c")} implies that both {@code a.b} and {@code a.b.c} must be
-// non-null.
+// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:  Every prefix expression must
+// also be non-null; for example, {@code @RequiresNonNull(expression="a.b.c")} implies that both
+// {@code a.b} and {@code a.b.c} must be non-null.
 /**
  * Indicates a method precondition: the method expects the specified expressions to be non-null when
  * the annotated method is invoked.
@@ -60,11 +59,11 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PreconditionAnnotation(qualifier = NonNull.class)
 public @interface RequiresNonNull {
-    /**
-     * The Java expressions that need to be {@link
-     * org.checkerframework.checker.nullness.qual.NonNull}.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] value();
+  /**
+   * The Java expressions that need to be {@link
+   * org.checkerframework.checker.nullness.qual.NonNull}.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] value();
 }

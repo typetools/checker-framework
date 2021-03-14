@@ -8,29 +8,29 @@ import com.google.auto.value.AutoValue;
  */
 @AutoValue
 abstract class FooParcelable implements Parcelable {
-    abstract String name();
+  abstract String name();
 
-    static Builder builder() {
-        return new AutoValue_FooParcelable.Builder();
-    }
+  static Builder builder() {
+    return new AutoValue_FooParcelable.Builder();
+  }
 
-    @AutoValue.Builder
-    abstract static class Builder {
+  @AutoValue.Builder
+  abstract static class Builder {
 
-        abstract Builder setName(String value);
+    abstract Builder setName(String value);
 
-        abstract FooParcelable build();
-    }
+    abstract FooParcelable build();
+  }
 
-    public static void buildSomethingWrong() {
-        Builder b = builder();
-        // :: error: finalizer.invocation.invalid
-        b.build();
-    }
+  public static void buildSomethingWrong() {
+    Builder b = builder();
+    // :: error: finalizer.invocation.invalid
+    b.build();
+  }
 
-    public static void buildSomethingRight() {
-        Builder b = builder();
-        b.setName("Frank");
-        b.build();
-    }
+  public static void buildSomethingRight() {
+    Builder b = builder();
+    b.setName("Frank");
+    b.build();
+  }
 }

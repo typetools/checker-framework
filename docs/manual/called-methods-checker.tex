@@ -46,6 +46,11 @@ The Called Methods Checker supports the following optional command-line argument
  Supply this if you are uninterested in errors in the use of builders, but
  are using the Called Methods Checker to detect errors in other types of
  code.
+\item The \<-ACalledMethodsChecker\_disableReturnsReceiver> option disables
+  the Returns Receiver Checker (\chapterpageref{returns-receiver-checker}),
+  which ordinarily runs as a subchecker of the Called Methods Checker.  If
+  the code being checked does not use fluent APIs, then you can supply this
+  option and the Called Methods Checker will run much faster.
 \item The \<-ACalledMethodsChecker\_useValueChecker> option improves precision when analyzing
  code that uses the AWS SDK's \<DescribeImageRequest> API\@.  See
  Section~\ref{called-methods-other}.

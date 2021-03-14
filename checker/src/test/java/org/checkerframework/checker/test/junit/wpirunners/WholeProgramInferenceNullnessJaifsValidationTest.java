@@ -13,26 +13,25 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @Category(WholeProgramInferenceNullnessJaifsTest.class)
 public class WholeProgramInferenceNullnessJaifsValidationTest
-        extends CheckerFrameworkPerDirectoryTest {
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceNullnessJaifsValidationTest(List<File> testFiles) {
-        super(testFiles, NullnessChecker.class, "nullness", "-Anomsgtext");
-    }
+    extends CheckerFrameworkPerDirectoryTest {
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public WholeProgramInferenceNullnessJaifsValidationTest(List<File> testFiles) {
+    super(testFiles, NullnessChecker.class, "nullness", "-Anomsgtext");
+  }
 
-    @Override
-    public void run() {
-        // Only run if annotated files have been created.
-        // See wholeProgramInferenceTests task.
-        if (!new File("tests/wpi-nullness/annotated/").exists()) {
-            throw new RuntimeException(
-                    WholeProgramInferenceNullnessJaifsTest.class
-                            + " must be run before this test.");
-        }
-        super.run();
+  @Override
+  public void run() {
+    // Only run if annotated files have been created.
+    // See wholeProgramInferenceTests task.
+    if (!new File("tests/wpi-nullness/annotated/").exists()) {
+      throw new RuntimeException(
+          WholeProgramInferenceNullnessJaifsTest.class + " must be run before this test.");
     }
+    super.run();
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"wpi-nullness/annotated/"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"wpi-nullness/annotated/"};
+  }
 }

@@ -9,18 +9,18 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
-// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:
-// Every prefix expression is also non-null; for example, {@code
-// @EnsuresNonNull(expression="a.b.c")} implies that both {@code a.b} and {@code a.b.c} are
-// non-null.
+// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:  Every prefix expression is
+// also non-null; for example, {@code @EnsuresNonNull(expression="a.b.c")} implies that both {@code
+// a.b} and {@code a.b.c} are non-null.
 /**
- * Indicates that the value expressions are non-null, if the method terminates successfully.
+ * Indicates that the value expressions are non-null just after a method call, if the method
+ * terminates successfully.
  *
  * <p>This postcondition annotation is useful for methods that initialize a field:
  *
  * <pre><code>
  * {@literal @}EnsuresNonNull("theMap")
- *  public static void initialize() {
+ *  void initialize() {
  *    theMap = new HashMap&lt;&gt;();
  *  }
  * </code></pre>
@@ -44,31 +44,31 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 @Repeatable(EnsuresNonNull.List.class)
 public @interface EnsuresNonNull {
-    /**
-     * Returns Java expressions that are {@link NonNull} after successful method termination.
-     *
-     * @return Java expressions that are {@link NonNull} after successful method termination
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] value();
+  /**
+   * Returns Java expressions that are {@link NonNull} after successful method termination.
+   *
+   * @return Java expressions that are {@link NonNull} after successful method termination
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] value();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresNonNull} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresNonNull} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @PostconditionAnnotation(qualifier = NonNull.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresNonNull} annotation repeatable.
+     * Returns the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresNonNull} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @PostconditionAnnotation(qualifier = NonNull.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Returns the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresNonNull[] value();
-    }
+    EnsuresNonNull[] value();
+  }
 }

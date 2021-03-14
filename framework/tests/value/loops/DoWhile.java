@@ -7,33 +7,33 @@ import org.checkerframework.common.value.qual.IntVal;
 @SuppressWarnings("value")
 public class DoWhile {
 
-    void doWhile() {
-        int d = 0;
-        do {
-            d++;
-        } while (d < 399);
-        @IntRange(from = 399) int after = d;
-    }
+  void doWhile() {
+    int d = 0;
+    do {
+      d++;
+    } while (d < 399);
+    @IntRange(from = 399) int after = d;
+  }
 
-    void another() {
-        int d = 0;
-        do {
-            d++;
-            if (d > 444) {
-                break;
-            }
-            @IntRange(from = 1, to = 444) int z = d;
-        } while (true);
-    }
+  void another() {
+    int d = 0;
+    do {
+      d++;
+      if (d > 444) {
+        break;
+      }
+      @IntRange(from = 1, to = 444) int z = d;
+    } while (true);
+  }
 
-    void fromAnno(@IntVal(2222) int param) {
-        int d = 0;
-        do {
-            d++;
-            if (d > param) {
-                break;
-            }
-            @IntRange(from = 1, to = 2222) int z = d;
-        } while (true);
-    }
+  void fromAnno(@IntVal(2222) int param) {
+    int d = 0;
+    do {
+      d++;
+      if (d > param) {
+        break;
+      }
+      @IntRange(from = 1, to = 2222) int z = d;
+    } while (true);
+  }
 }

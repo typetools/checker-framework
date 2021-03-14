@@ -14,33 +14,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class FloatingDivisionNode extends BinaryOperationNode {
 
-    public FloatingDivisionNode(BinaryTree tree, Node left, Node right) {
-        super(tree, left, right);
-        assert tree.getKind() == Kind.DIVIDE;
-    }
+  public FloatingDivisionNode(BinaryTree tree, Node left, Node right) {
+    super(tree, left, right);
+    assert tree.getKind() == Kind.DIVIDE;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitFloatingDivision(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitFloatingDivision(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " / " + getRightOperand() + ")";
-    }
+  @Override
+  public String toString() {
+    return "(" + getLeftOperand() + " / " + getRightOperand() + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof FloatingDivisionNode)) {
-            return false;
-        }
-        FloatingDivisionNode other = (FloatingDivisionNode) obj;
-        return getLeftOperand().equals(other.getLeftOperand())
-                && getRightOperand().equals(other.getRightOperand());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof FloatingDivisionNode)) {
+      return false;
     }
+    FloatingDivisionNode other = (FloatingDivisionNode) obj;
+    return getLeftOperand().equals(other.getLeftOperand())
+        && getRightOperand().equals(other.getRightOperand());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getLeftOperand(), getRightOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getLeftOperand(), getRightOperand());
+  }
 }

@@ -31,19 +31,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface UpperBoundFor {
-    /**
-     * Returns {@link TypeKind}s of types that get an upper bound. The meta-annotated annotation is
-     * the upper bound.
-     *
-     * @return {@link TypeKind}s of types that get an upper bound
-     */
-    TypeKind[] typeKinds() default {};
+  /**
+   * Returns {@link TypeKind}s of types that get an upper bound. The meta-annotated annotation is
+   * the upper bound.
+   *
+   * @return {@link TypeKind}s of types that get an upper bound
+   */
+  TypeKind[] typeKinds() default {};
 
-    /**
-     * Returns {@link Class}es that should get an upper bound. The meta-annotated annotation is the
-     * upper bound.
-     *
-     * @return {@link Class}es that get an upper bound
-     */
-    Class<?>[] types() default {};
+  /**
+   * Returns {@link Class}es that should get an upper bound. The meta-annotated annotation is the
+   * upper bound.
+   *
+   * @return {@link Class}es that get an upper bound
+   */
+  Class<?>[] types() default {};
 }

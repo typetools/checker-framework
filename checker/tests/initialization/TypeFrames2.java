@@ -3,31 +3,31 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class TypeFrames2 {
 
-    class A {
-        @NonNull String a;
+  class A {
+    @NonNull String a;
 
-        public A() {
-            // :: error: (method.invocation.invalid)
-            this.foo();
-            a = "";
-            this.foo();
-        }
-
-        public void foo(@UnderInitialization(A.class) A this) {}
+    public A() {
+      // :: error: (method.invocation.invalid)
+      this.foo();
+      a = "";
+      this.foo();
     }
 
-    class B extends A {
-        @NonNull String b;
+    public void foo(@UnderInitialization(A.class) A this) {}
+  }
 
-        public B() {
-            super();
-            this.foo();
-            // :: error: (method.invocation.invalid)
-            this.bar();
-            b = "";
-            this.bar();
-        }
+  class B extends A {
+    @NonNull String b;
 
-        public void bar(@UnderInitialization(B.class) B this) {}
+    public B() {
+      super();
+      this.foo();
+      // :: error: (method.invocation.invalid)
+      this.bar();
+      b = "";
+      this.bar();
     }
+
+    public void bar(@UnderInitialization(B.class) B this) {}
+  }
 }

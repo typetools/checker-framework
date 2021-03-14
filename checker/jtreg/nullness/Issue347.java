@@ -11,25 +11,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue347 {
 
-    @MonotonicNonNull String mono;
+  @MonotonicNonNull String mono;
 
-    @Nullable String nble;
+  @Nullable String nble;
 
-    void testMono() {
-        if (mono == null) {
-            return;
-        }
-        // The object referenced by mono might change, but
-        // it can't become null again, even in concurrent
-        // semantics.
-        mono.toString();
+  void testMono() {
+    if (mono == null) {
+      return;
     }
+    // The object referenced by mono might change, but it can't become null again, even in
+    // concurrent semantics.
+    mono.toString();
+  }
 
-    void testNble() {
-        if (nble == null) {
-            return;
-        }
-        // error expected in concurrent semantics only
-        nble.toString();
+  void testNble() {
+    if (nble == null) {
+      return;
     }
+    // error expected in concurrent semantics only
+    nble.toString();
+  }
 }

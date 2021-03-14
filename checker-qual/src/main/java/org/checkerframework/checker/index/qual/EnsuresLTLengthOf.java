@@ -55,51 +55,51 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @InheritedAnnotation
 @Repeatable(EnsuresLTLengthOf.List.class)
 public @interface EnsuresLTLengthOf {
-    /**
-     * The Java expressions that are less than the length of the given sequences on successful
-     * method termination.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    @JavaExpression
-    String[] value();
+  /**
+   * The Java expressions that are less than the length of the given sequences on successful method
+   * termination.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  @JavaExpression
+  String[] value();
 
-    /**
-     * Sequences, each of which is longer than the each of the expressions' value on successful
-     * method termination.
-     */
-    @JavaExpression
-    @QualifierArgument("value")
-    String[] targetValue();
+  /**
+   * Sequences, each of which is longer than the each of the expressions' value on successful method
+   * termination.
+   */
+  @JavaExpression
+  @QualifierArgument("value")
+  String[] targetValue();
 
-    /**
-     * This expression plus each of the value expressions is less than the length of the sequence on
-     * successful method termination. The {@code offset} element must ether be empty or the same
-     * length as {@code targetValue}.
-     *
-     * @return the offset expressions
-     */
-    @JavaExpression
-    @QualifierArgument("offset")
-    String[] offset() default {};
+  /**
+   * This expression plus each of the value expressions is less than the length of the sequence on
+   * successful method termination. The {@code offset} element must ether be empty or the same
+   * length as {@code targetValue}.
+   *
+   * @return the offset expressions
+   */
+  @JavaExpression
+  @QualifierArgument("offset")
+  String[] offset() default {};
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresLTLengthOf} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresLTLengthOf} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @PostconditionAnnotation(qualifier = LTLengthOf.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresLTLengthOf} annotation repeatable.
+     * Return the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresLTLengthOf} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @PostconditionAnnotation(qualifier = LTLengthOf.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Return the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresLTLengthOf[] value();
-    }
+    EnsuresLTLengthOf[] value();
+  }
 }

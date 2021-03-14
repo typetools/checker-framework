@@ -5,12 +5,16 @@
 # inputs:
 #
 # The file git-personal-access-token must exist in the directory from which
-# this script is run, and must be a valid github OAuth token.
+# this script is run, and must be a valid github OAuth token.  The token only
+# needs the "Access public repositories" permission.
 #
 # $1 is the query file, which should contain the literal string to use
 # as the github search. REQUIRED, no default
 #
 # $2 is the number of pages to search. default 1
+
+# Set to 1 to enable debug output from this script.
+DEBUG=0
 
 query_file=$1
 # Number of times to retry a GitHub search query.
@@ -33,15 +37,15 @@ mkdir -p "/tmp/$USER"
 
 ## for storing the results before sorting and uniqing them
 rm -f "/tmp/$USER/github-query-results-*.txt"
-tempfile=$(mktemp "/tmp/$USER/github-query-results-XXX.txt")
+tempfile=$(mktemp "/tmp/$USER/github-query-results-$(date +%Y%m%d%H%M%S)-XXX.txt")
 #trap "rm -f ${tempfile}" 0 2 3 15
 
 rm -f "/tmp/$USER/github-hash-results-*.txt"
-hashfile=$(mktemp "/tmp/$USER/github-hash-results-XXX.txt")
+hashfile=$(mktemp "/tmp/$USER/github-hash-results-$(date +%Y%m%d%H%M%S)-XXX.txt")
 #trap "rm -f ${hashfile}" 0 2 3 15
 
 rm -rf "/tmp/$USER/curl-output-*.txt"
-curl_output_file=$(mktemp "/tmp/$USER/curl-output-XXX.txt")
+curl_output_file=$(mktemp "/tmp/$USER/curl-output-$(date +%Y%m%d%H%M%S)-XXX.txt")
 
 # find the repos
 for i in $(seq "${page_count}"); do
@@ -51,6 +55,9 @@ for i in $(seq "${page_count}"); do
     fi
 
     full_query='https://api.github.com/search/code?q='${query}'&page='${i}
+    if [ $DEBUG -ne 0 ] ; then
+        echo "full_query=$full_query"
+    fi
     for tries in $(seq ${query_tries}); do
         status_code=$(curl -s \
             -H "Authorization: token $(cat git-personal-access-token)" \

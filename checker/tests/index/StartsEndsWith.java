@@ -5,15 +5,15 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class StartsEndsWith {
 
-    // This particular test is here rather than in the framework tests because it depends on purity
-    // annotations for these particular JDK methods.
-    void refineStartsConditional(String str, String prefix) {
-        if (prefix.length() > 10 && str.startsWith(prefix)) {
-            @MinLen(11) String s11 = str;
-        }
+  // This particular test is here rather than in the framework tests because it depends on purity
+  // annotations for these particular JDK methods.
+  void refineStartsConditional(String str, String prefix) {
+    if (prefix.length() > 10 && str.startsWith(prefix)) {
+      @MinLen(11) String s11 = str;
     }
+  }
 }
 
 class StartsEndsWithExternal {
-    public static final String staticFinalField = "str";
+  public static final String staticFinalField = "str";
 }

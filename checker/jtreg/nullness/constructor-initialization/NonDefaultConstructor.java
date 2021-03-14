@@ -7,29 +7,29 @@
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 public class NonDefaultConstructor {
-    Object nonNull = 4;
-    Object nullObject;
-    @MonotonicNonNull Object lazyField;
+  Object nonNull = 4;
+  Object nullObject;
+  @MonotonicNonNull Object lazyField;
 
-    // error doesn't initialize nullObject
-    public NonDefaultConstructor() {}
+  // error doesn't initialize nullObject
+  public NonDefaultConstructor() {}
 
-    // error doesn't initialize nullObject
-    public NonDefaultConstructor(int i) {
-        lazyField = "m";
-    }
+  // error doesn't initialize nullObject
+  public NonDefaultConstructor(int i) {
+    lazyField = "m";
+  }
 
-    // OK, lazyField is lazy!
-    public NonDefaultConstructor(double a) {
-        nullObject = "n";
-    }
+  // OK, lazyField is lazy!
+  public NonDefaultConstructor(double a) {
+    nullObject = "n";
+  }
 
-    public NonDefaultConstructor(String s) {
-        nullObject = "a";
-        lazyField = "m";
-    }
+  public NonDefaultConstructor(String s) {
+    nullObject = "a";
+    lazyField = "m";
+  }
 
-    public Object getNull() {
-        return nullObject;
-    }
+  public Object getNull() {
+    return nullObject;
+  }
 }

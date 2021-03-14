@@ -30,97 +30,96 @@ import jdk.javadoc.doclet.Taglet;
  */
 public class ManualTaglet implements Taglet {
 
-    private static final String NAME = "checker_framework.manual";
+  private static final String NAME = "checker_framework.manual";
 
-    @Override
-    public String getName() {
-        return NAME;
+  @Override
+  public String getName() {
+    return NAME;
+  }
+
+  private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
+
+  @Override
+  public Set<Taglet.Location> getAllowedLocations() {
+    return allowedSet;
+  }
+
+  @Override
+  public boolean isInlineTag() {
+    return false;
+  }
+
+  /**
+   * Formats a link, given an array of tokens.
+   *
+   * @param parts the array of tokens
+   * @return a link to the manual top-level if the array size is one, or a link to a part of the
+   *     manual if it's larger than one
+   */
+  private String formatLink(String[] parts) {
+    String anchor, text;
+    if (parts.length < 2) {
+      anchor = "";
+      text = "Checker Framework";
+    } else {
+      anchor = parts[0];
+      text = parts[1];
     }
+    return String.format("<A HREF=\"https://checkerframework.org/manual/%s\">%s</A>", anchor, text);
+  }
 
-    private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
+  /**
+   * Formats the {@code @checker_framework.manual} tag, prepending the tag header to the tag
+   * content.
+   *
+   * @param text the tag content
+   * @return the formatted tag
+   */
+  private String formatHeader(String text) {
+    return String.format("<DT><B>See the Checker Framework Manual:</B><DD>%s<BR>", text);
+  }
 
-    @Override
-    public Set<Taglet.Location> getAllowedLocations() {
-        return allowedSet;
+  @Override
+  public String toString(List<? extends DocTree> tags, Element element) {
+    if (tags.isEmpty()) {
+      return "";
     }
-
-    @Override
-    public boolean isInlineTag() {
-        return false;
+    StringJoiner sb = new StringJoiner(", ");
+    for (DocTree t : tags) {
+      String text = getText(t);
+      String[] split = text.split(" ", 2);
+      sb.add(formatLink(split));
     }
+    return formatHeader(sb.toString());
+  }
 
-    /**
-     * Formats a link, given an array of tokens.
-     *
-     * @param parts the array of tokens
-     * @return a link to the manual top-level if the array size is one, or a link to a part of the
-     *     manual if it's larger than one
-     */
-    private String formatLink(String[] parts) {
-        String anchor, text;
-        if (parts.length < 2) {
-            anchor = "";
-            text = "Checker Framework";
-        } else {
-            anchor = parts[0];
-            text = parts[1];
+  static String getText(DocTree dt) {
+    return new SimpleDocTreeVisitor<String, Void>() {
+      @Override
+      public String visitUnknownBlockTag(UnknownBlockTagTree node, Void p) {
+        for (DocTree dt : node.getContent()) {
+          return dt.accept(this, null);
         }
-        return String.format(
-                "<A HREF=\"https://checkerframework.org/manual/%s\">%s</A>", anchor, text);
-    }
+        return "";
+      }
 
-    /**
-     * Formats the {@code @checker_framework.manual} tag, prepending the tag header to the tag
-     * content.
-     *
-     * @param text the tag content
-     * @return the formatted tag
-     */
-    private String formatHeader(String text) {
-        return String.format("<DT><B>See the Checker Framework Manual:</B><DD>%s<BR>", text);
-    }
-
-    @Override
-    public String toString(List<? extends DocTree> tags, Element element) {
-        if (tags.isEmpty()) {
-            return "";
+      @Override
+      public String visitUnknownInlineTag(UnknownInlineTagTree node, Void p) {
+        for (DocTree dt : node.getContent()) {
+          return dt.accept(this, null);
         }
-        StringJoiner sb = new StringJoiner(", ");
-        for (DocTree t : tags) {
-            String text = getText(t);
-            String[] split = text.split(" ", 2);
-            sb.add(formatLink(split));
-        }
-        return formatHeader(sb.toString());
-    }
+        return "";
+      }
 
-    static String getText(DocTree dt) {
-        return new SimpleDocTreeVisitor<String, Void>() {
-            @Override
-            public String visitUnknownBlockTag(UnknownBlockTagTree node, Void p) {
-                for (DocTree dt : node.getContent()) {
-                    return dt.accept(this, null);
-                }
-                return "";
-            }
+      @Override
+      public String visitText(TextTree node, Void p) {
+        return node.getBody();
+      }
 
-            @Override
-            public String visitUnknownInlineTag(UnknownInlineTagTree node, Void p) {
-                for (DocTree dt : node.getContent()) {
-                    return dt.accept(this, null);
-                }
-                return "";
-            }
-
-            @Override
-            public String visitText(TextTree node, Void p) {
-                return node.getBody();
-            }
-
-            @Override
-            protected String defaultAction(DocTree node, Void p) {
-                return "";
-            }
-        }.visit(dt, null);
-    }
+      @Override
+      protected String defaultAction(DocTree node, Void p) {
+        return "";
+      }
+    }.visit(dt, null);
+  }
 }

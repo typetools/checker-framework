@@ -25,75 +25,75 @@ import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnCont
  */
 public class ReturnNode extends Node {
 
-    protected final ReturnTree tree;
-    protected final @Nullable Node result;
+  protected final ReturnTree tree;
+  protected final @Nullable Node result;
 
-    public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
-        super(types.getNoType(TypeKind.NONE));
-        this.result = result;
-        tree = t;
-        if (result != null) {
-            result.setAssignmentContext(new MethodReturnContext(methodTree));
-        }
+  public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
+    super(types.getNoType(TypeKind.NONE));
+    this.result = result;
+    tree = t;
+    if (result != null) {
+      result.setAssignmentContext(new MethodReturnContext(methodTree));
     }
+  }
 
-    public ReturnNode(
-            ReturnTree t,
-            @Nullable Node result,
-            Types types,
-            LambdaExpressionTree lambda,
-            MethodSymbol methodSymbol) {
-        super(types.getNoType(TypeKind.NONE));
-        this.result = result;
-        tree = t;
-        if (result != null) {
-            result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
-        }
+  public ReturnNode(
+      ReturnTree t,
+      @Nullable Node result,
+      Types types,
+      LambdaExpressionTree lambda,
+      MethodSymbol methodSymbol) {
+    super(types.getNoType(TypeKind.NONE));
+    this.result = result;
+    tree = t;
+    if (result != null) {
+      result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
     }
+  }
 
-    /** The result of the return node, {@code null} otherwise. */
-    public @Nullable Node getResult() {
-        return result;
-    }
+  /** The result of the return node, {@code null} otherwise. */
+  public @Nullable Node getResult() {
+    return result;
+  }
 
-    @Override
-    public ReturnTree getTree() {
-        return tree;
-    }
+  @Override
+  public ReturnTree getTree() {
+    return tree;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitReturn(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitReturn(this, p);
+  }
 
-    @Override
-    public String toString() {
-        if (result != null) {
-            return "return " + result;
-        }
-        return "return";
+  @Override
+  public String toString() {
+    if (result != null) {
+      return "return " + result;
     }
+    return "return";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof ReturnNode)) {
-            return false;
-        }
-        ReturnNode other = (ReturnNode) obj;
-        return Objects.equals(result, other.result);
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof ReturnNode)) {
+      return false;
     }
+    ReturnNode other = (ReturnNode) obj;
+    return Objects.equals(result, other.result);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(ReturnNode.class, result);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(ReturnNode.class, result);
+  }
 
-    @Override
-    public Collection<Node> getOperands() {
-        if (result == null) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(result);
-        }
+  @Override
+  public Collection<Node> getOperands() {
+    if (result == null) {
+      return Collections.emptyList();
+    } else {
+      return Collections.singletonList(result);
     }
+  }
 }

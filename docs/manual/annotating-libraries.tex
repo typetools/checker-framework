@@ -74,7 +74,7 @@ You can write annotations for a library, and make them known to a checker, in tw
   A stub file is applicable to multiple versions of a library, so
   the stub file does not need to be updated when a new version of the
   library is released, unless the API has changed (such as defining a new
-  method).
+  class or method).
 
   For instructions, see Section~\ref{stub}.
 
@@ -83,7 +83,7 @@ You can write annotations for a library, and make them known to a checker, in tw
 
 If you annotate a new library (either in its source code or in a stub
 file), please inform the Checker Framework
-developers so that your annotated library can be distributed with the
+developers so that your annotated library can be advertised to users of the
 Checker Framework.
 Sharing your annotations is useful even if the library is only partially
 annotated.
@@ -126,8 +126,8 @@ version.
 
 Do not change formatting and whitespace.
 
-All of these changes increase the difference between upstream (the original
-version) and your annotated version.  This makes it harder for others to
+Any of these changes would increase the difference between upstream (the original
+version) and your annotated version.  Unnecessary differences make it harder for others to
 understand what you have done, and they make it harder to pull changes from
 upstream into the annotated library.
 
@@ -142,8 +142,7 @@ documentation.
 
 Do not add requirements or guarantees beyond what the library author has
 already committed to.  If a project's Javadoc says nothing about nullness,
-then you should not assume that the specification forbids null, nor that it
-permits it.
+then you should not assume that the specification forbids or permits null.
 (If the project's Javadoc explicitly mentions null everywhere it is permitted,
 then you can assume it is forbidden elsewhere, where the author omitted those
 statements.)
@@ -842,6 +841,110 @@ AnnotationFileParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 by removing the method \<enableForgroundNdefPush(...)> from
 the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
 in the version of the library you are using.
+
+
+\sectionAndLabel{Ajava files}{ajava-files}
+
+There are two types of annotation files, which are files containing annotations that
+can be read by the Checker Framework.
+Section~\ref{stub} describes stub files, which are used by programmers and
+type system designers.
+This section dscribes ajava files.
+
+Ajava files are simply valid Java
+source files whose annotations the Checker Framework can read.
+The Checker Framework can read their annotations that are written
+on anonymous and local classes (annotations in such locations are ignored
+in stub files).
+
+Ajava files are typically read and written by tools, such as whole-program
+inference (see Section~\ref{whole-program-inference}).  This section is
+primarily of interest to the maintainers of those tools.
+
+
+\subsectionAndLabel{Using an Ajava file}{ajava-using}
+
+The \code{-Aajava} command-line argument works like \code{-Astubs} (see
+Section~\ref{stub-using}). It takes a colon-separated list of
+files and directories containing ajava files, which end in the \code{.ajava}
+extension.
+
+For example:
+
+\begin{myxsmall}
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.interning.InterningChecker \
+    -Aajava=path/to/String.ajava:ajavadir MyFile.java MyOtherFile.java ...
+\end{Verbatim}
+\end{myxsmall}
+
+If there's an annotation in both a source file file and the corresponding a
+source file, the Checker Framework uses the greatest lower bound, as with
+the \code{-AmergeStubsWithSource} option.
+
+
+\subsectionAndLabel{Corresponding source files and ajava files}{ajava-corresponding}
+
+
+If the Checker Framework reads both a source file and an ajava file that
+corresponds to it, then the source file and the ajava file must have a
+specific relationship to one another.
+
+
+\subsubsectionAndLabel{Names of ajava files}{ajava-file-name}
+
+The ajava file must be found below one of the arguments to
+\code{-Aajava}, in a subdirectory matching its package name.
+
+The ajava file must be named
+\code{ClassName-checker.qualified.name.ajava} where
+\code{checker.qualified.name} is the fully qualified name of the checker that
+the ajava file's annotations belong to.
+
+For example, an ajava file with
+tainting annotations for a class \code{outerpackage.innerpackage.MyClass} would
+be located in a subdirectory \code{outerpackage/innerpackage} and it would be
+named
+\code{MyClass-org.checkerframework.checker.tainting.TaintingChecker.ajava}.
+
+
+\subsubsectionAndLabel{Contents of an ajava file}{ajava-contents}
+
+The
+ajava file must contain the same source code as the source file with the following exceptions:
+\begin{itemize}
+  \item The two may differ in annotations.
+  \item The two may have different import statements.
+  \item The ajava file may have explicit receivers where the source file
+    doesn't. If a source file has a method declaration \code{void
+      myMethod()}, the ajava file might contain \code{void myMethod(MyClass
+      this)} or \code{void myMethod(@Interned MyClass this)}.
+  \item The ajava file may have explicit type bounds that are implicit in the source file.
+    If a source file has a type argument \<?>,
+    the ajava file might contain \code{? extends Object} or \code{? extends
+      @Nullable Object}.
+\end{itemize}
+
+
+\subsubsectionAndLabel{Inserting annotations from ajava files}{ajava-insert-annotations}
+
+The \code{InsertAjavaAnnotations.java} program inserts annotations
+from ajava files into Java files.  This can be used to
+insert the annotations inferred by whole program inference into the source code
+of a program, similarly to the
+\ahref{https://checkerframework.org/annotation-file-utilities/\#insert-annotations-to-source}{\code{insert-annotations-to-source}
+  script} from the
+\ahref{https://checkerframework.org/annotation-file-utilities/}{Annotation
+  File Utilities project}.
+
+Its arguments are a directory containing ajava files and a directory
+containing Java files.  The \code{checker.jar} file must be in the classpath.
+Here is an example invocation:
+\begin{Verbatim}
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+    org.checkerframework.framework.ajava.InsertAjavaAnnoations \
+    <path-to-ajava-files> <path-to-java-files>
+\end{Verbatim}
 
 
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}

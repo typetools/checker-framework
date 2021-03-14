@@ -8,20 +8,19 @@ import org.junit.runners.Parameterized.Parameters;
 
 /** Basic tests for the Called Methods Checker. */
 public class CalledMethodsDisableReturnsReceiverTest extends CheckerFrameworkPerDirectoryTest {
-    public CalledMethodsDisableReturnsReceiverTest(List<File> testFiles) {
-        super(
-                testFiles,
-                CalledMethodsChecker.class,
-                "calledmethods-disablereturnsreceiver",
-                "-Anomsgtext",
-                "-AdisableReturnsReceiver",
-                "-nowarn",
-                "-encoding",
-                "UTF-8");
-    }
+  public CalledMethodsDisableReturnsReceiverTest(List<File> testFiles) {
+    super(
+        testFiles,
+        CalledMethodsChecker.class,
+        "calledmethods-disablereturnsreceiver",
+        "-Anomsgtext",
+        "-AdisableReturnsReceiver",
+        "-encoding",
+        "UTF-8");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"calledmethods-disablereturnsreceiver"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"calledmethods-disablereturnsreceiver"};
+  }
 }

@@ -1,7 +1,7 @@
 import java.util.List;
 
 interface B {
-    List<L<?>> getItems();
+  List<L<?>> getItems();
 }
 
 interface V {}

@@ -1,4 +1,86 @@
-Version 3.??.??, March 1, 2021
+Version 3.12.1, May 3, 2021
+
+---------------------------------------------------------------------------
+
+Version 3.12.0, April 1, 2021
+
+**User-visible changes:**
+
+New FAQ item "How should I annotate code that uses generics?" gives
+examples of annotations on type variables, together with their meaning.
+
+`-Ainfer=ajava` uses ajava files (rather than jaif files or stub files)
+internally during whole-program inference.
+
+The Optional Checker supports a new annotation `@OptionalBottom` that
+stands for (only) the `null` value.
+
+The `value` element/argument to `@EnumVal` is now required.  Previously it
+defaulted to an empty array.
+
+**Implementation details:**
+
+A precondition or normal postcondition annotation's `value` element must have
+type `String[]`, not `String`.  A conditinoal postcondition annotation's
+`expression` element must have type `String[]`, not `String`.  These changes
+will not affect users (any programmer-written annotation that was legal before
+will still be legal), but it may affect checker implementations.
+
+`JavaExpressionParseUtil`:
+`JavaExpressionParseUtil#parse` no longer viewpoint-adapts Java expressions. It
+just converts the expression `String` to a `JavaExpression`.  To that end,
+`JavaExpressionParseUtil.JavaExpressionContext` has been removed and
+`JavaExpressionParseUtil#parse` no longer takes a context object.  Most calls to
+`JavaExpressionParseUtil#parse` should be replaced with a call to one of the
+methods in `StringToJavaExpressions`.
+
+Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
+class, the method `compare` was renamed `defaultAction`. The method `combineRs`
+was replaced by `reduce`.
+
+Removed methods:
+ * `AnnotationUtils.getElementValueArrayOrSingleton`
+ * `DependentTypesHelper.standardizeNewClassTree`: use `atExpression` instead
+ * `DependentTypesHelper.standardizeString`: override one of the methods
+   explained in the Javadoc of `convertAnnotationMirror`
+
+Method renamings:
+ * `DefaultQualifierForUseTypeAnnotator.getSupportAnnosFromDefaultQualifierForUses` => `getDefaultQualifierForUses`
+ * In `DependentTypesHelper`:
+    * `check*` => `check*ForErrorExpressions`
+    * `viewpointAdaptConstructor` => `atConstructorInvocation`
+    * `viewpointAdaptMethod` => `atMethodInvocation`
+    * `viewpointAdaptTypeVariableBounds` => `atParameterizedTypeUse`
+    * `standardizeClass` =>  `atTypeDecl`
+    * `standardizeExpression` => `atExpression`
+    * `standardizeFieldAccess` => `atFieldAccess`
+    * `standardizeReturnType` => `atReturnType`
+    * `standardizeVariable` => `atVariableDeclaration`
+
+Deprecated some overloads in `AnnotationUtils` that take a `CharSequence`
+(use an overload that takes an `ExecutablElement`):
+ * `getElementValueArray`
+ * `getElementValueClassName`
+ * `getElementValueClassNames`
+ * `getElementValueEnumArray`
+ * `getElementValueEnum`
+ * `getElementValue`
+ * `getElementValuesWithDefaults`
+
+Deprecated methods in `AnnotationUtils`:
+ * `areSameByClass`: use `areSameByName`
+ * `getElementValuesWithDefaults`: use a `getElementValue*` method
+
+Removed deprecated `PluginUtil` class.
+
+**Closed issues:**
+#1376, #3740, #3970, #4041, #4254, #4346, #4355, #4358, #4372, #4381, #4384,
+#4417, #4449, #4452, #4480.
+
+
+---------------------------------------------------------------------------
+
+Version 3.11.0, March 1, 2021
 
 **User-visible changes:**
 
@@ -58,6 +140,8 @@ expression.  Use new method `CFAbstractStore.insertValuePermitNondeterministic`
 to map a nondeterministic expression to a value.
 
 **Closed issues:**
+#862, #3631, #3991, #4031, #4206, #4207, #4226, #4231, #4248, #4263, #4265,
+#4279, #4286, #4289.
 
 ---------------------------------------------------------------------------
 
