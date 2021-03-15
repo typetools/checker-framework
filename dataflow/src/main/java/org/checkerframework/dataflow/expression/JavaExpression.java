@@ -44,6 +44,7 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -575,7 +576,7 @@ public abstract class JavaExpression {
      * @return list of parameters as {@link LocalVariable}s
      */
     public static List<JavaExpression> getParametersAsLocalVariables(ExecutableElement methodEle) {
-        return SystemUtil.mapList(variableElement -> LocalVariable::new, methodEle.getParameters());
+        return SystemUtil.mapList(LocalVariable::new, methodEle.getParameters());
     }
 
     /**
@@ -769,7 +770,7 @@ public abstract class JavaExpression {
             return result;
         }
 
-        return SystemUtil.mapList(JavaExpression.fromTree, argTrees);
+        return SystemUtil.mapList(JavaExpression::fromTree, argTrees);
     }
 
     /**
