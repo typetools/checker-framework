@@ -101,7 +101,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String from = atypeFactory.hasSubsequenceFromValue(anno);
             String to = atypeFactory.hasSubsequenceToValue(anno);
 
-            // check that each expression is parseable at the declaration of this class
+            // check that each expression is parsable at the declaration of this class
             ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
             checkEffectivelyFinalAndParsable(seq, enclosingClass, node);
             checkEffectivelyFinalAndParsable(from, enclosingClass, node);
