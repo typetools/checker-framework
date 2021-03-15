@@ -1070,7 +1070,7 @@ public class DependentTypesHelper {
             }
             p.replaceAnnotations(replacement);
             if (type.getKind() != p.getKind()) {
-                // if the underlying types don't match, then this type has be substituted for a
+                // If the underlying types don't match, then this type has be substituted for a
                 // type variable, so don't recur. The primary annotation was copied because
                 // if the type variable might have had a primary annotation at a use.
                 // For example:
