@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.upperbound;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -186,30 +188,7 @@ public abstract class UBQualifier {
             }
         }
 
-        Map<String, Set<OffsetEquation>> map = new HashMap<>();
-        if (offsets.isEmpty()) {
-            for (String sequence : sequences) {
-                map.put(sequence, Collections.singleton(extraEq));
-            }
-        } else {
-            assert sequences.size() == offsets.size();
-            for (int i = 0; i < sequences.size(); i++) {
-                String sequence = sequences.get(i);
-                String offset = offsets.get(i);
-                Set<OffsetEquation> set = map.get(sequence);
-                if (set == null) {
-                    set = new HashSet<>();
-                    map.put(sequence, set);
-                }
-                OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
-                if (eq.hasError()) {
-                    return UpperBoundUnknownQualifier.UNKNOWN;
-                }
-                eq = eq.copyAdd('+', extraEq);
-                set.add(eq);
-            }
-        }
-        return new LessThanLengthOf(map);
+        return new LessThanLengthOf(sequences, offsets, extraEq);
     }
 
     /**
@@ -325,18 +304,163 @@ public abstract class UBQualifier {
 
     /** The less-than-length-of qualifier (@LTLengthOf). */
     public static class LessThanLengthOf extends UBQualifier {
+
         // There are two representations for sequences and offsets.
         // In source code, they are represented by two parallel arrays, as in
         //   @LTLengthOf(value = {"a", "b", "a", "c"}, offset = {"-1", "x", "y", "0"}).
         // In this implementation, they are represented by a single map; the above would be
         //   { "a" : {"-1", "y"}, "b" : {"x"}, "c" : {"0"} }
         // Code in this class transforms from one representation to the other.
+
         /** Maps from sequence name to offset. */
         private final Map<String, Set<OffsetEquation>> map;
 
+        /**
+         * Returns a copy of the map.
+         *
+         * @return a copy of the map
+         */
+        private Map<String, Set<OffsetEquation>> copyMap() {
+            Map<String, Set<OffsetEquation>> result = new HashMap<>();
+            for (String sequenceName : map.keySet()) {
+                Set<OffsetEquation> equations = new HashSet<>();
+                for (OffsetEquation offsetEquation : map.get(sequenceName)) {
+                    equations.add(new OffsetEquation(offsetEquation));
+                }
+                result.put(sequenceName, equations);
+            }
+            return result;
+        }
+
+        /**
+         * Convert the parallel array representation to the map representation.
+         *
+         * @param sequences non-empty list of sequences
+         * @param offsets list of offset, if empty, an offset of 0 is used
+         * @param extraEq offset to add to each element of offsets; may be null
+         * @return the map representation of a {@link UBQualifier}, or null if there is an error
+         */
+        private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
+                List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
+
+            Map<String, Set<OffsetEquation>> map = new HashMap<>();
+            if (offsets.isEmpty()) {
+                for (String sequence : sequences) {
+                    map.put(sequence, Collections.singleton(extraEq));
+                }
+            } else {
+                assert sequences.size() == offsets.size();
+                for (int i = 0; i < sequences.size(); i++) {
+                    String sequence = sequences.get(i);
+                    String offset = offsets.get(i);
+                    Set<OffsetEquation> set = map.get(sequence);
+                    if (set == null) {
+                        set = new HashSet<>();
+                        map.put(sequence, set);
+                    }
+                    OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
+                    if (eq.hasError()) {
+                        return null;
+                    }
+                    eq = eq.copyAdd('+', extraEq);
+                    set.add(eq);
+                }
+            }
+            return map;
+        }
+
+        /** A triple that is the return type of {@link #mapToSequencesAndOffsets}. */
+        private static class SequencesOffsetsAndClass {
+            /** List of sequences. */
+            public final List<String> sequences;
+            /** List of offsets. */
+            public final List<String> offsets;
+            /** The class of the annotation to be built. */
+            public final Class<? extends Annotation> annoClass;
+
+            /**
+             * Creates a new SequencesOffsetsAndClass.
+             *
+             * @param sequences list of sequences
+             * @param offsets list of offsets
+             * @param annoClass the class of the annotation to be built
+             */
+            public SequencesOffsetsAndClass(
+                    List<String> sequences,
+                    List<String> offsets,
+                    Class<? extends Annotation> annoClass) {
+
+                this.sequences = sequences;
+                this.offsets = offsets;
+                this.annoClass = annoClass;
+            }
+        }
+
+        /**
+         * Given the map representation, returns parallel-arrays representation.
+         *
+         * @param map the internal representation of LessThanLengthOf
+         * @param buildSubstringIndexAnnotation if true, the annoClass in the result is
+         *     ubstringIndexFor.class
+         * @return the external representation
+         */
+        private static SequencesOffsetsAndClass mapToSequencesAndOffsets(
+                Map<String, Set<OffsetEquation>> map, boolean buildSubstringIndexAnnotation) {
+            List<String> sortedSequences = new ArrayList<>(map.keySet());
+            Collections.sort(sortedSequences);
+            List<String> sequences = new ArrayList<>();
+            List<String> offsets = new ArrayList<>();
+            boolean isLTEq = true;
+            boolean isLTOM = true;
+            for (String sequence : sortedSequences) {
+                // The offsets for this sequence.
+                List<String> thisOffsets = new ArrayList<>();
+                for (OffsetEquation eq : map.get(sequence)) {
+                    isLTEq = isLTEq && eq.equals(OffsetEquation.NEG_1);
+                    isLTOM = isLTOM && eq.equals(OffsetEquation.ONE);
+                    thisOffsets.add(eq.toString());
+                }
+                Collections.sort(thisOffsets);
+                for (String offset : thisOffsets) {
+                    sequences.add(sequence);
+                    offsets.add(offset);
+                }
+            }
+            Class<? extends Annotation> annoClass;
+            if (buildSubstringIndexAnnotation) {
+                annoClass = SubstringIndexFor.class;
+            } else if (isLTEq) {
+                annoClass = LTEqLengthOf.class;
+            } else if (isLTOM) {
+                annoClass = LTOMLengthOf.class;
+            } else {
+                annoClass = LTLengthOf.class;
+            }
+            return new SequencesOffsetsAndClass(sequences, offsets, annoClass);
+        }
+
+        // End of code for manipulating the representation
+
+        /**
+         * Create a new LessThanLengthOf, from the internal representation.
+         *
+         * @param map a map from sequence name to offse
+         */
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {
             assert !map.isEmpty();
             this.map = map;
+        }
+
+        /**
+         * Create a new LessThanLengthOf from the parallel array representation.
+         *
+         * @param sequences non-empty list of sequences
+         * @param offsets list of offset, if empty, an offset of 0 is used
+         * @param extraEq offset to add to each element of offsets; may be null
+         */
+        private LessThanLengthOf(
+                List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
+            this(sequencesAndOffsetsToMap(sequences, offsets, extraEq));
         }
 
         @Override
@@ -449,40 +573,25 @@ public abstract class UBQualifier {
          */
         private AnnotationMirror convertToAnnotation(
                 ProcessingEnvironment env, boolean buildSubstringIndexAnnotation) {
-            List<String> sortedSequences = new ArrayList<>(map.keySet());
-            Collections.sort(sortedSequences);
-            List<String> sequences = new ArrayList<>();
-            List<String> offsets = new ArrayList<>();
-            boolean isLTEq = true;
-            boolean isLTOM = true;
-            for (String sequence : sortedSequences) {
-                List<String> sortOffsets = new ArrayList<>();
-                for (OffsetEquation eq : map.get(sequence)) {
-                    isLTEq = isLTEq && eq.equals(OffsetEquation.NEG_1);
-                    isLTOM = isLTOM && eq.equals(OffsetEquation.ONE);
-                    sortOffsets.add(eq.toString());
-                }
-                Collections.sort(sortOffsets);
-                for (String offset : sortOffsets) {
-                    sequences.add(sequence);
-                    offsets.add(offset);
-                }
-            }
-            AnnotationBuilder builder;
-            if (buildSubstringIndexAnnotation) {
-                builder = new AnnotationBuilder(env, SubstringIndexFor.class);
+            SequencesOffsetsAndClass soc =
+                    mapToSequencesAndOffsets(map, buildSubstringIndexAnnotation);
+            List<String> sequences = soc.sequences;
+            List<String> offsets = soc.offsets;
+            Class<? extends Annotation> annoClass = soc.annoClass;
+
+            AnnotationBuilder builder = new AnnotationBuilder(env, annoClass);
+            if (annoClass == SubstringIndexFor.class) {
                 builder.setValue("value", sequences);
                 builder.setValue("offset", offsets);
-            } else if (isLTEq) {
-                builder = new AnnotationBuilder(env, LTEqLengthOf.class);
+            } else if (annoClass == LTEqLengthOf.class) {
                 builder.setValue("value", sequences);
-            } else if (isLTOM) {
-                builder = new AnnotationBuilder(env, LTOMLengthOf.class);
+            } else if (annoClass == LTOMLengthOf.class) {
                 builder.setValue("value", sequences);
+            } else if (annoClass == LTLengthOf.class) {
+                builder.setValue("value", sequences);
+                builder.setValue("offset", offsets);
             } else {
-                builder = new AnnotationBuilder(env, LTLengthOf.class);
-                builder.setValue("value", sequences);
-                builder.setValue("offset", offsets);
+                throw new BugInCF("What annoClass? " + annoClass);
             }
             return builder.build();
         }
@@ -778,7 +887,7 @@ public abstract class UBQualifier {
          */
         @Override
         public UBQualifier plusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
-            return pluseOrMinusOffset(node, factory, '+');
+            return plusOrMinusOffset(node, factory, '+');
         }
 
         /**
@@ -792,12 +901,25 @@ public abstract class UBQualifier {
          */
         @Override
         public UBQualifier minusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
-            return pluseOrMinusOffset(node, factory, '-');
+            return plusOrMinusOffset(node, factory, '-');
         }
 
-        private UBQualifier pluseOrMinusOffset(
+        /**
+         * Adds node as a positive or negative offset to a copy of this qualifier. This is done by
+         * creating an offset equation for node and then adding or subtracting that equation to
+         * every offset equation in a copy of this object.
+         *
+         * @param node a Node
+         * @param factory an AnnotatedTypeFactory
+         * @param op either '-' or '+'
+         * @return a copy of this qualifier with node add as an offset
+         */
+        private UBQualifier plusOrMinusOffset(
                 Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
             assert op == '-' || op == '+';
+
+            // Try treating the offset as both an OffsetEquation and as a value.
+            // Use whichever is not null, or glb the two.
 
             OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, op);
             LessThanLengthOf nodeOffsetQualifier = null;
@@ -996,21 +1118,19 @@ public abstract class UBQualifier {
          */
         public UBQualifier removeOffset(String sequence, int offset) {
             OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
-            List<String> sequences = new ArrayList<>();
-            List<String> offsets = new ArrayList<>();
-            for (String seq : this.map.keySet()) {
-                Set<OffsetEquation> offsetSet = this.map.get(seq);
-                for (OffsetEquation off : offsetSet) {
-                    if (!sequence.equals(seq) && !off.equals(offsetEq)) {
-                        sequences.add(seq);
-                        offsets.add(off.toString());
-                    }
+            Map<String, Set<OffsetEquation>> newMap = copyMap();
+            Set<OffsetEquation> equations = newMap.get(sequence);
+            if (equations != null) {
+                equations.remove(offsetEq);
+                if (equations.isEmpty()) {
+                    newMap.remove(sequence);
                 }
             }
-            if (sequences.isEmpty()) {
+
+            if (newMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             } else {
-                return UBQualifier.createUBQualifier(sequences, offsets);
+                return new LessThanLengthOf(newMap);
             }
         }
 
