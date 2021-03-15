@@ -34,6 +34,7 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -704,10 +705,9 @@ public class JavaExpressionParseUtil {
             String methodName = expr.getNameAsString();
 
             // parse argument list
-            List<JavaExpression> arguments = new ArrayList<>(expr.getArguments().size());
-            for (Expression argument : expr.getArguments()) {
-                arguments.add(argument.accept(this, null));
-            }
+            List<JavaExpression> arguments =
+                    SystemUtil.mapList(
+                            argument -> argument.accept(this, null), expr.getArguments());
 
             ExecutableElement methodElement;
             try {
@@ -733,11 +733,12 @@ public class JavaExpressionParseUtil {
                         && TypesUtils.isPrimitive(argumentType)) {
                     // boxing is necessary
                     MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
-                    List<JavaExpression> p = new ArrayList<>();
-                    p.add(argument);
                     JavaExpression boxedParam =
                             new MethodCall(
-                                    parameterType, valueOfMethod, new ClassName(parameterType), p);
+                                    parameterType,
+                                    valueOfMethod,
+                                    new ClassName(parameterType),
+                                    Collections.singletonList(argument));
                     arguments.set(i, boxedParam);
                 }
             }
@@ -772,7 +773,7 @@ public class JavaExpressionParseUtil {
          *
          * @param methodName the method name
          * @param receiverType the receiver type
-         * @param path the path
+         * @param pathToCompilationUnit the path to the compilation unit
          * @param arguments the arguments
          * @param resolver the resolver
          * @return the ExecutableElement for a method, or throws an exception
@@ -781,7 +782,7 @@ public class JavaExpressionParseUtil {
         private ExecutableElement getMethodElement(
                 String methodName,
                 TypeMirror receiverType,
-                TreePath path,
+                TreePath pathToCompilationUnit,
                 List<JavaExpression> arguments,
                 Resolver resolver)
                 throws JavaExpressionParseException {
@@ -790,7 +791,8 @@ public class JavaExpressionParseUtil {
 
             if (receiverType.getKind() == TypeKind.ARRAY) {
                 ExecutableElement element =
-                        resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                        resolver.findMethod(
+                                methodName, receiverType, pathToCompilationUnit, argumentTypes);
                 if (element == null) {
                     throw constructJavaExpressionParseError(methodName, "no such method");
                 }
@@ -800,7 +802,8 @@ public class JavaExpressionParseUtil {
             // Search for method in each enclosing class.
             while (receiverType.getKind() == TypeKind.DECLARED) {
                 ExecutableElement element =
-                        resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                        resolver.findMethod(
+                                methodName, receiverType, pathToCompilationUnit, argumentTypes);
                 if (element != null) {
                     return element;
                 }
@@ -834,7 +837,7 @@ public class JavaExpressionParseUtil {
                                 expr.toString(),
                                 "could not find class "
                                         + expr.getNameAsString()
-                                        + " inside "
+                                        + " in package "
                                         + scope.toString()));
             }
 
@@ -899,7 +902,6 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        @SuppressWarnings("MissingCasesInEnumSwitch") // fallthrough for cases lacking optimization
         public JavaExpression visit(UnaryExpr expr, Void aVoid) {
             Tree.Kind treeKind = javaParserUnaryOperatorToTreeKind(expr.getOperator());
             JavaExpression operand = expr.getExpression().accept(this, null);
@@ -912,6 +914,10 @@ public class JavaExpressionParseUtil {
                     if (operand instanceof ValueLiteral) {
                         return ((ValueLiteral) operand).negate();
                     }
+                    break;
+                default:
+                    // Not optimization for this operand
+                    break;
             }
             return new UnaryOperation(operand.getType(), treeKind, operand);
         }
@@ -1020,9 +1026,7 @@ public class JavaExpressionParseUtil {
 
         /**
          * Converts the JavaParser type to a TypeMirror. Returns null if {@code type} is not
-         * handled.
-         *
-         * <p>This method does not handle type variables, union types, or intersection types.
+         * handled; this method does not handle type variables, union types, or intersection types.
          *
          * @param type a JavaParser type
          * @return a TypeMirror corresponding to {@code type}, or null if {@code type} isn't handled
@@ -1121,13 +1125,11 @@ public class JavaExpressionParseUtil {
         if (type instanceof ClassType) {
             // enclClass() needs to be called on tsym.owner, because tsym.enclClass() == tsym.
             Symbol sym = ((ClassType) type).tsym.owner;
-
             if (sym == null) {
                 return com.sun.tools.javac.code.Type.noType;
             }
 
             ClassSymbol cs = sym.enclClass();
-
             if (cs == null) {
                 return com.sun.tools.javac.code.Type.noType;
             }
