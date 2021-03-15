@@ -2,7 +2,6 @@
 
 package org.checkerframework.checker.regex.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Assert;
@@ -17,6 +16,7 @@ public final class RegexUtilTest {
         String s2 = "(brown|beige)";
         String s3 = "colou?r";
         String s4 = "1) first point";
+        String s5 = "(abc)(cde[)])(\\Qxyz\\E)";
 
         Assert.assertTrue(RegexUtil.isRegex(s1));
         RegexUtil.asRegex(s1);
@@ -65,6 +65,13 @@ public final class RegexUtilTest {
         Assert.assertThrows(Error.class, () -> RegexUtil.asRegex(s4, 2));
         Assert.assertFalse(RegexUtil.isRegex(s4, 1, 1));
         Assert.assertThrows(Error.class, () -> RegexUtil.asRegex(s4, 1, 1));
+
+        Assert.assertTrue(RegexUtil.isRegex(s5, 3, 1, 2, 3));
+        Assert.assertTrue(RegexUtil.isRegex(s5, 3, 1, 2));
+        Assert.assertTrue(RegexUtil.isRegex(s5, 3, 1));
+        Assert.assertFalse(RegexUtil.isRegex(s5, 4, 1, 2, 3));
+        Assert.assertThrows(Error.class, () -> RegexUtil.asRegex(s5, 3, 1, 2, 4));
+        Assert.assertThrows(Error.class, () -> RegexUtil.asRegex(s5, 4, 1, 2, 3));
     }
 
     @Test
@@ -76,17 +83,13 @@ public final class RegexUtilTest {
         String s5 = "[(abc]";
 
         Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s1, 2));
-        Assert.assertEquals(
-                new ArrayList<>(Collections.singletonList(1)), RegexUtil.getNonNullGroups(s1, 1));
+        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s1, 1));
         Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s2, 4));
-        Assert.assertEquals(
-                new ArrayList<>(Arrays.asList(2, 3)), RegexUtil.getNonNullGroups(s2, 3));
+        Assert.assertEquals(Arrays.asList(2, 3), RegexUtil.getNonNullGroups(s2, 3));
         Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s3, 3));
-        Assert.assertEquals(
-                new ArrayList<>(Collections.singletonList(1)), RegexUtil.getNonNullGroups(s3, 1));
+        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s3, 1));
         Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s4, 3));
-        Assert.assertEquals(
-                new ArrayList<>(Collections.singletonList(1)), RegexUtil.getNonNullGroups(s4, 2));
+        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s4, 2));
         Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s5, 1));
     }
 }

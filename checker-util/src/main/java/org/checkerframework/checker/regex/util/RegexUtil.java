@@ -557,12 +557,12 @@ public final class RegexUtil {
                             balance -= 1;
                         }
                     } else if (regexp.charAt(j) == '\\') {
-                        j = resumeFromHere(regexp, j);
+                        j = resumeTraversalFromHere(regexp, j);
                     }
                 }
                 i = j - 1;
             } else if (regexp.charAt(i) == '\\') {
-                i = resumeFromHere(regexp, i);
+                i = resumeTraversalFromHere(regexp, i);
             }
         }
         return nonNullGroups;
@@ -575,7 +575,7 @@ public final class RegexUtil {
      * @param st the index of the '\' which causes the skip
      * @return the index till which the traversal can be skipped
      */
-    private static int resumeFromHere(String regexp, int st) {
+    private static int resumeTraversalFromHere(String regexp, int st) {
         int length = regexp.length();
         if (st < length - 1 && regexp.charAt(st + 1) != 'Q') {
             return st + 1;
