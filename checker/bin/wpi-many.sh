@@ -274,7 +274,6 @@ else
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
-
     # shellcheck disable=SC2046
     grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
 
