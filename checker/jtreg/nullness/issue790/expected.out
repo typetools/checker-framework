@@ -1,3 +1,0 @@
-Class1.java:12:15: compiler.err.cant.ref.before.ctor.called: this
-Class1.java:12:9: compiler.err.cant.apply.symbol: kindname.constructor, Object, compiler.misc.no.args, Class1, kindname.class, java.lang.Object, (compiler.misc.arg.length.mismatch)
-2 errors

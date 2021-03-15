@@ -9,11 +9,11 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -26,6 +26,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -176,6 +177,19 @@ public final class TypesUtils {
                 return "<nulltype>";
             case VOID:
                 return "void";
+            case WILDCARD:
+                WildcardType wildcard = (WildcardType) type;
+                TypeMirror extendsBound = wildcard.getExtendsBound();
+                TypeMirror superBound = wildcard.getSuperBound();
+                return "?"
+                        + (extendsBound != null ? " extends " + simpleTypeName(extendsBound) : "")
+                        + (superBound != null ? " super " + simpleTypeName(superBound) : "");
+            case UNION:
+                StringJoiner sj = new StringJoiner(" | ");
+                for (TypeMirror alternative : ((UnionType) type).getAlternatives()) {
+                    sj.add(simpleTypeName(alternative));
+                }
+                return sj.toString();
             default:
                 if (type.getKind().isPrimitive()) {
                     return TypeAnnotationUtils.unannotatedType(type).toString();
@@ -217,6 +231,20 @@ public final class TypesUtils {
             return (TypeElement) element;
         }
         return null;
+    }
+
+    /**
+     * Given an array type, returns the type with all array levels stripped off.
+     *
+     * @param at an array type
+     * @return the type with all array levels stripped off
+     */
+    public static TypeMirror getInnermostComponentType(ArrayType at) {
+        TypeMirror result = at;
+        while (result.getKind() == TypeKind.ARRAY) {
+            result = ((ArrayType) result).getComponentType();
+        }
+        return result;
     }
 
     /// Equality
@@ -759,7 +787,7 @@ public final class TypesUtils {
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     * @return the least upper bound of {@code tm1} and {@code tm2}.
+     * @return the least upper bound of {@code tm1} and {@code tm2}
      */
     public static TypeMirror leastUpperBound(
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
@@ -821,7 +849,7 @@ public final class TypesUtils {
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     * @return the greatest lower bound of {@code tm1} and {@code tm2}.
+     * @return the greatest lower bound of {@code tm1} and {@code tm2}
      */
     public static TypeMirror greatestLowerBound(
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
@@ -866,6 +894,44 @@ public final class TypesUtils {
         return types.glb(t1, t2);
     }
 
+    /**
+     * Returns the most specific type from the list, or null if none exists.
+     *
+     * @param typeMirrors a list of types
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     * @return the most specific of the types, or null if none exists
+     */
+    public static @Nullable TypeMirror mostSpecific(
+            List<TypeMirror> typeMirrors, ProcessingEnvironment processingEnv) {
+        if (typeMirrors.size() == 1) {
+            return typeMirrors.get(0);
+        } else {
+            JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+            com.sun.tools.javac.code.Types types =
+                    com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+            com.sun.tools.javac.util.List<Type> typeList = typeMirrorListToTypeList(typeMirrors);
+            Type glb = types.glb(typeList);
+            for (Type candidate : typeList) {
+                if (types.isSameType(glb, candidate)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Given a list of TypeMirror, return a list of Type.
+     *
+     * @param typeMirrors a list of TypeMirrors
+     * @return the argument, converted to a javac list
+     */
+    private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
+            List<TypeMirror> typeMirrors) {
+        List<Type> typeList = SystemUtil.mapList(Type.class::cast, typeMirrors);
+        return com.sun.tools.javac.util.List.from(typeList);
+    }
+
     /// Substitutions
 
     /**
@@ -874,7 +940,7 @@ public final class TypesUtils {
      * @param methodElement a method
      * @param substitutedReceiverType the receiver type, after substitution
      * @param env the environment
-     * @return the return type of the mehtod
+     * @return the return type of the method
      */
     public static TypeMirror substituteMethodReturnType(
             Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {
@@ -957,15 +1023,10 @@ public final class TypesUtils {
             List<? extends TypeMirror> typeArgs,
             ProcessingEnvironment env) {
 
-        List<Type> newP = new ArrayList<>();
-        for (TypeMirror typeVariable : typeVariables) {
-            newP.add((Type) typeVariable);
-        }
+        List<Type> newP = SystemUtil.mapList(Type.class::cast, typeVariables);
 
-        List<Type> newT = new ArrayList<>();
-        for (TypeMirror typeMirror : typeArgs) {
-            newT.add((Type) typeMirror);
-        }
+        List<Type> newT = SystemUtil.mapList(Type.class::cast, typeArgs);
+
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         com.sun.tools.javac.code.Types types =
                 com.sun.tools.javac.code.Types.instance(javacEnv.getContext());

@@ -206,7 +206,6 @@ public class PurityChecker {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
-            assert TreeUtils.isUseOfElement(node) : "@AssumeAssertion(nullness): tree kind";
             Element elt = TreeUtils.elementFromUse(node);
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
                 purityResult.addNotBothReason(node, "call");
@@ -266,7 +265,6 @@ public class PurityChecker {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
-            assert TreeUtils.isUseOfElement(node) : "@AssumeAssertion(nullness): tree kind";
             Element ctorElement = TreeUtils.elementFromUse(node);
             boolean deterministic = assumeDeterministic || okThrowDeterministic;
             boolean sideEffectFree =

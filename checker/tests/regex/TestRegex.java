@@ -13,7 +13,7 @@ public class TestRegex {
 // test-case for issue 148
 class Search {
     public static void main(String[] args) {
-        if (!org.checkerframework.checker.regex.RegexUtil.isRegex(args[0], 4)) {
+        if (!org.checkerframework.checker.regex.util.RegexUtil.isRegex(args[0], 4)) {
             return;
         }
         @Regex(4) String regex = args[0];

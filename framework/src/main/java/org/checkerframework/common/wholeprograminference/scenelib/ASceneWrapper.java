@@ -25,8 +25,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -165,7 +165,7 @@ public class ASceneWrapper {
                                 List<AnnotationMirror> contractAnnotationMirrors =
                                         checker.getTypeFactory().getContractAnnotations(aMethod);
                                 List<Annotation> contractAnnotations =
-                                        CollectionsPlume.mapList(
+                                        SystemUtil.mapList(
                                                 AnnotationConverter::annotationMirrorToAnnotation,
                                                 contractAnnotationMirrors);
                                 aMethod.contracts = contractAnnotations;

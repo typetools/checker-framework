@@ -14,8 +14,8 @@ import org.plumelib.util.StringsPlume;
  * A node for new array creation.
  *
  * <pre>
- *   <em>new type [1][2]</em>
- *   <em>new type [] = { expr1, expr2, ... }</em>
+ *   <em>new type[1][2]</em>
+ *   <em>new type[] = { expr1, expr2, ... }</em>
  * </pre>
  */
 public class ArrayCreationNode extends Node {
@@ -25,7 +25,8 @@ public class ArrayCreationNode extends Node {
 
     /**
      * The length of this list is the number of dimensions in the array. Each element is the size of
-     * the given dimension.
+     * the given dimension. It can be empty if initializers is non-empty, as in {@code new
+     * SomeType[] = { expr1, expr2, ... }}.
      */
     protected final List<Node> dimensions;
 

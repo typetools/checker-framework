@@ -22,6 +22,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -102,6 +106,10 @@ public class AnnotationClassLoader {
      */
     private final Set<Class<? extends Annotation>> supportedBundledAnnotationClasses;
 
+    /** The package separator: ".". */
+    private static final Pattern DOT_LITERAL_PATTERN =
+            Pattern.compile(Character.toString(DOT), Pattern.LITERAL);
+
     /**
      * Constructor for loading annotations defined for a checker.
      *
@@ -132,9 +140,7 @@ public class AnnotationClassLoader {
         // from the fully qualified package name, split it at every dot then add
         // to the list
         fullyQualifiedPackageNameSegments.addAll(
-                Arrays.asList(
-                        Pattern.compile(Character.toString(DOT), Pattern.LITERAL)
-                                .split(packageName)));
+                Arrays.asList(DOT_LITERAL_PATTERN.split(packageName)));
 
         classLoader = getClassLoader();
 
@@ -178,6 +184,9 @@ public class AnnotationClassLoader {
      *     or null if no jar or directory contains the qual package
      */
     private final @Nullable URL getURLFromClasspaths() {
+        // TODO: This method could probably be replaced with
+        // io.github.classgraph.ClassGraph#getClasspathURIs()
+
         // Debug use, uncomment if needed to see all of the classpaths (boot
         // classpath, extension classpath, and classpath)
         // printPaths();
@@ -467,9 +476,8 @@ public class AnnotationClassLoader {
         }
 
         // all paths in CLASSPATH, -cp, and -classpath
-        String[] javaclassPaths = System.getProperty("java.class.path").split(File.pathSeparator);
-        processingEnv.getMessager().printMessage(Kind.NOTE, "java classpaths:");
-        for (String path : javaclassPaths) {
+        processingEnv.getMessager().printMessage(Kind.NOTE, "java.class.path property:");
+        for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
         }
 
@@ -490,16 +498,10 @@ public class AnnotationClassLoader {
      * Checker Framework.
      */
     private void loadBundledAnnotationClasses() {
-        // if there's no resourceURL, then there's nothing we can load
-        if (resourceURL == null) {
-            return;
-        }
-
         // retrieve the fully qualified class names of the annotations
         Set<@BinaryName String> annotationNames;
-
         // see whether the resource URL has a protocol of jar or file
-        if (resourceURL.getProtocol().contentEquals("jar")) {
+        if (resourceURL != null && resourceURL.getProtocol().contentEquals("jar")) {
             // if the checker class file is contained within a jar, then the
             // resource URL for the qual directory will have the protocol
             // "jar". This means the whole checker is loaded as a jar file.
@@ -531,7 +533,7 @@ public class AnnotationClassLoader {
                         "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
             }
 
-        } else if (resourceURL.getProtocol().contentEquals("file")) {
+        } else if (resourceURL != null && resourceURL.getProtocol().contentEquals("file")) {
             // if the checker class file is found within the file system itself
             // within some directory (usually development build directories),
             // then process the package as a file directory in the file system
@@ -544,7 +546,21 @@ public class AnnotationClassLoader {
             // We do not support a resource URL with any other protocols, so create an empty set.
             annotationNames = Collections.emptySet();
         }
-
+        if (annotationNames.isEmpty()) {
+            PackageElement pkgEle = checker.getElementUtils().getPackageElement(packageName);
+            if (pkgEle != null) {
+                for (Element e : pkgEle.getEnclosedElements()) {
+                    if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
+                        @SuppressWarnings(
+                                "signature:assignment.type.incompatible") // Elements needs to be
+                        // annotated.
+                        @BinaryName String annoBinName =
+                                checker.getElementUtils().getBinaryName((TypeElement) e).toString();
+                        annotationNames.add(annoBinName);
+                    }
+                }
+            }
+        }
         supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
     }
 

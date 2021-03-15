@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * A transfer function that extends {@link CFAbstractTransfer} and tracks {@link
  * InitializationStore}s. In addition to the features of {@link CFAbstractTransfer}, this transfer
- * function also track which fields of the current class ('self' receiver) have been initialized.
+ * function also tracks which fields of the current class ('self' receiver) have been initialized.
  *
  * <p>More precisely, the following refinements are performed:
  *
@@ -136,7 +136,7 @@ public class InitializationTransfer<
                 // If the type is not completed yet, we might run
                 // into trouble. Skip the field.
                 // TODO: is there a nicer solution?
-                // This was raised by Issue 244.
+                // This was raised by Issue #244.
                 continue;
             }
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);
@@ -150,7 +150,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
-        JavaExpression expr = JavaExpression.fromNode(analysis.getTypeFactory(), n.getTarget());
+        JavaExpression expr = JavaExpression.fromNode(n.getTarget());
 
         // If this is an assignment to a field of 'this', then mark the field as
         // initialized.

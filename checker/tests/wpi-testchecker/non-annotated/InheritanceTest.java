@@ -4,9 +4,9 @@ class IParent {
     int field;
 
     public void expectsBotNoSignature(int t) {
-        // :: error: (argument.type.incompatible)
+        // :: warning: (argument.type.incompatible)
         expectsBot(t);
-        // :: error: (argument.type.incompatible)
+        // :: warning: (argument.type.incompatible)
         expectsBot(field);
     }
 

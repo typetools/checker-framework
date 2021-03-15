@@ -10,10 +10,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An assignment context for a node, which represents the place to which the node with this context
- * is 'assigned' to. An 'assignment' (as we use the term here) can occur for Java assignments,
- * method calls (for all the actual parameters which get assigned to their formal parameters) or
- * method return statements.
+ * An assignment context is the left-hand side of an assignment or pseudo-assignment.
+ * Pseudo-assignments include regular Java assignments, method calls (for all the actual parameters
+ * which get assigned to their formal parameters), and method return statements.
  *
  * <p>The main use of {@link AssignmentContext} is to be able to get the declared type of the
  * left-hand side of the assignment for proper type-refinement.

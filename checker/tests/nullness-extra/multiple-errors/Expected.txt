@@ -1,6 +1,6 @@
-C1.java:1: error: [initialization.fields.uninitialized] the constructor does not initialize fields: o
-public class C1 {
-       ^
+C1.java:2: error: [initialization.field.uninitialized] the default constructor does not initialize field o
+    Object o;
+           ^
 C2.java:2: error: [assignment.type.incompatible] incompatible types in assignment.
     Object o = null;
                ^
@@ -11,7 +11,10 @@ C3.java:4: error: cannot find symbol
                      ^
   symbol:   class XXX
   location: class C3b
-C4.java:3: error: [dereference.of.nullable] dereference of possibly-null reference p
-        p.toString();
-        ^
-4 errors
+C3.java:1: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
+public class C3 {
+       ^
+C4.java:1: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
+public class C4 {
+       ^
+5 errors

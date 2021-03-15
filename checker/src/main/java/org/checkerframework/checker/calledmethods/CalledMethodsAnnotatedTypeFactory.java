@@ -163,7 +163,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition.
      *     Otherwise, return the first argument.
      */
-    String adjustMethodNameUsingValueChecker(
+    public String adjustMethodNameUsingValueChecker(
             final String methodName, final MethodInvocationTree tree) {
         if (!useValueChecker) {
             return methodName;

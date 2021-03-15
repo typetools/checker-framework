@@ -16,7 +16,7 @@ enum EnumWithInnerClass {
         void requireSibling1(@Sibling1 int x) {}
 
         void test() {
-            // :: error: argument.type.incompatible
+            // :: warning: argument.type.incompatible
             requireSibling1(getSibling1());
         }
     }

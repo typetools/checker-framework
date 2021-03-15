@@ -33,8 +33,15 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
-/** Utility class for annotation files (stub files). */
+/** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
+    /** The types of files that can contain annotations. */
+    public enum AnnotationFileType {
+        /** Stub file format with extension ".astub". */
+        STUB,
+        /** Ajava file format with extension ".ajava" */
+        AJAVA
+    }
 
     /**
      * Finds the type declaration with the given class name in a StubUnit.
@@ -299,46 +306,62 @@ public class AnnotationFileUtil {
     /**
      * Return annotation files found in the file system (does not look on classpath).
      *
-     * @param location an annotation file (stub file), a jarfile, or a directory. Look for it as an
-     *     absolute file and relative to the current directory.
-     * @return annotation files found in the file system (does not look on classpath)
+     * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
+     *     for it as an absolute file and relative to the current directory.
+     * @param fileType file type of files to collect
+     * @return annotation files with the given file type found in the file system (does not look on
+     *     classpath)
      */
-    public static List<AnnotationFileResource> allAnnotationFiles(String location) {
-        List<AnnotationFileResource> resources = new ArrayList<>();
+    public static List<AnnotationFileResource> allAnnotationFiles(
+            String location, AnnotationFileType fileType) {
         File file = new File(location);
         if (file.exists()) {
-            addAnnotationFilesToList(file, resources);
-        } else {
-            // If the file doesn't exist, maybe it is relative to the
-            // current working directory, so try that.
-            String workingDir =
-                    System.getProperty("user.dir") + System.getProperty("file.separator");
-            file = new File(workingDir + location);
-            if (file.exists()) {
-                addAnnotationFilesToList(file, resources);
-            }
+            List<AnnotationFileResource> resources = new ArrayList<>();
+            addAnnotationFilesToList(file, resources, fileType);
+            return resources;
         }
-        return resources;
+
+        // The file doesn't exist.  Maybe it is relative to the
+        // current working directory, so try that.
+        String workingDir = System.getProperty("user.dir") + System.getProperty("file.separator");
+        file = new File(workingDir + location);
+        if (file.exists()) {
+            List<AnnotationFileResource> resources = new ArrayList<>();
+            addAnnotationFilesToList(file, resources, fileType);
+            return resources;
+        }
+
+        return null;
     }
 
     /**
-     * Returns true if the given file is an annotation file.
+     * Returns true if the given file is an annotation file of the given type.
      *
      * @param f the file to check
-     * @return true if {@code f} is an annotation file
+     * @param fileType the type of file to check against
+     * @return true if {@code f} is a file with file type matching {@code fileType}, false otherwise
      */
-    private static boolean isAnnotationFile(File f) {
-        return f.isFile() && isAnnotationFile(f.getName());
+    private static boolean isAnnotationFile(File f, AnnotationFileType fileType) {
+        return f.isFile() && isAnnotationFile(f.getName(), fileType);
     }
 
     /**
-     * Returns true if the given file is an annotation file.
+     * Returns true if the given file is an annotation file of the given kind.
      *
      * @param path a file
-     * @return true if the given file is an annotation file
+     * @param fileType the type of file to check against
+     * @return true if {@code path} represents a file with file type matching {@code fileType},
+     *     false otherwise
      */
-    private static boolean isAnnotationFile(String path) {
-        return path.endsWith(".astub");
+    private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
+        switch (fileType) {
+            case STUB:
+                return path.endsWith(".astub");
+            case AJAVA:
+                return path.endsWith(".ajava");
+            default:
+                return false;
+        }
     }
 
     private static boolean isJar(File f) {
@@ -346,17 +369,19 @@ public class AnnotationFileUtil {
     }
 
     /**
-     * Side-effects {@code resources} by adding annotation files (stub files) to it.
+     * Side-effects {@code resources} by adding annotation files of the given file type to it.
      *
-     * @param location an annotation file (a stub file), a jarfile, or a directory. If a stub file,
-     *     add it to the {@code resources} list. If a jarfile, use all annotation files contained in
-     *     it. If a directory, recurse on all files contained in it.
+     * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If
+     *     a stub file or ajava file, add it to the {@code resources} list. If a jarfile, use all
+     *     annotation files (of type {@code fileType}) contained in it. If a directory, recurse on
+     *     all files contained in it.
      * @param resources the list to add the found files to
+     * @param fileType type of annotation files to add
      */
     @SuppressWarnings("JdkObsolete") // JarFile.entries()
     private static void addAnnotationFilesToList(
-            File location, List<AnnotationFileResource> resources) {
-        if (isAnnotationFile(location)) {
+            File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
+        if (isAnnotationFile(location, fileType)) {
             resources.add(new FileAnnotationFileResource(location));
         } else if (isJar(location)) {
             JarFile file;
@@ -369,7 +394,7 @@ public class AnnotationFileUtil {
             Enumeration<JarEntry> entries = file.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                if (isAnnotationFile(entry.getName())) {
+                if (isAnnotationFile(entry.getName(), fileType)) {
                     resources.add(new JarEntryAnnotationFileResource(file, entry));
                 }
             }
@@ -384,7 +409,7 @@ public class AnnotationFileUtil {
                         }
                     });
             for (File enclosed : directoryContents) {
-                addAnnotationFilesToList(enclosed, resources);
+                addAnnotationFilesToList(enclosed, resources, fileType);
             }
         }
     }

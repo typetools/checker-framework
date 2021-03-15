@@ -14,6 +14,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
@@ -103,7 +104,7 @@ public class TestDiagnosticUtils {
     }
 
     /**
-     * Instantiate the diagnostic from a Jspecify string that would appear in a Java file, e.g.:
+     * Instantiate the diagnostic from a JSpecify string that would appear in a Java file, e.g.:
      * "jspecify_some_category".
      *
      * @param filename the file containing the diagnostic (and the error)
@@ -112,12 +113,12 @@ public class TestDiagnosticUtils {
      * @param stringFromjavaFile the string containing the diagnostic
      * @return a new TestDiagnostic
      */
-    public static TestDiagnostic fromJspecifyFileComment(
+    public static TestDiagnostic fromJSpecifyFileComment(
             String filename, long lineNumber, String stringFromjavaFile) {
         return new TestDiagnostic(
                 filename,
                 lineNumber,
-                DiagnosticKind.Jspecify,
+                DiagnosticKind.JSpecify,
                 stringFromjavaFile,
                 /*isFixable=*/ false,
                 /*omitParentheses=*/ true);
@@ -241,7 +242,7 @@ public class TestDiagnosticUtils {
         }
         DiagnosticKind categoryEnum = DiagnosticKind.fromParseString(category);
         if (categoryEnum == null) {
-            throw new Error("Unparseable category: " + category);
+            throw new Error("Unparsable category: " + category);
         }
 
         return Pair.of(categoryEnum, isFixable);
@@ -339,7 +340,7 @@ public class TestDiagnosticUtils {
                     filename, lineNumber, line, Collections.singletonList(diagnostic));
         } else if (trimmedLine.startsWith("// jspecify_")) {
             TestDiagnostic diagnostic =
-                    fromJspecifyFileComment(filename, errorLine, trimmedLine.substring(3));
+                    fromJSpecifyFileComment(filename, errorLine, trimmedLine.substring(3));
             return new TestDiagnosticLine(
                     filename, errorLine, line, Collections.singletonList(diagnostic));
         } else {
@@ -388,13 +389,12 @@ public class TestDiagnosticUtils {
     /**
      * Converts the given diagnostics to strings (as they would appear in a source file
      * individually).
+     *
+     * @param diagnostics a list of diagnostics
+     * @return a list of the diagnastics as they would appear in a source file
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        final List<String> strings = new ArrayList<>(diagnostics.size());
-        for (TestDiagnostic diagnostic : diagnostics) {
-            strings.add(diagnostic.toString());
-        }
-        return strings;
+        return SystemUtil.mapList(TestDiagnostic::toString, diagnostics);
     }
 
     public static void removeDiagnosticsOfKind(

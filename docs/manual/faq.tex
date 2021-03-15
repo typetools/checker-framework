@@ -71,6 +71,7 @@ fully-qualified type name?
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
 \\ \ref{faq-implicit-bounds}: Why are explicit and implicit bounds defaulted differently?
+\\ \ref{faq-writing-generics}: How should I annotate code that uses generics?
 \\ \ref{faq-runtime-retention}: Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?
 
 \faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
@@ -394,8 +395,10 @@ Section~\ref{faq-cf-is-slow}.
 \begin{sloppypar}
 The compile options to javac can be long to type; for example,
 \code{javac -processor org.checkerframework.checker.nullness.NullnessChecker ...}.
-See Section~\ref{checker-auto-discovery} for a way to avoid the need for
-the \code{-processor} command-line option.
+You can use shorthand for built-in checkers, such as \code{javac -processor
+  nullness ...} (see Section~\ref{shorthand-for-checkers}), or you can use
+auto-discovery te eliminate the need for the \code{-processor} command-line
+option (see Section~\ref{checker-auto-discovery}).
 \end{sloppypar}
 
 
@@ -663,7 +666,7 @@ welcome it as a contribution to the Checker Framework.
 Some checkers have library methods that you can explicitly insert in your
 source code.
 Examples include the Nullness Checker's
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method (see
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} method (see
 Section~\ref{suppressing-warnings-with-assertions}) and the Regex Checker's
 \<RegexUtil> class (see Section~\ref{regexutil-methods}).
 But, it would be better to have more general support that does not require
@@ -1325,6 +1328,71 @@ Here are some style guidelines:
 \end{itemize}
 
 
+\subsectionAndLabel{How should I annotate code that uses generics?}{faq-writing-generics}
+
+Suppose unannotated code contains a type parameter \code{<T>}.  How should
+you annotate that?
+
+This is really a question about Java's generic types, so if you understand
+Java generics, this question is moot.  However, Java generics can be hard
+to understand, so here is a brief explanation of some concrete annotations,
+using nullness annotations for concreteness.
+
+\begin{description}
+\item[\code{<T>}]
+  Any type argument may be supplied for \code{T}.
+
+  It is equivalent to \code{<T extends @Nullable Object>}, because
+  \code{@Nullable Object} is the top type in the type hierarchy.
+
+\item[\code{<T extends @Nullable Object>}]
+  Any type argument may be supplied for \code{T}.
+
+  It is equivalent to \code{<T>}, as noted above.
+
+\item[\code{<T extends Object>}]
+  \code{T} can be instantiated by any type whose qualifier is \code{@NonNull}.
+
+  The default annotation is \code{@NonNull}, and annotation defaults apply
+  to type uses such as \code{Object} but not to type variables such as
+  \code{T}.  Therefore, \code{<T extends Object>} is equivalent to
+  \code{<T extends @NonNull Object>}.  It permits any type argument that is
+  a subtype of \code{@NonNull Object}, which is any type argument whose
+  qualifier is \code{@NonNull} since \code{@NonNull} is the bottom type
+  qualifier in the type qualifier hierarchy.
+
+\item[\code{<T extends @NonNull Object>}]
+  \code{T} can be instantiated by any type whose qualifier is \code{@NonNull}.
+
+  It is equivalent to \code{<T extends Object>}, as noted above.
+
+\item[\code{<@Nullable T>}]
+  \code{T} can be instantiated by any type whose qualifier is \code{@Nullable}.
+
+  The annotation \code{@Nullable} before \code{T} applies to \code{T}'s
+  implicit lower bound.  There is no explicit upper bound (that is, no
+  \code{extends}), so the upper bound is the top type, \code{@Nullable
+    Object}, just as for \code{<T>}, which was discussed above.  Therefore,
+  \code{<@Nullable T>} is the same as \code{<T super @Nullable void extends
+    @Nullable Object>}, except that the latter is not legal Java.
+
+\item[\code{<T super @Nullable String>}]
+  \code{T} can be instantiated by any supertype of \code{@Nullable String},
+  which is any supertype of \code{String} (\code{Object},
+  \code{Serializable}, \code{CharSequence}, etc.) so long as its type
+  qualifier is \code{@Nullable}.
+
+\item[\code{<T super @NonNull String>}]
+  \code{T} can be instantiated by any supertype of \code{@NonNull String}.
+  Since \<@NonNull> is the bottom type qualifier, the instantiating type
+  can have any type qualifier.
+
+\end{description}
+
+For more details about how the Checker Framework supports generics and
+polymorphism, see \chapterpageref{polymorphism}
+
+
 \subsectionAndLabel{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?}{faq-runtime-retention}
 
 Annotations such as \refqualclass{checker/nullness/qual}{NonNull} are
@@ -1518,16 +1586,30 @@ Using a pluggable type-checker increases compile times by a factor of 2--10.
 Slow compilation speed is probably the worst thing about the Checker
 Framework.
 
-To improve performance, the most important thing you can do is
-\emph{incremental compilation}.  When compiling just a few source files
-(the size of a typical edit or commit), you won't notice the slowdown.  If
-you compile all files in a large project, you will definitely notice a
-slowdown.  You should structure your build system to make compiling all
-files rare, by declaring dependencies and using caching.
-% (Note that some build systems have a bug, in that they unnecessarily always
-% re-run compilation that uses annotation processors.)
+To improve performance:
+\begin{itemize}
+\item
+  Ensure that the Checker Framework has enough memory.  The Checker
+  Framework uses more memory than \<javac> does, and Java's default heap
+  limit is so small that the Checker Framework might spend most of its time
+  in garbage collection.  (If this is the case, the Checker Framework will
+  issue a warning ``Memory constraints are impeding performance; please
+  increase max heap size''.)  For example, you might pass an argument like
+  \<-Xmx3g>, or set an environment variable like \<export
+  \_JAVA\_OPTIONS=-Xmx3g>, to permit the Checker Framework to use up to 3GB
+  of memory.
+\item
+  Set your build system to perform \emph{incremental compilation}.  When
+  compiling just a few source files (the size of a typical edit or commit),
+  you won't notice the slowdown even if the Checker Framework is very slow.
+  If you compile all files in a large project, you will definitely notice a
+  slowdown.  You should structure your build system to make compiling all
+  files rare, by declaring dependencies and using caching.
+  % (Note that some build systems have a bug, in that they unnecessarily always
+  % re-run compilation that uses annotation processors.)
+\end{itemize}
 
-If the Checker Framework is too slow for you to run on every compilation,
+If the Checker Framework is still too slow for you to run on every compilation,
 you can run it periodically, such as in a Git commit hook or in continuous
 integration.
 
@@ -1824,4 +1906,4 @@ third-party tools.  The Checker Framework is one such tool.
 %%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 %%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
 %%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
-% LocalWords:  checkers'' covariance'' contravariance''
+% LocalWords:  checkers'' covariance'' contravariance'' Xmx3g lookups

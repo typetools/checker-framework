@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -51,7 +52,8 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element.
+     * Returns the innermost type element enclosing the given element. Returns the element itself if
+     * it is a type element.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element, or null if no type element encloses {@code elem}
@@ -63,7 +65,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element.
+     * Returns the innermost type element that is, or encloses, the given element.
      *
      * <p>Note that in this code:
      *
@@ -76,15 +78,77 @@ public class ElementUtils {
      * {@code Inner} has no enclosing type, but this method returns {@code Outer}.
      *
      * @param elem the enclosed element of a class
-     * @return the innermost type element, or null if no type element encloses {@code elem}
+     * @return the innermost type element (possibly the argument itself), or null if {@code elem} is
+     *     not, and is not enclosed by, a type element
      */
     public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
         Element result = elem;
         while (result != null && !isTypeElement(result)) {
-            @Nullable Element encl = result.getEnclosingElement();
-            result = encl;
+            result = result.getEnclosingElement();
         }
         return (TypeElement) result;
+    }
+
+    /**
+     * Returns the innermost type element enclosing the given element, that is different from the
+     * element itself. By contrast, {@link #enclosingTypeElement} returns its argument if the
+     * argument is a type element.
+     *
+     * @param elem the enclosed element of a class
+     * @return the innermost type element, or null if no type element encloses {@code elem}
+     */
+    public static @Nullable TypeElement strictEnclosingTypeElement(final Element elem) {
+        Element enclosingElement = elem.getEnclosingElement();
+        if (enclosingElement == null) {
+            return null;
+        }
+
+        return enclosingTypeElement(enclosingElement);
+    }
+
+    /**
+     * Returns the top-level type element that contains {@code element}.
+     *
+     * @param element the element whose enclosing tye element to find
+     * @return a type element containing {@code element} that isn't contained in another class
+     */
+    public static TypeElement toplevelEnclosingTypeElement(Element element) {
+        TypeElement result = enclosingTypeElement(element);
+        if (result == null) {
+            return (TypeElement) element;
+        }
+
+        TypeElement enclosing = strictEnclosingTypeElement(result);
+        while (enclosing != null) {
+            result = enclosing;
+            enclosing = strictEnclosingTypeElement(enclosing);
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns the binary name of the class enclosing {@code executableElement}.
+     *
+     * @param executableElement the ExecutableElement
+     * @return the binary name of the class enclosing {@code executableElement}
+     */
+    public static @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
+        return getBinaryName(((MethodSymbol) executableElement).enclClass());
+    }
+
+    /**
+     * Returns the binary name of the class enclosing {@code variableElement}.
+     *
+     * @param variableElement the VariableElement
+     * @return the binary name of the class enclosing {@code variableElement}
+     */
+    public static @BinaryName String getEnclosingClassName(VariableElement variableElement) {
+        TypeElement enclosingType = enclosingTypeElement(variableElement);
+        if (enclosingType == null) {
+            throw new BugInCF("enclosingTypeElement(%s) is null", variableElement);
+        }
+        return getBinaryName(enclosingType);
     }
 
     /**
@@ -243,7 +307,8 @@ public class ElementUtils {
                 return pe.getQualifiedName() + "." + simpleName;
             }
         } else {
-            throw new BugInCF("Unexpected enclosing %s for %s", enclosing, te);
+            // This case occurs for anonymous inner classes. Fall back to the flatname method.
+            return ((ClassSymbol) te).flatName().toString();
         }
     }
 
@@ -294,7 +359,22 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /** Returns true if the element is a reference to a compile-time constant. */
+    /**
+     * Check if the element is an element for 'java.lang.String'
+     *
+     * @param element the type element
+     * @return true iff the element is java.lang.String element
+     */
+    public static boolean isString(TypeElement element) {
+        return element.getQualifiedName().contentEquals("java.lang.String");
+    }
+
+    /**
+     * Returns true if the element is a reference to a compile-time constant.
+     *
+     * @param elt an element
+     * @return true if the element is a reference to a compile-time constant
+     */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
@@ -315,10 +395,11 @@ public class ElementUtils {
         if (element == null) {
             return false;
         }
-        if (element instanceof Symbol.ClassSymbol) {
-            return isElementFromSourceCodeImpl((Symbol.ClassSymbol) element);
+        TypeElement enclosingClass = enclosingClass(element);
+        if (enclosingClass == null) {
+            throw new BugInCF("enclosingClass(%s) is null", element);
         }
-        return isElementFromSourceCode(element.getEnclosingElement());
+        return isElementFromSourceCodeImpl((Symbol.ClassSymbol) enclosingClass);
     }
 
     /**
@@ -422,7 +503,7 @@ public class ElementUtils {
      * called.
      *
      * @param type where to look for fields
-     * @param names simple names of fields that might be declared in {@code type} or a supertype.
+     * @param names simple names of fields that might be declared in {@code type} or a supertype
      *     (Names that are found are removed from this list.)
      * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
      *     whose simple names were in {@code names} when the method was called.
@@ -507,11 +588,40 @@ public class ElementUtils {
     }
 
     /**
-     * Determine all type elements for the classes and interfaces referenced (directly or
-     * indirectly) in the extends/implements clauses of the given type element.
+     * Returns a type's superclass, or null if it does not have a superclass (it is object or an
+     * interface, or the superclass is not on the classpath).
+     *
+     * @param typeElt a type element
+     * @return the superclass of {@code typeElt}
+     */
+    public static @Nullable TypeElement getSuperClass(TypeElement typeElt) {
+        TypeMirror superTypeMirror;
+        try {
+            superTypeMirror = typeElt.getSuperclass();
+        } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+            // Looking up a supertype failed. This sometimes happens
+            // when transitive dependencies are not on the classpath.
+            // As javac didn't complain, let's also not complain.
+            return null;
+        }
+
+        if (superTypeMirror == null || superTypeMirror.getKind() == TypeKind.NONE) {
+            return null;
+        } else {
+            return (TypeElement) ((DeclaredType) superTypeMirror).asElement();
+        }
+    }
+
+    /**
+     * Determine all type elements for the supertypes of the given type element. This is the
+     * transitive closure of the extends and implements clauses.
      *
      * <p>TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+     *
+     * @param type the type whose supertypes to return
+     * @param elements the Element utilities
+     * @return supertypes of {@code type}
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
@@ -530,18 +640,8 @@ public class ElementUtils {
             // For each direct supertype of the current type element, if it
             // hasn't already been visited, push it onto the stack and
             // add it to our superelems set.
-            TypeMirror supertypecls;
-            try {
-                supertypecls = current.getSuperclass();
-            } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-                // Looking up a supertype failed. This sometimes happens
-                // when transitive dependencies are not on the classpath.
-                // As javac didn't complain, let's also not complain.
-                supertypecls = null;
-            }
-
-            if (supertypecls != null && supertypecls.getKind() != TypeKind.NONE) {
-                TypeElement supercls = (TypeElement) ((DeclaredType) supertypecls).asElement();
+            TypeElement supercls = ElementUtils.getSuperClass(current);
+            if (supercls != null) {
                 if (!superelems.contains(supercls)) {
                     stack.push(supercls);
                     superelems.add(supercls);
@@ -567,9 +667,14 @@ public class ElementUtils {
     }
 
     /**
-     * Return all fields declared in the given type or any superclass/interface. TODO: should this
-     * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
-     * getSuperTypes?
+     * Return all fields declared in the given type or any superclass/interface.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose fields to return
+     * @param elements the Element utilities
+     * @return fields of {@code type}
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
         List<VariableElement> fields = new ArrayList<>();
@@ -583,8 +688,14 @@ public class ElementUtils {
 
     /**
      * Return all methods declared in the given type or any superclass/interface. Note that no
-     * constructors will be returned. TODO: should this use
-     * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
+     * constructors will be returned.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose methods to return
+     * @param elements the Element utilities
+     * @return methods of {@code type}
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
         List<ExecutableElement> meths = new ArrayList<>();
@@ -740,12 +851,14 @@ public class ElementUtils {
     }
 
     /**
-     * Get all the supertypes of a given type, including the type itself.
+     * Get all the supertypes of a given type, including the type itself. The result includes both
+     * superclasses and implemented interfaces.
      *
      * @param type a type
      * @param env the processing environment
-     * @return list including the type and all its supertypes, with a guarantee that supertypes
-     *     (i.e. those that appear in extends clauses) appear before indirect supertypes
+     * @return list including the type and all its supertypes, with a guarantee that direct
+     *     supertypes (i.e. those that appear in extends or implements clauses) appear before
+     *     indirect supertypes
      */
     public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();

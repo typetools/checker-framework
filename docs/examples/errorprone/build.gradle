@@ -6,7 +6,7 @@ plugins {
     id 'java'
     id 'net.ltgt.errorprone' version '1.2.1'
     // Checker Framework pluggable type-checking
-    id 'org.checkerframework' version '0.5.14'
+    id 'org.checkerframework' version '0.5.17'
 }
 
 apply plugin: 'org.checkerframework'
@@ -31,8 +31,4 @@ compileJava {
     // convert the expected error to a warning to test that both Error Prone
     // and the Nullness Checker run.
     options.errorprone.warn('CollectionIncompatibleType')
-    options.errorprone.errorproneArgs = [
-        // The HidingField test causes crashes: https://github.com/google/error-prone/issues/2092
-        '-Xep:HidingField:OFF',
-    ]
 }

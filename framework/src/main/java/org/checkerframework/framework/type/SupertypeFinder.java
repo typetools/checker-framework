@@ -28,6 +28,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -44,9 +45,11 @@ class SupertypeFinder {
     /**
      * See {@link Types#directSupertypes(TypeMirror)}.
      *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
      * @see Types#directSupertypes(TypeMirror)
      */
-    public static List<AnnotatedDeclaredType> directSuperTypes(AnnotatedDeclaredType type) {
+    public static List<AnnotatedDeclaredType> directSupertypes(AnnotatedDeclaredType type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
         List<AnnotatedDeclaredType> supertypes = supertypeFindingVisitor.visitDeclared(type, null);
@@ -58,9 +61,11 @@ class SupertypeFinder {
     /**
      * See {@link Types#directSupertypes(TypeMirror)}.
      *
+     * @param type the type whose supertypes to return
+     * @return the immediate supertypes of {@code type}
      * @see Types#directSupertypes(TypeMirror)
      */
-    public static final List<? extends AnnotatedTypeMirror> directSuperTypes(
+    public static final List<? extends AnnotatedTypeMirror> directSupertypes(
             AnnotatedTypeMirror type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
@@ -273,18 +278,19 @@ class SupertypeFinder {
                                 != adt.getUnderlyingType().getTypeArguments().size()
                         && classTree.getSimpleName().contentEquals("")) {
                     // classTree is an anonymous class with a diamond.
-                    List<AnnotatedTypeMirror> args = new ArrayList<>();
-                    for (TypeParameterElement element :
-                            TypesUtils.getTypeElement(adt.getUnderlyingType())
-                                    .getTypeParameters()) {
-                        AnnotatedTypeMirror arg =
-                                AnnotatedTypeMirror.createType(
-                                        element.asType(), atypeFactory, false);
-                        // TODO: After #979 is fixed, calculate the correct type using inference.
-                        args.add(
-                                atypeFactory.getUninferredWildcardType(
-                                        (AnnotatedTypeVariable) arg));
-                    }
+                    List<AnnotatedTypeMirror> args =
+                            SystemUtil.mapList(
+                                    (TypeParameterElement element) -> {
+                                        AnnotatedTypeMirror arg =
+                                                AnnotatedTypeMirror.createType(
+                                                        element.asType(), atypeFactory, false);
+                                        // TODO: After #979 is fixed, calculate the correct type
+                                        // using inference.
+                                        return atypeFactory.getUninferredWildcardType(
+                                                (AnnotatedTypeVariable) arg);
+                                    },
+                                    TypesUtils.getTypeElement(adt.getUnderlyingType())
+                                            .getTypeParameters());
                     adt.setTypeArguments(args);
                 }
                 supertypes.add(adt);
@@ -364,7 +370,7 @@ class SupertypeFinder {
             serializableType.addAnnotations(annotations);
             superTypes.add(serializableType);
 
-            for (AnnotatedTypeMirror sup : type.getComponentType().directSuperTypes()) {
+            for (AnnotatedTypeMirror sup : type.getComponentType().directSupertypes()) {
                 ArrayType arrType = atypeFactory.types.getArrayType(sup.getUnderlyingType());
                 AnnotatedArrayType aarrType =
                         (AnnotatedArrayType) atypeFactory.toAnnotatedType(arrType, false);

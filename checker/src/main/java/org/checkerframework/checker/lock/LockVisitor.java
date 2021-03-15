@@ -61,6 +61,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -499,7 +500,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     protected boolean checkOverride(
             MethodTree overriderTree,
             AnnotatedDeclaredType enclosingType,
-            AnnotatedExecutableType overridden,
+            AnnotatedExecutableType overriddenMethodType,
             AnnotatedDeclaredType overriddenType) {
 
         boolean isValid = true;
@@ -508,7 +509,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 atypeFactory.methodSideEffectAnnotation(
                         TreeUtils.elementFromDeclaration(overriderTree), false);
         SideEffectAnnotation seaOfOverridenMethod =
-                atypeFactory.methodSideEffectAnnotation(overridden.getElement(), false);
+                atypeFactory.methodSideEffectAnnotation(overriddenMethodType.getElement(), false);
 
         if (seaOfOverriderMethod.isWeakerThan(seaOfOverridenMethod)) {
             isValid = false;
@@ -516,13 +517,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     "override.sideeffect.invalid",
                     overriderTree,
                     enclosingType,
-                    overridden,
+                    overriddenMethodType,
                     overriddenType,
                     null,
                     null);
         }
 
-        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType)
+        return super.checkOverride(
+                        overriderTree, enclosingType, overriddenMethodType, overriddenType)
                 && isValid;
     }
 
@@ -1234,33 +1236,39 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         TreePath currentPath = getCurrentPath();
-        List<JavaExpression> params =
-                JavaExpression.getParametersOfEnclosingMethod(atypeFactory, currentPath);
+        List<JavaExpression> params = JavaExpression.getParametersOfEnclosingMethod(currentPath);
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
                 JavaExpression.getPseudoReceiver(currentPath, enclosingType);
         JavaExpressionContext exprContext =
-                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
+                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getChecker());
         JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;
         } else if (TreeUtils.isExpressionTree(tree)) {
-            self = JavaExpression.fromTree(atypeFactory, (ExpressionTree) tree);
+            self = JavaExpression.fromTree((ExpressionTree) tree);
         } else {
-            self = new Unknown(TreeUtils.typeOf(tree));
+            self = new Unknown(tree);
         }
 
-        List<LockExpression> lockExpressions = new ArrayList<>();
-        for (String expression : expressions) {
-            lockExpressions.add(parseExpressionString(expression, exprContext, currentPath, self));
-        }
-        return lockExpressions;
+        return SystemUtil.mapList(
+                expression -> parseExpressionString(expression, exprContext, currentPath, self),
+                expressions);
     }
 
+    /**
+     * Parse a Java expression.
+     *
+     * @param expression the Java expression
+     * @param jeContext the Java Expression parsing context
+     * @param path the path to the expression
+     * @param itself the self expression
+     * @return the parsed expression
+     */
     private LockExpression parseExpressionString(
             String expression,
-            JavaExpressionContext flowExprContext,
+            JavaExpressionContext jeContext,
             TreePath path,
             JavaExpression itself) {
 
@@ -1285,7 +1293,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     return lockExpression;
                 } else {
                     // TODO: The proper way to do this is to call
-                    // flowExprContext.copyChangeToParsingMemberOfReceiver to set the receiver to
+                    // jeContext.copyChangeToParsingMemberOfReceiver to set the receiver to
                     // the <self> expression, and then call JavaExpressionParseUtil.parse on the
                     // remaining expression string with the new JavaExpressionContext. However,
                     // this currently results in a JavaExpression that has a different
@@ -1297,10 +1305,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                     lockExpression.lockExpression =
                             JavaExpressionParseUtil.parse(
-                                    itself.toString() + "." + remainingExpression,
-                                    flowExprContext,
-                                    path,
-                                    true);
+                                    itself.toString() + "." + remainingExpression, jeContext, path);
                     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpression.lockExpression)) {
                         checker.reportError(
                                 path.getLeaf(),
@@ -1311,7 +1316,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             } else {
                 lockExpression.lockExpression =
-                        JavaExpressionParseUtil.parse(expression, flowExprContext, path, true);
+                        JavaExpressionParseUtil.parse(expression, jeContext, path);
                 return lockExpression;
             }
         } catch (JavaExpressionParseException ex) {

@@ -13,6 +13,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -160,6 +161,7 @@ public class CFGProcessor extends BasicTypeProcessor {
         }
 
         /** Check if the CFG process succeeded. */
+        @Pure
         @EnsuresNonNullIf(expression = "getCFG()", result = true)
         // TODO: add once #1307 is fixed
         // @EnsuresNonNullIf(expression = "getErrMsg()", result = false)
@@ -168,12 +170,22 @@ public class CFGProcessor extends BasicTypeProcessor {
             return isSuccess;
         }
 
-        /** Get the generated control flow graph. */
+        /**
+         * Returns the generated control flow graph.
+         *
+         * @return the generated control flow graph
+         */
+        @Pure
         public @Nullable ControlFlowGraph getCFG() {
             return controlFlowGraph;
         }
 
-        /** Get the error message. */
+        /**
+         * Returns the error message.
+         *
+         * @return the error message
+         */
+        @Pure
         public @Nullable String getErrMsg() {
             return errMsg;
         }

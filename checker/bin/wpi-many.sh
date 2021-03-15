@@ -6,7 +6,11 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
-while getopts "o:i:u:t:g:" opt; do
+DEBUG=0
+# To enable debugging, uncomment the following line.
+# DEBUG=1
+
+while getopts "o:i:u:t:g:s" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
        ;;
@@ -17,6 +21,8 @@ while getopts "o:i:u:t:g:" opt; do
     t) TIMEOUT="$OPTARG"
        ;;
     g) GRADLECACHEDIR="$OPTARG"
+       ;;
+    s) SKIP_OR_DELETE_UNUSABLE="skip"
        ;;
     \?) # the remainder of the arguments will be passed to DLJC directly
        ;;
@@ -107,6 +113,10 @@ if [ "x${GRADLECACHEDIR}" = "x" ]; then
   GRADLECACHEDIR=".gradle"
 fi
 
+if [ "x${SKIP_OR_DELETE_UNUSABLE}" = "x" ]; then
+  SKIP_OR_DELETE_UNUSABLE="delete"
+fi
+
 JAVA_HOME_BACKUP="${JAVA_HOME}"
 export JAVA_HOME="${JAVA11_HOME}"
 
@@ -133,19 +143,27 @@ do
     REPO_NAME=$(echo "${REPO}" | cut -d / -f 5)
     REPO_NAME_HASH="${REPO_NAME}-${HASH}"
 
+    if [ "$DEBUG" -eq "1" ]; then
+        echo "REPOHASH=$REPOHASH"
+        echo "REPO=$REPO"
+        echo "HASH=$HASH"
+        echo "REPO_NAME=$REPO_NAME"
+        echo "REPO_NAME_HASH=$REPO_NAME_HASH"
+    fi
+
     # Use repo name and hash, but not owner.  We want
     # repos that are different but have the same name to be treated
     # as different repos, but forks with the same content to be skipped.
     # TODO: consider just using hash, to skip hard forks?
-    mkdir -p "${REPO_NAME_HASH}"
+    mkdir -p "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): mkdir -p ./${REPO_NAME_HASH}" && exit 5)
 
-    cd "${REPO_NAME_HASH}" || exit 5
+    cd "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): cd ./${REPO_NAME_HASH}" && exit 5)
 
     if [ ! -d "${REPO_NAME}" ]; then
         # see https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
         # for the inspiration for this code
-        mkdir "${REPO_NAME}"
-        cd "${REPO_NAME}" || exit 5
+        mkdir "./${REPO_NAME}" || (echo "command failed in $(pwd): mkdir ./${REPO_NAME}" && exit 5)
+        cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
         git init
         git remote add origin "${REPO}"
 
@@ -165,7 +183,7 @@ do
         rm -rf "${REPO_NAME}/dljc-out"
     fi
 
-    cd "${REPO_NAME}" || exit 5
+    cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
     git checkout "${HASH}"
 
@@ -191,17 +209,27 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+    if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
+      if [ "${SKIP_OR_DELETE_UNUSABLE}" = "skip" ]; then
+        echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present, indicating that an earlier run of WPI failed. To try again, delete the .cannot-run-wpi file and re-run the script."
+      fi
+      # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
+    else
+      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+    fi
+
     rm -f "${OUTDIR}-results/wpi-out"
 
     cd "${OUTDIR}" || exit 5
 
-    # If the result is unusable (i.e. wpi cannot run),
-    # we don't need it for data analysis and we can
-    # delete it right away.
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
-        echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-        rm -rf "${REPO_NAME_HASH}"
+        # If the result is unusable (i.e. wpi cannot run),
+        # we don't need it for data analysis and we can
+        # delete it right away.
+        if [ "${SKIP_OR_DELETE_UNUSABLE}" = "delete" ]; then
+          echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
+          rm -rf "${REPO_NAME_HASH}"
+        fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
@@ -246,6 +274,8 @@ else
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
+
+    # shellcheck disable=SC2046
     grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-" | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
@@ -262,8 +292,9 @@ else
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
+    # shellcheck disable=SC2046
     "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
-        "$(< "${listpath}")"
+        $(< "${listpath}")
 
     rm -f "${listpath}"
   else

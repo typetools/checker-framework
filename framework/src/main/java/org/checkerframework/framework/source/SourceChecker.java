@@ -15,6 +15,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import io.github.classgraph.ClassGraph;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,7 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -59,6 +59,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -66,7 +67,6 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
@@ -236,6 +236,9 @@ import org.plumelib.util.UtilPlume;
     // Additional stub files to use
     // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
+    // Additional ajava files to use
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parserAjavaFiles()
+    "ajava",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
     // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
@@ -381,9 +384,12 @@ import org.plumelib.util.UtilPlume;
 
     // Parse all JDK files at startup rather than as needed.
     "parseAllJdk",
+
+    // Whenever processing a source file, parse it with JavaParser and check that the AST can be
+    // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
+    "checkJavaParserVisitor",
 })
-public abstract class SourceChecker extends AbstractTypeProcessor
-        implements CFContext, OptionConfiguration {
+public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -419,12 +425,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /** The source tree that is being scanned. */
     protected @InternedDistinct CompilationUnitTree currentRoot;
-
-    /**
-     * If an error is detected in a CompilationUnitTree, skip all future calls of {@link
-     * #typeProcess} with that same CompilationUnitTree.
-     */
-    private @InternedDistinct CompilationUnitTree previousErrorCompilationUnit;
 
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
@@ -516,7 +516,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * in the case of a compound checker, the compound checker is the parent, not the checker that
      * was run prior to this one by the compound checker.
      */
-    protected SourceChecker parentChecker;
+    protected @Nullable SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
     protected List<@FullyQualifiedName String> upstreamCheckerNames;
@@ -581,7 +581,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @return the {@link ProcessingEnvironment} that was supplied to this checker
      */
-    @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -640,40 +639,46 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Returns the {@link CFContext} used by this checker.
+     * Returns the OptionConfiguration associated with this.
      *
-     * @return the {@link CFContext} used by this checker
+     * @return the OptionConfiguration associated with this
      */
-    public CFContext getContext() {
-        return this;
-    }
-
-    @Override
-    public SourceChecker getChecker() {
-        return this;
-    }
-
-    @Override
     public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
-    @Override
+    /**
+     * Returns the element utilities associated with this.
+     *
+     * @return the element utilities associated with this
+     */
     public Elements getElementUtils() {
         return getProcessingEnvironment().getElementUtils();
     }
 
-    @Override
+    /**
+     * Returns the type utilities associated with this.
+     *
+     * @return the type utilities associated with this
+     */
     public Types getTypeUtils() {
         return getProcessingEnvironment().getTypeUtils();
     }
 
-    @Override
+    /**
+     * Returns the tree utilities associated with this.
+     *
+     * @return the tree utilities associated with this
+     */
     public Trees getTreeUtils() {
         return Trees.instance(getProcessingEnvironment());
     }
 
-    @Override
+    /**
+     * Returns the SourceVisitor associated with this.
+     *
+     * @return the SourceVisitor associated with this
+     */
     public SourceVisitor<?, ?> getVisitor() {
         return this.visitor;
     }
@@ -685,7 +690,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
 
-    @Override
+    /**
+     * Returns the AnnotationProvider (the type factory) associated with this.
+     *
+     * @return the AnnotationProvider (the type factory) associated with this
+     */
     public AnnotationProvider getAnnotationProvider() {
         throw new UnsupportedOperationException(
                 "getAnnotationProvider is not implemented for this class.");
@@ -860,7 +869,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
         @Nullable Trees trees = Trees.instance(processingEnv);
-        assert trees != null; /*nninvariant*/
+        assert trees != null;
         this.trees = trees;
 
         this.messager = processingEnv.getMessager();
@@ -877,6 +886,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
+    /**
+     * If true, javac failed to compile the code or a previously-run annotation processor issued an
+     * error.
+     */
+    protected boolean javacErrored = false;
+
     /** Output the warning about memory at most once. */
     private boolean warnedAboutGarbageCollection = false;
 
@@ -889,12 +904,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected int errsOnLastExit = 0;
 
     /**
+     * Report "type.checking.not.run" error.
+     *
+     * @param p error is reported at the leaf of the path
+     */
+    @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+    protected void reportJavacError(TreePath p) {
+        // If javac issued any errors, do not type check any file, so that the Checker Framework
+        // does not have to deal with error types.
+        currentRoot = p.getCompilationUnit();
+        reportError(p.getLeaf(), "type.checking.not.run", getClass().getSimpleName());
+    }
+
+    /**
      * Type-check the code using this checker's visitor.
      *
      * @see Processor#process(Set, RoundEnvironment)
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
+        if (javacErrored) {
+            reportJavacError(p);
+            return;
+        }
+
         // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
             messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
@@ -908,7 +941,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
             messager.printMessage(
                     Kind.WARNING,
-                    "Memory constraints are impeding performance; please increase max heap size.");
+                    String.format(
+                            "Memory constraints are impeding performance; please increase max heap size (max memory = %d, total memory = %d, free memory = %d)",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
             warnedAboutGarbageCollection = true;
         }
 
@@ -925,20 +962,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
-            @SuppressWarnings("interning:assignment.type.incompatible") // will be compared with ==
-            @InternedDistinct CompilationUnitTree cu = p.getCompilationUnit();
-            previousErrorCompilationUnit = cu;
+            javacErrored = true;
+            reportJavacError(p);
             return;
         }
-        if (p.getCompilationUnit() == previousErrorCompilationUnit) {
-            // If the same compilation unit was seen with an error before,
-            // skip it. This is in particular necessary for Java errors, which
-            // show up once, but further calls to typeProcess will happen.
-            // See Issue 346.
-            return;
-        } else {
-            previousErrorCompilationUnit = null;
-        }
+
         if (visitor == null) {
             // typeProcessingStart invokes initChecker, which should
             // have set the visitor. If the field is still null, an
@@ -1032,6 +1060,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
+    // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+    // property key that maps to a format string for `args`.
+    // @FormatMethod
+    @SuppressWarnings("formatter:format.string.invalid") // arg is a format string or a property key
     private void report(
             Object source,
             javax.tools.Diagnostic.Kind kind,
@@ -1106,13 +1138,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param args optional arguments to substitute in the message
      * @see SourceChecker#report(Object, DiagMessage)
      */
+    @FormatMethod
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
-        String ftdmsg = String.format(msg, args);
+        message(kind, String.format(msg, args));
+    }
+
+    /**
+     * Print a non-localized message using the javac messager. This is preferable to using
+     * System.out or System.err, but should only be used for exceptional cases that don't happen in
+     * correct usage. Localized messages should be raised using {@link #reportError}, {@link
+     * #reportWarning}, etc.
+     *
+     * @param kind the kind of message to print
+     * @param msg the message text
+     * @see SourceChecker#report(Object, DiagMessage)
+     */
+    public void message(javax.tools.Diagnostic.Kind kind, String msg) {
         if (messager == null) {
             // If this method is called before initChecker() sets the field
             messager = processingEnv.getMessager();
         }
-        messager.printMessage(kind, ftdmsg);
+        messager.printMessage(kind, msg);
     }
 
     /**
@@ -1550,7 +1596,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         @Nullable String @Nullable [] slValue = sl.value();
-        assert slValue != null; /*nninvariant*/
+        assert slValue != null;
 
         @Nullable String[] lintArray = slValue;
         Set<String> lintSet = new HashSet<>(lintArray.length);
@@ -1984,7 +2030,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
      * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
-     * suppresses the checker's warnings.
+     * suppresses the checker's warnings. Also, returns true if the {@code errKey} matches a string
+     * in {@code -AsuppressWarnings}.
      *
      * @param tree the tree that might be a source of a warning
      * @param errKey the error key the checker is emitting
@@ -1999,6 +2046,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
             throw new BugInCF(
                     "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
+        }
+        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
+            return true;
+        }
+
+        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
+            // If the error key matches a warning string in the -AsuppressWarnings, then suppress
+            // the warning.
+            return true;
         }
 
         // trees.getPath might be slow, but this is only used in error reporting
@@ -2296,7 +2352,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 this.getClass().getAnnotation(SuppressWarningsPrefix.class);
         if (prefixMetaAnno != null) {
             for (String prefix : prefixMetaAnno.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }
@@ -2306,7 +2362,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {
             for (String prefix : annotation.value()) {
-                prefixes.add(prefix.toLowerCase());
+                prefixes.add(prefix);
             }
             return prefixes;
         }
@@ -2348,6 +2404,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
         TypeElement typeElement = ElementUtils.enclosingTypeElement(element);
+        if (typeElement == null) {
+            throw new BugInCF(
+                    "enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
+        }
         @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
         // @FullyQualifiedName
         )
@@ -2462,65 +2522,66 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void logBugInCF(BugInCF ce) {
         StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
-        msg.add(ce.getMessage());
-        boolean noPrintErrorStack =
-                (processingEnv != null
-                        && processingEnv.getOptions() != null
-                        && processingEnv.getOptions().containsKey("noPrintErrorStack"));
-
-        msg.add("; The Checker Framework crashed.  Please report the crash.");
-        if (noPrintErrorStack) {
+        if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
             msg.add(
-                    " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+                    String.format(
+                            "The JVM ran out of memory.  Run with a larger max heap size (max memory = %d, total memory = %d, free memory = %d).",
+                            Runtime.getRuntime().maxMemory(),
+                            Runtime.getRuntime().totalMemory(),
+                            Runtime.getRuntime().freeMemory()));
         } else {
-            if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
-                msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
-            }
 
-            if (this.visitor != null) {
-                DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-                if (pos != null) {
-                    DiagnosticSource source =
-                            new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-                    int linenr = source.getLineNumber(pos.getStartPosition());
-                    int col = source.getColumnNumber(pos.getStartPosition(), true);
-                    String line = source.getLine(pos.getStartPosition());
+            msg.add(ce.getMessage());
+            boolean noPrintErrorStack =
+                    (processingEnv != null
+                            && processingEnv.getOptions() != null
+                            && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
-                    msg.add("Last visited tree at line " + linenr + " column " + col + ":");
-                    msg.add(line);
-                }
-            }
-
-            msg.add(
-                    "Exception: "
-                            + ce.getCause()
-                            + "; "
-                            + UtilPlume.stackTraceToString(ce.getCause()));
-            boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-            Throwable cause = ce.getCause().getCause();
-            while (cause != null) {
+            msg.add("; The Checker Framework crashed.  Please report the crash.");
+            if (noPrintErrorStack) {
                 msg.add(
-                        "Underlying Exception: "
-                                + cause
-                                + "; "
-                                + UtilPlume.stackTraceToString(cause));
-                printClasspath |= cause instanceof NoClassDefFoundError;
-                cause = cause.getCause();
-            }
+                        " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+            } else {
+                if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
+                    msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
+                }
 
-            if (printClasspath) {
-                ClassLoader cl = ClassLoader.getSystemClassLoader();
+                if (this.visitor != null) {
+                    DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
+                    if (pos != null) {
+                        DiagnosticSource source =
+                                new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+                        int linenr = source.getLineNumber(pos.getStartPosition());
+                        int col = source.getColumnNumber(pos.getStartPosition(), true);
+                        String line = source.getLine(pos.getStartPosition());
 
-                if (cl instanceof URLClassLoader) {
-                    msg.add("Classpath:");
-                    URL[] urls = ((URLClassLoader) cl).getURLs();
-                    for (URL url : urls) {
-                        msg.add(url.getFile());
+                        msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+                        msg.add(line);
                     }
-                } else {
-                    // TODO: Java 9+ use an internal classloader that doesn't support getting URLs,
-                    // so we will need an alternative approach to retrieve the classpath on Java 9+.
-                    msg.add("Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
+                }
+
+                msg.add(
+                        "Exception: "
+                                + ce.getCause()
+                                + "; "
+                                + UtilPlume.stackTraceToString(ce.getCause()));
+                boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
+                Throwable cause = ce.getCause().getCause();
+                while (cause != null) {
+                    msg.add(
+                            "Underlying Exception: "
+                                    + cause
+                                    + "; "
+                                    + UtilPlume.stackTraceToString(cause));
+                    printClasspath |= cause instanceof NoClassDefFoundError;
+                    cause = cause.getCause();
+                }
+
+                if (printClasspath) {
+                    msg.add("Classpath:");
+                    for (URI uri : new ClassGraph().getClasspathURIs()) {
+                        msg.add(uri.toString());
+                    }
                 }
             }
         }
@@ -2737,5 +2798,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } catch (NoSuchFieldException | IllegalAccessException e) {
             return null;
         }
+    }
+
+    /**
+     * Return the path to the current compilation unit.
+     *
+     * @return path to the current compilation unit
+     */
+    public TreePath getPathToCompilationUnit() {
+        return TreePath.getPath(currentRoot, currentRoot);
     }
 }

@@ -36,7 +36,7 @@ public class NTDConstructorReceiverTest {
         }
 
         void method() {
-            // The TypeUseLocation.RECEIVER only applies to the outer most type, so
+            // The TypeUseLocation.RECEIVER only applies to the outermost type, so
             // NTDConstructorReceiverTest.this is given the
             @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
             // :: error: (assignment.type.incompatible)

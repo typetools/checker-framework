@@ -4,17 +4,28 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * A ClassName represents the occurrence of a class as part of a static field access or method
  * invocation.
  */
 public class ClassName extends JavaExpression {
+    /** The string representation of the raw type of this. */
     private final String typeString;
 
+    /**
+     * Creates a new ClassName object for the given type.
+     *
+     * @param type the type for this ClassName
+     */
     public ClassName(TypeMirror type) {
         super(type);
-        typeString = type.toString();
+        String typeString = type.toString();
+        if (typeString.endsWith(">")) {
+            typeString = typeString.substring(0, typeString.indexOf("<"));
+        }
+        this.typeString = typeString;
     }
 
     @Override
@@ -42,8 +53,8 @@ public class ClassName extends JavaExpression {
     }
 
     @Override
-    public boolean syntacticEquals(JavaExpression other) {
-        return this.equals(other);
+    public boolean isDeterministic(AnnotationProvider provider) {
+        return true;
     }
 
     @Override
@@ -57,7 +68,26 @@ public class ClassName extends JavaExpression {
     }
 
     @Override
+    public boolean syntacticEquals(JavaExpression je) {
+        if (!(je instanceof ClassName)) {
+            return false;
+        }
+        ClassName other = (ClassName) je;
+        return typeString.equals(other.typeString);
+    }
+
+    @Override
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+        return this.syntacticEquals(other);
+    }
+
+    @Override
     public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return false; // not modifiable
+    }
+
+    @Override
+    public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+        return visitor.visitClassName(this, p);
     }
 }

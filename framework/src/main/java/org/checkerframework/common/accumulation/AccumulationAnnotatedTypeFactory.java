@@ -245,7 +245,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the annotation mirror is an instance of this factory's accumulator annotation
      */
     public boolean isAccumulatorAnnotation(AnnotationMirror anm) {
-        return AnnotationUtils.areSameByClass(anm, accumulator);
+        return areSameByClass(anm, accumulator);
     }
 
     @Override
@@ -572,7 +572,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         try {
             expression = StaticJavaParser.parseExpression(pred);
         } catch (ParseProblemException p) {
-            throw new UserError("unparseable predicate: " + pred + ". Parse exception: " + p);
+            throw new UserError("unparsable predicate: " + pred + ". Parse exception: " + p);
         }
         return evaluateBooleanExpression(expression, trueVariables);
     }
@@ -663,6 +663,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if anno is a predicate annotation
      */
     protected boolean isPredicate(AnnotationMirror anno) {
-        return predicate != null && AnnotationUtils.areSameByClass(anno, predicate);
+        return predicate != null && areSameByClass(anno, predicate);
     }
 }

@@ -1,6 +1,6 @@
 evaluationDependsOn(":checker-qual")
 
-task copySources(type: Copy, dependsOn: ':checker-qual:copySources') {
+task copySources(type: Copy) {
     description 'Copy checker-qual source to checker-qual-android'
 
     includeEmptyDirs = false
@@ -47,17 +47,14 @@ final checkerQualAndroidPom(publication) {
     publication.from components.java
     publication.pom {
         name = 'Checker Qual Android'
-        description = 'checker-qual-android contains annotations (type qualifiers)\n' +
-                        'used by the Checker Framework to type-check Java source code.\n' +
-                        'It also contains utility classes for programmers to use at run time.\n' +
+        description = 'checker-qual-android contains annotations (type qualifiers) that a programmer\n' +
+                        'writes to specify Java code for type-checking by the Checker Framework.\n' +
                         '\n' +
                         'The checker-qual-android artifact is identical to the checker-qual\n' +
                         'artifact, except that in checker-qual-android annotations have classfile\n' +
                         'retention.  The default Android Gradle plugin retains types annotated with\n' +
                         'runtime annotations in the main dex, but strips out class-retention\n' +
-                        'annotations.\n' +
-                        '\n' +
-                        'Please see artifact: org.checkerframework:checker'
+                        'annotations.\n'
         licenses {
             license {
                 name = 'The MIT License'

@@ -7,6 +7,7 @@ import com.sun.source.util.TreeScanner;
 import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * TreePathCacher is a TreeScanner that creates and caches a TreePath for a target Tree.
@@ -48,15 +49,15 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     /**
      * Return the TreePath for a Tree.
      *
-     * <p>This method uses try/catch and the Result Error for control flow to stop the superclass
-     * from scanning other subtrees when target is found.
-     *
      * @param root the compilation unit to search in
      * @param target the target tree to look for
      * @return the TreePath corresponding to target, or null if target is not found in the
      *     compilation root
      */
-    public TreePath getPath(CompilationUnitTree root, @FindDistinct Tree target) {
+    public @Nullable TreePath getPath(CompilationUnitTree root, @FindDistinct Tree target) {
+        // This method uses try/catch and the private {@code Result} exception for control flow to
+        // stop the superclass from scanning other subtrees when target is found.
+
         if (foundPaths.containsKey(target)) {
             return foundPaths.get(target);
         }
