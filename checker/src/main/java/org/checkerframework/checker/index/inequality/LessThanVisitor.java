@@ -3,7 +3,6 @@ package org.checkerframework.checker.index.inequality;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -13,7 +12,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
+/** The visitor for the Less Than Checker. */
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
 
     private static final @CompilerMessageKey String FROM_GT_TO = "from.gt.to";
@@ -116,13 +117,12 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(exprLTAnno);
 
             if (initialAnnotations != null) {
-                List<String> updatedAnnotations = new ArrayList<>();
-
-                for (String annotation : initialAnnotations) {
-                    OffsetEquation updatedAnnotation =
-                            OffsetEquation.createOffsetFromJavaExpression(annotation);
-                    updatedAnnotations.add(updatedAnnotation.toString());
-                }
+                List<String> updatedAnnotations =
+                        SystemUtil.mapList(
+                                annotation ->
+                                        OffsetEquation.createOffsetFromJavaExpression(annotation)
+                                                .toString(),
+                                initialAnnotations);
 
                 exprType.replaceAnnotation(
                         atypeFactory.createLessThanQualifier(updatedAnnotations));

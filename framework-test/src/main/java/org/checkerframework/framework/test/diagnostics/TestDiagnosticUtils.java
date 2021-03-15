@@ -14,6 +14,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
@@ -241,7 +242,7 @@ public class TestDiagnosticUtils {
         }
         DiagnosticKind categoryEnum = DiagnosticKind.fromParseString(category);
         if (categoryEnum == null) {
-            throw new Error("Unparseable category: " + category);
+            throw new Error("Unparsable category: " + category);
         }
 
         return Pair.of(categoryEnum, isFixable);
@@ -393,11 +394,7 @@ public class TestDiagnosticUtils {
      * @return a list of the diagnastics as they would appear in a source file
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        final List<String> strings = new ArrayList<>(diagnostics.size());
-        for (TestDiagnostic diagnostic : diagnostics) {
-            strings.add(diagnostic.toString());
-        }
-        return strings;
+        return SystemUtil.mapList(TestDiagnostic::toString, diagnostics);
     }
 
     public static void removeDiagnosticsOfKind(

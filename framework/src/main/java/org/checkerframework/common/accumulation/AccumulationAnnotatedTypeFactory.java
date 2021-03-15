@@ -572,7 +572,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         try {
             expression = StaticJavaParser.parseExpression(pred);
         } catch (ParseProblemException p) {
-            throw new UserError("unparseable predicate: " + pred + ". Parse exception: " + p);
+            throw new UserError("unparsable predicate: " + pred + ". Parse exception: " + p);
         }
         return evaluateBooleanExpression(expression, trueVariables);
     }

@@ -14,13 +14,13 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
@@ -83,11 +83,9 @@ public class ReflectiveEvaluator {
 
         if (method.isVarArgs()) {
             int numberOfParameters = method.getParameterTypes().length;
-            List<Object[]> newList = new ArrayList<>();
-            for (Object[] args : listOfArguments) {
-                newList.add(normalizeVararg(args, numberOfParameters));
-            }
-            listOfArguments = newList;
+            listOfArguments =
+                    SystemUtil.mapList(
+                            args -> normalizeVararg(args, numberOfParameters), listOfArguments);
         }
 
         List<Object> results = new ArrayList<>();
@@ -231,13 +229,9 @@ public class ReflectiveEvaluator {
      */
     private List<Class<?>> getParameterClasses(ExecutableElement ele)
             throws ClassNotFoundException {
-        List<? extends VariableElement> paramEles = ele.getParameters();
-        List<Class<?>> paramClasses = new ArrayList<>();
-        for (Element e : paramEles) {
-            TypeMirror pType = ElementUtils.getType(e);
-            paramClasses.add(TypesUtils.getClassFromType(pType));
-        }
-        return paramClasses;
+        return SystemUtil.mapList(
+                (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)),
+                ele.getParameters());
     }
 
     private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
@@ -269,12 +263,7 @@ public class ReflectiveEvaluator {
      * @return a depth-2 copy of the given list
      */
     private List<Object[]> copy(List<Object[]> lastTuples) {
-        List<Object[]> returnListOfLists = new ArrayList<>();
-        for (Object[] list : lastTuples) {
-            Object[] copy = Arrays.copyOf(list, list.length);
-            returnListOfLists.add(copy);
-        }
-        return returnListOfLists;
+        return SystemUtil.mapList((Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
     }
 
     /**

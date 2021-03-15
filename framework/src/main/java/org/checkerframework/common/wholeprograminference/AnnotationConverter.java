@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Type.ArrayType;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
@@ -67,11 +67,7 @@ public class AnnotationConverter {
                 // Convert each AnnotationValue to its respective Java type.
                 @SuppressWarnings("unchecked")
                 List<Object> valueList = (List<Object>) value;
-                List<Object> newList = new ArrayList<>();
-                for (Object o : valueList) {
-                    newList.add(((AnnotationValue) o).getValue());
-                }
-                value = newList;
+                value = SystemUtil.mapList(o -> ((AnnotationValue) o).getValue(), valueList);
             } else if (value instanceof TypeMirror) {
                 try {
                     value = Class.forName(TypesUtils.binaryName((TypeMirror) value));

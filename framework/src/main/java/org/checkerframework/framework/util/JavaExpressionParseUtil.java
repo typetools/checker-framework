@@ -68,9 +68,9 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -98,7 +98,7 @@ public class JavaExpressionParseUtil {
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /**
-     * Parsable replacement for parameter references. It is parseable because it is a Java
+     * Parsable replacement for parameter references. It is parsable because it is a Java
      * identifier.
      */
     private static final String PARAMETER_REPLACEMENT = "_param_";
@@ -782,8 +782,7 @@ public class JavaExpressionParseUtil {
                 Resolver resolver)
                 throws JavaExpressionParseException {
 
-            List<TypeMirror> argumentTypes =
-                    CollectionsPlume.mapList(JavaExpression::getType, arguments);
+            List<TypeMirror> argumentTypes = SystemUtil.mapList(JavaExpression::getType, arguments);
 
             if (receiverType.getKind() == TypeKind.ARRAY) {
                 ExecutableElement element =
@@ -868,15 +867,14 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
-            List<JavaExpression> dimensions = new ArrayList<>();
-            for (ArrayCreationLevel dimension : expr.getLevels()) {
-                if (dimension.getDimension().isPresent()) {
-                    dimensions.add(dimension.getDimension().get().accept(this, null));
-                } else {
-                    dimensions.add(null);
-                }
-            }
+        public JavaExpression visit(ArrayCreationExpr expr, JavaExpressionContext context) {
+            List<JavaExpression> dimensions =
+                    SystemUtil.mapList(
+                            (ArrayCreationLevel dimension) ->
+                                    dimension.getDimension().isPresent()
+                                            ? dimension.getDimension().get().accept(this, context)
+                                            : null,
+                            expr.getLevels());
 
             List<JavaExpression> initializers = new ArrayList<>();
             if (expr.getInitializer().isPresent()) {

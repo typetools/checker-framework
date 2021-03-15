@@ -319,14 +319,10 @@ public abstract class JavaExpression {
             result = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            List<@Nullable JavaExpression> dimensions = new ArrayList<>();
-            for (Node dimension : an.getDimensions()) {
-                dimensions.add(fromNode(dimension));
-            }
-            List<JavaExpression> initializers = new ArrayList<>();
-            for (Node initializer : an.getInitializers()) {
-                initializers.add(fromNode(initializer));
-            }
+            List<@Nullable JavaExpression> dimensions =
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getDimensions());
+            List<JavaExpression> initializers =
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getInitializers());
             result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
@@ -338,10 +334,8 @@ public abstract class JavaExpression {
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
             // Note that the method might be nondeterministic.
-            List<JavaExpression> parameters = new ArrayList<>();
-            for (Node p : mn.getArguments()) {
-                parameters.add(fromNode(p));
-            }
+            List<JavaExpression> parameters =
+                    SystemUtil.mapList(JavaExpression::fromNode, mn.getArguments());
             JavaExpression methodReceiver;
             if (ElementUtils.isStatic(invokedMethod)) {
                 methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
@@ -412,10 +406,8 @@ public abstract class JavaExpression {
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
 
                 // Note that the method might be nondeterministic.
-                List<JavaExpression> parameters = new ArrayList<>();
-                for (ExpressionTree p : mn.getArguments()) {
-                    parameters.add(fromTree(p));
-                }
+                List<JavaExpression> parameters =
+                        SystemUtil.mapList(JavaExpression::fromTree, mn.getArguments());
                 JavaExpression methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
                     methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
@@ -586,6 +578,7 @@ public abstract class JavaExpression {
      * @return list of parameters as {@link FormalParameter}s
      */
     public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
+        // TODO: Use mapList
         List<FormalParameter> parameters = new ArrayList<>(methodEle.getParameters().size());
         int oneBasedIndex = 1;
         for (VariableElement variableElement : methodEle.getParameters()) {
