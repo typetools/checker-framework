@@ -214,12 +214,11 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clone or update DLJC
 (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
-(cd "${SCRIPTDIR}" && ../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac .do-like-javac)
+"${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
 if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
     echo "Failed to clone do-like-javac"
     exit 1
 fi
-
 DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script

@@ -542,7 +542,7 @@ literal is a valid format string or not.  When a string is computed or is
 obtained from an external resource, then the string must be trusted or tested.
 
 One way to test a string is to call the
-\refmethod{checker/formatter}{FormatUtil}{asFormat}{-java.lang.String-org.checkerframework.checker.formatter.qual.ConversionCategory...-}
+\refmethod{checker/formatter/util}{FormatUtil}{asFormat}{-java.lang.String-org.checkerframework.checker.formatter.qual.ConversionCategory...-}
 method to check whether the format string is valid and its format
 specifiers match certain conversion categories.
 If this is not the case, \<asFormat> raises an exception.  Your code should
@@ -581,7 +581,7 @@ System.out.printf(format, "hello", 1337);
 \end{Verbatim}
 
 \noindent
-To use the \<FormatUtil> class, the \<checker-qual.jar> file
+To use the \refclass{checker/formatter/util}{FormatUtil} class, the \<checker-util.jar> file
 must be on the classpath at run time.
 
 %  LocalWords:  printf InvalidFormat Formatter FormatBottom specifier's

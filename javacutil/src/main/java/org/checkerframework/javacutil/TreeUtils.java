@@ -26,6 +26,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.tools.javac.code.Flags;
@@ -308,36 +309,34 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for the called method, from a call. Might return null if no
-     * element wasfound.
+     * Returns the ExecutableElement for the called method, from a call.
      *
      * @param node a method call
      * @return the ExecutableElement for the called method
      */
-    public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
+    @Pure
+    public static ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF("Method elements should be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
-     * Gets the ExecutableElement for the called constrctor, from a constructor invocation. Might
-     * return null if no element was found.
+     * Gets the ExecutableElement for the called constructor, from a constructor invocation.
      *
      * @param node a constructor invocation
      * @return the ExecutableElement for the called constructor
      * @see #constructor(NewClassTree)
      */
-    public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
+    @Pure
+    public static ExecutableElement elementFromUse(NewClassTree node) {
         Element el = TreeUtils.elementFromTree(node);
-        if (el instanceof ExecutableElement) {
-            return (ExecutableElement) el;
-        } else {
-            return null;
+        if (!(el instanceof ExecutableElement)) {
+            throw new BugInCF("Constructor elements should  be ExecutableElement. Found: %s", el);
         }
+        return (ExecutableElement) el;
     }
 
     /**
@@ -525,20 +524,41 @@ public final class TreeUtils {
      * Determine whether the given class contains an explicit constructor.
      *
      * @param node a class tree
-     * @return true, iff there is an explicit constructor
+     * @return true iff there is an explicit constructor
      */
     public static boolean hasExplicitConstructor(ClassTree node) {
         TypeElement elem = TreeUtils.elementFromDeclaration(node);
-
-        for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
-            MethodSymbol ms = (MethodSymbol) ee;
-            long mod = ms.flags();
-
-            if ((mod & Flags.SYNTHETIC) == 0) {
+        for (ExecutableElement constructorElt :
+                ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+            if (!isSynthetic(constructorElt)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns true if the given method is synthetic.
+     *
+     * @param ee a method or constructor element
+     * @return true iff the given method is synthetic
+     */
+    public static boolean isSynthetic(ExecutableElement ee) {
+        MethodSymbol ms = (MethodSymbol) ee;
+        long mod = ms.flags();
+        // GENERATEDCONSTR is for generated constructors, which seem not to have SYNTHETIC set.
+        return (mod & (Flags.SYNTHETIC | Flags.GENERATEDCONSTR)) != 0;
+    }
+
+    /**
+     * Returns true if the given method is synthetic.
+     *
+     * @param node a method declaration tree
+     * @return true iff the given method is synthetic
+     */
+    public static boolean isSynthetic(MethodTree node) {
+        ExecutableElement ee = TreeUtils.elementFromDeclaration(node);
+        return isSynthetic(ee);
     }
 
     /**
@@ -944,7 +964,8 @@ public final class TreeUtils {
      * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
      * tree} to be a field access, as determined by {@code isFieldAccess}.
      *
-     * @return the name of the field accessed by {@code tree}.
+     * @param tree a field access tree
+     * @return the name of the field accessed by {@code tree}
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
@@ -992,7 +1013,8 @@ public final class TreeUtils {
      * Compute the name of the method that the method access {@code tree} accesses. Requires {@code
      * tree} to be a method access, as determined by {@code isMethodAccess}.
      *
-     * @return the name of the method accessed by {@code tree}.
+     * @param tree a method access tree
+     * @return the name of the method accessed by {@code tree}
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);
@@ -1132,16 +1154,12 @@ public final class TreeUtils {
     /**
      * Converts the given AnnotationTrees to AnnotationMirrors.
      *
-     * @param annoTreess list of annotation trees to convert to annotation mirrors
+     * @param annoTrees list of annotation trees to convert to annotation mirrors
      * @return list of annotation mirrors that represent the given annotation trees
      */
     public static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
-            List<? extends AnnotationTree> annoTreess) {
-        List<AnnotationMirror> annotations = new ArrayList<>(annoTreess.size());
-        for (AnnotationTree anno : annoTreess) {
-            annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
-        }
-        return annotations;
+            List<? extends AnnotationTree> annoTrees) {
+        return SystemUtil.mapList(TreeUtils::annotationFromAnnotationTree, annoTrees);
     }
 
     /**
@@ -1248,7 +1266,7 @@ public final class TreeUtils {
      * typed lambda. (See JLS 15.27.1)
      *
      * @param tree any kind of tree
-     * @return true iff {@code tree} is an implicitly typed lambda.
+     * @return true iff {@code tree} is an implicitly typed lambda
      */
     public static boolean isImplicitlyTypedLambda(Tree tree) {
         return tree.getKind() == Kind.LAMBDA_EXPRESSION
@@ -1260,7 +1278,7 @@ public final class TreeUtils {
      * to the compiler logic.
      *
      * @param node the expression to be checked
-     * @return true if {@code node} has the constant value true.
+     * @return true if {@code node} has the constant value true
      */
     public static boolean isExprConstTrue(final ExpressionTree node) {
         assert node instanceof JCExpression;
@@ -1396,12 +1414,13 @@ public final class TreeUtils {
      * Returns the annotations explicitly written on the given type.
      *
      * @param annoTrees annotations written before a variable/method declaration; null if this type
-     *     is not from such a location
+     *     is not from such a location. This might contain type annotations that the Java parser
+     *     attached to the declaration rather than to the type.
      * @param typeTree the type whose annotations to return
      * @return the annotations explicitly written on the given type
      */
     public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
-            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         while (true) {
             switch (typeTree.getKind()) {
                 case IDENTIFIER:
@@ -1427,6 +1446,12 @@ public final class TreeUtils {
                 case PARAMETERIZED_TYPE:
                     typeTree = ((ParameterizedTypeTree) typeTree).getType();
                     break;
+                case UNION_TYPE:
+                    List<AnnotationTree> result = new ArrayList<>();
+                    for (Tree alternative : ((UnionTypeTree) typeTree).getTypeAlternatives()) {
+                        result.addAll(getExplicitAnnotationTrees(null, alternative));
+                    }
+                    return result;
                 default:
                     throw new BugInCF(
                             "what typeTree? %s %s %s",

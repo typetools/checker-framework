@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -48,7 +49,6 @@ import org.checkerframework.checker.index.substringindex.SubstringIndexAnnotated
 import org.checkerframework.checker.index.substringindex.SubstringIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -100,7 +100,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>10. Special handling for Math.random: Math.random() * array.length is LTL array.
  * </ul>
  */
-public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForIndexChecker {
 
     /** The @{@link UpperBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
@@ -255,7 +255,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
             if (anm != null) {
                 List<String> sequences =
-                        AnnotationUtils.getElementValueArray(anm, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(anm, "value", String.class, false);
                 List<String> offsets =
                         AnnotationUtils.getElementValueArray(anm, "offset", String.class, true);
                 if (sequences != null
@@ -682,8 +682,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
-         * length of some sequence, then (a + b) / divisor is less than the length of that sequence.
+         * If {@code numeratorTree} is "a + b" and {@code divisor} is greater than 1, and a and b
+         * are less than the length of some sequence, then "(a + b) / divisor" is less than the
+         * length of that sequence.
+         *
+         * @param divisor the divisor
+         * @param numeratorTree an addition tree that is divided by {@code divisor}
+         * @return a qualifier for the division
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
             numeratorTree = TreeUtils.withoutParens(numeratorTree);

@@ -29,13 +29,14 @@ public class Commitment {
     }
 
     // :: error: (initialization.invalid.constructor.return.type)
+    // :: error: (nullness.on.constructor)
     public @Initialized @NonNull Commitment(boolean i) {
         a = "";
         t = "";
         b = "";
     }
 
-    // :: error: (initialization.invalid.constructor.return.type)
+    // :: error: (nullness.on.constructor)
     public @Nullable Commitment(char i) {
         a = "";
         t = "";

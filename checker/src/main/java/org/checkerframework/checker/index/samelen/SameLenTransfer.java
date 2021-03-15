@@ -4,6 +4,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -90,10 +91,8 @@ public class SameLenTransfer extends CFTransfer {
                     // "lengthNodeReceiver.length()"
 
                     // targetRec is the receiver for the left hand side of the assignment.
-                    JavaExpression targetRec =
-                            JavaExpression.fromNode(analysis.getTypeFactory(), node.getTarget());
-                    JavaExpression otherRec =
-                            JavaExpression.fromNode(analysis.getTypeFactory(), lengthNodeReceiver);
+                    JavaExpression targetRec = JavaExpression.fromNode(node.getTarget());
+                    JavaExpression otherRec = JavaExpression.fromNode(lengthNodeReceiver);
 
                     AnnotationMirror lengthNodeAnnotation =
                             aTypeFactory
@@ -101,11 +100,9 @@ public class SameLenTransfer extends CFTransfer {
                                     .getAnnotationInHierarchy(UNKNOWN);
 
                     AnnotationMirror combinedSameLen =
-                            // In Java 9, this can be:
-                            // aTypeFactory.createCombinedSameLen(
-                            //         List.of(targetRec, otherRec), List.of(lengthNodeAnnotation));
                             aTypeFactory.createCombinedSameLen(
-                                    targetRec, otherRec, UNKNOWN, lengthNodeAnnotation);
+                                    Arrays.asList(targetRec, otherRec),
+                                    Arrays.asList(UNKNOWN, lengthNodeAnnotation));
 
                     propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
                     return result;
@@ -121,11 +118,9 @@ public class SameLenTransfer extends CFTransfer {
         // If the left side of the assignment is an array or a string, then have both the right and
         // left side be SameLen of each other.
 
-        JavaExpression targetRec =
-                JavaExpression.fromNode(analysis.getTypeFactory(), node.getTarget());
+        JavaExpression targetRec = JavaExpression.fromNode(node.getTarget());
 
-        JavaExpression exprRec =
-                JavaExpression.fromNode(analysis.getTypeFactory(), node.getExpression());
+        JavaExpression exprRec = JavaExpression.fromNode(node.getExpression());
 
         if (IndexUtil.isSequenceType(node.getTarget().getType())
                 || (rightAnno != null && aTypeFactory.areSameByClass(rightAnno, SameLen.class))) {
@@ -133,11 +128,9 @@ public class SameLenTransfer extends CFTransfer {
             AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 
             AnnotationMirror combinedSameLen =
-                    // In Java 9, this can be:
-                    // aTypeFactory.createCombinedSameLen(
-                    //         List.of(targetRec, exprRec), List.of(rightAnnoOrUnknown));
                     aTypeFactory.createCombinedSameLen(
-                            targetRec, exprRec, UNKNOWN, rightAnnoOrUnknown);
+                            Arrays.asList(targetRec, exprRec),
+                            Arrays.asList(UNKNOWN, rightAnnoOrUnknown));
 
             propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
         }
@@ -181,16 +174,20 @@ public class SameLenTransfer extends CFTransfer {
     /**
      * Handles refinement of equality comparisons. Assumes "a == b" or "a.length == b.length"
      * evaluates to true. The method gives a and b SameLen of each other in the store.
+     *
+     * @param left the first argument to the equality operator
+     * @param right the second argument to the equality operator
+     * @param store the store in which to perform refinement
      */
     private void refineEq(Node left, Node right, CFStore store) {
         List<JavaExpression> exprs = new ArrayList<>();
         List<AnnotationMirror> annos = new ArrayList<>();
         for (Node internal : splitAssignments(left)) {
-            exprs.add(JavaExpression.fromNode(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpression.fromNode(internal));
             annos.add(getAnno(internal));
         }
         for (Node internal : splitAssignments(right)) {
-            exprs.add(JavaExpression.fromNode(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpression.fromNode(internal));
             annos.add(getAnno(internal));
         }
 
@@ -296,17 +293,9 @@ public class SameLenTransfer extends CFTransfer {
                 AnnotationMirror newSameLen =
                         aTypeFactory.createSameLen(
                                 Collections.singletonList(paramNames.get(index)));
-                JavaExpression otherParamRec = null;
-                try {
-                    otherParamRec =
-                            JavaExpressionParseUtil.fromVariableTree(
-                                    aTypeFactory, paramTrees.get(otherParamIndex));
-                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                    // do nothing
-                }
-                if (otherParamRec != null) {
-                    info.insertValue(otherParamRec, newSameLen);
-                }
+                JavaExpression otherParamRec =
+                        JavaExpression.fromVariableTree(paramTrees.get(otherParamIndex));
+                info.insertValuePermitNondeterministic(otherParamRec, newSameLen);
             }
         }
     }

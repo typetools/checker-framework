@@ -1,5 +1,17 @@
-import org.checkerframework.checker.units.*;
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.Area;
+import org.checkerframework.checker.units.qual.Prefix;
+import org.checkerframework.checker.units.qual.degrees;
+import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.km;
+import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.kmPERh;
+import org.checkerframework.checker.units.qual.m;
+import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.mPERs;
+import org.checkerframework.checker.units.qual.mPERs2;
+import org.checkerframework.checker.units.qual.radians;
+import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.util.UnitsTools;
 
 public class BasicUnits {
 

@@ -38,9 +38,9 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         if (factory.isMapContainsKey(node) || factory.isMapPut(node)) {
 
             Node receiver = node.getTarget().getReceiver();
-            JavaExpression receiverJe = JavaExpression.fromNode(factory, receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
             String mapName = receiverJe.toString();
-            JavaExpression keyExpr = JavaExpression.fromNode(factory, node.getArgument(0));
+            JavaExpression keyExpr = JavaExpression.fromNode(node.getArgument(0));
 
             LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
             keyForMaps.add(mapName);
@@ -57,8 +57,10 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
             AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
             if (factory.isMapContainsKey(node)) {
+                // method is Map.containsKey
                 result.getThenStore().insertValue(keyExpr, am);
-            } else { // method is Map.put
+            } else {
+                // method is Map.put
                 result.getThenStore().insertValue(keyExpr, am);
                 result.getElseStore().insertValue(keyExpr, am);
             }
@@ -67,13 +69,18 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         return result;
     }
 
-    /** @return the String value of a KeyFor, this will throw an exception */
+    /**
+     * Returns the elements/arguments of a {@code @KeyFor} annotation.
+     *
+     * @param keyFor a {@code @KeyFor} annotation
+     * @return the elements/arguments of a {@code @KeyFor} annotation
+     */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
         if (keyFor.getElementValues().isEmpty()) {
             return new LinkedHashSet<>();
         }
 
         return new LinkedHashSet<>(
-                AnnotationUtils.getElementValueArray(keyFor, "value", String.class, true));
+                AnnotationUtils.getElementValueArray(keyFor, "value", String.class, false));
     }
 }

@@ -14,6 +14,14 @@ public class Issue2470 {
             return this;
         }
 
+        // TODO: Support "return" in Java Expression syntax.
+        // @EnsuresNonNull("return.s")
+        @EnsuresNonNull("this.s")
+        public Example setS2(String s1) {
+            this.s = s1;
+            return this;
+        }
+
         @RequiresNonNull("this.s")
         public void print() {
             System.out.println(this.s.toString());
@@ -27,6 +35,28 @@ public class Issue2470 {
     }
 
     static void ok() {
-        new Example().setS("test").print();
+        Example e = new Example();
+        e.setS("test");
+        e.print();
     }
+
+    static void buggy2() {
+        new Example()
+                .setS("test")
+                // :: error:(contracts.precondition.not.satisfied)
+                .print();
+    }
+
+    // TODO: These should be legal, once "return" is supported in Java Expression syntax.
+    // of a method.
+    /*
+    static void ok3() {
+        Example e = new Example().setS2("test");
+        e.print();
+    }
+
+    static void ok2() {
+        new Example().setS2("test").print();
+    }
+    */
 }

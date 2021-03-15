@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -161,6 +162,9 @@ public class AnnotationUtils {
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#areSameByClass} or {@link #areSameByName}.
+     *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
      * @return true if annoclass is the class of am
@@ -242,6 +246,9 @@ public class AnnotationUtils {
      * Checks that the collection contains the annotation. Using Collection.contains does not always
      * work, because it does not use areSame for comparison.
      *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#containsSameByClass} or {@link #containsSameByName}.
+     *
      * @param c a collection of AnnotationMirrors
      * @param anno the annotation class to search for in c
      * @return true iff c contains anno, according to areSameByClass
@@ -253,6 +260,9 @@ public class AnnotationUtils {
 
     /**
      * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
+     *
+     * <p>This method is not very efficient. It is more efficient to use {@code
+     * AnnotatedTypeFactory#getAnnotationByClass} or {@link #getAnnotationByName}.
      *
      * @param c a collection of AnnotationMirrors
      * @param anno the class to search for in c
@@ -635,6 +645,12 @@ public class AnnotationUtils {
                         am1.getAnnotationType().asElement().getEnclosedElements())) {
             AnnotationValue aval1 = vals1.get(meth);
             AnnotationValue aval2 = vals2.get(meth);
+            @SuppressWarnings("interning:not.interned") // optimization via equality test
+            boolean identical = aval1 == aval2;
+            if (identical) {
+                // Handles when both aval1 and aval2 are null, and maybe other cases too.
+                continue;
+            }
             if (aval1 == null) {
                 aval1 = meth.getDefaultValue();
             }
@@ -684,9 +700,16 @@ public class AnnotationUtils {
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
      * is expected to have type {@code expectedType}.
      *
-     * <p>For elements of array type, use {@code getElementValueArray} instead.
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
      *
-     * <p>For elements of enum type, use {@code getElementValueEnum} instead.
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
@@ -735,6 +758,13 @@ public class AnnotationUtils {
      * Get the element with the name {@code elementName} of the annotation {@code anno}, or return
      * null if no such element exists.
      *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
+     *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
      * @param expectedType the expected type of the element
@@ -759,6 +789,13 @@ public class AnnotationUtils {
     /**
      * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
      * enum of type {@code T}.
+     *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -785,6 +822,13 @@ public class AnnotationUtils {
      * <p>Parameter useDefaults is used to determine whether default values should be used for
      * annotation values. Finding defaults requires more computation, so should be false when no
      * defaulting is needed.
+     *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -832,6 +876,13 @@ public class AnnotationUtils {
      * annotation values. Finding defaults requires more computation, so should be false when no
      * defaulting is needed.
      *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
+     *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
      * @param expectedType the expected type used to cast the return type
@@ -868,6 +919,19 @@ public class AnnotationUtils {
      * the elements are {@code Enum}s. One element of the result is expected to have type {@code
      * expectedType}.
      *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     *
+     * <pre>{@code
+     * AnnotationUtils.annotationValueListToEnumArray(
+     *   anno.getElementValues().get(someElement).getValue(),
+     *   MyEnumClass.class);
+     * }</pre>
+     *
+     * rather than this method which iterates through a map. A similar comment is true of all {@code
+     * getElementValue*} methods. It is true even if the annotation has only one element/field.
+     * Using that method is possible if the type of the annotation is known (in which case the
+     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
      * @param expectedType the expected type used to cast the return type
@@ -875,17 +939,48 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the value of the element with the given name
      */
-    public static <T extends Enum<T>> List<T> getElementValueEnumArray(
+    public static <T extends Enum<T>> T[] getElementValueEnumArray(
             AnnotationMirror anno,
             CharSequence elementName,
             Class<T> expectedType,
             boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
-        List<T> result = new ArrayList<>(la.size());
-        for (AnnotationValue a : la) {
+        return annotationValueListToEnumArray(la, expectedType);
+    }
+
+    /**
+     * Converts a list of AnnotationValue to an array of enum.
+     *
+     * @param <T> the element type of the enum array
+     * @param la a list of AnnotationValue
+     * @param expectedType the expected type used to cast the return type
+     * @return an array of enum, converted from the input list
+     */
+    public static <T extends Enum<T>> T[] annotationValueListToEnumArray(
+            Object la, Class<T> expectedType) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> annoValues = (List<AnnotationValue>) la;
+        return annotationValueListToEnumArray(annoValues, expectedType);
+    }
+
+    /**
+     * Converts a list of AnnotationValue to an array of enum.
+     *
+     * @param <T> the element type of the enum array
+     * @param la a list of AnnotationValue
+     * @param expectedType the expected type used to cast the return type
+     * @return an array of enum, converted from the input list
+     */
+    public static <T extends Enum<T>> T[] annotationValueListToEnumArray(
+            List<AnnotationValue> la, Class<T> expectedType) {
+        int size = la.size();
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) Array.newInstance(expectedType, size);
+        for (int i = 0; i < size; i++) {
+            AnnotationValue a = la.get(i);
             T value = Enum.valueOf(expectedType, a.getValue().toString());
-            result.add(value);
+            result[i] = value;
         }
         return result;
     }
@@ -896,6 +991,13 @@ public class AnnotationUtils {
      * <p>This is a convenience method for the most common use-case. It is like {@code
      * getElementValue(anno, elementName, ClassType.class).getQualifiedName()}, but this method
      * ensures consistent use of the qualified name.
+     *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}
+     * rather than this method which iterates through a map. A similar comment is true of all {@code
+     * getElementValue*} methods. It is true even if the annotation has only one element/field.
+     * Using that method is possible if the type of the annotation is known (in which case the
+     * element/field's Element (called {@code someElement} in the code snippet) is available.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -916,6 +1018,13 @@ public class AnnotationUtils {
      * fails if the class wasn't found. Like {@link #getElementValueClassNames}, but returns classes
      * rather than names.
      *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}
+     * rather than this method which iterates through a map. A similar comment is true of all {@code
+     * getElementValue*} methods. It is true even if the annotation has only one element/field.
+     * Using that method is possible if the type of the annotation is known (in which case the
+     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     *
      * @param anno the annotation whose field to access
      * @param annoElement the element/field of {@code anno} whose content is a list of classes
      * @param useDefaults whether to apply default values to the element
@@ -925,11 +1034,8 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-        List<@CanonicalName Name> names = new ArrayList<>();
-        for (Type.ClassType classType : la) {
-            names.add(classType.asElement().getQualifiedName());
-        }
-        return names;
+        return SystemUtil.<Type.ClassType, @CanonicalName Name>mapList(
+                (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
     }
 
     // The Javadoc doesn't use @link because framework is a different project than this one

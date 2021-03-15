@@ -61,13 +61,13 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
@@ -232,6 +232,10 @@ public abstract class CFAbstractTransfer<
                 && ((MethodInvocationNode) node).getIterableExpression() != null) {
             ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
             at = factory.getIterableElementType(iter);
+        } else if (node instanceof ArrayAccessNode
+                && ((ArrayAccessNode) node).getArrayExpression() != null) {
+            ExpressionTree array = ((ArrayAccessNode) node).getArrayExpression();
+            at = factory.getIterableElementType(array);
         } else {
             at = factory.getAnnotatedType(tree);
         }
@@ -563,62 +567,47 @@ public abstract class CFAbstractTransfer<
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
-            String expression = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;
 
             if (methodUseContext == null) {
                 methodUseContext =
                         JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodDeclTree,
-                                methodAst.getClassTree(),
-                                analysis.checker.getContext());
+                                methodDeclTree, analysis.checker);
             }
 
-            TreePath localScope = analysis.atypeFactory.getPath(methodDeclTree);
+            annotation = viewpointAdaptAnnoFromContract(annotation, methodUseContext);
 
-            annotation =
-                    standardizeAnnotationFromContract(annotation, methodUseContext, localScope);
-
+            JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                JavaExpression expr =
-                        JavaExpressionParseUtil.parse(
-                                expression, methodUseContext, localScope, false);
-                initialStore.insertValue(expr, annotation);
+                exprJe = JavaExpressionParseUtil.parse(expressionString, methodUseContext);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
+                continue;
             }
+            initialStore.insertValuePermitNondeterministic(exprJe, annotation);
         }
     }
 
     /**
-     * Standardize a type qualifier annotation obtained from a contract.
+     * Viewpoint-adapts a type qualifier annotation obtained from a contract.
      *
-     * @param annoFromContract a controct annotation that was written on a method declaration
-     * @param flowExprContext context
-     * @param path the program element that will be annotated by the returned annotation
-     * @return a type qualifier annotation obtained from the given contract
+     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
+     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} to the given context.
+     *
+     * @param annoFromContract an annotation from a contract
+     * @param jeContext the context to use for standardization
+     * @return the standardized annotation, or the argument if it does not need standardization
      */
-    private AnnotationMirror standardizeAnnotationFromContract(
-            AnnotationMirror annoFromContract,
-            JavaExpressionContext flowExprContext,
-            TreePath path) {
-        // TODO: common implementation with
-        // GenericAnnotatedTypeFactory.standardizeAnnotationFromContract.
-        if (analysis.dependentTypesHelper != null) {
-            AnnotationMirror standardized =
-                    analysis.dependentTypesHelper.standardizeAnnotationIfDependentType(
-                            flowExprContext, path, annoFromContract, false, false);
-            if (standardized != null) {
-                // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
-                // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
-                return standardized;
-            }
-        }
-        return annoFromContract;
+    private AnnotationMirror viewpointAdaptAnnoFromContract(
+            AnnotationMirror annoFromContract, JavaExpressionContext jeContext) {
+        // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
+        return analysis.dependentTypesHelper.viewpointAdaptQualifierFromContract(
+                annoFromContract, jeContext, /*errorTree=*/ null);
     }
 
     /**
@@ -843,11 +832,15 @@ public abstract class CFAbstractTransfer<
      * #splitAssignments} should be called, and the new type should be inserted into the store for
      * each of the resulting nodes.
      *
+     * @param firstNode the node that might be more precise
+     * @param secondNode the node whose type to possibly refine
+     * @param firstValue the abstract value that might be more precise
+     * @param secondValue the abstract value that might be less precise
      * @param res the previous result
      * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is
      *     added to the {@code elseStore} instead of the {@code thenStore}) for a not-equal
      *     comparison.
-     * @return the conditional transfer result (if information has been added), or {@code null}.
+     * @return the conditional transfer result (if information has been added), or {@code null}
      */
     protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
             TransferResult<V, S> res,
@@ -861,8 +854,10 @@ public abstract class CFAbstractTransfer<
             if (!firstValue.equals(secondValue)) {
                 List<Node> secondParts = splitAssignments(secondNode);
                 for (Node secondPart : secondParts) {
-                    JavaExpression secondInternal =
-                            JavaExpression.fromNode(analysis.getTypeFactory(), secondPart);
+                    JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
+                    if (!secondInternal.isDeterministic(analysis.atypeFactory)) {
+                        continue;
+                    }
                     if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                         S thenStore = res.getThenStore();
                         S elseStore = res.getElseStore();
@@ -887,6 +882,10 @@ public abstract class CFAbstractTransfer<
      * Takes a node, and either returns the node itself again (as a singleton list), or if the node
      * is an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively
      * to the rhs -- that is, the rhs may not appear in the result, but rather its lhs and rhs may).
+     *
+     * @param node possibly an assignment node
+     * @return a list containing all the right- and left-hand sides in the given assignment node; it
+     *     contains just the node itself if it is not an assignment)
      */
     protected List<Node> splitAssignments(Node node) {
         if (node instanceof AssignmentNode) {
@@ -1089,9 +1088,7 @@ public abstract class CFAbstractTransfer<
             if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
                     && !refType.getAnnotations().equals(expType.getAnnotations())
                     && !expType.getAnnotations().isEmpty()) {
-                JavaExpression expr =
-                        JavaExpression.fromTree(
-                                analysis.getTypeFactory(), node.getTree().getExpression());
+                JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
                 for (AnnotationMirror anno : refType.getAnnotations()) {
                     in.getRegularStore().insertOrRefine(expr, anno);
                 }
@@ -1202,46 +1199,42 @@ public abstract class CFAbstractTransfer<
             S elseStore,
             Set<? extends Contract> postconditions) {
 
-        GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = analysis.getTypeFactory();
-
         // These lazily initialized variables are needed only if the method has any contracts.
         JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
 
         for (Contract p : postconditions) {
-            String expression = p.expression;
+            String expressionString = p.expressionString;
             AnnotationMirror anno = p.annotation;
 
             if (methodUseContext == null) {
                 // Set the lazily initialized variables.
-                BaseContext baseContext = analysis.checker.getContext();
+                SourceChecker checker = analysis.checker;
 
                 methodUseContext =
-                        JavaExpressionContext.buildContextForMethodUse(invocationNode, baseContext);
+                        JavaExpressionContext.buildContextForMethodUse(invocationNode, checker);
             }
 
             // Standardize with respect to the method use (the call site).
-            TreePath pathToInvocation = atypeFactory.getPath(invocationTree);
             AnnotationMirror standardizedUse =
-                    standardizeAnnotationFromContract(anno, methodUseContext, pathToInvocation);
+                    viewpointAdaptAnnoFromContract(anno, methodUseContext);
 
             anno = standardizedUse;
 
             try {
                 JavaExpression je =
-                        JavaExpressionParseUtil.parse(
-                                expression, methodUseContext, pathToInvocation, false);
+                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call
                 // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
                     if (((ConditionalPostcondition) p).resultValue) {
-                        thenStore.insertOrRefine(je, anno);
+                        thenStore.insertOrRefinePermitNondeterministic(je, anno);
                     } else {
-                        elseStore.insertOrRefine(je, anno);
+                        elseStore.insertOrRefinePermitNondeterministic(je, anno);
                     }
                 } else {
-                    thenStore.insertOrRefine(je, anno);
+                    thenStore.insertOrRefinePermitNondeterministic(je, anno);
                 }
             } catch (JavaExpressionParseException e) {
                 // report errors here
@@ -1273,9 +1266,7 @@ public abstract class CFAbstractTransfer<
 
         V caseValue = in.getValueOfSubNode(n.getCaseOperand());
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
-        V switchValue =
-                store.getValue(
-                        JavaExpression.fromNode(analysis.getTypeFactory(), assign.getTarget()));
+        V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
         result =
                 strengthenAnnotationOfEqualTo(
                         result,

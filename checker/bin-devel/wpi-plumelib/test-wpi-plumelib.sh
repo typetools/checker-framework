@@ -1,6 +1,17 @@
 #!/bin/sh
 
-# Run wpi.sh on plume-lib projects and check
+# Run wpi.sh on plume-lib projects.
+# For each project:
+#  * clone it
+#  * remove its annotations
+#  * run WPI to infer annotations
+#  * type-check the annotated version
+#  * check that the output of type-checking is the same as the *.expected file in this directory
+# Afterward, the inferred annotations can be found in a directory named /tmp/wpi-stubs-XXXXXX .
+# The exact directory name is the last directory in the -Astubs= argument in file
+# checker-framework/checker/build/wpi-plumelib-tests/PROJECTNAME/dljc-out/typecheck.out .
+
+# This script is run by `./gradlew wpiPlumeLibTests` at the top level.
 
 # wpi.sh may exit with non-zero status.
 set +e
@@ -49,7 +60,7 @@ test_wpi_plume_lib() {
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
     java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
-    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
+    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     ACTUAL_FILE="$TESTDIR/$project/dljc-out/typecheck.out"

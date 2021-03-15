@@ -178,7 +178,7 @@ public final class TypeKindUtils {
      *
      * @param from a primitive type
      * @param to a primitive type
-     * @return the type of primitive conversion between {@code from} and {@code to}.
+     * @return the type of primitive conversion between {@code from} and {@code to}
      */
     public static PrimitiveConversionKind getPrimitiveConversionKind(TypeKind from, TypeKind to) {
         if (from == TypeKind.BOOLEAN && to == TypeKind.BOOLEAN) {

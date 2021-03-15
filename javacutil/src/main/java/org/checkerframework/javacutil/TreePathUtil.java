@@ -11,6 +11,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -55,7 +56,7 @@ public final class TreePathUtil {
 
         while (p != null) {
             Tree leaf = p.getLeaf();
-            assert leaf != null; /*nninvariant*/
+            assert leaf != null;
             if (kinds.contains(leaf.getKind())) {
                 return p;
             }
@@ -164,6 +165,9 @@ public final class TreePathUtil {
      * a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element}
      * can be obtained.
      *
+     * <p>Also see {@code AnnotatedTypeFactory#getEnclosingMethod} and {@code
+     * AnnotatedTypeFactory#getEnclosingClassOrMethod}, which do not require a TreePath.
+     *
      * @param path the path defining the tree node
      * @return the enclosing method as given by the path, or {@code null} if one does not exist
      */
@@ -223,11 +227,14 @@ public final class TreePathUtil {
     }
 
     /**
-     * Returns the tree with the assignment context for the treePath leaf node. (Does not handle
-     * pseudo-assignment of an argument to a parameter or a receiver expression to a receiver.)
+     * Returns the "assignment context" for the leaf of {@code treePath}, which is often the leaf of
+     * the parent of {@code treePath}. (Does not handle pseudo-assignment of an argument to a
+     * parameter or a receiver expression to a receiver.) This is not the same as {@code
+     * org.checkerframework.dataflow.cfg.node.AssignmentContext}, which represents the left-hand
+     * side rather than the assignment itself.
      *
-     * <p>The assignment context for the {@code treePath} is the leaf of its parent, if the parent
-     * is one of the following trees:
+     * <p>The assignment context for {@code treePath} is the leaf of its parent, if that leaf is one
+     * of the following trees:
      *
      * <ul>
      *   <li>AssignmentTree
@@ -260,8 +267,13 @@ public final class TreePathUtil {
 
         Tree parent = parentPath.getLeaf();
         switch (parent.getKind()) {
-            case PARENTHESIZED:
-                return getAssignmentContext(parentPath);
+            case ASSIGNMENT: // See below for CompoundAssignmentTree.
+            case METHOD_INVOCATION:
+            case NEW_ARRAY:
+            case NEW_CLASS:
+            case RETURN:
+            case VARIABLE:
+                return parent;
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
                 @SuppressWarnings("interning:not.interned") // AST node comparison
@@ -273,13 +285,8 @@ public final class TreePathUtil {
                 }
                 // Otherwise use the context of the ConditionalExpressionTree.
                 return getAssignmentContext(parentPath);
-            case ASSIGNMENT:
-            case METHOD_INVOCATION:
-            case NEW_ARRAY:
-            case NEW_CLASS:
-            case RETURN:
-            case VARIABLE:
-                return parent;
+            case PARENTHESIZED:
+                return getAssignmentContext(parentPath);
             default:
                 // 11 Tree.Kinds are CompoundAssignmentTrees,
                 // so use instanceof rather than listing all 11.
@@ -334,5 +341,40 @@ public final class TreePathUtil {
             return classTree.getModifiers().getFlags().contains(Modifier.STATIC);
         }
         return false;
+    }
+
+    ///
+    /// Formatting
+    ///
+
+    /**
+     * Return a printed representation of a TreePath.
+     *
+     * @param path a TreePath
+     * @return a printed representation of the given TreePath
+     */
+    public static String toString(TreePath path) {
+        StringJoiner result = new StringJoiner(System.lineSeparator() + "    ");
+        result.add("TreePath:");
+        for (Tree t : path) {
+            result.add(TreeUtils.toStringTruncated(t, 65));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Returns a string representation of the leaf of the given path, using {@link
+     * TreeUtils#toStringTruncated}.
+     *
+     * @param path a path
+     * @param length the maximum length for the result; must be at least 6
+     * @return a one-line string representation of the leaf of the given path that is no longer than
+     *     {@code length} characters long
+     */
+    public static String leafToStringTruncated(@Nullable TreePath path, int length) {
+        if (path == null) {
+            return "null";
+        }
+        return TreeUtils.toStringTruncated(path.getLeaf(), length);
     }
 }

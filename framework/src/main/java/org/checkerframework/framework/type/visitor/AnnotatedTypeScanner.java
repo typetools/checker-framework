@@ -64,11 +64,19 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * }
  * </pre>
  *
- * Below is an example of how to use {@code CountTypeVariable}
+ * An {@code AnnotatedTypeScanner} keeps a map of visited types, in order to prevent infinite
+ * recursion on recursive types. Because of this map, you should not create a new {@code
+ * AnnotatedTypeScanner} for each use. Instead, store an {@code AnnotatedTypeScanner} as a field in
+ * the {@link org.checkerframework.framework.type.AnnotatedTypeFactory} or {@link
+ * org.checkerframework.common.basetype.BaseTypeVisitor} of the checker.
+ *
+ * <p>Below is an example of how to use {@code CountTypeVariable}.
  *
  * <pre>{@code
+ * private final CountTypeVariable countTypeVariable = new CountTypeVariable();
+ *
  * void method(AnnotatedTypeMirror type) {
- *     int count = new CountTypeVariable().visit(type);
+ *     int count = countTypeVariable.visit(type);
  * }
  * }</pre>
  *

@@ -27,4 +27,15 @@ public class TryCatch {
             t.toString();
         }
     }
+
+    void noClassDefFoundError(@Nullable Object x) {
+        try {
+            Class cls = EntryReader.class;
+        } catch (NoClassDefFoundError e) {
+            if (x != null) {
+                // OK
+                x.toString();
+            }
+        }
+    }
 }

@@ -17,6 +17,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
@@ -69,6 +70,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     @Override
+    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
@@ -203,7 +205,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             case ValueAnnotatedTypeFactory.INTVAL_NAME:
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 List<Object> values =
-                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
 
                 if (values.isEmpty()) {
                     checker.reportWarning(node, "no.values.given");
@@ -276,7 +278,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 && exprAnno != null
                 && atypeFactory.isIntRange(castAnno)
                 && atypeFactory.isIntRange(exprAnno)) {
-            final Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
+            final Range castRange = atypeFactory.getRange(castAnno);
             final TypeKind castTypeKind = castType.getKind();
             if (castTypeKind == TypeKind.BYTE && castRange.isByteEverything()) {
                 return p;
@@ -297,7 +299,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // Range.ignoreOverflow is only set if this checker is ignoring overflow.
                 // In that case, do not warn if the range of the expression encompasses
                 // the whole type being casted to (i.e. the warning is actually about overflow).
-                Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
+                Range exprRange = atypeFactory.getRange(exprAnno);
                 if (castTypeKind == TypeKind.BYTE
                         || castTypeKind == TypeKind.CHAR
                         || castTypeKind == TypeKind.SHORT

@@ -18,7 +18,7 @@ public class Issue579<T> implements Comparator<T> {
 
     @Override
     public Comparator<T> thenComparing(Comparator<? super T> other) {
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         return new Issue579<>(real == null ? other : real.thenComparing(other));
     }
 }

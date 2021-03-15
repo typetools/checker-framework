@@ -5,13 +5,13 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue1044 {
-    // :: error: (initialization.fields.uninitialized)
     static class Inner1<V> {
+        // :: error: (initialization.field.uninitialized)
         V f;
     }
 
-    // :: error: (initialization.fields.uninitialized)
     static class Inner2<@Nullable T extends @Nullable Object> {
+        // :: error: (initialization.field.uninitialized)
         @NonNull T f;
     }
 
@@ -47,8 +47,8 @@ public class Issue1044 {
         Inner8() {}
     }
 
-    // :: error: (initialization.fields.uninitialized)
     static class Inner9<V extends Object> {
+        // :: error: (initialization.field.uninitialized)
         V f;
     }
 
