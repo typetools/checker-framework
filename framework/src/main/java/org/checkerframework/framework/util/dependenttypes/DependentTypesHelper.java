@@ -1112,9 +1112,11 @@ public class DependentTypesHelper {
         if (atm == null) {
             return false;
         }
+        // This is a test about the type system.
         if (!hasDependentAnnotations()) {
             return false;
         }
+        // This is a test about this specific type.
         return hasDependentTypeScanner.visit(atm);
     }
 }
