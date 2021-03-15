@@ -98,7 +98,7 @@ public class JavaExpressionParseUtil {
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /**
-     * Parsable replacement for parameter references. It is parsable because it is a Java
+     * Parsable replacement for formal parameter references. It is parsable because it is a Java
      * identifier.
      */
     private static final String PARAMETER_REPLACEMENT = "_param_";
@@ -318,9 +318,9 @@ public class JavaExpressionParseUtil {
         /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
         @Override
         public JavaExpression defaultAction(com.github.javaparser.ast.Node n, Void aVoid) {
-            String message = "is not a supported expression";
             throw new ParseRuntimeException(
-                    constructJavaExpressionParseError(n.toString(), message));
+                    constructJavaExpressionParseError(
+                            n.toString(), "is not a supported expression"));
         }
 
         @Override
@@ -362,7 +362,7 @@ public class JavaExpressionParseUtil {
         public JavaExpression visit(ThisExpr n, Void aVoid) {
             if (thisReference == null) {
                 throw new ParseRuntimeException(
-                        constructJavaExpressionParseError("this", "this isn't allowed here"));
+                        constructJavaExpressionParseError("this", "\"this\" isn't allowed here"));
             }
             return thisReference;
         }
@@ -374,7 +374,7 @@ public class JavaExpressionParseUtil {
             if (superclass == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
-                                "super", "superclass of " + enclosingType + " not found"));
+                                "super", enclosingType + " has no superclass"));
             }
             return new ThisReference(superclass);
         }
@@ -474,7 +474,7 @@ public class JavaExpressionParseUtil {
 
         /**
          * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
-         * arguments}.
+         * parameters}.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
          * @return the JavaExpression for the given parameter
