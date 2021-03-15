@@ -63,7 +63,7 @@ import org.plumelib.util.StringsPlume;
  *
  * <ol>
  *   <li>Viewpoint-adapts dependant type annotations in {@link AnnotationMirror} by converting
- *       expressions strings in annotations to {@link JavaExpression}, then viewpoint-adapting them,
+ *       expression strings in annotations to {@link JavaExpression}, then viewpoint-adapting them,
  *       then converting the {@link JavaExpression}s back to strings, and finally creating new
  *       annotations with the new strings. Subclasses can specialize this process by overriding
  *       methods. See {@link #map(StringToJavaExpression, AnnotationMirror)}.
@@ -109,11 +109,11 @@ public class DependentTypesHelper {
     /** Return true if the passed AnnotatedTypeMirror has any dependent type annotations. */
     private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner;
 
-    /** Object type mirror. */
+    /** The type mirror for java.lang.Object. */
     TypeMirror objectTM;
 
     /**
-     * Creates {@code DependentTypesHelper}.
+     * Creates a {@code DependentTypesHelper}.
      *
      * @param factory annotated type factory
      */
@@ -132,7 +132,7 @@ public class DependentTypesHelper {
         this.viewpointAdaptedCopier = new ViewpointAdaptedCopier();
         this.hasDependentTypeScanner =
                 new SimpleAnnotatedTypeScanner<>(
-                        (type, p) ->
+                        (type, unused) ->
                                 type.getAnnotations().stream().anyMatch(this::isExpressionAnno),
                         Boolean::logicalOr,
                         false);
@@ -164,13 +164,28 @@ public class DependentTypesHelper {
         }
         List<String> elements = new ArrayList<>();
         for (Method method : methods) {
-            org.checkerframework.framework.qual.JavaExpression javaExpression =
+            org.checkerframework.framework.qual.JavaExpression javaExpressionAnno =
                     method.getAnnotation(org.checkerframework.framework.qual.JavaExpression.class);
-            if (javaExpression != null) {
+            if (javaExpressionAnno != null) {
                 elements.add(method.getName());
             }
         }
         return elements;
+    }
+
+    /**
+     * Returns the elements of the annotation that are Java expressions.
+     *
+     * @param am AnnotationMirror
+     * @return the elements of the annotation that are Java expressions
+     */
+    private List<String> getListOfExpressionElements(AnnotationMirror am) {
+        for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
+            if (factory.areSameByClass(am, clazz)) {
+                return annoToElements.get(clazz);
+            }
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -192,8 +207,8 @@ public class DependentTypesHelper {
      *
      * @param classDecl class or interface declaration whose type variables should be viewpoint
      *     adapted
-     * @param bounds annotated types of the bounds of the type variables; side-effected by this
-     *     method
+     * @param bounds annotated types of the bounds of the type variables; its elements are not
+     *     side-effected by this method (but the list itself is not side-effected)
      */
     public void atTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds) {
@@ -380,7 +395,7 @@ public class DependentTypesHelper {
                 TreePath pathTillEnclTree =
                         TreePathUtil.pathTillOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);
                 if (pathTillEnclTree == null) {
-                    throw new BugInCF("no enclosing method or lambda found");
+                    throw new BugInCF("no enclosing method or lambda found for " + variableElt);
                 }
                 Tree enclTree = pathTillEnclTree.getLeaf();
 
@@ -489,8 +504,7 @@ public class DependentTypesHelper {
 
             default:
                 // It's not a local variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE,
-                // for
-                // example), so there is nothing to do.
+                // for example), so there is nothing to do.
                 break;
         }
     }
@@ -540,7 +554,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        TreePath pathToMethod = factory.getPath(methodDeclTree);
+        TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
 
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodDeclTree);
         StringToJavaExpression stringToJavaExpr =
@@ -549,7 +563,7 @@ public class DependentTypesHelper {
                     try {
                         result =
                                 StringToJavaExpression.atPath(
-                                        expression, pathToMethod, factory.getChecker());
+                                        expression, pathToMethodDecl, factory.getChecker());
                     } catch (JavaExpressionParseException ex) {
                         return null;
                     }
@@ -583,11 +597,11 @@ public class DependentTypesHelper {
     /**
      * Calls {@link #map(StringToJavaExpression, AnnotationMirror)} on each annotation mirror on
      * type with {@code stringToJavaExpr}. And replaces the annotation with the one created by
-     * {@code map}, it its not null. See {@link #map(StringToJavaExpression, AnnotationMirror)} for
+     * {@code map}, it it's not null. See {@link #map(StringToJavaExpression, AnnotationMirror)} for
      * more details.
      *
      * @param stringToJavaExpr function to convert a string to a {@link JavaExpression}
-     * @param type type the is sideeffected by this method
+     * @param type the type that is side-effected by this method
      */
     protected void convertAnnotatedTypeMirror(
             StringToJavaExpression stringToJavaExpr, AnnotatedTypeMirror type) {
@@ -596,14 +610,14 @@ public class DependentTypesHelper {
 
     /**
      * If {@code anno} is not a dependent type annotation, {@code null} is returned. Otherwise, this
-     * method applies {@code stringToJavaExpr} to all expressions strings in {@code anno} and then
+     * method applies {@code stringToJavaExpr} to all expression strings in {@code anno} and then
      * calls {@link #buildAnnotation(AnnotationMirror, Map)} to build a new annotation with the
      * {@code JavaExpression}s converted back to strings.
      *
      * <p>If {@code stringToJavaExpr} returns {@code null}, then that expression is removed from the
      * returned annotation.
      *
-     * <p>Instead of overriding this method subclasses can override the following methods to change
+     * <p>Instead of overriding this method, subclasses can override the following methods to change
      * the behavior of this class:
      *
      * <ul>
@@ -618,7 +632,7 @@ public class DependentTypesHelper {
      *
      * @param stringToJavaExpr function that converts strings to {@code JavaExpression}s
      * @param anno annotation mirror
-     * @return an annotation created by applying {@code stringToJavaExpr} to all expressions strings
+     * @return an annotation created by applying {@code stringToJavaExpr} to all expression strings
      *     in {@code anno}
      */
     protected @Nullable AnnotationMirror map(
@@ -642,7 +656,7 @@ public class DependentTypesHelper {
                         result = createError(expression, e);
                     }
                 } else {
-                    result = passThroughString(expression);
+                    result = createPassThroughString(expression);
                 }
 
                 if (result != null) {
@@ -670,7 +684,7 @@ public class DependentTypesHelper {
     /**
      * Whether or not {@code expression} should be parsed. The default implementation returns false
      * if the {@code expression} is an expression error according to {@link
-     * DependentTypesError#isExpressionError(String)}. Subclass may override this method to add
+     * DependentTypesError#isExpressionError(String)}. Subclasses may override this method to add
      * additional logic.
      *
      * <p>If this method returns false, the {@code expression} is not parsed and will appear in the
@@ -684,7 +698,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Create a new annotation the same type as {@code originalAnno} using the provide {@code
+     * Create a new annotation of the same type as {@code originalAnno} using the provided {@code
      * valueMap}.
      *
      * @param originalAnno the annotation passed to {@link #map(StringToJavaExpression,
@@ -742,13 +756,13 @@ public class DependentTypesHelper {
      * @param string some string
      * @return a {@link PassThroughExpression}
      */
-    protected PassThroughExpression passThroughString(String string) {
+    protected PassThroughExpression createPassThroughString(String string) {
         return new PassThroughExpression(objectTM, string);
     }
 
     /**
      * Creates a {@link JavaExpression} representing the exception thrown when parsing {@code
-     * expression}
+     * expression}.
      *
      * @param expression an expression that cause {@code e} when parsed
      * @param e the exception thrown when parsing {@code expression}
@@ -774,7 +788,7 @@ public class DependentTypesHelper {
 
     /**
      * Applies the passed function to each annotation in the given {@link AnnotatedTypeMirror}, if
-     * the function returns a nonnull annotation, then the original annotation is replaced with the
+     * the function returns a non-null annotation, then the original annotation is replaced with the
      * result.
      */
     private static class AnnotatedTypeReplacer
@@ -829,7 +843,8 @@ public class DependentTypesHelper {
     /**
      * Checks all Java expressions in the given annotated type to see if the expression string is an
      * error string as specified by {@link DependentTypesError#isExpressionError}. If the annotated
-     * type has any errors, an expression.unparsable.type.invalid error is issued at the errorTree.
+     * type has any errors, an expression.unparsable.type.invalid error is issued at {@code
+     * errorTree}.
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -1101,20 +1116,5 @@ public class DependentTypesHelper {
             return false;
         }
         return hasDependentTypeScanner.visit(atm);
-    }
-
-    /**
-     * Returns the elements of the annotation that are Java expressions.
-     *
-     * @param am AnnotationMirror
-     * @return the elements of the annotation that are Java expressions
-     */
-    private List<String> getListOfExpressionElements(AnnotationMirror am) {
-        for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (factory.areSameByClass(am, clazz)) {
-                return annoToElements.get(clazz);
-            }
-        }
-        return Collections.emptyList();
     }
 }
