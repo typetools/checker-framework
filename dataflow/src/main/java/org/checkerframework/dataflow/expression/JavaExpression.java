@@ -578,7 +578,6 @@ public abstract class JavaExpression {
      * @return list of parameters as {@link FormalParameter}s
      */
     public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
-        // TODO: Use mapList
         List<FormalParameter> parameters = new ArrayList<>(methodEle.getParameters().size());
         int oneBasedIndex = 1;
         for (VariableElement variableElement : methodEle.getParameters()) {

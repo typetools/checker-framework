@@ -867,12 +867,12 @@ public class JavaExpressionParseUtil {
         }
 
         @Override
-        public JavaExpression visit(ArrayCreationExpr expr, JavaExpressionContext context) {
+        public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
             List<JavaExpression> dimensions =
                     SystemUtil.mapList(
                             (ArrayCreationLevel dimension) ->
                                     dimension.getDimension().isPresent()
-                                            ? dimension.getDimension().get().accept(this, context)
+                                            ? dimension.getDimension().get().accept(this, aVoid)
                                             : null,
                             expr.getLevels());
 
