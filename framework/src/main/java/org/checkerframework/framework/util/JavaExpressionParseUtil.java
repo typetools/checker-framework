@@ -622,7 +622,7 @@ public class JavaExpressionParseUtil {
                 fieldElem =
                         resolver.findField(identifier, enclosingTypeOfField, pathToCompilationUnit);
                 if (fieldElem == null) {
-                    throw new BugInCF("length field not found for type: %s", enclosingTypeOfField);
+                    throw new BugInCF("length field not found for type %s", enclosingTypeOfField);
                 }
             } else {
                 fieldElem = null;
@@ -649,6 +649,9 @@ public class JavaExpressionParseUtil {
                 JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
                 return new FieldAccess(staticClassReceiver, fieldElem);
             }
+
+            // fieldElem is an instance field.
+
             if (receiverExpr instanceof ClassName) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
@@ -656,31 +659,32 @@ public class JavaExpressionParseUtil {
                                 "a non-static field cannot have a class name as a receiver."));
             }
 
+            // There are two possibilities, captured by local variable fieldDeclaredInReceiverType:
+            //  * true: it's an instance field declared in the type (or supertype) of receiverExpr.
+            //  * false: it's an instance field declared in an enclosing type of receiverExpr.
+
             @SuppressWarnings("interning:not.interned") // Checking for exact object
             boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
-            // fieldElem is an instance field
             if (fieldDeclaredInReceiverType) {
-                // It's an instance field declared in the type (or supertype) of receiverExpr.
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 return new FieldAccess(receiverExpr, fieldType, fieldElem);
+            } else {
+                if (!(receiverExpr instanceof ThisReference)) {
+                    throw new ParseRuntimeException(
+                            constructJavaExpressionParseError(
+                                    identifier,
+                                    "field declared in an outer type cannot be accessed from an inner type"));
+                }
+                TypeElement receiverTypeElement = TypesUtils.getTypeElement(receiverExpr.getType());
+                if (receiverTypeElement == null || ElementUtils.isStatic(receiverTypeElement)) {
+                    throw new ParseRuntimeException(
+                            constructJavaExpressionParseError(
+                                    identifier,
+                                    "a non-static field declared in an outer type cannot be referenced from a member type"));
+                }
+                JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
+                return new FieldAccess(locationOfField, fieldElem);
             }
-            if (!(receiverExpr instanceof ThisReference)) {
-                throw new ParseRuntimeException(
-                        constructJavaExpressionParseError(
-                                identifier,
-                                "field declared in an outer type cannot be accessed from an inner type"));
-            }
-            TypeElement receiverTypeElement = TypesUtils.getTypeElement(receiverExpr.getType());
-            if (receiverTypeElement == null || ElementUtils.isStatic(receiverTypeElement)) {
-                throw new ParseRuntimeException(
-                        constructJavaExpressionParseError(
-                                identifier,
-                                "a non-static field declared in an outer type cannot be referenced from a member type"));
-            }
-            // It's an instance field declared in an enclosing type of receiverExpr, and
-            // enclosingTypeOfField != receiverExpr.getType().
-            JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
-            return new FieldAccess(locationOfField, fieldElem);
         }
 
         @Override
