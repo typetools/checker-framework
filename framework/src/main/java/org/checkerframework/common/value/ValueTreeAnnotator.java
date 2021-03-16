@@ -171,8 +171,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             List<? extends ExpressionTree> initializers,
             AnnotatedTypeMirror.AnnotatedArrayType type) {
 
-        List<Integer> array = new ArrayList<>();
-        array.add(initializers.size());
+        List<Integer> array = Collections.singletonList(initializers.size());
         type.replaceAnnotation(atypeFactory.createArrayLenAnnotation(array));
 
         if (type.getComponentType().getKind() != TypeKind.ARRAY) {

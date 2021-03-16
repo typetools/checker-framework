@@ -126,7 +126,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ClassValAnnotatedTypeFactory classValATF =
                 getTypeFactoryOfSubchecker(ClassValChecker.class);
         AnnotatedTypeMirror classAnno = classValATF.getAnnotatedType(tree);
-        List<String> classNames = new ArrayList<>();
+        List<String> classNames = Collections.emptyList();
         AnnotationMirror classValAnno = classAnno.getAnnotation(ClassVal.class);
         if (classValAnno != null) {
             classNames =
@@ -151,15 +151,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return string values of arg or the empty list if no values were found
      */
     private List<String> getMethodNamesFromStringArg(ExpressionTree arg) {
-        List<String> methodNames = new ArrayList<>();
         ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
         AnnotatedTypeMirror valueAnno = valueATF.getAnnotatedType(arg);
         AnnotationMirror annotation = valueAnno.getAnnotation(StringVal.class);
         if (annotation != null) {
-            methodNames =
-                    AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
+        } else {
+            return Collections.emptyList();
         }
-        return methodNames;
     }
 
     @Override

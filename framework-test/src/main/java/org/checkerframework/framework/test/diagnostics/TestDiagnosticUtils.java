@@ -1,7 +1,6 @@
 package org.checkerframework.framework.test.diagnostics;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -315,10 +314,11 @@ public class TestDiagnosticUtils {
         if (trimmedLine.startsWith("// ::")) {
             String restOfLine = trimmedLine.substring(5); // drop the "// ::"
             String[] diagnosticStrs = restOfLine.split("::");
-            List<TestDiagnostic> diagnostics = new ArrayList<>(diagnosticStrs.length);
-            for (String diagnostic : diagnosticStrs) {
-                diagnostics.add(fromJavaFileComment(filename, errorLine, diagnostic));
-            }
+            List<TestDiagnostic> diagnostics =
+                    SystemUtil.mapList(
+                            (String diagnostic) ->
+                                    fromJavaFileComment(filename, errorLine, diagnostic),
+                            diagnosticStrs);
             return new TestDiagnosticLine(
                     filename, errorLine, line, Collections.unmodifiableList(diagnostics));
 

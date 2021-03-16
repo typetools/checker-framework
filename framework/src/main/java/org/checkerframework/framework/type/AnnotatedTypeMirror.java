@@ -1304,12 +1304,14 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
 
+        /**
+         * Returns the erased types corresponding to the given types.
+         *
+         * @param lst annotated type mirrors
+         * @return erased annotated type mirrors
+         */
         private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-            List<AnnotatedTypeMirror> erased = new ArrayList<>();
-            for (AnnotatedTypeMirror t : lst) {
-                erased.add(t.getErased());
-            }
-            return erased;
+            return SystemUtil.mapList(AnnotatedTypeMirror::getErased, lst);
         }
     }
 

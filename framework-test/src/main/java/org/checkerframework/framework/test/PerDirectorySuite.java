@@ -72,7 +72,7 @@ public class PerDirectorySuite extends Suite {
         // We must have a method getTestDirs which returns String[],
         // or getParametersMethod would fail.
         if (!method.getReturnType().isArray()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         String[] dirs = (String[]) method.invokeExplosively(null);
         return TestUtilities.findJavaFilesPerDirectory(new File("tests"), dirs);
