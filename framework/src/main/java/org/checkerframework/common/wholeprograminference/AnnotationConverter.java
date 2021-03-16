@@ -72,7 +72,7 @@ public class AnnotationConverter {
                 try {
                     value = Class.forName(TypesUtils.binaryName((TypeMirror) value));
                 } catch (ClassNotFoundException e) {
-                    throw new BugInCF(String.format("value = %s [%s]", value, value.getClass()), e);
+                    throw new BugInCF(e, "value = %s [%s]", value, value.getClass());
                 }
             }
             newValues.put(ee.getSimpleName().toString(), value);
