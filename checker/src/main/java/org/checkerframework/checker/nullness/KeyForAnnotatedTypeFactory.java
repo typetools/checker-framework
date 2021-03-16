@@ -196,8 +196,9 @@ public class KeyForAnnotatedTypeFactory
         AnnotationMirror keyForAnno = type.getAnnotation(KeyFor.class);
         if (keyForAnno != null) {
             maps =
-                    AnnotationUtils.getElementValueArrayList(
-                            keyForAnno, "value", String.class, false);
+                    Arrays.asList(
+                            AnnotationUtils.getElementValueArray(
+                                    keyForAnno, "value", String.class, false));
         } else {
             KeyForValue value = getInferredValueFor(tree);
             if (value != null) {

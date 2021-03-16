@@ -2,7 +2,6 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -54,9 +53,9 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
                 && (underlyingType.getKind() == TypeKind.TYPEVAR
                         || underlyingType.getKind() == TypeKind.WILDCARD)) {
             keyForMaps = new LinkedHashSet<>();
-            List<String> list =
-                    AnnotationUtils.getElementValueArrayList(keyfor, "value", String.class, false);
-            keyForMaps.addAll(list);
+            String[] keyForValues =
+                    AnnotationUtils.getElementValueArray(keyfor, "value", String.class, false);
+            keyForMaps.addAll(Arrays.asList(keyForValues));
         } else {
             keyForMaps = null;
         }

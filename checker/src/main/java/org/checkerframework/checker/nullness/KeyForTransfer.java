@@ -81,6 +81,8 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         }
 
         return new LinkedHashSet<>(
-                AnnotationUtils.getElementValueArrayList(keyFor, "value", String.class, false));
+                Arrays.asList(
+                        AnnotationUtils.getElementValueArray(
+                                keyFor, "value", String.class, false)));
     }
 }

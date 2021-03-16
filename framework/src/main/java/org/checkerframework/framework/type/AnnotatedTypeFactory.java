@@ -3860,8 +3860,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     // This candidate has the right kind of meta-annotation.
                     // It might be a real contract, or a list of contracts.
                     if (isListForRepeatedAnnotation(candidate)) {
-                        List<AnnotationMirror> wrappedCandidates =
-                                AnnotationUtils.getElementValueArrayList(
+                        AnnotationMirror[] wrappedCandidates =
+                                AnnotationUtils.getElementValueArray(
                                         candidate, "value", AnnotationMirror.class, false);
                         for (AnnotationMirror wrappedCandidate : wrappedCandidates) {
                             result.add(Pair.of(wrappedCandidate, ma));
@@ -4805,8 +4805,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return whether {@code anno} applies to this checker
      */
     public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror anno) {
-        List<String> annoForCheckers =
-                AnnotationUtils.getElementValueArrayList(anno, "value", String.class, false);
+        String[] annoForCheckers =
+                AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         for (String annoForChecker : annoForCheckers) {
             if (checker.getUpstreamCheckerNames().contains(annoForChecker)
                     || CheckerMain.matchesFullyQualifiedProcessor(

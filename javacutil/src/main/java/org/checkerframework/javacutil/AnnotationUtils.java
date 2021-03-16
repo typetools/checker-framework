@@ -878,6 +878,13 @@ public class AnnotationUtils {
      * annotation values. Finding defaults requires more computation, so should be false when no
      * defaulting is needed.
      *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
+     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
+     * is true even if the annotation has only one element/field. Using that method is possible if
+     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * someElement} in the code snippet) is available.
+     *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
      * @param expectedType the expected type used to cast the return type

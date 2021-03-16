@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -122,8 +123,8 @@ public class ContractsFromMethod {
         AnnotationMirror frameworkContractAnnos =
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractsClass);
         if (frameworkContractAnnos != null) {
-            List<AnnotationMirror> frameworkContractAnnoList =
-                    AnnotationUtils.getElementValueArrayList(
+            AnnotationMirror[] frameworkContractAnnoList =
+                    AnnotationUtils.getElementValueArray(
                             frameworkContractAnnos, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : frameworkContractAnnoList) {
                 result.addAll(getContract(kind, a, clazz));
@@ -179,14 +180,14 @@ public class ContractsFromMethod {
         if (enforcedQualifier == null) {
             return Collections.emptySet();
         }
-        Set<T> result = new LinkedHashSet<>();
-        List<String> expressions =
-                AnnotationUtils.getElementValueArrayList(
+        String[] expressions =
+                AnnotationUtils.getElementValueArray(
                         contractAnnotation, "expression", String.class, false);
-        Collections.sort(expressions);
+        Arrays.sort(expressions);
         Boolean annoResult =
                 AnnotationUtils.getElementValueOrNull(
                         contractAnnotation, "result", Boolean.class, false);
+        Set<T> result = new LinkedHashSet<>();
         for (String expr : expressions) {
             T contract =
                     clazz.cast(

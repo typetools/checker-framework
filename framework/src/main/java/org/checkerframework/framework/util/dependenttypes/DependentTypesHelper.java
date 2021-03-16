@@ -722,8 +722,8 @@ public class DependentTypesHelper {
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
 
         for (String value : getListOfExpressionElements(anno)) {
-            List<String> expressionStrings =
-                    AnnotationUtils.getElementValueArrayList(anno, value, String.class, true);
+            String[] expressionStrings =
+                    AnnotationUtils.getElementValueArray(anno, value, String.class, true);
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
                 String standardized = standardizeString(expression, context, localVarPath);
@@ -886,8 +886,7 @@ public class DependentTypesHelper {
         List<DependentTypesError> errors = new ArrayList<>();
 
         for (String element : getListOfExpressionElements(am)) {
-            List<String> value =
-                    AnnotationUtils.getElementValueArrayList(am, element, String.class, false);
+            String[] value = AnnotationUtils.getElementValueArray(am, element, String.class, false);
             for (String v : value) {
                 if (DependentTypesError.isExpressionError(v)) {
                     errors.add(DependentTypesError.unparse(v));

@@ -615,8 +615,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
-                        AnnotationUtils.getElementValueArrayList(
-                                ensuresLockHeldAnno, "value", String.class, false));
+                        Arrays.asList(
+                                AnnotationUtils.getElementValueArray(
+                                        ensuresLockHeldAnno, "value", String.class, false)));
             }
 
             AnnotationMirror ensuresLockHeldIfAnno =
@@ -624,8 +625,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             if (ensuresLockHeldIfAnno != null) {
                 expressions.addAll(
-                        AnnotationUtils.getElementValueArrayList(
-                                ensuresLockHeldIfAnno, "expression", String.class, false));
+                        Arrays.asList(
+                                AnnotationUtils.getElementValueArray(
+                                        ensuresLockHeldIfAnno, "expression", String.class, false)));
             }
 
             for (String expr : expressions) {

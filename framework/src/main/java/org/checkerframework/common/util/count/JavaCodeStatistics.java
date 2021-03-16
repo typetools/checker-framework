@@ -12,7 +12,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.util.Log;
-import java.util.List;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -97,8 +96,8 @@ public class JavaCodeStatistics extends SourceChecker {
             AnnotationMirror annotationMirror = TreeUtils.annotationFromAnnotationTree(node);
             if (AnnotationUtils.annotationName(annotationMirror)
                     .equals(SuppressWarnings.class.getCanonicalName())) {
-                List<String> keys =
-                        AnnotationUtils.getElementValueArrayList(
+                String[] keys =
+                        AnnotationUtils.getElementValueArray(
                                 annotationMirror, "value", String.class, false);
                 for (String foundKey : keys) {
                     for (String indexKey : warningKeys) {
