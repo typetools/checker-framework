@@ -17,7 +17,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -285,8 +284,10 @@ public interface StringToJavaExpression {
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(parentPath));
         JavaExpression receiver = JavaExpression.getPseudoReceiver(parentPath, enclosingType);
+        // If receiver isn't a ThisReference, then the lambda is in a static context and "this"
+        // cannot be referenced in the expression.
         ThisReference thisReference =
-                receiver instanceof ClassName ? null : (ThisReference) receiver;
+                receiver instanceof ThisReference ? (ThisReference) receiver : null;
         List<JavaExpression> paramsAsLocals = new ArrayList<>(lambdaTree.getParameters().size());
         List<FormalParameter> parameters = new ArrayList<>(lambdaTree.getParameters().size());
         int oneBasedIndex = 1;

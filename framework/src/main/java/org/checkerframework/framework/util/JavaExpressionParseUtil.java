@@ -190,6 +190,7 @@ public class JavaExpressionParseUtil {
 
     /**
      * A visitor class that converts a JavaParser {@link Expression} to a {@link JavaExpression}.
+     * This class does not viewpoint-adapt the expression.
      */
     private static class ExpressionToJavaExpressionVisitor
             extends GenericVisitorWithDefaults<JavaExpression, Void> {
@@ -412,10 +413,11 @@ public class JavaExpressionParseUtil {
             setResolverField();
 
             // Formal parameter, using "#2" syntax.
-            if (s.startsWith(PARAMETER_REPLACEMENT)) {
+            JavaExpression parameter = getParameterJavaExpression(s);
+            if (parameter != null) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // (at the method scope) using the special #NN syntax.
-                return getParameterJavaExpression(s);
+                return parameter;
             }
 
             // Local variable or parameter.
@@ -474,13 +476,18 @@ public class JavaExpressionParseUtil {
         }
 
         /**
-         * Returns a JavaExpression for the given parameter; that is, returns an element of {@code
-         * parameters}.
+         * If {@code s} a parameter expressed using the {@code #NN} syntax, then returns a
+         * JavaExpression for the given parameter; that is, returns an element of {@code
+         * parameters}. Otherwise, returns {@code null}.
          *
          * @param s a String that starts with PARAMETER_REPLACEMENT
-         * @return the JavaExpression for the given parameter
+         * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
+         *     parameter
          */
-        private JavaExpression getParameterJavaExpression(String s) {
+        private @Nullable JavaExpression getParameterJavaExpression(String s) {
+            if (!s.startsWith(PARAMETER_REPLACEMENT)) {
+                return null;
+            }
             if (parameters == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(s, "no parameters found"));
@@ -506,8 +513,9 @@ public class JavaExpressionParseUtil {
          * the {@link ClassName} for the inner class. If not, return null.
          *
          * @param type type to search for {@code identifier}
-         * @param identifier possible class name
-         * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
+         * @param identifier possible simple class name
+         * @return the {@code ClassName} for {@code identifier}, or null if it is not a simple class
+         *     name
          */
         protected @Nullable ClassName getIdentifierAsInnerClassName(
                 TypeMirror type, String identifier) {
@@ -546,21 +554,19 @@ public class JavaExpressionParseUtil {
          * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
          */
         protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
-            // Is identifier an inner class of this or of any enclosing class of this?
+            // Is identifier an inner class of enclosingType or of any enclosing class of
+            // enclosingType?
             TypeMirror searchType = enclosingType;
             while (searchType.getKind() == TypeKind.DECLARED) {
-                // Is identifier the simple name of this?
-                if (((DeclaredType) searchType)
-                        .asElement()
-                        .getSimpleName()
-                        .contentEquals(identifier)) {
+                DeclaredType searchDeclaredType = (DeclaredType) searchType;
+                if (searchDeclaredType.asElement().getSimpleName().contentEquals(identifier)) {
                     return new ClassName(searchType);
                 }
                 ClassName className = getIdentifierAsInnerClassName(searchType, identifier);
                 if (className != null) {
                     return className;
                 }
-                searchType = getTypeOfEnclosingClass((DeclaredType) searchType);
+                searchType = getTypeOfEnclosingClass(searchDeclaredType);
             }
 
             if (enclosingType.getKind() == TypeKind.DECLARED) {
@@ -947,7 +953,7 @@ public class JavaExpressionParseUtil {
                 case PREFIX_INCREMENT:
                     return Tree.Kind.PREFIX_INCREMENT;
                 default:
-                    throw new Error("unhandled " + op);
+                    throw new BugInCF("unhandled " + op);
             }
         }
 
@@ -967,7 +973,12 @@ public class JavaExpressionParseUtil {
                     && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
                 type = stringTypeMirror;
             } else {
-                throw new BugInCF("inconsistent types %s %s for %s", leftType, rightType, expr);
+                throw new ParseRuntimeException(
+                        constructJavaExpressionParseError(
+                                expr.toString(),
+                                String.format(
+                                        "inconsistent types %s %s for %s",
+                                        leftType, rightType, expr)));
             }
             return new BinaryOperation(
                     type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
