@@ -131,6 +131,9 @@ public abstract class AnnotatedTypeMirror {
     /** Actual type wrapped with this AnnotatedTypeMirror. */
     protected final TypeMirror underlyingType;
 
+    /** The hash code for {@code underlyingType.toString()}. Lazily initialized. */
+    protected int underlyingTypeHashcode;
+
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
     // the class name of Annotation instead.
@@ -154,6 +157,8 @@ public abstract class AnnotatedTypeMirror {
         this.underlyingType = underlyingType;
         assert atypeFactory != null;
         this.atypeFactory = atypeFactory;
+        this.underlyingTypeHashcode = -1;
+        ;
     }
 
     @Override
