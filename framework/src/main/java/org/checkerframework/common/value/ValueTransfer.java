@@ -66,6 +66,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -234,10 +235,7 @@ public class ValueTransfer extends CFTransfer {
         if (values == null) {
             return null;
         }
-        List<String> stringValues = new ArrayList<>();
-        for (Object o : values) {
-            stringValues.add(o.toString());
-        }
+        List<String> stringValues = SystemUtil.mapList(Object::toString, values);
         // Empty list means bottom value
         return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
     }

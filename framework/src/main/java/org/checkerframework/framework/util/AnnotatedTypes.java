@@ -51,6 +51,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -222,24 +223,18 @@ public class AnnotatedTypes {
         }
 
         List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
-        Collections.sort(
-                orderedByDestination,
-                new Comparator<Pair<Integer, Integer>>() {
-                    @Override
-                    public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-                        return o1.second - o2.second;
-                    }
-                });
+        orderedByDestination.sort(Comparator.comparingInt(o -> o.second));
 
-        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
         if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
-            final List<? extends AnnotatedTypeMirror> subTypeArgs =
-                    declaredSubtype.getTypeArguments();
-            for (Pair<Integer, Integer> mapping : orderedByDestination) {
-                newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
-            }
+            List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+            List<AnnotatedTypeMirror> newTypeArgs =
+                    SystemUtil.mapList(
+                            mapping -> subTypeArgs.get(mapping.first).deepCopy(),
+                            orderedByDestination);
+            declaredAsSuper.setTypeArguments(newTypeArgs);
+        } else {
+            declaredAsSuper.setTypeArguments(Collections.emptyList());
         }
-        declaredAsSuper.setTypeArguments(newTypeArgs);
     }
 
     /** This method identifies wildcard types that are unbound. */
@@ -555,13 +550,9 @@ public class AnnotatedTypes {
                             "baseType=" + base));
         }
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
-            List<AnnotatedTypeMirror> newBaseParams = new ArrayList<>();
-            for (AnnotatedTypeVariable arg : ownerParams) {
-                // If base type was raw and the type arguments are missing, set them to the erased
-                // type of the type variable (which is the erased type of the upper bound).
-                newBaseParams.add(arg.getErased());
-            }
-            baseParams = newBaseParams;
+            // If base type was raw and the type arguments are missing, set them to the erased
+            // type of the type variable (which is the erased type of the upper bound).
+            baseParams = SystemUtil.mapList(AnnotatedTypeVariable::getErased, ownerParams);
         }
 
         for (int i = 0; i < ownerParams.size(); ++i) {

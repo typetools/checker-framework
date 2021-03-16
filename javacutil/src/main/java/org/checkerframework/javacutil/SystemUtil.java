@@ -18,9 +18,10 @@ import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.plumelib.util.StringsPlume;
 
 /** This file contains basic utility functions. */
@@ -245,11 +246,72 @@ public class SystemUtil {
      * @param <TO> the type of elements of the result list
      * @param f a function
      * @param c a collection
-     * @return a list of the results of applying {@code f} to the elements of {@code list}
+     * @return a list of the results of applying {@code f} to the elements of {@code c}
      */
-    public static <FROM, TO> List<TO> mapList(
-            Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
-        return c.stream().map(f).collect(Collectors.toList());
+    public static <
+                    @KeyForBottom FROM extends @UnknownKeyFor Object,
+                    @KeyForBottom TO extends @UnknownKeyFor Object>
+            List<TO> mapList(Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
+        // This implementation uses a for loop and is likely more efficient than using streams, both
+        // because it doesn't create stream objects and because it creates an ArrayList of the
+        // appropriate size.
+        List<TO> result = new ArrayList<>(c.size());
+        for (FROM elt : c) {
+            result.add(f.apply(elt));
+        }
+        return result;
+    }
+
+    /**
+     * Applies the function to each element of the given array, producing a list of the results.
+     *
+     * <p>The point of this method is to make mapping operations more concise. Import it with
+     *
+     * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
+     *
+     * @param <FROM> the type of elements of the given array
+     * @param <TO> the type of elements of the result list
+     * @param f a function
+     * @param a an array
+     * @return a list of the results of applying {@code f} to the elements of {@code a}
+     */
+    public static <
+                    @KeyForBottom FROM extends @UnknownKeyFor Object,
+                    @KeyForBottom TO extends @UnknownKeyFor Object>
+            List<TO> mapList(Function<? super FROM, ? extends TO> f, FROM[] a) {
+        List<TO> result = new ArrayList<>(a.length);
+        for (FROM elt : a) {
+            result.add(f.apply(elt));
+        }
+        return result;
+    }
+
+    /**
+     * Applies the function to each element of the given iterable, producing a list of the results.
+     *
+     * <p>The point of this method is to make mapping operations more concise. Import it with
+     *
+     * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
+     *
+     * @param <FROM> the type of elements of the given iterable
+     * @param <TO> the type of elements of the result list
+     * @param f a function
+     * @param iterable an iterable
+     * @return a list of the results of applying {@code f} to the elements of {@code iterable}
+     */
+    public static <
+                    @KeyForBottom FROM extends @UnknownKeyFor Object,
+                    @KeyForBottom TO extends @UnknownKeyFor Object>
+            List<TO> mapList(Function<? super FROM, ? extends TO> f, Iterable<FROM> iterable) {
+        if (iterable instanceof Collection) {
+            Collection<FROM> c = (Collection<FROM>) iterable;
+            return mapList(f, c);
+        }
+        List<TO> result = new ArrayList<>(); // no information about size is available
+        for (FROM elt : iterable) {
+            result.add(f.apply(elt));
+        }
+        return result;
     }
 
     /**
