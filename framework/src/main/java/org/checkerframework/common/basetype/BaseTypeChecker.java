@@ -330,10 +330,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
             }
             Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
             throw new BugInCF(
-                    String.format(
-                            "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
-                            name, Arrays.toString(args), Arrays.toString(paramTypes), cause),
-                    cause);
+                    cause,
+                    "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                    name,
+                    Arrays.toString(args),
+                    Arrays.toString(paramTypes));
         }
     }
 
