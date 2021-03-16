@@ -52,8 +52,7 @@ public class CheckerMain {
     /** Any exception thrown by the Checker Framework escapes to the command line. */
     public static void main(String[] args) {
         final File pathToThisJar = new File(findPathTo(CheckerMain.class, false));
-        ArrayList<String> alargs = new ArrayList<>(args.length);
-        alargs.addAll(Arrays.asList(args));
+        ArrayList<String> alargs = new ArrayList<>(Arrays.asList(args));
         final CheckerMain program = new CheckerMain(pathToThisJar, alargs);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
@@ -388,8 +387,6 @@ public class CheckerMain {
      * @return the arguments that should be put on the processorpath when calling javac.jar
      */
     protected static List<String> extractPpOpts(final List<String> args) {
-        List<String> actualArgs = new ArrayList<>();
-
         String path = null;
 
         for (int i = 0; i < args.size(); i++) {
@@ -402,10 +399,10 @@ public class CheckerMain {
         }
 
         if (path != null) {
-            actualArgs.add(path);
+            return Collections.singletonList(path);
+        } else {
+            return Collections.emptyList();
         }
-
-        return actualArgs;
     }
 
     protected void addMainToArgs(final List<String> args) {

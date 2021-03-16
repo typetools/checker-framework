@@ -445,11 +445,7 @@ public class TestConfigurationBuilder {
      */
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {
-        final List<T> newList = new ArrayList<>();
-
-        for (T listObject : list) {
-            newList.add(listObject);
-        }
+        final List<T> newList = new ArrayList<>(list);
 
         for (T iterObject : iterable) {
             newList.add(iterObject);

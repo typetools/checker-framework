@@ -1300,11 +1300,7 @@ public abstract class AnnotatedTypeMirror {
         }
 
         private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-            List<AnnotatedTypeMirror> erased = new ArrayList<>();
-            for (AnnotatedTypeMirror t : lst) {
-                erased.add(t.getErased());
-            }
-            return erased;
+            return SystemUtil.mapList(AnnotatedTypeMirror::getErased, lst);
         }
     }
 

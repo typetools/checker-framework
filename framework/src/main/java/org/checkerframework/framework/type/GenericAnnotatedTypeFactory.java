@@ -511,7 +511,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a tree annotator
      */
     protected TreeAnnotator createTreeAnnotator() {
-        List<TreeAnnotator> treeAnnotators = new ArrayList<>();
+        List<TreeAnnotator> treeAnnotators = new ArrayList<>(2);
         treeAnnotators.add(new PropagationTreeAnnotator(this));
         treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
         if (dependentTypesHelper.hasDependentAnnotations()) {
@@ -536,7 +536,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
-        List<TypeAnnotator> typeAnnotators = new ArrayList<>();
+        List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
         if (relevantJavaTypes != null) {
             typeAnnotators.add(
                     new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));

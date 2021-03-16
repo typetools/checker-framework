@@ -625,10 +625,11 @@ public class ElementUtils {
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
-        List<TypeElement> superelems = new ArrayList<>();
         if (type == null) {
-            return superelems;
+            return Collections.emptyList();
         }
+
+        List<TypeElement> superelems = new ArrayList<>();
 
         // Set up a stack containing type, which is our starting point.
         Deque<TypeElement> stack = new ArrayDeque<>();
@@ -677,8 +678,8 @@ public class ElementUtils {
      * @return fields of {@code type}
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
-        List<VariableElement> fields = new ArrayList<>();
-        fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
+        List<VariableElement> fields =
+                new ArrayList<>(ElementFilter.fieldsIn(type.getEnclosedElements()));
         List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
             fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
@@ -698,8 +699,8 @@ public class ElementUtils {
      * @return methods of {@code type}
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
-        List<ExecutableElement> meths = new ArrayList<>();
-        meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
+        List<ExecutableElement> meths =
+                new ArrayList<>(ElementFilter.methodsIn(type.getEnclosedElements()));
 
         List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
@@ -710,9 +711,7 @@ public class ElementUtils {
 
     /** Return all nested/inner classes/interfaces declared in the given type. */
     public static List<TypeElement> getAllTypeElementsIn(TypeElement type) {
-        List<TypeElement> types = new ArrayList<>();
-        types.addAll(ElementFilter.typesIn(type.getEnclosedElements()));
-        return types;
+        return ElementFilter.typesIn(type.getEnclosedElements());
     }
 
     /** The set of kinds that represent types. */

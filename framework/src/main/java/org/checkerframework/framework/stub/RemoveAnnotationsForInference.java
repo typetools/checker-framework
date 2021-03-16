@@ -470,9 +470,7 @@ public class RemoveAnnotationsForInference {
                 || name.equals("javax.inject.Singleton")
                 || name.equals("Option")
                 || name.equals("org.plumelib.options.Option")) {
-            List<String> result = new ArrayList<>(1);
-            result.add("allcheckers");
-            return result;
+            return Collections.singletonList("allcheckers");
         }
 
         return null;
@@ -486,9 +484,7 @@ public class RemoveAnnotationsForInference {
      */
     private static List<String> annotationElementStrings(Expression e) {
         if (e instanceof StringLiteralExpr) {
-            List<String> result = new ArrayList<>(1);
-            result.add(((StringLiteralExpr) e).asString());
-            return result;
+            return Collections.singletonList(((StringLiteralExpr) e).asString());
         } else if (e instanceof ArrayInitializerExpr) {
             NodeList<Expression> values = ((ArrayInitializerExpr) e).getValues();
             List<String> result = new ArrayList<>(values.size());
