@@ -439,10 +439,11 @@ public class Resolver {
             return res;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new BugInCF(
-                    String.format(
-                            "Unexpected reflection error in wrapInvocation(%s, %s, %s)",
-                            receiver, method, Arrays.toString(args)),
-                    e);
+                    e,
+                    "Unexpected reflection error in wrapInvocation(%s, %s, %s)",
+                    receiver,
+                    method,
+                    Arrays.toString(args));
         }
     }
 }
