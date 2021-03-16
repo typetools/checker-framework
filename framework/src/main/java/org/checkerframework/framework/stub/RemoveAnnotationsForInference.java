@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -418,16 +419,18 @@ public class RemoveAnnotationsForInference {
         if (suppressWarningsStrings == null) {
             return false;
         }
-        suppressWarningsStrings.replaceAll(RemoveAnnotationsForInference::checkerName);
+        List<String> checkerNames =
+                SystemUtil.mapList(
+                        RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
         // "allcheckers" suppresses all warnings.
-        if (suppressWarningsStrings.contains("allcheckers")) {
+        if (checkerNames.contains("allcheckers")) {
             return true;
         }
 
         // Try every element of suppressee's fully-qualified name.
         for (String suppressee : suppressees) {
             for (String fqPart : suppressee.split("\\.")) {
-                if (suppressWarningsStrings.contains(fqPart)) {
+                if (checkerNames.contains(fqPart)) {
                     return true;
                 }
             }
