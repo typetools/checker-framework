@@ -769,7 +769,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
     }
 
-    /** Convert a {@code List<Long>} to a {@code List<Double>}. */
+    /**
+     * Convert a {@code List<Long>} to a {@code List<Double>}.
+     *
+     * @param intValues a list of long integers
+     * @return a list of double floating-point values
+     */
     /* package-private */ List<Double> convertLongListToDoubleList(List<Long> intValues) {
         return SystemUtil.mapList(Long::doubleValue, intValues);
     }

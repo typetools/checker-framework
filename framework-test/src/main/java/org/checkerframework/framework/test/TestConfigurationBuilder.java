@@ -441,6 +441,8 @@ public class TestConfigurationBuilder {
     /**
      * Returns a list that first has the items from parameter list then the items from iterable.
      *
+     * @param list a list
+     * @param iterable an iterable
      * @return a list that first has the items from parameter list then the items from iterable
      */
     private static <T> List<T> catListAndIterable(

@@ -709,7 +709,12 @@ public class ElementUtils {
         return Collections.unmodifiableList(meths);
     }
 
-    /** Return all nested/inner classes/interfaces declared in the given type. */
+    /**
+     * Return all nested/inner classes/interfaces declared in the given type.
+     *
+     * @param type a type
+     * @return all nested/inner classes/interfaces declared in {@code type}
+     */
     public static List<TypeElement> getAllTypeElementsIn(TypeElement type) {
         return ElementFilter.typesIn(type.getEnclosedElements());
     }

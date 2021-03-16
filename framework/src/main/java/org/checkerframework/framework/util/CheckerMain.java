@@ -49,7 +49,11 @@ import org.checkerframework.javacutil.UserError;
  */
 public class CheckerMain {
 
-    /** Any exception thrown by the Checker Framework escapes to the command line. */
+    /**
+     * Any exception thrown by the Checker Framework escapes to the command line.
+     *
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         final File pathToThisJar = new File(findPathTo(CheckerMain.class, false));
         ArrayList<String> alargs = new ArrayList<>(Arrays.asList(args));
@@ -193,7 +197,14 @@ public class CheckerMain {
         return extractedOpts;
     }
 
-    // Assumes that createCpOpts has already been run.
+    /**
+     * Returns processor path options.
+     *
+     * <p>This method assumes that createCpOpts has already been run.
+     *
+     * @param argsList arguments
+     * @return processor path options
+     */
     protected List<String> createPpOpts(final List<String> argsList) {
         final List<String> extractedOpts = new ArrayList<>(extractPpOpts(argsList));
         if (extractedOpts.isEmpty()) {
