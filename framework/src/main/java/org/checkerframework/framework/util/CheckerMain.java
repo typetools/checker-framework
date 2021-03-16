@@ -195,7 +195,7 @@ public class CheckerMain {
 
     // Assumes that createCpOpts has already been run.
     protected List<String> createPpOpts(final List<String> argsList) {
-        final List<String> extractedOpts = extractPpOpts(argsList);
+        final List<String> extractedOpts = new ArrayList<>(extractPpOpts(argsList));
         if (extractedOpts.isEmpty()) {
             // If processorpath is not provided, then javac uses the classpath.
             // CheckerMain always supplies a processorpath, so if the user
