@@ -341,6 +341,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
         }
 
+        /**
+         * Returns a singleton array containing the number of parameters for a call to a method
+         * annotated with {@code @}{@link GetMethod}
+         *
+         * @param arguments arguments to a call to a method such as {@code getMethod}
+         * @return the number of parameters
+         */
         private int[] getMethodParamsLen(List<? extends ExpressionTree> args) {
             assert !args.isEmpty() : "getMethod must have at least one parameter";
 
@@ -352,6 +359,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return new int[] {numParams};
         }
 
+        /**
+         * Returns a singleton array containing the number of parameters for a call to a method
+         * annotated with {@code @}{@link GetConstructor}
+         *
+         * @param arguments arguments to a call to a method such as {@code getConstructor}
+         * @return the number of parameters
+         */
         private int[] getConstructorParamsLen(List<? extends ExpressionTree> args) {
             // Number of parameters in the created method object
             int numParams = args.size();
@@ -373,6 +387,10 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *   <li>UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
          *   <li>1: otherwise
          * </ul>
+         *
+         * @param argument the single argument in a call to {@code getMethod} or {@code
+         *     getConstrutor}
+         * @return a singleton list of the number of parameters
          */
         private int[] getNumberOfParameterOneArg(ExpressionTree argument) {
             AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
