@@ -372,7 +372,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (numParams == 1) {
                 return getNumberOfParameterOneArg(args.get(0));
             }
-            return new int[numParams];
+            return new int[] {numParams};
         }
 
         /**
