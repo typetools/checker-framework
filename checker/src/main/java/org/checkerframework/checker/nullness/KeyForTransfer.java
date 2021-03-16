@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;

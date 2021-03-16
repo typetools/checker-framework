@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
