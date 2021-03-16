@@ -345,7 +345,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Returns a singleton array containing the number of parameters for a call to a method
          * annotated with {@code @}{@link GetMethod}
          *
-         * @param arguments arguments to a call to a method such as {@code getMethod}
+         * @param args arguments to a call to a method such as {@code getMethod}
          * @return the number of parameters
          */
         private int[] getMethodParamsLen(List<? extends ExpressionTree> args) {
@@ -363,7 +363,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Returns a singleton array containing the number of parameters for a call to a method
          * annotated with {@code @}{@link GetConstructor}
          *
-         * @param arguments arguments to a call to a method such as {@code getConstructor}
+         * @param args arguments to a call to a method such as {@code getConstructor}
          * @return the number of parameters
          */
         private int[] getConstructorParamsLen(List<? extends ExpressionTree> args) {
