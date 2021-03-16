@@ -377,7 +377,7 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
-    List<String> args = new ArrayList<>();
+    List<String> args = new ArrayList<>(javaFiles.size());
     for (File f : javaFiles) {
         args += project(projectName).relativePath(f)
     }

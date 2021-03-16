@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
@@ -71,9 +71,6 @@ public class AssertionErrorNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<>(2);
-        list.add(getCondition());
-        list.add(getDetail());
-        return list;
+        return Arrays.asList(getCondition(), getDetail());
     }
 }

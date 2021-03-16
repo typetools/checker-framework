@@ -162,7 +162,7 @@ public class ValueTransfer extends CFTransfer {
         if (annoName.equals(ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
             return ValueAnnotatedTypeFactory.getArrayLength(anno);
         } else if (annoName.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         TypeKind subNodeTypeKind = subNode.getType().getKind();
@@ -210,7 +210,7 @@ public class ValueTransfer extends CFTransfer {
             case ValueAnnotatedTypeFactory.UNKNOWN_NAME:
                 return null;
             case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
-                return new ArrayList<>();
+                return Collections.emptyList();
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 return ValueAnnotatedTypeFactory.getStringValues(anno);
             default:
@@ -302,7 +302,7 @@ public class ValueTransfer extends CFTransfer {
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     private AnnotationMirror getValueAnnotation(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -346,7 +346,7 @@ public class ValueTransfer extends CFTransfer {
             return null;
         } else if (AnnotationUtils.areSameByName(
                 valueAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         List<? extends Number> values;
         if (AnnotationUtils.areSameByName(valueAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
@@ -677,22 +677,22 @@ public class ValueTransfer extends CFTransfer {
             // Both operands have known string values, compute set of results
             if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
-                    leftValues.add("null");
+                    leftValues = SystemUtil.append(leftValues, "null");
                 }
                 if (isNullable(rightOperand)) {
-                    rightValues.add("null");
+                    rightValues = SystemUtil.append(rightValues, "null");
                 }
             } else {
                 if (leftOperand instanceof StringConversionNode) {
                     if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
                             == TypeKind.NULL) {
-                        leftValues.add("null");
+                        leftValues = SystemUtil.append(leftValues, "null");
                     }
                 }
                 if (rightOperand instanceof StringConversionNode) {
                     if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
                             == TypeKind.NULL) {
-                        rightValues.add("null");
+                        rightValues = SystemUtil.append(rightValues, "null");
                     }
                 }
             }
@@ -1228,7 +1228,7 @@ public class ValueTransfer extends CFTransfer {
             // Appropriately handle bottom when something is compared to bottom.
             if (AnnotationUtils.areSame(leftAnno, atypeFactory.BOTTOMVAL)
                     || AnnotationUtils.areSame(rightAnno, atypeFactory.BOTTOMVAL)) {
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
             return null;
         }
