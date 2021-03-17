@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -360,7 +361,7 @@ public class SystemUtil {
         List<T> list2 = Arrays.asList(arr2);
         return list1.containsAll(list2) && list2.containsAll(list1);
 
-        // // Alterate implementation, which is more efficient if the arrays are be large:
+        // // Alterate implementation, which is more efficient if the arrays are large:
         // Note: this sorts the arrays as a side effect.
         // Arrays.sort(arr1);
         // Arrays.sort(arr2);
