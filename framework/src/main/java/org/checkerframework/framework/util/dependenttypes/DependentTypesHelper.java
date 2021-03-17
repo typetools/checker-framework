@@ -278,7 +278,6 @@ public class DependentTypesHelper {
             ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree) tree);
             if (isVarArgsInvocation(method, methodType, argTrees)) {
                 List<JavaExpression> result = new ArrayList<>();
-
                 for (int i = 0; i < method.getParameters().size() - 1; i++) {
                     result.add(JavaExpression.fromTree(argTrees.get(i)));
                 }

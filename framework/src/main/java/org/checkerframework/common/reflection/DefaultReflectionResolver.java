@@ -515,13 +515,13 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Resolve resolve = Resolve.instance(context);
         Names names = Names.instance(context);
 
-        List<Symbol> result = new ArrayList<>();
         Symbol sym = getSymbol(className, env, names, resolve);
         if (!sym.exists()) {
             debugReflection("Unable to resolve class: " + className);
             return Collections.emptyList();
         }
 
+        List<Symbol> result = new ArrayList<>();
         ClassSymbol classSym = (ClassSymbol) sym;
         while (classSym != null) {
             for (Symbol s : classSym.getEnclosedElements()) {
@@ -560,15 +560,16 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Resolve resolve = Resolve.instance(context);
         Names names = Names.instance(context);
 
-        List<Symbol> result = new ArrayList<>();
         Symbol symClass = getSymbol(className, env, names, resolve);
         if (!symClass.exists()) {
             debugReflection("Unable to resolve class: " + className);
             return Collections.emptyList();
         }
 
+        // TODO: Should this be used instead of the below??
         ElementFilter.constructorsIn(symClass.getEnclosedElements());
 
+        List<Symbol> result = new ArrayList<>();
         for (Symbol s : symClass.getEnclosedElements()) {
             // Check all constructors
             if (s.getKind() == ElementKind.CONSTRUCTOR) {

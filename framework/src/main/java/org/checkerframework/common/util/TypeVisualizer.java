@@ -264,18 +264,14 @@ public class TypeVisualizer {
                     writer.flush();
                 } catch (IOException e) {
                     throw new BugInCF(
-                            String.format(
-                                    "Exception visualizing type:%nfile=%s%ntype=%s", file, type),
-                            e);
+                            e, "Exception visualizing type:%nfile=%s%ntype=%s", file, type);
                 } finally {
                     if (writer != null) {
                         writer.close();
                     }
                 }
             } catch (IOException exc) {
-                throw new BugInCF(
-                        String.format("Exception visualizing type:%nfile=%s%ntype=%s", file, type),
-                        exc);
+                throw new BugInCF(exc, "Exception visualizing type:%nfile=%s%ntype=%s", file, type);
             }
         }
 

@@ -3,6 +3,7 @@ package org.checkerframework.common.value;
 import com.google.common.collect.Comparators;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -65,7 +66,7 @@ public class ValueCheckerUtils {
                 break;
             case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-                values = new ArrayList<>();
+                values = Collections.emptyList();
                 break;
             default:
                 values = null;
@@ -127,9 +128,8 @@ public class ValueCheckerUtils {
         if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
             return null;
         }
-        List<T> values = new ArrayList<>();
         if (range.isNothing()) {
-            return values;
+            return Collections.emptyList();
         }
 
         // The subtraction does not overflow, because the width has already been checked, so the
@@ -140,6 +140,7 @@ public class ValueCheckerUtils {
         // to avoid having range.to as an upper bound of the loop. range.to can be Long.MAX_VALUE,
         // in which case a comparison value <= range.to would be always true.
         // boundDifference is always much smaller than Long.MAX_VALUE
+        List<T> values = new ArrayList<T>((int) boundDifference + 1);
         for (long offset = 0; offset <= boundDifference; offset++) {
             long value = range.from + offset;
             values.add(convertLongToType(value, expectedType));

@@ -638,20 +638,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         if (TypesUtils.isString(resultType)) {
-            List<String> stringVals = new ArrayList<>(values.size());
-            for (Object o : values) {
-                stringVals.add((String) o);
-            }
+            List<String> stringVals = SystemUtil.mapList((Object o) -> (String) o, values);
             return createStringAnnotation(stringVals);
         } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
-            List<String> stringVals = new ArrayList<>(values.size());
-            for (Object o : values) {
-                if (o instanceof char[]) {
-                    stringVals.add(new String((char[]) o));
-                } else {
-                    stringVals.add(o.toString());
-                }
-            }
+            List<String> stringVals =
+                    SystemUtil.mapList(
+                            (Object o) -> {
+                                if (o instanceof char[]) {
+                                    return new String((char[]) o);
+                                } else {
+                                    return o.toString();
+                                }
+                            },
+                            values);
             return createStringAnnotation(stringVals);
         }
 
@@ -666,10 +665,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         switch (primitiveKind) {
             case BOOLEAN:
-                List<Boolean> boolVals = new ArrayList<>(values.size());
-                for (Object o : values) {
-                    boolVals.add((Boolean) o);
-                }
+                List<Boolean> boolVals = SystemUtil.mapList((Object o) -> (Boolean) o, values);
                 return createBooleanAnnotation(boolVals);
             case DOUBLE:
             case FLOAT:
@@ -774,13 +770,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
     }
 
-    /** Convert a {@code List<Long>} to a {@code List<Double>}. */
+    /**
+     * Convert a {@code List<Long>} to a {@code List<Double>}.
+     *
+     * @param intValues a list of long integers
+     * @return a list of double floating-point values
+     */
     /* package-private */ List<Double> convertLongListToDoubleList(List<Long> intValues) {
-        List<Double> doubleValues = new ArrayList<>(intValues.size());
-        for (Long intValue : intValues) {
-            doubleValues.add(intValue.doubleValue());
-        }
-        return doubleValues;
+        return SystemUtil.mapList(Long::doubleValue, intValues);
     }
 
     /**
@@ -889,10 +886,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
-            List<Long> longValues = new ArrayList<>();
-            for (char value : values) {
-                longValues.add((long) value);
-            }
+            List<Long> longValues =
+                    SystemUtil.mapList((Character value) -> (long) (char) value, values);
             return createIntValAnnotation(longValues);
         }
     }
@@ -914,16 +909,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 || first instanceof Short
                 || first instanceof Long
                 || first instanceof Byte) {
-            List<Long> intValues = new ArrayList<>();
-            for (Number number : values) {
-                intValues.add(number.longValue());
-            }
+            List<Long> intValues = SystemUtil.mapList(Number::longValue, values);
             return createIntValAnnotation(intValues);
         } else if (first instanceof Double || first instanceof Float) {
-            List<Double> intValues = new ArrayList<>();
-            for (Number number : values) {
-                intValues.add(number.doubleValue());
-            }
+            List<Double> intValues = SystemUtil.mapList(Number::doubleValue, values);
             return createDoubleValAnnotation(intValues);
         }
         throw new UnsupportedOperationException(
@@ -1077,10 +1066,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /* package-private */ AnnotationMirror convertStringValToMatchesRegex(
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
-        List<@Regex String> valuesAsRegexes = new ArrayList<>();
-        for (String value : values) {
-            valuesAsRegexes.add(Pattern.quote(value));
-        }
+        List<@Regex String> valuesAsRegexes = SystemUtil.mapList(Pattern::quote, values);
         return createMatchesRegexAnnotation(valuesAsRegexes);
     }
 
@@ -1202,7 +1188,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         List<Long> intValues =
                 AnnotationUtils.getElementValueArrayList(intAnno, "value", Long.class, false);
@@ -1245,7 +1231,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         List<Boolean> boolValues =
                 AnnotationUtils.getElementValueArrayList(boolAnno, "value", Boolean.class, false);

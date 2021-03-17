@@ -18,7 +18,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -803,9 +802,7 @@ public class NullnessAnnotatedTypeFactory
         String expression = receiver + "." + fieldElement.getSimpleName();
         builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
-        List<AnnotationMirror> result = new ArrayList<>(1);
-        result.add(am);
-        return result;
+        return Collections.singletonList(am);
     }
 
     @Override
@@ -845,8 +842,6 @@ public class NullnessAnnotatedTypeFactory
         String expression = receiver + "." + fieldElement.getSimpleName();
         builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
-        List<AnnotationMirror> result = new ArrayList<>(1);
-        result.add(am);
-        return result;
+        return Collections.singletonList(am);
     }
 }

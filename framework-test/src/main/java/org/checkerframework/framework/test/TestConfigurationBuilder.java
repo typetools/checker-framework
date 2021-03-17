@@ -441,15 +441,14 @@ public class TestConfigurationBuilder {
     /**
      * Returns a list that first has the items from parameter list then the items from iterable.
      *
+     * @param <T> the type of the elements in the resulting list
+     * @param list a list
+     * @param iterable an iterable
      * @return a list that first has the items from parameter list then the items from iterable
      */
     private static <T> List<T> catListAndIterable(
-            final List<T> list, final Iterable<? extends T> iterable) {
-        final List<T> newList = new ArrayList<>();
-
-        for (T listObject : list) {
-            newList.add(listObject);
-        }
+            final List<? extends T> list, final Iterable<? extends T> iterable) {
+        final List<T> newList = new ArrayList<>(list);
 
         for (T iterObject : iterable) {
             newList.add(iterObject);

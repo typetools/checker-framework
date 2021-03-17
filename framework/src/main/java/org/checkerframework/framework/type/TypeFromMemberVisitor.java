@@ -6,7 +6,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -43,7 +43,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         if (annoTrees != null && !annoTrees.isEmpty()) {
             modifierAnnos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
         } else {
-            modifierAnnos = new ArrayList<>();
+            modifierAnnos = Collections.emptyList();
         }
 
         if (result.getKind() == TypeKind.DECLARED

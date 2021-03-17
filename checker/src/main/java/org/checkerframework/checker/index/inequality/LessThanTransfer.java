@@ -53,17 +53,21 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // Refine right to @LessThan("left")
         JavaExpression leftJe = JavaExpression.fromNode(left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
-            List<String> lessThanExpressions =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
+            List<String> lessThanExpressions = factory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
             }
+            AnnotationMirror newAnno;
             if (!isDoubleOrFloatLiteral(leftJe)) {
                 lessThanExpressions.add(leftJe.toString());
+                newAnno = factory.createLessThanQualifier(lessThanExpressions);
+            } else {
+                // TODO: Is any work done in this case?  If not, can return early.
+                newAnno = rightAnno;
             }
             JavaExpression rightJe = JavaExpression.fromNode(right);
-            store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
+            store.insertValue(rightJe, newAnno);
         }
     }
 
@@ -130,9 +134,23 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     /** Return the expressions that {@code node} are less than. */
     private List<String> getLessThanExpressions(Node node) {
         Set<AnnotationMirror> s = analysis.getValue(node).getAnnotations();
-        LessThanAnnotatedTypeFactory factory =
-                (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         if (s != null && !s.isEmpty()) {
+            LessThanAnnotatedTypeFactory factory =
+                    (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
+            return LessThanAnnotatedTypeFactory.getLessThanExpressions(
+                    factory.getQualifierHierarchy()
+                            .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    /** Return the expressions that {@code node} are less than. */
+    private List<String> getLessThanExpressionsStrings(Node node) {
+        Set<AnnotationMirror> s = analysis.getValue(node).getAnnotations();
+        if (s != null && !s.isEmpty()) {
+            LessThanAnnotatedTypeFactory factory =
+                    (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
             return LessThanAnnotatedTypeFactory.getLessThanExpressions(
                     factory.getQualifierHierarchy()
                             .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
