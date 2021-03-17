@@ -874,7 +874,7 @@ public final class TreeUtils {
      * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
-            Class type, String methodName, ProcessingEnvironment env, String... paramTypes) {
+            Class<?> type, String methodName, ProcessingEnvironment env, String... paramTypes) {
         return getMethod(type.getCanonicalName(), methodName, env, paramTypes);
     }
 
