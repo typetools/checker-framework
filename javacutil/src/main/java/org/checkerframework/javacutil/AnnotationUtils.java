@@ -678,6 +678,47 @@ public class AnnotationUtils {
     }
 
     /**
+     * Returns true if an AnnotationValue list contains the given value.
+     *
+     * <p>Using this method is slightly cheaper than creating a new {@code List<String>} just for
+     * the purpose of testing containment within it.
+     *
+     * @param avList an AnnotationValue that is null or a list of Strings
+     * @param s a string
+     * @return true if {@code av} contains {@code s}
+     */
+    public static boolean annotationValueContains(@Nullable AnnotationValue avList, String s) {
+        if (avList == null) {
+            return false;
+        }
+        // The value is actually a javac.util.List<Attribute.Constant>.
+        @SuppressWarnings("unchecked")
+        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
+        return annotationValueContains(list, s);
+    }
+
+    /**
+     * Returns true if an AnnotationValue list contains the given value.
+     *
+     * <p>Using this method is slightly cheaper than creating a new {@code List<String>} just for
+     * the purpose of testing containment within it.
+     *
+     * @param avList a list of Strings (as {@code AnnotationValue}s)
+     * @param s a string
+     * @return true if {@code av} contains {@code s}
+     */
+    public static boolean annotationValueContains(
+            List<? extends AnnotationValue> avList, String s) {
+        // `avList` is actually a javac.util.List<Attribute.Constant>.
+        for (AnnotationValue av : avList) {
+            if (av.getValue().equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Verify whether the element with the name {@code elementName} exists in the annotation {@code
      * anno}.
      *
