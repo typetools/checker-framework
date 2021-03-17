@@ -21,7 +21,6 @@ public interface ReflectionResolver {
     /**
      * A list containing just the "method name" of constructors. Clients must not modify this list.
      */
-    @SuppressWarnings("MutablePublicArray")
     public static final List<String> INIT_LIST = Collections.singletonList(INIT);
 
     /**
