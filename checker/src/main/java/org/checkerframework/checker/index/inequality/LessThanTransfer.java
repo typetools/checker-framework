@@ -59,9 +59,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions.add(leftJe.toString());
+            if (isDoubleOrFloatLiteral(leftJe)) {
+                return;
             }
+            lessThanExpressions.add(leftJe.toString());
             JavaExpression rightJe = JavaExpression.fromNode(right);
             store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
@@ -91,9 +92,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions.add(incrementedExpression(leftJe));
+            if (isDoubleOrFloatLiteral(leftJe)) {
+                return;
             }
+            lessThanExpressions.add(incrementedExpression(leftJe));
             JavaExpression rightJe = JavaExpression.fromNode(right);
             store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
