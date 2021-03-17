@@ -885,11 +885,14 @@ public class JavaExpressionParseUtil {
                                             : null,
                             expr.getLevels());
 
-            List<JavaExpression> initializers = new ArrayList<>();
+            List<JavaExpression> initializers;
             if (expr.getInitializer().isPresent()) {
-                for (Expression initializer : expr.getInitializer().get().getValues()) {
-                    initializers.add(initializer.accept(this, null));
-                }
+                initializers =
+                        SystemUtil.mapList(
+                                (Expression initializer) -> initializer.accept(this, null),
+                                expr.getInitializer().get().getValues());
+            } else {
+                initializers = Collections.emptyList();
             }
             TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType());
             if (arrayType == null) {
