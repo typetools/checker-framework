@@ -160,6 +160,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     public static boolean isLessThan(AnnotationMirror left, String right) {
         List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
+            // `left` is @LessThanBottom
             return true;
         }
         return expressions.contains(right);
@@ -282,10 +283,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
         }
         // {@code @LessThan("end + 1")} is equivalent to {@code @LessThanOrEqual("end")}.
         for (String expression : expressions) {
-            if (expression.endsWith(" + 1")) {
-                if (expression.substring(0, expression.length() - 4).equals(right)) {
-                    return true;
-                }
+            if (expression.endsWith(" + 1")
+                    && expression.substring(0, expression.length() - 4).equals(right)) {
+                return true;
             }
         }
         return false;
@@ -331,9 +331,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     }
 
     /**
-     * Returns a modifiable list of expressions in the annotation sorted. If the annotation is
-     * {@link LessThanBottom}, return null. If the annotation is {@link LessThanUnknown} return the
-     * empty list.
+     * If the annotation is LessThan, returns a list of expressions in the annotation. If the
+     * annotation is {@link LessThanBottom}, returns null. If the annotation is {@link
+     * LessThanUnknown}, returns the empty list.
      */
     public static List<String> getLessThanExpressions(AnnotationMirror annotation) {
         if (AnnotationUtils.areSameByClass(annotation, LessThanBottom.class)) {
@@ -341,6 +341,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
         } else if (AnnotationUtils.areSameByClass(annotation, LessThanUnknown.class)) {
             return new ArrayList<>();
         } else {
+            // The annotation is LessThan.
             List<String> list =
                     AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
             return list;
