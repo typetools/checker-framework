@@ -819,6 +819,12 @@ public abstract class AnnotatedTypeMirror {
         return objectType;
     }
 
+    /**
+     * Returns the result of calling {@code underlyingType.toString()}. This method saves the result
+     * in a field so that the string isn't recomputed each time.
+     *
+     * @return the result of calling {@code underlyingType.toString()}
+     */
     public String getUnderlyingTypeString() {
         if (underlyingTypeString == null) {
             underlyingTypeString = underlyingType.toString();
