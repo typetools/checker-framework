@@ -32,6 +32,6 @@ public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<Integer, Void
         if (type == null) {
             return 0;
         }
-        return Objects.hash(type.getUnderlyingTypeString(), type.getAnnotations().toString());
+        return Objects.hash(type.getUnderlyingTypeHashCode(), type.getAnnotations().toString());
     }
 }

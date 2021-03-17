@@ -132,10 +132,11 @@ public abstract class AnnotatedTypeMirror {
     protected final TypeMirror underlyingType;
 
     /**
-     * Used for generating the hash code for this. Call {@link #getUnderlyingTypeString()} rather
-     * than using the field directly.
+     * Saves the result of {@code underlyingType.toString().hashcode()} to use when computing the
+     * hash code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot
+     * be saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
      */
-    private String underlyingTypeString = null;
+    private int underlyingTypeHashCode = -1;
 
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
@@ -823,16 +824,16 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the result of calling {@code underlyingType.toString()}. This method saves the result
-     * in a field so that the string isn't recomputed each time.
+     * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
+     * the result in a field so that it isn't recomputed each time.
      *
-     * @return the result of calling {@code underlyingType.toString()}
+     * @return the result of calling {@code underlyingType.toString().hashcode()}
      */
-    public String getUnderlyingTypeString() {
-        if (underlyingTypeString == null) {
-            underlyingTypeString = underlyingType.toString();
+    public int getUnderlyingTypeHashCode() {
+        if (underlyingTypeHashCode == -1) {
+            underlyingTypeHashCode = underlyingType.toString().hashCode();
         }
-        return underlyingTypeString;
+        return underlyingTypeHashCode;
     }
 
     /** Represents a declared type (whether class or interface). */
