@@ -119,6 +119,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     /** The LengthOf.value argument/element. */
     /*package-private*/ final ExecutableElement ltLengthOfOffsetElement;
 
+    /** Predicates about what method an invocation is calling. */
     private final IndexMethodIdentifier imf;
 
     /** Create a new UpperBoundAnnotatedTypeFactory. */

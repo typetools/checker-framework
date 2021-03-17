@@ -37,7 +37,11 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // TODO: This isn't initialized, so its uses are all wrong.
     UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory;
 
-    /** Create a new SubstringIndexAnnotatedTypeFactory. */
+    /**
+     * Create a new SubstringIndexAnnotatedTypeFactory.
+     *
+     * @param checker the associated checker
+     */
     public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 

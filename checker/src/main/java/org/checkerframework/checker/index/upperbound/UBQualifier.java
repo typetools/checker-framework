@@ -89,6 +89,7 @@ public abstract class UBQualifier {
      *
      * @param ltLengthOfAnno a @LTLengthOf annotation
      * @param extraOffset the extra offset
+     * @param atypeFactory type factory used to read elements/fields of the annotation
      * @return a UBQualifier created from the @LTLengthOf annotation
      */
     private static UBQualifier parseLTLengthOf(
@@ -158,6 +159,14 @@ public abstract class UBQualifier {
                 Collections.singletonList(sequence), Collections.singletonList(offset));
     }
 
+    /**
+     * Create an upper bound qualifier.
+     *
+     * @param type the type from which to obtain an annotation
+     * @param top the top annotation in a hierarchy; the annotation in this hierarchy will be used
+     * @param upperBoundAtypeFactory the type factory, to read annotations out of {@code type}
+     * @return a new upper bound qualifier
+     */
     public static UBQualifier createUBQualifier(
             AnnotatedTypeMirror type,
             AnnotationMirror top,
