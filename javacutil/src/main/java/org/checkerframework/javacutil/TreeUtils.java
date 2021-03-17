@@ -778,7 +778,11 @@ public final class TreeUtils {
      */
     public static ExecutableElement getMethod(
             Class<?> type, String methodName, int params, ProcessingEnvironment env) {
-        return getMethod(type.getCanonicalName(), methodName, params, env);
+        String typeName = type.getCanonicalName();
+        if (typeName == null) {
+            throw new BugInCF("class %s has no canonical name", type);
+        }
+        return getMethod(typeName, methodName, params, env);
     }
 
     /**
@@ -875,7 +879,11 @@ public final class TreeUtils {
      */
     public static ExecutableElement getMethod(
             Class<?> type, String methodName, ProcessingEnvironment env, String... paramTypes) {
-        return getMethod(type.getCanonicalName(), methodName, env, paramTypes);
+        String typeName = type.getCanonicalName();
+        if (typeName == null) {
+            throw new BugInCF("class %s has no canonical name", type);
+        }
+        return getMethod(typeName, methodName, env, paramTypes);
     }
 
     /**
