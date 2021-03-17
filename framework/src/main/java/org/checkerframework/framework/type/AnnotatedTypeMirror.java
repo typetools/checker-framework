@@ -131,8 +131,11 @@ public abstract class AnnotatedTypeMirror {
     /** Actual type wrapped with this AnnotatedTypeMirror. */
     protected final TypeMirror underlyingType;
 
-    /** Used for generating the hash code for this. Lazily initialized. */
-    protected String underlyingTypeString = null;
+    /**
+     * Used for generating the hash code for this. Call {@link #getUnderlyingTypeString()} rather
+     * than using the field directly.
+     */
+    private String underlyingTypeString = null;
 
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
