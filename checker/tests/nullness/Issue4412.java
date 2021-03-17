@@ -1,4 +1,4 @@
-// @skip-test This tests passes, but is slow. So skip it until performance improves.
+// @skip-test This test passes, but is slow. So skip it until performance improves.
 
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.NonNull;
