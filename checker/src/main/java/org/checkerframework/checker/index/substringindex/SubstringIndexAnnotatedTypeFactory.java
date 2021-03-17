@@ -12,6 +12,7 @@ import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.SubstringIndexUnknown;
 import org.checkerframework.checker.index.upperbound.UBQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
+import org.checkerframework.checker.index.upperbound.UpperBoundAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
@@ -32,6 +33,9 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     /** The bottom qualifier of the Substring Index hierarchy. */
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
+
+    // TODO: This isn't initialized, so its uses are all wrong.
+    UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory;
 
     /** Create a new SubstringIndexAnnotatedTypeFactory. */
     public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -103,8 +107,8 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             if (AnnotationUtils.areSame(a2, BOTTOM)) {
                 return a2;
             }
-            UBQualifier ubq1 = UBQualifier.createUBQualifier(a1);
-            UBQualifier ubq2 = UBQualifier.createUBQualifier(a2);
+            UBQualifier ubq1 = UBQualifier.createUBQualifier(a1, upperBoundAtypeFactory);
+            UBQualifier ubq2 = UBQualifier.createUBQualifier(a2, upperBoundAtypeFactory);
             UBQualifier glb = ubq1.glb(ubq2);
             return convertUBQualifierToAnnotation(glb);
         }
@@ -123,8 +127,8 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             if (AnnotationUtils.areSame(a2, BOTTOM)) {
                 return a1;
             }
-            UBQualifier ubq1 = UBQualifier.createUBQualifier(a1);
-            UBQualifier ubq2 = UBQualifier.createUBQualifier(a2);
+            UBQualifier ubq1 = UBQualifier.createUBQualifier(a1, upperBoundAtypeFactory);
+            UBQualifier ubq2 = UBQualifier.createUBQualifier(a2, upperBoundAtypeFactory);
             UBQualifier lub = ubq1.lub(ubq2);
             return convertUBQualifierToAnnotation(lub);
         }
@@ -144,8 +148,9 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 return false;
             }
 
-            UBQualifier subtype = UBQualifier.createUBQualifier(subAnno);
-            UBQualifier supertype = UBQualifier.createUBQualifier(superAnno);
+            UBQualifier subtype = UBQualifier.createUBQualifier(subAnno, upperBoundAtypeFactory);
+            UBQualifier supertype =
+                    UBQualifier.createUBQualifier(superAnno, upperBoundAtypeFactory);
             return subtype.isSubtype(supertype);
         }
     }

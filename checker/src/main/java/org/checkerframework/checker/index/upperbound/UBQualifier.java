@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
@@ -42,10 +43,12 @@ public abstract class UBQualifier {
      * Create a UBQualifier from the given annotation.
      *
      * @param am the annotation to turn into a UBQualifier
+     * @param upperBoundAtypeFactory used to obtain the fields of {@code am}
      * @return a UBQualifier that represents the same information as the given annotation
      */
-    public static UBQualifier createUBQualifier(AnnotationMirror am) {
-        return createUBQualifier(am, null);
+    public static UBQualifier createUBQualifier(
+            AnnotationMirror am, UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory) {
+        return createUBQualifier(am, null, upperBoundAtypeFactory);
     }
 
     /**
@@ -53,16 +56,20 @@ public abstract class UBQualifier {
      *
      * @param am the annotation to turn into a UBQualifier
      * @param offset the extra offset; may be null
+     * @param upperBoundAtypeFactory used to obtain the fields of {@code am}
      * @return a UBQualifier that represents the same information as the given annotation (plus an
      *     optional offset)
      */
-    public static UBQualifier createUBQualifier(AnnotationMirror am, String offset) {
+    public static UBQualifier createUBQualifier(
+            AnnotationMirror am,
+            String offset,
+            UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory) {
         if (AnnotationUtils.areSameByClass(am, UpperBoundUnknown.class)) {
             return UpperBoundUnknownQualifier.UNKNOWN;
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
         } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
-            return parseLTLengthOf(am, offset);
+            return parseLTLengthOf(am, offset, upperBoundAtypeFactory);
         } else if (AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
             return parseSubstringIndexFor(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
@@ -80,19 +87,24 @@ public abstract class UBQualifier {
     /**
      * Create a UBQualifier from a @LTLengthOf annotation.
      *
-     * @param am a @LTLengthOf annotation
+     * @param ltLengthOfAnno a @LTLengthOf annotation
      * @param extraOffset the extra offset
      * @return a UBQualifier created from the @LTLengthOf annotation
      */
-    private static UBQualifier parseLTLengthOf(AnnotationMirror am, String extraOffset) {
-        List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
-        List<String> offset =
-                AnnotationUtils.getElementValueArray(am, "offset", String.class, true);
-        if (offset.isEmpty()) {
-            offset = Collections.nCopies(sequences.size(), "");
-        }
-        return createUBQualifier(sequences, offset, extraOffset);
+    private static UBQualifier parseLTLengthOf(
+            AnnotationMirror ltLengthOfAnno,
+            String extraOffset,
+            UpperBoundAnnotatedTypeFactory atypeFactory) {
+        AnnotationValue valueAV =
+                ltLengthOfAnno.getElementValues().get(atypeFactory.ltLengthOfValueElement);
+        List<String> sequences = AnnotationUtils.annotationValueToList(valueAV, String.class);
+        AnnotationValue offsetAV =
+                ltLengthOfAnno.getElementValues().get(atypeFactory.ltLengthOfOffsetElement);
+        List<String> offsets =
+                (offsetAV == null)
+                        ? Collections.nCopies(sequences.size(), "")
+                        : AnnotationUtils.annotationValueToList(offsetAV, String.class);
+        return createUBQualifier(sequences, offsets, extraOffset);
     }
 
     /**
@@ -146,8 +158,12 @@ public abstract class UBQualifier {
                 Collections.singletonList(sequence), Collections.singletonList(offset));
     }
 
-    public static UBQualifier createUBQualifier(AnnotatedTypeMirror type, AnnotationMirror top) {
-        return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top));
+    public static UBQualifier createUBQualifier(
+            AnnotatedTypeMirror type,
+            AnnotationMirror top,
+            UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory) {
+        return createUBQualifier(
+                type.getEffectiveAnnotationInHierarchy(top), upperBoundAtypeFactory);
     }
 
     /**

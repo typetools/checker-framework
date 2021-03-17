@@ -17,8 +17,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This class stores information about interesting methods and allows its clients to query it to
- * determine if a method belongs to a particular class.
+ * Given a Tree or other construct, this class has methods to query whether it is a particular
+ * method call.
  */
 public class IndexMethodIdentifier {
 
