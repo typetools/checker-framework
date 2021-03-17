@@ -53,8 +53,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // Refine right to @LessThan("left")
         JavaExpression leftJe = JavaExpression.fromNode(left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+            LessThanAnnotatedTypeFactory lessThanAtypeFactory =
+                    (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
             List<String> lessThanExpressions =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
+                    lessThanAtypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
@@ -85,8 +87,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // Refine right to @LessThan("left")
         JavaExpression leftJe = JavaExpression.fromNode(left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
-            List<String> lessThanExpressions =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
+            List<String> lessThanExpressions = factory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
@@ -133,7 +134,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         LessThanAnnotatedTypeFactory factory =
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         if (s != null && !s.isEmpty()) {
-            return LessThanAnnotatedTypeFactory.getLessThanExpressions(
+            return factory.getLessThanExpressions(
                     factory.getQualifierHierarchy()
                             .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
         } else {

@@ -101,8 +101,14 @@ import org.checkerframework.framework.type.QualifierHierarchy;
  */
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
+    /** The type factory associated with this transfer function. */
     private UpperBoundAnnotatedTypeFactory atypeFactory;
 
+    /**
+     * Creates a new UpperBoundTransfer.
+     *
+     * @param analysis the analysis for this transfer function
+     */
     public UpperBoundTransfer(CFAnalysis analysis) {
         super(analysis);
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
@@ -618,19 +624,20 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         JavaExpression rightOp = JavaExpression.fromNode(n.getRightOperand());
 
                         if (rightOp.toString().equals(from)) {
+                            LessThanAnnotatedTypeFactory lessThanAtypeFactory =
+                                    atypeFactory.getLessThanAnnotatedTypeFactory();
                             AnnotationMirror lessThanType =
-                                    atypeFactory
-                                            .getLessThanAnnotatedTypeFactory()
+                                    lessThanAtypeFactory
                                             .getAnnotatedType(n.getLeftOperand().getTree())
                                             .getAnnotation(LessThan.class);
 
                             if (lessThanType != null
-                                    && LessThanAnnotatedTypeFactory.isLessThan(lessThanType, to)) {
+                                    && lessThanAtypeFactory.isLessThan(lessThanType, to)) {
                                 UBQualifier ltlA = UBQualifier.createUBQualifier(a, "0");
                                 leftWithOffset = leftWithOffset.glb(ltlA);
                             } else if (leftOp.toString().equals(to)
                                     || (lessThanType != null
-                                            && LessThanAnnotatedTypeFactory.isLessThanOrEqual(
+                                            && lessThanAtypeFactory.isLessThanOrEqual(
                                                     lessThanType, to))) {
                                 // It's necessary to check if leftOp == to because LessThan doesn't
                                 // infer that things are less than or equal to themselves.

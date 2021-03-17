@@ -719,6 +719,49 @@ public class AnnotationUtils {
     }
 
     /**
+     * Convert an annotation value to a list.
+     *
+     * @param avList an AnnotationValue that is null or a list of Strings Converts an annotation
+     *     value to a list
+     * @param expectedType the expected type of the element
+     * @param <T> the class of the expected type
+     * @return the annotation value, converted to a list
+     */
+    public static <T> List<T> annotationValueToList(AnnotationValue avList, Class<T> expectedType) {
+        // The value is actually a javac.util.List<Attribute.Constant>.
+        @SuppressWarnings("unchecked")
+        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
+        return annotationValueToList(list, expectedType);
+    }
+
+    /**
+     * Convert an annotation value to a list.
+     *
+     * @param avList a list of Strings (as {@code AnnotationValue}s) Converts an annotation value to
+     *     a list
+     * @param expectedType the expected type of the element
+     * @param <T> the class of the expected type
+     * @return the annotation value, converted to a list
+     */
+    public static <T> List<T> annotationValueToList(
+            List<? extends AnnotationValue> avList, Class<T> expectedType) {
+        List<T> result = new ArrayList<>(avList.size());
+        for (AnnotationValue a : avList) {
+            try {
+                result.add(expectedType.cast(a.getValue()));
+            } catch (Throwable t) {
+                String err1 = String.format("annotationValueToList(%s, %s)", avList, expectedType);
+                String err2 =
+                        String.format(
+                                "a=%s [%s]%n  a.getValue()=%s [%s]",
+                                a, a.getClass(), a.getValue(), a.getValue().getClass());
+                throw new BugInCF(err1 + " " + err2, t);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Verify whether the element with the name {@code elementName} exists in the annotation {@code
      * anno}.
      *
