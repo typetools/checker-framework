@@ -53,17 +53,19 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // Refine right to @LessThan("left")
         JavaExpression leftJe = JavaExpression.fromNode(left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+            if (isDoubleOrFloatLiteral(leftJe)) {
+                return;
+            }
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions.add(leftJe.toString());
+            if (lessThanExpressions.add(leftJe.toString())) {
+                JavaExpression rightJe = JavaExpression.fromNode(right);
+                store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
             }
-            JavaExpression rightJe = JavaExpression.fromNode(right);
-            store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
 
@@ -85,17 +87,19 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // Refine right to @LessThan("left")
         JavaExpression leftJe = JavaExpression.fromNode(left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+            if (isDoubleOrFloatLiteral(leftJe)) {
+                return;
+            }
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions.add(incrementedExpression(leftJe));
+            if (lessThanExpressions.add(incrementedExpression(leftJe))) {;
+                JavaExpression rightJe = JavaExpression.fromNode(right);
+                store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
             }
-            JavaExpression rightJe = JavaExpression.fromNode(right);
-            store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
 
