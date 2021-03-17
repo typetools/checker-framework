@@ -770,6 +770,22 @@ public final class TreeUtils {
      * matching method. If more than one method takes the same number of formal parameters, then use
      * {@link #getMethod(String, String, ProcessingEnvironment, String...)}.
      *
+     * @param type the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElement for the specified method
+     */
+    public static ExecutableElement getMethod(
+            Class<?> type, String methodName, int params, ProcessingEnvironment env) {
+        return getMethod(type.getCanonicalName(), methodName, params, env);
+    }
+
+    /**
+     * Returns the ExecutableElement for a method declaration. Errs if there is not exactly one
+     * matching method. If more than one method takes the same number of formal parameters, then use
+     * {@link #getMethod(String, String, ProcessingEnvironment, String...)}.
+     *
      * @param typeName the class that contains the method
      * @param methodName the name of the method
      * @param params the number of formal parameters
@@ -846,6 +862,20 @@ public final class TreeUtils {
             }
         }
         return methods;
+    }
+
+    /**
+     * Returns the ExecutableElement for a method declaration. Errs if there is no matching method.
+     *
+     * @param type the class that contains the method
+     * @param methodName the name of the method
+     * @param env the processing environment
+     * @param paramTypes the method's formal parameter types
+     * @return the ExecutableElement for the specified method
+     */
+    public static ExecutableElement getMethod(
+            Class type, String methodName, ProcessingEnvironment env, String... paramTypes) {
+        return getMethod(type.getCanonicalName(), methodName, env, paramTypes);
     }
 
     /**

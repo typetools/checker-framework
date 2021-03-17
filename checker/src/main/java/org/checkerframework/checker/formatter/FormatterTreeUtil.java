@@ -56,15 +56,13 @@ public class FormatterTreeUtil {
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
-        formatValueElement =
-                TreeUtils.getMethod(Format.class.getCanonicalName(), "value", 0, processingEnv);
+        formatValueElement = TreeUtils.getMethod(Format.class, "value", 0, processingEnv);
         invalidFormatValueElement =
-                TreeUtils.getMethod(
-                        InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
+                TreeUtils.getMethod(InvalidFormat.class, "value", 0, processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        Format.class.getCanonicalName(),
+                        Format.class,
                         "value",
                         0,
                         processingEnv);
