@@ -347,6 +347,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
      * Returns a modifiable list of expressions in the annotation sorted. If the annotation is
      * {@link LessThanBottom}, return null. If the annotation is {@link LessThanUnknown} return the
      * empty list.
+     *
+     * @param annotation an annotation from the LessThan hierarchy
+     * @return the expressions in the given annotation
      */
     public List<String> getLessThanExpressions(AnnotationMirror annotation) {
         if (AnnotationUtils.areSameByClass(annotation, LessThanBottom.class)) {
