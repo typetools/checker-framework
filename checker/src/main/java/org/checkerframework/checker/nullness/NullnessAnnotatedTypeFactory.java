@@ -188,9 +188,9 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
-                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/annotations
-                    "org.jspecify.annotations.Nullable",
-                    "org.jspecify.annotations.NullnessUnspecified",
+                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
+                    "org.jspecify.nullness.Nullable",
+                    "org.jspecify.nullness.NullnessUnspecified",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html

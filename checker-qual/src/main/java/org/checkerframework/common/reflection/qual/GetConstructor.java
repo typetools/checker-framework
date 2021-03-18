@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for methods like {@code Class.getConstructor}, whose signature is: <br>
- * {@code {@link MethodVal}(classname=c, methodname="<init>", params=p) Constructor<T>
+ * {@code @}{@link MethodVal}{@code (classname=c, methodname="<init>", params=p) Constructor<T>
  * method(Class<c> this, Object... params)}
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
