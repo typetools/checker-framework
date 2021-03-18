@@ -60,7 +60,7 @@ test_wpi_plume_lib() {
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
     java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
-    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
+    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     ACTUAL_FILE="$TESTDIR/$project/dljc-out/typecheck.out"

@@ -44,6 +44,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
@@ -187,12 +188,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * <p>This method is protected so it can be overridden, but it should only be called internally
      * by the BaseTypeChecker.
      *
-     * <p>The BaseTypeChecker will not modify the list returned by this method.
+     * <p>The BaseTypeChecker will not modify the list returned by this method, but other clients do
+     * modify the list.
+     *
+     * @return the subchecker classes on which this checker depends
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         if (shouldResolveReflection()) {
             return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
         }
+        // The returned set will be modified by callees.
         return new LinkedHashSet<>();
     }
 
@@ -326,10 +331,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
             }
             Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
             throw new BugInCF(
-                    String.format(
-                            "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
-                            name, Arrays.toString(args), Arrays.toString(paramTypes), cause),
-                    cause);
+                    cause,
+                    "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                    name,
+                    Arrays.toString(args),
+                    Arrays.toString(paramTypes));
         }
     }
 
@@ -475,6 +481,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
             treePathCacher = new TreePathCacher();
         }
         return treePathCacher;
+    }
+
+    @Override
+    protected void reportJavacError(TreePath p) {
+        if (parentChecker == null) {
+            // Only the parent checker should report the "type.checking.not.run" error.
+            super.reportJavacError(p);
+        }
     }
 
     // AbstractTypeProcessor delegation
@@ -795,11 +809,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     protected Object processArg(Object arg) {
         if (arg instanceof Collection) {
             Collection<?> carg = (Collection<?>) arg;
-            List<Object> newList = new ArrayList<>(carg.size());
-            for (Object o : carg) {
-                newList.add(processArg(o));
-            }
-            return newList;
+            return SystemUtil.mapList(this::processArg, carg);
         } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
             return getTypeFactory()
                     .getAnnotationFormatter()

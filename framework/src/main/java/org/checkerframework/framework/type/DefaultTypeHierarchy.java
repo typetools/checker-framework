@@ -351,6 +351,17 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             outsideUpperBound = ((AnnotatedWildcardType) outsideUpperBound).getExtendsBound();
         }
 
+        if (!TypesUtils.isErasedSubtype(
+                inside.getUnderlyingType(),
+                outsideUpperBound.getUnderlyingType(),
+                inside.atypeFactory.types)) {
+            // TODO: subtype is a wildcard that should have been captured, so just check the primary
+            // annotations.
+            AnnotationMirror subAnno = inside.getEffectiveAnnotationInHierarchy(currentTop);
+            AnnotationMirror superAnno = outsideUpperBound.getAnnotationInHierarchy(currentTop);
+            return qualifierHierarchy.isSubtype(subAnno, superAnno);
+        }
+
         AnnotatedTypeMirror castedInside =
                 AnnotatedTypes.castedAsSuper(inside.atypeFactory, inside, outsideUpperBound);
         if (!isSubtypeCaching(castedInside, outsideUpperBound)) {
@@ -490,14 +501,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         }
 
         final TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();
-        List<Integer> covariantArgIndexes = null;
         AnnotationMirror covam =
                 supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
 
-        if (covam != null) {
-            covariantArgIndexes =
-                    AnnotationUtils.getElementValueArray(covam, "value", Integer.class, false);
-        }
+        List<Integer> covariantArgIndexes =
+                (covam == null)
+                        ? null
+                        : AnnotationUtils.getElementValueArray(
+                                covam, "value", Integer.class, false);
 
         for (int i = 0; i < supertypeTypeArgs.size(); i++) {
             final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
@@ -1075,6 +1086,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             }
         }
 
-        return isSubtype(subtype.getExtendsBound(), supertype, currentTop);
+        if (TypesUtils.isErasedSubtype(
+                subtype.getExtendsBound().getUnderlyingType(),
+                supertype.getUnderlyingType(),
+                subtype.atypeFactory.types)) {
+            return isSubtype(subtype.getExtendsBound(), supertype, currentTop);
+        }
+        // TODO: subtype is a wildcard that should have been captured, so just check the primary
+        // annotations.
+        AnnotationMirror subAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
+        AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(currentTop);
+        return qualifierHierarchy.isSubtype(subAnno, superAnno);
     }
 }

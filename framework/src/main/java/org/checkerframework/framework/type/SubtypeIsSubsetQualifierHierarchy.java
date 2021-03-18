@@ -50,8 +50,8 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
             AnnotationMirror superAnno,
             QualifierKind superKind) {
         if (subKind == superKind) {
-            List<String> superValues = extractValues(superAnno);
-            List<String> subValues = extractValues(subAnno);
+            List<String> superValues = valuesStringList(superAnno);
+            List<String> subValues = valuesStringList(subAnno);
             return superValues.containsAll(subValues);
         }
         return subKind.isSubtypeOf(superKind);
@@ -65,8 +65,8 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
             QualifierKind qualifierKind2,
             QualifierKind lubKind) {
         if (qualifierKind1 == qualifierKind2) {
-            List<String> a1Values = extractValues(a1);
-            List<String> a2Values = extractValues(a2);
+            List<String> a1Values = valuesStringList(a1);
+            List<String> a2Values = valuesStringList(a2);
             LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
             set.addAll(a2Values);
             return createAnnotationMirrorWithValue(lubKind, set);
@@ -88,8 +88,8 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
             QualifierKind qualifierKind2,
             QualifierKind glbKind) {
         if (qualifierKind1 == qualifierKind2) {
-            List<String> a1Values = extractValues(a1);
-            List<String> a2Values = extractValues(a2);
+            List<String> a1Values = valuesStringList(a1);
+            List<String> a2Values = valuesStringList(a2);
             LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
             set.retainAll(a2Values);
             return createAnnotationMirrorWithValue(glbKind, set);
@@ -110,10 +110,11 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
      * @param anno an annotation
      * @return a mutable list containing the {@code values} element; may be the empty list
      */
-    private List<String> extractValues(AnnotationMirror anno) {
+    private List<String> valuesStringList(AnnotationMirror anno) {
         Map<? extends ExecutableElement, ? extends AnnotationValue> valMap =
                 anno.getElementValues();
         if (valMap.isEmpty()) {
+            // result is mutable
             return new ArrayList<>();
         } else {
             return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);

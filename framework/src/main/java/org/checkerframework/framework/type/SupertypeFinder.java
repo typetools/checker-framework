@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -87,7 +89,7 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedTypeMirror> defaultAction(AnnotatedTypeMirror t, Void p) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         /**
@@ -155,7 +157,6 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedDeclaredType> visitDeclared(AnnotatedDeclaredType type, Void p) {
-            List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
             // Set<AnnotationMirror> annotations = type.getAnnotations();
 
             TypeElement typeElement = (TypeElement) type.getUnderlyingType().asElement();
@@ -186,6 +187,8 @@ class SupertypeFinder {
 
                 enclosing = enclosing.getEnclosingType();
             }
+
+            List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
 
             ClassTree classTree = atypeFactory.trees.getTree(typeElement);
             // Testing against enum and annotation. Ideally we can simply use element!
@@ -277,18 +280,19 @@ class SupertypeFinder {
                                 != adt.getUnderlyingType().getTypeArguments().size()
                         && classTree.getSimpleName().contentEquals("")) {
                     // classTree is an anonymous class with a diamond.
-                    List<AnnotatedTypeMirror> args = new ArrayList<>();
-                    for (TypeParameterElement element :
-                            TypesUtils.getTypeElement(adt.getUnderlyingType())
-                                    .getTypeParameters()) {
-                        AnnotatedTypeMirror arg =
-                                AnnotatedTypeMirror.createType(
-                                        element.asType(), atypeFactory, false);
-                        // TODO: After #979 is fixed, calculate the correct type using inference.
-                        args.add(
-                                atypeFactory.getUninferredWildcardType(
-                                        (AnnotatedTypeVariable) arg));
-                    }
+                    List<AnnotatedTypeMirror> args =
+                            SystemUtil.mapList(
+                                    (TypeParameterElement element) -> {
+                                        AnnotatedTypeMirror arg =
+                                                AnnotatedTypeMirror.createType(
+                                                        element.asType(), atypeFactory, false);
+                                        // TODO: After #979 is fixed, calculate the correct type
+                                        // using inference.
+                                        return atypeFactory.getUninferredWildcardType(
+                                                (AnnotatedTypeVariable) arg);
+                                    },
+                                    TypesUtils.getTypeElement(adt.getUnderlyingType())
+                                            .getTypeParameters());
                     adt.setTypeArguments(args);
                 }
                 supertypes.add(adt);
@@ -382,16 +386,12 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedTypeMirror> visitTypeVariable(AnnotatedTypeVariable type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
-            superTypes.add(type.getUpperBound().deepCopy());
-            return superTypes;
+            return Collections.singletonList(type.getUpperBound().deepCopy());
         }
 
         @Override
         public List<AnnotatedTypeMirror> visitWildcard(AnnotatedWildcardType type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
-            superTypes.add(type.getExtendsBound().deepCopy());
-            return superTypes;
+            return Collections.singletonList(type.getExtendsBound().deepCopy());
         }
 
         /**
@@ -426,7 +426,7 @@ class SupertypeFinder {
                     scan(type.getEnclosingType(), mapping);
                 }
 
-                List<AnnotatedTypeMirror> args = new ArrayList<>();
+                List<AnnotatedTypeMirror> args = new ArrayList<>(type.getTypeArguments().size());
                 for (AnnotatedTypeMirror arg : type.getTypeArguments()) {
                     Element elem = types.asElement(arg.getUnderlyingType());
                     if ((elem != null)

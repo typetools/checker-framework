@@ -4,6 +4,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -99,11 +100,9 @@ public class SameLenTransfer extends CFTransfer {
                                     .getAnnotationInHierarchy(UNKNOWN);
 
                     AnnotationMirror combinedSameLen =
-                            // In Java 9, this can be:
-                            // aTypeFactory.createCombinedSameLen(
-                            //         List.of(targetRec, otherRec), List.of(lengthNodeAnnotation));
                             aTypeFactory.createCombinedSameLen(
-                                    targetRec, otherRec, UNKNOWN, lengthNodeAnnotation);
+                                    Arrays.asList(targetRec, otherRec),
+                                    Arrays.asList(UNKNOWN, lengthNodeAnnotation));
 
                     propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
                     return result;
@@ -129,11 +128,9 @@ public class SameLenTransfer extends CFTransfer {
             AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 
             AnnotationMirror combinedSameLen =
-                    // In Java 9, this can be:
-                    // aTypeFactory.createCombinedSameLen(
-                    //         List.of(targetRec, exprRec), List.of(rightAnnoOrUnknown));
                     aTypeFactory.createCombinedSameLen(
-                            targetRec, exprRec, UNKNOWN, rightAnnoOrUnknown);
+                            Arrays.asList(targetRec, exprRec),
+                            Arrays.asList(UNKNOWN, rightAnnoOrUnknown));
 
             propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
         }
@@ -177,6 +174,10 @@ public class SameLenTransfer extends CFTransfer {
     /**
      * Handles refinement of equality comparisons. Assumes "a == b" or "a.length == b.length"
      * evaluates to true. The method gives a and b SameLen of each other in the store.
+     *
+     * @param left the first argument to the equality operator
+     * @param right the second argument to the equality operator
+     * @param store the store in which to perform refinement
      */
     private void refineEq(Node left, Node right, CFStore store) {
         List<JavaExpression> exprs = new ArrayList<>();

@@ -23,7 +23,6 @@ import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -38,6 +37,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -673,10 +673,7 @@ public class TreeBuilder {
      * @return a NewArrayTree to create a new array with initializers
      */
     public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
-        List<JCExpression> exprs = new ArrayList<>();
-        for (ExpressionTree elem : elems) {
-            exprs.add((JCExpression) elem);
-        }
+        List<JCExpression> exprs = SystemUtil.mapList(JCExpression.class::cast, elems);
 
         JCTree.JCNewArray newArray =
                 maker.NewArray(

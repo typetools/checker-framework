@@ -42,6 +42,7 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -315,14 +316,10 @@ public abstract class JavaExpression {
             result = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            List<@Nullable JavaExpression> dimensions = new ArrayList<>();
-            for (Node dimension : an.getDimensions()) {
-                dimensions.add(fromNode(dimension));
-            }
-            List<JavaExpression> initializers = new ArrayList<>();
-            for (Node initializer : an.getInitializers()) {
-                initializers.add(fromNode(initializer));
-            }
+            List<@Nullable JavaExpression> dimensions =
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getDimensions());
+            List<JavaExpression> initializers =
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getInitializers());
             result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
@@ -334,10 +331,8 @@ public abstract class JavaExpression {
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
             // Note that the method might be nondeterministic.
-            List<JavaExpression> parameters = new ArrayList<>();
-            for (Node p : mn.getArguments()) {
-                parameters.add(fromNode(p));
-            }
+            List<JavaExpression> parameters =
+                    SystemUtil.mapList(JavaExpression::fromNode, mn.getArguments());
             JavaExpression methodReceiver;
             if (ElementUtils.isStatic(invokedMethod)) {
                 methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
@@ -408,10 +403,8 @@ public abstract class JavaExpression {
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
 
                 // Note that the method might be nondeterministic.
-                List<JavaExpression> parameters = new ArrayList<>();
-                for (ExpressionTree p : mn.getArguments()) {
-                    parameters.add(fromTree(p));
-                }
+                List<JavaExpression> parameters =
+                        SystemUtil.mapList(JavaExpression::fromTree, mn.getArguments());
                 JavaExpression methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
                     methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
@@ -576,11 +569,9 @@ public abstract class JavaExpression {
         if (methodTree == null) {
             return null;
         }
-        List<JavaExpression> internalArguments = new ArrayList<>();
-        for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(fromNode(new LocalVariableNode(arg)));
-        }
-        return internalArguments;
+        return SystemUtil.mapList(
+                (VariableTree arg) -> fromNode(new LocalVariableNode(arg)),
+                methodTree.getParameters());
     }
 
     ///

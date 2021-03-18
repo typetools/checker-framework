@@ -618,13 +618,18 @@ public class ElementUtils {
      *
      * <p>TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+     *
+     * @param type the type whose supertypes to return
+     * @param elements the Element utilities
+     * @return supertypes of {@code type}
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
-        List<TypeElement> superelems = new ArrayList<>();
         if (type == null) {
-            return superelems;
+            return Collections.emptyList();
         }
+
+        List<TypeElement> superelems = new ArrayList<>();
 
         // Set up a stack containing type, which is our starting point.
         Deque<TypeElement> stack = new ArrayDeque<>();
@@ -663,13 +668,18 @@ public class ElementUtils {
     }
 
     /**
-     * Return all fields declared in the given type or any superclass/interface. TODO: should this
-     * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
-     * getSuperTypes?
+     * Return all fields declared in the given type or any superclass/interface.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose fields to return
+     * @param elements the Element utilities
+     * @return fields of {@code type}
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
-        List<VariableElement> fields = new ArrayList<>();
-        fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
+        List<VariableElement> fields =
+                new ArrayList<>(ElementFilter.fieldsIn(type.getEnclosedElements()));
         List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
             fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
@@ -679,12 +689,18 @@ public class ElementUtils {
 
     /**
      * Return all methods declared in the given type or any superclass/interface. Note that no
-     * constructors will be returned. TODO: should this use
-     * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
+     * constructors will be returned.
+     *
+     * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
+     * our own getSuperTypes?
+     *
+     * @param type the type whose methods to return
+     * @param elements the Element utilities
+     * @return methods of {@code type}
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
-        List<ExecutableElement> meths = new ArrayList<>();
-        meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
+        List<ExecutableElement> meths =
+                new ArrayList<>(ElementFilter.methodsIn(type.getEnclosedElements()));
 
         List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
@@ -693,11 +709,14 @@ public class ElementUtils {
         return Collections.unmodifiableList(meths);
     }
 
-    /** Return all nested/inner classes/interfaces declared in the given type. */
+    /**
+     * Return all nested/inner classes/interfaces declared in the given type.
+     *
+     * @param type a type
+     * @return all nested/inner classes/interfaces declared in {@code type}
+     */
     public static List<TypeElement> getAllTypeElementsIn(TypeElement type) {
-        List<TypeElement> types = new ArrayList<>();
-        types.addAll(ElementFilter.typesIn(type.getEnclosedElements()));
-        return types;
+        return ElementFilter.typesIn(type.getEnclosedElements());
     }
 
     /** The set of kinds that represent types. */

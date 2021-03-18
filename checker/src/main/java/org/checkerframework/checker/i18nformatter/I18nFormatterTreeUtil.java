@@ -60,11 +60,14 @@ public class I18nFormatterTreeUtil {
     /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
 
-    /** The value() element/field of an @I18nInvalidFormat annotation. */
-    protected final ExecutableElement i18nInvalidFormatValueElement;
+    /** The value() element/field of an @I18nFormat annotation. */
+    protected final ExecutableElement i18nFormatValueElement;
 
     /** The value() element/field of an @I18nFormatFor annotation. */
     protected final ExecutableElement i18nFormatForValueElement;
+
+    /** The value() element/field of an @I18nInvalidFormat annotation. */
+    protected final ExecutableElement i18nInvalidFormatValueElement;
 
     /**
      * Creates a new I18nFormatterTreeUtil.
@@ -74,18 +77,11 @@ public class I18nFormatterTreeUtil {
     public I18nFormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
-        i18nInvalidFormatValueElement =
-                TreeUtils.getMethod(
-                        "org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat",
-                        "value",
-                        0,
-                        processingEnv);
+        i18nFormatValueElement = TreeUtils.getMethod(I18nFormat.class, "value", 0, processingEnv);
         i18nFormatForValueElement =
-                TreeUtils.getMethod(
-                        "org.checkerframework.checker.i18nformatter.qual.I18nFormatFor",
-                        "value",
-                        0,
-                        processingEnv);
+                TreeUtils.getMethod(I18nFormatFor.class, "value", 0, processingEnv);
+        i18nInvalidFormatValueElement =
+                TreeUtils.getMethod(I18nInvalidFormat.class, "value", 0, processingEnv);
     }
 
     /** Describe the format annotation type. */
@@ -167,14 +163,15 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link I18nFormat} annotation, and returns its
-     * value.
+     * Takes an {@code @}{@link I18nFormat} annotation, and returns its {@code value} element
+     *
+     * @param anno an {@code @}{@link I18nFormat} annotation
+     * @return the {@code @}{@link I18nFormat} annotation's {@code value} element
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        List<I18nConversionCategory> list =
-                AnnotationUtils.getElementValueEnumArray(
-                        anno, "value", I18nConversionCategory.class, false);
-        return list.toArray(new I18nConversionCategory[] {});
+        return AnnotationUtils.annotationValueListToEnumArray(
+                anno.getElementValues().get(i18nFormatValueElement).getValue(),
+                I18nConversionCategory.class);
     }
 
     /**
