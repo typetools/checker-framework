@@ -995,12 +995,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 stringExpr -> StringToJavaExpression.atMethodBody(stringExpr, methodTree, checker);
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
-            AnnotationMirror annotation = contract.annotation;
-            annotation =
-                    atypeFactory
-                            .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(
-                                    annotation, stringToJavaExpr, methodTree);
+            AnnotationMirror annotation =
+                    contract.viewpointAdaptDependentTypeAnnotation(
+                            atypeFactory, stringToJavaExpr, methodTree);
 
             JavaExpression exprJe;
             try {
@@ -1724,12 +1721,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Contract c : preconditions) {
             Precondition p = (Precondition) c;
             String expressionString = p.expressionString;
-            AnnotationMirror anno = p.annotation;
-            anno =
-                    atypeFactory
-                            .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(anno, stringToJavaExpr, tree);
-
+            AnnotationMirror anno =
+                    c.viewpointAdaptDependentTypeAnnotation(atypeFactory, stringToJavaExpr, tree);
             JavaExpression exprJe;
             try {
                 exprJe = StringToJavaExpression.atMethodInvocation(expressionString, tree, checker);
@@ -4259,12 +4252,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
-            AnnotationMirror annotation = p.annotation;
-            annotation =
-                    atypeFactory
-                            .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(
-                                    annotation, stringToJavaExpr, methodTree);
+            AnnotationMirror annotation =
+                    p.viewpointAdaptDependentTypeAnnotation(
+                            atypeFactory, stringToJavaExpr, methodTree);
             JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed many times.

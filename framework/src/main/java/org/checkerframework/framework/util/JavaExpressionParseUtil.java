@@ -140,7 +140,17 @@ public class JavaExpressionParseUtil {
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
         } catch (ParseProblemException e) {
-            throw constructJavaExpressionParseError(expression, "is an invalid expression");
+            String extra = ".";
+            if (!e.getProblems().isEmpty()) {
+                String message = e.getProblems().get(0).getMessage();
+                int newLine = message.indexOf(System.lineSeparator());
+                if (newLine != -1) {
+                    message = message.substring(0, newLine);
+                }
+                extra = ". Error message: " + message;
+            }
+            throw constructJavaExpressionParseError(
+                    expression, "the expression did not parse" + extra);
         }
 
         JavaExpression result =
@@ -318,7 +328,7 @@ public class JavaExpressionParseUtil {
         public JavaExpression defaultAction(com.github.javaparser.ast.Node n, Void aVoid) {
             throw new ParseRuntimeException(
                     constructJavaExpressionParseError(
-                            n.toString(), "is not a supported expression"));
+                            n.toString(), n.getClass() + " is not a supported expression"));
         }
 
         @Override
@@ -494,7 +504,7 @@ public class JavaExpressionParseUtil {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
                                 "#0",
-                                "use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+                                "\"this\" should be used for the receiver or \"#1\" for the first formal parameter"));
             }
             if (idx > parameters.size()) {
                 throw new ParseRuntimeException(
@@ -673,17 +683,21 @@ public class JavaExpressionParseUtil {
                 return new FieldAccess(receiverExpr, fieldType, fieldElem);
             } else {
                 if (!(receiverExpr instanceof ThisReference)) {
+                    String msg =
+                            String.format(
+                                    "%s is declared in an outer type of the type of the receiver expression, %s.",
+                                    identifier, receiverExpr);
                     throw new ParseRuntimeException(
-                            constructJavaExpressionParseError(
-                                    identifier,
-                                    "field declared in an outer type cannot be accessed from an inner type"));
+                            constructJavaExpressionParseError(identifier, msg));
                 }
                 TypeElement receiverTypeElement = TypesUtils.getTypeElement(receiverExpr.getType());
                 if (receiverTypeElement == null || ElementUtils.isStatic(receiverTypeElement)) {
+                    String msg =
+                            String.format(
+                                    "%s is a non-static field declared in an outer type this.",
+                                    identifier);
                     throw new ParseRuntimeException(
-                            constructJavaExpressionParseError(
-                                    identifier,
-                                    "a non-static field declared in an outer type cannot be referenced from a member type"));
+                            constructJavaExpressionParseError(identifier, msg));
                 }
                 JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
                 return new FieldAccess(locationOfField, fieldElem);
@@ -870,7 +884,7 @@ public class JavaExpressionParseUtil {
             if (result == null) {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
-                                expr.toString(), "is an unparsable class literal"));
+                                expr.toString(), "it is an unparsable class literal"));
             }
             return new ClassName(result);
         }
@@ -1220,10 +1234,10 @@ public class JavaExpressionParseUtil {
     private static JavaExpressionParseException constructJavaExpressionParseError(
             String expr, String explanation) {
         if (expr == null) {
-            throw new Error("Must have an expression.");
+            throw new BugInCF("Must have an expression.");
         }
         if (explanation == null) {
-            throw new Error("Must have an explanation.");
+            throw new BugInCF("Must have an explanation.");
         }
         return new JavaExpressionParseException(
                 (Throwable) null,

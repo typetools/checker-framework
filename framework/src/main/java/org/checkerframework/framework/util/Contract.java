@@ -1,15 +1,19 @@
 package org.checkerframework.framework.util;
 
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -191,6 +195,35 @@ public abstract class Contract {
         return String.format(
                 "%s{expressionString=%s, annotation=%s, contractAnnotation=%s}",
                 getClass().getSimpleName(), expressionString, annotation, contractAnnotation);
+    }
+
+    /**
+     * Viewpoint-adapt {@link #annotation} using {@code stringToJavaExpr}.
+     *
+     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map = "map")},
+     * {@code annoFromContract} is {@code @KeyFor("map")}. This method applies {@code stringToJava}
+     * to "map" and returns a new {@code KeyFor} annotation with the result.
+     *
+     * @param factory used to get {@link DependentTypesHelper}
+     * @param stringToJavaExpr function used to convert strings to {@link JavaExpression}s
+     * @param errorTree if non-null, where to report any errors that occur when parsing the
+     *     dependent type annotation; if null, report no errors
+     * @return the viewpoint-adapted annotation, or {@link #annotation} if it is not a dependent
+     *     type annotation
+     */
+    public AnnotationMirror viewpointAdaptDependentTypeAnnotation(
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> factory,
+            StringToJavaExpression stringToJavaExpr,
+            @Nullable Tree errorTree) {
+        DependentTypesHelper dependentTypesHelper = factory.getDependentTypesHelper();
+        AnnotationMirror standardized = dependentTypesHelper.map(stringToJavaExpr, annotation);
+        if (standardized == null) {
+            return annotation;
+        }
+        if (errorTree != null) {
+            dependentTypesHelper.checkAnnotation(standardized, errorTree);
+        }
+        return standardized;
     }
 
     /** A precondition contract. */

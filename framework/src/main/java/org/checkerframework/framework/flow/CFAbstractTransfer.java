@@ -569,7 +569,8 @@ public abstract class CFAbstractTransfer<
         for (Precondition p : preconditions) {
             String stringExpr = p.expressionString;
             AnnotationMirror annotation =
-                    viewpointAdaptAnnoFromContract(p.annotation, stringToJavaExpr);
+                    p.viewpointAdaptDependentTypeAnnotation(
+                            analysis.atypeFactory, stringToJavaExpr, /*errorTree=*/ null);
             JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -585,24 +586,6 @@ public abstract class CFAbstractTransfer<
             }
             initialStore.insertValuePermitNondeterministic(exprJe, annotation);
         }
-    }
-
-    /**
-     * Viewpoint-adapts a type qualifier annotation obtained from a contract.
-     *
-     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
-     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} using {@code
-     * stringToJavaExpr}.
-     *
-     * @param annoFromContract an annotation from a contract
-     * @param stringToJavaExpr function to use to convert the expression string in the annotation
-     * @return the standardized annotation, or the argument if it does not need standardization
-     */
-    private AnnotationMirror viewpointAdaptAnnoFromContract(
-            AnnotationMirror annoFromContract, StringToJavaExpression stringToJavaExpr) {
-        // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
-        return analysis.dependentTypesHelper.viewpointAdaptQualifierFromContract(
-                annoFromContract, stringToJavaExpr, /*errorTree=*/ null);
     }
 
     /**
@@ -1200,7 +1183,9 @@ public abstract class CFAbstractTransfer<
                                 stringExpr, invocationNode, analysis.checker);
         for (Contract p : postconditions) {
             // Viewpoint-adapt to the method use (the call site).
-            AnnotationMirror anno = viewpointAdaptAnnoFromContract(p.annotation, stringToJavaExpr);
+            AnnotationMirror anno =
+                    p.viewpointAdaptDependentTypeAnnotation(
+                            analysis.atypeFactory, stringToJavaExpr, /*errorTree=*/ null);
 
             String expressionString = p.expressionString;
             try {

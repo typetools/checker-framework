@@ -59,7 +59,7 @@ import org.plumelib.util.StringsPlume;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
- * expression strings. This class performs four main functions:
+ * expression strings. This class performs three main functions:
  *
  * <ol>
  *   <li>Viewpoint-adapts dependant type annotations in {@link AnnotationMirror} by converting
@@ -201,7 +201,7 @@ public class DependentTypesHelper {
      *
      * @param classDecl class or interface declaration whose type variables should be viewpoint
      *     adapted
-     * @param bounds annotated types of the bounds of the type variables; its elements are not
+     * @param bounds annotated types of the bounds of the type variables; its elements are
      *     side-effected by this method (but the list itself is not side-effected)
      */
     public void atTypeVariableBounds(
@@ -221,26 +221,33 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint-adapts the dependent type annotations in the methodDeclType based on the
+     * Viewpoint-adapts the dependent type annotations in the methodType based on the
      * methodInvocationTree.
      *
+     * <p>{@code methodType} has been viewpoint-adapted to the call site, except that any dependent
+     * type annotations. The dependent type annotations will be viewpoint-adapted by this method.
+     *
      * @param methodInvocationTree use of the method
-     * @param methodDeclType type of the method declaration; is side-effected by this method
+     * @param methodType type of the method invocation; is side-effected by this method
      */
     public void atMethodInvocation(
-            MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodDeclType) {
+            MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodType) {
         if (!hasDependentAnnotations()) {
             return;
         }
-        atInvocation(methodInvocationTree, methodDeclType);
+        atInvocation(methodInvocationTree, methodType);
     }
 
     /**
      * Viewpoint-adapts the dependent type annotations in the constructorType based on the
      * newClassTree.
      *
+     * <p>{@code constructorType} has been viewpoint-adapted to the call site, except that any
+     * dependent type annotations. The dependent type annotations will be viewpoint-adapted by this
+     * method.
+     *
      * @param newClassTree invocation of the constructor
-     * @param constructorType type of the constructor; is side-effected by this method
+     * @param constructorType type of the constructor invocation; is side-effected by this method
      */
     public void atConstructorInvocation(
             NewClassTree newClassTree, AnnotatedExecutableType constructorType) {
@@ -253,16 +260,20 @@ public class DependentTypesHelper {
     /**
      * Viewpoint-adapts a method or constructor invocation.
      *
+     * <p>{@code methodType} has been viewpoint-adapted to the call site, except that any dependent
+     * type annotations. The dependent type annotations will be viewpoint-adapted by this method.
+     *
      * @param tree invocation of the method or constructor
-     * @param methodType type of the method or constructor; is side-effected by this method
+     * @param methodType type of the method or constructor invocation; is side-effected by this
+     *     method
      */
     private void atInvocation(ExpressionTree tree, AnnotatedExecutableType methodType) {
         assert hasDependentAnnotations();
         Element methodElt = TreeUtils.elementFromUse(tree);
-        // The annotations on `viewpointAdaptedType` will be copied to `methodType`.
-        AnnotatedExecutableType viewpointAdaptedType =
+        // The annotations on `declaredMethodType` will be copied to `methodType`.
+        AnnotatedExecutableType declaredMethodType =
                 (AnnotatedExecutableType) factory.getAnnotatedType(methodElt);
-        if (!hasDependentType(viewpointAdaptedType)) {
+        if (!hasDependentType(declaredMethodType)) {
             return;
         }
 
@@ -276,7 +287,7 @@ public class DependentTypesHelper {
         // If the type of List.get is viewpoint adapted for the invocation "list.get(0)", then
         // methodType would be @KeyFor("map") String get(int).
         //
-        // Instead, use the type for the method (viewpointAdaptedType) and viewpoint adapt that
+        // Instead, use the type for the method (declaredMethodType) and viewpoint adapt that
         // type.
         // Then copy annotations from the viewpoint adapted type to methodType, if that annotation
         // is not on a type that was substituted for a type variable.
@@ -295,8 +306,8 @@ public class DependentTypesHelper {
         } else {
             throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
         }
-        convertAnnotatedTypeMirror(stringToJavaExpr, viewpointAdaptedType);
-        this.viewpointAdaptedCopier.visit(viewpointAdaptedType, methodType);
+        convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
+        this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
     }
 
     /**
@@ -319,12 +330,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint-adapts the Java expressions in annotations to a class declaration.
+     * Standardizes the Java expressions in annotations to a class declaration.
      *
-     * @param type the type of the class declaration; is side-effected by this method
-     * @param classElt the element of the class declaration
+     * @param type the type of the type declaration; is side-effected by this method
+     * @param typeElt the element of the type declaration
      */
-    public void atClassDeclaration(AnnotatedTypeMirror type, TypeElement classElt) {
+    public void atTypeDecl(AnnotatedTypeMirror type, TypeElement typeElt) {
         if (!hasDependentType(type)) {
             return;
         }
@@ -332,7 +343,7 @@ public class DependentTypesHelper {
         convertAnnotatedTypeMirror(
                 stringExpr ->
                         StringToJavaExpression.atTypeDecl(
-                                stringExpr, classElt, factory.getChecker()),
+                                stringExpr, typeElt, factory.getChecker()),
                 type);
     }
 
@@ -362,7 +373,7 @@ public class DependentTypesHelper {
      * Standardize the Java expressions in annotations in a variable declaration.
      *
      * @param declarationTree the variable declaration
-     * @param type the type of the variable declaration
+     * @param type the type of the variable declaration; is side-effected by this method
      * @param variableElt the element of the variable declaration
      */
     public void atVariableDeclaration(
@@ -454,7 +465,7 @@ public class DependentTypesHelper {
     /**
      * Standardize the Java expressions in annotations in a type.
      *
-     * @param type the type to standardize
+     * @param type the type to standardize; is side-effected by this method
      * @param elt the element whose type is {@code type}
      */
     public void atLocalVariable(AnnotatedTypeMirror type, Element elt) {
@@ -492,38 +503,6 @@ public class DependentTypesHelper {
                 // for example), so there is nothing to do.
                 break;
         }
-    }
-
-    /**
-     * Viewpoint-adapt a type qualifier obtained from a contract using {@code stringToJavaExpr}.
-     *
-     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
-     * "this.map")}, this method applies {@code stringToJava} to "this.map" and returns a new {@code
-     * KeyFor} annotation with the result.
-     *
-     * @param annoFromContract an annotation from a contract
-     * @param stringToJavaExpr function used to convert strings to {@link JavaExpression}s
-     * @param errorTree if non-null, where to report any errors that occur when parsing the
-     *     dependent type annotation; if null, report no errors
-     * @return the viewpoint-adapted annotation, or the argument if it is not a dependant type
-     *     annotation
-     */
-    public AnnotationMirror viewpointAdaptQualifierFromContract(
-            AnnotationMirror annoFromContract,
-            StringToJavaExpression stringToJavaExpr,
-            @Nullable Tree errorTree) {
-        if (!hasDependentAnnotations()) {
-            return annoFromContract;
-        }
-
-        AnnotationMirror standardized = map(stringToJavaExpr, annoFromContract);
-        if (standardized == null) {
-            return annoFromContract;
-        }
-        if (errorTree != null) {
-            checkAnnotation(standardized, errorTree);
-        }
-        return standardized;
     }
 
     /**
@@ -620,7 +599,7 @@ public class DependentTypesHelper {
      * @return an annotation created by applying {@code stringToJavaExpr} to all expression strings
      *     in {@code anno}
      */
-    protected @Nullable AnnotationMirror map(
+    public @Nullable AnnotationMirror map(
             StringToJavaExpression stringToJavaExpr, AnnotationMirror anno) {
         if (!isExpressionAnno(anno)) {
             return null;
