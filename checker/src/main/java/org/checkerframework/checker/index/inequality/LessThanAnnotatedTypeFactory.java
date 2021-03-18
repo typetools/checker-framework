@@ -360,6 +360,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
             // The annotation is @LessThan.
             AnnotationValue value = annotation.getElementValues().get(lessThanValueElement);
             List<String> list = AnnotationUtils.annotationValueToList(value, String.class);
+            // System.out.printf("getLessThanExpressions(%s) => %s%n", annotation, list);
             return list;
         }
     }

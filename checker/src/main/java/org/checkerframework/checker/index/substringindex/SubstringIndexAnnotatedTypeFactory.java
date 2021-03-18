@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.SubstringIndexBottom;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
@@ -34,9 +35,13 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
 
-    /** The factory used for reading elements/fields from annotations. */
-    // TODO: This isn't initialized, so its uses are all wrong.
-    UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory;
+    //
+    /**
+     * The factory used for reading elements/fields from annotations.
+     *
+     * <p>This field is set by {@link IndexChecker#introduceSubcheckers}.
+     */
+    public UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory;
 
     /**
      * Create a new SubstringIndexAnnotatedTypeFactory.
@@ -45,6 +50,9 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      */
     public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+
+        IndexChecker indexChecker = (IndexChecker) checker.getUltimateParentChecker();
+        indexChecker.setSubstringIndexAtypeFactory(this);
 
         this.postInit();
     }

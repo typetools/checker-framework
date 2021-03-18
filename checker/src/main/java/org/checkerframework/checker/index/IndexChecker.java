@@ -1,6 +1,9 @@
 package org.checkerframework.checker.index;
 
+import org.checkerframework.checker.index.substringindex.SubstringIndexAnnotatedTypeFactory;
+import org.checkerframework.checker.index.upperbound.UpperBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /**
  * A type checker for preventing out-of-bounds accesses on fixed-length sequences, such as arrays
@@ -77,4 +80,45 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  * @checker_framework.manual #index-checker Index Checker
  */
 // @RelevantJavaTypes annotations appear on other checkers.
-public class IndexChecker extends UpperBoundChecker {}
+public class IndexChecker extends UpperBoundChecker {
+
+    /** The SubstringIndexAnnotatedTypeFactory associated with this. */
+    private @MonotonicNonNull SubstringIndexAnnotatedTypeFactory substringIndexAtypeFactory;
+
+    /** The UpperBoundAnnotatedTypeFactory associated with this. */
+    private @MonotonicNonNull UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory;
+
+    /** Creates the Index Chceker. */
+    public IndexChecker() {}
+
+    /**
+     * Sets the SubstringIndexAnnotatedTypeFactory associated with this.
+     *
+     * @param substringIndexAtypeFactory the SubstringIndexAnnotatedTypeFactory associated with this
+     */
+    public void setSubstringIndexAtypeFactory(
+            SubstringIndexAnnotatedTypeFactory substringIndexAtypeFactory) {
+        this.substringIndexAtypeFactory = substringIndexAtypeFactory;
+        introduceSubcheckers();
+    }
+
+    /**
+     * Sets the UpperBoundAnnotatedTypeFactory associated with this.
+     *
+     * @param upperBoundAtypeFactory the UpperBoundAnnotatedTypeFactory associated with this
+     */
+    public void setUpperBoundAtypeFactory(UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory) {
+        this.upperBoundAtypeFactory = upperBoundAtypeFactory;
+        introduceSubcheckers();
+    }
+
+    /**
+     * Introduce the subcheckers to one another: set fields that link between them. Calling this has
+     * no effect until all the needed fields have been set.
+     */
+    private void introduceSubcheckers() {
+        if (upperBoundAtypeFactory != null && substringIndexAtypeFactory != null) {
+            substringIndexAtypeFactory.upperBoundAtypeFactory = upperBoundAtypeFactory;
+        }
+    }
+}

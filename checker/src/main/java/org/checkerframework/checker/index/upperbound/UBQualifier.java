@@ -104,6 +104,9 @@ public abstract class UBQualifier {
                 (offsetAV == null)
                         ? Collections.nCopies(sequences.size(), "")
                         : AnnotationUtils.annotationValueToList(offsetAV, String.class);
+        // System.out.printf(
+        //         "parseLTLengthOf(%s, %s) => createUBQualifier(%s, %s, %s)%n",
+        //         ltLengthOfAnno, extraOffset, sequences, offsets, extraOffset);
         return createUBQualifier(sequences, offsets, extraOffset);
     }
 
@@ -135,6 +138,10 @@ public abstract class UBQualifier {
     private static UBQualifier parseLTEqLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
                 AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+        if (sequences.isEmpty()) {
+            // How did this AnnotationMirror even get made?  It seems invalid.
+            return UpperBoundUnknownQualifier.UNKNOWN;
+        }
         List<String> offset = Collections.nCopies(sequences.size(), "-1");
         return createUBQualifier(sequences, offset, extraOffset);
     }
@@ -212,6 +219,9 @@ public abstract class UBQualifier {
             }
         }
 
+        // System.out.printf(
+        //         "createUBQualifier(%s, %s, %s) => LessThanLengthOf(%s, %s, %s)%n",
+        //         sequences, offsets, extraEq, sequences, offsets, extraEq);
         return new LessThanLengthOf(sequences, offsets, extraEq);
     }
 
@@ -366,11 +376,16 @@ public abstract class UBQualifier {
          */
         private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
                 List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
+            // System.out.printf(
+            //         "sequencesAndOffsetsToMap(%s, %s, %s)%n", sequences, offsets, extraEq);
 
             Map<String, Set<OffsetEquation>> map = new HashMap<>();
             if (offsets.isEmpty()) {
                 for (String sequence : sequences) {
-                    map.put(sequence, Collections.singleton(extraEq));
+                    // Not `Collections.singleton(extraEq)` because the values get modified
+                    Set<OffsetEquation> thisSet = new HashSet<>();
+                    thisSet.add(extraEq);
+                    map.put(sequence, thisSet);
                 }
             } else {
                 assert sequences.size() == offsets.size();
@@ -384,12 +399,14 @@ public abstract class UBQualifier {
                     }
                     OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
                     if (eq.hasError()) {
+                        // System.out.printf("sequencesAndOffsetsToMap() => null%n");
                         return null;
                     }
                     eq = eq.copyAdd('+', extraEq);
                     set.add(eq);
                 }
             }
+            // System.out.printf("sequencesAndOffsetsToMap() => %s%n", map);
             return map;
         }
 
@@ -948,7 +965,10 @@ public abstract class UBQualifier {
             OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, op);
             LessThanLengthOf nodeOffsetQualifier = null;
             if (!newOffset.hasError()) {
-                nodeOffsetQualifier = (LessThanLengthOf) addOffset(newOffset);
+                UBQualifier nodeOffsetQualifierMaybe = addOffset(newOffset);
+                if (!(nodeOffsetQualifierMaybe instanceof UpperBoundUnknownQualifier)) {
+                    nodeOffsetQualifier = (LessThanLengthOf) nodeOffsetQualifierMaybe;
+                }
             }
 
             OffsetEquation valueOffset =
@@ -956,7 +976,10 @@ public abstract class UBQualifier {
                             node, factory.getValueAnnotatedTypeFactory(), op);
             LessThanLengthOf valueOffsetQualifier = null;
             if (valueOffset != null && !valueOffset.hasError()) {
-                valueOffsetQualifier = (LessThanLengthOf) addOffset(valueOffset);
+                UBQualifier valueOffsetQualifierMaybe = addOffset(valueOffset);
+                if (!(valueOffsetQualifierMaybe instanceof UpperBoundUnknownQualifier)) {
+                    valueOffsetQualifier = (LessThanLengthOf) valueOffsetQualifierMaybe;
+                }
             }
 
             if (valueOffsetQualifier == null) {

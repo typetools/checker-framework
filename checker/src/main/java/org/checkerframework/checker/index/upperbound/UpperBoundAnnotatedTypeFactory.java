@@ -21,6 +21,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
+import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -141,6 +142,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                         LTLengthOf.class.getCanonicalName(), "offset", 0, processingEnv);
 
         imf = new IndexMethodIdentifier(this);
+
+        IndexChecker indexChecker = (IndexChecker) checker.getUltimateParentChecker();
+        indexChecker.setUpperBoundAtypeFactory(this);
 
         this.postInit();
     }
