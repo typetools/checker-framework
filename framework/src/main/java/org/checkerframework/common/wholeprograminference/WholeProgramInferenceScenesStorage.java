@@ -520,7 +520,7 @@ public class WholeProgramInferenceScenesStorage
             AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
         Element elt = am.getAnnotationType().asElement();
         // Checks if am is an implementation detail (a type qualifier used
-        // internally by the type system and not meant to be seen by the user.)
+        // internally by the type system and not meant to be seen by the user).
         Target target = elt.getAnnotation(Target.class);
         if (target != null && target.value().length == 0) {
             return true;
