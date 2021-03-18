@@ -71,7 +71,10 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree node, AnnotatedTypeMirror type) {
-        helper.atFieldAccess(node, type);
+        Element ele = TreeUtils.elementFromUse(node);
+        if (ele.getKind() == ElementKind.FIELD || ele.getKind() == ElementKind.ENUM_CONSTANT) {
+            helper.atFieldAccess(node, type);
+        }
         return super.visitMemberSelect(node, type);
     }
 }

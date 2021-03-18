@@ -196,10 +196,6 @@ public class DependentTypesHelper {
         return new DependentTypesTreeAnnotator(factory, this);
     }
 
-    ///
-    /// Viewpoint adaptation
-    ///
-
     /**
      * Viewpoint-adapts the dependent type annotations on the bounds to the use of the type.
      *
@@ -311,12 +307,7 @@ public class DependentTypesHelper {
      * @param type its type; is side-effected by this method
      */
     public void atFieldAccess(MemberSelectTree fieldAccess, AnnotatedTypeMirror type) {
-        if (!hasDependentType(type) || TreeUtils.isClassLiteral(fieldAccess)) {
-            return;
-        }
-
-        Element ele = TreeUtils.elementFromUse(fieldAccess);
-        if (ele.getKind() != ElementKind.FIELD && ele.getKind() != ElementKind.ENUM_CONSTANT) {
+        if (!hasDependentType(type)) {
             return;
         }
 
@@ -326,10 +317,6 @@ public class DependentTypesHelper {
                                 stringExpr, fieldAccess, factory.getChecker()),
                 type);
     }
-
-    ///
-    /// Standardization
-    ///
 
     /**
      * Viewpoint-adapts the Java expressions in annotations to a class declaration.
@@ -667,10 +654,14 @@ public class DependentTypesHelper {
     }
 
     /**
-     * This method is for subclasses to override to change JavaExpressions in some way. This
-     * implementation returns the argument. This method is called after parsing and
-     * viewpoint-adaption have occurred. {@code javaExpr} may be a {@link PassThroughExpression}
-     * that results from an {@link JavaExpressionParseException}.
+     * This method is for subclasses to override to change JavaExpressions in some way before they
+     * are inserted into new annotations. This method is called after parsing and viewpoint-adaption
+     * have occurred. {@code javaExpr} may be a {@link PassThroughExpression} that results from an
+     * {@link JavaExpressionParseException}.
+     *
+     * <p>If {@code null} is returned then the expression is not added to the new annotation.
+     *
+     * <p>This implementation returns the argument.
      *
      * @param javaExpr a JavaExpression
      * @return a transformed JavaExpression or {@code null} if no transformation exists
@@ -697,20 +688,21 @@ public class DependentTypesHelper {
 
     /**
      * Create a new annotation of the same type as {@code originalAnno} using the provided {@code
-     * valueMap}.
+     * elementMap}.
      *
      * @param originalAnno the annotation passed to {@link #map(StringToJavaExpression,
      *     AnnotationMirror)}
-     * @param valueMap a mapping of element names of {@code originalAnno} to {@code JavaExpression}s
-     * @return an annotation created from {@code valueMap}
+     * @param elementMap a mapping of element names of {@code originalAnno} to {@code
+     *     JavaExpression}s
+     * @return an annotation created from {@code elementMap}
      */
     protected AnnotationMirror buildAnnotation(
-            AnnotationMirror originalAnno, Map<String, List<JavaExpression>> valueMap) {
+            AnnotationMirror originalAnno, Map<String, List<JavaExpression>> elementMap) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(originalAnno));
 
-        for (Map.Entry<String, List<JavaExpression>> entry : valueMap.entrySet()) {
+        for (Map.Entry<String, List<JavaExpression>> entry : elementMap.entrySet()) {
             String value = entry.getKey();
             List<String> strings = new ArrayList<>(entry.getValue().size());
             for (JavaExpression javaExpr : entry.getValue()) {
@@ -748,8 +740,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Creates a allows an expression string to be converted to a JavaExpression and then to a
-     * string without parsing the string.
+     * Allows an expression string to be converted to a JavaExpression and then to a string without
+     * parsing the string.
      *
      * @param string some string
      * @return a {@link PassThroughExpression}
