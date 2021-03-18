@@ -27,10 +27,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * Abstraction for Upper Bound annotations.
- *
- * <p>{@link UpperBoundUnknown} is modeled as {@link UpperBoundUnknownQualifier} and {@link
- * UpperBoundBottom} is modeled as {@link UBQualifier.UpperBoundBottomQualifier}.
+ * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
+ * nested class: {@link LessThanLengthOf}, {@link UpperBoundUnknownQualifier}, {@code
+ * UpperBoundBottomQualifier}, and {@code PolyQualifier}.
  *
  * <p>{@link LTLengthOf} is modeled by {@link LessThanLengthOf}. {@link LTEqLengthOf} is equivalent
  * to @{@link LessThanLengthOf} with an offset of -1. {@link LTOMLengthOf} is equivalent to @{@link
@@ -131,7 +130,7 @@ public abstract class UBQualifier {
      * Create a UBQualifier from a @LTOMLengthOf annotation.
      *
      * @param am a @LTOMLengthOf annotation
-     * @param extraOffset the extra offset
+     * @param extraOffset offset to add to each element of offsets; may be null
      * @return a UBQualifier created from the @LTOMLengthOf annotation
      */
     private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
@@ -1110,7 +1109,8 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Generates a new UBQualifer without the given sequence and offset.
+         * Generates a new UBQualifer without the given (sequence, offset) pair. Other occurrences
+         * of the sequence and the offset may remain in the result, but not together.
          *
          * @param sequence a Java expression representing a string
          * @param offset an integral offset
