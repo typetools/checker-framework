@@ -185,11 +185,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Indicates whether the method has the declaration annotation {@code @SideEffectsOnly}.
+     * Returns true if the method has the declaration annotation {@code @SideEffectsOnly}.
      *
      * @param atypeFactory the type factory used to retrieve annotations on the method element
      * @param method the method element
-     * @return whether the method is annotated with {@code @SideEffectsOnly}
+     * @return true if the method is annotated with {@code @SideEffectsOnly}
      */
     protected boolean isSideEffectsOnly(
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
@@ -210,7 +210,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *   <li>If the method is side-effect-free (as indicated by {@link
      *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
      *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
-     *   <li>If the method side effects at most a limited set of expressions (specified as
+     *   <li>If the method side-effects at most a limited set of expressions (specified as
      *       annotation values of {@code @SideEffectsOnly}), then information about those
      *       expressions is removed.
      *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
@@ -226,7 +226,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
 
-        // List of expressions that this method side effects (specified as annotation values of
+        // List of expressions that this method side-effects (specified as arguments/elements of
         // @SideEffectsOnly). If the List is empty, then there is no @SideEffectsOnly annotation.
         List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
         if (isSideEffectsOnly(atypeFactory, method)) {
@@ -236,13 +236,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                             n, checker);
 
             AnnotationMirror sefOnlyAnnotation =
-                    atypeFactory.getDeclAnnotation(
-                            method, org.checkerframework.dataflow.qual.SideEffectsOnly.class);
-            List<String> sideEffectsOnlyExpressionsString =
+                    atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+            List<String> sideEffectsOnlyExpressionStrings =
                     AnnotationUtils.getElementValueArray(
                             sefOnlyAnnotation, "value", String.class, true);
 
-            for (String st : sideEffectsOnlyExpressionsString) {
+            for (String st : sideEffectsOnlyExpressionStrings) {
                 try {
                     JavaExpression exprJe = JavaExpressionParseUtil.parse(st, methodUseContext);
                     sideEffectsOnlyExpressions.add(exprJe);
