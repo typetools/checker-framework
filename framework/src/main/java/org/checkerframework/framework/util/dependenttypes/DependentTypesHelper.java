@@ -89,22 +89,23 @@ public class DependentTypesHelper {
     private final Map<Class<? extends Annotation>, List<String>> annoToElements;
 
     /**
-     * The {@code ExpressionErrorChecker} that scans an annotated type and returns a list of {@link
-     * DependentTypesError}.
+     * The {@code ExpressionErrorCollector} that scans an annotated type and returns a list of
+     * {@link DependentTypesError}.
      */
-    private final ExpressionErrorChecker expressionErrorChecker;
+    private final ExpressionErrorCollector expressionErrorCollector =
+            new ExpressionErrorCollector();
 
     /**
      * A scanner that applies a function to each {@link AnnotationMirror} in a given {@code
      * AnnotatedTypeMirror}.
      */
-    private final AnnotatedTypeReplacer annotatedTypeReplacer;
+    private final AnnotatedTypeReplacer annotatedTypeReplacer = new AnnotatedTypeReplacer();
 
     /**
      * Copies annotations that might have been viewpoint adapted from the visited type (the first
      * formal parameter of the {@code ViewpointAdaptedCopier#visit}) to the second formal parameter.
      */
-    private final ViewpointAdaptedCopier viewpointAdaptedCopier;
+    private final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
 
     /** Return true if the passed AnnotatedTypeMirror has any dependent type annotations. */
     private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner;
@@ -123,13 +124,10 @@ public class DependentTypesHelper {
         this.annoToElements = new HashMap<>();
         for (Class<? extends Annotation> expressionAnno : factory.getSupportedTypeQualifiers()) {
             List<String> elementList = getExpressionElementNames(expressionAnno);
-            if (elementList != null && !elementList.isEmpty()) {
+            if (!elementList.isEmpty()) {
                 annoToElements.put(expressionAnno, elementList);
             }
         }
-        this.expressionErrorChecker = new ExpressionErrorChecker();
-        this.annotatedTypeReplacer = new AnnotatedTypeReplacer();
-        this.viewpointAdaptedCopier = new ViewpointAdaptedCopier();
         this.hasDependentTypeScanner =
                 new SimpleAnnotatedTypeScanner<>(
                         (type, unused) ->
@@ -854,7 +852,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        List<DependentTypesError> errors = expressionErrorChecker.visit(atm);
+        List<DependentTypesError> errors = expressionErrorCollector.visit(atm);
         if (errors == null || errors.isEmpty()) {
             return;
         }
@@ -1026,11 +1024,11 @@ public class DependentTypesHelper {
      * annotated type has any errors, then a non-empty list of {@link DependentTypesError} is
      * returned.
      */
-    private class ExpressionErrorChecker
+    private class ExpressionErrorCollector
             extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
 
-        /** Create ExpressionErrorChecker. */
-        private ExpressionErrorChecker() {
+        /** Create ExpressionErrorCollector. */
+        private ExpressionErrorCollector() {
             super(
                     (AnnotatedTypeMirror type, Void aVoid) -> {
                         List<DependentTypesError> errors = new ArrayList<>();
