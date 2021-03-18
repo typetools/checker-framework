@@ -49,12 +49,12 @@ import org.checkerframework.javacutil.TreeUtils;
  * org.checkerframework.common.wholeprograminference.WholeProgramInference}. It uses an instance of
  * {@link WholeProgramInferenceStorage} to store annotations and to create output files.
  *
- * <p>This class does not perform inference for an element if the element has explicit annotations:
- * calling an update* method on an explicitly annotated field, method return, or method parameter
- * has no effect.
+ * <p>This class does not perform inference for an element if the element has explicit annotations.
+ * That is, calling an update* method on an explicitly annotated field, method return, or method
+ * parameter has no effect.
  *
  * <p>In addition, whole program inference ignores inferred types in a few scenarios. When
- * discovering a use, if:
+ * discovering a use, WPI ignores an inferred type if:
  *
  * <ol>
  *   <li>The inferred type of an element that should be written into a file is a subtype of the
@@ -65,10 +65,12 @@ import org.checkerframework.javacutil.TreeUtils;
  *       value passed as an argument.)
  * </ol>
  *
- * When outputting a file, if:
+ * When outputting a file, WPI ignores an inferred type if:
  *
  * <ol>
  *   <li>The @Target annotation does not permit the annotation to be written at this location.
+ *   <li>The @RelevantJavaTypes annotation does not permit the annotation to be written at this
+ *       location.
  *   <li>The inferred annotation has the @InvisibleQualifier meta-annotation.
  *   <li>The inferred annotation would be the same annotation applied via defaulting &mdash; that
  *       is, if omitting it has the same effect as writing it.
