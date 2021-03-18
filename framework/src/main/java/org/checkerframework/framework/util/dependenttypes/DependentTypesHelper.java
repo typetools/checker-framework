@@ -282,10 +282,12 @@ public class DependentTypesHelper {
         // viewpoint adapted along with the dependent type annotations that are on the method
         // declaration. For example:
         //   Map<String, String> map = ...;
-        //   List<@KeyFor("map") String> list = ...;
+        //   List<@KeyFor("this.map") String> list = ...;
         //   list.get(0)
-        // If the type of List.get is viewpoint adapted for the invocation "list.get(0)", then
-        // methodType would be @KeyFor("map") String get(int).
+        //
+        // methodType is @KeyFor("this.map") String get(int)
+        // "this.map" must not be viewpoint-adapted based on the invocation because it is not from
+        // the method declaration, but added during type variable substitution.
         //
         // Instead, use the type for the method (declaredMethodType) and viewpoint adapt that
         // type.
@@ -507,8 +509,14 @@ public class DependentTypesHelper {
 
     /**
      * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
-     * methodDeclTree}. This changes occurrences of formal parameter names to the "#2" syntax, and
-     * it removes expressions that contain other local variables.
+     * methodDeclTree}. This method changes occurrences of formal parameter names to the "#2"
+     * syntax, and it removes expressions that contain other local variables.
+     *
+     * <p>If a Java expression in {@code atm} references local variables (other than formal
+     * parameter), the expression is removed from the annotation. This could result in dependent
+     * type annotations with empty lists of expressions. If this is a problem, subclasses can
+     * override {@link #buildAnnotation(AnnotationMirror, Map)} to do something besides creating an
+     * annotation with a empty list.
      *
      * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
      * @param atm type to viewpoint-adapt; is side-effected by this method
@@ -605,12 +613,12 @@ public class DependentTypesHelper {
             return null;
         }
 
-        Map<String, List<JavaExpression>> map = new HashMap<>();
+        Map<String, List<JavaExpression>> newElements = new HashMap<>();
         for (String value : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
             List<JavaExpression> javaExprs = new ArrayList<>(expressionStrings.size());
-            map.put(value, javaExprs);
+            newElements.put(value, javaExprs);
             for (String expression : expressionStrings) {
                 JavaExpression result;
                 if (shouldParseExpression(expression)) {
@@ -629,7 +637,7 @@ public class DependentTypesHelper {
                 }
             }
         }
-        return buildAnnotation(anno, map);
+        return buildAnnotation(anno, newElements);
     }
 
     /**
@@ -858,11 +866,11 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns all the Java expression elements of the annotation that are an error string as
-     * specified by DependentTypesError#isExpressionError.
+     * Returns a list of {@link DependentTypesError}s for all the Java expression elements of the
+     * annotation that are an error string as specified by DependentTypesError#isExpressionError.
      *
      * @param am an annotation
-     * @return the elements of {@code am} that are errors
+     * @return the list {@link DependentTypesError}s
      */
     private List<DependentTypesError> errorElements(AnnotationMirror am) {
         assert hasDependentAnnotations();
@@ -971,8 +979,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns true if {@code am} is an expression annotation, that is an annotation whose value is
-     * a Java expression.
+     * Returns true if {@code am} is an expression annotation, that is an annotation whose element
+     * is a Java expression.
      *
      * @param am an annotation
      * @return true if {@code am} is an expression annotation
@@ -1010,15 +1018,30 @@ public class DependentTypesHelper {
                         }
                         return errors;
                     },
-                    (r1, r2) -> {
-                        List<DependentTypesError> newList = new ArrayList<>(r1);
-                        newList.addAll(r2);
-                        return newList;
-                    },
+                    DependentTypesHelper::listConcatenation,
                     Collections.emptyList());
         }
     }
 
+    /**
+     * Appends list2 to list1 in a new list. If either list is empty, the other is returned.
+     *
+     * @param list1 a list
+     * @param list2 a list
+     * @return Appends list2 to list1 in a new list. If either list is empty, the other is returned.
+     */
+    static List<DependentTypesError> listConcatenation(
+            List<DependentTypesError> list1, List<DependentTypesError> list2) {
+        if (list1.isEmpty()) {
+            return list2;
+        } else if (list2.isEmpty()) {
+            return list1;
+        }
+        List<DependentTypesError> newList = new ArrayList<>(list1.size() + list2.size());
+        newList.addAll(list1);
+        newList.addAll(list2);
+        return newList;
+    }
     /**
      * Copies annotations that might have been viewpoint adapted from the visited type (the first
      * formal parameter) to the second formal parameter.
@@ -1039,9 +1062,9 @@ public class DependentTypesHelper {
             }
             p.replaceAnnotations(replacement);
             if (type.getKind() != p.getKind()) {
-                // If the underlying types don't match, then this type has be substituted for a
+                // If the underlying types don't match, then this type has been substituted for a
                 // type variable, so don't recur. The primary annotation was copied because
-                // if the type variable might have had a primary annotation at a use.
+                // the type variable might have had a primary annotation at a use.
                 // For example:
                 // <T> void method(@KeyFor("a") T t) {...}
                 // void use(@KeyFor("b") String s) {
