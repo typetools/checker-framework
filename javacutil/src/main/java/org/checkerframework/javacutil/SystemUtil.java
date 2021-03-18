@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -232,28 +233,41 @@ public class SystemUtil {
     }
 
     /**
-     * Applies the function to each element of the given collection, producing a list of the
-     * results.
+     * Applies the function to each element of the given iterable, producing a list of the results.
      *
      * <p>The point of this method is to make mapping operations more concise. Import it with
      *
      * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
      *
-     * @param <FROM> the type of elements of the given collection
+     * @param <FROM> the type of elements of the given iterable
      * @param <TO> the type of elements of the result list
      * @param f a function
-     * @param c a collection
-     * @return a list of the results of applying {@code f} to the elements of {@code c}
+     * @param iterable an iterable
+     * @return a list of the results of applying {@code f} to the elements of {@code iterable}
      */
     public static <
                     @KeyForBottom FROM extends @UnknownKeyFor Object,
                     @KeyForBottom TO extends @UnknownKeyFor Object>
-            List<TO> mapList(Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
-        // This implementation uses a for loop and is likely more efficient than using streams, both
-        // because it doesn't create stream objects and because it creates an ArrayList of the
-        // appropriate size.
-        List<TO> result = new ArrayList<>(c.size());
-        for (FROM elt : c) {
+            List<TO> mapList(Function<? super FROM, ? extends TO> f, Iterable<FROM> iterable) {
+        List<TO> result;
+
+        if (iterable instanceof RandomAccess) {
+            // Per the Javadoc of RandomAccess, an indexed for loop is faster than a foreach loop.
+            List<FROM> list = (List<FROM>) iterable;
+            int size = list.size();
+            result = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                result.add(f.apply(list.get(i)));
+            }
+            return result;
+        }
+
+        if (iterable instanceof Collection) {
+            result = new ArrayList<>(((Collection<?>) iterable).size());
+        } else {
+            result = new ArrayList<>(); // no information about size is available
+        }
+        for (FROM elt : iterable) {
             result.add(f.apply(elt));
         }
         return result;
@@ -276,37 +290,10 @@ public class SystemUtil {
                     @KeyForBottom FROM extends @UnknownKeyFor Object,
                     @KeyForBottom TO extends @UnknownKeyFor Object>
             List<TO> mapList(Function<? super FROM, ? extends TO> f, FROM[] a) {
-        List<TO> result = new ArrayList<>(a.length);
-        for (FROM elt : a) {
-            result.add(f.apply(elt));
-        }
-        return result;
-    }
-
-    /**
-     * Applies the function to each element of the given iterable, producing a list of the results.
-     *
-     * <p>The point of this method is to make mapping operations more concise. Import it with
-     *
-     * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
-     *
-     * @param <FROM> the type of elements of the given iterable
-     * @param <TO> the type of elements of the result list
-     * @param f a function
-     * @param iterable an iterable
-     * @return a list of the results of applying {@code f} to the elements of {@code iterable}
-     */
-    public static <
-                    @KeyForBottom FROM extends @UnknownKeyFor Object,
-                    @KeyForBottom TO extends @UnknownKeyFor Object>
-            List<TO> mapList(Function<? super FROM, ? extends TO> f, Iterable<FROM> iterable) {
-        if (iterable instanceof Collection) {
-            Collection<FROM> c = (Collection<FROM>) iterable;
-            return mapList(f, c);
-        }
-        List<TO> result = new ArrayList<>(); // no information about size is available
-        for (FROM elt : iterable) {
-            result.add(f.apply(elt));
+        int size = a.length;
+        List<TO> result = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            result.add(f.apply(a[i]));
         }
         return result;
     }
