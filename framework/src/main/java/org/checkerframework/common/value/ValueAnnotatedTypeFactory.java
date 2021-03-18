@@ -137,23 +137,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The from() element/field of an @IntRange annotation. */
     protected final ExecutableElement intRangeFromElement =
-            TreeUtils.getMethod(IntRange.class.getName(), "from", 0, processingEnv);
+            TreeUtils.getMethod(IntRange.class, "from", 0, processingEnv);
 
     /** The to() element/field of an @IntRange annotation. */
     protected final ExecutableElement intRangeToElement =
-            TreeUtils.getMethod(IntRange.class.getName(), "to", 0, processingEnv);
+            TreeUtils.getMethod(IntRange.class, "to", 0, processingEnv);
 
     /** The from() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeFromElement =
-            TreeUtils.getMethod(ArrayLenRange.class.getName(), "from", 0, processingEnv);
+            TreeUtils.getMethod(ArrayLenRange.class, "from", 0, processingEnv);
 
     /** The to() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeToElement =
-            TreeUtils.getMethod(ArrayLenRange.class.getName(), "to", 0, processingEnv);
+            TreeUtils.getMethod(ArrayLenRange.class, "to", 0, processingEnv);
 
     /** The value() element/field of a @MinLen annotation. */
     protected final ExecutableElement minLenValueElement =
-            TreeUtils.getMethod(MinLen.class.getName(), "value", 0, processingEnv);
+            TreeUtils.getMethod(MinLen.class, "value", 0, processingEnv);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
