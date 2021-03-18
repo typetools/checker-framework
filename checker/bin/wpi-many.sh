@@ -228,7 +228,7 @@ do
         # delete it right away.
         if [ "${SKIP_OR_DELETE_UNUSABLE}" = "delete" ]; then
           echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-          rm -rf "${REPO_NAME_HASH}"
+          rm -rf "./${REPO_NAME_HASH}"
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
