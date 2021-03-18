@@ -595,7 +595,7 @@ public class AnnotationUtils {
     }
 
     // **********************************************************************
-    // Extractors for annotation values
+    // Annotation values: extractors
     // **********************************************************************
 
     /**
@@ -622,143 +622,6 @@ public class AnnotationUtils {
             }
         }
         return valMap;
-    }
-
-    /**
-     * Returns true if the two annotations have the same elements (fields). The arguments {@code
-     * am1} and {@code am2} must be the same type of annotation.
-     *
-     * @param am1 the first AnnotationMirror to compare
-     * @param am2 the second AnnotationMirror to compare
-     * @return true if if the two annotations have the same elements (fields)
-     */
-    @EqualsMethod
-    public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
-        if (am1 == am2) {
-            return true;
-        }
-
-        Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
-        Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
-        for (ExecutableElement meth :
-                ElementFilter.methodsIn(
-                        am1.getAnnotationType().asElement().getEnclosedElements())) {
-            AnnotationValue aval1 = vals1.get(meth);
-            AnnotationValue aval2 = vals2.get(meth);
-            @SuppressWarnings("interning:not.interned") // optimization via equality test
-            boolean identical = aval1 == aval2;
-            if (identical) {
-                // Handles when both aval1 and aval2 are null, and maybe other cases too.
-                continue;
-            }
-            if (aval1 == null) {
-                aval1 = meth.getDefaultValue();
-            }
-            if (aval2 == null) {
-                aval2 = meth.getDefaultValue();
-            }
-            if (!sameAnnotationValue(aval1, aval2)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Return true iff the two AnnotationValue objects are the same. Use this instead of
-     * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the receiver is some
-     * AnnotationValue other than CheckerFrameworkAnnotationValue.
-     *
-     * @param av1 the first AnnotationValue to compare
-     * @param av2 the second AnnotationValue to compare
-     * @return true if if the two annotation values are the same
-     */
-    public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
-        return compareAnnotationValue(av1, av2) == 0;
-    }
-
-    /**
-     * Returns true if an AnnotationValue list contains the given value.
-     *
-     * <p>Using this method is slightly cheaper than creating a new {@code List<String>} just for
-     * the purpose of testing containment within it.
-     *
-     * @param avList an AnnotationValue that is null or a list of Strings
-     * @param s a string
-     * @return true if {@code av} contains {@code s}
-     */
-    public static boolean annotationValueContains(@Nullable AnnotationValue avList, String s) {
-        if (avList == null) {
-            return false;
-        }
-        // The value is actually a javac.util.List<Attribute.Constant>.
-        @SuppressWarnings("unchecked")
-        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
-        return annotationValueContains(list, s);
-    }
-
-    /**
-     * Returns true if an AnnotationValue list contains the given value.
-     *
-     * <p>Using this method is slightly cheaper than creating a new {@code List<String>} just for
-     * the purpose of testing containment within it.
-     *
-     * @param avList a list of Strings (as {@code AnnotationValue}s)
-     * @param s a string
-     * @return true if {@code av} contains {@code s}
-     */
-    public static boolean annotationValueContains(
-            List<? extends AnnotationValue> avList, String s) {
-        // `avList` is actually a javac.util.List<Attribute.Constant>.
-        for (AnnotationValue av : avList) {
-            if (av.getValue().equals(s)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Convert an annotation value to a list.
-     *
-     * @param avList an AnnotationValue that is null or a list of Strings Converts an annotation
-     *     value to a list
-     * @param expectedType the expected type of the element
-     * @param <T> the class of the expected type
-     * @return the annotation value, converted to a list
-     */
-    public static <T> List<T> annotationValueToList(AnnotationValue avList, Class<T> expectedType) {
-        // The value is actually a javac.util.List<Attribute.Constant>.
-        @SuppressWarnings("unchecked")
-        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
-        return annotationValueToList(list, expectedType);
-    }
-
-    /**
-     * Convert an annotation value to a list.
-     *
-     * @param avList a list of Strings (as {@code AnnotationValue}s) Converts an annotation value to
-     *     a list
-     * @param expectedType the expected type of the element
-     * @param <T> the class of the expected type
-     * @return the annotation value, converted to a list
-     */
-    public static <T> List<T> annotationValueToList(
-            List<? extends AnnotationValue> avList, Class<T> expectedType) {
-        List<T> result = new ArrayList<>(avList.size());
-        for (AnnotationValue a : avList) {
-            try {
-                result.add(expectedType.cast(a.getValue()));
-            } catch (Throwable t) {
-                String err1 = String.format("annotationValueToList(%s, %s)", avList, expectedType);
-                String err2 =
-                        String.format(
-                                "a=%s [%s]%n  a.getValue()=%s [%s]",
-                                a, a.getClass(), a.getValue(), a.getValue().getClass());
-                throw new BugInCF(err1 + " " + err2, t);
-            }
-        }
-        return result;
     }
 
     /**
@@ -1120,6 +983,151 @@ public class AnnotationUtils {
         return SystemUtil.<Type.ClassType, @CanonicalName Name>mapList(
                 (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
     }
+
+    // **********************************************************************
+    // Annotation values: other methods (e.g., testing and transforming)
+    // **********************************************************************
+
+    /**
+     * Returns true if the two annotations have the same elements (fields). The arguments {@code
+     * am1} and {@code am2} must be the same type of annotation.
+     *
+     * @param am1 the first AnnotationMirror to compare
+     * @param am2 the second AnnotationMirror to compare
+     * @return true if if the two annotations have the same elements (fields)
+     */
+    @EqualsMethod
+    public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+        if (am1 == am2) {
+            return true;
+        }
+
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
+        for (ExecutableElement meth :
+                ElementFilter.methodsIn(
+                        am1.getAnnotationType().asElement().getEnclosedElements())) {
+            AnnotationValue aval1 = vals1.get(meth);
+            AnnotationValue aval2 = vals2.get(meth);
+            @SuppressWarnings("interning:not.interned") // optimization via equality test
+            boolean identical = aval1 == aval2;
+            if (identical) {
+                // Handles when both aval1 and aval2 are null, and maybe other cases too.
+                continue;
+            }
+            if (aval1 == null) {
+                aval1 = meth.getDefaultValue();
+            }
+            if (aval2 == null) {
+                aval2 = meth.getDefaultValue();
+            }
+            if (!sameAnnotationValue(aval1, aval2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Return true iff the two AnnotationValue objects are the same. Use this instead of
+     * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the receiver is some
+     * AnnotationValue other than CheckerFrameworkAnnotationValue.
+     *
+     * @param av1 the first AnnotationValue to compare
+     * @param av2 the second AnnotationValue to compare
+     * @return true if if the two annotation values are the same
+     */
+    public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
+        return compareAnnotationValue(av1, av2) == 0;
+    }
+
+    /**
+     * Returns true if an AnnotationValue list contains the given value.
+     *
+     * <p>Using this method is slightly cheaper than creating a new {@code List<String>} just for
+     * the purpose of testing containment within it.
+     *
+     * @param avList an AnnotationValue that is null or a list of Strings
+     * @param s a string
+     * @return true if {@code av} contains {@code s}
+     */
+    public static boolean annotationValueContains(@Nullable AnnotationValue avList, String s) {
+        if (avList == null) {
+            return false;
+        }
+        // The value is actually a javac.util.List<Attribute.Constant>.
+        @SuppressWarnings("unchecked")
+        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
+        return annotationValueContains(list, s);
+    }
+
+    /**
+     * Returns true if an AnnotationValue list contains the given value.
+     *
+     * <p>Using this method is slightly cheaper than creating a new {@code List<String>} just for
+     * the purpose of testing containment within it.
+     *
+     * @param avList a list of Strings (as {@code AnnotationValue}s)
+     * @param s a string
+     * @return true if {@code av} contains {@code s}
+     */
+    public static boolean annotationValueContains(
+            List<? extends AnnotationValue> avList, String s) {
+        // `avList` is actually a javac.util.List<Attribute.Constant>.
+        for (AnnotationValue av : avList) {
+            if (av.getValue().equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Convert an annotation value to a list.
+     *
+     * @param avList an AnnotationValue that is null or a list of Strings Converts an annotation
+     *     value to a list
+     * @param expectedType the expected type of the element
+     * @param <T> the class of the expected type
+     * @return the annotation value, converted to a list
+     */
+    public static <T> List<T> annotationValueToList(AnnotationValue avList, Class<T> expectedType) {
+        // The value is actually a javac.util.List<Attribute.Constant>.
+        @SuppressWarnings("unchecked")
+        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
+        return annotationValueToList(list, expectedType);
+    }
+
+    /**
+     * Convert an annotation value to a list.
+     *
+     * @param avList a list of Strings (as {@code AnnotationValue}s) Converts an annotation value to
+     *     a list
+     * @param expectedType the expected type of the element
+     * @param <T> the class of the expected type
+     * @return the annotation value, converted to a list
+     */
+    public static <T> List<T> annotationValueToList(
+            List<? extends AnnotationValue> avList, Class<T> expectedType) {
+        List<T> result = new ArrayList<>(avList.size());
+        for (AnnotationValue a : avList) {
+            try {
+                result.add(expectedType.cast(a.getValue()));
+            } catch (Throwable t) {
+                String err1 = String.format("annotationValueToList(%s, %s)", avList, expectedType);
+                String err2 =
+                        String.format(
+                                "a=%s [%s]%n  a.getValue()=%s [%s]",
+                                a, a.getClass(), a.getValue(), a.getValue().getClass());
+                throw new BugInCF(err1 + " " + err2, t);
+            }
+        }
+        return result;
+    }
+
+    // **********************************************************************
+    // Other methods
+    // **********************************************************************
 
     // The Javadoc doesn't use @link because framework is a different project than this one
     // (javacutil).
