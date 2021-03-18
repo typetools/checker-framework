@@ -8,9 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * A method annotated with the declaration annotation {@code @SideEffectsOnly} could side effect
- * those expressions that are supplied as annotation values to {@code @SideEffectsOnly}. The
- * annotation values are an upper bound of all expressions that the method side-effects.
+ * A method annotated with the declaration annotation {@code @SideEffectsOnly(A, B)} side-effects at
+ * most the expressions A and B. All other expressions have the same value before and after a call.
  *
  * @checker_framework.manual #type-refinement-purity Side effects only
  */
@@ -19,7 +18,7 @@ import org.checkerframework.framework.qual.JavaExpression;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface SideEffectsOnly {
     /**
-     * An upper bound of the expressions that this method side effects.
+     * An upper bound on the expressions that this method side effects.
      *
      * @return Java expression(s) that represent an upper bound of expressions side-effected by this
      *     method
