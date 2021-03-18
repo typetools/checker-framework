@@ -34,6 +34,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
 
+    /** The factory used for reading elements/fields from annotations. */
     // TODO: This isn't initialized, so its uses are all wrong.
     UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory;
 
