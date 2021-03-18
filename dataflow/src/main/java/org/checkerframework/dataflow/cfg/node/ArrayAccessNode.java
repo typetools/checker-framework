@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -118,9 +118,6 @@ public class ArrayAccessNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<>(2);
-        list.add(getArray());
-        list.add(getIndex());
-        return list;
+        return Arrays.asList(getArray(), getIndex());
     }
 }

@@ -3,11 +3,11 @@ package org.checkerframework.checker.index.searchindex;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
@@ -196,8 +196,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         }
 
-        arrays = new ArrayList<>(new HashSet<>(arrays)); // remove duplicates
-        Collections.sort(arrays);
+        arrays = new ArrayList<>(new TreeSet<>(arrays)); // remove duplicates and sort
 
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, NegativeIndexFor.class);
         builder.setValue("value", arrays);
@@ -210,8 +209,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         }
 
-        arrays = new ArrayList<>(new HashSet<>(arrays)); // remove duplicates
-        Collections.sort(arrays);
+        arrays = new ArrayList<>(new TreeSet<>(arrays)); // remove duplicates and sort
 
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SearchIndexFor.class);
         builder.setValue("value", arrays);

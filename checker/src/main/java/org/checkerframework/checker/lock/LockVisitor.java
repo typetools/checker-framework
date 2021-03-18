@@ -61,6 +61,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -610,8 +611,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             AnnotationMirror ensuresLockHeldAnno =
                     atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
-            List<String> expressions = new ArrayList<>();
 
+            List<String> expressions = new ArrayList<>();
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
                         AnnotationUtils.getElementValueArray(
@@ -1251,11 +1252,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             self = new Unknown(tree);
         }
 
-        List<LockExpression> lockExpressions = new ArrayList<>();
-        for (String expression : expressions) {
-            lockExpressions.add(parseExpressionString(expression, exprContext, currentPath, self));
-        }
-        return lockExpressions;
+        return SystemUtil.mapList(
+                expression -> parseExpressionString(expression, exprContext, currentPath, self),
+                expressions);
     }
 
     /**

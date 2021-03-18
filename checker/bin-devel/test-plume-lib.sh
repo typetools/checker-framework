@@ -49,5 +49,8 @@ for PACKAGE in "${PACKAGES[@]}"; do
   # Uses "compileJava" target instead of "assemble" to avoid the javadoc error "Error fetching URL:
   # https://docs.oracle.com/en/java/javase/11/docs/api/" due to network problems.
   echo "About to call ./gradlew --console=plain -PcfLocal compileJava"
-  (cd "${PACKAGEDIR}" && ./gradlew --console=plain -PcfLocal compileJava)
+  # Try twice in case of network lossage while downloading packages (e.g., from Maven Central).
+  # A disadvantage is that if there is a real error in pluggable type-checking, this runs it twice
+  # and puts a delays in between.
+  (cd "${PACKAGEDIR}" && (./gradlew --console=plain -PcfLocal compileJava || (sleep 60 && ./gradlew --console=plain -PcfLocal compileJava)))
 done

@@ -50,6 +50,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.StringsPlume;
@@ -277,7 +278,6 @@ public class DependentTypesHelper {
             ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree) tree);
             if (isVarArgsInvocation(method, methodType, argTrees)) {
                 List<JavaExpression> result = new ArrayList<>();
-
                 for (int i = 0; i < method.getParameters().size() - 1; i++) {
                     result.add(JavaExpression.fromTree(argTrees.get(i)));
                 }
@@ -294,11 +294,7 @@ public class DependentTypesHelper {
             }
         }
 
-        List<JavaExpression> result = new ArrayList<>();
-        for (ExpressionTree argTree : argTrees) {
-            result.add(JavaExpression.fromTree(argTree));
-        }
-        return result;
+        return SystemUtil.mapList(JavaExpression::fromTree, argTrees);
     }
 
     /**
@@ -890,7 +886,7 @@ public class DependentTypesHelper {
 
         for (String element : getListOfExpressionElements(am)) {
             List<String> value =
-                    AnnotationUtils.getElementValueArray(am, element, String.class, true);
+                    AnnotationUtils.getElementValueArray(am, element, String.class, false);
             for (String v : value) {
                 if (DependentTypesError.isExpressionError(v)) {
                     errors.add(DependentTypesError.unparse(v));

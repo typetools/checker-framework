@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Type.ArrayType;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
@@ -63,20 +63,16 @@ public class AnnotationConverter {
         for (ExecutableElement ee : values.keySet()) {
             Object value = values.get(ee).getValue();
             if (value instanceof List) {
+                // If we have a List here, then it is a List of AnnotationValue.
+                // Convert each AnnotationValue to its respective Java type.
                 @SuppressWarnings("unchecked")
                 List<Object> valueList = (List<Object>) value;
-                List<Object> newList = new ArrayList<>();
-                // If we have a List here, then it is a List of AnnotatedValue.
-                // Converting each AnnotatedValue to its respective Java type:
-                for (Object o : valueList) {
-                    newList.add(((AnnotationValue) o).getValue());
-                }
-                value = newList;
+                value = SystemUtil.mapList(o -> ((AnnotationValue) o).getValue(), valueList);
             } else if (value instanceof TypeMirror) {
                 try {
                     value = Class.forName(TypesUtils.binaryName((TypeMirror) value));
                 } catch (ClassNotFoundException e) {
-                    throw new BugInCF(String.format("value = %s [%s]", value, value.getClass()), e);
+                    throw new BugInCF(e, "value = %s [%s]", value, value.getClass());
                 }
             }
             newValues.put(ee.getSimpleName().toString(), value);

@@ -426,12 +426,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** The source tree that is being scanned. */
     protected @InternedDistinct CompilationUnitTree currentRoot;
 
-    /**
-     * If an error is detected in a CompilationUnitTree, skip all future calls of {@link
-     * #typeProcess} with that same CompilationUnitTree.
-     */
-    private @InternedDistinct CompilationUnitTree previousErrorCompilationUnit;
-
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
 
@@ -522,7 +516,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * in the case of a compound checker, the compound checker is the parent, not the checker that
      * was run prior to this one by the compound checker.
      */
-    protected SourceChecker parentChecker;
+    protected @Nullable SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
     protected List<@FullyQualifiedName String> upstreamCheckerNames;
@@ -892,6 +886,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
+    /**
+     * If true, javac failed to compile the code or a previously-run annotation processor issued an
+     * error.
+     */
+    protected boolean javacErrored = false;
+
     /** Output the warning about memory at most once. */
     private boolean warnedAboutGarbageCollection = false;
 
@@ -904,12 +904,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     protected int errsOnLastExit = 0;
 
     /**
+     * Report "type.checking.not.run" error.
+     *
+     * @param p error is reported at the leaf of the path
+     */
+    @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+    protected void reportJavacError(TreePath p) {
+        // If javac issued any errors, do not type check any file, so that the Checker Framework
+        // does not have to deal with error types.
+        currentRoot = p.getCompilationUnit();
+        reportError(p.getLeaf(), "type.checking.not.run", getClass().getSimpleName());
+    }
+
+    /**
      * Type-check the code using this checker's visitor.
      *
      * @see Processor#process(Set, RoundEnvironment)
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
+        if (javacErrored) {
+            reportJavacError(p);
+            return;
+        }
+
         // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
         if (e == null) {
             messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
@@ -944,20 +962,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
-            @SuppressWarnings("interning:assignment.type.incompatible") // will be compared with ==
-            @InternedDistinct CompilationUnitTree cu = p.getCompilationUnit();
-            previousErrorCompilationUnit = cu;
+            javacErrored = true;
+            reportJavacError(p);
             return;
         }
-        if (p.getCompilationUnit() == previousErrorCompilationUnit) {
-            // If the same compilation unit was seen with an error before,
-            // skip it. This is in particular necessary for Java errors, which
-            // show up once, but further calls to typeProcess will happen.
-            // See Issue 346.
-            return;
-        } else {
-            previousErrorCompilationUnit = null;
-        }
+
         if (visitor == null) {
             // typeProcessingStart invokes initChecker, which should
             // have set the visitor. If the field is still null, an
@@ -2037,6 +2046,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
             throw new BugInCF(
                     "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
+        }
+        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
+            return true;
         }
 
         if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {

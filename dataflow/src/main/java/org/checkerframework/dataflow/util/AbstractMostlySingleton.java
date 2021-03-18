@@ -12,6 +12,11 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * Base class for arbitrary-size sets that very efficient (more efficient than HashSet) for 0 and 1
  * elements.
+ *
+ * <p>Does not support storing {@code null}.
+ *
+ * <p>This class exists because it has multiple subclasses (currently {@link MostlySingleton} and
+ * {@link IdentityMostlySingleton}).
  */
 public abstract class AbstractMostlySingleton<T extends Object> implements Set<T> {
 

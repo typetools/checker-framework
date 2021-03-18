@@ -82,7 +82,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 // If offsets are provided, there must be the same number of them as there are
                 // arrays.
                 List<String> sequences =
-                        AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 List<String> offsets =
                         AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
                 if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
@@ -102,7 +102,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String from = atypeFactory.hasSubsequenceFromValue(anno);
             String to = atypeFactory.hasSubsequenceToValue(anno);
 
-            // check that each expression is parseable in this context
+            // check that each expression is parsable in this context
             ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
             JavaExpressionContext context =
                     JavaExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
