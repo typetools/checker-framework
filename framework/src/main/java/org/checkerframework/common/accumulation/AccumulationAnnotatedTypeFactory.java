@@ -9,7 +9,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -322,7 +321,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
         List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
         if (values == null) {
-            return new ArrayList<>(0);
+            return Collections.emptyList();
         } else {
             return values;
         }
@@ -572,7 +571,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         try {
             expression = StaticJavaParser.parseExpression(pred);
         } catch (ParseProblemException p) {
-            throw new UserError("unparseable predicate: " + pred + ". Parse exception: " + p);
+            throw new UserError("unparsable predicate: " + pred + ". Parse exception: " + p);
         }
         return evaluateBooleanExpression(expression, trueVariables);
     }

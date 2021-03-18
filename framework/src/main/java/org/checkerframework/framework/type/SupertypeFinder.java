@@ -157,7 +157,6 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedDeclaredType> visitDeclared(AnnotatedDeclaredType type, Void p) {
-            List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
             // Set<AnnotationMirror> annotations = type.getAnnotations();
 
             TypeElement typeElement = (TypeElement) type.getUnderlyingType().asElement();
@@ -188,6 +187,8 @@ class SupertypeFinder {
 
                 enclosing = enclosing.getEnclosingType();
             }
+
+            List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
 
             ClassTree classTree = atypeFactory.trees.getTree(typeElement);
             // Testing against enum and annotation. Ideally we can simply use element!

@@ -84,7 +84,8 @@ public class ReflectiveEvaluator {
             int numberOfParameters = method.getParameterTypes().length;
             listOfArguments =
                     SystemUtil.mapList(
-                            args -> normalizeVararg(args, numberOfParameters), listOfArguments);
+                            (Object[] args) -> normalizeVararg(args, numberOfParameters),
+                            listOfArguments);
         }
 
         List<Object> results = new ArrayList<>(listOfArguments.size());

@@ -2349,15 +2349,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
 
-        List<AnnotatedTypeMirror> typeargs = new ArrayList<>(con.getTypeVariables().size());
-
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
                 AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
 
-        if (!typeVarMapping.isEmpty()) {
-            for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
-                typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
-            }
+        List<AnnotatedTypeMirror> typeargs = new ArrayList<>(con.getTypeVariables().size());
+        if (typeVarMapping.isEmpty()) {
+            typeargs = Collections.emptyList();
+        } else {
+            typeargs =
+                    SystemUtil.mapList(
+                            (AnnotatedTypeVariable tv) ->
+                                    typeVarMapping.get(tv.getUnderlyingType()),
+                            con.getTypeVariables());
             con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);
         }
 

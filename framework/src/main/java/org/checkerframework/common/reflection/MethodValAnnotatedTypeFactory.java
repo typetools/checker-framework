@@ -44,7 +44,21 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror UNKNOWN_METHOD =
             AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
+    /** An arary length that represents that the length is unknown. */
     private static final int UNKNOWN_PARAM_LENGTH = -1;
+
+    /** A list containing just {@link #UNKNOWN_PARAM_LENGTH}. */
+    private static final List<Integer> UNKNOWN_PARAM_LENGTH_LIST =
+            Collections.singletonList(UNKNOWN_PARAM_LENGTH);
+
+    /** A list containing just 0. */
+    private static List<Integer> ZERO_LIST = Collections.singletonList(0);
+
+    /** A list containing just 1. */
+    private static List<Integer> ONE_LIST = Collections.singletonList(1);
+
+    /** An empty String list. */
+    private static List<String> EMPTY_STRING_LIST = Collections.emptyList();
 
     /**
      * Create a new MethodValAnnotatedTypeFactory.
@@ -114,6 +128,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         builder.setValue("params", params);
         return builder.build();
     }
+
     /**
      * Returns a list of class names for the given tree using the Class Val Checker.
      *
@@ -157,7 +172,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (annotation != null) {
             return AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
         } else {
-            return Collections.emptyList();
+            return EMPTY_STRING_LIST;
         }
     }
 
@@ -276,7 +291,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> classNames;
             if (isGetConstructorMethodInvocation(tree)) {
                 // method name for constructors is always <init>
-                methodNames = Arrays.asList(ReflectionResolver.INIT);
+                methodNames = ReflectionResolver.INIT_LIST;
                 params = getConstructorParamsLen(tree.getArguments());
                 classNames =
                         getClassNamesFromClassValChecker(TreeUtils.getReceiverTree(tree), true);
@@ -332,6 +347,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
         }
 
+        /**
+         * Returns a singleton list containing the number of parameters for a call to a method
+         * annotated with {@code @}{@link GetMethod}.
+         *
+         * @param args arguments to a call to a method such as {@code getMethod}
+         * @return the number of parameters
+         */
         private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {
             assert !args.isEmpty() : "getMethod must have at least one parameter";
 
@@ -343,6 +365,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.singletonList(numParams);
         }
 
+        /**
+         * Returns a singleton list containing the number of parameters for a call to a method
+         * annotated with {@code @}{@link GetConstructor}.
+         *
+         * @param args arguments to a call to a method such as {@code getConstructor}
+         * @return the number of parameters
+         */
         private List<Integer> getConstructorParamsLen(List<? extends ExpressionTree> args) {
             // Number of parameters in the created method object
             int numParams = args.size();
@@ -359,10 +388,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *
          * <ul>
          *   <li>0: if the argument is null
-         *   <li>x: if the argument is an array with @ArrayLen(x)
+         *   <li>x: if the argument is an array with @ArrayLen(x); note that x might be a set rather
+         *       than a single value
          *   <li>UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
          *   <li>1: otherwise
          * </ul>
+         *
+         * @param argument the single argument in a call to {@code getMethod} or {@code
+         *     getConstrutor}
+         * @return a list, each of whose elementts is a possible the number of parameters; it is
+         *     often, but not always, a singleton list
          */
         private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
             AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
@@ -377,18 +412,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 arrayLenAnno, "value", Integer.class, false);
                     } else if (valueType.getAnnotation(BottomVal.class) != null) {
                         // happens in this case: (Class[]) null
-                        return Collections.singletonList(0);
+                        return ZERO_LIST;
                     }
                     // the argument is an array with unknown array length
-                    return Collections.singletonList(UNKNOWN_PARAM_LENGTH);
+                    return UNKNOWN_PARAM_LENGTH_LIST;
                 case NULL:
-                    // null is treated as the empty list of parameters, so size
-                    // is 0
-                    return Collections.singletonList(0);
+                    // null is treated as the empty list of parameters, so size is 0.
+                    return ZERO_LIST;
                 default:
-                    // The argument is not an array or null,
-                    // so it must be a class.
-                    return Collections.singletonList(1);
+                    // The argument is not an array or null, so it must be a class.
+                    return ONE_LIST;
             }
         }
     }

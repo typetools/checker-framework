@@ -611,8 +611,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             AnnotationMirror ensuresLockHeldAnno =
                     atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
-            List<String> expressions = new ArrayList<>();
 
+            List<String> expressions = new ArrayList<>();
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
                         AnnotationUtils.getElementValueArray(

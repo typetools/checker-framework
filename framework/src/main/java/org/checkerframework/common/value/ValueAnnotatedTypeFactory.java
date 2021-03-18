@@ -137,23 +137,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The from() element/field of an @IntRange annotation. */
     protected final ExecutableElement intRangeFromElement =
-            TreeUtils.getMethod(IntRange.class.getName(), "from", 0, processingEnv);
+            TreeUtils.getMethod(IntRange.class, "from", 0, processingEnv);
 
     /** The to() element/field of an @IntRange annotation. */
     protected final ExecutableElement intRangeToElement =
-            TreeUtils.getMethod(IntRange.class.getName(), "to", 0, processingEnv);
+            TreeUtils.getMethod(IntRange.class, "to", 0, processingEnv);
 
     /** The from() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeFromElement =
-            TreeUtils.getMethod(ArrayLenRange.class.getName(), "from", 0, processingEnv);
+            TreeUtils.getMethod(ArrayLenRange.class, "from", 0, processingEnv);
 
     /** The to() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeToElement =
-            TreeUtils.getMethod(ArrayLenRange.class.getName(), "to", 0, processingEnv);
+            TreeUtils.getMethod(ArrayLenRange.class, "to", 0, processingEnv);
 
     /** The value() element/field of a @MinLen annotation. */
     protected final ExecutableElement minLenValueElement =
-            TreeUtils.getMethod(MinLen.class.getName(), "value", 0, processingEnv);
+            TreeUtils.getMethod(MinLen.class, "value", 0, processingEnv);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
@@ -637,20 +637,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         if (TypesUtils.isString(resultType)) {
-            List<String> stringVals = new ArrayList<>(values.size());
-            for (Object o : values) {
-                stringVals.add((String) o);
-            }
+            List<String> stringVals = SystemUtil.mapList((Object o) -> (String) o, values);
             return createStringAnnotation(stringVals);
         } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
-            List<String> stringVals = new ArrayList<>(values.size());
-            for (Object o : values) {
-                if (o instanceof char[]) {
-                    stringVals.add(new String((char[]) o));
-                } else {
-                    stringVals.add(o.toString());
-                }
-            }
+            List<String> stringVals =
+                    SystemUtil.mapList(
+                            (Object o) -> {
+                                if (o instanceof char[]) {
+                                    return new String((char[]) o);
+                                } else {
+                                    return o.toString();
+                                }
+                            },
+                            values);
             return createStringAnnotation(stringVals);
         }
 
@@ -665,10 +664,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         switch (primitiveKind) {
             case BOOLEAN:
-                List<Boolean> boolVals = new ArrayList<>(values.size());
-                for (Object o : values) {
-                    boolVals.add((Boolean) o);
-                }
+                List<Boolean> boolVals = SystemUtil.mapList((Object o) -> (Boolean) o, values);
                 return createBooleanAnnotation(boolVals);
             case DOUBLE:
             case FLOAT:
@@ -773,13 +769,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
     }
 
-    /** Convert a {@code List<Long>} to a {@code List<Double>}. */
+    /**
+     * Convert a {@code List<Long>} to a {@code List<Double>}.
+     *
+     * @param intValues a list of long integers
+     * @return a list of double floating-point values
+     */
     /* package-private */ List<Double> convertLongListToDoubleList(List<Long> intValues) {
-        List<Double> doubleValues = new ArrayList<>(intValues.size());
-        for (Long intValue : intValues) {
-            doubleValues.add(intValue.doubleValue());
-        }
-        return doubleValues;
+        return SystemUtil.mapList(Long::doubleValue, intValues);
     }
 
     /**

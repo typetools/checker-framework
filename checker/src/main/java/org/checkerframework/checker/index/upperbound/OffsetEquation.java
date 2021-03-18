@@ -21,6 +21,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * An offset equation is 2 sets of Java expression strings, one set of added terms and one set of
  * subtracted terms, and a single integer constant. The Java expression strings have been
  * standardized and viewpoint-adapted.
+ *
+ * <p>An OffsetEquation is mutable.
  */
 public class OffsetEquation {
     public static final OffsetEquation ZERO = createOffsetForInt(0);
@@ -37,7 +39,12 @@ public class OffsetEquation {
         subtractedTerms = new ArrayList<>(1);
     }
 
-    private OffsetEquation(OffsetEquation other) {
+    /**
+     * Create a new OffsetEquation that is a copy of the given one.
+     *
+     * @param other the OffsetEquation to copy
+     */
+    protected OffsetEquation(OffsetEquation other) {
         this.addedTerms = new ArrayList<>(other.addedTerms);
         this.subtractedTerms = new ArrayList<>(other.subtractedTerms);
         this.error = other.error;

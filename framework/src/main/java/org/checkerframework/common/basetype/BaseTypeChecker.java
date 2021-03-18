@@ -44,6 +44,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
@@ -330,10 +331,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
             }
             Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
             throw new BugInCF(
-                    String.format(
-                            "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
-                            name, Arrays.toString(args), Arrays.toString(paramTypes), cause),
-                    cause);
+                    cause,
+                    "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                    name,
+                    Arrays.toString(args),
+                    Arrays.toString(paramTypes));
         }
     }
 
@@ -807,11 +809,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     protected Object processArg(Object arg) {
         if (arg instanceof Collection) {
             Collection<?> carg = (Collection<?>) arg;
-            List<Object> newList = new ArrayList<>(carg.size());
-            for (Object o : carg) {
-                newList.add(processArg(o));
-            }
-            return newList;
+            return SystemUtil.mapList(this::processArg, carg);
         } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
             return getTypeFactory()
                     .getAnnotationFormatter()

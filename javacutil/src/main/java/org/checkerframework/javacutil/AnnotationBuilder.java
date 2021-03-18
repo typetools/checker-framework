@@ -327,10 +327,15 @@ public class AnnotationBuilder {
         return this;
     }
 
-    /** Set the element/field with the given name, to the given value. */
+    /**
+     * Set the element/field with the given name, to the given value.
+     *
+     * @param elementName the element/field name
+     * @param values the new value for the element/field
+     * @return this
+     */
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -338,6 +343,7 @@ public class AnnotationBuilder {
         }
         expectedType = ((ArrayType) expectedType).getComponentType();
 
+        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         for (Object v : values) {
             checkSubtype(expectedType, v);
             avalues.add(createValue(v));

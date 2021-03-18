@@ -2,7 +2,7 @@ package flowexpression;
 
 import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
-public class Unparseable {
+public class Unparsable {
     // :: error: (expression.unparsable.type.invalid)
     @FlowExp("lsdjf") Object o3 = null;
 

@@ -47,7 +47,7 @@ public class DependentTypesError {
 
     /// Instance fields
 
-    /** The expression that is unparseable or otherwise problematic. */
+    /** The expression that is unparsable or otherwise problematic. */
     public final String expression;
     /** An error message about that expression. */
     public final String error;

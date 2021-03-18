@@ -564,6 +564,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             return Collections.emptyList();
         }
 
+        // TODO: Should this be used instead of the below??
         ElementFilter.constructorsIn(symClass.getEnclosedElements());
 
         // The common case is probably that `result` is a singleton at method exit.
