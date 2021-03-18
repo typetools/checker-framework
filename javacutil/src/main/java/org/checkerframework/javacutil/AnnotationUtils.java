@@ -1047,7 +1047,7 @@ public class AnnotationUtils {
      * <p>Using this method is slightly cheaper than creating a new {@code List<String>} just for
      * the purpose of testing containment within in.
      *
-     * @param av an AnnotationValue that is null or a list of Strings
+     * @param avList an AnnotationValue that is null or a list of Strings
      * @param s a string
      * @return true if {@code av} contains {@code s}
      */
@@ -1056,8 +1056,9 @@ public class AnnotationUtils {
         if (avList == null) {
             return false;
         }
-        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) av.getValue();
-        for (AnnotatonValue av : list) {
+        @SuppressWarnings("unchecked")
+        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
+        for (AnnotationValue av : list) {
             if (av.getValue().equals(s)) {
                 return true;
             }
