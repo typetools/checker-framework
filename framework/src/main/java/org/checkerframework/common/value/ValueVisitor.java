@@ -191,8 +191,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
                 // accordingly.
                 if (args.size() == 2) {
-                    long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
-                    long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
+                    long from = getTypeFactory().getIntRangeFromValue(anno);
+                    long to = getTypeFactory().getIntRangeToValue(anno);
                     if (from > to) {
                         checker.reportError(node, "from.greater.than.to");
                         return null;
@@ -230,8 +230,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 }
                 break;
             case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-                int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
-                int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+                long from = getTypeFactory().getArrayLenRangeFromValue(anno);
+                long to = getTypeFactory().getArrayLenRangeToValue(anno);
                 if (from > to) {
                     checker.reportError(node, "from.greater.than.to");
                     return null;
@@ -354,8 +354,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             }
         } else if (AnnotationUtils.areSameByName(
                 anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-            int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
-            int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+            long from = getTypeFactory().getArrayLenRangeFromValue(anno);
+            long to = getTypeFactory().getArrayLenRangeToValue(anno);
             if (from > to) {
                 checker.reportError(tree, "from.greater.than.to");
                 return false;

@@ -113,8 +113,8 @@ class ValueTypeAnnotator extends TypeAnnotator {
             }
         } else if (AnnotationUtils.areSameByName(
                 anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-            int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
-            int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+            int from = typeFactory.getArrayLenRangeFromValue(anno);
+            int to = typeFactory.getArrayLenRangeToValue(anno);
             if (from > to) {
                 // from > to either indicates a user error when writing an
                 // annotation or an error in the checker's implementation -
