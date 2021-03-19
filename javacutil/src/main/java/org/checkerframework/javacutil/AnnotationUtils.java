@@ -652,10 +652,11 @@ public class AnnotationUtils {
      * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
-     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
-     * is true even if the annotation has only one element/field. Using that method is possible if
-     * the type of the annotation is known (in which case the element/field's Element (called {@code
+     * either {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@code
+     * anno.getElementValues().get(someElement).getValue();} rather than this method which iterates
+     * through a map. A similar comment is true of all {@code getElementValue*} methods. It is true
+     * even if the annotation has only one element/field. Using that method is possible if the type
+     * of the annotation is known (in which case the element/field's Element (called {@code
      * someElement} in the code snippet) is available.
      *
      * @param anno the annotation whose element to access
@@ -699,6 +700,26 @@ public class AnnotationUtils {
         public NoSuchElementException(String message) {
             super(message);
         }
+    }
+
+    /**
+     * Get given element of the annotation {@code anno}. The result is expected to have type {@code
+     * expectedType}.
+     *
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
+     *
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * @param anno the annotation whose element to access
+     * @param element the the element to access
+     * @param expectedType the expected type of the element
+     * @param <T> the class of the expected type
+     * @return the value of the element with the given name
+     */
+    public static <T> @Nullable T getElementValue(
+            AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        return expectedType.cast(av.getValue());
     }
 
     /**
@@ -762,6 +783,24 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+     * enum of type {@code T}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access
+     * @param expectedType the expected type used to cast the return type, an enum
+     * @param <T> the class of the expected type
+     * @return the value of the element with the given name
+     */
+    public static <T extends Enum<T>> T[] getElementValueEnum(
+            AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> list =
+                (List<AnnotationValue>) anno.getElementValues().get(element).getValue();
+        return AnnotationUtils.annotationValueListToEnumArray(list, expectedType);
+    }
+
+    /**
      * Get the element with the name {@code elementName} of the annotation {@code anno}, where the
      * element has an array type. One element of the result is expected to have type {@code
      * expectedType}.
@@ -813,6 +852,25 @@ public class AnnotationUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, where the
+     * element has an array type. One element of the result is expected to have type {@code
+     * expectedType}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
+     */
+    public static <T> List<T> getElementValueArray(
+            AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        List<T> list = AnnotationUtils.annotationValueToList(av, expectedType);
+        return list;
     }
 
     /**

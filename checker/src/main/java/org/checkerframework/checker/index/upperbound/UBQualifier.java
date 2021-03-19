@@ -101,18 +101,15 @@ public abstract class UBQualifier {
             AnnotationMirror ltLengthOfAnno,
             String extraOffset,
             UpperBoundAnnotatedTypeFactory atypeFactory) {
-        AnnotationValue valueAV =
-                ltLengthOfAnno.getElementValues().get(atypeFactory.ltLengthOfValueElement);
-        List<String> sequences = AnnotationUtils.annotationValueToList(valueAV, String.class);
+        List<String> sequences =
+                AnnotationUtils.getElementValueArray(
+                        ltLengthOfAnno, atypeFactory.ltLengthOfValueElement, String.class);
         AnnotationValue offsetAV =
                 ltLengthOfAnno.getElementValues().get(atypeFactory.ltLengthOfOffsetElement);
         List<String> offsets =
                 (offsetAV == null)
                         ? Collections.nCopies(sequences.size(), "")
                         : AnnotationUtils.annotationValueToList(offsetAV, String.class);
-        // System.out.printf(
-        //         "parseLTLengthOf(%s, %s) => createUBQualifier(%s, %s, %s)%n",
-        //         ltLengthOfAnno, extraOffset, sequences, offsets, extraOffset);
         return createUBQualifier(sequences, offsets, extraOffset);
     }
 
@@ -127,21 +124,16 @@ public abstract class UBQualifier {
             AnnotationMirror substringIndexForAnno,
             String extraOffset,
             SubstringIndexAnnotatedTypeFactory atypeFactory) {
-        AnnotationValue valueAV =
-                substringIndexForAnno
-                        .getElementValues()
-                        .get(atypeFactory.substringIndexForValueElement);
-        if (valueAV == null) {
-            throw new BugInCF(
-                    "parseSubstringIndexFor(%s, %s) value=null%n",
-                    substringIndexForAnno, extraOffset);
-        }
-        List<String> sequences = AnnotationUtils.annotationValueToList(valueAV, String.class);
-        AnnotationValue offsetAV =
-                substringIndexForAnno
-                        .getElementValues()
-                        .get(atypeFactory.substringIndexForOffsetElement);
-        List<String> offsets = AnnotationUtils.annotationValueToList(offsetAV, String.class);
+        List<String> sequences =
+                AnnotationUtils.getElementValueArray(
+                        substringIndexForAnno,
+                        atypeFactory.substringIndexForValueElement,
+                        String.class);
+        List<String> offsets =
+                AnnotationUtils.getElementValueArray(
+                        substringIndexForAnno,
+                        atypeFactory.substringIndexForOffsetElement,
+                        String.class);
         if (offsets.isEmpty()) {
             offsets = Collections.nCopies(sequences.size(), "");
         }
@@ -243,9 +235,6 @@ public abstract class UBQualifier {
             }
         }
 
-        // System.out.printf(
-        //         "createUBQualifier(%s, %s, %s) => LessThanLengthOf(%s, %s, %s)%n",
-        //         sequences, offsets, extraEq, sequences, offsets, extraEq);
         return new LessThanLengthOf(sequences, offsets, extraEq);
     }
 
@@ -400,8 +389,6 @@ public abstract class UBQualifier {
          */
         private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
                 List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
-            // System.out.printf(
-            //         "sequencesAndOffsetsToMap(%s, %s, %s)%n", sequences, offsets, extraEq);
 
             Map<String, Set<OffsetEquation>> map = new HashMap<>();
             if (offsets.isEmpty()) {
@@ -423,14 +410,12 @@ public abstract class UBQualifier {
                     }
                     OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
                     if (eq.hasError()) {
-                        // System.out.printf("sequencesAndOffsetsToMap() => null%n");
                         return null;
                     }
                     eq = eq.copyAdd('+', extraEq);
                     set.add(eq);
                 }
             }
-            // System.out.printf("sequencesAndOffsetsToMap() => %s%n", map);
             return map;
         }
 

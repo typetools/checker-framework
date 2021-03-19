@@ -11,7 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
@@ -357,9 +356,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
             return new ArrayList<>();
         } else {
             // The annotation is @LessThan.
-            AnnotationValue value = annotation.getElementValues().get(lessThanValueElement);
-            List<String> list = AnnotationUtils.annotationValueToList(value, String.class);
-            // System.out.printf("getLessThanExpressions(%s) => %s%n", annotation, list);
+            List<String> list =
+                    AnnotationUtils.getElementValueArray(
+                            annotation, lessThanValueElement, String.class);
             return list;
         }
     }
