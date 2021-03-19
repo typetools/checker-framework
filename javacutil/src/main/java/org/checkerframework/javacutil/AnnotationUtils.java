@@ -1287,10 +1287,12 @@ public class AnnotationUtils {
     }
 
     /**
-     * Convert an annotation value to a list.
+     * Converts an annotation value to a list.
      *
-     * @param avList an AnnotationValue that is null or a list of Strings Converts an annotation
-     *     value to a list
+     * <p>To test containment, use {@link #annotationValueContains(AnnotationValue, String)} or
+     * {@link #annotationValueContainsToString(AnnotationValue, String)}.
+     *
+     * @param avList an AnnotationValue that is null or a list of Strings
      * @param expectedType the component type of the argument and of the return type, an enum
      * @param <T> the class of the type
      * @return the annotation value, converted to a list
@@ -1303,10 +1305,12 @@ public class AnnotationUtils {
     }
 
     /**
-     * Convert an annotation value to a list.
+     * Converts an annotation value to a list.
      *
-     * @param avList a list of Strings (as {@code AnnotationValue}s) Converts an annotation value to
-     *     a list
+     * <p>To test containment, use {@link #annotationValueContains(List, String)} or {@link
+     * #annotationValueContainsToString(List, String)}.
+     *
+     * @param avList a list of Strings (as {@code AnnotationValue}s)
      * @param expectedType the component type of the argument and of the return type, an enum
      * @param <T> the class of the type
      * @return the annotation value, converted to a list
