@@ -658,12 +658,8 @@ public class AnnotationUtils {
      * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * either {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@code
-     * anno.getElementValues().get(someElement).getValue();} rather than this method which iterates
-     * through a map. A similar comment is true of all {@code getElementValue*} methods. It is true
-     * even if the annotation has only one element/field. Using that method is possible if the type
-     * of the annotation is known (in which case the element/field's Element (called {@code
-     * someElement} in the code snippet) is available.
+     * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
+     * #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
@@ -715,11 +711,7 @@ public class AnnotationUtils {
      * null if no such element exists.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
-     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
-     * is true even if the annotation has only one element/field. Using that method is possible if
-     * the type of the annotation is known (in which case the element/field's Element (called {@code
-     * someElement} in the code snippet) is available.
+     * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
      *
      * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
@@ -742,16 +734,15 @@ public class AnnotationUtils {
         }
     }
 
+    // TODO: Add the referenced methods, then add this comment:
+    // * <p>This method is intended only for use by the framework. A checker implementation should
+    // use
+    // * {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or {@link
+    // * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Object)}.
+
     /**
      * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
      * enum of type {@code T}.
-     *
-     * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
-     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
-     * is true even if the annotation has only one element/field. Using that method is possible if
-     * the type of the annotation is known (in which case the element/field's Element (called {@code
-     * someElement} in the code snippet) is available.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -779,11 +770,8 @@ public class AnnotationUtils {
      * defaulting is needed.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
-     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
-     * is true even if the annotation has only one element/field. Using that method is possible if
-     * the type of the annotation is known (in which case the element/field's Element (called {@code
-     * someElement} in the code snippet) is available.
+     * {@code #getElementValueArray(AnnotationMirror, ExecutableElement, Class)} or {@code
+     * #getElementValueArray(AnnotationMirror, ExecutableElement, Class, Object)}.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -823,6 +811,7 @@ public class AnnotationUtils {
         return result;
     }
 
+    // TODO: Make a version of this method that takes an ExecutableElement?
     /**
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The element
      * has type {@code expectedType} or array of {@code expectedType}.
@@ -832,11 +821,7 @@ public class AnnotationUtils {
      * defaulting is needed.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue();} rather than this method which
-     * iterates through a map. A similar comment is true of all {@code getElementValue*} methods. It
-     * is true even if the annotation has only one element/field. Using that method is possible if
-     * the type of the annotation is known (in which case the element/field's Element (called {@code
-     * someElement} in the code snippet) is available.
+     * {@code anno.getElementValues().get(someElement).getValue();}.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -873,18 +858,8 @@ public class AnnotationUtils {
      * the elements are {@code Enum}s. One element of the result has type {@code expectedType}.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class)} or
-     *
-     * <pre>{@code
-     * AnnotationUtils.annotationValueListToEnumArray(
-     *   anno.getElementValues().get(someElement).getValue(),
-     *   MyEnumClass.class);
-     * }</pre>
-     *
-     * rather than this method which iterates through a map. A similar comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class)} or {@link
+     * #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class, Enum[])}.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -911,11 +886,7 @@ public class AnnotationUtils {
      * ensures consistent use of the qualified name.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}
-     * rather than this method which iterates through a map. A similar comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access; it must be present in the annotation
@@ -937,11 +908,7 @@ public class AnnotationUtils {
      * rather than names.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}
-     * rather than this method which iterates through a map. A similar comment is true of all {@code
-     * getElementValue*} methods. It is true even if the annotation has only one element/field.
-     * Using that method is possible if the type of the annotation is known (in which case the
-     * element/field's Element (called {@code someElement} in the code snippet) is available.
+     * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}.
      *
      * @param anno the annotation whose field to access; it must be present in the annotation
      * @param annoElement the element/field of {@code anno} whose content is a list of classes
@@ -963,6 +930,9 @@ public class AnnotationUtils {
     /**
      * Get the given element of the annotation {@code anno}. The result has type {@code
      * expectedType}.
+     *
+     * <p>If the return type is primitive, use {@link #getElementValueInt} or {@link
+     * #getElementValueLong} instead.
      *
      * <p>If the return type is an array, use {@link #getElementValueArray} instead.
      *
@@ -1015,11 +985,7 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the given element of the annotation {@code anno}.
-     *
-     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
-     *
-     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     * Get the given integer element of the annotation {@code anno}.
      *
      * @param anno the annotation whose element to access
      * @param element the element to access
@@ -1037,11 +1003,7 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the given element of the annotation {@code anno}.
-     *
-     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
-     *
-     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     * Get the given long element of the annotation {@code anno}.
      *
      * @param anno the annotation whose element to access
      * @param element the element to access
@@ -1065,14 +1027,14 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param element the element to access; it must be present in the annotation
      * @param expectedType the component type of the element and of the return value, an enum
-     * @param <T> the enum class of the type
+     * @param <T> the enum class of the component type
      * @return the value of the element with the given name
      */
     public static <T extends Enum<T>> T[] getElementValueEnumArray(
             AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
         AnnotationValue av = anno.getElementValues().get(element);
         if (av == null) {
-            throw new BugInCF("getElementValueEnum(%s, %s, ...)", anno, element);
+            throw new BugInCF("getElementValueEnumArray(%s, %s, ...)", anno, element);
         }
         return AnnotationUtils.annotationValueListToEnumArray(av, expectedType);
     }
@@ -1084,7 +1046,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param element the element to access
      * @param expectedType the component type of the element and of the return type
-     * @param <T> the enum class of the type
+     * @param <T> the enum class of the component type
      * @param defaultValue the value to return if the annotation does not have the element
      * @return the value of the element with the given name
      */
@@ -1108,7 +1070,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param element the element to access; it must be present in the annotation
      * @param expectedType the component type of the element and of the return type
-     * @param <T> the class of the type
+     * @param <T> the class of the component type
      * @return the value of the element with the given name; it is a new list, so it is safe for
      *     clients to side-effect
      */
@@ -1128,7 +1090,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param element the element to access
      * @param expectedType the component type of the element and of the return type
-     * @param <T> the class of the type
+     * @param <T> the class of the component type
      * @param defaultValue the value to return if the element is not present
      * @return the value of the element with the given name; it is a new list, so it is safe for
      *     clients to side-effect
