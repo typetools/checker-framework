@@ -9,7 +9,6 @@ import java.util.IllegalFormatException;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.NullType;
@@ -503,9 +502,7 @@ public class FormatterTreeUtil {
      */
     @SuppressWarnings("GetClassOnEnum")
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        @SuppressWarnings("unchecked")
-        List<AnnotationValue> list =
-                (List<AnnotationValue>) anno.getElementValues().get(formatValueElement).getValue();
-        return AnnotationUtils.annotationValueListToEnumArray(list, ConversionCategory.class);
+        return AnnotationUtils.getElementValueEnumArray(
+                anno, formatValueElement, ConversionCategory.class);
     }
 }

@@ -554,12 +554,7 @@ public class LockAnnotatedTypeFactory
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
-        AnnotationValue av = am.getElementValues().get(guardSatisfiedValueElement);
-        if (av == null) {
-            return -1;
-        } else {
-            return (int) av.getValue();
-        }
+        return AnnotationUtils.getElementValueInt(am, guardSatisfiedValueElement, -1);
     }
 
     @Override

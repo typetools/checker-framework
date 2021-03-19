@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -117,16 +116,12 @@ public class I18nFormatterTreeUtil {
      * Gets the value() element/field out of an I18nInvalidFormat annotation.
      *
      * @param anno an I18nInvalidFormat annotation
-     * @return its value() element/field
+     * @return its value() element/field, or null if it does not have one
      */
     /*package-visible*/
     @Nullable String getI18nInvalidFormatValue(AnnotationMirror anno) {
-        AnnotationValue av = anno.getElementValues().get(i18nInvalidFormatValueElement);
-        if (av == null) {
-            return null;
-        } else {
-            return (String) av.getValue();
-        }
+        return AnnotationUtils.getElementValue(
+                anno, i18nInvalidFormatValueElement, String.class, null);
     }
 
     /**
@@ -136,7 +131,7 @@ public class I18nFormatterTreeUtil {
      * @return its value() element/field
      */
     /*package-visible*/ String getI18nFormatForValue(AnnotationMirror anno) {
-        return (String) anno.getElementValues().get(i18nFormatForValueElement).getValue();
+        return AnnotationUtils.getElementValue(anno, i18nFormatForValueElement, String.class);
     }
 
     /**
@@ -169,9 +164,8 @@ public class I18nFormatterTreeUtil {
      * @return the {@code @}{@link I18nFormat} annotation's {@code value} element
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        return AnnotationUtils.annotationValueListToEnumArray(
-                anno.getElementValues().get(i18nFormatValueElement).getValue(),
-                I18nConversionCategory.class);
+        return AnnotationUtils.getElementValueEnumArray(
+                anno, i18nFormatValueElement, I18nConversionCategory.class);
     }
 
     /**

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -556,15 +555,12 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            AnnotationValue av = dq.getElementValues().get(defaultQualifierLocationsElement);
-            TypeUseLocation[] locations;
-            if (av == null) {
-                locations = defaultQualifierValueDefault;
-            } else {
-                locations =
-                        AnnotationUtils.annotationValueListToEnumArray(
-                                av.getValue(), TypeUseLocation.class);
-            }
+            TypeUseLocation[] locations =
+                    AnnotationUtils.getElementValueEnumArray(
+                            dq,
+                            defaultQualifierLocationsElement,
+                            TypeUseLocation.class,
+                            defaultQualifierValueDefault);
             DefaultSet ret = new DefaultSet();
             for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));
