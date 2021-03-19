@@ -3,14 +3,10 @@ package org.checkerframework.framework.type;
 // The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
 
-import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.*;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.*;
-import com.github.javaparser.printer.PrettyPrinter;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -87,12 +83,6 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceIm
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
-import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
-import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
-import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
-import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
-import org.checkerframework.framework.ajava.StringLiteralConcatenateVisitor;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
