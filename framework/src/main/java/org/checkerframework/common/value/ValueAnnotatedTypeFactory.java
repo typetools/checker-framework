@@ -387,7 +387,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno an IntRange annotation
      * @return its from() element/field
      */
-    private long getIntRangeFromValue(AnnotationMirror anno) {
+    protected long getIntRangeFromValue(AnnotationMirror anno) {
         return AnnotationUtils.getElementValueLong(anno, intRangeFromElement, Long.MIN_VALUE);
     }
 
@@ -398,7 +398,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno an IntRange annotation
      * @return its to() element/field
      */
-    private long getIntRangeToValue(AnnotationMirror anno) {
+    protected long getIntRangeToValue(AnnotationMirror anno) {
         return AnnotationUtils.getElementValueLong(anno, intRangeToElement, Long.MAX_VALUE);
     }
 
@@ -408,7 +408,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno an ArrayLenRange annotation
      * @return its from() element/field
      */
-    private int getArrayLenRangeFromValue(AnnotationMirror anno) {
+    protected int getArrayLenRangeFromValue(AnnotationMirror anno) {
         return AnnotationUtils.getElementValueInt(anno, arrayLenRangeFromElement, 0);
     }
 
@@ -418,7 +418,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno an ArrayLenRange annotation
      * @return its to() element/field
      */
-    private int getArrayLenRangeToValue(AnnotationMirror anno) {
+    protected int getArrayLenRangeToValue(AnnotationMirror anno) {
         return AnnotationUtils.getElementValueInt(anno, arrayLenRangeToElement, Integer.MAX_VALUE);
     }
 
