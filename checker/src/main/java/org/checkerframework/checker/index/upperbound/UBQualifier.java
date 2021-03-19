@@ -718,9 +718,9 @@ public abstract class UBQualifier {
 
             Map<String, Set<OffsetEquation>> lubMap = new HashMap<>();
             for (String sequence : sequences) {
-                Set<OffsetEquation> lub = new HashSet<>();
                 Set<OffsetEquation> offsets1 = map.get(sequence);
                 Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
+                Set<OffsetEquation> lub = new HashSet<>(offsets1.size() + offsets2.size());
                 for (OffsetEquation offset1 : offsets1) {
                     for (OffsetEquation offset2 : offsets2) {
                         if (offset2.lessThanOrEqual(offset1)) {
@@ -832,7 +832,7 @@ public abstract class UBQualifier {
             Set<String> sequences = new HashSet<>(map.keySet());
             sequences.addAll(otherLtl.map.keySet());
 
-            Map<String, Set<OffsetEquation>> glbMap = new HashMap<>();
+            Map<String, Set<OffsetEquation>> glbMap = new HashMap<>(sequences.size());
             for (String sequence : sequences) {
                 Set<OffsetEquation> glb = map.get(sequence);
                 Set<OffsetEquation> otherglb = otherLtl.map.get(sequence);

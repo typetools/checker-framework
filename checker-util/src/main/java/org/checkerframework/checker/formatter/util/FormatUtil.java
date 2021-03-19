@@ -116,7 +116,7 @@ public class FormatUtil {
         int maxindex = -1;
 
         Conversion[] cs = parse(format);
-        Map<Integer, ConversionCategory> conv = new HashMap<>();
+        Map<Integer, ConversionCategory> conv = new HashMap<>(cs.length);
 
         for (Conversion c : cs) {
             int index = c.index();

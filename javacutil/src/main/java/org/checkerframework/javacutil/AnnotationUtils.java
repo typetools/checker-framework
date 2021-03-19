@@ -735,13 +735,15 @@ public class AnnotationUtils {
         }
     }
 
+    // TODO: Add the referenced methods, then add this comment:
+    // * <p>This method is intended only for use by the framework. A checker implementation should
+    // use
+    // * {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or {@link
+    // * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Object)}.
+
     /**
      * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
      * enum of type {@code T}.
-     *
-     * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or {@link
-     * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Enum)}.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
