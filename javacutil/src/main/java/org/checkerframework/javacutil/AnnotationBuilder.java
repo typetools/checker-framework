@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -205,7 +204,7 @@ public class AnnotationBuilder {
      */
     public static @Nullable AnnotationMirror fromName(
             Elements elements, @FullyQualifiedName CharSequence name) {
-        return fromName(elements, name, new HashMap<>());
+        return fromName(elements, name, Collections.emptyMap());
     }
 
     /**
@@ -239,9 +238,9 @@ public class AnnotationBuilder {
             return null;
         }
 
-        Map<ExecutableElement, AnnotationValue> elementValues = new LinkedHashMap<>();
-        for (ExecutableElement annoElement :
-                ElementFilter.methodsIn(annoElt.getEnclosedElements())) {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(annoElt.getEnclosedElements());
+        Map<ExecutableElement, AnnotationValue> elementValues = new LinkedHashMap<>(methods.size());
+        for (ExecutableElement annoElement : methods) {
             AnnotationValue elementValue =
                     elementNamesValues.get(annoElement.getSimpleName().toString());
             if (elementValue == null) {

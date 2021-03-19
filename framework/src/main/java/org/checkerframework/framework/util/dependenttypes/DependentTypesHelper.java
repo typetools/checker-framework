@@ -66,7 +66,7 @@ import org.plumelib.util.StringsPlume;
  *       expression strings in annotations to {@link JavaExpression}, then viewpoint-adapting them,
  *       then converting the {@link JavaExpression}s back to strings, and finally creating new
  *       annotations with the new strings. Subclasses can specialize this process by overriding
- *       methods. See {@link #map(StringToJavaExpression, AnnotationMirror)}.
+ *       methods. See {@link #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}.
  *   <li>Changes invalid expression strings to an error string that includes the reason why the
  *       expression is invalid. For example, {@code @KeyFor("m")} would be changed to
  *       {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a
@@ -567,17 +567,18 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Calls {@link #map(StringToJavaExpression, AnnotationMirror)} on each annotation mirror on
-     * type with {@code stringToJavaExpr}. And replaces the annotation with the one created by
-     * {@code map}, it it's not null. See {@link #map(StringToJavaExpression, AnnotationMirror)} for
-     * more details.
+     * Calls {@link #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} on each
+     * annotation mirror on type with {@code stringToJavaExpr}. And replaces the annotation with the
+     * one created by {@code convertAnnotationMirror}, it it's not null. See {@link
+     * #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} for more details.
      *
      * @param stringToJavaExpr function to convert a string to a {@link JavaExpression}
      * @param type the type that is side-effected by this method
      */
     protected void convertAnnotatedTypeMirror(
             StringToJavaExpression stringToJavaExpr, AnnotatedTypeMirror type) {
-        this.annotatedTypeReplacer.visit(type, anno -> map(stringToJavaExpr, anno));
+        this.annotatedTypeReplacer.visit(
+                type, anno -> convertAnnotationMirror(stringToJavaExpr, anno));
     }
 
     /**
@@ -607,7 +608,7 @@ public class DependentTypesHelper {
      * @return an annotation created by applying {@code stringToJavaExpr} to all expression strings
      *     in {@code anno}
      */
-    public @Nullable AnnotationMirror map(
+    public @Nullable AnnotationMirror convertAnnotationMirror(
             StringToJavaExpression stringToJavaExpr, AnnotationMirror anno) {
         if (!isExpressionAnno(anno)) {
             return null;
@@ -677,8 +678,8 @@ public class DependentTypesHelper {
      * Create a new annotation of the same type as {@code originalAnno} using the provided {@code
      * elementMap}.
      *
-     * @param originalAnno the annotation passed to {@link #map(StringToJavaExpression,
-     *     AnnotationMirror)}
+     * @param originalAnno the annotation passed to {@link
+     *     #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}
      * @param elementMap a mapping of element names of {@code originalAnno} to {@code
      *     JavaExpression}s
      * @return an annotation created from {@code elementMap}

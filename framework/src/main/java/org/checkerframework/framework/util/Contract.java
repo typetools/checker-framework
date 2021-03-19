@@ -216,7 +216,8 @@ public abstract class Contract {
             StringToJavaExpression stringToJavaExpr,
             @Nullable Tree errorTree) {
         DependentTypesHelper dependentTypesHelper = factory.getDependentTypesHelper();
-        AnnotationMirror standardized = dependentTypesHelper.map(stringToJavaExpr, annotation);
+        AnnotationMirror standardized =
+                dependentTypesHelper.convertAnnotationMirror(stringToJavaExpr, annotation);
         if (standardized == null) {
             return annotation;
         }

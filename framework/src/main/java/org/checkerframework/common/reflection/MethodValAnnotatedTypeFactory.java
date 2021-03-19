@@ -113,9 +113,10 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return a {@code @MethodVal} annotation that represents {@code sigs}
      */
     private AnnotationMirror createMethodVal(Set<MethodSignature> sigs) {
-        List<String> classNames = new ArrayList<>();
-        List<String> methodNames = new ArrayList<>();
-        List<Integer> params = new ArrayList<>();
+        int size = sigs.size();
+        List<String> classNames = new ArrayList<>(size);
+        List<String> methodNames = new ArrayList<>(size);
+        List<Integer> params = new ArrayList<>(size);
         for (MethodSignature sig : sigs) {
             classNames.add(sig.className);
             methodNames.add(sig.methodName);
@@ -141,18 +142,21 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ClassValAnnotatedTypeFactory classValATF =
                 getTypeFactoryOfSubchecker(ClassValChecker.class);
         AnnotatedTypeMirror classAnno = classValATF.getAnnotatedType(tree);
+
         AnnotationMirror classValAnno = classAnno.getAnnotation(ClassVal.class);
         if (classValAnno != null) {
             return AnnotationUtils.getElementValueArray(classValAnno, "value", String.class, false);
-        } else if (!mustBeExact) {
-            // Could be ClassBound instead of ClassVal
-            AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
-            if (classBoundAnno != null) {
-                return AnnotationUtils.getElementValueArray(
-                        classBoundAnno, "value", String.class, false);
-            }
+        } else if (mustBeExact) {
+            return Collections.emptyList();
         }
-        return EMPTY_STRING_LIST;
+
+        AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
+        if (classBoundAnno != null) {
+            return AnnotationUtils.getElementValueArray(
+                    classBoundAnno, "value", String.class, false);
+        } else {
+            return Collections.emptyList();
+        }
     }
     /**
      * Returns the string values for the argument passed. The String Values are estimated using the
@@ -312,7 +316,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             Set<MethodSignature> methodSigs = new HashSet<>();
-
             // The possible method signatures are the Cartesian product of all
             // found class, method, and parameter lengths
             for (String methodName : methodNames) {
