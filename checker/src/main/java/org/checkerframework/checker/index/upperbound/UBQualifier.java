@@ -118,6 +118,7 @@ public abstract class UBQualifier {
      *
      * @param substringIndexForAnno a @SubstringIndexFor annotation
      * @param extraOffset the extra offset
+     * @param atypeFactory used for obtaining arguments/elements from {@code substringIndexForAnno}
      * @return a UBQualifier created from the @SubstringIndexFor annotation
      */
     private static UBQualifier parseSubstringIndexFor(
