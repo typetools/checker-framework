@@ -18,6 +18,7 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
+import org.checkerframework.checker.index.substringindex.SubstringIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
@@ -43,11 +44,14 @@ public abstract class UBQualifier {
      *
      * @param am the annotation to turn into a UBQualifier
      * @param upperBoundAtypeFactory used to obtain the fields of {@code am}
+     * @param substringIndexAtypeFactory used to obtain the fields of {@code am}
      * @return a UBQualifier that represents the same information as the given annotation
      */
     public static UBQualifier createUBQualifier(
-            AnnotationMirror am, UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory) {
-        return createUBQualifier(am, null, upperBoundAtypeFactory);
+            AnnotationMirror am,
+            UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory,
+            SubstringIndexAnnotatedTypeFactory substringIndexAtypeFactory) {
+        return createUBQualifier(am, null, upperBoundAtypeFactory, substringIndexAtypeFactory);
     }
 
     /**
@@ -56,13 +60,15 @@ public abstract class UBQualifier {
      * @param am the annotation to turn into a UBQualifier
      * @param offset the extra offset; may be null
      * @param upperBoundAtypeFactory used to obtain the fields of {@code am}
+     * @param substringIndexAtypeFactory used to obtain the fields of {@code am}
      * @return a UBQualifier that represents the same information as the given annotation (plus an
      *     optional offset)
      */
     public static UBQualifier createUBQualifier(
             AnnotationMirror am,
             String offset,
-            UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory) {
+            UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory,
+            SubstringIndexAnnotatedTypeFactory substringIndexAtypeFactory) {
         if (AnnotationUtils.areSameByClass(am, UpperBoundUnknown.class)) {
             return UpperBoundUnknownQualifier.UNKNOWN;
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
@@ -70,7 +76,7 @@ public abstract class UBQualifier {
         } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
             return parseLTLengthOf(am, offset, upperBoundAtypeFactory);
         } else if (AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
-            return parseSubstringIndexFor(am, offset);
+            return parseSubstringIndexFor(am, offset, substringIndexAtypeFactory);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
             return parseLTEqLengthOf(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
@@ -113,19 +119,33 @@ public abstract class UBQualifier {
     /**
      * Create a UBQualifier from a @SubstringIndexFor annotation.
      *
-     * @param am a @SubstringIndexFor annotation
+     * @param substringIndexForAnno a @SubstringIndexFor annotation
      * @param extraOffset the extra offset
      * @return a UBQualifier created from the @SubstringIndexFor annotation
      */
-    private static UBQualifier parseSubstringIndexFor(AnnotationMirror am, String extraOffset) {
-        List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
-        List<String> offset =
-                AnnotationUtils.getElementValueArray(am, "offset", String.class, false);
-        if (offset.isEmpty()) {
-            offset = Collections.nCopies(sequences.size(), "");
+    private static UBQualifier parseSubstringIndexFor(
+            AnnotationMirror substringIndexForAnno,
+            String extraOffset,
+            SubstringIndexAnnotatedTypeFactory atypeFactory) {
+        AnnotationValue valueAV =
+                substringIndexForAnno
+                        .getElementValues()
+                        .get(atypeFactory.substringIndexForValueElement);
+        if (valueAV == null) {
+            throw new BugInCF(
+                    "parseSubstringIndexFor(%s, %s) value=null%n",
+                    substringIndexForAnno, extraOffset);
         }
-        return createUBQualifier(sequences, offset, extraOffset);
+        List<String> sequences = AnnotationUtils.annotationValueToList(valueAV, String.class);
+        AnnotationValue offsetAV =
+                substringIndexForAnno
+                        .getElementValues()
+                        .get(atypeFactory.substringIndexForOffsetElement);
+        List<String> offsets = AnnotationUtils.annotationValueToList(offsetAV, String.class);
+        if (offsets.isEmpty()) {
+            offsets = Collections.nCopies(sequences.size(), "");
+        }
+        return createUBQualifier(sequences, offsets, extraOffset);
     }
 
     /**
@@ -171,14 +191,18 @@ public abstract class UBQualifier {
      * @param type the type from which to obtain an annotation
      * @param top the top annotation in a hierarchy; the annotation in this hierarchy will be used
      * @param upperBoundAtypeFactory the type factory, to read annotations out of {@code type}
+     * @param substringIndexAtypeFactory used to obtain the fields of {@code am}
      * @return a new upper bound qualifier
      */
     public static UBQualifier createUBQualifier(
             AnnotatedTypeMirror type,
             AnnotationMirror top,
-            UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory) {
+            UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory,
+            SubstringIndexAnnotatedTypeFactory substringIndexAtypeFactory) {
         return createUBQualifier(
-                type.getEffectiveAnnotationInHierarchy(top), upperBoundAtypeFactory);
+                type.getEffectiveAnnotationInHierarchy(top),
+                upperBoundAtypeFactory,
+                substringIndexAtypeFactory);
     }
 
     /**

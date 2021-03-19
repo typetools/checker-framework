@@ -59,8 +59,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
      */
     public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        lessThanValueElement =
-                TreeUtils.getMethod(LessThan.class.getCanonicalName(), "value", 0, processingEnv);
+        lessThanValueElement = TreeUtils.getMethod(LessThan.class, "value", 0, processingEnv);
         postInit();
     }
 

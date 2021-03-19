@@ -288,10 +288,14 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
         // larger > smaller
-        UBQualifier largerQual = UBQualifier.createUBQualifier(largerAnno, atypeFactory);
+        UBQualifier largerQual =
+                UBQualifier.createUBQualifier(
+                        largerAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
         // larger + 1 >= smaller
         UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(smallerAnno, atypeFactory);
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        smallerAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
         UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
         if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -316,8 +320,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno, atypeFactory);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno, atypeFactory);
+        UBQualifier leftQualifier =
+                UBQualifier.createUBQualifier(
+                        leftAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        rightAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
         UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
         if (leftQualifier.isLessThanLengthQualifier()) {
@@ -404,8 +412,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Node right,
             AnnotationMirror rightAnno,
             CFStore store) {
-        UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno, atypeFactory);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno, atypeFactory);
+        UBQualifier leftQualifier =
+                UBQualifier.createUBQualifier(
+                        leftAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        rightAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
         UBQualifier glb = rightQualifier.glb(leftQualifier);
         AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
@@ -464,7 +476,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
 
         if (receiver != null && !receiver.containsUnknown()) {
-            UBQualifier otherQualifier = UBQualifier.createUBQualifier(otherNodeAnno, atypeFactory);
+            UBQualifier otherQualifier =
+                    UBQualifier.createUBQualifier(
+                            otherNodeAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
             String sequence = receiver.toString();
             // Check if otherNode + c - 1 < receiver.length
             if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
@@ -762,7 +776,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 && (lowerBoundType.hasAnnotation(NonNegative.class)
                         || lowerBoundType.hasAnnotation(Positive.class))) {
             UBQualifier substringIndexQualifier =
-                    UBQualifier.createUBQualifier(substringIndexAnno, atypeFactory);
+                    UBQualifier.createUBQualifier(
+                            substringIndexAnno,
+                            atypeFactory,
+                            atypeFactory.substringIndexAtypeFactory);
             ubQualifier = ubQualifier.glb(substringIndexQualifier);
         }
         return ubQualifier;
@@ -810,7 +827,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (anno == null) {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
-        return UBQualifier.createUBQualifier(anno, atypeFactory);
+        return UBQualifier.createUBQualifier(
+                anno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
     }
 
     private TransferResult<CFValue, CFStore> createTransferResult(

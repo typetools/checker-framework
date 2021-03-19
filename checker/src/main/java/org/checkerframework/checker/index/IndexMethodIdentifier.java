@@ -53,8 +53,7 @@ public class IndexMethodIdentifier {
         mathMinMethods = TreeUtils.getMethods("java.lang.Math", "min", 2, processingEnv);
         mathMaxMethods = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
 
-        lengthOfValueElement =
-                TreeUtils.getMethod(LengthOf.class.getCanonicalName(), "value", 0, processingEnv);
+        lengthOfValueElement = TreeUtils.getMethod(LengthOf.class, "value", 0, processingEnv);
     }
 
     /** Returns true iff the argument is an invocation of Math.min. */

@@ -114,11 +114,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     public final AnnotationMirror POLY =
             AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
-    /** The LengthOf.value argument/element. */
+    /** The LTLengthOf.value argument/element. */
     /*package-private*/ final ExecutableElement ltLengthOfValueElement;
-
-    /** The LengthOf.value argument/element. */
+    /** The LTLengthOf.offset argument/element. */
     /*package-private*/ final ExecutableElement ltLengthOfOffsetElement;
+
+    /**
+     * A factory used for reading elements/fields from annotations.
+     *
+     * <p>This field is set by {@link IndexChecker#introduceSubcheckers}.
+     */
+    public SubstringIndexAnnotatedTypeFactory substringIndexAtypeFactory;
 
     /** Predicates about what method an invocation is calling. */
     private final IndexMethodIdentifier imf;
@@ -135,11 +141,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         addAliasedTypeAnnotation(LengthOf.class, LTEqLengthOf.class, true);
         addAliasedTypeAnnotation(PolyIndex.class, POLY);
 
-        ltLengthOfValueElement =
-                TreeUtils.getMethod(LTLengthOf.class.getCanonicalName(), "value", 0, processingEnv);
-        ltLengthOfOffsetElement =
-                TreeUtils.getMethod(
-                        LTLengthOf.class.getCanonicalName(), "offset", 0, processingEnv);
+        ltLengthOfValueElement = TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
+        ltLengthOfOffsetElement = TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
 
         imf = new IndexMethodIdentifier(this);
 
@@ -377,9 +380,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             UBQualifier a1Obj =
-                    UBQualifier.createUBQualifier(a1, UpperBoundAnnotatedTypeFactory.this);
+                    UBQualifier.createUBQualifier(
+                            a1, UpperBoundAnnotatedTypeFactory.this, substringIndexAtypeFactory);
             UBQualifier a2Obj =
-                    UBQualifier.createUBQualifier(a2, UpperBoundAnnotatedTypeFactory.this);
+                    UBQualifier.createUBQualifier(
+                            a2, UpperBoundAnnotatedTypeFactory.this, substringIndexAtypeFactory);
             UBQualifier glb = a1Obj.glb(a2Obj);
             return convertUBQualifierToAnnotation(glb);
         }
@@ -394,9 +399,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             UBQualifier a1Obj =
-                    UBQualifier.createUBQualifier(a1, UpperBoundAnnotatedTypeFactory.this);
+                    UBQualifier.createUBQualifier(
+                            a1, UpperBoundAnnotatedTypeFactory.this, substringIndexAtypeFactory);
             UBQualifier a2Obj =
-                    UBQualifier.createUBQualifier(a2, UpperBoundAnnotatedTypeFactory.this);
+                    UBQualifier.createUBQualifier(
+                            a2, UpperBoundAnnotatedTypeFactory.this, substringIndexAtypeFactory);
             UBQualifier lub = a1Obj.lub(a2Obj);
             return convertUBQualifierToAnnotation(lub);
         }
@@ -406,10 +413,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                 AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
             UBQualifier a1Obj =
                     UBQualifier.createUBQualifier(
-                            newQualifier, UpperBoundAnnotatedTypeFactory.this);
+                            newQualifier,
+                            UpperBoundAnnotatedTypeFactory.this,
+                            substringIndexAtypeFactory);
             UBQualifier a2Obj =
                     UBQualifier.createUBQualifier(
-                            previousQualifier, UpperBoundAnnotatedTypeFactory.this);
+                            previousQualifier,
+                            UpperBoundAnnotatedTypeFactory.this,
+                            substringIndexAtypeFactory);
             UBQualifier lub = a1Obj.widenUpperBound(a2Obj);
             return convertUBQualifierToAnnotation(lub);
         }
@@ -429,9 +440,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             UBQualifier subtype =
-                    UBQualifier.createUBQualifier(subAnno, UpperBoundAnnotatedTypeFactory.this);
+                    UBQualifier.createUBQualifier(
+                            subAnno,
+                            UpperBoundAnnotatedTypeFactory.this,
+                            substringIndexAtypeFactory);
             UBQualifier supertype =
-                    UBQualifier.createUBQualifier(superAnno, UpperBoundAnnotatedTypeFactory.this);
+                    UBQualifier.createUBQualifier(
+                            superAnno,
+                            UpperBoundAnnotatedTypeFactory.this,
+                            substringIndexAtypeFactory);
             return subtype.isSubtype(supertype);
         }
     }
@@ -475,7 +492,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                 AnnotatedTypeMirror argType = getAnnotatedType(tree.getArguments().get(0));
                 AnnotationMirror anno = argType.getAnnotationInHierarchy(UNKNOWN);
                 UBQualifier qualifier =
-                        UBQualifier.createUBQualifier(anno, UpperBoundAnnotatedTypeFactory.this);
+                        UBQualifier.createUBQualifier(
+                                anno,
+                                UpperBoundAnnotatedTypeFactory.this,
+                                substringIndexAtypeFactory);
                 qualifier = qualifier.plusOffset(1);
                 type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
             }
@@ -599,7 +619,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                     if (!plusDivQualifier.isUnknown()) {
                         UBQualifier qualifier =
                                 UBQualifier.createUBQualifier(
-                                        annotation, UpperBoundAnnotatedTypeFactory.this);
+                                        annotation,
+                                        UpperBoundAnnotatedTypeFactory.this,
+                                        substringIndexAtypeFactory);
                         qualifier = qualifier.glb(plusDivQualifier);
                         annotation = convertUBQualifierToAnnotation(qualifier);
                     }
@@ -657,7 +679,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                         UBQualifier.createUBQualifier(
                                 getAnnotatedType(numeratorTree),
                                 UNKNOWN,
-                                UpperBoundAnnotatedTypeFactory.this);
+                                UpperBoundAnnotatedTypeFactory.this,
+                                substringIndexAtypeFactory);
             }
             // if divisor >= 0, then numerator%divisor < divisor
             if (lowerBoundATF.isNonNegative(divisorTree)) {
@@ -665,7 +688,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                         UBQualifier.createUBQualifier(
                                 getAnnotatedType(divisorTree),
                                 UNKNOWN,
-                                UpperBoundAnnotatedTypeFactory.this);
+                                UpperBoundAnnotatedTypeFactory.this,
+                                substringIndexAtypeFactory);
                 result = result.glb(divisor.plusOffset(1));
             }
             resultType.addAnnotation(convertUBQualifierToAnnotation(result));
@@ -699,7 +723,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                     UBQualifier.createUBQualifier(
                             getAnnotatedType(numeratorTree),
                             UNKNOWN,
-                            UpperBoundAnnotatedTypeFactory.this);
+                            UpperBoundAnnotatedTypeFactory.this,
+                            substringIndexAtypeFactory);
             if (numerator.isLessThanLengthQualifier()) {
                 result = ((LessThanLengthOf) numerator).divide(divisor.intValue());
             }
@@ -741,12 +766,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                     UBQualifier.createUBQualifier(
                             getAnnotatedType(plusTree.getLeftOperand()),
                             UNKNOWN,
-                            UpperBoundAnnotatedTypeFactory.this);
+                            UpperBoundAnnotatedTypeFactory.this,
+                            substringIndexAtypeFactory);
             UBQualifier right =
                     UBQualifier.createUBQualifier(
                             getAnnotatedType(plusTree.getRightOperand()),
                             UNKNOWN,
-                            UpperBoundAnnotatedTypeFactory.this);
+                            UpperBoundAnnotatedTypeFactory.this,
+                            substringIndexAtypeFactory);
             if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
                 LessThanLengthOf leftLTL = (LessThanLengthOf) left;
                 LessThanLengthOf rightLTL = (LessThanLengthOf) right;
@@ -870,7 +897,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                                 qualHierarchy.findAnnotationInHierarchy(
                                         value.getAnnotations(), UNKNOWN),
                                 AnnotatedTypeFactory.negateConstant(offset),
-                                this);
+                                this,
+                                substringIndexAtypeFactory);
                 if (ubQualifier == null) {
                     ubQualifier = newUBQ;
                 } else {

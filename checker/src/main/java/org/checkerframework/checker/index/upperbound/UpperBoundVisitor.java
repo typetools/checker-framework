@@ -167,7 +167,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
         UBQualifier qualifier =
-                UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN, atypeFactory);
+                UBQualifier.createUBQualifier(
+                        indexType,
+                        atypeFactory.UNKNOWN,
+                        atypeFactory,
+                        atypeFactory.substringIndexAtypeFactory);
         ValueAnnotatedTypeFactory valueFactory = atypeFactory.getValueAnnotatedTypeFactory();
         Long valMax = ValueCheckerUtils.getMaxValue(indexTree, valueFactory);
 
@@ -219,7 +223,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
             boolean ltelCheckFailed = true;
             if (anm != null) {
-                UBQualifier qual = UBQualifier.createUBQualifier(anm, atypeFactory);
+                UBQualifier qual =
+                        UBQualifier.createUBQualifier(
+                                anm, atypeFactory, atypeFactory.substringIndexAtypeFactory);
                 ltelCheckFailed = !qual.isLessThanOrEqualTo(subSeq.array);
             }
 
@@ -311,7 +317,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             AnnotatedTypeMirror componentType = ((AnnotatedArrayType) varType).getComponentType();
             UBQualifier qualifier =
                     UBQualifier.createUBQualifier(
-                            componentType, atypeFactory.UNKNOWN, atypeFactory);
+                            componentType,
+                            atypeFactory.UNKNOWN,
+                            atypeFactory,
+                            atypeFactory.substringIndexAtypeFactory);
             if (!qualifier.isLessThanLengthQualifier()) {
                 return false;
             }
@@ -324,7 +333,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         UBQualifier qualifier =
-                UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN, atypeFactory);
+                UBQualifier.createUBQualifier(
+                        varType,
+                        atypeFactory.UNKNOWN,
+                        atypeFactory,
+                        atypeFactory.substringIndexAtypeFactory);
         return qualifier.isLessThanLengthQualifier()
                 && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
     }
@@ -392,7 +405,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
         UBQualifier expQual =
-                UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN, atypeFactory);
+                UBQualifier.createUBQualifier(
+                        expType,
+                        atypeFactory.UNKNOWN,
+                        atypeFactory,
+                        atypeFactory.substringIndexAtypeFactory);
 
         UBQualifier lessThanQual = atypeFactory.fromLessThan(valueExp, getCurrentPath());
         if (lessThanQual != null) {

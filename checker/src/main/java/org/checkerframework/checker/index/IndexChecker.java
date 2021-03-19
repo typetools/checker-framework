@@ -119,6 +119,7 @@ public class IndexChecker extends UpperBoundChecker {
     private void introduceSubcheckers() {
         if (upperBoundAtypeFactory != null && substringIndexAtypeFactory != null) {
             substringIndexAtypeFactory.upperBoundAtypeFactory = upperBoundAtypeFactory;
+            upperBoundAtypeFactory.substringIndexAtypeFactory = substringIndexAtypeFactory;
         }
     }
 }
