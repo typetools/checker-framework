@@ -153,7 +153,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getDefaultValue().ifPresent(l -> l.accept(this, node2.getDefaultValue().get()));
         visitLists(node1.getModifiers(), node2.getModifiers());
         node1.getName().accept(this, node2.getName());
-        node1.getType().accept(this, node2.getName());
+        node1.getType().accept(this, node2.getType());
     }
 
     @Override
