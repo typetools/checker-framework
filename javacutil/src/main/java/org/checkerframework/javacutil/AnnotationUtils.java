@@ -1064,7 +1064,7 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the geven element of the annotation {@code anno}, where the element has an array type.
+     * Get the given element of the annotation {@code anno}, where the element has an array type.
      * One element of the result has type {@code expectedType}.
      *
      * @param anno the annotation to disassemble
@@ -1215,7 +1215,6 @@ public class AnnotationUtils {
         if (avList == null) {
             return false;
         }
-        // The value is actually a javac.util.List<Attribute.Constant>.
         @SuppressWarnings("unchecked")
         List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
         return annotationValueContains(list, s);
@@ -1233,7 +1232,6 @@ public class AnnotationUtils {
      */
     public static boolean annotationValueContains(
             List<? extends AnnotationValue> avList, String s) {
-        // `avList` is actually a javac.util.List<Attribute.Constant>.
         for (AnnotationValue av : avList) {
             if (av.getValue().equals(s)) {
                 return true;
@@ -1258,7 +1256,6 @@ public class AnnotationUtils {
         if (avList == null) {
             return false;
         }
-        // The value is actually a javac.util.List<Attribute.Constant>.
         @SuppressWarnings("unchecked")
         List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
         return annotationValueContainsToString(list, s);
@@ -1277,7 +1274,6 @@ public class AnnotationUtils {
      */
     public static boolean annotationValueContainsToString(
             List<? extends AnnotationValue> avList, String s) {
-        // `avList` is actually a javac.util.List<Attribute.Constant>.
         for (AnnotationValue av : avList) {
             if (av.getValue().toString().equals(s)) {
                 return true;
@@ -1287,26 +1283,29 @@ public class AnnotationUtils {
     }
 
     /**
-     * Convert an annotation value to a list.
+     * Converts an annotation value to a list.
      *
-     * @param avList an AnnotationValue that is null or a list of Strings Converts an annotation
-     *     value to a list
+     * <p>To test containment, use {@link #annotationValueContains(AnnotationValue, String)} or
+     * {@link #annotationValueContainsToString(AnnotationValue, String)}.
+     *
+     * @param avList an AnnotationValue that is null or a list of Strings
      * @param expectedType the component type of the argument and of the return type, an enum
      * @param <T> the class of the type
      * @return the annotation value, converted to a list
      */
     public static <T> List<T> annotationValueToList(AnnotationValue avList, Class<T> expectedType) {
-        // The value is actually a javac.util.List<Attribute.Constant>.
         @SuppressWarnings("unchecked")
         List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
         return annotationValueToList(list, expectedType);
     }
 
     /**
-     * Convert an annotation value to a list.
+     * Converts an annotation value to a list.
      *
-     * @param avList a list of Strings (as {@code AnnotationValue}s) Converts an annotation value to
-     *     a list
+     * <p>To test containment, use {@link #annotationValueContains(List, String)} or {@link
+     * #annotationValueContainsToString(List, String)}.
+     *
+     * @param avList a list of Strings (as {@code AnnotationValue}s)
      * @param expectedType the component type of the argument and of the return type, an enum
      * @param <T> the class of the type
      * @return the annotation value, converted to a list
