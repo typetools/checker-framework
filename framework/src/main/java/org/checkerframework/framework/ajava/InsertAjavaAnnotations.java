@@ -88,10 +88,21 @@ public class InsertAjavaAnnotations {
     private static class Insertion {
         public int position;
         public String contents;
+        public boolean ownLine;
 
         public Insertion(int position, String contents) {
+            this(position, contents, false);
+        }
+
+        public Insertion(int position, String contents, boolean ownLine) {
             this.position = position;
             this.contents = contents;
+            this.ownLine = ownLine;
+        }
+
+        @Override
+        public String toString() {
+            return "Insertion [contents=" + contents + ", position=" + position + "]";
         }
     }
 
@@ -264,7 +275,7 @@ public class InsertAjavaAnnotations {
                 insertionContent.append(System.lineSeparator());
                 insertionContent.append(whitespaceCopy);
                 int absolutePosition = getAbsolutePosition(position);
-                insertions.add(new Insertion(absolutePosition, insertionContent.toString()));
+                insertions.add(new Insertion(absolutePosition, insertionContent.toString(), true));
             } else {
                 addAnnotations(position, annotations, 0, false);
             }
@@ -476,8 +487,17 @@ public class InsertAjavaAnnotations {
         annotationCu.accept(insertionVisitor, fileCu);
         List<Insertion> insertions = insertionVisitor.insertions;
         insertions.sort(
-                (insertion1, insertion2) ->
-                        -Integer.compare(insertion1.position, insertion2.position));
+                (insertion1, insertion2) -> {
+                    int cmp = Integer.compare(insertion1.position, insertion2.position);
+                    if (cmp == 0 && (insertion1.ownLine != insertion2.ownLine)) {
+                        if (insertion1.ownLine) {
+                            cmp = -1;
+                        } else {
+                            cmp = 1;
+                        }
+                    }
+                    return -cmp;
+                });
         StringBuilder result = new StringBuilder(fileContents);
         for (Insertion insertion : insertions) {
             result.insert(insertion.position, insertion.contents);
