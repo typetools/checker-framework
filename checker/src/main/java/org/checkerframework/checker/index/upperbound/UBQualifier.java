@@ -88,7 +88,7 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
-    /** A cache for the {@link #nCopies} method. */
+    /** A cache for the {@link #nCopiesEmptyStringCache} method. */
     private static List<List<String>> nCopiesEmptyStringCache = new ArrayList<>(10);
 
     static {
