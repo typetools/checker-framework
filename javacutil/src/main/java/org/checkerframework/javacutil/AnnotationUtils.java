@@ -696,6 +696,7 @@ public class AnnotationUtils {
          *
          * @param message the detail message
          */
+        @Pure
         public NoSuchElementException(String message) {
             super(message);
         }

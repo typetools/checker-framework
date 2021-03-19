@@ -759,7 +759,7 @@ public class DependentTypesHelper {
     /**
      * Applies the passed function to each annotation in the given {@link AnnotatedTypeMirror}. If
      * the function returns a non-null annotation, then the original annotation is replaced with the
-     * result.
+     * result. If the function returns null, the original annotation is retained.
      */
     private static class AnnotatedTypeReplacer
             extends AnnotatedTypeScanner<Void, Function<AnnotationMirror, AnnotationMirror>> {
@@ -811,10 +811,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all Java expressions in the given annotated type to see if the expression string is an
-     * error string as specified by {@link DependentTypesError#isExpressionError}. If the annotated
-     * type has any errors, an expression.unparsable.type.invalid error is issued at {@code
-     * errorTree}.
+     * Reports an expression.unparsable.type.invalid error for each Java expression in the given
+     * type that is an expression error string (as specified by {@link
+     * DependentTypesError#isExpressionError}).
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -832,10 +831,11 @@ public class DependentTypesHelper {
             ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
             errorTree = ((VariableTree) errorTree).getType();
             for (AnnotationTree annoTree : modifiers.getAnnotations()) {
+                String annoString = annoTree.toString();
                 for (Class<?> annoClazz : annoToElements.keySet()) {
                     // TODO: Simple string containment seems too simplistic.  At least check for a
                     // word boundary.
-                    if (annoTree.toString().contains(annoClazz.getSimpleName())) {
+                    if (annoString.contains(annoClazz.getSimpleName())) {
                         errorTree = annoTree;
                         break;
                     }
@@ -883,9 +883,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks every Java expression element of the annotation to see if the expression is an error
-     * string as specified by DependentTypesError#isExpressionError. If any expression is an error,
-     * then a flowexpr.parse.error error is reported at {@code errorTree}.
+     * Reports a flowexpr.parse.error error for each Java expression in the given annotation that is
+     * an expression error string (as specified by {@link DependentTypesError#isExpressionError}).
      *
      * @param annotation annotation to check
      * @param errorTree location at which to issue errors
@@ -905,10 +904,10 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all Java expressions in the class declaration AnnotatedTypeMirror to see if the
-     * expression string is an error string as specified by DependentTypesError#isExpressionError.
-     * If the annotated type has any errors, a flowexpr.parse.error is issued. Note that this checks
-     * the class declaration itself, not the body or extends/implements clauses.
+     * Reports an expression.unparsable.type.invalid error for each Java expression in the given
+     * class declaration AnnotatedTypeMirror that is an expression error string (as specified by
+     * {@link DependentTypesError#isExpressionError}). Note that this reports errors in the class
+     * declaration itself, not the body or extends/implements clauses.
      *
      * @param classTree class to check
      * @param type annotated type of the class
@@ -924,9 +923,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all Java expressions in the method declaration AnnotatedTypeMirror to see if the
-     * expression string is an error string as specified by DependentTypesError#isExpressionError.
-     * If the annotated type has any errors, a flowexpr.parse.error is issued.
+     * Reports an expression.unparsable.type.invalid error for each Java expression in the method
+     * declaration AnnotatedTypeMirror that is an expression error string (as specified by {@link
+     * DependentTypesError#isExpressionError}).
      *
      * @param methodDeclTree method to check
      * @param type annotated type of the method
@@ -952,9 +951,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all Java expressions in the type variables to see if the expression string is an error
-     * string as specified by DependentTypesError#isExpressionError. If the annotated type has any
-     * errors, a flowexpr.parse.error is issued.
+     * Reports an expression.unparsable.type.invalid error for each Java expression in the given
+     * type variables that is an expression error string (as specified by {@link
+     * DependentTypesError#isExpressionError}).
      *
      * @param node a method declaration
      * @param methodType annotated type of the method
