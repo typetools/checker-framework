@@ -812,6 +812,7 @@ public class AnnotationUtils {
      * @param element the element to access
      * @param expectedType the expected type used to cast the return type, an enum
      * @param <T> the enum class of the expected type
+     * @param defaultValue the value to return if the annotation does not have the element
      * @return the value of the element with the given name
      */
     public static <T extends Enum<T>> T[] getElementValueEnumArray(
