@@ -741,7 +741,7 @@ public class AnnotationUtils {
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
      * {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or {@link
-     * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Object)}.
+     * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Enum)}.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
