@@ -706,6 +706,9 @@ public class AnnotationUtils {
     public static <T> @Nullable T getElementValue(
             AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
         AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            throw new BugInCF("getElementValue(%s, %s, ...)", anno, element);
+        }
         return expectedType.cast(av.getValue());
     }
 
@@ -848,20 +851,44 @@ public class AnnotationUtils {
 
     /**
      * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
-     * enum of type {@code T}.
+     * array of type {@code T}.
      *
      * @param anno the annotation to disassemble
      * @param element the element to access
      * @param expectedType the expected type used to cast the return type, an enum
-     * @param <T> the class of the expected type
+     * @param <T> the enum class of the expected type
      * @return the value of the element with the given name
      */
-    public static <T extends Enum<T>> T[] getElementValueEnum(
+    public static <T extends Enum<T>> T[] getElementValueEnumArray(
             AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
-        @SuppressWarnings("unchecked")
-        List<AnnotationValue> list =
-                (List<AnnotationValue>) anno.getElementValues().get(element).getValue();
-        return AnnotationUtils.annotationValueListToEnumArray(list, expectedType);
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            throw new BugInCF("getElementValueEnum(%s, %s, ...)", anno, element);
+        }
+        return AnnotationUtils.annotationValueListToEnumArray(av, expectedType);
+    }
+
+    /**
+     * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+     * array of type {@code T}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access
+     * @param expectedType the expected type used to cast the return type, an enum
+     * @param <T> the enum class of the expected type
+     * @return the value of the element with the given name
+     */
+    public static <T extends Enum<T>> T[] getElementValueEnumArray(
+            AnnotationMirror anno,
+            ExecutableElement element,
+            Class<T> expectedType,
+            T[] defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            return AnnotationUtils.annotationValueListToEnumArray(av, expectedType);
+        }
     }
 
     /**
@@ -933,6 +960,9 @@ public class AnnotationUtils {
     public static <T> List<T> getElementValueArray(
             AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
         AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            throw new BugInCF("getElementValueArray(%s, %s, ...)", anno, element);
+        }
         List<T> list = AnnotationUtils.annotationValueToList(av, expectedType);
         return list;
     }
@@ -1045,64 +1075,18 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the element with the name {@code elementName} of the annotation {@code anno}, or the
-     * default value if no element is present explicitly, where the element has an array type and
-     * the elements are {@code Enum}s. One element of the result is expected to have type {@code
-     * expectedType}.
-     *
-     * @param anno the annotation to disassemble
-     * @param element the element to access
-     * @param expectedType the expected type used to cast the return type
-     * @param <T> the class of the expected type
-     * @return the value of the element with the given name
-     */
-    public static <T extends Enum<T>> T[] getElementValueEnumArray(
-            AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
-        @SuppressWarnings("unchecked")
-        List<AnnotationValue> la = getElementValue(anno, element, List.class);
-        return annotationValueListToEnumArray(la, expectedType);
-    }
-
-    /**
-     * Get the element with the name {@code elementName} of the annotation {@code anno}, or the
-     * default value if no element is present explicitly, where the element has an array type and
-     * the elements are {@code Enum}s. One element of the result is expected to have type {@code
-     * expectedType}.
-     *
-     * @param anno the annotation to disassemble
-     * @param element the element to access
-     * @param expectedType the expected type used to cast the return type
-     * @param <T> the class of the expected type
-     * @param defaultValue the value to return if the element is not present
-     * @return the value of the element with the given name
-     */
-    public static <T extends Enum<T>> T[] getElementValueEnumArray(
-            AnnotationMirror anno,
-            ExecutableElement element,
-            Class<T> expectedType,
-            T[] defaultValue) {
-        @SuppressWarnings("unchecked")
-        List<AnnotationValue> la = getElementValue(anno, element, List.class);
-        if (la == null) {
-            return defaultValue;
-        } else {
-            return annotationValueListToEnumArray(la, expectedType);
-        }
-    }
-
-    /**
      * Converts a list of AnnotationValue to an array of enum.
      *
      * @param <T> the element type of the enum array
-     * @param la a list of AnnotationValue
+     * @param avList a list of AnnotationValue
      * @param expectedType the expected type used to cast the return type
      * @return an array of enum, converted from the input list
      */
     public static <T extends Enum<T>> T[] annotationValueListToEnumArray(
-            Object la, Class<T> expectedType) {
+            AnnotationValue avList, Class<T> expectedType) {
         @SuppressWarnings("unchecked")
-        List<AnnotationValue> annoValues = (List<AnnotationValue>) la;
-        return annotationValueListToEnumArray(annoValues, expectedType);
+        List<AnnotationValue> list = (List<AnnotationValue>) avList.getValue();
+        return annotationValueListToEnumArray(list, expectedType);
     }
 
     /**
