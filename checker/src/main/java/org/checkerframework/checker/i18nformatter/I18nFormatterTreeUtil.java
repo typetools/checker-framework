@@ -169,9 +169,8 @@ public class I18nFormatterTreeUtil {
      * @return the {@code @}{@link I18nFormat} annotation's {@code value} element
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        return AnnotationUtils.annotationValueListToEnumArray(
-                anno.getElementValues().get(i18nFormatValueElement).getValue(),
-                I18nConversionCategory.class);
+        return AnnotationUtils.getElementValueEnumArray(
+                anno, i18nFormatValueElement, I18nConversionCategory.class);
     }
 
     /**

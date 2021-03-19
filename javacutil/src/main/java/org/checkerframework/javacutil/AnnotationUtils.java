@@ -924,6 +924,7 @@ public class AnnotationUtils {
      * expectedType}.
      *
      * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class)} or
      *
      * <pre>{@code
      * AnnotationUtils.annotationValueListToEnumArray(
@@ -950,6 +951,25 @@ public class AnnotationUtils {
             boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
+        return annotationValueListToEnumArray(la, expectedType);
+    }
+
+    /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, or the
+     * default value if no element is present explicitly, where the element has an array type and
+     * the elements are {@code Enum}s. One element of the result is expected to have type {@code
+     * expectedType}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @return the value of the element with the given name
+     */
+    public static <T extends Enum<T>> T[] getElementValueEnumArray(
+            AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> la = getElementValue(anno, element, List.class);
         return annotationValueListToEnumArray(la, expectedType);
     }
 
