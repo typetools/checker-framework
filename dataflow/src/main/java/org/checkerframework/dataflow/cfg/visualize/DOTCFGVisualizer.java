@@ -5,6 +5,7 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -89,10 +90,7 @@ public class DOTCFGVisualizer<
             throw new UserError("Error creating dot file (is the path valid?): " + dotFileName, e);
         }
 
-        Map<String, Object> res = new HashMap<>();
-        res.put("dotFileName", dotFileName);
-
-        return res;
+        return Collections.singletonMap("dotFileName", dotFileName);
     }
 
     @SuppressWarnings("keyfor:enhancedfor.type.incompatible")

@@ -88,7 +88,7 @@ public class ReflectiveEvaluator {
                             listOfArguments);
         }
 
-        List<Object> results = new ArrayList<>();
+        List<Object> results = new ArrayList<>(listOfArguments.size());
         for (Object[] arguments : listOfArguments) {
             for (Object receiver : receiverValues) {
                 try {
@@ -329,7 +329,7 @@ public class ReflectiveEvaluator {
             listOfArguments = cartesianProduct(argValues, argValues.size() - 1);
         }
 
-        List<Object> results = new ArrayList<>();
+        List<Object> results = new ArrayList<>(listOfArguments.size());
         for (Object[] arguments : listOfArguments) {
             try {
                 results.add(constructor.newInstance(arguments));

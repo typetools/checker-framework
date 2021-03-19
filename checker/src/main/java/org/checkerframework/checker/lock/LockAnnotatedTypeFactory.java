@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -160,7 +161,7 @@ public class LockAnnotatedTypeFactory
             protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
                 // If the error message is NOT_EFFECTIVELY_FINAL, then report
                 // lock.expression.not.final instead of expression.unparsable.type.invalid .
-                List<DependentTypesError> superErrors = new ArrayList<>();
+                List<DependentTypesError> superErrors = new ArrayList<>(errors.size());
                 for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
                         checker.reportError(
@@ -484,7 +485,8 @@ public class LockAnnotatedTypeFactory
     SideEffectAnnotation methodSideEffectAnnotation(
             Element element, boolean issueErrorIfMoreThanOnePresent) {
         if (element != null) {
-            List<SideEffectAnnotation> sideEffectAnnotationPresent = new ArrayList<>();
+            Set<SideEffectAnnotation> sideEffectAnnotationPresent =
+                    EnumSet.noneOf(SideEffectAnnotation.class);
             for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
                 if (getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null) {
                     sideEffectAnnotationPresent.add(sea);
@@ -504,10 +506,10 @@ public class LockAnnotatedTypeFactory
                 // checker.reportError(element, "multiple.sideeffect.annotations");
             }
 
-            SideEffectAnnotation weakest = sideEffectAnnotationPresent.get(0);
+            SideEffectAnnotation weakest = null;
             // At least one side effect annotation was found. Return the weakest.
             for (SideEffectAnnotation sea : sideEffectAnnotationPresent) {
-                if (sea.isWeakerThan(weakest)) {
+                if (weakest == null || sea.isWeakerThan(weakest)) {
                     weakest = sea;
                 }
             }

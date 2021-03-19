@@ -2323,7 +2323,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the method
      */
     public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
-        List<AnnotationMirror> result = new ArrayList<>();
+        List<AnnotationMirror> result = new ArrayList<>(m.getPreconditions().size());
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
             WholeProgramInferenceImplementation<?> wholeProgramInference =
                     (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
@@ -2349,7 +2349,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public List<AnnotationMirror> getPostconditionAnnotations(
             AMethod m, List<AnnotationMirror> preconds) {
-        List<AnnotationMirror> result = new ArrayList<>();
+        List<AnnotationMirror> result = new ArrayList<>(m.getPostconditions().size());
         for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
             WholeProgramInferenceImplementation<?> wholeProgramInference =
                     (WholeProgramInferenceImplementation<?>) getWholeProgramInference();

@@ -720,9 +720,11 @@ public class ValueTransfer extends CFTransfer {
             // Both operands have known lengths, compute set of result lengths
             if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
+                    leftLengths = new ArrayList<>(leftLengths);
                     leftLengths.add(4); // "null"
                 }
                 if (isNullable(rightOperand)) {
+                    rightLengths = new ArrayList<>(rightLengths);
                     rightLengths.add(4); // "null"
                 }
             }
@@ -1141,7 +1143,7 @@ public class ValueTransfer extends CFTransfer {
         if (lefts == null) {
             return null;
         }
-        List<Number> resultValues = new ArrayList<>();
+        List<Number> resultValues = new ArrayList<>(lefts.size());
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
             switch (op) {
@@ -1588,10 +1590,7 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues = new ArrayList<>(2);
         switch (op) {
             case NOT:
-                for (Boolean left : lefts) {
-                    resultValues.add(!left);
-                }
-                return resultValues;
+                return SystemUtil.mapList((Boolean left) -> !left, lefts);
             case OR:
                 for (Boolean left : lefts) {
                     for (Boolean right : rights) {
