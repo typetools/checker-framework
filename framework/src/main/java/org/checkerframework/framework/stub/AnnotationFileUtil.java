@@ -313,21 +313,24 @@ public class AnnotationFileUtil {
      */
     public static List<AnnotationFileResource> allAnnotationFiles(
             String location, AnnotationFileType fileType) {
-        List<AnnotationFileResource> resources = new ArrayList<>();
         File file = new File(location);
         if (file.exists()) {
+            List<AnnotationFileResource> resources = new ArrayList<>();
             addAnnotationFilesToList(file, resources, fileType);
-        } else {
-            // If the file doesn't exist, maybe it is relative to the
-            // current working directory, so try that.
-            String workingDir =
-                    System.getProperty("user.dir") + System.getProperty("file.separator");
-            file = new File(workingDir + location);
-            if (file.exists()) {
-                addAnnotationFilesToList(file, resources, fileType);
-            }
+            return resources;
         }
-        return resources;
+
+        // The file doesn't exist.  Maybe it is relative to the
+        // current working directory, so try that.
+        String workingDir = System.getProperty("user.dir") + System.getProperty("file.separator");
+        file = new File(workingDir + location);
+        if (file.exists()) {
+            List<AnnotationFileResource> resources = new ArrayList<>();
+            addAnnotationFilesToList(file, resources, fileType);
+            return resources;
+        }
+
+        return null;
     }
 
     /**

@@ -4,10 +4,12 @@ import com.sun.source.tree.ExpressionTree;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -38,7 +40,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
      * this value is a key. Otherwise, it's null.
      */
     // Cannot be final because lub re-assigns; add a new constructor to do this cleanly?
-    private Set<String> keyForMaps;
+    private @Nullable Set<String> keyForMaps;
 
     /** Create an instance. */
     public KeyForValue(
@@ -51,9 +53,9 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
         if (keyfor != null
                 && (underlyingType.getKind() == TypeKind.TYPEVAR
                         || underlyingType.getKind() == TypeKind.WILDCARD)) {
-            keyForMaps = new LinkedHashSet<>();
+            keyForMaps = new TreeSet<>();
             List<String> list =
-                    AnnotationUtils.getElementValueArray(keyfor, "value", String.class, true);
+                    AnnotationUtils.getElementValueArray(keyfor, "value", String.class, false);
             keyForMaps.addAll(list);
         } else {
             keyForMaps = null;

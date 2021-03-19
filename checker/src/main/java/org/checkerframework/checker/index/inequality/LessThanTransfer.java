@@ -51,19 +51,21 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right < left
         // Refine right to @LessThan("left")
-        JavaExpression leftJe = JavaExpression.fromNode(factory, left);
+        JavaExpression leftJe = JavaExpression.fromNode(left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+            if (isDoubleOrFloatLiteral(leftJe)) {
+                return;
+            }
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions.add(leftJe.toString());
+            if (lessThanExpressions.add(leftJe.toString())) {
+                JavaExpression rightJe = JavaExpression.fromNode(right);
+                store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
             }
-            JavaExpression rightJe = JavaExpression.fromNode(analysis.getTypeFactory(), right);
-            store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
 
@@ -83,19 +85,21 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right is less than left
         // Refine right to @LessThan("left")
-        JavaExpression leftJe = JavaExpression.fromNode(factory, left);
+        JavaExpression leftJe = JavaExpression.fromNode(left);
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+            if (isDoubleOrFloatLiteral(leftJe)) {
+                return;
+            }
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (!isDoubleOrFloatLiteral(leftJe)) {
-                lessThanExpressions.add(leftJe.toString() + " + 1");
+            if (lessThanExpressions.add(incrementedExpression(leftJe))) {;
+                JavaExpression rightJe = JavaExpression.fromNode(right);
+                store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
             }
-            JavaExpression rightJe = JavaExpression.fromNode(analysis.getTypeFactory(), right);
-            store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
 
@@ -105,7 +109,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
         LessThanAnnotatedTypeFactory factory =
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-        JavaExpression leftJe = JavaExpression.fromNode(factory, n.getLeftOperand());
+        JavaExpression leftJe = JavaExpression.fromNode(n.getLeftOperand());
         if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
             ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
             Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
@@ -127,12 +131,17 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         return super.visitNumericalSubtraction(n, in);
     }
 
-    /** Return the expressions that {@code node} are less than. */
+    /**
+     * Return the expressions that {@code node} is less than.
+     *
+     * @param node a CFG node
+     * @return the expressions that {@code node} is less than
+     */
     private List<String> getLessThanExpressions(Node node) {
         Set<AnnotationMirror> s = analysis.getValue(node).getAnnotations();
-        LessThanAnnotatedTypeFactory factory =
-                (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         if (s != null && !s.isEmpty()) {
+            LessThanAnnotatedTypeFactory factory =
+                    (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
             return LessThanAnnotatedTypeFactory.getLessThanExpressions(
                     factory.getQualifierHierarchy()
                             .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
@@ -152,5 +161,28 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Return the string representation of {@code expr + 1}.
+     *
+     * @param expr a JavaExpression
+     * @return the string representation of {@code expr + 1}
+     */
+    private String incrementedExpression(JavaExpression expr) {
+        expr = ValueCheckerUtils.optimize(expr, analysis.getTypeFactory());
+        if (expr instanceof ValueLiteral) {
+            ValueLiteral literal = (ValueLiteral) expr;
+            if (literal.getValue() instanceof Number) {
+                long longLiteral = ((Number) literal.getValue()).longValue();
+                if (longLiteral != Long.MAX_VALUE) {
+                    return (longLiteral + 1) + "L";
+                }
+            }
+        }
+
+        // Could do more optimization to merge with a literal at end of `exprString`.  Is that
+        // needed?
+        return expr + " + 1";
     }
 }

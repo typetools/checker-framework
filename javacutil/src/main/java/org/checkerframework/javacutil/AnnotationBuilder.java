@@ -88,7 +88,6 @@ public class AnnotationBuilder {
      * @param env the processing environment
      * @param name the canonical name of the annotation to build
      */
-    //
     public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -121,6 +120,15 @@ public class AnnotationBuilder {
     }
 
     /**
+     * Returns the type element of the annotation that is being built.
+     *
+     * @return the type element of the annotation that is being built
+     */
+    public TypeElement getAnnotationElt() {
+        return annotationElt;
+    }
+
+    /**
      * Creates a mapping between element/field names and values.
      *
      * @param elementName the name of an element/field to initialize
@@ -144,6 +152,7 @@ public class AnnotationBuilder {
      * @param elements the element utilities to use
      * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of the given type
+     * @throws UserError if the annotation corresponding to the class could not be loaded
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
@@ -319,10 +328,15 @@ public class AnnotationBuilder {
         return this;
     }
 
-    /** Set the element/field with the given name, to the given value. */
+    /**
+     * Set the element/field with the given name, to the given value.
+     *
+     * @param elementName the element/field name
+     * @param values the new value for the element/field
+     * @return this
+     */
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -330,6 +344,7 @@ public class AnnotationBuilder {
         }
         expectedType = ((ArrayType) expectedType).getComponentType();
 
+        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         for (Object v : values) {
             checkSubtype(expectedType, v);
             avalues.add(createValue(v));

@@ -1,4 +1,0 @@
-The POMs in this folder are used solely to deploy artifacts to Maven Central or
-a local repository. They provide meta-data about the artifacts to the repository.
-
-${checkerframeworkversion} is changed by the Gradle tasks to be the correct verion number.

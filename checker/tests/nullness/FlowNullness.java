@@ -6,7 +6,7 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str != null) {
             a = str;
         }
@@ -20,7 +20,7 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str != null) {
             a = str;
         }
@@ -34,7 +34,7 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str == null) {
             testAssert();
         } else {
@@ -50,7 +50,7 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str == null) {
             testAssert();
         } else {
@@ -65,7 +65,7 @@ public class FlowNullness {
     public void testReturnIf() {
 
         String str = "foo";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str == null) {
             testAssert();
             return;
@@ -81,7 +81,7 @@ public class FlowNullness {
     public void testReturnElse() {
 
         String str = "foo";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str != null) {
             testAssert();
         } else {
@@ -98,7 +98,7 @@ public class FlowNullness {
     public void testThrowIf() {
 
         String str = "foo";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str == null) {
             testAssert();
             throw new RuntimeException("foo");
@@ -114,7 +114,7 @@ public class FlowNullness {
     public void testThrowElse() {
 
         String str = "foo";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str != null) {
             testAssert();
         } else {
@@ -131,7 +131,7 @@ public class FlowNullness {
     public void testAssert() {
 
         String str = "foo";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         assert str != null;
 
         @NonNull String a = str;
@@ -144,7 +144,7 @@ public class FlowNullness {
     public void testWhile() {
 
         String str = "foo";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         while (str != null) {
             @NonNull String a = str;
             break;
@@ -184,7 +184,7 @@ public class FlowNullness {
     public void testExit() {
 
         String str = "foo";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (str == null) {
             System.exit(0);
         }
@@ -326,7 +326,7 @@ public class FlowNullness {
 
     public void add_modified(double[] a, int count) {
         // System.out.println ("common: " + ArraysMDE.toString (a));
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (a == null) {
             return;
         } else if (intersect == null) {

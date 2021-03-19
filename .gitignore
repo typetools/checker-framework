@@ -42,6 +42,7 @@ checker/jdk/**/*.class
 *.pyc
 checker/build-temp
 checker/bin/.do-like-javac
+checker/bin-devel/.html-tools
 checker/bin-devel/.plume-scripts
 checker/bin-devel/.run-google-java-format
 checker/bin-devel/dockerdir
@@ -126,12 +127,13 @@ checker/tests/nullness-temp/*.class
 checker/jtreg/multipleexecutions/Main.class
 
 # Source is copied from elsewhere.
-checker-qual/src
 checker-qual-android/src
 
 # Some tests produce output into the tests/ directory instead of the build/ directory.
 checker/tests/wpi-testchecker/annotated/
 checker/tests/wpi-testchecker/inference-output/
+checker/tests/wpi-nullness/annotated/
+checker/tests/wpi-nullness/inference-output/
 framework/tests/returnsreceiverdelomboked/
 
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class

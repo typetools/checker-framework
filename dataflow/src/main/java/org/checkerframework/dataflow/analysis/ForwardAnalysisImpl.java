@@ -2,8 +2,6 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -28,6 +26,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -227,12 +226,9 @@ public class ForwardAnalysisImpl<
     @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-        List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> result = new ArrayList<>();
-        for (ReturnNode returnNode : cfg.getReturnNodes()) {
-            TransferResult<V, S> store = storesAtReturnStatements.get(returnNode);
-            result.add(Pair.of(returnNode, store));
-        }
-        return result;
+        return SystemUtil.<ReturnNode, Pair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
+                returnNode -> Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
+                cfg.getReturnNodes());
     }
 
     @Override
@@ -312,8 +308,17 @@ public class ForwardAnalysisImpl<
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
-                        TransferResult<V, S> transferResult =
-                                callTransferFunction(node, blockTransferInput.copy());
+                        TransferResult<V, S> transferResult;
+                        if (cache != null && cache.containsKey(node)) {
+                            transferResult = cache.get(node);
+                        } else {
+                            // Copy the store to avoid changing other blocks' transfer inputs in
+                            // {@link #inputs}
+                            transferResult = callTransferFunction(node, blockTransferInput.copy());
+                            if (cache != null) {
+                                cache.put(node, transferResult);
+                            }
+                        }
                         return transferResult.getRegularStore();
                     }
                 default:
@@ -360,26 +365,17 @@ public class ForwardAnalysisImpl<
      */
     @SideEffectFree
     private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
-        List<LocalVariableNode> result;
         switch (underlyingAST.getKind()) {
             case METHOD:
                 MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-                result = new ArrayList<>();
-                for (VariableTree p : tree.getParameters()) {
-                    LocalVariableNode var = new LocalVariableNode(p);
-                    result.add(var);
-                    // TODO: document that LocalVariableNode has no block that it belongs to
-                }
-                return result;
+                return SystemUtil.mapList(
+                        // TODO: document that LocalVariableNode has no block that it belongs to
+                        LocalVariableNode::new, tree.getParameters());
             case LAMBDA:
                 LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-                result = new ArrayList<>();
-                for (VariableTree p : lambda.getParameters()) {
-                    LocalVariableNode var = new LocalVariableNode(p);
-                    result.add(var);
-                    // TODO: document that LocalVariableNode has no block that it belongs to
-                }
-                return result;
+                return SystemUtil.mapList(
+                        // TODO: document that LocalVariableNode has no block that it belongs to
+                        LocalVariableNode::new, lambda.getParameters());
             default:
                 return Collections.emptyList();
         }

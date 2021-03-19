@@ -29,7 +29,7 @@ public abstract class Contract {
      * <p>An annotation like {@code @RequiresNonNull({"a", "b", "c"})} would be represented by
      * multiple Contracts.
      */
-    public final String expression;
+    public final String expressionString;
 
     /** The annotation on the type of expression, according to this contract. */
     public final AnnotationMirror annotation;
@@ -60,11 +60,12 @@ public abstract class Contract {
                 "value"),
         /** A conditional postcondition. */
         CONDITIONALPOSTCONDITION(
-                "conditional.postcondition",
+                "conditional postcondition",
                 ConditionalPostconditionAnnotation.class,
                 EnsuresQualifierIf.class,
                 EnsuresQualifierIf.List.class,
                 "expression");
+
         /** Used for constructing error messages. */
         public final String errorKey;
 
@@ -106,20 +107,21 @@ public abstract class Contract {
     }
 
     /**
-     * Creates a new Contract.
+     * Creates a new Contract. This should be called only by the constructors for {@link
+     * Precondition}, {@link Postcondition}, and {@link ConditionalPostcondition}.
      *
      * @param kind precondition, postcondition, or conditional postcondition
-     * @param expression the Java expression that should have a type qualifier
-     * @param annotation the type qualifier that {@code expression} should have
+     * @param expressionString the Java expression that should have a type qualifier
+     * @param annotation the type qualifier that {@code expressionString} should have
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
      */
-    protected Contract(
+    private Contract(
             Kind kind,
-            String expression,
+            String expressionString,
             AnnotationMirror annotation,
             AnnotationMirror contractAnnotation) {
-        this.expression = expression;
+        this.expressionString = expressionString;
         this.annotation = annotation;
         this.contractAnnotation = contractAnnotation;
         this.kind = kind;
@@ -129,8 +131,8 @@ public abstract class Contract {
      * Creates a new Contract.
      *
      * @param kind precondition, postcondition, or conditional postcondition
-     * @param expression the Java expression that should have a type qualifier
-     * @param annotation the type qualifier that {@code expression} should have
+     * @param expressionString the Java expression that should have a type qualifier
+     * @param annotation the type qualifier that {@code expressionString} should have
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
      * @param ensuresQualifierIf the ensuresQualifierIf field, for a conditional postcondition
@@ -138,7 +140,7 @@ public abstract class Contract {
      */
     public static Contract create(
             Kind kind,
-            String expression,
+            String expressionString,
             AnnotationMirror annotation,
             AnnotationMirror contractAnnotation,
             Boolean ensuresQualifierIf) {
@@ -147,12 +149,12 @@ public abstract class Contract {
         }
         switch (kind) {
             case PRECONDITION:
-                return new Precondition(expression, annotation, contractAnnotation);
+                return new Precondition(expressionString, annotation, contractAnnotation);
             case POSTCONDITION:
-                return new Postcondition(expression, annotation, contractAnnotation);
+                return new Postcondition(expressionString, annotation, contractAnnotation);
             case CONDITIONALPOSTCONDITION:
                 return new ConditionalPostcondition(
-                        expression, annotation, contractAnnotation, ensuresQualifierIf);
+                        expressionString, annotation, contractAnnotation, ensuresQualifierIf);
             default:
                 throw new BugInCF("Unrecognized kind: " + kind);
         }
@@ -175,20 +177,20 @@ public abstract class Contract {
         Contract otherContract = (Contract) o;
 
         return kind == otherContract.kind
-                && Objects.equals(expression, otherContract.expression)
+                && Objects.equals(expressionString, otherContract.expressionString)
                 && Objects.equals(annotation, otherContract.annotation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(kind, expression, annotation);
+        return Objects.hash(kind, expressionString, annotation);
     }
 
     @Override
     public String toString() {
         return String.format(
-                "%s{expression=%s, annotation=%s, contractAnnotation=%s}",
-                getClass().getSimpleName(), expression, annotation, contractAnnotation);
+                "%s{expressionString=%s, annotation=%s, contractAnnotation=%s}",
+                getClass().getSimpleName(), expressionString, annotation, contractAnnotation);
     }
 
     /** A precondition contract. */
@@ -196,16 +198,16 @@ public abstract class Contract {
         /**
          * Create a precondition contract.
          *
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
+         * @param expressionString the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expressionString} should have
          * @param contractAnnotation the precondition annotation that the programmer wrote; used for
          *     diagnostic messages
          */
         public Precondition(
-                String expression,
+                String expressionString,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(Kind.PRECONDITION, expression, annotation, contractAnnotation);
+            super(Kind.PRECONDITION, expressionString, annotation, contractAnnotation);
         }
     }
 
@@ -214,16 +216,16 @@ public abstract class Contract {
         /**
          * Create a postcondition contract.
          *
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
+         * @param expressionString the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expressionString} should have
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
          */
         public Postcondition(
-                String expression,
+                String expressionString,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(Kind.POSTCONDITION, expression, annotation, contractAnnotation);
+            super(Kind.POSTCONDITION, expressionString, annotation, contractAnnotation);
         }
     }
 
@@ -250,18 +252,18 @@ public abstract class Contract {
         /**
          * Create a new conditional postcondition.
          *
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
+         * @param expressionString the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expressionString} should have
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
          * @param resultValue whether the condition is the method returning true or false
          */
         public ConditionalPostcondition(
-                String expression,
+                String expressionString,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation,
                 boolean resultValue) {
-            super(Kind.CONDITIONALPOSTCONDITION, expression, annotation, contractAnnotation);
+            super(Kind.CONDITIONALPOSTCONDITION, expressionString, annotation, contractAnnotation);
             this.resultValue = resultValue;
         }
 

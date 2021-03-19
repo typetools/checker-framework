@@ -130,7 +130,7 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 
 /**
- * An implementatino of JointJavacJavaParserVisitor where {@code process} methdos do nothing. To use
+ * An implementation of JointJavacJavaParserVisitor where {@code process} methods do nothing. To use
  * this class, extend it and override a {@code process} method.
  */
 public class DefaultJointVisitor extends JointJavacJavaParserVisitor {

@@ -1,4 +1,5 @@
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Call this program with two arguments; a regular expression and a string. The program prints the

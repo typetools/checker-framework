@@ -78,9 +78,6 @@ The repository also contains the following directories:
 <dl>
   <dt><code>docs</code></dt>
   <dd>documentation: manual, tutorial, examples, developer docs</dd>
-
-  <dt><code>maven-artifacts</code></dt>
-  <dd>artifacts to be uploaded to Maven Central</dd>
 </dl>
 
 
@@ -262,6 +259,13 @@ Framework and ensure that it passes before you open a pull request.
 </p>
 
 <p>
+A pull request marked as "draft" means it should not be reviewed.  To use a
+"draft" pull request for discussions, make it in a fork.  If it were in
+the <code>typetools</code> GitHub organization, it would use CI resources
+and thus slow down CI feedback for other pull requests.
+</p>
+
+<p>
 Also
 see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
 Ernst's advice about creating GitHub pull requests</a>.
@@ -274,9 +278,9 @@ Ernst's advice about creating GitHub pull requests</a>.
   It is good style to create a branch (in your fork of the Checker
   Framework GitHub repository) for each independent change.
   Do not make changes to your <code>master</code> branch.
-  Do not make changes to a branch of the upstream (<code>typetools</code>) repository.
-  Such a branch competes for CI resources with all pull requests.
-  Make changes on a branch of your own fork, so that both you and others get faster CI feedback.
+  If you have write access to the <code>typetools</code> repository, don't
+  work in a branch of it, because such a branch competes for CI resources
+  with all pull requests.
 </p>
 
 <p>

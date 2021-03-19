@@ -1,11 +1,13 @@
 package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
+import io.github.classgraph.ClassGraph;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -17,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
@@ -25,17 +28,24 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -84,8 +94,8 @@ public class AnnotationFileElementTypes {
         this.annotatedJdkVersion =
                 release != null ? release : String.valueOf(SystemUtil.getJreVersion());
 
-        this.shouldParseJdk = !factory.getContext().getChecker().hasOption("ignorejdkastub");
-        this.parseAllJdkFiles = factory.getContext().getChecker().hasOption("parseAllJdk");
+        this.shouldParseJdk = !factory.getChecker().hasOption("ignorejdkastub");
+        this.parseAllJdkFiles = factory.getChecker().hasOption("parseAllJdk");
     }
 
     /**
@@ -120,7 +130,7 @@ public class AnnotationFileElementTypes {
      */
     public void parseStubFiles() {
         parsing = true;
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         // 1. jdk.astub
         // Only look in .jar files, and parse it right away.
@@ -184,11 +194,11 @@ public class AnnotationFileElementTypes {
         parsing = false;
     }
 
-    /** Parses the ajava files passed through the -Aajava option. */
+    /** Parses the ajava files passed through the -Aajava command-line option. */
     public void parseAjavaFiles() {
         parsing = true;
         // TODO: Error if this is called more than once?
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         List<String> ajavaFiles = new ArrayList<>();
         String ajavaOption = checker.getOption("ajava");
         if (ajavaOption != null) {
@@ -210,11 +220,10 @@ public class AnnotationFileElementTypes {
      */
     public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
         parsing = true;
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        InputStream in;
         try {
-            in = new FileInputStream(ajavaPath);
+            InputStream in = new FileInputStream(ajavaPath);
             AnnotationFileParser.parseAjavaFile(
                     ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
         } catch (IOException e) {
@@ -234,15 +243,16 @@ public class AnnotationFileElementTypes {
      */
     private void parseAnnotationFiles(
             List<String> annotationFiles, AnnotationFileUtil.AnnotationFileType fileType) {
-        SourceChecker checker = factory.getContext().getChecker();
+        SourceChecker checker = factory.getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         for (String path : annotationFiles) {
             // Special case when running in jtreg.
             String base = System.getProperty("test.src");
             String fullPath = (base == null) ? path : base + "/" + path;
+
             List<AnnotationFileResource> allFiles =
                     AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
-            if (!allFiles.isEmpty()) {
+            if (allFiles != null) {
                 for (AnnotationFileResource resource : allFiles) {
                     InputStream annotationFileStream;
                     try {
@@ -253,6 +263,9 @@ public class AnnotationFileElementTypes {
                                 "Could not read annotation resource: " + resource.getDescription());
                         continue;
                     }
+                    // We use parseStubFile here even for ajava files because at this stage ajava
+                    // files are parsed as stub files. The extra annotation data in an ajava file is
+                    // parsed when type checking the ajava file's corresponding Java file.
                     AnnotationFileParser.parseStubFile(
                             resource.getDescription(),
                             annotationFileStream,
@@ -303,15 +316,21 @@ public class AnnotationFileElementTypes {
                         String parentPathDescription =
                                 (parentPath == null
                                         ? "current directory"
-                                        : "directory "
-                                                + new File(path).getParentFile().getAbsolutePath());
-                        checker.message(
-                                Kind.WARNING,
-                                "Did not find annotation file "
+                                        : "directory " + parentPath.getAbsolutePath());
+                        String msg =
+                                checker.getClass().getSimpleName()
+                                        + " did not find annotation file "
                                         + path
                                         + " on classpath or within "
                                         + parentPathDescription
-                                        + (fullPath.equals(path) ? "" : (" or at " + fullPath)));
+                                        + (fullPath.equals(path) ? "" : (" or at " + fullPath));
+                        StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
+                        sj.add(msg);
+                        sj.add("Classpath:");
+                        for (URI uri : new ClassGraph().getClasspathURIs()) {
+                            sj.add(uri.toString());
+                        }
+                        checker.message(Kind.WARNING, sj.toString());
                     }
                 }
             }
@@ -360,6 +379,108 @@ public class AnnotationFileElementTypes {
     }
 
     /**
+     * Returns the method type of the most specific fake override for the given element, when used
+     * as a member of the given type.
+     *
+     * @param elt element for which annotations are returned
+     * @param receiverType the type of the class that contains member (or a subtype of it)
+     * @return the most specific AnnotatedTypeMirror for {@code elt} that is a fake override, or
+     *     null if there are no fake overrides
+     */
+    public @Nullable AnnotatedTypeMirror getFakeOverride(
+            Element elt, AnnotatedTypeMirror receiverType) {
+        if (parsing) {
+            throw new BugInCF("parsing while calling getFakeOverride");
+        }
+
+        if (elt.getKind() != ElementKind.METHOD) {
+            return null;
+        }
+
+        ExecutableElement method = (ExecutableElement) elt;
+
+        TypeMirror methodReceiverType = method.getReceiverType();
+        if (methodReceiverType != null && methodReceiverType.getKind() == TypeKind.NONE) {
+            return null;
+        }
+
+        // This is a list of pairs of (where defined, method type) for fake overrides.  The second
+        // element of each pair is currently always an AnnotatedExecutableType.
+        List<Pair<TypeMirror, AnnotatedTypeMirror>> candidates =
+                annotationFileAnnos.fakeOverrides.get(elt);
+
+        if (candidates == null || candidates.isEmpty()) {
+            return null;
+        }
+
+        TypeMirror receiverTypeMirror = receiverType.getUnderlyingType();
+
+        // A list of fake receiver types.
+        List<TypeMirror> applicableClasses = new ArrayList<>();
+        List<TypeMirror> applicableInterfaces = new ArrayList<>();
+        for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+            TypeMirror fakeLocation = candidatePair.first;
+            AnnotatedExecutableType candidate = (AnnotatedExecutableType) candidatePair.second;
+            if (factory.types.isSameType(receiverTypeMirror, fakeLocation)) {
+                return candidate;
+            } else if (factory.types.isSubtype(receiverTypeMirror, fakeLocation)) {
+                TypeElement fakeElement = TypesUtils.getTypeElement(fakeLocation);
+                switch (fakeElement.getKind()) {
+                    case CLASS:
+                    case ENUM:
+                        applicableClasses.add(fakeLocation);
+                        break;
+                    case INTERFACE:
+                    case ANNOTATION_TYPE:
+                        applicableInterfaces.add(fakeLocation);
+                        break;
+                    default:
+                        throw new BugInCF(
+                                "What type? %s %s %s",
+                                fakeElement.getKind(), fakeElement.getClass(), fakeElement);
+                }
+            }
+        }
+
+        if (applicableClasses.isEmpty() && applicableInterfaces.isEmpty()) {
+            return null;
+        }
+        TypeMirror fakeReceiverType =
+                TypesUtils.mostSpecific(
+                        !applicableClasses.isEmpty() ? applicableClasses : applicableInterfaces,
+                        factory.getProcessingEnv());
+        if (fakeReceiverType == null) {
+            StringJoiner message = new StringJoiner(System.lineSeparator());
+            message.add(
+                    String.format(
+                            "No most specific fake override found for %s with receiver %s.  These fake overrides are applicable:",
+                            elt, receiverTypeMirror));
+            for (TypeMirror candidate : applicableClasses) {
+                message.add("  class candidate: " + candidate);
+            }
+            for (TypeMirror candidate : applicableInterfaces) {
+                message.add("  interface candidate: " + candidate);
+            }
+            throw new BugInCF(message.toString());
+        }
+
+        for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+            TypeMirror candidateReceiverType = candidatePair.first;
+            if (factory.types.isSameType(fakeReceiverType, candidateReceiverType)) {
+                return (AnnotatedExecutableType) candidatePair.second;
+            }
+        }
+
+        throw new BugInCF(
+                "No match for %s in %s %s %s",
+                fakeReceiverType, candidates, applicableClasses, applicableInterfaces);
+    }
+
+    ///
+    /// End of public methods, private helper methods follow
+    ///
+
+    /**
      * Parses the outermost enclosing class of {@code e} if there exists an annotation file for it
      * and it has not already been parsed.
      *
@@ -388,10 +509,10 @@ public class AnnotationFileElementTypes {
      *
      * @param e an element whose outermost enclosing class to return
      * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if
-     *     no such class exists for {@code e}
+     *     no class encloses {@code e}
      */
     private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
-        TypeElement enclosingClass = ElementUtils.enclosingClass(e);
+        TypeElement enclosingClass = ElementUtils.enclosingTypeElement(e);
         if (enclosingClass == null) {
             return null;
         }
@@ -400,7 +521,7 @@ public class AnnotationFileElementTypes {
             if (element == null || element.getKind() == ElementKind.PACKAGE) {
                 break;
             }
-            TypeElement t = ElementUtils.enclosingClass(element);
+            TypeElement t = ElementUtils.enclosingTypeElement(element);
             if (t == null) {
                 break;
             }
@@ -498,9 +619,9 @@ public class AnnotationFileElementTypes {
         }
         URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         if (resourceURL == null) {
-            if (factory.getContext().getChecker().hasOption("permitMissingJdk")
+            if (factory.getChecker().hasOption("permitMissingJdk")
                     // temporary, for backward compatibility
-                    || factory.getContext().getChecker().hasOption("nocheckjdk")) {
+                    || factory.getChecker().hasOption("nocheckjdk")) {
                 return;
             }
             throw new BugInCF("JDK not found");
@@ -509,9 +630,9 @@ public class AnnotationFileElementTypes {
         } else if (resourceURL.getProtocol().contentEquals("file")) {
             prepJdkFromFile(resourceURL);
         } else {
-            if (factory.getContext().getChecker().hasOption("permitMissingJdk")
+            if (factory.getChecker().hasOption("permitMissingJdk")
                     // temporary, for backward compatibility
-                    || factory.getContext().getChecker().hasOption("nocheckjdk")) {
+                    || factory.getChecker().hasOption("nocheckjdk")) {
                 return;
             }
             throw new BugInCF("JDK not found");

@@ -15,8 +15,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Standardizes Java expressions in annotations and also view points adapts field accesses. (Other
- * viewpoint adaption is handled in {@link DependentTypesHelper}
+ * Standardizes Java expressions in annotations and also viewpoint-adapts field accesses. Other
+ * viewpoint adaption is handled in {@link DependentTypesHelper}.
  */
 public class DependentTypesTreeAnnotator extends TreeAnnotator {
     private final DependentTypesHelper helper;

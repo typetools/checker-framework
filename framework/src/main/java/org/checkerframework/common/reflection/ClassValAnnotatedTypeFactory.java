@@ -10,6 +10,7 @@ import com.sun.tools.javac.code.Type.UnionClassType;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +38,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -100,9 +102,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
         if (areSameByClass(anno, ClassBound.class) || areSameByClass(anno, ClassVal.class)) {
-            return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+            return AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         }
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     @Override
@@ -264,7 +266,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (TreeUtils.getReceiverTree(tree) != null) {
                     clType = (Type) TreeUtils.typeOf(TreeUtils.getReceiverTree(tree));
                 } else { // receiver is null, so it is implicitly "this"
-                    ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
+                    ClassTree classTree = TreePathUtil.enclosingClass(getPath(tree));
                     clType = (Type) TreeUtils.typeOf(classTree);
                 }
                 String className = getClassNameFromType(clType);
@@ -296,7 +298,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (annotation == null) {
                 return null;
             }
-            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
+            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
         }
 
         // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type

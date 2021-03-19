@@ -80,7 +80,7 @@ public class JavaExprContext {
             graphField1.addEdge2(
                     hero,
                     graphField1); // Calling a static method from an instance object. Ensuring this
-            // doesn't confuse the FlowExpression parsing.
+            // doesn't confuse the JavaExpression parsing.
             graphField1.addEdge3(hero);
         }
 
@@ -95,7 +95,7 @@ public class JavaExprContext {
             myGraph.addEdge2(
                     hero,
                     myGraph); // Calling a static method from an instance object. Ensuring this
-            // doesn't confuse the FlowExpression parsing.
+            // doesn't confuse the JavaExpression parsing.
             myGraph.addEdge3(hero);
         }
 
@@ -116,7 +116,7 @@ public class JavaExprContext {
             graphField1.addEdge2(
                     hero,
                     graphField1); // Calling a static method from an instance object. Ensuring this
-            // doesn't confuse the FlowExpression parsing.
+            // doesn't confuse the JavaExpression parsing.
             graphField1.addEdge3(hero);
         }
 
@@ -126,7 +126,7 @@ public class JavaExprContext {
             graphField2.addEdge2(
                     hero,
                     graphField2); // Calling a static method from an instance object. Ensuring this
-            // doesn't confuse the FlowExpression parsing.
+            // doesn't confuse the JavaExpression parsing.
             graphField2.addEdge3(hero);
         }
 
@@ -136,7 +136,7 @@ public class JavaExprContext {
             myGraph.addEdge2(
                     hero,
                     myGraph); // Calling a static method from an instance object. Ensuring this
-            // doesn't confuse the FlowExpression parsing.
+            // doesn't confuse the JavaExpression parsing.
             myGraph.addEdge3(hero);
         }
 
@@ -151,7 +151,7 @@ public class JavaExprContext {
             graphField2.addEdge2(
                     hero,
                     graphField2); // Calling a static method from an instance object. Ensuring this
-            // doesn't confuse the FlowExpression parsing.
+            // doesn't confuse the JavaExpression parsing.
             graphField2.addEdge3(hero);
         }
 
@@ -162,7 +162,7 @@ public class JavaExprContext {
             myGraph.addEdge2(
                     hero,
                     myGraph); // Calling a static method from an instance object. Ensuring this
-            // doesn't confuse the FlowExpression parsing.
+            // doesn't confuse the JavaExpression parsing.
             myGraph.addEdge3(hero);
         }
 

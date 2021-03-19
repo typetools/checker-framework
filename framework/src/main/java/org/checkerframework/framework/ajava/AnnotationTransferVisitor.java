@@ -18,9 +18,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /**
- * A visitor that given a JavaParser type node and an {@code AnnotatedTypeMirror} representing the
- * same type, adds all annotations from the {@code AnnotatedTypeMirror} to the JavaParser type,
- * including nested types like array components.
+ * A visitor that adds all annotations from a {@code AnnotatedTypeMirror} to the corresponding
+ * JavaParser type, including nested types like array components.
  *
  * <p>The {@code AnnotatedTypeMirror} is passed as the secondary parameter to the visit methods.
  */
@@ -75,7 +74,8 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
 
         for (AnnotationMirror annotation : annotatedType.getAnnotations()) {
             AnnotationExpr convertedAnnotation =
-                    AnnotationConversion.annotationMirrorToAnnotationExpr(annotation);
+                    AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                            annotation);
             target.addAnnotation(convertedAnnotation);
         }
     }

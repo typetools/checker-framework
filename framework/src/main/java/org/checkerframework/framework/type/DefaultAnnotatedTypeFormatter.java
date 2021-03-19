@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import com.sun.tools.javac.code.Type;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -256,13 +255,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 AnnotatedExecutableType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
             if (!type.getTypeVariables().isEmpty()) {
-                sb.append('<');
-                List<String> typeVars = new ArrayList<>(type.getTypeVariables().size());
+                StringJoiner sj = new StringJoiner(", ", "<", "> ");
                 for (AnnotatedTypeVariable atv : type.getTypeVariables()) {
-                    typeVars.add(visit(atv, visiting));
+                    sj.add(visit(atv, visiting));
                 }
-                sb.append(String.join(", ", typeVars));
-                sb.append("> ");
+                sb.append(sj.toString());
             }
             if (type.getReturnType() != null) {
                 sb.append(visit(type.getReturnType(), visiting));
@@ -385,7 +382,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         public String visitNull(AnnotatedNullType type, Set<AnnotatedTypeMirror> visiting) {
             return annoFormatter.formatAnnotationString(
                             type.getAnnotations(), currentPrintInvisibleSetting)
-                    + "null";
+                    + "NullType";
         }
 
         @Override

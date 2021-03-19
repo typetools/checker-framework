@@ -23,7 +23,8 @@ public class WholeProgramInferenceTestCheckerAjavaValidationTest
                 WholeProgramInferenceTestChecker.class,
                 "wpi-testchecker/annotated",
                 "-Anomsgtext",
-                "-Aajava=tests/wpi-testchecker/inference-output");
+                "-Aajava=tests/wpi-testchecker/inference-output",
+                "-Awarns");
     }
 
     @Override

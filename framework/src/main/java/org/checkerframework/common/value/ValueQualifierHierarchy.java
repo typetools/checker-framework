@@ -62,7 +62,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 break;
             case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
                 // Retain strings of lengths from a range
-                Range otherRange = ValueAnnotatedTypeFactory.getRange(otherAnno);
+                Range otherRange = atypeFactory.getRange(otherAnno);
                 ArrayList<String> range = new ArrayList<>();
                 for (String s : values) {
                     if (otherRange.contains(s.length())) {
@@ -119,16 +119,16 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
         AnnotationMirror lub = leastUpperBound(newQualifier, previousQualifier);
         if (AnnotationUtils.areSameByName(lub, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
-            Range lubRange = ValueAnnotatedTypeFactory.getRange(lub);
-            Range newRange = ValueAnnotatedTypeFactory.getRange(newQualifier);
-            Range oldRange = ValueAnnotatedTypeFactory.getRange(previousQualifier);
+            Range lubRange = atypeFactory.getRange(lub);
+            Range newRange = atypeFactory.getRange(newQualifier);
+            Range oldRange = atypeFactory.getRange(previousQualifier);
             Range wubRange = widenedRange(newRange, oldRange, lubRange);
             return atypeFactory.createIntRangeAnnotation(wubRange);
         } else if (AnnotationUtils.areSameByName(
                 lub, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-            Range lubRange = ValueAnnotatedTypeFactory.getRange(lub);
-            Range newRange = ValueAnnotatedTypeFactory.getRange(newQualifier);
-            Range oldRange = ValueAnnotatedTypeFactory.getRange(previousQualifier);
+            Range lubRange = atypeFactory.getRange(lub);
+            Range newRange = atypeFactory.getRange(newQualifier);
+            Range oldRange = atypeFactory.getRange(previousQualifier);
             Range wubRange = widenedRange(newRange, oldRange, lubRange);
             return atypeFactory.createArrayLenRangeAnnotation(wubRange);
         } else {
@@ -223,13 +223,13 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             switch (qual1) {
                 case ValueAnnotatedTypeFactory.INTRANGE_NAME:
                     // special handling for IntRange
-                    Range intrange1 = ValueAnnotatedTypeFactory.getRange(a1);
-                    Range intrange2 = ValueAnnotatedTypeFactory.getRange(a2);
+                    Range intrange1 = atypeFactory.getRange(a1);
+                    Range intrange2 = atypeFactory.getRange(a2);
                     return atypeFactory.createIntRangeAnnotation(intrange1.union(intrange2));
                 case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
                     // special handling for ArrayLenRange
-                    Range range1 = ValueAnnotatedTypeFactory.getRange(a1);
-                    Range range2 = ValueAnnotatedTypeFactory.getRange(a2);
+                    Range range1 = atypeFactory.getRange(a1);
+                    Range range2 = atypeFactory.getRange(a2);
                     return atypeFactory.createArrayLenRangeAnnotation(range1.union(range2));
                 case ValueAnnotatedTypeFactory.INTVAL_NAME:
                     List<Long> a1Values = ValueAnnotatedTypeFactory.getIntValues(a1);
@@ -253,6 +253,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                     newStringValues.addAll(string2Values);
                     return atypeFactory.createStringAnnotation(newStringValues);
                 default:
+                    // What cases does this default handle?  Make them explicit.
                     List<Object> object1Values =
                             AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                     List<Object> object2Values =
@@ -419,8 +420,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             if (subQual.equals(ValueAnnotatedTypeFactory.INTRANGE_NAME)
                     || subQual.equals(ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
                 // Special case for range-based annotations
-                Range superRange = ValueAnnotatedTypeFactory.getRange(superAnno);
-                Range subRange = ValueAnnotatedTypeFactory.getRange(subAnno);
+                Range superRange = atypeFactory.getRange(superAnno);
+                Range subRange = atypeFactory.getRange(subAnno);
                 return superRange.contains(subRange);
             } else {
                 List<Object> superValues =
@@ -441,12 +442,12 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
             case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME
                     + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-                Range superRange = ValueAnnotatedTypeFactory.getRange(superAnno);
+                Range superRange = atypeFactory.getRange(superAnno);
                 List<Long> subLongValues = atypeFactory.getArrayLenOrIntValue(subAnno);
                 Range subLongRange = Range.create(subLongValues);
                 return superRange.contains(subLongRange);
             case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
-                Range subRange = ValueAnnotatedTypeFactory.getRange(subAnno);
+                Range subRange = atypeFactory.getRange(subAnno);
                 if (subRange.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
                     return false;
                 }
@@ -458,7 +459,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME
                     + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-                Range subRange2 = ValueAnnotatedTypeFactory.getRange(subAnno);
+                Range subRange2 = atypeFactory.getRange(subAnno);
                 if (subRange2.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
                     return false;
                 }
@@ -496,7 +497,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 // StringVal is a subtype of ArrayLenRange, if all the strings have a length in
                 // the
                 // range.
-                Range superRange2 = ValueAnnotatedTypeFactory.getRange(superAnno);
+                Range superRange2 = atypeFactory.getRange(superAnno);
                 List<String> subValues3 = ValueAnnotatedTypeFactory.getStringValues(subAnno);
                 for (String value : subValues3) {
                     if (!superRange2.contains(value.length())) {

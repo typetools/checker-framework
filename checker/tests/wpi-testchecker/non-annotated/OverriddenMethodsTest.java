@@ -9,12 +9,12 @@ class OverriddenMethodsTestParent {
     public void barz(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {}
 
     public void qux(Object obj1, Object obj2) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         foo(obj1, obj2);
     }
 
     public void thud(Object obj1, Object obj2) {
-        // :: error: argument.type.incompatible
+        // :: warning: argument.type.incompatible
         foo(obj1, obj2);
     }
 }
@@ -22,17 +22,17 @@ class OverriddenMethodsTestParent {
 class OverriddenMethodsTestChild extends OverriddenMethodsTestParent {
     @Override
     public void foo(Object obj, Object obj2) {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Sibling1 Object o = obj;
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Sibling2 Object o2 = obj2;
     }
 
     @Override
     public void bar(Object obj) {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Sibling1 OverriddenMethodsTestChild child = this;
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (assignment.type.incompatible)
         @Sibling2 Object o = obj;
     }
 

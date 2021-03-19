@@ -8,10 +8,10 @@ public class Suppression {
     @SuppressWarnings("initialization.fields.uninitialized")
     public Suppression(Suppression arg) {}
 
-    @SuppressWarnings({"fbc", "nullness"})
+    @SuppressWarnings({"nullness"})
     void foo(@UnknownInitialization Suppression arg) {
-        t = arg; // "fbc" error
-        t = null; // "nullness" error
+        t = arg; // initialization error
+        t = null; // nullness error
     }
 
     void test() {

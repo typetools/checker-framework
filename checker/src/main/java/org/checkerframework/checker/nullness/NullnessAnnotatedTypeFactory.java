@@ -16,10 +16,11 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,14 +35,16 @@ import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -67,6 +70,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -185,9 +189,9 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
-                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/annotations
-                    "org.jspecify.annotations.Nullable",
-                    "org.jspecify.annotations.NullnessUnspecified",
+                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
+                    "org.jspecify.nullness.Nullable",
+                    "org.jspecify.nullness.NullnessUnspecified",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
@@ -235,11 +239,7 @@ public class NullnessAnnotatedTypeFactory
                 new SystemGetPropertyHandler(processingEnv, this, permitClearProperty);
 
         classGetCanonicalName =
-                TreeUtils.getMethod(
-                        java.lang.Class.class.getCanonicalName(),
-                        "getCanonicalName",
-                        0,
-                        processingEnv);
+                TreeUtils.getMethod("java.lang.Class", "getCanonicalName", 0, processingEnv);
 
         postInit();
 
@@ -297,7 +297,7 @@ public class NullnessAnnotatedTypeFactory
             NullnessStore store,
             TreePath path,
             boolean isStatic,
-            List<? extends AnnotationMirror> receiverAnnotations) {
+            Collection<? extends AnnotationMirror> receiverAnnotations) {
         Pair<List<VariableTree>, List<VariableTree>> result =
                 super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
         // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
@@ -563,14 +563,6 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
-        Set<Class<? extends Annotation>> l =
-                new HashSet<>(super.getInvalidConstructorReturnTypeAnnotations());
-        l.addAll(getNullnessAnnotations());
-        return l;
-    }
-
-    @Override
     public AnnotationMirror getFieldInvariantAnnotation() {
         return NONNULL;
     }
@@ -655,14 +647,15 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * Returns true if some annotation in the given list is a nullness annotation such
-     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     * Returns true if some annotation on the given type, or in the given list, is a nullness
+     * annotation such as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
      * <p>This method ignores aliases of nullness annotations that are declaration annotations,
      * because they may apply to inner types.
      *
-     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
-     *     not from such a location
+     * @param annoTrees a list of annotations that the the Java parser attached to the
+     *     variable/method declaration; null if this type is not from such a location. This is a
+     *     list of extra annotations to check, in addition to those on the type.
      * @param typeTree the type whose annotations to test
      * @return true if some annotation is a nullness annotation
      */
@@ -670,8 +663,25 @@ public class NullnessAnnotatedTypeFactory
             List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         List<? extends AnnotationTree> annos =
                 TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+        return containsNullnessAnnotation(annos);
+    }
 
-        for (AnnotationTree annoTree : annos) {
+    /**
+     * Returns true if some annotation in the given list is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * <p>This method ignores aliases of nullness annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
+     * <p>Clients that are processing a field or variable definition, or a method return type,
+     * should call {@link #containsNullnessAnnotation(List, Tree)} instead.
+     *
+     * @param annoTrees a list of annotations to check
+     * @return true if some annotation is a nullness annotation
+     * @see #containsNullnessAnnotation(List, Tree)
+     */
+    protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annoTrees) {
+        for (AnnotationTree annoTree : annoTrees) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
             if (isNullnessAnnotation(am) && !AnnotationUtils.isDeclarationAnnotation(am)) {
                 return true;
@@ -731,12 +741,108 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
+    // If
+    //  1. rhs is @Nullable
+    //  2. lhs is a field of this
+    //  3. in a constructor
+    // then change rhs to @MonotonicNonNull.
     @Override
-    public WholeProgramInference createWholeProgramInference() {
-        if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
-            return new WholeProgramInferenceJavaParser(this, false);
+    public void wpiAdjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+        if (!rhsATM.hasAnnotation(Nullable.class)) {
+            return;
+        }
+        TreePath lhsPath = getPath(lhsTree);
+        if (TreePathUtil.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
+                && TreePathUtil.inConstructor(lhsPath)) {
+            rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
+        }
+    }
+
+    // If
+    //  1. rhs is @MonotonicNonNull
+    // then change rhs to @Nullable
+    @Override
+    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+        if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
+            rhsATM.replaceAnnotation(NULLABLE);
+        }
+    }
+
+    // This implementation overrides the superclass implementation to:
+    //  * check for @MonotonicNonNull
+    //  * output @RequiresNonNull rather than @RequiresQualifier.
+    @Override
+    public List<AnnotationMirror> getPreconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldType) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return Collections.emptyList();
         }
 
-        return new NullnessWholeProgramInferenceScenes(this);
+        if (AnnotationUtils.containsSameByName(
+                fieldType.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return requiresNonNullAnno(elt);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns a {@code RequiresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code RequiresNonNull("...")} annotation for the given field
+     */
+    private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
+        String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
+        String expression = receiver + "." + fieldElement.getSimpleName();
+        builder.setValue("value", new String[] {expression});
+        AnnotationMirror am = builder.build();
+        return Collections.singletonList(am);
+    }
+
+    @Override
+    public List<AnnotationMirror> getPostconditionAnnotation(
+            VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        // TODO: This does not handle the possibility that the user set a different default
+        // annotation.
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return Collections.emptyList();
+        }
+        if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
+                && preconds.contains(requiresNonNullAnno(elt))) {
+            // The postcondition is implied by the precondition and the field being
+            // @MonotonicNonNull.
+            return Collections.emptyList();
+        }
+        if (AnnotationUtils.containsSameByName(
+                fieldAnnos.getAnnotations(),
+                "org.checkerframework.checker.nullness.qual.NonNull")) {
+            return ensuresNonNullAnno(elt);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns a {@code EnsuresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code EnsuresNonNull("...")} annotation for the given field
+     */
+    private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
+        String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
+        String expression = receiver + "." + fieldElement.getSimpleName();
+        builder.setValue("value", new String[] {expression});
+        AnnotationMirror am = builder.build();
+        return Collections.singletonList(am);
     }
 }

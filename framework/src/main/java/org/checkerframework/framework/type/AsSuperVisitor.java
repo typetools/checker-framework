@@ -28,8 +28,10 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror, Void> {
 
+    /** Type utilities. */
     private final Types types;
-    private final AnnotatedTypeFactory annotatedTypeFactory;
+    /** The type factory. */
+    private final AnnotatedTypeFactory atypeFactory;
     /**
      * Whether or not the type being visited is an uninferred type argument. If true, then the
      * underlying type may not have the correct relationship with the supertype.
@@ -39,11 +41,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     /**
      * Create a new AsSuperVisitor.
      *
-     * @param annotatedTypeFactory the type factory
+     * @param atypeFactory the type factory
      */
-    public AsSuperVisitor(AnnotatedTypeFactory annotatedTypeFactory) {
-        this.annotatedTypeFactory = annotatedTypeFactory;
-        types = annotatedTypeFactory.types;
+    public AsSuperVisitor(AnnotatedTypeFactory atypeFactory) {
+        this.atypeFactory = atypeFactory;
+        types = atypeFactory.types;
     }
 
     /**
@@ -115,9 +117,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
                     for (AnnotationMirror lub : lubs) {
                         AnnotationMirror anno = altern.getAnnotationInHierarchy(lub);
                         newLubs.add(
-                                annotatedTypeFactory
-                                        .getQualifierHierarchy()
-                                        .leastUpperBound(anno, lub));
+                                atypeFactory.getQualifierHierarchy().leastUpperBound(anno, lub));
                     }
                     lubs = newLubs;
                 }
@@ -138,8 +138,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     private AnnotatedTypeMirror errorTypeNotErasedSubtypeOfSuperType(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
         if (TypesUtils.isString(superType.getUnderlyingType())) {
-            // Any type can be converted to a String
-            return visit(annotatedTypeFactory.getStringType(type), superType, p);
+            // Any type can be converted to String
+            return visit(atypeFactory.getStringType(type), superType, p);
         }
         if (isUninferredTypeArgument) {
             return copyPrimaryAnnos(type, superType);
@@ -200,7 +200,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (lowerBound.getKind() == TypeKind.NULL) {
             Set<AnnotationMirror> typeLowerBound =
                     AnnotatedTypes.findEffectiveLowerBoundAnnotations(
-                            annotatedTypeFactory.getQualifierHierarchy(), type);
+                            atypeFactory.getQualifierHierarchy(), type);
             lowerBound.replaceAnnotations(typeLowerBound);
             return lowerBound;
         }
@@ -326,9 +326,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
 
         // Not same erased Java type.
-        // Walk up the directSuperTypes.
-        // directSuperTypes() annotates type variables correctly and handles substitution.
-        for (AnnotatedDeclaredType dst : type.directSuperTypes()) {
+        // Walk up the directSupertypes.
+        // directSupertypes() annotates type variables correctly and handles substitution.
+        for (AnnotatedDeclaredType dst : type.directSupertypes()) {
             if (isErasedJavaSubtype(dst, superType)) {
                 // If two direct supertypes of type, dst1 and dst2, are subtypes of superType then
                 // asSuper(dst1, superType) and asSuper(dst2, superType) return equivalent ATMs, so
@@ -361,9 +361,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     public AnnotatedTypeMirror visitDeclared_Primitive(
             AnnotatedDeclaredType type, AnnotatedPrimitiveType superType, Void p) {
         if (!TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
-            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a box primitive.");
+            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a boxed primitive.");
         }
-        AnnotatedTypeMirror unboxedType = annotatedTypeFactory.getUnboxedType(type);
+        AnnotatedTypeMirror unboxedType = atypeFactory.getUnboxedType(type);
         return copyPrimaryAnnos(unboxedType, superType);
     }
 
@@ -525,9 +525,17 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, superType);
     }
 
+    /**
+     * A helper method for visiting a primitive and a non-primitive.
+     *
+     * @param type a primitive type
+     * @param superType some other type
+     * @param p ignore
+     * @return {@code type}, viewed as a {@code superType}
+     */
     private AnnotatedTypeMirror visitPrimitive_Other(
             AnnotatedPrimitiveType type, AnnotatedTypeMirror superType, Void p) {
-        return visit(annotatedTypeFactory.getBoxedType(type), superType, p);
+        return visit(atypeFactory.getBoxedType(type), superType, p);
     }
 
     @Override
@@ -538,7 +546,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             if (unboxedSuper.getKind() != type.getKind()
                     && canBeNarrowingPrimitiveConversion(unboxedSuper)) {
                 AnnotatedPrimitiveType narrowedType =
-                        annotatedTypeFactory.getNarrowedPrimitive(type, unboxedSuper);
+                        atypeFactory.getNarrowedPrimitive(type, unboxedSuper);
                 return visit(narrowedType, superType, p);
             }
         }
@@ -729,7 +737,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, p);
         isUninferredTypeArgument = oldIsUninferredTypeArgument;
-        annotatedTypeFactory.addDefaultAnnotations(superType);
+        atypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, asSuper);
     }
@@ -780,7 +788,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setLowerBound(lowerBound);
         isUninferredTypeArgument = oldIsUninferredTypeArgument;
-        annotatedTypeFactory.addDefaultAnnotations(superType);
+        atypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, superType);
     }
@@ -817,7 +825,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             copyPrimaryAnnos(type.getExtendsBound(), superType.getExtendsBound());
 
             // Add defaults in case any locations are missing annotations.
-            annotatedTypeFactory.addDefaultAnnotations(superType.getExtendsBound());
+            atypeFactory.addDefaultAnnotations(superType.getExtendsBound());
         }
 
         AnnotatedTypeMirror lowerBound;
@@ -831,20 +839,19 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setSuperBound(lowerBound);
         isUninferredTypeArgument = oldIsUninferredTypeArgument;
-        annotatedTypeFactory.addDefaultAnnotations(superType);
+        atypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, superType);
     }
 
     /**
-     * Returns true if the annotatedTypeFactory for this is the given value.
+     * Returns true if the atypeFactory for this is the given value.
      *
-     * @param annotatedTypeFactory a factory to compare to that of this
-     * @return true if the annotatedTypeFactory for this is the given value
+     * @param atypeFactory a factory to compare to that of this
+     * @return true if the atypeFactory for this is the given value
      */
-    public boolean sameAnnotatedTypeFactory(
-            @FindDistinct AnnotatedTypeFactory annotatedTypeFactory) {
-        return this.annotatedTypeFactory == annotatedTypeFactory;
+    public boolean sameAnnotatedTypeFactory(@FindDistinct AnnotatedTypeFactory atypeFactory) {
+        return this.atypeFactory == atypeFactory;
     }
     // </editor-fold>
 }

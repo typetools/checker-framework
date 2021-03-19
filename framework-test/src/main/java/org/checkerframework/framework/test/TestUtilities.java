@@ -132,12 +132,16 @@ public class TestUtilities {
         return fileGroupedByDirectory;
     }
 
+    /**
+     * Prepends a file to the beginning of each filename.
+     *
+     * @param parent a file to prepend to each filename
+     * @param fileNames file names
+     * @return the file names, each with {@code parent} prepended
+     */
     public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
-        List<Object[]> files = new ArrayList<>();
-        for (String fileName : fileNames) {
-            files.add(new Object[] {new File(parent, fileName)});
-        }
-        return files;
+        return SystemUtil.mapList(
+                (String fileName) -> new Object[] {new File(parent, fileName)}, fileNames);
     }
 
     /**
@@ -149,11 +153,7 @@ public class TestUtilities {
     public static List<File> getJavaFilesAsArgumentList(File... dirs) {
         List<File> arguments = new ArrayList<>();
         for (File dir : dirs) {
-            List<File> javaFiles = deeplyEnclosedJavaTestFiles(dir);
-
-            for (File javaFile : javaFiles) {
-                arguments.add(javaFile);
-            }
+            arguments.addAll(deeplyEnclosedJavaTestFiles(dir));
         }
         return arguments;
     }
@@ -433,6 +433,9 @@ public class TestUtilities {
                 System.out.println("---------------- start of javac ouput ----------------");
                 System.out.println(testResult.getCompilationResult().getJavacOutput());
                 System.out.println("---------------- end of javac ouput ----------------");
+            } else {
+                System.out.println(
+                        "To see the javac command line and output, run with: -Pemit.test.debug");
             }
             Assert.fail(testResult.summarize());
         }

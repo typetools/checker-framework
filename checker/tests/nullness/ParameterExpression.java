@@ -32,10 +32,9 @@ public class ParameterExpression {
     @EnsuresNonNull("#3")
     public void m4(@Nullable Object x1, @Nullable Object x2, final @Nullable Object x3) {}
 
-    // Formal parameter names should not be used on pre/postcondition, conditional postcondition
-    // and formal parameter annotations in the same method declaration as the formal parameter
-    // being referred. In this case, "#paramNum" should be used. This is because
-    // the parameter names are not saved in bytecode.
+    // Formal parameter names should not be used in signatures (pre/postcondition, conditional
+    // postcondition, and formal parameter annotations).  Use "#paramNum", because the parameter
+    // names are not saved in bytecode.
 
     @Nullable Object field = null;
 
@@ -47,20 +46,62 @@ public class ParameterExpression {
 
     @EnsuresNonNull("param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (contracts.postcondition.expression.parameter.name)
-    public void m6(Object param) {
+    public void m6a(Object param) {
         param = new Object();
     }
 
-    // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
-    // formal parameter.
+    @EnsuresNonNull("param")
+    // :: error: (flowexpr.parse.error)
+    public void m6b(Object param) {
+        // :: error: (assignment.type.incompatible)
+        param = null;
+    }
+
+    @EnsuresNonNull("param")
+    // :: error: (flowexpr.parse.error)
+    public void m6c(@Nullable Object param) {
+        param = new Object();
+    }
+
+    @EnsuresNonNull("param")
+    // :: error: (flowexpr.parse.error)
+    public void m6d(@Nullable Object param) {
+        param = null;
+    }
+
+    @EnsuresNonNull("param.toString()")
+    // :: error: (flowexpr.parse.error)
+    public void m6e(@Nullable Object param) {
+        param = null;
+    }
+
     @EnsuresNonNull("field")
-    // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
     // :: error: (contracts.postcondition.not.satisfied)
-    // :: warning: (contracts.postcondition.expression.parameter.name)
-    public void m7(Object field) {
+    // :: warning: (expression.parameter.name.shadows.field)
+    public void m7a(Object field) {
         field = new Object();
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (contracts.postcondition.not.satisfied)
+    // :: warning: (expression.parameter.name.shadows.field)
+    public void m7b(Object field) {
+        // :: error: (assignment.type.incompatible)
+        field = null;
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (contracts.postcondition.not.satisfied)
+    // :: warning: (expression.parameter.name.shadows.field)
+    public void m7c(@Nullable Object field) {
+        field = new Object();
+    }
+
+    @EnsuresNonNull("field")
+    // :: error: (contracts.postcondition.not.satisfied)
+    // :: warning: (expression.parameter.name.shadows.field)
+    public void m7d(@Nullable Object field) {
+        field = null;
     }
 
     // Preconditions
@@ -69,15 +110,12 @@ public class ParameterExpression {
 
     @RequiresNonNull("param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (contracts.precondition.expression.parameter.name)
     public void m9(Object param) {}
 
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
     // formal parameter.
     @RequiresNonNull("field")
-    // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
-    // :: warning: (contracts.precondition.expression.parameter.name)
+    // :: warning: (expression.parameter.name.shadows.field)
     public void m10(Object field) {}
 
     // Conditional postconditions
@@ -89,7 +127,6 @@ public class ParameterExpression {
 
     @EnsuresNonNullIf(result = true, expression = "param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (contracts.conditional.postcondition.expression.parameter.name)
     public boolean m12(Object param) {
         param = new Object();
         return true;
@@ -98,13 +135,33 @@ public class ParameterExpression {
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
     // formal parameter.
     @EnsuresNonNullIf(result = true, expression = "field")
-    // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant
-    // the field.
-    // :: warning: (contracts.conditional.postcondition.expression.parameter.name)
-    public boolean m13(Object field) {
+    // :: warning: (expression.parameter.name.shadows.field)
+    public boolean m13a(@Nullable Object field) {
         field = new Object();
         // :: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: warning: (expression.parameter.name.shadows.field)
+    public boolean m13b(@Nullable Object field) {
+        field = new Object();
+        return false;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: warning: (expression.parameter.name.shadows.field)
+    public boolean m13c(@Nullable Object field) {
+        field = null;
+        // :: error: (contracts.conditional.postcondition.not.satisfied)
+        return true;
+    }
+
+    @EnsuresNonNullIf(result = true, expression = "field")
+    // :: warning: (expression.parameter.name.shadows.field)
+    public boolean m13d(@Nullable Object field) {
+        field = null;
+        return false;
     }
 
     // Annotations on formal parameters referring to a formal parameter of the same method.
