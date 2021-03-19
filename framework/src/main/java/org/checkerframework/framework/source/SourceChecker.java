@@ -597,11 +597,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     /**
-     * Returns the parent checker of the current checker.
+     * Returns the immediate parent checker of the current checker.
      *
-     * @return the parent checker of the current checker
+     * @return the immediate parent checker of the current checker, or null if there is none
      */
-    public SourceChecker getParentChecker() {
+    public @Nullable SourceChecker getParentChecker() {
         return this.parentChecker;
     }
 
