@@ -38,8 +38,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>The primary purpose is to test the {@link JointJavacJavaParserVisitor} class when the
  * -AajavaChecks flag is used. That class traverses a javac tree and JavaParser AST simultaneously,
- *  so the trees this class stores can be used to test if the entirety of the javac tree was
- *  visited.
+ * so the trees this class stores can be used to test if the entirety of the javac tree was visited.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     /** The set of trees that should be matched to a JavaParser node when visiting both. */
