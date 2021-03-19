@@ -350,8 +350,6 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         JavacScope scope = (JavacScope) trees.getScope(path);
         Env<AttrContext> env = scope.getEnv();
 
-        List<MethodInvocationTree> methods = new ArrayList<>();
-
         boolean unknown = isUnknownMethod(tree);
 
         AnnotationMirror estimate = getMethodVal(tree);
@@ -359,7 +357,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         if (estimate == null) {
             debugReflection("MethodVal is unknown for: " + tree);
             debugReflection("UnknownMethod annotation: " + unknown);
-            return methods;
+            return Collections.emptyList();
         }
 
         debugReflection("MethodVal type system annotations: " + estimate);
@@ -370,9 +368,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 AnnotationUtils.getElementValueArray(estimate, "methodName", String.class, false);
         List<Integer> listParamLengths =
                 AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, false);
-
         assert listClassNames.size() == listMethodNames.size()
                 && listClassNames.size() == listParamLengths.size();
+
+        List<MethodInvocationTree> methods = new ArrayList<>();
         for (int i = 0; i < listClassNames.size(); ++i) {
             String className = listClassNames.get(i);
             String methodName = listMethodNames.get(i);
@@ -453,14 +452,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         JavacScope scope = (JavacScope) trees.getScope(path);
         Env<AttrContext> env = scope.getEnv();
 
-        List<JCNewClass> constructors = new ArrayList<>();
-
         AnnotationMirror estimate = getMethodVal(tree);
 
         if (estimate == null) {
             debugReflection("MethodVal is unknown for: " + tree);
             debugReflection("UnknownMethod annotation: " + isUnknownMethod(tree));
-            return constructors;
+            return Collections.emptyList();
         }
 
         debugReflection("MethodVal type system annotations: " + estimate);
@@ -469,8 +466,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 AnnotationUtils.getElementValueArray(estimate, "className", String.class, false);
         List<Integer> listParamLengths =
                 AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, false);
-
         assert listClassNames.size() == listParamLengths.size();
+
+        List<JCNewClass> constructors = new ArrayList<>();
         for (int i = 0; i < listClassNames.size(); ++i) {
             String className = listClassNames.get(i);
             int paramLength = listParamLengths.get(i);
@@ -520,6 +518,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             return Collections.emptyList();
         }
 
+        // The common case is probably that `result` is a singleton at method exit.
         List<Symbol> result = new ArrayList<>();
         ClassSymbol classSym = (ClassSymbol) sym;
         while (classSym != null) {
@@ -568,6 +567,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         // TODO: Should this be used instead of the below??
         ElementFilter.constructorsIn(symClass.getEnclosedElements());
 
+        // The common case is probably that `result` is a singleton at method exit.
         List<Symbol> result = new ArrayList<>();
         for (Symbol s : symClass.getEnclosedElements()) {
             // Check all constructors

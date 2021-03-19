@@ -4,7 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -53,9 +52,9 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
         if (keyfor != null
                 && (underlyingType.getKind() == TypeKind.TYPEVAR
                         || underlyingType.getKind() == TypeKind.WILDCARD)) {
-            keyForMaps = new TreeSet<>();
             List<String> list =
                     AnnotationUtils.getElementValueArray(keyfor, "value", String.class, false);
+            keyForMaps = new LinkedHashSet<>(list.size());
             keyForMaps.addAll(list);
         } else {
             keyForMaps = null;
@@ -77,7 +76,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
             return lub;
         }
         // Lub the keyForMaps by intersecting the sets.
-        lub.keyForMaps = new LinkedHashSet<>();
+        lub.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
         lub.keyForMaps.addAll(this.keyForMaps);
         lub.keyForMaps.retainAll(other.keyForMaps);
         if (lub.keyForMaps.isEmpty()) {

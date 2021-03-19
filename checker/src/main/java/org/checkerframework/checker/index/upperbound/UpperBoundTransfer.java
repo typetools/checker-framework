@@ -660,13 +660,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
         // Look up the SameLen type of the sequence.
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
-        List<String> sameLenSequences =
-                sameLenAnno == null
-                        ? new ArrayList<>()
-                        : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
-
-        if (!sameLenSequences.contains(sequenceJe.toString())) {
-            sameLenSequences.add(sequenceJe.toString());
+        List<String> sameLenSequences;
+        if (sameLenAnno == null) {
+            sameLenSequences = Collections.singletonList(sequenceJe.toString());
+        } else {
+            sameLenSequences =
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
+            if (!sameLenSequences.contains(sequenceJe.toString())) {
+                sameLenSequences.add(sequenceJe.toString());
+            }
         }
 
         List<String> offsets = Collections.nCopies(sameLenSequences.size(), "-1");

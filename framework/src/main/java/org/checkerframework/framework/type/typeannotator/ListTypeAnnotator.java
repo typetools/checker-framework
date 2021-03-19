@@ -40,7 +40,7 @@ public final class ListTypeAnnotator extends TypeAnnotator {
      */
     public ListTypeAnnotator(List<TypeAnnotator> annotators) {
         super(null);
-        List<TypeAnnotator> annotatorList = new ArrayList<>();
+        List<TypeAnnotator> annotatorList = new ArrayList<>(annotators.size());
         for (TypeAnnotator annotator : annotators) {
             if (annotator instanceof ListTypeAnnotator) {
                 annotatorList.addAll(((ListTypeAnnotator) annotator).annotators);
