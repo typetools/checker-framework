@@ -6,7 +6,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -331,7 +330,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             sameLenAnno = null;
         }
         if (sameLenAnno == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         return ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
     }
