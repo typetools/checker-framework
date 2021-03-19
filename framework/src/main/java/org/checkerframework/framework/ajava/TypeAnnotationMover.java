@@ -30,14 +30,18 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(FieldDeclaration node, Void p) {
+        // When adding annotations, it should be sufficient to add the annotations to the type of
+        // the first declared variable in the field declaration.
+        Type type = node.getVariable(0).getType();
+        if (isMultiPartName(type)) {
+            return;
+        }
+
         List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.FIELD);
         if (annosToMove.isEmpty()) {
             return;
         }
 
-        // It should be sufficient to add the annnotations to the type of the first declared
-        // variable in the field declaration.
-        Type type = node.getVariable(0).getType();
         if (!type.isClassOrInterfaceType()) {
             return;
         }
@@ -48,12 +52,16 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(MethodDeclaration node, Void p) {
+        Type type = node.getType();
+        if (isMultiPartName(type)) {
+            return;
+        }
+
         List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.METHOD);
         if (annosToMove.isEmpty()) {
             return;
         }
 
-        Type type = node.getType();
         if (!type.isClassOrInterfaceType()) {
             return;
         }
@@ -135,5 +143,17 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
         }
 
         return !hasTypeUse;
+    }
+
+    /**
+     * Returns whether {@code type} has a name containing multiple parts separated by dots, e.g.
+     * "java.lang.String".
+     *
+     * @param type a JavaParser type node
+     * @return true if {@code type} has a multi-part name
+     */
+    private boolean isMultiPartName(Type type) {
+        return type.isClassOrInterfaceType()
+                && type.asClassOrInterfaceType().getScope().isPresent();
     }
 }
