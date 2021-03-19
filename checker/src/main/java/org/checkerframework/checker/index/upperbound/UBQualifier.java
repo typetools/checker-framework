@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
@@ -89,6 +88,35 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
+    private static List<List<String>> nCopiesEmptyStringCache = new ArrayList<>(10);
+
+    static {
+        nCopiesEmptyStringCache.add(Collections.emptyList());
+        nCopiesEmptyStringCache.add(Collections.singletonList(""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(2, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(3, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(4, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(5, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(6, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(7, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(8, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(9, ""));
+    };
+
+    /**
+     * Equivalent to {@code Collections.nCopies(n, "")}.
+     *
+     * @param n the length of the list
+     * @return an immutable list of {@code n} copies of {@code ""}
+     */
+    private static List<String> nCopiesEmptyString(int n) {
+        if (n < 10) {
+            return nCopiesEmptyStringCache.get(n);
+        } else {
+            return Collections.nCopies(n, "");
+        }
+    }
+
     /**
      * Create a UBQualifier from a @LTLengthOf annotation.
      *
@@ -104,12 +132,12 @@ public abstract class UBQualifier {
         List<String> sequences =
                 AnnotationUtils.getElementValueArray(
                         ltLengthOfAnno, atypeFactory.ltLengthOfValueElement, String.class);
-        AnnotationValue offsetAV =
-                ltLengthOfAnno.getElementValues().get(atypeFactory.ltLengthOfOffsetElement);
         List<String> offsets =
-                (offsetAV == null)
-                        ? Collections.nCopies(sequences.size(), "")
-                        : AnnotationUtils.annotationValueToList(offsetAV, String.class);
+                AnnotationUtils.getElementValueArray(
+                        ltLengthOfAnno,
+                        atypeFactory.ltLengthOfOffsetElement,
+                        String.class,
+                        nCopiesEmptyString(sequences.size()));
         return createUBQualifier(sequences, offsets, extraOffset);
     }
 

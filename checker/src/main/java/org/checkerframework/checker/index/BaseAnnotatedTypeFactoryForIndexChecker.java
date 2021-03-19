@@ -4,6 +4,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -52,7 +53,7 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
      * @return its from() element/field
      */
     public String hasSubsequenceFromValue(AnnotationMirror anno) {
-        return (String) anno.getElementValues().get(hasSubsequenceFromElement).getValue();
+        return AnnotationUtils.getElementValue(anno, hasSubsequenceFromElement, String.class);
     }
 
     /**
@@ -62,7 +63,7 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
      * @return its to() element/field
      */
     public String hasSubsequenceToValue(AnnotationMirror anno) {
-        return (String) anno.getElementValues().get(hasSubsequenceToElement).getValue();
+        return AnnotationUtils.getElementValue(anno, hasSubsequenceToElement, String.class);
     }
 
     /**
@@ -72,6 +73,7 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
      * @return its subsequence() element/field
      */
     public String hasSubsequenceSubsequenceValue(AnnotationMirror anno) {
-        return (String) anno.getElementValues().get(hasSubsequenceSubsequenceElement).getValue();
+        return AnnotationUtils.getElementValue(
+                anno, hasSubsequenceSubsequenceElement, String.class);
     }
 }

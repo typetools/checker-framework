@@ -689,19 +689,6 @@ public class AnnotationUtils {
                         elementName, anno, useDefaults, valmap.keySet()));
     }
 
-    /** Differentiates NoSuchElementException from other BugInCF. */
-    @SuppressWarnings("serial")
-    private static class NoSuchElementException extends BugInCF {
-        /**
-         * Constructs a new NoSuchElementException.
-         *
-         * @param message the detail message
-         */
-        public NoSuchElementException(String message) {
-            super(message);
-        }
-    }
-
     /**
      * Get given element of the annotation {@code anno}. The result is expected to have type {@code
      * expectedType}.
@@ -720,6 +707,83 @@ public class AnnotationUtils {
             AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
         AnnotationValue av = anno.getElementValues().get(element);
         return expectedType.cast(av.getValue());
+    }
+
+    /**
+     * Get given element of the annotation {@code anno}. The result is expected to have type {@code
+     * expectedType}.
+     *
+     * <p>If the return type is primitive, use {@link #getElementValueInt} or {@link
+     * #getElementValueLong} instead.
+     *
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
+     *
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * @param anno the annotation whose element to access
+     * @param element the the element to access
+     * @param expectedType the expected type of the element
+     * @param <T> the class of the expected type
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name
+     */
+    public static <T> @Nullable T getElementValue(
+            AnnotationMirror anno,
+            ExecutableElement element,
+            Class<T> expectedType,
+            T defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            return expectedType.cast(av.getValue());
+        }
+    }
+
+    /**
+     * Get given element of the annotation {@code anno}. The result is expected to have type {@code
+     * expectedType}.
+     *
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
+     *
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * @param anno the annotation whose element to access
+     * @param element the the element to access
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name
+     */
+    public static int getElementValueInt(
+            AnnotationMirror anno, ExecutableElement element, int defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            return (int) av.getValue();
+        }
+    }
+
+    /**
+     * Get given element of the annotation {@code anno}. The result is expected to have type {@code
+     * expectedType}.
+     *
+     * <p>If the return type is an array, use {@link #getElementValueArray} instead.
+     *
+     * <p>If the return type is an enum, use {@link #getElementValueEnum} instead.
+     *
+     * @param anno the annotation whose element to access
+     * @param element the the element to access
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name
+     */
+    public static long getElementValueLong(
+            AnnotationMirror anno, ExecutableElement element, long defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            return (long) av.getValue();
+        }
     }
 
     /**
@@ -874,6 +938,32 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, where the
+     * element has an array type. One element of the result is expected to have type {@code
+     * expectedType}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
+     */
+    public static <T> List<T> getElementValueArray(
+            AnnotationMirror anno,
+            ExecutableElement element,
+            Class<T> expectedType,
+            List<T> defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            return AnnotationUtils.annotationValueToList(av, expectedType);
+        }
+    }
+
+    /**
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The element
      * has type {@code expectedType} or array of {@code expectedType}.
      *
@@ -974,6 +1064,33 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, or the
+     * default value if no element is present explicitly, where the element has an array type and
+     * the elements are {@code Enum}s. One element of the result is expected to have type {@code
+     * expectedType}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name
+     */
+    public static <T extends Enum<T>> T[] getElementValueEnumArray(
+            AnnotationMirror anno,
+            ExecutableElement element,
+            Class<T> expectedType,
+            T[] defaultValue) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> la = getElementValue(anno, element, List.class);
+        if (la == null) {
+            return defaultValue;
+        } else {
+            return annotationValueListToEnumArray(la, expectedType);
+        }
+    }
+
+    /**
      * Converts a list of AnnotationValue to an array of enum.
      *
      * @param <T> the element type of the enum array
@@ -1060,6 +1177,19 @@ public class AnnotationUtils {
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
         return SystemUtil.<Type.ClassType, @CanonicalName Name>mapList(
                 (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
+    }
+
+    /** Differentiates NoSuchElementException from other BugInCF. */
+    @SuppressWarnings("serial")
+    private static class NoSuchElementException extends BugInCF {
+        /**
+         * Constructs a new NoSuchElementException.
+         *
+         * @param message the detail message
+         */
+        public NoSuchElementException(String message) {
+            super(message);
+        }
     }
 
     // **********************************************************************
@@ -1154,6 +1284,50 @@ public class AnnotationUtils {
         // `avList` is actually a javac.util.List<Attribute.Constant>.
         for (AnnotationValue av : avList) {
             if (av.getValue().equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if an AnnotationValue list contains a value whose {@code toString()} is the
+     * given string.
+     *
+     * <p>Using this method is slightly cheaper than creating a new {@code List} just for the
+     * purpose of testing containment within it.
+     *
+     * @param avList an AnnotationValue that is null or a list
+     * @param s a string
+     * @return true if {@code av} contains {@code s}
+     */
+    public static boolean annotationValueContainsToString(
+            @Nullable AnnotationValue avList, String s) {
+        if (avList == null) {
+            return false;
+        }
+        // The value is actually a javac.util.List<Attribute.Constant>.
+        @SuppressWarnings("unchecked")
+        List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
+        return annotationValueContainsToString(list, s);
+    }
+
+    /**
+     * Returns true if an AnnotationValue list contains a value whose {@code toString()} is the
+     * given string.
+     *
+     * <p>Using this method is slightly cheaper than creating a new {@code List} just for the
+     * purpose of testing containment within it.
+     *
+     * @param avList a list of Strings (as {@code AnnotationValue}s)
+     * @param s a string
+     * @return true if {@code av} contains {@code s}
+     */
+    public static boolean annotationValueContainsToString(
+            List<? extends AnnotationValue> avList, String s) {
+        // `avList` is actually a javac.util.List<Attribute.Constant>.
+        for (AnnotationValue av : avList) {
+            if (av.getValue().toString().equals(s)) {
                 return true;
             }
         }
