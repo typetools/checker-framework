@@ -131,11 +131,6 @@ public abstract class UBQualifier {
                 substringIndexForAnno
                         .getElementValues()
                         .get(atypeFactory.substringIndexForValueElement);
-        if (valueAV == null) {
-            throw new BugInCF(
-                    "parseSubstringIndexFor(%s, %s) value=null%n",
-                    substringIndexForAnno, extraOffset);
-        }
         List<String> sequences = AnnotationUtils.annotationValueToList(valueAV, String.class);
         AnnotationValue offsetAV =
                 substringIndexForAnno
