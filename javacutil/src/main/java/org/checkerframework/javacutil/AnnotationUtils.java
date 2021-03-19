@@ -32,6 +32,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -734,15 +735,13 @@ public class AnnotationUtils {
         }
     }
 
-    // TODO: Add the referenced methods, then add this comment:
-    // * <p>This method is intended only for use by the framework. A checker implementation should
-    // use
-    // * {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or {@link
-    // * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Object)}.
-
     /**
      * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
      * enum of type {@code T}.
+     *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or {@link
+     * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Enum)}.
      *
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
@@ -1017,6 +1016,51 @@ public class AnnotationUtils {
             return defaultValue;
         } else {
             return (long) av.getValue();
+        }
+    }
+
+    /**
+     * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+     * enum of type {@code T}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access; it must be present in the annotation
+     * @param expectedType the type of the element and the return value, an enum
+     * @param <T> the class of the type
+     * @return the value of the element with the given name
+     */
+    public static <T extends Enum<T>> T getElementValueEnum(
+            AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            throw new BugInCF("getElementValueEnum(%s, %s, ...)", anno, element);
+        }
+        VariableElement ve = (VariableElement) av.getValue();
+        return Enum.valueOf(expectedType, ve.getSimpleName().toString());
+    }
+
+    /**
+     * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+     * enum of type {@code T}.
+     *
+     * @param anno the annotation to disassemble
+     * @param element the element to access
+     * @param expectedType the type of the element and the return value, an enum
+     * @param <T> the class of the type
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name
+     */
+    public static <T extends Enum<T>> T getElementValueEnum(
+            AnnotationMirror anno,
+            ExecutableElement element,
+            Class<T> expectedType,
+            T defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            VariableElement ve = (VariableElement) av.getValue();
+            return Enum.valueOf(expectedType, ve.getSimpleName().toString());
         }
     }
 
