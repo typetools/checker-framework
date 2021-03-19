@@ -1,13 +1,9 @@
 package org.checkerframework.common.basetype;
 
-import java.io.InputStream;
-import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
-import com.github.javaparser.printer.PrettyPrinter;
-import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
 import com.github.javaparser.ParseProblemException;
-import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.printer.PrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -53,6 +49,7 @@ import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
@@ -98,7 +95,10 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
+import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
+import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
+import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
 import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -333,33 +333,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Subclasses may override this method to disable the test if even the option is provided.
      */
     protected void testJointJavacJavaParserVisitor() {
-        if (checker.hasOption("ajavaChecks") && root != null) {
-            Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
-            try {
-                java.io.InputStream reader = root.getSourceFile().openInputStream();
-                com.github.javaparser.ast.CompilationUnit javaParserRoot =
-                        StaticJavaParser.parse(reader);
-                reader.close();
-                JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
-                new JointVisitorWithDefaultAction() {
-                    @Override
-                    public void defaultAction(
-                            Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
-                        treePairs.put(javacTree, javaParserNode);
-                    }
-                }.visitCompilationUnit(root, javaParserRoot);
-                ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
-                expectedTreesVisitor.visitCompilationUnit(root, null);
-                for (Tree expected : expectedTreesVisitor.getTrees()) {
-                    if (!treePairs.containsKey(expected)) {
-                        throw new BugInCF(
-                                "Javac tree not matched to JavaParser node: %s, in file: %s",
-                                expected, root.getSourceFile().getName());
-                    }
+        if (!checker.hasOption("ajavaChecks") || root == null) {
+            return;
+        }
+
+        Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
+        try {
+            java.io.InputStream reader = root.getSourceFile().openInputStream();
+            com.github.javaparser.ast.CompilationUnit javaParserRoot =
+                    StaticJavaParser.parse(reader);
+            reader.close();
+            JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
+            new JointVisitorWithDefaultAction() {
+                @Override
+                public void defaultAction(
+                        Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
+                    treePairs.put(javacTree, javaParserNode);
                 }
-            } catch (IOException e) {
-                throw new BugInCF("Error reading Java source file", e);
+            }.visitCompilationUnit(root, javaParserRoot);
+            ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
+            expectedTreesVisitor.visitCompilationUnit(root, null);
+            for (Tree expected : expectedTreesVisitor.getTrees()) {
+                if (!treePairs.containsKey(expected)) {
+                    throw new BugInCF(
+                            "Javac tree not matched to JavaParser node: %s, in file: %s",
+                            expected, root.getSourceFile().getName());
+                }
             }
+        } catch (IOException e) {
+            throw new BugInCF("Error reading Java source file", e);
         }
     }
 
@@ -367,7 +369,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!checker.hasOption("ajavaChecks") || root == null) {
             return;
         }
-
 
         CompilationUnit originalAst;
         try (InputStream originalInputStream = root.getSourceFile().openInputStream()) {
