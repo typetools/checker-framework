@@ -428,7 +428,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno a MinLen annotation
      * @return its value() element/field
      */
-    private int getMinLenValueValue(AnnotationMirror anno) {
+    protected int getMinLenValueValue(AnnotationMirror anno) {
         return AnnotationUtils.getElementValueInt(anno, minLenValueElement, 0);
     }
 
@@ -859,8 +859,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
-            List<Long> longValues =
-                    SystemUtil.mapList((Character value) -> (long) (char) value, values);
+            List<Long> longValues = SystemUtil.mapList((Character value) -> (long) value, values);
             return createIntValAnnotation(longValues);
         }
     }
@@ -1164,10 +1163,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Long> intValues =
                 AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
-        TreeSet<Character> charValues = new TreeSet<>();
-        for (Long i : intValues) {
-            charValues.add((char) i.intValue());
-        }
+        List<Character> charValues = SystemUtil.mapList((Long i) -> (char) i.intValue(), intValues);
+        Collections.sort(charValues);
+        // TODO: Should this be an unmodifiable list?
         return new ArrayList<>(charValues);
     }
 
@@ -1199,14 +1197,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * constant-value annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
-     * @return a list of possible boolean values
+     * @return a singleton or empty list of possible boolean values, or null
      */
-    public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
+    public static @Nullable List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
             return Collections.emptyList();
         }
         List<Boolean> boolValues =
                 AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, false);
+        if (boolValues.size() < 2) {
+            return boolValues;
+        }
+        // Remove duplicates.
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() > 1) {
             // boolSet={true,false};

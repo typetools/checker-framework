@@ -166,6 +166,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (unitsRel == null) {
             unitsRel = new HashMap<>();
             // Always add the default units relations, for the standard units.
+            // Other code adds more relations.
             unitsRel.put(
                     UnitsRelationsDefault.class.getCanonicalName(),
                     new UnitsRelationsDefault().init(processingEnv));

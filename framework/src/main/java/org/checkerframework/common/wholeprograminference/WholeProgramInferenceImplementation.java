@@ -634,7 +634,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
 
         // LUB primary annotations
-        Set<AnnotationMirror> annosToReplace = new HashSet<>();
+        Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
         for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
             AnnotationMirror amAjava = ajavaATM.getAnnotationInHierarchy(amSource);
             // amAjava only contains annotations from the ajava file, so it might be missing

@@ -1996,13 +1996,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return null;
         }
 
+        List<ExecutableElement> methods = ElementFilter.methodsIn(anno.getEnclosedElements());
         // Mapping from argument simple name to its annotated type.
-        Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<>();
-        for (Element encl : ElementFilter.methodsIn(anno.getEnclosedElements())) {
-            AnnotatedExecutableType exeatm =
-                    (AnnotatedExecutableType) atypeFactory.getAnnotatedType(encl);
+        Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<>(methods.size());
+        for (ExecutableElement meth : methods) {
+            AnnotatedExecutableType exeatm = atypeFactory.getAnnotatedType(meth);
             AnnotatedTypeMirror retty = exeatm.getReturnType();
-            annoTypes.put(encl.getSimpleName().toString(), retty);
+            annoTypes.put(meth.getSimpleName().toString(), retty);
         }
 
         for (ExpressionTree arg : args) {
@@ -2930,7 +2930,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * A scanner that indicates whether any (sub-)types have the same toString but different verbose
-     * toString.
+     * toString. If so, the Checker Framework prints types verbosely.
      */
     private static SimpleAnnotatedTypeScanner<Boolean, Map<String, String>>
             checkContainsSameToString =
@@ -2953,7 +2953,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
-     * are the same but their verbose toStrings differ.
+     * are the same but their verbose toStrings differ. If so, the Checker Framework prints types
+     * verbosely.
      *
      * @param atms annotated type mirrors to compare
      * @return true iff there are two annotated types (anywhere in any ATM) such that their
@@ -4124,7 +4125,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private Set<Postcondition> filterConditionalPostconditions(
             Set<ConditionalPostcondition> conditionalPostconditions, boolean b) {
-        Set<Postcondition> result = new LinkedHashSet<>();
+        if (conditionalPostconditions.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<Postcondition> result = new LinkedHashSet<>(conditionalPostconditions.size());
         for (Contract c : conditionalPostconditions) {
             ConditionalPostcondition p = (ConditionalPostcondition) c;
             if (p.resultValue == b) {
@@ -4253,7 +4258,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         JavaExpressionContext jeContext =
                 new JavaExpressionContext(receiverJe, parametersJe, checker);
 
-        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
+        Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>(contractSet.size());
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
             AnnotationMirror annotation = p.annotation;

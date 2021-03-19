@@ -49,7 +49,7 @@ public class AnnotationConverter {
                         String.format(
                                 "annotationMirrorToAnnotation %s [%s] keyset=%s",
                                 am, am.getClass(), am.getElementValues().keySet()));
-        Map<String, AnnotationFieldType> fieldTypes = new HashMap<>();
+        Map<String, AnnotationFieldType> fieldTypes = new HashMap<>(am.getElementValues().size());
         // Handling cases where there are fields in annotations.
         for (ExecutableElement ee : am.getElementValues().keySet()) {
             AnnotationFieldType aft = getAnnotationFieldType(ee);
@@ -59,15 +59,15 @@ public class AnnotationConverter {
 
         // Now, we handle the values of those types below
         Map<? extends ExecutableElement, ? extends AnnotationValue> values = am.getElementValues();
-        Map<String, Object> newValues = new HashMap<>();
+        Map<String, Object> newValues = new HashMap<>(values.size());
         for (ExecutableElement ee : values.keySet()) {
             Object value = values.get(ee).getValue();
             if (value instanceof List) {
                 // If we have a List here, then it is a List of AnnotationValue.
                 // Convert each AnnotationValue to its respective Java type.
                 @SuppressWarnings("unchecked")
-                List<Object> valueList = (List<Object>) value;
-                value = SystemUtil.mapList(o -> ((AnnotationValue) o).getValue(), valueList);
+                List<AnnotationValue> valueList = (List<AnnotationValue>) value;
+                value = SystemUtil.mapList(AnnotationValue::getValue, valueList);
             } else if (value instanceof TypeMirror) {
                 try {
                     value = Class.forName(TypesUtils.binaryName((TypeMirror) value));
