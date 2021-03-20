@@ -175,6 +175,7 @@ public abstract class UBQualifier {
      *
      * @param am a @LTEqLengthOf annotation
      * @param extraOffset the extra offset
+     * @param atypeFactory used for obtaining fields from {@code am}
      * @return a UBQualifier created from the @LTEqLengthOf annotation
      */
     private static UBQualifier parseLTEqLengthOf(
