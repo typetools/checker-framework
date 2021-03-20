@@ -81,15 +81,13 @@ public final class RegexUtilTest {
         String s3 = "(\\Q()()\\E)";
         String s4 = "([abc\\Qwww\\E])(abc)?";
         String s5 = "[(abc]";
+        String s6 = "1) first point";
 
-        Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s1, 2));
-        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s1, 1));
-        Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s2, 4));
-        Assert.assertEquals(Arrays.asList(2, 3), RegexUtil.getNonNullGroups(s2, 3));
-        Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s3, 3));
-        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s3, 1));
-        Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s4, 3));
-        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s4, 2));
-        Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s5, 1));
+        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s1));
+        Assert.assertEquals(Arrays.asList(2, 3), RegexUtil.getNonNullGroups(s2));
+        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s3));
+        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s4));
+        Assert.assertEquals(Collections.emptyList(), RegexUtil.getNonNullGroups(s5));
+        Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s6));
     }
 }

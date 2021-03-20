@@ -186,15 +186,20 @@ public final class RegexUtil {
     @Pure
     @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
     public static boolean isRegex(String s, int groups, int... nonNullGroups) {
-        Pattern p;
         try {
-            p = Pattern.compile(s);
-        } catch (PatternSyntaxException e) {
+            List<Integer> computedNonNullGroups = getNonNullGroups(s);
+            if (groups <= getGroupCount(Pattern.compile(s))) {
+                for (int e : nonNullGroups) {
+                    if (!computedNonNullGroups.contains(e)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        } catch (PatternSyntaxException | Error e) {
             return false;
         }
-        List<Integer> computedNonNullGroups = getNonNullGroups(p.pattern(), getGroupCount(p));
-        return groups <= getGroupCount(p)
-                && computedNonNullGroups.containsAll(Arrays.asList(nonNullGroups));
     }
 
     /**
@@ -353,7 +358,9 @@ public final class RegexUtil {
     // RegexAnnotatedTypeFactory.
     public static @Regex String asRegex(String s, int groups, int... nonNullGroups) {
         try {
-            List<Integer> actualNonNullGroups = getNonNullGroups(s, groups);
+            int actualGroups = getGroupCount(Pattern.compile(s));
+            if (groups > actualGroups) throw new Error(regexErrorMessage(s, groups, actualGroups));
+            List<Integer> actualNonNullGroups = getNonNullGroups(s);
             int failingGroup = -1;
             for (int e : nonNullGroups) {
                 if (!actualNonNullGroups.contains(e)) {
@@ -422,30 +429,25 @@ public final class RegexUtil {
 
     /**
      * Returns a list of groups other than 0, that are guaranteed to be non-null given that the
-     * regular expression matches the String. The String argument passed has to be a valid regular
-     * expression.
+     * regular expression matches a target String.
      *
      * @param regexp regular expression to be analysed; must be a legal regex
-     * @param n number of capturing groups in the pattern
      * @return a {@code List} of groups that are guaranteed to match some part of a string that
      *     matches {@code regexp}
-     * @throws Error if the argument is not a regex or has less than the specified number of
-     *     capturing groups
+     * @throws Error if the argument is not a regex
      */
-    public static List<Integer> getNonNullGroups(String regexp, int n) {
+    public static List<Integer> getNonNullGroups(String regexp) {
+        int groups = 0;
         try {
             Pattern p = Pattern.compile(regexp);
-            int actualGroups = getGroupCount(p);
-            if (actualGroups < n) {
-                throw new Error(regexErrorMessage(regexp, n, actualGroups));
-            }
+            groups = getGroupCount(p);
         } catch (PatternSyntaxException e) {
             throw new Error(e);
         }
         // The list that will hold the groups that are guaranteed to match some part of text that
         // matches the regex. Initially holds all the groups. The optional groups will be removed.
         List<Integer> nonNullGroups = new ArrayList<>();
-        for (int i = 1; i <= n; i++) {
+        for (int i = 1; i <= groups; i++) {
             nonNullGroups.add(i);
         }
 
@@ -459,85 +461,94 @@ public final class RegexUtil {
         // Index of the most recently opened capturing group.
         int group = 0;
 
+        // Whenever we encounter any character, we know that it is not escaped. This is because,
+        // when we encountered a '\' which was used to escape something, we traverse till the end
+        // of the escape construct and then only resume normal traversal. This is why we are never
+        // checking if the previous character was a '\'.
+
         // Optional group here onwards means the ith capturing group, which may not match any part
         // of a text that matched the regular expression and thus may return null on calls to
         // matcher.group(i).
 
-        // If you encounter '(', check the next character. If it is a '?', it is a special
-        // construct,
-        // (either pure, non-capturing groups that do not capture text and do not count towards the
-        // group total, or named-capturing group) and we need to check the next character. If the
-        // character following the '?' is a '<' the '(' represents the opening of a named-capturing
-        // group and it will be handled like a normal capturing group. If the '(' was not followed
-        // by a '?', it is a normal capturing group.
-        // In case of capturing groups, increment the group variable and push it to the
-        // unclosedCapturingGroups deque. Push true to the isCapturingGroup deque.
-        // In case of non-capturing groups, push false to the isCapturingGroup deque.
-        // We need the boolean deque so that when we encounter a ')', we can know whether it closes
-        // a capturing group (the top element is true) or a non-capturing group (the top element is
-        // false). One additional check is required. If '(' represented a capturing a group and was
-        // preceded by '|', it is an optional group.
-
-        // If you encounter ')', check the top of the isCapturingGroup deque. If it was
-        // false, do nothing otherwise remove the top element from the deque since it is now closed
-        // and check if it is followed by a '?', '*', '|' or '{0'. If it is, then it is an optional
-        // group otherwise not. If it is an optional group, remove it from the nonNullGroups list.
-
-        // If you encounter '[', traverse the regex till you find the closing '[', you may encounter
-        // more of '[' in the process, keep a track of the number of character classes that are
-        // still open. Keep on traversing till the number becomes 0. After this resume normal
-        // traversal.
-
-        // If you encounter '\', check the next character. If it is not 'Q', skip the next
-        // character. If it is 'Q', it marks the beginning of a literal quote, find the next
-        // occurrence of '\E', which marks the end of quote. Set the loop variable to the index of
-        // 'E' and resume normal traversal.
+        // Special construct means either pure, non-capturing groups that do not capture text and do
+        // not count towards the group total.
 
         final int length = regexp.length();
         for (int i = 0; i < length; i++) {
+            // Marks the opening of either a capturing a capturing group or some special
+            // construct.
             if (regexp.charAt(i) == '(') {
-                boolean isCapturingGroup = false;
+                boolean isThisCapturingGroup = false;
+                // If '(' is not followed by a '?' or is followed by '?<', it is a capturing group.
                 if ((i < length - 1)
                         && (regexp.charAt(i + 1) != '?' || regexp.startsWith("?<", i + 1))) {
                     group += 1;
+                    // Push the group index onto a stack.
                     unclosedCapturingGroups.push(group);
-                    isCapturingGroup = true;
+                    // This opening bracket marked the opening of a capturing group.
+                    isThisCapturingGroup = true;
                 }
-                isCapturingGroup.push(isCapturingGroup);
-                if (isCapturingGroup) {
+                // Push the boolean on top of a stack. When we encounter a ')', we will use this
+                // stack to check whether it closes a capturing group or a special construct.
+                isCapturingGroup.push(isThisCapturingGroup);
+                if (isThisCapturingGroup) {
+                    // If this opening was preceded by a '|', this group is optional.
                     if (i > 0 && regexp.charAt(i - 1) == '|') {
                         nonNullGroups.remove(Integer.valueOf(group));
                     }
                 }
             } else if (regexp.charAt(i) == ')') {
+                // This closes the last opened "thing" (either a capturing group or a special
+                // construct). What the last opened "thing" was, is determined from the boolean
+                // stack.
+                // If the top is false, then it was a special construct.
+                // If the top is true, then it was a capturing group and we need to analyse it
+                // further.
                 boolean closesCapturingGroup = isCapturingGroup.pop();
                 if (closesCapturingGroup) {
+                    // The capturing group being closed is on top of the unclosedCapturingGroups
+                    // stack.
                     Integer closedGroupIndex = unclosedCapturingGroups.pop();
+                    // If the ')' is followed by a '?', '*', '|' or '{0', then this capturing group
+                    // is optional and can be removed from the list of nonNullGroups.
                     if ((i < length - 1 && "?*|".contains(String.valueOf(regexp.charAt(i + 1))))
                             || (i < length - 2 && regexp.startsWith("{0", i + 1))) {
                         nonNullGroups.remove(closedGroupIndex);
                     }
                 }
             } else if (regexp.charAt(i) == '[') {
-                int balance = 1, j;
+                // A character class has been opened. We will traverse till we close this class.
+                // Character classes can be nested, so we have a nestingLevel integer which keeps
+                // track
+                // of character classes still open.
+                int nestingLevel = 1;
                 // the loop starts from i+2 because the character class cannot be empty. "[]]" is a
                 // valid regex.
-                for (j = i + 1; j < length && balance > 0; j++) {
-                    if (regexp.charAt(j) == '[') {
-                        // Character classes can be nested.
-                        balance += 1;
-                    } else if (regexp.charAt(j) == ']') {
+                for (i = i + 1; i < length && nestingLevel > 0; i++) {
+                    // A nested character class. Increment nestingLevel.
+                    if (regexp.charAt(i) == '[') {
+                        nestingLevel += 1;
+                    }
+                    // Either a nested character class being closed or a literal ']' (when
+                    // immediately
+                    // followed by an opening of a character class).
+                    else if (regexp.charAt(i) == ']') {
                         // If the first character in a character class is "]", it is treated
                         // literally and does not close the character class.
-                        if (regexp.charAt(j - 1) != '[') {
-                            balance -= 1;
+                        if (regexp.charAt(i - 1) != '[') {
+                            nestingLevel -= 1;
                         }
-                    } else if (regexp.charAt(j) == '\\') {
-                        j = resumeTraversalFromHere(regexp, j);
+                    } else if (regexp.charAt(i) == '\\') {
+                        // If a '\' is encountered, it may escape a single character or may
+                        // represent a
+                        // quote. Traverse till the end of the escape construct.
+                        i = resumeTraversalFromHere(regexp, i);
                     }
                 }
-                i = j - 1;
+                i = i - 1;
             } else if (regexp.charAt(i) == '\\') {
+                // If a '\' is encountered, it may escape a single character or may represent a
+                // quote. Traverse till the end of the escape construct.
                 i = resumeTraversalFromHere(regexp, i);
             }
         }
