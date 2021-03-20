@@ -301,9 +301,8 @@ public final class RegexUtil {
      * @throws Error if argument is not a regex
      */
     @SideEffectFree
-    // The return type annotation is irrelevant; it is special-cased by
-    // RegexAnnotatedTypeFactory.
-    // The return type annotation is a conservative bound.
+    // The return type annotation is a conservative bound, but is irrelevant because this method is
+    // special-cased by RegexAnnotatedTypeFactory.
     public static @Regex String asRegex(String s) {
         return asRegex(s, 0);
     }
