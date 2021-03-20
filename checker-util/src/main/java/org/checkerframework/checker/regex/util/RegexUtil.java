@@ -541,14 +541,14 @@ public final class RegexUtil {
                         // If a '\' is encountered, it may escape a single character or may
                         // represent a
                         // quote. Traverse till the end of the escape construct.
-                        i = resumeTraversalFromHere(regexp, i);
+                        i = getLastIndexOfEscapeConstruct(regexp, i);
                     }
                 }
                 i = i - 1;
             } else if (regexp.charAt(i) == '\\') {
                 // If a '\' is encountered, it may escape a single character or may represent a
                 // quote. Traverse till the end of the escape construct.
-                i = resumeTraversalFromHere(regexp, i);
+                i = getLastIndexOfEscapeConstruct(regexp, i);
             }
         }
         return nonNullGroups;
@@ -561,7 +561,7 @@ public final class RegexUtil {
      * @param st the index of the '\' which causes the skip
      * @return the index till which the traversal can be skipped
      */
-    private static int resumeTraversalFromHere(String regexp, int st) {
+    private static int getLastIndexOfEscapeConstruct(String regexp, int st) {
         int length = regexp.length();
         if (st < length - 1 && regexp.charAt(st + 1) != 'Q') {
             return st + 1;
