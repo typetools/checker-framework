@@ -52,6 +52,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -969,7 +970,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns true if {@code am} is an expression annotation, that is an annotation whose element
+     * Returns true if {@code am} is an expression annotation, that is, an annotation whose element
      * is a Java expression.
      *
      * @param am an annotation
@@ -1008,19 +1009,21 @@ public class DependentTypesHelper {
                         }
                         return errors;
                     },
-                    DependentTypesHelper::listConcatenation,
+                    DependentTypesHelper::concatenate,
                     Collections.emptyList());
         }
     }
 
     /**
-     * Appends list2 to list1 in a new list. If either list is empty, the other is returned.
+     * Appends list2 to list1 in a new list. If either list is empty, returns the other. Thus, the
+     * result may be aliased to one of the arguments and the client should only read, not write, the
+     * result.
      *
      * @param list1 a list
      * @param list2 a list
-     * @return Appends list2 to list1 in a new list. If either list is empty, the other is returned.
+     * @return the lists, concatenated
      */
-    static List<DependentTypesError> listConcatenation(
+    private static List<DependentTypesError> concatenate(
             List<DependentTypesError> list1, List<DependentTypesError> list2) {
         if (list1.isEmpty()) {
             return list2;
@@ -1032,8 +1035,9 @@ public class DependentTypesHelper {
         newList.addAll(list2);
         return newList;
     }
+
     /**
-     * Copies annotations that might have been viewpoint adapted from the visited type (the first
+     * Copies annotations that might have been viewpoint-adapted from the visited type (the first
      * formal parameter) to the second formal parameter.
      */
     private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
@@ -1083,9 +1087,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Return true if {@code atm} has any dependent type annotations. If an annotated type does not
+     * Returns true if {@code atm} has any dependent type annotations. If an annotated type does not
      * have a dependent type annotation, then no standardization or viewpoint adaption is performed.
-     * (This check avoids calling time intensive methods unless required.)
+     * (This check avoids calling time-intensive methods unless required.)
      *
      * @param atm a type
      * @return true if {@code atm} has any dependent type annotations
