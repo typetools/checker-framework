@@ -118,6 +118,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     /*package-private*/ final ExecutableElement ltLengthOfValueElement;
     /** The LTLengthOf.offset argument/element. */
     /*package-private*/ final ExecutableElement ltLengthOfOffsetElement;
+    /** The LTEqLengthOf.value argument/element. */
+    /*package-private*/ final ExecutableElement ltEqLengthOfValueElement;
 
     /**
      * A factory used for reading elements/fields from annotations.
@@ -143,6 +145,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
         ltLengthOfValueElement = TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
         ltLengthOfOffsetElement = TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
+        ltEqLengthOfValueElement =
+                TreeUtils.getMethod(LTEqLengthOf.class, "value", 0, processingEnv);
 
         imf = new IndexMethodIdentifier(this);
 

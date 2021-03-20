@@ -77,7 +77,7 @@ public abstract class UBQualifier {
         } else if (AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
             return parseSubstringIndexFor(am, offset, substringIndexAtypeFactory);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
-            return parseLTEqLengthOf(am, offset);
+            return parseLTEqLengthOf(am, offset, upperBoundAtypeFactory);
         } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
             return parseLTOMLengthOf(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
@@ -177,9 +177,11 @@ public abstract class UBQualifier {
      * @param extraOffset the extra offset
      * @return a UBQualifier created from the @LTEqLengthOf annotation
      */
-    private static UBQualifier parseLTEqLengthOf(AnnotationMirror am, String extraOffset) {
+    private static UBQualifier parseLTEqLengthOf(
+            AnnotationMirror am, String extraOffset, UpperBoundAnnotatedTypeFactory atypeFactory) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        am, atypeFactory.ltEqLengthOfValueElement, String.class);
         if (sequences.isEmpty()) {
             // How did this AnnotationMirror even get made?  It seems invalid.
             return UpperBoundUnknownQualifier.UNKNOWN;
