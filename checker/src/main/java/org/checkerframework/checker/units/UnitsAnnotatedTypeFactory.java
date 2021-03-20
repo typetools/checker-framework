@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
@@ -47,6 +48,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
@@ -72,6 +74,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, UnitsBottom.class);
 
+    /** the UnitsMultiple.prefix argument/element. */
+    private final ExecutableElement unitsMultiplePrefixElement;
+
     /**
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
      * to prevent instantiating the UnitsRelations multiple times.
@@ -87,6 +92,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
         // use true to enable flow inference, false to disable it
         super(checker, false);
+
+        unitsMultiplePrefixElement =
+                TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
 
         this.postInit();
     }
@@ -126,7 +134,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // retrieve the SI Prefix of the aliased annotation
                 Prefix prefix =
-                        AnnotationUtils.getElementValueEnum(metaAnno, "prefix", Prefix.class, true);
+                        AnnotationUtils.getElementValueEnum(
+                                metaAnno, unitsMultiplePrefixElement, Prefix.class, Prefix.one);
 
                 // Build a base unit annotation with the prefix applied
                 result =
