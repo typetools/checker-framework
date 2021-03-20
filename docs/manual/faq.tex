@@ -85,7 +85,7 @@ fully-qualified type name?
 \\ \ref{faq-classfile-annotations}: Why do \<.class> files contain more annotations than the source code?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
 \\ \ref{faq-cf-is-slow}: The Checker Framework runs too slowly
-
+\\ \ref{faq-version-number}: What does the Checker Framework version number mean?
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs, SpotBugs, or Error Prone)?
@@ -1642,6 +1642,36 @@ Here are some reasons that the Checker Framework is slow.
   flow graph multiple times, and it makes multiple passes over the program
   rather than just one.
 \end{itemize}
+
+
+\subsectionAndLabel{What does the Checker Framework version number mean?}{faq-version-number}
+
+As explained in Section~\ref{version-number}, a change in the middle number
+of the Checker Framework version string indicates a possible
+incompatibility.
+
+Another policy is "semantic versioning" as defined at
+\url{https://semver.org/}.  It is also a fine version number policy, with
+its own advantages and disadvantages.  It is a proposal, not a standard nor
+an official definition.  Some projects follow it, and many projects do not
+follow it; even those that follow it often do so loosely.  It does not
+define key terms, such as "backwards compatible bug fixes".  It includes an
+escape hatch, ``Semantic Versioning is all about conveying meaning by how
+the version number changes.''
+
+% The API also includes the Annotation File Utilities.
+If the Checker Framework strictly used semver.org's difinition, every
+release would be a new major version, and the current version string would
+be
+% 70 releases as of the beginning of 2021.
+around version 100.0.0.
+Always incrementing the major version number would not convey meaning to
+its users --- for example, it would not indicate major new functionality or
+important behavior differences.
+
+% The Checker Framework has over 10,000 methods in its API, xand most users
+% depend on its external behavior which is also complex.  The Checker
+% Framework is released frequently.
 
 
 \sectionAndLabel{Relationship to other tools}{faq-other-tools-section}

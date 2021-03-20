@@ -228,7 +228,7 @@ do
         # delete it right away.
         if [ "${SKIP_OR_DELETE_UNUSABLE}" = "delete" ]; then
           echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-          rm -rf "${REPO_NAME_HASH}"
+          rm -rf "./${REPO_NAME_HASH}"
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
@@ -274,8 +274,9 @@ else
     listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
+    # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java".
     # shellcheck disable=SC2046
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-J" | sort | uniq > "${listpath}"
 
     cd "${SCRIPTDIR}/.do-like-javac" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"

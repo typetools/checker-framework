@@ -74,8 +74,7 @@ public class ReflectiveEvaluator {
         List<Object[]> listOfArguments;
         if (allArgValues == null) {
             // Method does not have arguments
-            listOfArguments = new ArrayList<>();
-            listOfArguments.add(null);
+            listOfArguments = Collections.singletonList(null);
         } else {
             // Find all possible argument sets
             listOfArguments = cartesianProduct(allArgValues, allArgValues.size() - 1);
@@ -85,10 +84,11 @@ public class ReflectiveEvaluator {
             int numberOfParameters = method.getParameterTypes().length;
             listOfArguments =
                     SystemUtil.mapList(
-                            args -> normalizeVararg(args, numberOfParameters), listOfArguments);
+                            (Object[] args) -> normalizeVararg(args, numberOfParameters),
+                            listOfArguments);
         }
 
-        List<Object> results = new ArrayList<>();
+        List<Object> results = new ArrayList<>(listOfArguments.size());
         for (Object[] arguments : listOfArguments) {
             for (Object receiver : receiverValues) {
                 try {
@@ -323,14 +323,13 @@ public class ReflectiveEvaluator {
         List<Object[]> listOfArguments;
         if (argValues == null) {
             // Method does not have arguments
-            listOfArguments = new ArrayList<>();
-            listOfArguments.add(null);
+            listOfArguments = Collections.singletonList(null);
         } else {
             // Find all possible argument sets
             listOfArguments = cartesianProduct(argValues, argValues.size() - 1);
         }
 
-        List<Object> results = new ArrayList<>();
+        List<Object> results = new ArrayList<>(listOfArguments.size());
         for (Object[] arguments : listOfArguments) {
             try {
                 results.add(constructor.newInstance(arguments));

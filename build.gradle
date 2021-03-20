@@ -98,8 +98,7 @@ allprojects {
     group 'org.checkerframework'
     // Increment the minor version (second number) rather than just the patch
     // level (third number) if:
-    //   * any new checkers have been added,
-    //   * the patch level is 9 (keep the patch level as a single digit), or
+    //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
     version '3.11.1-SNAPSHOT'
 
@@ -377,7 +376,7 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
-    List<String> args = new ArrayList<>();
+    List<String> args = new ArrayList<>(javaFiles.size());
     for (File f : javaFiles) {
         args += project(projectName).relativePath(f)
     }

@@ -171,9 +171,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
             List<? extends ExpressionTree> initializers,
             AnnotatedTypeMirror.AnnotatedArrayType type) {
 
-        List<Integer> array = new ArrayList<>();
-        array.add(initializers.size());
-        type.replaceAnnotation(atypeFactory.createArrayLenAnnotation(array));
+        type.replaceAnnotation(
+                atypeFactory.createArrayLenAnnotation(
+                        Collections.singletonList(initializers.size())));
 
         if (type.getComponentType().getKind() != TypeKind.ARRAY) {
             return;
@@ -463,7 +463,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
         if (arguments.isEmpty()) {
             argValues = null;
         } else {
-            argValues = new ArrayList<>();
+            argValues = new ArrayList<>(arguments.size());
             for (ExpressionTree argument : arguments) {
                 AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
                 List<?> values = getValues(argType, argType.getUnderlyingType());
@@ -515,7 +515,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
         if (arguments.isEmpty()) {
             argValues = null;
         } else {
-            argValues = new ArrayList<>();
+            argValues = new ArrayList<>(arguments.size());
             for (ExpressionTree argument : arguments) {
                 AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
                 List<?> values = getValues(argType, argType.getUnderlyingType());

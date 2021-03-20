@@ -7,10 +7,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -244,9 +242,12 @@ public class ControlFlowGraph implements UniqueId {
                 worklist.removeLast();
             } else {
                 visited.add(cur);
-                Collection<Block> successors = cur.getSuccessors();
-                successors.removeAll(visited);
-                worklist.addAll(successors);
+
+                for (Block b : cur.getSuccessors()) {
+                    if (!visited.contains(b)) {
+                        worklist.add(b);
+                    }
+                }
             }
         }
 
@@ -311,11 +312,8 @@ public class ControlFlowGraph implements UniqueId {
 
     @Override
     public String toString() {
-        Map<String, Object> args = new HashMap<>();
-        args.put("verbose", true);
-
         CFGVisualizer<?, ?, ?> viz = new StringCFGVisualizer<>();
-        viz.init(args);
+        viz.init(Collections.singletonMap("verbose", true));
         Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
         viz.shutdown();
         if (res == null) {

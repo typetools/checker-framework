@@ -67,7 +67,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 CalledMethods.class,
                 CalledMethodsBottom.class,
                 CalledMethodsPredicate.class);
-        this.builderFrameworkSupports = new ArrayList<>();
+        this.builderFrameworkSupports = new ArrayList<>(2);
         String[] disabledFrameworks;
         if (checker.hasOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS)) {
             disabledFrameworks =

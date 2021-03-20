@@ -901,10 +901,10 @@ public class AnnotatedTypes {
                             + " Arguments: "
                             + trees);
         }
-        List<AnnotatedTypeMirror> types = new ArrayList<>();
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                 atypeFactory.getVisitorState().getAssignmentContext();
 
+        List<AnnotatedTypeMirror> types = new ArrayList<>();
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);
