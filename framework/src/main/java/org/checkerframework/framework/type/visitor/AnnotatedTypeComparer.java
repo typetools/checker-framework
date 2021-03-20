@@ -35,7 +35,7 @@ public abstract class AnnotatedTypeComparer<R>
      * Supplies the logic to reduce on how to combine two values of type {@code R}.
      *
      * @param r1 the first value
-     * @param r1 the second value
+     * @param r2 the second value
      * @return the result of combining the two values
      */
     protected abstract R combineRs(R r1, R r2);
