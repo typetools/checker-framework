@@ -23,7 +23,9 @@ public abstract class AnnotatedTypeComparer<R>
     /** Compares two annotated type mirrors. */
     protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
 
-    /** Supplies the logic to reduce on how to combine two R objects. */
+    // The reason for this inelegant method name is that subtype AnnotatedTypeCombiner has a
+    // `combine` method that means something else.
+    /** Supplies the logic to reduce on how to combine two objects of type {@code R}. */
     protected abstract R combineRs(R r1, R r2);
 
     protected R scan(
