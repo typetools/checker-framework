@@ -180,6 +180,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The state of the visitor. */
     protected final VisitorState visitorState;
 
+    /** The FieldInvariant.field argument/element. */
+    private final ExecutableElement fieldInvariantFieldElement;
+    /** The FieldInvariant.qualifier argument/element. */
+    private final ExecutableElement fieldInvariantQualifierElement;
+
     /**
      * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
      * initialized in the postInit.
@@ -528,6 +533,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
 
         this.debugStubParser = checker.hasOption("stubDebug");
+
+        fieldInvariantFieldElement =
+                TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
+        fieldInvariantQualifierElement =
+                TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
     }
 
     /**
@@ -1618,9 +1628,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        fieldInvarAnno, fieldInvariantFieldElement, String.class);
         List<@CanonicalName Name> classes =
-                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
+                AnnotationUtils.getElementValueClassNames(
+                        fieldInvarAnno, fieldInvariantQualifierElement);
         List<AnnotationMirror> qualifiers =
                 SystemUtil.mapList(
                         (Name name) ->
