@@ -2684,7 +2684,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         ensuresQualifierIfResultElement,
                         /*default is irrelevant*/ false);
             } else {
-                // It's a checker-specific annotation such as @MinLenIf
+                // It's a checker-specific annotation such as @EnsuresMinLenIf
                 return AnnotationUtils.getElementValue(
                         contractAnnotation, "result", Boolean.class, false);
             }
