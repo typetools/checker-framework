@@ -812,8 +812,7 @@ public class DependentTypesHelper {
 
     /**
      * Reports an expression.unparsable.type.invalid error for each Java expression in the given
-     * type that is an expression error string (as specified by {@link
-     * DependentTypesError#isExpressionError}).
+     * type that is an expression error string.
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -871,6 +870,8 @@ public class DependentTypesHelper {
         List<DependentTypesError> errors = new ArrayList<>();
 
         for (String element : getListOfExpressionElements(am)) {
+            // It's always an array, not a single value, because @JavaExpression may only be written
+            // on an annotation element of type String[].
             List<String> value =
                     AnnotationUtils.getElementValueArray(am, element, String.class, false);
             for (String v : value) {
@@ -884,7 +885,7 @@ public class DependentTypesHelper {
 
     /**
      * Reports a flowexpr.parse.error error for each Java expression in the given annotation that is
-     * an expression error string (as specified by {@link DependentTypesError#isExpressionError}).
+     * an expression error string.
      *
      * @param annotation annotation to check
      * @param errorTree location at which to issue errors
@@ -905,9 +906,8 @@ public class DependentTypesHelper {
 
     /**
      * Reports an expression.unparsable.type.invalid error for each Java expression in the given
-     * class declaration AnnotatedTypeMirror that is an expression error string (as specified by
-     * {@link DependentTypesError#isExpressionError}). Note that this reports errors in the class
-     * declaration itself, not the body or extends/implements clauses.
+     * class declaration AnnotatedTypeMirror that is an expression error string. Note that this
+     * reports errors in the class declaration itself, not the body or extends/implements clauses.
      *
      * @param classTree class to check
      * @param type annotated type of the class
@@ -924,8 +924,7 @@ public class DependentTypesHelper {
 
     /**
      * Reports an expression.unparsable.type.invalid error for each Java expression in the method
-     * declaration AnnotatedTypeMirror that is an expression error string (as specified by {@link
-     * DependentTypesError#isExpressionError}).
+     * declaration AnnotatedTypeMirror that is an expression error string.
      *
      * @param methodDeclTree method to check
      * @param type annotated type of the method
@@ -952,8 +951,7 @@ public class DependentTypesHelper {
 
     /**
      * Reports an expression.unparsable.type.invalid error for each Java expression in the given
-     * type variables that is an expression error string (as specified by {@link
-     * DependentTypesError#isExpressionError}).
+     * type variables that is an expression error string.
      *
      * @param node a method declaration
      * @param methodType annotated type of the method

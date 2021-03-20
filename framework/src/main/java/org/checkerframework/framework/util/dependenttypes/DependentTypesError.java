@@ -12,9 +12,9 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * Helper class for creating dependent type annotation error strings.
  *
- * <p>IMPORTANT: This is not an Exception. It is a regular class that is returned, not thrown. The
- * errors are not thrown so that they are only reported once rather than every time the annotation
- * is parsed. See {@link DependentTypesHelper} for more details.
+ * <p><b>IMPORTANT:</b> This is not an Exception. It is a regular class that is returned, not
+ * thrown. The errors are not thrown so that they are only reported once rather than every time the
+ * annotation is parsed. See {@link DependentTypesHelper} for more details.
  */
 public class DependentTypesError {
 
