@@ -121,7 +121,7 @@ public class ContractsFromMethod {
         // Check for a framework-defined wrapper around contract annotations.
         // The result is RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
         AnnotationMirror frameworkContractListAnno =
-                factory.getDeclAnnotation(executableElement, kind.frameworkContractsClass);
+                factory.getDeclAnnotation(executableElement, kind.frameworkContractListClass);
         if (frameworkContractListAnno != null) {
             List<AnnotationMirror> frameworkContractAnnoList =
                     factory.getContractListValues(frameworkContractListAnno);

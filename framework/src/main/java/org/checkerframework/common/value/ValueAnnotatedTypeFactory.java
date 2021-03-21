@@ -1230,6 +1230,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * annotation so the argument is null.
      *
      * @param stringAnno a {@code @StringVal} annotation, or null
+     * @return the possible values, deduplicated and sorted
      */
     public static List<String> getStringValues(AnnotationMirror stringAnno) {
         if (stringAnno == null) {

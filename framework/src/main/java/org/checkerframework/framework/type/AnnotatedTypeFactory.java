@@ -211,6 +211,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The RequiresQualifier.List.value field/element. */
     ExecutableElement requiresQualifierListValueElement;
 
+    /** The RequiresQualifier type. */
+    TypeMirror requiresQualifierTM;
+    /** The RequiresQualifier.List type. */
+    TypeMirror requiresQualifierListTM;
+    /** The EnsuresQualifier type. */
+    TypeMirror ensuresQualifierTM;
+    /** The EnsuresQualifier.List type. */
+    TypeMirror ensuresQualifierListTM;
+    /** The EnsuresQualifierIf type. */
+    TypeMirror ensuresQualifierIfTM;
+    /** The EnsuresQualifierIf.List type. */
+    TypeMirror ensuresQualifierIfListTM;
+
     /**
      * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
      * initialized in the postInit.
@@ -583,6 +596,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
         requiresQualifierListValueElement =
                 TreeUtils.getMethod(RequiresQualifier.List.class, "value", 0, processingEnv);
+
+        requiresQualifierTM =
+                ElementUtils.getTypeElement(processingEnv, RequiresQualifier.class).asType();
+        requiresQualifierListTM =
+                ElementUtils.getTypeElement(processingEnv, RequiresQualifier.List.class).asType();
+        ensuresQualifierTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifier.class).asType();
+        ensuresQualifierListTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifier.List.class).asType();
+        ensuresQualifierIfTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.class).asType();
+        ensuresQualifierIfListTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.List.class).asType();
     }
 
     /**
@@ -4876,6 +4902,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return false;
     }
 
+    // The following two methods are complex enough that maybe
+    //   getElementValueArray(contractAnno, "expression", String.class, false)
+    // is equally or more efficient.  I'm not sure, though.
+
     /**
      * Get the {@code expression} field/element of the given contract annotation.
      *
@@ -4884,14 +4914,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the {@code expression} field/element of the given annotation
      */
     public List<String> getContractExpressions(AnnotationMirror contractAnno) {
-        Class<?> clazz = contractAnno.getClass();
-        if (clazz == RequiresQualifier.class) {
+        DeclaredType annoType = contractAnno.getAnnotationType();
+        if (types.isSameType(annoType, requiresQualifierTM)) {
             return AnnotationUtils.getElementValueArray(
                     contractAnno, requiresQualifierExpressionElement, String.class);
-        } else if (clazz == EnsuresQualifier.class) {
+        } else if (types.isSameType(annoType, ensuresQualifierTM)) {
             return AnnotationUtils.getElementValueArray(
                     contractAnno, ensuresQualifierExpressionElement, String.class);
-        } else if (clazz == EnsuresQualifierIf.class) {
+        } else if (types.isSameType(annoType, ensuresQualifierIfTM)) {
             return AnnotationUtils.getElementValueArray(
                     contractAnno, ensuresQualifierIfExpressionElement, String.class);
         } else {
@@ -4907,14 +4937,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the {@code value} field/element of the given annotation
      */
     public List<AnnotationMirror> getContractListValues(AnnotationMirror contractListAnno) {
-        Class<?> clazz = contractListAnno.getClass();
-        if (clazz == RequiresQualifier.List.class) {
+        DeclaredType annoType = contractListAnno.getAnnotationType();
+        if (types.isSameType(annoType, requiresQualifierListTM)) {
             return AnnotationUtils.getElementValueArray(
                     contractListAnno, requiresQualifierListValueElement, AnnotationMirror.class);
-        } else if (clazz == EnsuresQualifier.List.class) {
+        } else if (types.isSameType(annoType, ensuresQualifierListTM)) {
             return AnnotationUtils.getElementValueArray(
                     contractListAnno, ensuresQualifierListValueElement, AnnotationMirror.class);
-        } else if (clazz == EnsuresQualifierIf.List.class) {
+        } else if (types.isSameType(annoType, ensuresQualifierIfListTM)) {
             return AnnotationUtils.getElementValueArray(
                     contractListAnno, ensuresQualifierIfListValueElement, AnnotationMirror.class);
         } else {

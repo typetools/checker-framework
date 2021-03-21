@@ -74,7 +74,7 @@ public abstract class Contract {
         /** The built-in framework qualifier for this contract. */
         public final Class<? extends Annotation> frameworkContractClass;
         /** The built-in framework qualifier for repeated occurrences of this contract. */
-        public final Class<? extends Annotation> frameworkContractsClass;
+        public final Class<? extends Annotation> frameworkContractListClass;
         /**
          * The name of the element that contains the Java expressions on which a contract is
          * enforced.
@@ -87,8 +87,8 @@ public abstract class Contract {
          * @param errorKey used for constructing error messages
          * @param metaAnnotation the meta-annotation identifying annotations of this kind
          * @param frameworkContractClass the built-in framework qualifier for this contract
-         * @param frameworkContractsClass the built-in framework qualifier for repeated occurrences
-         *     of this contract
+         * @param frameworkContractListClass the built-in framework qualifier for repeated
+         *     occurrences of this contract
          * @param expressionElementName the name of the element that contains the Java expressions
          *     on which a contract is enforced
          */
@@ -96,12 +96,12 @@ public abstract class Contract {
                 String errorKey,
                 Class<? extends Annotation> metaAnnotation,
                 Class<? extends Annotation> frameworkContractClass,
-                Class<? extends Annotation> frameworkContractsClass,
+                Class<? extends Annotation> frameworkContractListClass,
                 String expressionElementName) {
             this.errorKey = errorKey;
             this.metaAnnotation = metaAnnotation;
             this.frameworkContractClass = frameworkContractClass;
-            this.frameworkContractsClass = frameworkContractsClass;
+            this.frameworkContractListClass = frameworkContractListClass;
             this.expressionElementName = expressionElementName;
         }
     }
