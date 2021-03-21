@@ -126,7 +126,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     /** The Covariant.value field/element. */
     ExecutableElement covariantValueElement;
 
-    /** Creates a DefaultTypeHierarchy. */
+    /**
+     * Creates a DefaultTypeHierarchy.
+     *
+     * @param checker the type-checker that is associated with this
+     * @param qualifierHierarchy the qualiifer hierarchy that is associated with this
+     * @param ignoreRawTypes whether to ignore raw types
+     * @param invariantArrayComponents whether to make array subtyping invariant with respect to
+     *     array component types
+     */
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
             final QualifierHierarchy qualifierHierarchy,
