@@ -303,6 +303,7 @@ public final class RegexUtil {
     @SideEffectFree
     // The return type annotation is a conservative bound, but is irrelevant because this method is
     // special-cased by RegexAnnotatedTypeFactory.
+    // The parameter lacks `@Regex` because the point of this method is to suppress warnings.
     public static @Regex String asRegex(String s) {
         return asRegex(s, 0);
     }
@@ -321,8 +322,9 @@ public final class RegexUtil {
      */
     @SuppressWarnings("regex") // RegexUtil
     @SideEffectFree
-    // The return type annotation is irrelevant; this method is special-cased by
-    // RegexAnnotatedTypeFactory.
+    // The return type annotation is a conservative bound, but is irrelevant because this method is
+    // special-cased by RegexAnnotatedTypeFactory.
+    // The parameter lacks `@Regex` because the point of this method is to suppress warnings.
     public static @Regex String asRegex(String s, int groups) {
         try {
             Pattern p = Pattern.compile(s);
@@ -351,14 +353,17 @@ public final class RegexUtil {
      * @return its argument
      * @throws Error if argument is not a regex with the specified characteristics
      */
-    @SuppressWarnings("regex")
+    @SuppressWarnings("regex") // RegexUtil
     @SideEffectFree
-    // The return type annotation is irrelevant; this method is special-cased by
-    // RegexAnnotatedTypeFactory.
+    // The return type annotation is a conservative bound, but is irrelevant because this method is
+    // special-cased by RegexAnnotatedTypeFactory.
+    // The parameter lacks `@Regex` because the point of this method is to suppress warnings.
     public static @Regex String asRegex(String s, int groups, int... nonNullGroups) {
         try {
             int actualGroups = getGroupCount(Pattern.compile(s));
-            if (groups > actualGroups) throw new Error(regexErrorMessage(s, groups, actualGroups));
+            if (groups > actualGroups) {
+                throw new Error(regexErrorMessage(s, groups, actualGroups));
+            }
             List<Integer> actualNonNullGroups = getNonNullGroups(s);
             int failingGroup = -1;
             for (int e : nonNullGroups) {
@@ -410,8 +415,7 @@ public final class RegexUtil {
                 + s
                 + "\", call to group("
                 + nullableGroup
-                + ") can return a possibly-null string "
-                + " but is expected to return a non-null string.";
+                + ") might return null, but is expected to return a non-null string.";
     }
 
     /**
@@ -430,12 +434,12 @@ public final class RegexUtil {
      * Returns a list of groups other than 0, that are guaranteed to be non-null given that the
      * regular expression matches a target String.
      *
-     * @param regexp regular expression to be analysed; must be a legal regex
+     * @param regexp regular expression to be analysed; must be a legal regular expression
      * @return a {@code List} of groups that are guaranteed to match some part of a string that
      *     matches {@code regexp}
      * @throws Error if the argument is not a regex
      */
-    public static List<Integer> getNonNullGroups(String regexp) {
+    public static List<Integer> getNonNullGroups(@Regex String regexp) {
         int groups = 0;
         try {
             Pattern p = Pattern.compile(regexp);
@@ -521,7 +525,7 @@ public final class RegexUtil {
                 // track
                 // of character classes still open.
                 int nestingLevel = 1;
-                // the loop starts from i+2 because the character class cannot be empty. "[]]" is a
+                // The loop starts from i+2 because the character class cannot be empty. "[]]" is a
                 // valid regex.
                 for (i = i + 1; i < length && nestingLevel > 0; i++) {
                     // A nested character class. Increment nestingLevel.
@@ -529,8 +533,7 @@ public final class RegexUtil {
                         nestingLevel += 1;
                     }
                     // Either a nested character class being closed or a literal ']' (when
-                    // immediately
-                    // followed by an opening of a character class).
+                    // immediately followed by an opening of a character class).
                     else if (regexp.charAt(i) == ']') {
                         // If the first character in a character class is "]", it is treated
                         // literally and does not close the character class.
@@ -539,8 +542,7 @@ public final class RegexUtil {
                         }
                     } else if (regexp.charAt(i) == '\\') {
                         // If a '\' is encountered, it may escape a single character or may
-                        // represent a
-                        // quote. Traverse till the end of the escape construct.
+                        // represent a quote. Traverse till the end of the escape construct.
                         i = getLastIndexOfEscapeConstruct(regexp, i);
                     }
                 }
