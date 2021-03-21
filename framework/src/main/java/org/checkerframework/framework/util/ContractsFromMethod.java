@@ -119,12 +119,12 @@ public class ContractsFromMethod {
         result.addAll(getContract(kind, frameworkContractAnno, clazz));
 
         // Check for a framework-defined wrapper around contract annotations.
-        AnnotationMirror frameworkContractAnnos =
+        // The result is RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
+        AnnotationMirror frameworkContractListAnno =
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractsClass);
-        if (frameworkContractAnnos != null) {
+        if (frameworkContractListAnno != null) {
             List<AnnotationMirror> frameworkContractAnnoList =
-                    AnnotationUtils.getElementValueArray(
-                            frameworkContractAnnos, "value", AnnotationMirror.class, false);
+                    factory.getContractListValues(frameworkContractListAnno);
             for (AnnotationMirror a : frameworkContractAnnoList) {
                 result.addAll(getContract(kind, a, clazz));
             }
@@ -180,9 +180,7 @@ public class ContractsFromMethod {
             return Collections.emptySet();
         }
         Set<T> result = new LinkedHashSet<>();
-        List<String> expressions =
-                AnnotationUtils.getElementValueArray(
-                        contractAnnotation, "expression", String.class, false);
+        List<String> expressions = factory.getContractExpressions(contractAnnotation);
         Collections.sort(expressions);
         Boolean annoResult =
                 AnnotationUtils.getElementValueOrNull(
