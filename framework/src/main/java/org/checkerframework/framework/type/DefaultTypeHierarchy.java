@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -23,6 +24,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -121,7 +123,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      */
     protected final StructuralEqualityVisitHistory areEqualVisitHistory;
 
-    /** Creates a DefaultTypeHierarchy. */
+    /** The Covariant.value field/element. */
+    ExecutableElement covariantValueElement;
+
+    /**
+     * Creates a DefaultTypeHierarchy.
+     *
+     * @param checker the type-checker that is associated with this
+     * @param qualifierHierarchy the qualiifer hierarchy that is associated with this
+     * @param ignoreRawTypes whether to ignore raw types
+     * @param invariantArrayComponents whether to make array subtyping invariant with respect to
+     *     array component types
+     */
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
             final QualifierHierarchy qualifierHierarchy,
@@ -135,6 +148,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
         this.ignoreRawTypes = ignoreRawTypes;
         this.invariantArrayComponents = invariantArrayComponents;
+
+        covariantValueElement =
+                TreeUtils.getMethod(
+                        Covariant.class, "value", 0, checker.getProcessingEnvironment());
     }
 
     /**
@@ -501,14 +518,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         }
 
         final TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();
-        AnnotationMirror covam =
+        AnnotationMirror covariantAnno =
                 supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
 
         List<Integer> covariantArgIndexes =
-                (covam == null)
+                (covariantAnno == null)
                         ? null
                         : AnnotationUtils.getElementValueArray(
-                                covam, "value", Integer.class, false);
+                                covariantAnno, covariantValueElement, Integer.class);
 
         for (int i = 0; i < supertypeTypeArgs.size(); i++) {
             final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
