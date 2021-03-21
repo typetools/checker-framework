@@ -137,22 +137,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The from() element/field of an @IntRange annotation. */
     protected final ExecutableElement intRangeFromElement =
             TreeUtils.getMethod(IntRange.class, "from", 0, processingEnv);
-
     /** The to() element/field of an @IntRange annotation. */
     protected final ExecutableElement intRangeToElement =
             TreeUtils.getMethod(IntRange.class, "to", 0, processingEnv);
-
     /** The from() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeFromElement =
             TreeUtils.getMethod(ArrayLenRange.class, "from", 0, processingEnv);
-
     /** The to() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeToElement =
             TreeUtils.getMethod(ArrayLenRange.class, "to", 0, processingEnv);
-
     /** The value() element/field of a @MinLen annotation. */
     protected final ExecutableElement minLenValueElement =
             TreeUtils.getMethod(MinLen.class, "value", 0, processingEnv);
+    /** The field() element/field of a @MinLenFieldInvariant annotation. */
+    protected final ExecutableElement minLenFieldInvariantFieldElement =
+            TreeUtils.getMethod(MinLenFieldInvariant.class, "field", 0, processingEnv);
+    /** The minLen() element/field of a @MinLenFieldInvariant annotation. */
+    protected final ExecutableElement minLenFieldInvariantMinLenElement =
+            TreeUtils.getMethod(MinLenFieldInvariant.class, "minLen", 0, processingEnv);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
@@ -313,10 +315,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        fieldInvarAnno, minLenFieldInvariantFieldElement, String.class);
         List<Integer> minlens =
                 AnnotationUtils.getElementValueArray(
-                        fieldInvarAnno, "minLen", Integer.class, false);
+                        fieldInvarAnno, minLenFieldInvariantMinLenElement, Integer.class);
         List<AnnotationMirror> qualifiers =
                 SystemUtil.mapList(
                         (Integer minlen) ->

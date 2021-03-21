@@ -181,7 +181,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final VisitorState visitorState;
 
     /** The FieldInvariant.field argument/element. */
-    @SuppressWarnings("UnusedVariable") // TEMPORARY
     private final ExecutableElement fieldInvariantFieldElement;
     /** The FieldInvariant.qualifier argument/element. */
     @SuppressWarnings("UnusedVariable") // TEMPORARY
@@ -1630,7 +1629,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        fieldInvarAnno, fieldInvariantFieldElement, String.class);
         List<@CanonicalName Name> classes =
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
         List<AnnotationMirror> qualifiers =
