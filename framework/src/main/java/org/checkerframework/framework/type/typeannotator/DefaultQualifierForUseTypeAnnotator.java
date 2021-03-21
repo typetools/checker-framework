@@ -132,7 +132,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
      *     annotation classes
      * @return the set of qualifiers supported by this type system from the value element of {@code
      *     annotationMirror}
-     * @deprecated use {@link supportedAnnosFromAnnotationMirror(List)}
+     * @deprecated use {@link #supportedAnnosFromAnnotationMirror(List)}
      */
     @Deprecated // 2021-03-21
     protected final AnnotationMirrorSet supportedAnnosFromAnnotationMirror(
