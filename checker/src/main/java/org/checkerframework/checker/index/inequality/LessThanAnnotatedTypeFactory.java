@@ -212,6 +212,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
      * @param expression the expression whose minimum value to retrieve
      * @param tree where to determine the value
      * @param path the path to {@code tree}
+     * @return the minimum value of {@code expression} at {@code tree}
      */
     private long getMinValueFromString(String expression, Tree tree, TreePath path) {
         ValueAnnotatedTypeFactory valueAtypeFactory = getValueAnnotatedTypeFactory();

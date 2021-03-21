@@ -173,6 +173,15 @@ public class ValueCheckerUtils {
         return bools;
     }
 
+    /**
+     * Convert the {@code value} argument/element of a {@code @StringVal} annotation into a list.
+     *
+     * @param anno a {@code @StringVal} annotation
+     * @param newClass if char[].class, the returned list is a {@code List<char[]>}
+     * @param atypeFactory the type factory, used for obtaining fields/elements from annotations
+     * @return the {@code value} of a {@code @StringVal} annotation, as a {@code List<String>} or a
+     *     {@code List<char[]>}
+     */
     private static List<?> convertStringVal(
             AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
         List<String> strings = atypeFactory.getStringValues(anno);
@@ -197,6 +206,15 @@ public class ValueCheckerUtils {
         return NumberUtils.castNumbers(newType, longs);
     }
 
+    /**
+     * Convert the {@code value} argument/element of a @StringVal annotation into a list.
+     *
+     * @param anno a {@code @DoubleVal} annotation
+     * @param newClass the component type for the returned list
+     * @param newType the component type for the returned list
+     * @param atypeFactory the type factory, used for obtaining fields/elements from annotations
+     * @return the {@code value} of a {@code @DoubleVal} annotation
+     */
     private static List<?> convertDoubleVal(
             AnnotationMirror anno,
             Class<?> newClass,
