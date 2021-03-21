@@ -3,7 +3,6 @@
 package org.checkerframework.checker.regex.util;
 
 import java.util.Arrays;
-import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -82,12 +81,18 @@ public final class RegexUtilTest {
         String s4 = "([abc\\Qwww\\E])(abc)?";
         String s5 = "[(abc]";
         String s6 = "1) first point";
+        String s7 = "a(b(c)d)f";
+        String s8 = "a(b(c)d|e)f";
+        String s9 = "a(e|b(c)d)f";
 
-        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s1));
+        Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s1));
         Assert.assertEquals(Arrays.asList(2, 3), RegexUtil.getNonNullGroups(s2));
-        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s3));
-        Assert.assertEquals(Collections.singletonList(1), RegexUtil.getNonNullGroups(s4));
-        Assert.assertEquals(Collections.emptyList(), RegexUtil.getNonNullGroups(s5));
+        Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s3));
+        Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s4));
+        Assert.assertEquals(Arrays.asList(), RegexUtil.getNonNullGroups(s5));
         Assert.assertThrows(Error.class, () -> RegexUtil.getNonNullGroups(s6));
+        Assert.assertEquals(Arrays.asList(1, 2), RegexUtil.getNonNullGroups(s7));
+        Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s8));
+        Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s9));
     }
 }
