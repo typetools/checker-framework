@@ -40,6 +40,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -686,7 +687,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             sameLenSequences = Collections.singletonList(sequenceJe.toString());
         } else {
             sameLenSequences =
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
+                    AnnotationUtils.getElementValueArray(
+                            sameLenAnno, atypeFactory.sameLenValueElement, String.class);
             if (!sameLenSequences.contains(sequenceJe.toString())) {
                 sameLenSequences.add(sequenceJe.toString());
             }

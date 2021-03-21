@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexBottom;
@@ -23,6 +24,7 @@ import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The Search Index Checker is used to help type the results of calls to the JDK's binary search
@@ -36,6 +38,9 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @{@link SearchIndexBottom} annotation. */
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
+
+    protected ExecutableElement searchIndexForValueElement =
+            TreeUtils.getMethod(SearchIndexFor.class, "value", 0, processingEnv);
 
     /** Create a new SearchIndexAnnotatedTypeFactory. */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
