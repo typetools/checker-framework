@@ -182,12 +182,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final VisitorState visitorState;
 
     /** The FieldInvariant.field argument/element. */
-    private final ExecutableElement fieldInvariantFieldElement;
+    private final ExecutableElement fieldInvariantFieldElement =
+            TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
     /** The FieldInvariant.qualifier argument/element. */
     @SuppressWarnings("UnusedVariable") // TEMPORARY
-    private final ExecutableElement fieldInvariantQualifierElement;
+    private final ExecutableElement fieldInvariantQualifierElement =
+            TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
     /** The AnnotatedFor.value argument/element. */
-    private final ExecutableElement annotatedForValueElement;
+    private final ExecutableElement annotatedForValueElement =
+            TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
 
     /**
      * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -537,13 +540,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
 
         this.debugStubParser = checker.hasOption("stubDebug");
-
-        fieldInvariantFieldElement =
-                TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
-        fieldInvariantQualifierElement =
-                TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
-        annotatedForValueElement =
-                TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
     }
 
     /**

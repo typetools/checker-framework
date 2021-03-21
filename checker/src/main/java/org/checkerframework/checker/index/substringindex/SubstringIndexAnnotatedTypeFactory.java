@@ -38,9 +38,11 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
 
     /** The SubstringIndexFor.value argument/element. */
-    public final ExecutableElement substringIndexForValueElement;
+    public final ExecutableElement substringIndexForValueElement =
+            TreeUtils.getMethod(SubstringIndexFor.class, "value", 0, processingEnv);
     /** The SubstringIndexFor.offset argument/element. */
-    public final ExecutableElement substringIndexForOffsetElement;
+    public final ExecutableElement substringIndexForOffsetElement =
+            TreeUtils.getMethod(SubstringIndexFor.class, "offset", 0, processingEnv);
 
     /**
      * A factory used for reading elements/fields from annotations.
@@ -59,11 +61,6 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
         IndexChecker indexChecker = (IndexChecker) checker.getUltimateParentChecker();
         indexChecker.setSubstringIndexAtypeFactory(this);
-
-        substringIndexForValueElement =
-                TreeUtils.getMethod(SubstringIndexFor.class, "value", 0, processingEnv);
-        substringIndexForOffsetElement =
-                TreeUtils.getMethod(SubstringIndexFor.class, "offset", 0, processingEnv);
 
         this.postInit();
     }

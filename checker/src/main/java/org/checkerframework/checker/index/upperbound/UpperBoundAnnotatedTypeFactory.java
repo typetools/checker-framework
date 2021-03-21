@@ -115,11 +115,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
     /** The LTLengthOf.value argument/element. */
-    /*package-private*/ final ExecutableElement ltLengthOfValueElement;
+    /*package-private*/ final ExecutableElement ltLengthOfValueElement =
+            TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
     /** The LTLengthOf.offset argument/element. */
-    /*package-private*/ final ExecutableElement ltLengthOfOffsetElement;
+    /*package-private*/ final ExecutableElement ltLengthOfOffsetElement =
+            TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
     /** The LTEqLengthOf.value argument/element. */
-    /*package-private*/ final ExecutableElement ltEqLengthOfValueElement;
+    /*package-private*/ final ExecutableElement ltEqLengthOfValueElement =
+            TreeUtils.getMethod(LTEqLengthOf.class, "value", 0, processingEnv);
 
     /**
      * A factory used for reading elements/fields from annotations.
@@ -142,11 +145,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         addAliasedTypeAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
         addAliasedTypeAnnotation(LengthOf.class, LTEqLengthOf.class, true);
         addAliasedTypeAnnotation(PolyIndex.class, POLY);
-
-        ltLengthOfValueElement = TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
-        ltLengthOfOffsetElement = TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
-        ltEqLengthOfValueElement =
-                TreeUtils.getMethod(LTEqLengthOf.class, "value", 0, processingEnv);
 
         imf = new IndexMethodIdentifier(this);
 

@@ -49,9 +49,11 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, UnknownClass.class);
 
     /** The ClassBound.value argument/element. */
-    private final ExecutableElement classBoundValueElement;
+    private final ExecutableElement classBoundValueElement =
+            TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);;
     /** The ClassVal.value argument/element. */
-    private final ExecutableElement classValValueElement;
+    private final ExecutableElement classValValueElement =
+            TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);;
 
     /**
      * Create a new ClassValAnnotatedTypeFactory.
@@ -60,9 +62,6 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-
-        classBoundValueElement = TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);
-        classValValueElement = TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);
 
         if (this.getClass() == ClassValAnnotatedTypeFactory.class) {
             this.postInit();
