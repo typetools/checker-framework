@@ -79,6 +79,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceIm
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
@@ -186,6 +187,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The FieldInvariant.qualifier argument/element. */
     @SuppressWarnings("UnusedVariable") // TEMPORARY
     private final ExecutableElement fieldInvariantQualifierElement;
+    /** The AnnotatedFor.value argument/element. */
+    private final ExecutableElement annotatedForValueElement;
 
     /**
      * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -540,6 +543,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
         fieldInvariantQualifierElement =
                 TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
+        annotatedForValueElement =
+                TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
     }
 
     /**
@@ -4815,13 +4820,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Does {@code anno}, which is an {@link org.checkerframework.framework.qual.AnnotatedFor}
      * annotation, apply to this checker?
      *
-     * @param anno an {@link org.checkerframework.framework.qual.AnnotatedFor} annotation
+     * @param annotatedForAnno an {@link AnnotatedFor} annotation
      * @return whether {@code anno} applies to this checker
      */
-    public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror anno) {
-        List<String> annoForCheckers =
-                AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-        for (String annoForChecker : annoForCheckers) {
+    public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror annotatedForAnno) {
+        List<String> annotatedForCheckers =
+                AnnotationUtils.getElementValueArray(
+                        annotatedForAnno, annotatedForValueElement, String.class);
+        for (String annoForChecker : annotatedForCheckers) {
             if (checker.getUpstreamCheckerNames().contains(annoForChecker)
                     || CheckerMain.matchesFullyQualifiedProcessor(
                             annoForChecker, checker.getUpstreamCheckerNames(), true)) {
