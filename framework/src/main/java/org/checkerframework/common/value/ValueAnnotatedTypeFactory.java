@@ -155,6 +155,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The minLen() element/field of a @MinLenFieldInvariant annotation. */
     protected final ExecutableElement minLenFieldInvariantMinLenElement =
             TreeUtils.getMethod(MinLenFieldInvariant.class, "minLen", 0, processingEnv);
+    /** The value() element/field of a @StringVal annotation. */
+    public final ExecutableElement stringValValueElement =
+            TreeUtils.getMethod(StringVal.class, "value", 0, processingEnv);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;

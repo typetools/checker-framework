@@ -311,7 +311,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (annotation == null) {
                 return null;
             }
-            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(
+                    annotation, valueATF.stringValValueElement, String.class);
         }
 
         // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
