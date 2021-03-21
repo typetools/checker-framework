@@ -2,6 +2,7 @@ package org.checkerframework.checker.index;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -13,11 +14,14 @@ import org.checkerframework.javacutil.TreeUtils;
 public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnotatedTypeFactory {
 
     /** The from() element/field of a @HasSubsequence annotation. */
-    protected final ExecutableElement hasSubsequenceFromElement;
+    protected final ExecutableElement hasSubsequenceFromElement =
+            TreeUtils.getMethod(HasSubsequence.class, "from", 0, processingEnv);
     /** The to() element/field of a @HasSubsequence annotation. */
-    protected final ExecutableElement hasSubsequenceToElement;
+    protected final ExecutableElement hasSubsequenceToElement =
+            TreeUtils.getMethod(HasSubsequence.class, "to", 0, processingEnv);
     /** The subsequence() element/field of a @HasSubsequence annotation. */
-    protected final ExecutableElement hasSubsequenceSubsequenceElement;
+    protected final ExecutableElement hasSubsequenceSubsequenceElement =
+            TreeUtils.getMethod(HasSubsequence.class, "subsequence", 0, processingEnv);
 
     /**
      * Creates a new BaseAnnotatedTypeFactoryForIndexChecker.
@@ -26,24 +30,6 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
      */
     public BaseAnnotatedTypeFactoryForIndexChecker(BaseTypeChecker checker) {
         super(checker);
-        hasSubsequenceFromElement =
-                TreeUtils.getMethod(
-                        "org.checkerframework.checker.index.qual.HasSubsequence",
-                        "from",
-                        0,
-                        processingEnv);
-        hasSubsequenceToElement =
-                TreeUtils.getMethod(
-                        "org.checkerframework.checker.index.qual.HasSubsequence",
-                        "to",
-                        0,
-                        processingEnv);
-        hasSubsequenceSubsequenceElement =
-                TreeUtils.getMethod(
-                        "org.checkerframework.checker.index.qual.HasSubsequence",
-                        "subsequence",
-                        0,
-                        processingEnv);
     }
 
     /**
