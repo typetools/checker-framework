@@ -46,10 +46,8 @@ public class FormatterTreeUtil {
 
     /** The value() element/field of an @Format annotation. */
     protected final ExecutableElement formatValueElement;
-
     /** The value() element/field of an @InvalidFormat annotation. */
     protected final ExecutableElement invalidFormatValueElement;
-
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
