@@ -74,6 +74,7 @@ import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
+import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
@@ -181,13 +182,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The state of the visitor. */
     protected final VisitorState visitorState;
 
+    /** The AnnotatedFor.value argument/element. */
+    private final ExecutableElement annotatedForValueElement;
     /** The FieldInvariant.field argument/element. */
     private final ExecutableElement fieldInvariantFieldElement;
     /** The FieldInvariant.qualifier argument/element. */
     @SuppressWarnings("UnusedVariable") // TEMPORARY
     private final ExecutableElement fieldInvariantQualifierElement;
-    /** The AnnotatedFor.value argument/element. */
-    private final ExecutableElement annotatedForValueElement;
+    /** The MethodVal.className argument/element. */
+    public final ExecutableElement methodValClassNameElement;
+    /** The MethodVal.methodName argument/element. */
+    public final ExecutableElement methodValMethodNameElement;
+    /** The MethodVal.params argument/element. */
+    public final ExecutableElement methodValParamsElement;
 
     /**
      * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -538,12 +545,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.debugStubParser = checker.hasOption("stubDebug");
 
+        annotatedForValueElement =
+                TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
         fieldInvariantFieldElement =
                 TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
         fieldInvariantQualifierElement =
                 TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
-        annotatedForValueElement =
-                TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
+        methodValClassNameElement =
+                TreeUtils.getMethod(MethodVal.class, "className", 0, processingEnv);
+        methodValMethodNameElement =
+                TreeUtils.getMethod(MethodVal.class, "methodName", 0, processingEnv);
+        methodValParamsElement = TreeUtils.getMethod(MethodVal.class, "params", 0, processingEnv);
     }
 
     /**
