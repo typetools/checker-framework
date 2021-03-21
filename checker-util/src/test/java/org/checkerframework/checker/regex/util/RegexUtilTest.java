@@ -84,6 +84,12 @@ public final class RegexUtilTest {
         String s7 = "a(b(c)d)f";
         String s8 = "a(b(c)d|e)f";
         String s9 = "a(e|b(c)d)f";
+        String s10 = "((b(c)d))";
+        String s11 = "((b(c)d))?";
+        String s12 = "((b(c)d)?)";
+        String s13 = "(?:(b(c)d))";
+        String s14 = "(?:(b(c)d))?";
+        String s15 = "(?:(b(c)d)?)";
 
         Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s1));
         Assert.assertEquals(Arrays.asList(2, 3), RegexUtil.getNonNullGroups(s2));
@@ -94,5 +100,11 @@ public final class RegexUtilTest {
         Assert.assertEquals(Arrays.asList(1, 2), RegexUtil.getNonNullGroups(s7));
         Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s8));
         Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s9));
+        Assert.assertEquals(Arrays.asList(1, 2, 3), RegexUtil.getNonNullGroups(s10));
+        Assert.assertEquals(Arrays.asList(), RegexUtil.getNonNullGroups(s11));
+        Assert.assertEquals(Arrays.asList(1), RegexUtil.getNonNullGroups(s12));
+        Assert.assertEquals(Arrays.asList(1, 2), RegexUtil.getNonNullGroups(s13));
+        Assert.assertEquals(Arrays.asList(), RegexUtil.getNonNullGroups(s14));
+        Assert.assertEquals(Arrays.asList(), RegexUtil.getNonNullGroups(s15));
     }
 }
