@@ -241,7 +241,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 }
                 break;
             case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-                List<String> regexes = getTypeFactory().getStringValues(anno);
+                List<String> regexes =
+                        AnnotationUtils.getElementValueArray(
+                                anno, atypeFactory.matchesRegexValueElement, String.class);
                 for (String regex : regexes) {
                     try {
                         Pattern.compile(regex);

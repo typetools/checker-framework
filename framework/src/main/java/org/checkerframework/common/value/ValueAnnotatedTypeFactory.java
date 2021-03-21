@@ -158,6 +158,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The value() element/field of a @IntVal annotation. */
     protected final ExecutableElement intValValueElement =
             TreeUtils.getMethod(IntVal.class, "value", 0, processingEnv);
+    /** The value() element/field of a @MatchesRegex annotation. */
+    public final ExecutableElement matchesRegexValueElement =
+            TreeUtils.getMethod(MatchesRegex.class, "value", 0, processingEnv);
     /** The value() element/field of a @MinLen annotation. */
     protected final ExecutableElement minLenValueElement =
             TreeUtils.getMethod(MinLen.class, "value", 0, processingEnv);

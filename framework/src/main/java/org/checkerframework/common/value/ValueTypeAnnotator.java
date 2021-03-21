@@ -140,7 +140,9 @@ class ValueTypeAnnotator extends TypeAnnotator {
                 anno, ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME)) {
             // If the annotation contains an invalid regex, replace it with bottom. ValueVisitor
             // will issue a warning where the annotation was written.
-            List<String> regexes = typeFactory.getStringValues(anno);
+            List<String> regexes =
+                    AnnotationUtils.getElementValueArray(
+                            anno, typeFactory.matchesRegexValueElement, String.class);
             for (String regex : regexes) {
                 try {
                     Pattern.compile(regex);

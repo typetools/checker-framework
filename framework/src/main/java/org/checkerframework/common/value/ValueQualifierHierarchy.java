@@ -72,7 +72,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 values = range;
                 break;
             case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-                List<@Regex String> regexes = atypeFactory.getStringValues(otherAnno);
+                List<@Regex String> regexes =
+                        AnnotationUtils.getElementValueArray(
+                                otherAnno, atypeFactory.matchesRegexValueElement, String.class);
                 values =
                         values.stream()
                                 .filter(value -> regexes.stream().anyMatch(value::matches))
@@ -477,7 +479,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME
                     + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 List<String> strings = atypeFactory.getStringValues(subAnno);
-                List<String> regexes = atypeFactory.getStringValues(superAnno);
+                List<String> regexes =
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, atypeFactory.matchesRegexValueElement, String.class);
                 return strings.stream()
                         .allMatch(string -> regexes.stream().anyMatch(string::matches));
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
