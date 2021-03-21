@@ -134,18 +134,30 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror BOOLEAN_FALSE =
             createBooleanAnnotation(Collections.singletonList(false));
 
-    /** The from() element/field of an @IntRange annotation. */
-    protected final ExecutableElement intRangeFromElement =
-            TreeUtils.getMethod(IntRange.class, "from", 0, processingEnv);
-    /** The to() element/field of an @IntRange annotation. */
-    protected final ExecutableElement intRangeToElement =
-            TreeUtils.getMethod(IntRange.class, "to", 0, processingEnv);
+    /** The value() element/field of an @ArrayLen annotation. */
+    protected final ExecutableElement arrayLenValueElement =
+            TreeUtils.getMethod(ArrayLen.class, "value", 0, processingEnv);
     /** The from() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeFromElement =
             TreeUtils.getMethod(ArrayLenRange.class, "from", 0, processingEnv);
     /** The to() element/field of an @ArrayLenRange annotation. */
     protected final ExecutableElement arrayLenRangeToElement =
             TreeUtils.getMethod(ArrayLenRange.class, "to", 0, processingEnv);
+    /** The value() element/field of a @BoolVal annotation. */
+    protected final ExecutableElement boolValValueElement =
+            TreeUtils.getMethod(BoolVal.class, "value", 0, processingEnv);
+    /** The value() element/field of a @DoubleVal annotation. */
+    protected final ExecutableElement doubleValValueElement =
+            TreeUtils.getMethod(DoubleVal.class, "value", 0, processingEnv);
+    /** The from() element/field of an @IntRange annotation. */
+    protected final ExecutableElement intRangeFromElement =
+            TreeUtils.getMethod(IntRange.class, "from", 0, processingEnv);
+    /** The to() element/field of an @IntRange annotation. */
+    protected final ExecutableElement intRangeToElement =
+            TreeUtils.getMethod(IntRange.class, "to", 0, processingEnv);
+    /** The value() element/field of a @IntVal annotation. */
+    protected final ExecutableElement intValValueElement =
+            TreeUtils.getMethod(IntVal.class, "value", 0, processingEnv);
     /** The value() element/field of a @MinLen annotation. */
     protected final ExecutableElement minLenValueElement =
             TreeUtils.getMethod(MinLen.class, "value", 0, processingEnv);
@@ -568,14 +580,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         switch (AnnotationUtils.annotationName(arrayAnno)) {
             case ARRAYLEN_NAME:
                 // array.length, where array : @ArrayLen(x)
-                List<Integer> lengths = ValueAnnotatedTypeFactory.getArrayLength(arrayAnno);
+                List<Integer> lengths = getArrayLength(arrayAnno);
                 return createNumberAnnotationMirror(new ArrayList<>(lengths));
             case ARRAYLENRANGE_NAME:
                 // array.length, where array : @ArrayLenRange(x)
                 Range range = getRange(arrayAnno);
                 return createIntRangeAnnotation(range);
             case STRINGVAL_NAME:
-                List<String> strings = ValueAnnotatedTypeFactory.getStringValues(arrayAnno);
+                List<String> strings = getStringValues(arrayAnno);
                 List<Integer> lengthsS = ValueCheckerUtils.getLengthsForStringValues(strings);
                 return createNumberAnnotationMirror(new ArrayList<>(lengthsS));
             default:
@@ -1109,11 +1121,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param intAnno an {@code @IntVal} annotation, or null
      */
-    public static List<Long> getIntValues(AnnotationMirror intAnno) {
+    public List<Long> getIntValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
             return null;
         }
-        List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
+        List<Long> list =
+                AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1126,12 +1139,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param doubleAnno a {@code @DoubleVal} annotation, or null
      */
-    public static List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
+    public List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
         if (doubleAnno == null) {
             return null;
         }
         List<Double> list =
-                AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, false);
+                AnnotationUtils.getElementValueArray(
+                        doubleAnno, doubleValValueElement, Double.class);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1144,12 +1158,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param arrayAnno an {@code @ArrayLen} annotation, or null
      */
-    public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
+    public List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
         if (arrayAnno == null) {
             return null;
         }
         List<Integer> list =
-                AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, false);
+                AnnotationUtils.getElementValueArray(
+                        arrayAnno, arrayLenValueElement, Integer.class);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
@@ -1163,12 +1178,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param intAnno an {@code @IntVal} annotation, or null
      * @return the values represented by the given {@code @IntVal} annotation
      */
-    public static List<Character> getCharValues(AnnotationMirror intAnno) {
+    public List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
             return Collections.emptyList();
         }
         List<Long> intValues =
-                AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
+                AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
         List<Character> charValues = SystemUtil.mapList((Long i) -> (char) i.intValue(), intValues);
         Collections.sort(charValues);
         // TODO: Should this be an unmodifiable list?
@@ -1183,12 +1198,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param boolAnno a {@code @BoolVal} annotation, or null
      * @return the single possible boolean value, on null if that is not the case
      */
-    public static Boolean getBooleanValue(AnnotationMirror boolAnno) {
+    public Boolean getBooleanValue(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
             return null;
         }
         List<Boolean> boolValues =
-                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, false);
+                AnnotationUtils.getElementValueArray(boolAnno, boolValValueElement, Boolean.class);
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() == 1) {
             return boolSet.iterator().next();
@@ -1205,12 +1220,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param boolAnno a {@code @BoolVal} annotation, or null
      * @return a singleton or empty list of possible boolean values, or null
      */
-    public static @Nullable List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
+    public @Nullable List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
             return Collections.emptyList();
         }
         List<Boolean> boolValues =
-                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, false);
+                AnnotationUtils.getElementValueArray(boolAnno, boolValValueElement, Boolean.class);
         if (boolValues.size() < 2) {
             return boolValues;
         }
@@ -1231,12 +1246,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param stringAnno a {@code @StringVal} annotation, or null
      */
-    public static List<String> getStringValues(AnnotationMirror stringAnno) {
+    public List<String> getStringValues(AnnotationMirror stringAnno) {
         if (stringAnno == null) {
             return null;
         }
         List<String> list =
-                AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        stringAnno, stringValValueElement, String.class);
         list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }

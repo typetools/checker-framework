@@ -47,10 +47,10 @@ public class ValueCheckerUtils {
         List<?> values;
         switch (AnnotationUtils.annotationName(anno)) {
             case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-                values = convertDoubleVal(anno, castType, castTo);
+                values = convertDoubleVal(anno, castType, castTo, atypeFactory);
                 break;
             case ValueAnnotatedTypeFactory.INTVAL_NAME:
-                List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
+                List<Long> longs = atypeFactory.getIntValues(anno);
                 values = convertIntVal(longs, castType, castTo);
                 break;
             case ValueAnnotatedTypeFactory.INTRANGE_NAME:
@@ -59,7 +59,7 @@ public class ValueCheckerUtils {
                 values = convertIntVal(rangeValues, castType, castTo);
                 break;
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                values = convertStringVal(anno, castType);
+                values = convertStringVal(anno, castType, atypeFactory);
                 break;
             case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
                 values = convertBoolVal(anno, castType);
@@ -173,8 +173,9 @@ public class ValueCheckerUtils {
         return bools;
     }
 
-    private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
-        List<String> strings = ValueAnnotatedTypeFactory.getStringValues(anno);
+    private static List<?> convertStringVal(
+            AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
+        List<String> strings = atypeFactory.getStringValues(anno);
         if (newClass == char[].class) {
             return SystemUtil.mapList(String::toCharArray, strings);
         }
@@ -197,8 +198,11 @@ public class ValueCheckerUtils {
     }
 
     private static List<?> convertDoubleVal(
-            AnnotationMirror anno, Class<?> newClass, TypeMirror newType) {
-        List<Double> doubles = ValueAnnotatedTypeFactory.getDoubleValues(anno);
+            AnnotationMirror anno,
+            Class<?> newClass,
+            TypeMirror newType,
+            ValueAnnotatedTypeFactory atypeFactory) {
+        List<Double> doubles = atypeFactory.getDoubleValues(anno);
         if (doubles == null) {
             return null;
         }
@@ -271,7 +275,7 @@ public class ValueCheckerUtils {
             return valueAnnotatedTypeFactory.getRange(valueType.getAnnotation(IntRange.class));
         } else {
             List<Long> values =
-                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+                    valueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
             if (values != null) {
                 return Range.create(values);
             } else {

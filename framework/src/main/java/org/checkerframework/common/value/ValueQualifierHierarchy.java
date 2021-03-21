@@ -42,16 +42,16 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
      */
     private AnnotationMirror glbOfStringVal(
             AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
-        List<String> values = ValueAnnotatedTypeFactory.getStringValues(stringValAnno);
+        List<String> values = atypeFactory.getStringValues(stringValAnno);
         switch (AnnotationUtils.annotationName(otherAnno)) {
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 // Intersection of value lists
-                List<String> otherValues = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
+                List<String> otherValues = atypeFactory.getStringValues(otherAnno);
                 values.retainAll(otherValues);
                 break;
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
                 // Retain strings of correct lengths
-                List<Integer> otherLengths = ValueAnnotatedTypeFactory.getArrayLength(otherAnno);
+                List<Integer> otherLengths = atypeFactory.getArrayLength(otherAnno);
                 ArrayList<String> result = new ArrayList<>();
                 for (String s : values) {
                     if (otherLengths.contains(s.length())) {
@@ -72,7 +72,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 values = range;
                 break;
             case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-                List<@Regex String> regexes = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
+                List<@Regex String> regexes = atypeFactory.getStringValues(otherAnno);
                 values =
                         values.stream()
                                 .filter(value -> regexes.stream().anyMatch(value::matches))
@@ -232,23 +232,23 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                     Range range2 = atypeFactory.getRange(a2);
                     return atypeFactory.createArrayLenRangeAnnotation(range1.union(range2));
                 case ValueAnnotatedTypeFactory.INTVAL_NAME:
-                    List<Long> a1Values = ValueAnnotatedTypeFactory.getIntValues(a1);
-                    List<Long> a2Values = ValueAnnotatedTypeFactory.getIntValues(a2);
+                    List<Long> a1Values = atypeFactory.getIntValues(a1);
+                    List<Long> a2Values = atypeFactory.getIntValues(a2);
                     List<Long> newValues = new ArrayList<>(a1Values.size() + a2Values.size());
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
                     return atypeFactory.createIntValAnnotation(newValues);
                 case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-                    List<Integer> al1Values = ValueAnnotatedTypeFactory.getArrayLength(a1);
-                    List<Integer> al2Values = ValueAnnotatedTypeFactory.getArrayLength(a2);
+                    List<Integer> al1Values = atypeFactory.getArrayLength(a1);
+                    List<Integer> al2Values = atypeFactory.getArrayLength(a2);
                     List<Integer> newValuesAL =
                             new ArrayList<>(al1Values.size() + al2Values.size());
                     newValuesAL.addAll(al1Values);
                     newValuesAL.addAll(al2Values);
                     return atypeFactory.createArrayLenAnnotation(newValuesAL);
                 case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                    List<String> string1Values = ValueAnnotatedTypeFactory.getStringValues(a1);
-                    List<String> string2Values = ValueAnnotatedTypeFactory.getStringValues(a2);
+                    List<String> string1Values = atypeFactory.getStringValues(a1);
+                    List<String> string2Values = atypeFactory.getStringValues(a2);
                     List<String> newStringValues =
                             new ArrayList<>(string1Values.size() + string2Values.size());
                     newStringValues.addAll(string1Values);
@@ -436,10 +436,10 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         }
         switch (superQual + subQual) {
             case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
-                List<Double> superValues = ValueAnnotatedTypeFactory.getDoubleValues(superAnno);
+                List<Double> superValues = atypeFactory.getDoubleValues(superAnno);
                 List<Double> subValues =
                         atypeFactory.convertLongListToDoubleList(
-                                ValueAnnotatedTypeFactory.getIntValues(subAnno));
+                                atypeFactory.getIntValues(subAnno));
                 return superValues.containsAll(subValues);
             case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
             case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME
@@ -453,8 +453,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 if (subRange.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
                     return false;
                 }
-                List<Double> superDoubleValues =
-                        ValueAnnotatedTypeFactory.getDoubleValues(superAnno);
+                List<Double> superDoubleValues = atypeFactory.getDoubleValues(superAnno);
                 List<Double> subDoubleValues =
                         ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
                 return superDoubleValues.containsAll(subDoubleValues);
@@ -473,21 +472,20 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
 
                 // Allow @ArrayLen(0) to be converted to @StringVal("")
-                List<String> superStringValues =
-                        ValueAnnotatedTypeFactory.getStringValues(superAnno);
+                List<String> superStringValues = atypeFactory.getStringValues(superAnno);
                 return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
             case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME
                     + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                List<String> strings = ValueAnnotatedTypeFactory.getStringValues(subAnno);
-                List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(superAnno);
+                List<String> strings = atypeFactory.getStringValues(subAnno);
+                List<String> regexes = atypeFactory.getStringValues(superAnno);
                 return strings.stream()
                         .allMatch(string -> regexes.stream().anyMatch(string::matches));
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 // StringVal is a subtype of ArrayLen, if all the strings have one of the
                 // correct
                 // lengths
-                List<Integer> superIntValues = ValueAnnotatedTypeFactory.getArrayLength(superAnno);
-                List<String> subStringValues = ValueAnnotatedTypeFactory.getStringValues(subAnno);
+                List<Integer> superIntValues = atypeFactory.getArrayLength(superAnno);
+                List<String> subStringValues = atypeFactory.getStringValues(subAnno);
                 for (String value : subStringValues) {
                     if (!superIntValues.contains(value.length())) {
                         return false;
@@ -500,7 +498,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 // the
                 // range.
                 Range superRange2 = atypeFactory.getRange(superAnno);
-                List<String> subValues3 = ValueAnnotatedTypeFactory.getStringValues(subAnno);
+                List<String> subValues3 = atypeFactory.getStringValues(subAnno);
                 for (String value : subValues3) {
                     if (!superRange2.contains(value.length())) {
                         return false;
