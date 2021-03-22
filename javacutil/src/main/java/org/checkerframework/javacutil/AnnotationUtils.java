@@ -813,15 +813,8 @@ public class AnnotationUtils {
             CharSequence elementName,
             Class<T> expectedType,
             boolean useDefaults) {
-        List<AnnotationValue> la;
-        try {
-            @SuppressWarnings("unchecked")
-            List<AnnotationValue> laTmp =
-                    getElementValue(anno, elementName, List.class, useDefaults);
-            la = laTmp;
-        } catch (NoSuchElementException e) {
-            return null;
-        }
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
         List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
             try {
