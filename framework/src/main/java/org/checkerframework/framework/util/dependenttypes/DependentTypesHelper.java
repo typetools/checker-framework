@@ -532,6 +532,7 @@ public class DependentTypesHelper {
         List<FormalParameter> parameters = JavaExpression.getFormalParameters(methodElement);
         List<JavaExpression> paramsAsLocals =
                 JavaExpression.getParametersAsLocalVariables(methodElement);
+        @SuppressWarnings("serial")
         class FoundLocalException extends RuntimeException {}
 
         StringToJavaExpression stringToJavaExpr =
