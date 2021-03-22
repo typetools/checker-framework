@@ -202,15 +202,15 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint-adapts the dependent type annotations on the bounds to the use of the type.
+     * Viewpoint-adapts the dependent type annotations on the bounds of the type parameters of a
+     * type to {@code typeUse}.
      *
-     * @param classDecl class or interface declaration whose type variables should be viewpoint
-     *     adapted
-     * @param bounds annotated types of the bounds of the type variables; its elements are
+     * @param typeUse a use of the type with type parameter bounds {@code bounds}
+     * @param bounds annotated types of the bounds of the type parameters; its elements are
      *     side-effected by this method (but the list itself is not side-effected)
      */
-    public void atTypeVariableBounds(
-            TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds) {
+    public void atParameterizedTypeUse(
+            TypeElement typeUse, List<AnnotatedTypeParameterBounds> bounds) {
         if (!hasDependentAnnotations()) {
             return;
         }
@@ -218,7 +218,7 @@ public class DependentTypesHelper {
         StringToJavaExpression stringToJavaExpr =
                 stringExpr ->
                         StringToJavaExpression.atTypeDecl(
-                                stringExpr, classDecl, factory.getChecker());
+                                stringExpr, typeUse, factory.getChecker());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             convertAnnotatedTypeMirror(stringToJavaExpr, bound.getUpperBound());
             convertAnnotatedTypeMirror(stringToJavaExpr, bound.getLowerBound());
