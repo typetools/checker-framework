@@ -1012,6 +1012,24 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the given boolean element of the annotation {@code anno}.
+     *
+     * @param anno the annotation whose element to access
+     * @param element the element to access
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name
+     */
+    public static boolean getElementValueBoolean(
+            AnnotationMirror anno, ExecutableElement element, boolean defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            return (boolean) av.getValue();
+        }
+    }
+
+    /**
      * Get the given integer element of the annotation {@code anno}.
      *
      * @param anno the annotation whose element to access

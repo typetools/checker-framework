@@ -145,7 +145,9 @@ public abstract class Contract {
             AnnotationMirror contractAnnotation,
             Boolean ensuresQualifierIf) {
         if ((ensuresQualifierIf != null) != (kind == Kind.CONDITIONALPOSTCONDITION)) {
-            throw new BugInCF("Mismatch: ensuresQualifierIf=%s, kind=%s", ensuresQualifierIf, kind);
+            throw new BugInCF(
+                    "Mismatch: Contract.create(%s, %s, %s, %s, %s)",
+                    kind, expressionString, annotation, contractAnnotation, ensuresQualifierIf);
         }
         switch (kind) {
             case PRECONDITION:
