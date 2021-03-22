@@ -340,6 +340,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // ignore parse errors
             return Collections.emptyList();
         }
+        if (sameLenAnno == null) {
+            return Collections.emptyList();
+        }
         return AnnotationUtils.getElementValueArray(sameLenAnno, sameLenValueElement, String.class);
     }
 
