@@ -62,7 +62,7 @@ public class ValueCheckerUtils {
                 values = convertStringVal(anno, castType, atypeFactory);
                 break;
             case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
-                values = convertBoolVal(anno, castType);
+                values = convertBoolVal(anno, castType, atypeFactory);
                 break;
             case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
@@ -160,12 +160,15 @@ public class ValueCheckerUtils {
      *
      * @param anno a @BoolVal annotation
      * @param newClass if String.class, the returned list is a {@code List<String>}
+     * @param atypeFactory the type factory, used for obtaining fields/elements from annotations
      * @return the {@code value} of a @BoolVal annotation, as a {@code List<Boolean>} or a {@code
      *     List<String>}
      */
-    private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
+    private static List<?> convertBoolVal(
+            AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
         List<Boolean> bools =
-                AnnotationUtils.getElementValueArray(anno, "value", Boolean.class, false);
+                AnnotationUtils.getElementValueArray(
+                        anno, atypeFactory.boolValValueElement, Boolean.class);
 
         if (newClass == String.class) {
             return convertToStringVal(bools);
@@ -346,7 +349,9 @@ public class ValueCheckerUtils {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
         if (valueType.hasAnnotation(StringVal.class)) {
             AnnotationMirror valueAnno = valueType.getAnnotation(StringVal.class);
-            List<String> possibleValues = getValueOfAnnotationWithStringArgument(valueAnno);
+            List<String> possibleValues =
+                    AnnotationUtils.getElementValueArray(
+                            valueAnno, factory.stringValValueElement, String.class);
             if (possibleValues.size() == 1) {
                 return possibleValues.get(0);
             }

@@ -123,6 +123,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     /** The LTEqLengthOf.value argument/element. */
     /*package-private*/ final ExecutableElement ltEqLengthOfValueElement =
             TreeUtils.getMethod(LTEqLengthOf.class, "value", 0, processingEnv);
+    /** The NegativeIndexFor.value element/field. */
+    final ExecutableElement negativeIndexForValueElement =
+            TreeUtils.getMethod(NegativeIndexFor.class, "value", 0, processingEnv);
+    /** The SameLen.value element/field. */
+    final ExecutableElement sameLenValueElement =
+            TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
 
     /**
      * A factory used for reading elements/fields from annotations.
@@ -543,9 +549,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
          */
         private void addAnnotationForBitwiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
-            if (containsSameByClass(searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
-                AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
-                List<String> arrays = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(nif);
+            AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
+            if (nif != null) {
+                List<String> arrays =
+                        AnnotationUtils.getElementValueArray(
+                                nif, negativeIndexForValueElement, String.class);
                 List<String> negativeOnes = Collections.nCopies(arrays.size(), "-1");
                 UBQualifier qual = UBQualifier.createUBQualifier(arrays, negativeOnes);
                 typeDst.addAnnotation(convertUBQualifierToAnnotation(qual));
