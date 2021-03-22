@@ -226,7 +226,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint-adapts the dependent type annotations in the methodType based on the
+     * Viewpoint-adapts the dependent type annotations in the methodType to the
      * methodInvocationTree.
      *
      * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
@@ -244,8 +244,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint-adapts the dependent type annotations in the constructorType based on the
-     * newClassTree.
+     * Viewpoint-adapts the dependent type annotations in the constructorType to the newClassTree.
      *
      * <p>{@code constructorType} has been viewpoint-adapted to the call site, except for any
      * dependent type annotations. This method viewpoint-adapts the dependent type annotations.
@@ -316,7 +315,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint-adapts the Java expressions in annotations written on a field declaration for the
+     * Viewpoint-adapts the Java expressions in annotations written on a field declaration to the
      * use at {@code fieldAccess}.
      *
      * @param fieldAccess a field access
@@ -353,7 +352,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardizes the Java expressions in annotations for a method return type.
+     * Standardizes the Java expressions in annotations to the method declaration.
      *
      * @param methodDeclTree a method declaration
      * @param atm the method return type; is side-effected by this method
