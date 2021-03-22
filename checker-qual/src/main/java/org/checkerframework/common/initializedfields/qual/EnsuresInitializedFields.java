@@ -27,7 +27,7 @@ public @interface EnsuresInitializedFields {
      *
      * @return object whose fields are initialized
      */
-    public String value() default "this";
+    public String[] value() default {"this"};
 
     /**
      * Fields that this method initializes.

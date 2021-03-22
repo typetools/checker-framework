@@ -53,22 +53,19 @@ public abstract class Contract {
                 "precondition",
                 PreconditionAnnotation.class,
                 RequiresQualifier.class,
-                RequiresQualifier.List.class,
-                "value"),
+                RequiresQualifier.List.class),
         /** A postcondition. */
         POSTCONDITION(
                 "postcondition",
                 PostconditionAnnotation.class,
                 EnsuresQualifier.class,
-                EnsuresQualifier.List.class,
-                "value"),
+                EnsuresQualifier.List.class),
         /** A conditional postcondition. */
         CONDITIONALPOSTCONDITION(
                 "conditional postcondition",
                 ConditionalPostconditionAnnotation.class,
                 EnsuresQualifierIf.class,
-                EnsuresQualifierIf.List.class,
-                "expression");
+                EnsuresQualifierIf.List.class);
 
         /** Used for constructing error messages. */
         public final String errorKey;
@@ -79,11 +76,6 @@ public abstract class Contract {
         public final Class<? extends Annotation> frameworkContractClass;
         /** The built-in framework qualifier for repeated occurrences of this contract. */
         public final Class<? extends Annotation> frameworkContractsClass;
-        /**
-         * The name of the element that contains the Java expressions on which a contract is
-         * enforced.
-         */
-        public final String expressionElementName;
 
         /**
          * Create a new Kind.
@@ -93,20 +85,16 @@ public abstract class Contract {
          * @param frameworkContractClass the built-in framework qualifier for this contract
          * @param frameworkContractsClass the built-in framework qualifier for repeated occurrences
          *     of this contract
-         * @param expressionElementName the name of the element that contains the Java expressions
-         *     on which a contract is enforced
          */
         Kind(
                 String errorKey,
                 Class<? extends Annotation> metaAnnotation,
                 Class<? extends Annotation> frameworkContractClass,
-                Class<? extends Annotation> frameworkContractsClass,
-                String expressionElementName) {
+                Class<? extends Annotation> frameworkContractsClass) {
             this.errorKey = errorKey;
             this.metaAnnotation = metaAnnotation;
             this.frameworkContractClass = frameworkContractClass;
             this.frameworkContractsClass = frameworkContractsClass;
-            this.expressionElementName = expressionElementName;
         }
     }
 
@@ -149,7 +137,9 @@ public abstract class Contract {
             AnnotationMirror contractAnnotation,
             Boolean ensuresQualifierIf) {
         if ((ensuresQualifierIf != null) != (kind == Kind.CONDITIONALPOSTCONDITION)) {
-            throw new BugInCF("Mismatch: ensuresQualifierIf=%s, kind=%s", ensuresQualifierIf, kind);
+            throw new BugInCF(
+                    "Mismatch: Contract.create(%s, %s, %s, %s, %s)",
+                    kind, expressionString, annotation, contractAnnotation, ensuresQualifierIf);
         }
         switch (kind) {
             case PRECONDITION:

@@ -36,9 +36,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
-import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -1418,17 +1416,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         for (AnnotationMirror metaAnno : annoSymbol.getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByName(metaAnno, TARGET)) {
-                AnnotationValue valueValue = metaAnno.getElementValues().get(targetValueElement);
-                @SuppressWarnings("unchecked")
-                List<? extends AnnotationValue> targets =
-                        (List<? extends AnnotationValue>) valueValue.getValue();
-                for (AnnotationValue target : targets) {
-                    VarSymbol targetSymbol = ((Attribute.Enum) target).value;
-                    if (targetSymbol.toString().equals("TYPE_USE")) {
-                        return true;
-                    }
-                }
-                return false;
+                AnnotationValue av = metaAnno.getElementValues().get(targetValueElement);
+                return AnnotationUtils.annotationValueContainsToString(av, "TYPE_USE");
             }
         }
 
