@@ -10,6 +10,7 @@ import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
 /** The qualifier hierarchy for the Value type system. */
