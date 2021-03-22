@@ -146,12 +146,17 @@ public class ContractsFromMethod {
                     AnnotationUtils.getElementValueArrayOrSingleton(
                             anno, kind.expressionElementName, String.class, true);
             Collections.sort(expressions);
-            Boolean annoResult =
-                    AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
+            Boolean ensuresQualifierIfResult = factory.getEnsuresQualifierIfResult(kind, anno);
+
             for (String expr : expressions) {
                 T contract =
                         clazz.cast(
-                                Contract.create(kind, expr, enforcedQualifier, anno, annoResult));
+                                Contract.create(
+                                        kind,
+                                        expr,
+                                        enforcedQualifier,
+                                        anno,
+                                        ensuresQualifierIfResult));
                 result.add(contract);
             }
         }
@@ -174,24 +179,31 @@ public class ContractsFromMethod {
         if (contractAnnotation == null) {
             return Collections.emptySet();
         }
+
         AnnotationMirror enforcedQualifier =
                 getQualifierEnforcedByContractAnnotation(contractAnnotation);
         if (enforcedQualifier == null) {
             return Collections.emptySet();
         }
-        Set<T> result = new LinkedHashSet<>();
+
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         contractAnnotation, "expression", String.class, false);
         Collections.sort(expressions);
-        Boolean annoResult =
-                AnnotationUtils.getElementValueOrNull(
-                        contractAnnotation, "result", Boolean.class, false);
+
+        Boolean ensuresQualifierIfResult =
+                factory.getEnsuresQualifierIfResult(kind, contractAnnotation);
+
+        Set<T> result = new LinkedHashSet<>();
         for (String expr : expressions) {
             T contract =
                     clazz.cast(
                             Contract.create(
-                                    kind, expr, enforcedQualifier, contractAnnotation, annoResult));
+                                    kind,
+                                    expr,
+                                    enforcedQualifier,
+                                    contractAnnotation,
+                                    ensuresQualifierIfResult));
             result.add(contract);
         }
         return result;
