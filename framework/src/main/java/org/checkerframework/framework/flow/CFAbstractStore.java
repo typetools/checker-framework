@@ -269,7 +269,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                             // update local variables
                             localVariableValues.keySet().remove(e);
                             // update field values
-                            localVariableValues.keySet().remove(e);
+                            fieldValues.keySet().remove(e);
                         }
                     }
                 } else {
