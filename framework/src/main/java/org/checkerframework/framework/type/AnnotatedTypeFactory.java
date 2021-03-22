@@ -4902,10 +4902,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return false;
     }
 
-    // The following two methods are complex enough that maybe
-    //   getElementValueArray(contractAnno, "expression", String.class, false)
-    // is equally or more efficient.  I'm not sure, though.
-
     /**
      * Get the {@code expression} field/element of the given contract annotation.
      *
