@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -17,6 +16,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The default transfer function for an accumulation checker.
@@ -84,11 +84,11 @@ public class AccumulationTransfer extends CFTransfer {
                 for (AnnotationMirror anno : flowAnnos) {
                     if (atypeFactory.isAccumulatorAnnotation(anno)) {
                         List<String> oldFlowValues =
-                                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
+                                AnnotationUtils.getElementValueArrayOrNull(
+                                        anno, "value", String.class, false);
                         if (oldFlowValues != null) {
                             // valuesAsList cannot have its length changed -- it is backed by an
-                            // array.  getValueOfAnnotationWithStringArgument returns a new,
-                            // modifiable list.
+                            // array -- but oldFlowValues is a new, modifiable list.
                             oldFlowValues.addAll(valuesAsList);
                             valuesAsList = oldFlowValues;
                         }

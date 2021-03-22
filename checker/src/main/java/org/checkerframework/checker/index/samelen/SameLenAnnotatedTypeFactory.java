@@ -25,7 +25,6 @@ import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -260,12 +259,14 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (areSameByClass(subAnno, PolySameLen.class)) {
                 return areSameByClass(superAnno, PolySameLen.class);
-            } else if (AnnotationUtils.hasElementValue(subAnno, "value")
-                    && AnnotationUtils.hasElementValue(superAnno, "value")) {
+            } else if (areSameByClass(subAnno, SameLen.class)
+                    && areSameByClass(superAnno, SameLen.class)) {
                 List<String> subArrays =
-                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
+                        AnnotationUtils.getElementValueArray(
+                                subAnno, sameLenValueElement, String.class);
                 List<String> superArrays =
-                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, sameLenValueElement, String.class);
 
                 if (subArrays.containsAll(superArrays)) {
                     return true;
