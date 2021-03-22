@@ -86,6 +86,7 @@ public class DependentTypesHelper {
     protected final AnnotatedTypeFactory factory;
 
     // TODO: Using strings is inefficient.  This should probably map to ExecutableElement instead.
+    // Also, the key should be annotation names rather than classes.
     /** Maps from an annotation class to the names of its elements that are Java expressions. */
     private final Map<Class<? extends Annotation>, List<String>> annoToElements;
 
@@ -529,8 +530,12 @@ public class DependentTypesHelper {
         }
 
         TreePath pathToMethodDecl = factory.getPath(methodDeclTree);
-
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodDeclTree);
+        List<FormalParameter> parameters = JavaExpression.getFormalParameters(methodElement);
+        List<JavaExpression> paramsAsLocals =
+                JavaExpression.getParametersAsLocalVariables(methodElement);
+        class FoundLocalException extends RuntimeException {}
+
         StringToJavaExpression stringToJavaExpr =
                 expression -> {
                     JavaExpression result;
@@ -541,10 +546,6 @@ public class DependentTypesHelper {
                     } catch (JavaExpressionParseException ex) {
                         return null;
                     }
-                    List<FormalParameter> parameters =
-                            JavaExpression.getFormalParameters(methodElement);
-                    List<JavaExpression> paramsAsLocals =
-                            JavaExpression.getParametersAsLocalVariables(methodElement);
                     JavaExpressionConverter jec =
                             new JavaExpressionConverter() {
                                 @Override
@@ -552,18 +553,16 @@ public class DependentTypesHelper {
                                         LocalVariable localVarExpr, Void unused) {
                                     int index = paramsAsLocals.indexOf(localVarExpr);
                                     if (index == -1) {
-                                        return new Unknown(
-                                                localVarExpr.getType(),
-                                                localVarExpr
-                                                        .getElement()
-                                                        .getSimpleName()
-                                                        .toString());
+                                        throw new FoundLocalException();
                                     }
                                     return parameters.get(index);
                                 }
                             };
-                    result = jec.convert(result);
-                    return result.containsUnknown() ? null : result;
+                    try {
+                        return jec.convert(result);
+                    } catch (FoundLocalException ex) {
+                        return null;
+                    }
                 };
         convertAnnotatedTypeMirror(stringToJavaExpr, atm);
     }
