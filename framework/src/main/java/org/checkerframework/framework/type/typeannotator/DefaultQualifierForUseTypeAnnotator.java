@@ -52,7 +52,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
             return elementToDefaults.get(element);
         }
         Set<AnnotationMirror> explictAnnos = getExplicitAnnos(element);
-        Set<AnnotationMirror> defaultAnnos = getSupportAnnosFromDefaultQualifierForUses(element);
+        Set<AnnotationMirror> defaultAnnos = getDefaultQualifierForUses(element);
         Set<AnnotationMirror> noDefaultAnnos = getHierarchiesNoDefault(element);
         AnnotationMirrorSet annosToApply = new AnnotationMirrorSet();
 
@@ -92,18 +92,22 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Return the default qualifiers for uses of {@code element} as specified by {@link
+     * Return the default qualifiers for uses of {@code element} as specified by a {@link
      * DefaultQualifierForUse} annotation.
      *
-     * <p>Subclass may override to use an annotation other than {@link DefaultQualifierForUse}.
+     * <p>Subclasses may override to use an annotation other than {@link DefaultQualifierForUse}.
+     *
+     * @param element an element
+     * @return the default qualifiers for uses of {@code element}
      */
-    protected Set<AnnotationMirror> getSupportAnnosFromDefaultQualifierForUses(Element element) {
+    protected Set<AnnotationMirror> getDefaultQualifierForUses(Element element) {
         AnnotationMirror defaultQualifier =
                 typeFactory.getDeclAnnotation(element, DefaultQualifierForUse.class);
         if (defaultQualifier == null) {
             return Collections.emptySet();
         }
-        return supportedAnnosFromAnnotationMirror(defaultQualifier);
+        return supportedAnnosFromAnnotationMirror(
+                AnnotationUtils.getElementValueClassNames(defaultQualifier, "value", true));
     }
 
     /**
@@ -116,7 +120,8 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
         if (noDefaultQualifier == null) {
             return Collections.emptySet();
         }
-        return supportedAnnosFromAnnotationMirror(noDefaultQualifier);
+        return supportedAnnosFromAnnotationMirror(
+                AnnotationUtils.getElementValueClassNames(noDefaultQualifier, "value", true));
     }
 
     /**
@@ -127,11 +132,25 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
      *     annotation classes
      * @return the set of qualifiers supported by this type system from the value element of {@code
      *     annotationMirror}
+     * @deprecated use {@link #supportedAnnosFromAnnotationMirror(List)}
      */
+    @Deprecated // 2021-03-21
     protected final AnnotationMirrorSet supportedAnnosFromAnnotationMirror(
             AnnotationMirror annotationMirror) {
-        List<@CanonicalName Name> annoClassNames =
-                AnnotationUtils.getElementValueClassNames(annotationMirror, "value", true);
+        return supportedAnnosFromAnnotationMirror(
+                AnnotationUtils.getElementValueClassNames(annotationMirror, "value", true));
+    }
+
+    /**
+     * Returns the set of qualifiers supported by this type system from the value element of {@code
+     * annotationMirror}.
+     *
+     * @param annoClassNames a list of annotation class names
+     * @return the set of qualifiers supported by this type system from the value element of {@code
+     *     annotationMirror}
+     */
+    protected final AnnotationMirrorSet supportedAnnosFromAnnotationMirror(
+            List<@CanonicalName Name> annoClassNames) {
         AnnotationMirrorSet supportAnnos = new AnnotationMirrorSet();
         for (Name annoName : annoClassNames) {
             AnnotationMirror anno =

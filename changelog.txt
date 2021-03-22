@@ -1,4 +1,4 @@
-Version 3.11.1, April 1, 2021
+Version 3.12.0, April 1, 2021
 
 **User-visible changes:**
 
@@ -14,6 +14,9 @@ stands for (only) the `null` value.
 **Implementation details:**
 
 Removed deprecated `PluginUtil` class.
+
+Method renamings:
+ * `DefaultQualifierForUseTypeAnnotator.getSupportAnnosFromDefaultQualifierForUses` => `getDefaultQualifierForUses`
 
 **Closed issues:**
 
