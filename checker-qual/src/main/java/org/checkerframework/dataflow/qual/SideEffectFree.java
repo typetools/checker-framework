@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * of the following Java constructs:
  *
  * <ol>
- *   <li>Assignment to any expression, except for local variables and method parameters.
+ *   <li>Assignment to any expression, except for local variables and immutable method parameters.
  *   <li>A method invocation of a method that is not {@code @SideEffectFree}.
  *   <li>Construction of a new object where the constructor is not {@code @SideEffectFree}.
  * </ol>
