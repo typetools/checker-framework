@@ -39,10 +39,15 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
 
+    /** The SearchIndexFor.value field/element. */
     protected ExecutableElement searchIndexForValueElement =
             TreeUtils.getMethod(SearchIndexFor.class, "value", 0, processingEnv);
 
-    /** Create a new SearchIndexAnnotatedTypeFactory. */
+    /**
+     * Create a new SearchIndexAnnotatedTypeFactory.
+     *
+     * @checker the type-checker associated with this
+     */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
