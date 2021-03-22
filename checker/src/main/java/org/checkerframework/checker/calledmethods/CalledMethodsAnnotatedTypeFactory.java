@@ -54,7 +54,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
      * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
      */
-    private final ExecutableElement collectionsSingletonList;
+    private final ExecutableElement collectionsSingletonList =
+            TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
 
     /**
      * Create a new CalledMethodsAnnotatedTypeFactory.
@@ -78,9 +79,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         }
         enableFrameworks(disabledFrameworks);
         this.useValueChecker = checker.hasOption(CalledMethodsChecker.USE_VALUE_CHECKER);
-        this.collectionsSingletonList =
-                TreeUtils.getMethod(
-                        "java.util.Collections", "singletonList", 1, getProcessingEnv());
         // Lombok generates @CalledMethods annotations using an old package name,
         // so we maintain it as an alias.
         addAliasedTypeAnnotation(
