@@ -13,7 +13,6 @@ import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -219,9 +218,8 @@ public class JavaStubifier {
         @Override
         public NormalAnnotationExpr visit(NormalAnnotationExpr nae, Void arg) {
             super.visit(nae, arg);
-            NodeList<MemberValuePair> empty = new NodeList<>();
             if (nae.getNameAsString().equals("Deprecated")) {
-                nae.setPairs(empty);
+                nae.setPairs(new NodeList<>());
             }
             return nae;
         }

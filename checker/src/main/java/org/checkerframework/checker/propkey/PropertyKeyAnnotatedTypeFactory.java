@@ -148,7 +148,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.emptySet();
         }
 
-        Set<String> result = new HashSet<>();
+        Set<String> result = new HashSet<>(namesArr.length);
 
         for (String name : namesArr) {
             try {
@@ -204,7 +204,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.emptySet();
         }
 
-        Set<String> result = new HashSet<>();
+        Set<String> result = new HashSet<>(namesArr.length);
 
         for (String bundleName : namesArr) {
             if (!Signatures.isBinaryName(bundleName)) {

@@ -47,6 +47,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -329,13 +330,28 @@ public abstract class BaseTypeChecker extends SourceChecker {
                     throw (RuntimeException) err;
                 }
             }
-            Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
+            Throwable cause;
+            String causeMessage;
+            if (t instanceof InvocationTargetException) {
+                cause = t.getCause();
+                if (cause == null || cause.getMessage() == null) {
+                    causeMessage = t.getMessage();
+                } else if (t.getMessage() == null) {
+                    causeMessage = cause.getMessage();
+                } else {
+                    causeMessage = t.getMessage() + ": " + cause.getMessage();
+                }
+            } else {
+                cause = t;
+                causeMessage = (cause == null) ? "null" : cause.getMessage();
+            }
             throw new BugInCF(
                     cause,
-                    "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                    "Error when invoking constructor %s(%s) on args %s; cause: %s",
                     name,
+                    StringsPlume.join(", ", paramTypes),
                     Arrays.toString(args),
-                    Arrays.toString(paramTypes));
+                    causeMessage);
         }
     }
 
@@ -553,6 +569,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return this.suppressWarningsPrefixesOfSubcheckers;
     }
 
+    /** A cache for {@link #getUltimateParentChecker}. */
+    @MonotonicNonNull BaseTypeChecker ultimateParentChecker;
+
     /**
      * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker
      * that the user actually requested, i.e. the one with no parent. The ultimate parent might be
@@ -562,11 +581,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
      *     the ultimate parent checker
      */
     public BaseTypeChecker getUltimateParentChecker() {
-        BaseTypeChecker ultimateParent = this;
-        while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
-            ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
+        if (ultimateParentChecker == null) {
+            ultimateParentChecker = this;
+            while (ultimateParentChecker.getParentChecker() instanceof BaseTypeChecker) {
+                ultimateParentChecker = (BaseTypeChecker) ultimateParentChecker.getParentChecker();
+            }
         }
-        return ultimateParent;
+
+        return ultimateParentChecker;
     }
 
     /**

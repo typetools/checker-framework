@@ -31,6 +31,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -77,6 +78,7 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -97,6 +99,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -248,6 +251,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public final boolean hasOrIsSubchecker;
 
+    /** The EnsuresQualifierIf.result argument/element. */
+    private final ExecutableElement ensuresQualifierIfResultElement;
+
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -365,6 +371,9 @@ public abstract class GenericAnnotatedTypeFactory<
         hasOrIsSubchecker =
                 !this.getChecker().getSubcheckers().isEmpty()
                         || this.getChecker().getParentChecker() != null;
+
+        ensuresQualifierIfResultElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.class, "result", 0, processingEnv);
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -2331,7 +2340,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the method
      */
     public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
-        List<AnnotationMirror> result = new ArrayList<>();
+        List<AnnotationMirror> result = new ArrayList<>(m.getPreconditions().size());
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
             WholeProgramInferenceImplementation<?> wholeProgramInference =
                     (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
@@ -2357,7 +2366,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public List<AnnotationMirror> getPostconditionAnnotations(
             AMethod m, List<AnnotationMirror> preconds) {
-        List<AnnotationMirror> result = new ArrayList<>();
+        List<AnnotationMirror> result = new ArrayList<>(m.getPostconditions().size());
         for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
             WholeProgramInferenceImplementation<?> wholeProgramInference =
                     (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
@@ -2652,6 +2661,35 @@ public abstract class GenericAnnotatedTypeFactory<
         if (parentChecker != null) {
             GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf = parentChecker.getTypeFactory();
             return parentAtf.getSharedCFGForTree(tree);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * If kind = CONDITIONALPOSTCONDITION, return the result element, e.g. {@link
+     * EnsuresQualifierIf#result}. Otherwise, return null.
+     *
+     * @param kind the kind of {@code contractAnnotation}
+     * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+     *     EnsuresQualifierIf}
+     * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have
+     *     a {@code result} element
+     */
+    public Boolean getEnsuresQualifierIfResult(
+            Contract.Kind kind, AnnotationMirror contractAnnotation) {
+        if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
+            if (contractAnnotation instanceof EnsuresQualifierIf) {
+                // It's the framework annotation @EnsuresQualifierIf
+                return AnnotationUtils.getElementValueBoolean(
+                        contractAnnotation,
+                        ensuresQualifierIfResultElement,
+                        /*default is irrelevant*/ false);
+            } else {
+                // It's a checker-specific annotation such as @EnsuresMinLenIf
+                return AnnotationUtils.getElementValue(
+                        contractAnnotation, "result", Boolean.class, false);
+            }
         } else {
             return null;
         }

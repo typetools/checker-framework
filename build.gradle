@@ -7,7 +7,7 @@ plugins {
     id "de.undercouch.download" version "4.1.1"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "1.3.0"
+    id "net.ltgt.errorprone" version "2.0.0"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
@@ -98,8 +98,7 @@ allprojects {
     group 'org.checkerframework'
     // Increment the minor version (second number) rather than just the patch
     // level (third number) if:
-    //   * any new checkers have been added,
-    //   * the patch level is 9 (keep the patch level as a single digit), or
+    //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
     version '3.11.1-SNAPSHOT'
 

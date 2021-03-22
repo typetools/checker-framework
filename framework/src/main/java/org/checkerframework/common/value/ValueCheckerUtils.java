@@ -140,7 +140,7 @@ public class ValueCheckerUtils {
         // to avoid having range.to as an upper bound of the loop. range.to can be Long.MAX_VALUE,
         // in which case a comparison value <= range.to would be always true.
         // boundDifference is always much smaller than Long.MAX_VALUE
-        List<T> values = new ArrayList<T>((int) boundDifference + 1);
+        List<T> values = new ArrayList<>((int) boundDifference + 1);
         for (long offset = 0; offset <= boundDifference; offset++) {
             long value = range.from + offset;
             values.add(convertLongToType(value, expectedType));

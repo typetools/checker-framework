@@ -14,6 +14,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -381,14 +382,20 @@ public abstract class JavaExpression {
 
             case NEW_ARRAY:
                 NewArrayTree newArrayTree = (NewArrayTree) tree;
-                List<@Nullable JavaExpression> dimensions = new ArrayList<>();
-                if (newArrayTree.getDimensions() != null) {
+                List<@Nullable JavaExpression> dimensions;
+                if (newArrayTree.getDimensions() == null) {
+                    dimensions = Collections.emptyList();
+                } else {
+                    dimensions = new ArrayList<>(newArrayTree.getDimensions().size());
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
                         dimensions.add(fromTree(dimension));
                     }
                 }
-                List<JavaExpression> initializers = new ArrayList<>();
-                if (newArrayTree.getInitializers() != null) {
+                List<JavaExpression> initializers;
+                if (newArrayTree.getInitializers() == null) {
+                    initializers = Collections.emptyList();
+                } else {
+                    initializers = new ArrayList<>(newArrayTree.getInitializers().size());
                     for (ExpressionTree initializer : newArrayTree.getInitializers()) {
                         initializers.add(fromTree(initializer));
                     }
