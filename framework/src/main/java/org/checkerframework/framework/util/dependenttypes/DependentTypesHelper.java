@@ -274,29 +274,28 @@ public class DependentTypesHelper {
     private void atInvocation(ExpressionTree tree, AnnotatedExecutableType methodType) {
         assert hasDependentAnnotations();
         Element methodElt = TreeUtils.elementFromUse(tree);
+        // Because methodType is the type post type variable substitution, it has annotations from
+        // both the method declaration and the type arguments at the use of the method. Annotations
+        // from type arguments must not be viewpoint-adapted to the call site. For example:
+        //   Map<String, String> map = ...;
+        //   List<@KeyFor("this.map") String> list = ...;
+        //   list.get(0)
+        //
+        // methodType is @KeyFor("this.map") String get(int)
+        // "this.map" must not be viewpoint-adapted to the invocation because it is not from
+        // the method declaration, but added during type variable substitution.
+        //
+        // So this implementation gets the declared type of the method, declaredMethodType,
+        // viewpoint-adapts all dependent type annotations in declaredMethodType to the call site,
+        // and then copies the viewpoint-adapted annotations from methodType except for types that
+        // are replace by type variable substitution.
+
         // The annotations on `declaredMethodType` will be copied to `methodType`.
         AnnotatedExecutableType declaredMethodType =
                 (AnnotatedExecutableType) factory.getAnnotatedType(methodElt);
         if (!hasDependentType(declaredMethodType)) {
             return;
         }
-
-        // methodType cannot be viewpoint adapted directly because it is the type post type variable
-        // substitution.  Dependent type annotations on type arguments cannot be
-        // viewpoint adapted along with the dependent type annotations that are on the method
-        // declaration. For example:
-        //   Map<String, String> map = ...;
-        //   List<@KeyFor("this.map") String> list = ...;
-        //   list.get(0)
-        //
-        // methodType is @KeyFor("this.map") String get(int)
-        // "this.map" must not be viewpoint-adapted based on the invocation because it is not from
-        // the method declaration, but added during type variable substitution.
-        //
-        // Instead, use the type for the method (declaredMethodType) and viewpoint adapt that
-        // type.
-        // Then copy annotations from the viewpoint adapted type to methodType, if that annotation
-        // is not on a type that was substituted for a type variable.
 
         StringToJavaExpression stringToJavaExpr;
         if (tree instanceof MethodInvocationTree) {
