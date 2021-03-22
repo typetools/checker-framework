@@ -60,7 +60,7 @@ public class JavaCodeStatistics extends SourceChecker {
     int numberOfIndexWarningSuppressions = 0;
 
     /** The SuppressWarnings.value field/element. */
-    ExecutableElement suppressWarningsValueElement =
+    final ExecutableElement suppressWarningsValueElement =
             TreeUtils.getMethod(SuppressWarnings.class, "value", 0, processingEnv);
 
     /** Creates a JavaCodeStatistics. */

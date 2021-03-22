@@ -78,7 +78,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
 
     /** The SameLen.value field/element. */
-    ExecutableElement sameLenValueElement =
+    final ExecutableElement sameLenValueElement =
             TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
 
     /** Predicates about method calls. */

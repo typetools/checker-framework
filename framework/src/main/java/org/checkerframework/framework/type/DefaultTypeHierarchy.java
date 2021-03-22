@@ -124,7 +124,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     protected final StructuralEqualityVisitHistory areEqualVisitHistory;
 
     /** The Covariant.value field/element. */
-    ExecutableElement covariantValueElement;
+    final ExecutableElement covariantValueElement;
 
     /**
      * Creates a DefaultTypeHierarchy.

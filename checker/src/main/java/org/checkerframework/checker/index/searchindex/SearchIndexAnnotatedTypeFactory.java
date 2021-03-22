@@ -40,10 +40,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
 
     /** The NegativeIndexFor.value field/element. */
-    protected ExecutableElement negativeIndexForValueElement =
+    protected final ExecutableElement negativeIndexForValueElement =
             TreeUtils.getMethod(NegativeIndexFor.class, "value", 0, processingEnv);
     /** The SearchIndexFor.value field/element. */
-    protected ExecutableElement searchIndexForValueElement =
+    protected final ExecutableElement searchIndexForValueElement =
             TreeUtils.getMethod(SearchIndexFor.class, "value", 0, processingEnv);
 
     /**

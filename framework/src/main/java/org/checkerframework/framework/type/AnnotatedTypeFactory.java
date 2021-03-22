@@ -188,13 +188,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The AnnotatedFor.value argument/element. */
     private final ExecutableElement annotatedForValueElement;
     /** The EnsuresQualifier.expression field/element. */
-    ExecutableElement ensuresQualifierExpressionElement;
+    final ExecutableElement ensuresQualifierExpressionElement;
     /** The EnsuresQualifier.List.value field/element. */
-    ExecutableElement ensuresQualifierListValueElement;
+    final ExecutableElement ensuresQualifierListValueElement;
     /** The EnsuresQualifierIf.expression field/element. */
-    ExecutableElement ensuresQualifierIfExpressionElement;
+    final ExecutableElement ensuresQualifierIfExpressionElement;
+    /** The EnsuresQualifierIf.result argument/element. */
+    final ExecutableElement ensuresQualifierIfResultElement;
     /** The EnsuresQualifierIf.List.value field/element. */
-    ExecutableElement ensuresQualifierIfListValueElement;
+    final ExecutableElement ensuresQualifierIfListValueElement;
     /** The FieldInvariant.field argument/element. */
     private final ExecutableElement fieldInvariantFieldElement;
     /** The FieldInvariant.qualifier argument/element. */
@@ -207,9 +209,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The MethodVal.params argument/element. */
     public final ExecutableElement methodValParamsElement;
     /** The RequiresQualifier.expression field/element. */
-    ExecutableElement requiresQualifierExpressionElement;
+    final ExecutableElement requiresQualifierExpressionElement;
     /** The RequiresQualifier.List.value field/element. */
-    ExecutableElement requiresQualifierListValueElement;
+    final ExecutableElement requiresQualifierListValueElement;
 
     /** The RequiresQualifier type. */
     TypeMirror requiresQualifierTM;
@@ -581,6 +583,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 TreeUtils.getMethod(EnsuresQualifier.List.class, "value", 0, processingEnv);
         ensuresQualifierIfExpressionElement =
                 TreeUtils.getMethod(EnsuresQualifierIf.class, "expression", 0, processingEnv);
+        ensuresQualifierIfResultElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.class, "result", 0, processingEnv);
         ensuresQualifierIfListValueElement =
                 TreeUtils.getMethod(EnsuresQualifierIf.List.class, "value", 0, processingEnv);
         fieldInvariantFieldElement =
