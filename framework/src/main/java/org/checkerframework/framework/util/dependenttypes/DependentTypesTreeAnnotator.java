@@ -10,6 +10,7 @@ import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -55,7 +56,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitVariable(VariableTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-        Element ele = TreeUtils.elementFromDeclaration(node);
+        VariableElement ele = TreeUtils.elementFromDeclaration(node);
         helper.atVariableDeclaration(node, annotatedTypeMirror, ele);
         return super.visitVariable(node, annotatedTypeMirror);
     }
@@ -64,7 +65,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         Element ele = TreeUtils.elementFromUse(node);
         if (ele.getKind() == ElementKind.FIELD || ele.getKind() == ElementKind.ENUM_CONSTANT) {
-            helper.atVariableDeclaration(node, annotatedTypeMirror, ele);
+            helper.atVariableDeclaration(node, annotatedTypeMirror, (VariableElement) ele);
         }
         return super.visitIdentifier(node, annotatedTypeMirror);
     }

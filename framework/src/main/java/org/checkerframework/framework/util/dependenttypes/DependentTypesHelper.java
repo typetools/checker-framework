@@ -376,7 +376,7 @@ public class DependentTypesHelper {
      * @param variableElt the element of the variable declaration
      */
     public void atVariableDeclaration(
-            Tree declarationTree, AnnotatedTypeMirror type, Element variableElt) {
+            Tree declarationTree, AnnotatedTypeMirror type, VariableElement variableElt) {
         if (!hasDependentType(type)) {
             return;
         }
@@ -427,11 +427,10 @@ public class DependentTypesHelper {
 
             case FIELD:
             case ENUM_CONSTANT:
-                VariableElement fieldEle = (VariableElement) variableElt;
                 convertAnnotatedTypeMirror(
                         stringExpr ->
                                 StringToJavaExpression.atFieldDecl(
-                                        stringExpr, fieldEle, factory.getChecker()),
+                                        stringExpr, variableElt, factory.getChecker()),
                         type);
                 break;
 
@@ -494,7 +493,7 @@ public class DependentTypesHelper {
                     return;
                 }
 
-                atVariableDeclaration(declarationTree, type, elt);
+                atVariableDeclaration(declarationTree, type, (VariableElement) elt);
                 return;
 
             default:
