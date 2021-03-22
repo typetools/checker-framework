@@ -245,7 +245,9 @@ public class ValueCheckerUtils {
      * @param <T> the type of elements in {@code values}
      * @param values a list of values
      * @return the values, with duplicates removed
+     * @deprecated use {@link SystemUtil#removeDuplicates}
      */
+    @Deprecated // 2020-03-31
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
         if (Comparators.isInStrictOrder(values, Comparator.naturalOrder())) {
@@ -268,7 +270,7 @@ public class ValueCheckerUtils {
      */
     public static List<Integer> getLengthsForStringValues(List<String> values) {
         List<Integer> lengths = SystemUtil.mapList(String::length, values);
-        return ValueCheckerUtils.removeDuplicates(lengths);
+        return SystemUtil.removeDuplicates(lengths);
     }
 
     /**

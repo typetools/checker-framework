@@ -4,14 +4,13 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** The qualifier hierarchy for the Value type system. */
 final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
@@ -234,51 +233,37 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                     Range range2 = atypeFactory.getRange(a2);
                     return atypeFactory.createArrayLenRangeAnnotation(range1.union(range2));
                 case ValueAnnotatedTypeFactory.INTVAL_NAME:
-                    List<Long> a1Values = atypeFactory.getIntValues(a1);
-                    List<Long> a2Values = atypeFactory.getIntValues(a2);
-                    List<Long> newValues = new ArrayList<>(a1Values.size() + a2Values.size());
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
-                    return atypeFactory.createIntValAnnotation(newValues);
+                    List<Long> longs1 = atypeFactory.getIntValues(a1);
+                    List<Long> longs2 = atypeFactory.getIntValues(a2);
+                    return atypeFactory.createIntValAnnotation(
+                            SystemUtil.concatenate(longs1, longs2));
                 case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-                    List<Integer> al1Values = atypeFactory.getArrayLength(a1);
-                    List<Integer> al2Values = atypeFactory.getArrayLength(a2);
-                    List<Integer> newValuesAL =
-                            new ArrayList<>(al1Values.size() + al2Values.size());
-                    newValuesAL.addAll(al1Values);
-                    newValuesAL.addAll(al2Values);
-                    return atypeFactory.createArrayLenAnnotation(newValuesAL);
+                    List<Integer> arrayLens1 = atypeFactory.getArrayLength(a1);
+                    List<Integer> arrayLens2 = atypeFactory.getArrayLength(a2);
+                    return atypeFactory.createArrayLenAnnotation(
+                            SystemUtil.concatenate(arrayLens1, arrayLens2));
                 case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                    List<String> string1Values = atypeFactory.getStringValues(a1);
-                    List<String> string2Values = atypeFactory.getStringValues(a2);
-                    List<String> newStringValues =
-                            new ArrayList<>(string1Values.size() + string2Values.size());
-                    newStringValues.addAll(string1Values);
-                    newStringValues.addAll(string2Values);
-                    return atypeFactory.createStringAnnotation(newStringValues);
+                    List<String> strings1 = atypeFactory.getStringValues(a1);
+                    List<String> strings2 = atypeFactory.getStringValues(a2);
+                    return atypeFactory.createStringAnnotation(
+                            SystemUtil.concatenate(strings1, strings2));
+                case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
+                    List<Boolean> bools1 = atypeFactory.getBooleanValues(a1);
+                    List<Boolean> bools2 = atypeFactory.getBooleanValues(a2);
+                    return atypeFactory.createBooleanAnnotation(
+                            SystemUtil.concatenate(bools1, bools2));
+                case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
+                    List<Double> doubles1 = atypeFactory.getDoubleValues(a1);
+                    List<Double> doubles2 = atypeFactory.getDoubleValues(a2);
+                    return atypeFactory.createDoubleAnnotation(
+                            SystemUtil.concatenate(doubles1, doubles2));
+                case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+                    List<@Regex String> regexes1 = atypeFactory.getMatchesRegexValues(a1);
+                    List<@Regex String> regexes2 = atypeFactory.getMatchesRegexValues(a2);
+                    return atypeFactory.createMatchesRegexAnnotation(
+                            SystemUtil.concatenate(regexes1, regexes2));
                 default:
-                    // What cases does this default handle?  Make them explicit.
-                    List<Object> object1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                    List<Object> object2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                    TreeSet<Object> newObjectValues = new TreeSet<>();
-                    newObjectValues.addAll(object1Values);
-                    newObjectValues.addAll(object2Values);
-
-                    if (newObjectValues.isEmpty()) {
-                        return atypeFactory.BOTTOMVAL;
-                    }
-                    if (newObjectValues.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
-                        return atypeFactory.UNKNOWNVAL;
-                    }
-                    AnnotationBuilder builder =
-                            new AnnotationBuilder(
-                                    atypeFactory.getProcessingEnv(),
-                                    AnnotationUtils.annotationName(a1));
-                    List<Object> valuesList = new ArrayList<>(newObjectValues);
-                    builder.setValue("value", valuesList);
-                    return builder.build();
+                    throw new BugInCF("default case: %s %s %s%n", qual1, a1, a2);
             }
         }
 

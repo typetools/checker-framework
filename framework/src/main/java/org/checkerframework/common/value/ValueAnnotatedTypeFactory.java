@@ -711,7 +711,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             long valMin = Collections.min(values);
             long valMax = Collections.max(values);
@@ -748,7 +748,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -791,7 +791,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             // Too many strings are replaced by their lengths
             List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -820,7 +820,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.isEmpty() || Collections.min(values) < 0) {
             return BOTTOMVAL;
         } else if (values.size() > MAX_VALUES) {
@@ -847,7 +847,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -876,12 +876,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
             List<Long> longValues = SystemUtil.mapList((Character value) -> (long) value, values);
             return createIntValAnnotation(longValues);
+        }
+    }
+
+    /**
+     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of doubleacters; duplicates are allowed and the values may be in any order
+     * @return a {@link IntVal} annotation using the values
+     */
+    public AnnotationMirror createDoubleAnnotation(List<Double> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
+        values = SystemUtil.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
+            return UNKNOWNVAL;
+        } else {
+            List<Double> doubleValues =
+                    SystemUtil.mapList((Double value) -> (double) value, values);
+            return createDoubleValAnnotation(doubleValues);
         }
     }
 
@@ -1012,7 +1037,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param regexes a list of Java regular expressions
      * @return a MatchesRegex annotation with those values
      */
-    private AnnotationMirror createMatchesRegexAnnotation(@Nullable List<@Regex String> regexes) {
+    public AnnotationMirror createMatchesRegexAnnotation(@Nullable List<@Regex String> regexes) {
         if (regexes == null) {
             return UNKNOWNVAL;
         }
@@ -1131,7 +1156,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Long> list =
                 AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1151,7 +1176,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Double> list =
                 AnnotationUtils.getElementValueArray(
                         doubleAnno, doubleValValueElement, Double.class);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1171,7 +1196,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Integer> list =
                 AnnotationUtils.getElementValueArray(
                         arrayAnno, arrayLenValueElement, Integer.class);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1260,7 +1285,27 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> list =
                 AnnotationUtils.getElementValueArray(
                         stringAnno, stringValValueElement, String.class);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
+        return list;
+    }
+
+    /**
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
+     *
+     * @param matchesRegexAnno a {@code @MatchesRegex} annotation, or null
+     * @return the possible values, deduplicated and sorted
+     */
+    public List<String> getMatchesRegexValues(AnnotationMirror matchesRegexAnno) {
+        if (matchesRegexAnno == null) {
+            return null;
+        }
+        List<String> list =
+                AnnotationUtils.getElementValueArray(
+                        matchesRegexAnno, matchesRegexValueElement, String.class);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
