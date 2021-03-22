@@ -19,6 +19,9 @@ type `String[]`, not `String`.  A conditinoal postcondition annotation's
 will not affect users (any programmer-written annotation that was legal before
 will still be legal), but it may affect checker implementations.
 
+Removed methods:
+ * `AnnotationUtils.getElementValueArrayOrSingleton`
+
 Removed deprecated `PluginUtil` class.
 
 Method renamings:
