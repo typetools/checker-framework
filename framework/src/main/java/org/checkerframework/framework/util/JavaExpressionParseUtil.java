@@ -201,7 +201,7 @@ public class JavaExpressionParseUtil {
      *     identifier like "_param_2"
      */
     private static String replaceParameterSyntax(String expression) {
-        Pattern p = Pattern.compile("#(\\d+)");
+        Pattern p = Pattern.compile("#(\\d)");
         Matcher m = p.matcher(expression);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
