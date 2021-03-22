@@ -46,7 +46,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Create a new SearchIndexAnnotatedTypeFactory.
      *
-     * @checker the type-checker associated with this
+     * @param checker the type-checker associated with this
      */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
