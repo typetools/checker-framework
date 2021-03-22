@@ -777,10 +777,11 @@ public class DependentTypesHelper {
             }
             visitedNodes.put(type, null);
 
-            // If the type variable has a primary annotation, then it is viewpoint adapted then
-            // copied to the upper and lower bounds.  Attempting to viewpoint adapt again, could
-            // cause the JavaExpression parser to fail.  So, remove the primary annotations from
-            // the upper and lower bound before they are recursively visited.  Then add them back.
+            // If the type variable has a primary annotation, then it is viewpoint-adapted before
+            // this method is called.  The viewpoint-adapted primary annotation was already copied
+            // to the upper and lower bounds.  These annotations cannot be viewpoint-adapted again,
+            // so remove them, viewpoint-adapt any other annotations in the bound, and then add them
+            // back.
             Set<AnnotationMirror> primarys = type.getAnnotations();
             type.getLowerBound().removeAnnotations(primarys);
             Void r = scan(type.getLowerBound(), func);
@@ -801,11 +802,12 @@ public class DependentTypesHelper {
                     AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
                 AnnotationMirror newAnno = func.apply(anno);
                 if (newAnno != null) {
-                    // Computed annotations are written into bytecode along with explicitly written
-                    // annotations. (This is a bug.)
-                    // So remove the old annotation and add newAnno. newAnno for both the explicitly
-                    // written annotation and the original annotation are equal with respect to
-                    // Object#equals, so only one new annotation will be added to the type.
+                    // This code must remove and then add, rather then call replace, because type
+                    // may have multiple annotations with the same class, but different elements.
+                    // (This is a bug; see
+                    // https://github.com/typetools/checker-framework/issues/4451.)
+                    // AnnotatedTypeMirror#replace only removes one annotation that is in the same
+                    // hierarchy as the passed argument.
                     type.removeAnnotation(anno);
                     type.addAnnotation(newAnno);
                 }
@@ -830,6 +832,7 @@ public class DependentTypesHelper {
         if (errors == null || errors.isEmpty()) {
             return;
         }
+
         if (errorTree.getKind() == Kind.VARIABLE) {
             ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
             errorTree = ((VariableTree) errorTree).getType();
