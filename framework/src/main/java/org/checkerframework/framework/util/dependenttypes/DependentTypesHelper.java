@@ -94,8 +94,8 @@ public class DependentTypesHelper {
             new ExpressionErrorCollector();
 
     /**
-     * A scanner that applies a function to each {@link AnnotationMirror} in a given {@code
-     * AnnotatedTypeMirror}.
+     * A scanner that applies a function to each {@link AnnotationMirror} and replaces it in the
+     * given {@code AnnotatedTypeMirror}. (This side-effects the {@code AnnotatedTypeMirror}.)
      */
     private final AnnotatedTypeReplacer annotatedTypeReplacer = new AnnotatedTypeReplacer();
 
@@ -106,7 +106,18 @@ public class DependentTypesHelper {
     private final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
 
     /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
-    private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner;
+    private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
+            new SimpleAnnotatedTypeScanner<>(
+                    (type, unused) -> {
+                        for (AnnotationMirror annotationMirror : type.getAnnotations()) {
+                            if (isExpressionAnno(annotationMirror)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    Boolean::logicalOr,
+                    false);
 
     /** The type mirror for java.lang.Object. */
     TypeMirror objectTM;
@@ -126,12 +137,7 @@ public class DependentTypesHelper {
                 annoToElements.put(expressionAnno, elementList);
             }
         }
-        this.hasDependentTypeScanner =
-                new SimpleAnnotatedTypeScanner<>(
-                        (type, unused) ->
-                                type.getAnnotations().stream().anyMatch(this::isExpressionAnno),
-                        Boolean::logicalOr,
-                        false);
+
         this.objectTM =
                 TypesUtils.typeFromClass(Object.class, factory.types, factory.getElementUtils());
     }
@@ -565,8 +571,9 @@ public class DependentTypesHelper {
     /**
      * Calls {@link #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} on each
      * annotation mirror on type with {@code stringToJavaExpr}. And replaces the annotation with the
-     * one created by {@code convertAnnotationMirror}, it it's not null. See {@link
-     * #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} for more details.
+     * one created by {@code convertAnnotationMirror}, if it's not null. If it is null, the original
+     * annotation is used. See {@link #convertAnnotationMirror(StringToJavaExpression,
+     * AnnotationMirror)} for more details.
      *
      * @param stringToJavaExpr function to convert a string to a {@link JavaExpression}
      * @param type the type that is side-effected by this method
