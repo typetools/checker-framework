@@ -49,22 +49,19 @@ public abstract class Contract {
                 "precondition",
                 PreconditionAnnotation.class,
                 RequiresQualifier.class,
-                RequiresQualifier.List.class,
-                "value"),
+                RequiresQualifier.List.class),
         /** A postcondition. */
         POSTCONDITION(
                 "postcondition",
                 PostconditionAnnotation.class,
                 EnsuresQualifier.class,
-                EnsuresQualifier.List.class,
-                "value"),
+                EnsuresQualifier.List.class),
         /** A conditional postcondition. */
         CONDITIONALPOSTCONDITION(
                 "conditional postcondition",
                 ConditionalPostconditionAnnotation.class,
                 EnsuresQualifierIf.class,
-                EnsuresQualifierIf.List.class,
-                "expression");
+                EnsuresQualifierIf.List.class);
 
         /** Used for constructing error messages. */
         public final String errorKey;
@@ -75,11 +72,6 @@ public abstract class Contract {
         public final Class<? extends Annotation> frameworkContractClass;
         /** The built-in framework qualifier for repeated occurrences of this contract. */
         public final Class<? extends Annotation> frameworkContractListClass;
-        /**
-         * The name of the element that contains the Java expressions on which a contract is
-         * enforced.
-         */
-        public final String expressionElementName;
 
         /**
          * Create a new Kind.
@@ -89,20 +81,16 @@ public abstract class Contract {
          * @param frameworkContractClass the built-in framework qualifier for this contract
          * @param frameworkContractListClass the built-in framework qualifier for repeated
          *     occurrences of this contract
-         * @param expressionElementName the name of the element that contains the Java expressions
-         *     on which a contract is enforced
          */
         Kind(
                 String errorKey,
                 Class<? extends Annotation> metaAnnotation,
                 Class<? extends Annotation> frameworkContractClass,
-                Class<? extends Annotation> frameworkContractListClass,
-                String expressionElementName) {
+                Class<? extends Annotation> frameworkContractListClass) {
             this.errorKey = errorKey;
             this.metaAnnotation = metaAnnotation;
             this.frameworkContractClass = frameworkContractClass;
             this.frameworkContractListClass = frameworkContractListClass;
-            this.expressionElementName = expressionElementName;
         }
     }
 
