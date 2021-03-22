@@ -272,20 +272,6 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Gets the value field of an annotation with a list of strings in its value field. Null is
-     * returned if the annotation has no value field.
-     *
-     * <p>For the Index Checker, this will get a list of array names from an Upper Bound or SameLen
-     * annotation. making this safe to call on any Upper Bound or SameLen annotation.
-     */
-    public static List<String> getValueOfAnnotationWithStringArgument(AnnotationMirror anno) {
-        if (!AnnotationUtils.hasElementValue(anno, "value")) {
-            return null;
-        }
-        return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
-    }
-
-    /**
      * Returns a range representing the possible integral values represented by the passed {@code
      * AnnotatedTypeMirror}. If the passed {@code AnnotatedTypeMirror} does not contain an {@code
      * IntRange} annotation or an {@code IntVal} annotation, returns null.

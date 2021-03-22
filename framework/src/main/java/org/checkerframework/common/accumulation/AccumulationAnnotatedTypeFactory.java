@@ -319,7 +319,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (!isAccumulatorAnnotation(anno)) {
             throw new BugInCF(anno + " isn't an accumulator annotation");
         }
-        List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
+        List<String> values =
+                AnnotationUtils.getElementValueArrayOrNull(anno, "value", String.class, false);
         if (values == null) {
             return Collections.emptyList();
         } else {

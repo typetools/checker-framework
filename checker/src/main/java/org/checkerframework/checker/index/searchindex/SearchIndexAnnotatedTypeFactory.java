@@ -19,11 +19,11 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -39,6 +39,9 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
 
+    /** The NegativeIndexFor.value field/element. */
+    protected ExecutableElement negativeIndexForValueElement =
+            TreeUtils.getMethod(NegativeIndexFor.class, "value", 0, processingEnv);
     /** The SearchIndexFor.value field/element. */
     protected ExecutableElement searchIndexForValueElement =
             TreeUtils.getMethod(SearchIndexFor.class, "value", 0, processingEnv);
@@ -75,6 +78,24 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         return new SearchIndexQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
+    }
+
+    /**
+     * Returns the {@code value} field/element of the given annotation.
+     *
+     * @param am a @NegativeIndexFor or @SearchIndexFor annotation
+     * @return the {@code value} field/element of the given annotation
+     */
+    private List<String> getValueElement(AnnotationMirror am) {
+        if (areSameByClass(am, NegativeIndexFor.class)) {
+            return AnnotationUtils.getElementValueArray(
+                    am, negativeIndexForValueElement, String.class);
+        } else if (areSameByClass(am, SearchIndexFor.class)) {
+            return AnnotationUtils.getElementValueArray(
+                    am, searchIndexForValueElement, String.class);
+        } else {
+            throw new BugInCF("indexForValue(%s)", am);
+        }
     }
 
     /** SearchIndexQualifierHierarchy. */
@@ -114,11 +135,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If neither is a subtype of the other, then create an
             // annotation that combines their values.
 
-            // Each annotation is either NegativeIndexFor or SearchIndexFor.
-            Set<String> combinedArrays =
-                    new HashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
-            combinedArrays.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
+            Set<String> combinedArrays = new HashSet<>(getValueElement(a1));
+            combinedArrays.addAll(getValueElement(a2));
 
+            // NegativeIndexFor <: SearchIndexFor.
             if (areSameByClass(a1, NegativeIndexFor.class)
                     || areSameByClass(a2, NegativeIndexFor.class)) {
                 return createNegativeIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));
@@ -151,10 +171,8 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // annotation that includes only their overlapping values.
 
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
-            List<String> arrayIntersection =
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
-            arrayIntersection.retainAll(
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
+            List<String> arrayIntersection = getValueElement(a1);
+            arrayIntersection.retainAll(getValueElement(a2));
 
             if (arrayIntersection.isEmpty()) {
                 return UNKNOWN;
@@ -186,10 +204,8 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
-            List<String> superArrays =
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno);
-            List<String> subArrays =
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
+            List<String> superArrays = getValueElement(superAnno);
+            List<String> subArrays = getValueElement(subAnno);
 
             // Subtyping requires:
             //  * subtype is NegativeIndexFor or supertype is SearchIndexFor
