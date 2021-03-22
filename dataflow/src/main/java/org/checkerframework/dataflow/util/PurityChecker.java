@@ -9,6 +9,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
@@ -287,9 +288,27 @@ public class PurityChecker {
 
         @Override
         public Void visitAssignment(AssignmentTree node, Void ignore) {
+            System.out.printf("PurityChecker.visitAssignment(%s)%n", node);
             ExpressionTree variable = node.getVariable();
             assignmentCheck(variable);
             return super.visitAssignment(node, ignore);
+        }
+
+        @Override
+        public Void visitUnary(UnaryTree node, Void ignore) {
+            switch (node.getKind()) {
+                case POSTFIX_DECREMENT:
+                case POSTFIX_INCREMENT:
+                case PREFIX_DECREMENT:
+                case PREFIX_INCREMENT:
+                    ExpressionTree expression = node.getExpression();
+                    assignmentCheck(expression);
+                    break;
+                default:
+                    // Nothing to do
+                    break;
+            }
+            return super.visitUnary(node, ignore);
         }
 
         /**
