@@ -61,10 +61,8 @@ public class I18nFormatterTreeUtil {
 
     /** The value() element/field of an @I18nFormat annotation. */
     protected final ExecutableElement i18nFormatValueElement;
-
     /** The value() element/field of an @I18nFormatFor annotation. */
     protected final ExecutableElement i18nFormatForValueElement;
-
     /** The value() element/field of an @I18nInvalidFormat annotation. */
     protected final ExecutableElement i18nInvalidFormatValueElement;
 

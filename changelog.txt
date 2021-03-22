@@ -1,4 +1,4 @@
-Version 3.11.1, April 1, 2021
+Version 3.12.0, April 1, 2021
 
 **User-visible changes:**
 
@@ -20,6 +20,9 @@ will not affect users (any programmer-written annotation that was legal before
 will still be legal), but it may affect checker implementations.
 
 Removed deprecated `PluginUtil` class.
+
+Method renamings:
+ * `DefaultQualifierForUseTypeAnnotator.getSupportAnnosFromDefaultQualifierForUses` => `getDefaultQualifierForUses`
 
 **Closed issues:**
 
