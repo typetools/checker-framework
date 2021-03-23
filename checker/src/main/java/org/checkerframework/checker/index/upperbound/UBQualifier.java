@@ -165,7 +165,7 @@ public abstract class UBQualifier {
                         atypeFactory.substringIndexForOffsetElement,
                         String.class);
         if (offsets.isEmpty()) {
-            offsets = Collections.nCopies(sequences.size(), "");
+            offsets = nCopiesEmptyString(sequences.size());
         }
         return createUBQualifier(sequences, offsets, extraOffset);
     }

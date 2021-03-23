@@ -135,6 +135,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If neither is a subtype of the other, then create an
             // annotation that combines their values.
 
+            // Each annotation is either NegativeIndexFor or SearchIndexFor.
             Set<String> combinedArrays = new HashSet<>(getValueElement(a1));
             combinedArrays.addAll(getValueElement(a2));
 
