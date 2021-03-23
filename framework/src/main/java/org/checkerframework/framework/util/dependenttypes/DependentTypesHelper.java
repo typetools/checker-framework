@@ -60,9 +60,33 @@ import org.plumelib.util.StringsPlume;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
- * expression strings. This class performs three main functions:
+ * expression strings. This class performs four main functions:
  *
  * <ol>
+ *   <li>Converts the expressions strings in an {@link AnnotationMirror} {@code am}, by creating a
+ *       new annotation whose Java expression elements are the result of the converson. See {@link
+ *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}. Subclasses can
+ *       specialize this process by overriding methods in this class. Conversion include:
+ *       standardization, viewpoint-adaption, and delocalization.
+ *       <ul>
+ *         <li>Standardization: the expressions in the annotations are converted such that two
+ *             expression strings that are equivalent are made to be equal. For example, an instance
+ *             field f may appear in an expression string as "f" or "this.f"; this class
+ *             standardizes both strings to "this.f".
+ *         <li>Viewpoint-adaption: converts an expression to some use site. For example, in method
+ *             bodies, formal parameter references such as "#2" are converted to the name of the
+ *             formal parameter. Another example, is at method call site, "this" is converted to the
+ *             receiver of the method invocation.
+ *         <li>Delocalization: removes all expressions with references to local variables that are
+ *             not parameters and changes parameters to the "#1" syntax.
+ *       </ul>
+ *       Java expressions are always standardized by this class, but only sometimes
+ *       viewpoint-adapted or delocalized.
+ *       <p>Standardizes/canonicalizes the expressions in the annotations such that two expression
+ *       strings that are equivalent are made to be equal. For example, an instance field f may
+ *       appear in an expression string as "f" or "this.f"; this class standardizes both strings to
+ *       "this.f". It also standardizes formal parameter references such as "#2" to the formal
+ *       parameter name.
  *   <li>Viewpoint-adapts an {@link AnnotationMirror} {@code am}, creating a new one whose Java
  *       expression elements are viewpoint-adapted versions of {@code am}'s. See {@link
  *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}. Subclasses can
@@ -354,7 +378,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardizes the Java expressions in annotations to a class declaration.
+     * Standardizes the Java expressions in annotations to a type declaration.
      *
      * @param type the type of the type declaration; is side-effected by this method
      * @param typeElt the element of the type declaration
@@ -376,7 +400,8 @@ public class DependentTypesHelper {
             EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION);
 
     /**
-     * Standardize the Java expressions in annotations in a variable declaration.
+     * Standardize the Java expressions in annotations in a variable declaration. Converts the
+     * parameter syntax to the parameter name.
      *
      * @param declarationTree the variable declaration
      * @param type the type of the variable declaration; is side-effected by this method
@@ -448,7 +473,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the Java expressions in annotations in the type of an expression.
+     * Standardize the Java expressions in annotations in the type of an expression. Converts the
+     * parameter syntax to the parameter name.
      *
      * @param tree an expression
      * @param annotatedType its type; is side-effected by this method
@@ -468,7 +494,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the Java expressions in annotations in a type.
+     * Standardize the Java expressions in annotations in a type. Converts the parameter syntax to
+     * the parameter name.
      *
      * @param type the type to standardize; is side-effected by this method
      * @param elt the element whose type is {@code type}
