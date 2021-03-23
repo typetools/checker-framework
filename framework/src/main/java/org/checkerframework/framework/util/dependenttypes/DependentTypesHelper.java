@@ -121,7 +121,7 @@ public class DependentTypesHelper {
                     false);
 
     /** The type mirror for java.lang.Object. */
-    TypeMirror objectTM;
+    protected final TypeMirror objectTM;
 
     /**
      * Creates a {@code DependentTypesHelper}.
@@ -596,9 +596,9 @@ public class DependentTypesHelper {
      * the behavior of this class:
      *
      * <ul>
-     *   <li>{@link #shouldParseExpression(String)}: to control which expressions are skipped. If
-     *       this method returns false, then the expression string is not parsed and is included in
-     *       the new annotation unchanged.
+     *   <li>{@link #shouldPassThroughExpression(String)}: to control which expressions are skipped.
+     *       If this method returns false, then the expression string is not parsed and is included
+     *       in the new annotation unchanged.
      *   <li>{@link #transform(JavaExpression)}: make changes to the JavaExpression produced by
      *       {@code stringToJavaExpr}.
      *   <li>{@link #buildAnnotation(AnnotationMirror, Map)}: to change the annotation returned by
@@ -624,14 +624,14 @@ public class DependentTypesHelper {
             newElements.put(value, javaExprs);
             for (String expression : expressionStrings) {
                 JavaExpression result;
-                if (shouldParseExpression(expression)) {
+                if (shouldPassThroughExpression(expression)) {
+                    result = new PassThroughExpression(objectTM, expression);
+                } else {
                     try {
                         result = stringToJavaExpr.toJavaExpression(expression);
                     } catch (JavaExpressionParseException e) {
                         result = createError(expression, e);
                     }
-                } else {
-                    result = createPassThroughString(expression);
                 }
 
                 if (result != null) {
@@ -661,19 +661,19 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Whether or not {@code expression} should be parsed. The default implementation returns false
-     * if the {@code expression} is an expression error according to {@link
-     * DependentTypesError#isExpressionError(String)}. Subclasses may override this method to add
-     * additional logic.
+     * Whether or not {@code expression} should be passed to the new annotation unchanged. The
+     * default implementation returns true if the {@code expression} is an expression error
+     * according to {@link DependentTypesError#isExpressionError(String)}. Subclasses may override
+     * this method to add additional logic.
      *
-     * <p>If this method returns false, the {@code expression} is not parsed and will appear in the
-     * dependent types annotation as is.
+     * <p>If this method returns true, the {@code expression} is not parsed.
      *
      * @param expression an expression string in a dependent types annotation
-     * @return whether or not {@code expression} should be parsed
+     * @return whether or not {@code expression} should be passed through unchanged to the new
+     *     annotation
      */
-    protected boolean shouldParseExpression(String expression) {
-        return !DependentTypesError.isExpressionError(expression);
+    protected boolean shouldPassThroughExpression(String expression) {
+        return DependentTypesError.isExpressionError(expression);
     }
 
     /**
@@ -724,17 +724,6 @@ public class DependentTypesHelper {
         public String toString() {
             return string;
         }
-    }
-
-    /**
-     * Allows an expression string to be converted to a JavaExpression and then to a string without
-     * parsing the string.
-     *
-     * @param string some string
-     * @return a {@link PassThroughExpression}
-     */
-    protected PassThroughExpression createPassThroughString(String string) {
-        return new PassThroughExpression(objectTM, string);
     }
 
     /**
