@@ -27,6 +27,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
     CalledMethodsChecker.USE_VALUE_CHECKER,
     CalledMethodsChecker.COUNT_FRAMEWORK_BUILD_CALLS,
     CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS,
+    CalledMethodsChecker.DISABLE_RETURNS_RECEIVER
 })
 @StubFiles({"DescribeImages.astub", "GenerateDataKey.astub"})
 public class CalledMethodsChecker extends AccumulationChecker {

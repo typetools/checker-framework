@@ -251,6 +251,12 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public final boolean hasOrIsSubchecker;
 
+    /** The RequiresQualifier.expression argument/element. */
+    private final ExecutableElement requiresQualifierExpressionElement;
+    /** The EnsuresQualifier.expression argument/element. */
+    private final ExecutableElement ensuresQualifierExpressionElement;
+    /** The EnsuresQualifierIf.expression argument/element. */
+    private final ExecutableElement ensuresQualifierIfExpressionElement;
     /** The EnsuresQualifierIf.result argument/element. */
     private final ExecutableElement ensuresQualifierIfResultElement;
 
@@ -372,6 +378,12 @@ public abstract class GenericAnnotatedTypeFactory<
                 !this.getChecker().getSubcheckers().isEmpty()
                         || this.getChecker().getParentChecker() != null;
 
+        requiresQualifierExpressionElement =
+                TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
+        ensuresQualifierExpressionElement =
+                TreeUtils.getMethod(EnsuresQualifier.class, "expression", 0, processingEnv);
+        ensuresQualifierIfExpressionElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.class, "expression", 0, processingEnv);
         ensuresQualifierIfResultElement =
                 TreeUtils.getMethod(EnsuresQualifierIf.class, "result", 0, processingEnv);
 
@@ -2692,6 +2704,38 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         } else {
             return null;
+        }
+    }
+
+    /**
+     * If {@code contractAnnotation} is a framework annotation, return its {@code expression}
+     * element. Otherwise, {@code contractAnnotation} is defined in a checker. If kind =
+     * CONDITIONALPOSTCONDITION, return its {@code expression} element, else return its {@code
+     * value} element.
+     *
+     * @param kind the kind of {@code contractAnnotation}
+     * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+     *     EnsuresQualifierIf}
+     * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have
+     *     a {@code result} element
+     */
+    public List<String> getContractExpressions(
+            Contract.Kind kind, AnnotationMirror contractAnnotation) {
+        if (contractAnnotation instanceof RequiresQualifier) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, requiresQualifierExpressionElement, String.class);
+        } else if (contractAnnotation instanceof EnsuresQualifier) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, ensuresQualifierExpressionElement, String.class);
+        } else if (contractAnnotation instanceof EnsuresQualifierIf) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, ensuresQualifierIfExpressionElement, String.class);
+        } else if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, "expression", String.class, true);
+        } else {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, "value", String.class, true);
         }
     }
 }

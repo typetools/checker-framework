@@ -142,9 +142,7 @@ public class ContractsFromMethod {
             if (enforcedQualifier == null) {
                 continue;
             }
-            List<String> expressions =
-                    AnnotationUtils.getElementValueArrayOrSingleton(
-                            anno, kind.expressionElementName, String.class, true);
+            List<String> expressions = factory.getContractExpressions(kind, anno);
             Collections.sort(expressions);
             Boolean ensuresQualifierIfResult = factory.getEnsuresQualifierIfResult(kind, anno);
 
