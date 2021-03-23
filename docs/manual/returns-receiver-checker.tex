@@ -7,7 +7,11 @@ returns its receiver (i.e., the \<this> parameter).
 There are two ways to run the Returns Receiver Checker.
 \begin{itemize}
 \item
-Typically, it is automatically run by another checker.
+  Typically, it is automatically run by another checker.
+
+  If the code being checked does not use fluent APIs, you can pass the
+  \<-AdisableReturnsReceiver> command-line option.  This disables the
+  Returns Receiver Checker and makes the other checker run faster.
 \item
 Alternately, you can run just the Returns Receiver Checker, by
 supplying the following command-line options to javac:
