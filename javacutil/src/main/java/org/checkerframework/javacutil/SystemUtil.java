@@ -225,7 +225,7 @@ public class SystemUtil {
             // Per the Javadoc of RandomAccess, an indexed for loop is faster than a foreach loop.
             int size = values.size();
             for (int i = 0; i < size - 1; i++) {
-                if (values.get(i).compareTo(values.get(i)) > 0) {
+                if (values.get(i).compareTo(values.get(i + 1)) > 0) {
                     return false;
                 }
             }
