@@ -1,6 +1,5 @@
 package org.checkerframework.javacutil;
 
-import com.google.common.collect.Comparators;
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -13,7 +12,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.RandomAccess;
@@ -199,7 +198,7 @@ public class SystemUtil {
      */
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
-        if (Comparators.isInStrictOrder(values, Comparator.naturalOrder())) {
+        if (isSorted(values)) {
             return values;
         }
 
@@ -208,6 +207,40 @@ public class SystemUtil {
             return values;
         } else {
             return new ArrayList<>(set);
+        }
+    }
+
+    /**
+     * Returns true if the given list is sorted.
+     *
+     * @param values a list
+     * @return true if the list is sorted
+     */
+    public static <T extends Comparable<T>> boolean isSorted(List<T> values) {
+        if (values.isEmpty() || values.size() == 1) {
+            return true;
+        }
+
+        if (values instanceof RandomAccess) {
+            // Per the Javadoc of RandomAccess, an indexed for loop is faster than a foreach loop.
+            int size = values.size();
+            for (int i = 0; i < size - 1; i++) {
+                if (values.get(i).compareTo(values.get(i)) > 0) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            Iterator<T> iter = values.iterator();
+            T previous = iter.next();
+            while (iter.hasNext()) {
+                T current = iter.next();
+                if (previous.compareTo(current) > 0) {
+                    return false;
+                }
+                previous = current;
+            }
+            return true;
         }
     }
 
