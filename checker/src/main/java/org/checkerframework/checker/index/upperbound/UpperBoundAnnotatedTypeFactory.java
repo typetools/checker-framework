@@ -112,6 +112,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     public final AnnotationMirror POLY =
             AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
+    /** Predicates about what method an invocation is calling. */
     private final IndexMethodIdentifier imf;
 
     /** Create a new UpperBoundAnnotatedTypeFactory. */

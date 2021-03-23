@@ -1102,6 +1102,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * supports the {@code @IntVal} annotation.
      *
      * @param intAnno an {@code @IntVal} annotation, or null
+     * @return the possible values, deduplicated and sorted
      */
     public static List<Long> getIntValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
@@ -1119,6 +1120,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * annotation so the argument is null.
      *
      * @param doubleAnno a {@code @DoubleVal} annotation, or null
+     * @return the possible values, deduplicated and sorted
      */
     public static List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
         if (doubleAnno == null) {
@@ -1137,6 +1139,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * constant-value annotation so the argument is null.
      *
      * @param arrayAnno an {@code @ArrayLen} annotation, or null
+     * @return the possible array lengths, deduplicated and sorted
      */
     public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
         if (arrayAnno == null) {
@@ -1224,6 +1227,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * annotation so the argument is null.
      *
      * @param stringAnno a {@code @StringVal} annotation, or null
+     * @return the possible values, deduplicated and sorted
      */
     public static List<String> getStringValues(AnnotationMirror stringAnno) {
         if (stringAnno == null) {

@@ -46,6 +46,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     public final AnnotationMirror LESS_THAN_UNKNOWN =
             AnnotationBuilder.fromClass(elements, LessThanUnknown.class);
 
+    /**
+     * Creates a new LessThanAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker associated with this type factory
+     */
     public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
@@ -344,7 +349,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
         } else if (AnnotationUtils.areSameByClass(annotation, LessThanUnknown.class)) {
             return Collections.emptyList();
         } else {
-            // The annotation is LessThan.
+            // The annotation is @LessThan.
             return AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
         }
     }
