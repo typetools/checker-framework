@@ -178,7 +178,7 @@ public class LockAnnotatedTypeFactory
                 // There is no expression to use to replace <self> here, so just pass the
                 // expression along.
                 return super.shouldPassThroughExpression(expression)
-                        && LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches();
+                        || LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches();
             }
 
             @Override
