@@ -198,7 +198,7 @@ public class SystemUtil {
      */
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
-        if (isSorted(values)) {
+        if (isSortedNoDuplicates(values)) {
             return values;
         }
 
@@ -236,6 +236,40 @@ public class SystemUtil {
             while (iter.hasNext()) {
                 T current = iter.next();
                 if (previous.compareTo(current) > 0) {
+                    return false;
+                }
+                previous = current;
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Returns true if the given list is sorted and has no duplicates
+     *
+     * @param values a list
+     * @return true if the list is sorted and has no duplicates
+     */
+    public static <T extends Comparable<T>> boolean isSortedNoDuplicates(List<T> values) {
+        if (values.isEmpty() || values.size() == 1) {
+            return true;
+        }
+
+        if (values instanceof RandomAccess) {
+            // Per the Javadoc of RandomAccess, an indexed for loop is faster than a foreach loop.
+            int size = values.size();
+            for (int i = 0; i < size - 1; i++) {
+                if (values.get(i).compareTo(values.get(i + 1)) >= 0) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            Iterator<T> iter = values.iterator();
+            T previous = iter.next();
+            while (iter.hasNext()) {
+                T current = iter.next();
+                if (previous.compareTo(current) >= 0) {
                     return false;
                 }
                 previous = current;
