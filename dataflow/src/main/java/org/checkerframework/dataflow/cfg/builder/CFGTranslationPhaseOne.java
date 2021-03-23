@@ -584,7 +584,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /**
      * Extend the list of extended nodes with a node, where {@code node} might throw any of the
-     * exception in {@code causes}.
+     * exceptions in {@code causes}.
      *
      * @param node the node to add
      * @param causes set of exceptions that the node might throw
