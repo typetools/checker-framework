@@ -99,6 +99,27 @@ public class PhaseOneResult {
     }
 
     /**
+     * Returns a representation of a map, one entry per line.
+     *
+     * @param map a map
+     * @return a representation of a map, one entry per line
+     */
+    public <K, V> String mapToString(Map<K, V> map) {
+        if (map.isEmpty()) {
+            return "{}";
+        }
+        StringJoiner result =
+                new StringJoiner(
+                        String.format("%n    "),
+                        String.format("{%n    "),
+                        String.format("%n    }"));
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            result.add(entry.getKey() + " => " + entry.getValue());
+        }
+        return result.toString();
+    }
+
+    /**
      * Returns a verbose string representation of this, useful for debugging.
      *
      * @return a string representation of this
@@ -109,9 +130,9 @@ public class PhaseOneResult {
                         String.format("%n  "),
                         String.format("PhaseOneResult{%n  "),
                         String.format("%n  }"));
-        result.add("treeLookupMap=" + treeLookupMap);
-        result.add("convertedTreeLookupMap=" + convertedTreeLookupMap);
-        result.add("unaryAssignNodeLookupMap=" + unaryAssignNodeLookupMap);
+        result.add("treeLookupMap=" + mapToString(treeLookupMap));
+        result.add("convertedTreeLookupMap=" + mapToString(convertedTreeLookupMap));
+        result.add("unaryAssignNodeLookupMap=" + mapToString(unaryAssignNodeLookupMap));
         result.add("underlyingAST=" + underlyingAST);
         result.add("bindings=" + bindings);
         result.add("nodeList=" + CFGBuilder.extendedNodeCollectionToStringDebug(nodeList));
