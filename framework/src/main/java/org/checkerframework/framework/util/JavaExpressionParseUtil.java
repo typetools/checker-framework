@@ -201,14 +201,14 @@ public class JavaExpressionParseUtil {
      *     identifier like "_param_2"
      */
     private static String replaceParameterSyntax(String expression) {
-        String updatedExpression = expression;
-
-        for (Integer integer : parameterIndices(expression)) {
-            updatedExpression =
-                    updatedExpression.replaceAll("#" + integer, PARAMETER_REPLACEMENT + integer);
+        Pattern p = Pattern.compile("#(\\d)");
+        Matcher m = p.matcher(expression);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            m.appendReplacement(sb, PARAMETER_REPLACEMENT + m.group(1));
         }
-
-        return updatedExpression;
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     /**
