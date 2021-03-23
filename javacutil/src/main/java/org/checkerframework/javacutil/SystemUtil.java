@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import com.google.common.collect.Comparators;
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -12,10 +13,13 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.RandomAccess;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,6 +187,28 @@ public class SystemUtil {
         }
         sj.add(conjunction + " " + elements.get(size - 1));
         return sj.toString();
+    }
+
+    /**
+     * Returns a list with the same contents as its argument, but without duplicates. May return its
+     * argument if its argument has no duplicates, but is not guaranteed to do so.
+     *
+     * @param <T> the type of elements in {@code values}
+     * @param values a list of values
+     * @return the values, with duplicates removed
+     */
+    public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
+        // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
+        if (Comparators.isInStrictOrder(values, Comparator.naturalOrder())) {
+            return values;
+        }
+
+        Set<T> set = new TreeSet<>(values);
+        if (values.size() == set.size()) {
+            return values;
+        } else {
+            return new ArrayList<>(set);
+        }
     }
 
     ///

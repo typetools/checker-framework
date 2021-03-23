@@ -690,7 +690,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             long valMin = Collections.min(values);
             long valMax = Collections.max(values);
@@ -727,7 +727,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -770,7 +770,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             // Too many strings are replaced by their lengths
             List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -799,7 +799,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.isEmpty() || Collections.min(values) < 0) {
             return BOTTOMVAL;
         } else if (values.size() > MAX_VALUES) {
@@ -826,7 +826,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -855,7 +855,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -1108,7 +1108,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1126,7 +1126,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Double> list =
                 AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1144,7 +1144,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Integer> list =
                 AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1231,7 +1231,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<String> list =
                 AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
