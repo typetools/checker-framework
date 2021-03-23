@@ -212,7 +212,7 @@ public abstract class Contract {
             return annotation;
         }
         if (errorTree != null) {
-            dependentTypesHelper.checkAnnotation(standardized, errorTree);
+            dependentTypesHelper.checkAnnotationForErrorExpressions(standardized, errorTree);
         }
         return standardized;
     }

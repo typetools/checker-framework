@@ -826,7 +826,7 @@ public class DependentTypesHelper {
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
      */
-    public void checkType(AnnotatedTypeMirror atm, Tree errorTree) {
+    public void checkTypeForErrorExpressions(AnnotatedTypeMirror atm, Tree errorTree) {
         if (!hasDependentAnnotations()) {
             return;
         }
@@ -900,7 +900,7 @@ public class DependentTypesHelper {
      * @param annotation annotation to check
      * @param errorTree location at which to issue errors
      */
-    public void checkAnnotation(AnnotationMirror annotation, Tree errorTree) {
+    public void checkAnnotationForErrorExpressions(AnnotationMirror annotation, Tree errorTree) {
         if (!hasDependentAnnotations()) {
             return;
         }
@@ -922,14 +922,14 @@ public class DependentTypesHelper {
      * @param classTree class to check
      * @param type annotated type of the class
      */
-    public void checkClass(ClassTree classTree, AnnotatedDeclaredType type) {
+    public void checkClassForErrorExpressions(ClassTree classTree, AnnotatedDeclaredType type) {
         if (!hasDependentAnnotations()) {
             return;
         }
 
         // TODO: check that invalid annotations in type variable bounds are properly
         // formatted. They are part of the type, but the output isn't nicely formatted.
-        checkType(type, classTree);
+        checkTypeForErrorExpressions(type, classTree);
     }
 
     /**
@@ -939,14 +939,15 @@ public class DependentTypesHelper {
      * @param methodDeclTree method to check
      * @param type annotated type of the method
      */
-    public void checkMethod(MethodTree methodDeclTree, AnnotatedExecutableType type) {
+    public void checkMethodForErrorExpressions(
+            MethodTree methodDeclTree, AnnotatedExecutableType type) {
         if (!hasDependentAnnotations()) {
             return;
         }
 
         // Parameters and receivers are checked by visitVariable
         // So only type parameters and return type need to be checked here.
-        checkTypeVariables(methodDeclTree, type);
+        checkTypeVariablesForErrorExpressions(methodDeclTree, type);
 
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
@@ -955,7 +956,7 @@ public class DependentTypesHelper {
                     TreeUtils.isConstructor(methodDeclTree)
                             ? methodDeclTree
                             : methodDeclTree.getReturnType();
-            checkType(returnType, treeForError);
+            checkTypeForErrorExpressions(returnType, treeForError);
         }
     }
 
@@ -966,7 +967,8 @@ public class DependentTypesHelper {
      * @param node a method declaration
      * @param methodType annotated type of the method
      */
-    private void checkTypeVariables(MethodTree node, AnnotatedExecutableType methodType) {
+    private void checkTypeVariablesForErrorExpressions(
+            MethodTree node, AnnotatedExecutableType methodType) {
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
             convertAnnotatedTypeMirror(
@@ -974,7 +976,7 @@ public class DependentTypesHelper {
                             StringToJavaExpression.atMethodBody(
                                     stringExpr, node, factory.getChecker()),
                     atm);
-            checkType(atm, node.getTypeParameters().get(i));
+            checkTypeForErrorExpressions(atm, node.getTypeParameters().get(i));
         }
     }
 
