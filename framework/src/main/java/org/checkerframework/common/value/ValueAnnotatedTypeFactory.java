@@ -705,6 +705,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Convert an {@code @IntRange} annotation to an {@code @IntVal} annotation, or to UNKNOWNVAL if
      * the input is too wide to be represented as an {@code @IntVal}.
+     *
+     * @param intRangeAnno an {@code @IntRange} annotation
+     * @return an {@code @IntVal} annotation corresponding to the argument
      */
     public AnnotationMirror convertIntRangeToIntVal(AnnotationMirror intRangeAnno) {
         Range range = getRange(intRangeAnno);
