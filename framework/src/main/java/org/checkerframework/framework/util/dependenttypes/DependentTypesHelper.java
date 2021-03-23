@@ -693,7 +693,7 @@ public class DependentTypesHelper {
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(originalAnno));
-
+        builder.copyElementValuesFromAnnotation(originalAnno, elementMap.keySet());
         for (Map.Entry<String, List<JavaExpression>> entry : elementMap.entrySet()) {
             String value = entry.getKey();
             List<String> strings = SystemUtil.mapList(JavaExpression::toString, entry.getValue());

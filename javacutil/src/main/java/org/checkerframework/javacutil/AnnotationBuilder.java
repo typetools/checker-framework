@@ -286,15 +286,27 @@ public class AnnotationBuilder {
     public void copyElementValuesFromAnnotation(
             AnnotationMirror valueHolder, String... ignorableElements) {
         Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
+        copyElementValuesFromAnnotation(valueHolder, ignorableElementsSet);
+    }
+
+    /**
+     * Copies every element value from the given annotation. If an element in the given annotation
+     * doesn't exist in the annotation to be built, an error is raised unless the element is
+     * specified in {@code ignorableElements}.
+     *
+     * @param valueHolder the annotation that holds the values to be copied
+     * @param ignorableElements the elements that can be safely dropped
+     */
+    public void copyElementValuesFromAnnotation(
+            AnnotationMirror valueHolder, Set<String> ignorableElements) {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
                 valueHolder.getElementValues().entrySet()) {
             Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-            if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
+            if (ignorableElements.contains(eltNameToCopy.toString())) {
                 continue;
             }
             elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
         }
-        return;
     }
 
     /**
