@@ -31,6 +31,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -77,6 +78,7 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -97,6 +99,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -248,6 +251,15 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public final boolean hasOrIsSubchecker;
 
+    /** The RequiresQualifier.expression argument/element. */
+    private final ExecutableElement requiresQualifierExpressionElement;
+    /** The EnsuresQualifier.expression argument/element. */
+    private final ExecutableElement ensuresQualifierExpressionElement;
+    /** The EnsuresQualifierIf.expression argument/element. */
+    private final ExecutableElement ensuresQualifierIfExpressionElement;
+    /** The EnsuresQualifierIf.result argument/element. */
+    private final ExecutableElement ensuresQualifierIfResultElement;
+
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -365,6 +377,15 @@ public abstract class GenericAnnotatedTypeFactory<
         hasOrIsSubchecker =
                 !this.getChecker().getSubcheckers().isEmpty()
                         || this.getChecker().getParentChecker() != null;
+
+        requiresQualifierExpressionElement =
+                TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
+        ensuresQualifierExpressionElement =
+                TreeUtils.getMethod(EnsuresQualifier.class, "expression", 0, processingEnv);
+        ensuresQualifierIfExpressionElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.class, "expression", 0, processingEnv);
+        ensuresQualifierIfResultElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.class, "result", 0, processingEnv);
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -511,7 +532,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a tree annotator
      */
     protected TreeAnnotator createTreeAnnotator() {
-        List<TreeAnnotator> treeAnnotators = new ArrayList<>();
+        List<TreeAnnotator> treeAnnotators = new ArrayList<>(2);
         treeAnnotators.add(new PropagationTreeAnnotator(this));
         treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
         if (dependentTypesHelper.hasDependentAnnotations()) {
@@ -536,7 +557,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
-        List<TypeAnnotator> typeAnnotators = new ArrayList<>();
+        List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
         if (relevantJavaTypes != null) {
             typeAnnotators.add(
                     new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
@@ -2331,7 +2352,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the method
      */
     public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
-        List<AnnotationMirror> result = new ArrayList<>();
+        List<AnnotationMirror> result = new ArrayList<>(m.getPreconditions().size());
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
             WholeProgramInferenceImplementation<?> wholeProgramInference =
                     (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
@@ -2357,7 +2378,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public List<AnnotationMirror> getPostconditionAnnotations(
             AMethod m, List<AnnotationMirror> preconds) {
-        List<AnnotationMirror> result = new ArrayList<>();
+        List<AnnotationMirror> result = new ArrayList<>(m.getPostconditions().size());
         for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
             WholeProgramInferenceImplementation<?> wholeProgramInference =
                     (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
@@ -2654,6 +2675,67 @@ public abstract class GenericAnnotatedTypeFactory<
             return parentAtf.getSharedCFGForTree(tree);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * If kind = CONDITIONALPOSTCONDITION, return the result element, e.g. {@link
+     * EnsuresQualifierIf#result}. Otherwise, return null.
+     *
+     * @param kind the kind of {@code contractAnnotation}
+     * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+     *     EnsuresQualifierIf}
+     * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have
+     *     a {@code result} element
+     */
+    public Boolean getEnsuresQualifierIfResult(
+            Contract.Kind kind, AnnotationMirror contractAnnotation) {
+        if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
+            if (contractAnnotation instanceof EnsuresQualifierIf) {
+                // It's the framework annotation @EnsuresQualifierIf
+                return AnnotationUtils.getElementValueBoolean(
+                        contractAnnotation,
+                        ensuresQualifierIfResultElement,
+                        /*default is irrelevant*/ false);
+            } else {
+                // It's a checker-specific annotation such as @EnsuresMinLenIf
+                return AnnotationUtils.getElementValue(
+                        contractAnnotation, "result", Boolean.class, false);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * If {@code contractAnnotation} is a framework annotation, return its {@code expression}
+     * element. Otherwise, {@code contractAnnotation} is defined in a checker. If kind =
+     * CONDITIONALPOSTCONDITION, return its {@code expression} element, else return its {@code
+     * value} element.
+     *
+     * @param kind the kind of {@code contractAnnotation}
+     * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+     *     EnsuresQualifierIf}
+     * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have
+     *     a {@code result} element
+     */
+    public List<String> getContractExpressions(
+            Contract.Kind kind, AnnotationMirror contractAnnotation) {
+        if (contractAnnotation instanceof RequiresQualifier) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, requiresQualifierExpressionElement, String.class);
+        } else if (contractAnnotation instanceof EnsuresQualifier) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, ensuresQualifierExpressionElement, String.class);
+        } else if (contractAnnotation instanceof EnsuresQualifierIf) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, ensuresQualifierIfExpressionElement, String.class);
+        } else if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, "expression", String.class, true);
+        } else {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, "value", String.class, true);
         }
     }
 }

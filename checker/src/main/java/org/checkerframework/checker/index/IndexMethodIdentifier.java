@@ -103,12 +103,12 @@ public class IndexMethodIdentifier {
             return true;
         }
 
-        AnnotationMirror len = factory.getDeclAnnotation(ele, LengthOf.class);
-        if (len == null) {
+        AnnotationMirror lengthOfAnno = factory.getDeclAnnotation(ele, LengthOf.class);
+        if (lengthOfAnno == null) {
             return false;
         }
         List<String> values =
-                AnnotationUtils.getElementValueArray(len, "value", String.class, false);
+                AnnotationUtils.getElementValueArray(lengthOfAnno, "value", String.class, false);
         return values.contains("this");
     }
 

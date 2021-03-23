@@ -406,7 +406,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         noClassDefFoundErrorType = getTypeMirror(NoClassDefFoundError.class);
         stringType = getTypeMirror(String.class);
         throwableType = getTypeMirror(Throwable.class);
-        uncheckedExceptionTypes = new LinkedHashSet<>();
+        uncheckedExceptionTypes = new LinkedHashSet<>(2);
         uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
         uncheckedExceptionTypes.add(getTypeMirror(Error.class));
         newArrayExceptionTypes = new LinkedHashSet<>(2);
@@ -582,7 +582,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /**
      * Extend the list of extended nodes with a node, where {@code node} might throw any of the
-     * exception in {@code causes}.
+     * exceptions in {@code causes}.
      *
      * @param node the node to add
      * @param causes set of exceptions that the node might throw
@@ -591,7 +591,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
             Node node, Set<TypeMirror> causes) {
         addToLookupMap(node);
-        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
+        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
         for (TypeMirror cause : causes) {
             exceptions.put(cause, tryStack.possibleLabels(cause));
         }
@@ -610,7 +610,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * @return the node holder
      */
     protected NodeWithExceptionsHolder extendWithClassNameNode(ClassNameNode node) {
-        Set<TypeMirror> thrownSet = new HashSet<>();
+        Set<TypeMirror> thrownSet = new HashSet<>(4);
         thrownSet.add(classCircularityErrorType);
         thrownSet.add(classFormatErrorType);
         thrownSet.add(noClassDefFoundErrorType);
@@ -645,7 +645,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
             Node node, Set<TypeMirror> causes, Node pred) {
         addToLookupMap(node);
-        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
+        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
         for (TypeMirror cause : causes) {
             exceptions.put(cause, tryStack.possibleLabels(cause));
         }
@@ -1144,7 +1144,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         List<? extends VariableElement> formals = method.getParameters();
         int numFormals = formals.size();
 
-        ArrayList<Node> convertedNodes = new ArrayList<>();
+        ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
 
         int numActuals = actualExprs.size();
         if (method.isVarArgs()) {
@@ -1153,8 +1153,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             // to the last formal.
             int lastArgIndex = numFormals - 1;
             TypeMirror lastParamType = formals.get(lastArgIndex).asType();
-            List<Node> dimensions = new ArrayList<>();
-            List<Node> initializers = new ArrayList<>();
             if (numActuals == numFormals
                     && types.isAssignable(
                             TreeUtils.typeOf(actualExprs.get(numActuals - 1)), lastParamType)) {
@@ -1180,8 +1178,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i).asType()));
                 }
 
-                List<ExpressionTree> inits = new ArrayList<>();
                 TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
+                List<ExpressionTree> inits = new ArrayList<>(numActuals - lastArgIndex);
+                List<Node> initializers = new ArrayList<>(numActuals - lastArgIndex);
                 for (int i = lastArgIndex; i < numActuals; i++) {
                     inits.add(actualExprs.get(i));
                     Node actualVal = scan(actualExprs.get(i), null);
@@ -1193,7 +1192,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
                 Node lastArgument =
                         new ArrayCreationNode(
-                                wrappedVarargs, lastParamType, dimensions, initializers);
+                                wrappedVarargs,
+                                lastParamType,
+                                /*dimensions=*/ Collections.emptyList(),
+                                initializers);
                 extendWithNode(lastArgument);
 
                 convertedNodes.add(lastArgument);
@@ -1341,16 +1343,17 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             extendWithNodeWithException(target, nullPointerExceptionType);
         }
 
-        List<Node> arguments = new ArrayList<>();
-
-        // Don't convert arguments for enum super calls.  The AST contains
-        // no actual arguments, while the method element expects two arguments,
-        // leading to an exception in convertCallArguments.  Since no actual
-        // arguments are present in the AST that is being checked, it shouldn't
-        // cause any harm to omit the conversions.
-        // See also BaseTypeVisitor.visitMethodInvocation and
-        // QualifierPolymorphism.annotate
-        if (!TreeUtils.isEnumSuper(tree)) {
+        List<Node> arguments;
+        if (TreeUtils.isEnumSuper(tree)) {
+            // Don't convert arguments for enum super calls.  The AST contains
+            // no actual arguments, while the method element expects two arguments,
+            // leading to an exception in convertCallArguments.  Since no actual
+            // arguments are present in the AST that is being checked, it shouldn't
+            // cause any harm to omit the conversions.
+            // See also BaseTypeVisitor.visitMethodInvocation and
+            // QualifierPolymorphism.annotate
+            arguments = Collections.emptyList();
+        } else {
             arguments = convertCallArguments(method, actualExprs);
         }
 
@@ -1359,9 +1362,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         MethodInvocationNode node =
                 new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-        Set<TypeMirror> thrownSet = new HashSet<>();
-        // Add exceptions explicitly mentioned in the throws clause.
         List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
+        Set<TypeMirror> thrownSet =
+                new HashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+        // Add exceptions explicitly mentioned in the throws clause.
         thrownSet.addAll(thrownTypes);
         // Add types to account for unchecked exceptions
         thrownSet.addAll(uncheckedExceptionTypes);
@@ -2915,12 +2919,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 SystemUtil.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
 
         List<Node> initializerNodes;
-        if (initializers != null) {
+        if (initializers == null) {
+            initializerNodes = Collections.emptyList();
+        } else {
             initializerNodes =
                     SystemUtil.mapList(
                             init -> assignConvert(scan(init, p), elemType), initializers);
-        } else {
-            initializerNodes = Collections.emptyList();
         }
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
@@ -2956,7 +2960,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
 
         List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
-        Set<TypeMirror> thrownSet = new HashSet<>();
+        Set<TypeMirror> thrownSet =
+                new HashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
         // Add exceptions explicitly mentioned in the throws clause.
         thrownSet.addAll(thrownTypes);
         // Add types to account for unchecked exceptions
@@ -3107,9 +3112,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         List<Pair<TypeMirror, Label>> catchLabels =
                 SystemUtil.mapList(
                         (CatchTree c) -> {
-                            TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
-                            assert type != null : "exception parameters must have a type";
-                            return Pair.of(type, new Label());
+                            return Pair.of(
+                                    TreeUtils.typeOf(c.getParameter().getType()), new Label());
                         },
                         catches);
 

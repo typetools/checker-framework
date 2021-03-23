@@ -201,14 +201,14 @@ public class JavaExpressionParseUtil {
      *     identifier like "_param_2"
      */
     private static String replaceParameterSyntax(String expression) {
-        String updatedExpression = expression;
-
-        for (Integer integer : parameterIndices(expression)) {
-            updatedExpression =
-                    updatedExpression.replaceAll("#" + integer, PARAMETER_REPLACEMENT + integer);
+        Pattern p = Pattern.compile("#(\\d)");
+        Matcher m = p.matcher(expression);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            m.appendReplacement(sb, PARAMETER_REPLACEMENT + m.group(1));
         }
-
-        return updatedExpression;
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     /**
@@ -616,12 +616,15 @@ public class JavaExpressionParseUtil {
             String methodName = expr.getNameAsString();
 
             // parse argument list
-            List<JavaExpression> arguments = new ArrayList<>();
-            if (!expr.getArguments().isEmpty()) {
+            List<JavaExpression> arguments;
+            if (expr.getArguments().isEmpty()) {
+                arguments = Collections.emptyList();
+            } else {
                 JavaExpressionContext argContext = context;
-                for (Expression argument : expr.getArguments()) {
-                    arguments.add(argument.accept(this, argContext));
-                }
+                arguments =
+                        SystemUtil.mapList(
+                                (Expression argument) -> argument.accept(this, argContext),
+                                expr.getArguments());
             }
 
             // Find the method element.
@@ -649,11 +652,12 @@ public class JavaExpressionParseUtil {
                         && TypesUtils.isPrimitive(argumentType)) {
                     // boxing is necessary
                     MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
-                    List<JavaExpression> p = new ArrayList<>();
-                    p.add(argument);
                     JavaExpression boxedParam =
                             new MethodCall(
-                                    parameterType, valueOfMethod, new ClassName(parameterType), p);
+                                    parameterType,
+                                    valueOfMethod,
+                                    new ClassName(parameterType),
+                                    Collections.singletonList(argument));
                     arguments.set(i, boxedParam);
                 }
             }
@@ -794,11 +798,14 @@ public class JavaExpressionParseUtil {
                                             : null,
                             expr.getLevels());
 
-            List<JavaExpression> initializers = new ArrayList<>();
+            List<JavaExpression> initializers;
             if (expr.getInitializer().isPresent()) {
-                for (Expression initializer : expr.getInitializer().get().getValues()) {
-                    initializers.add(initializer.accept(this, context));
-                }
+                initializers =
+                        SystemUtil.mapList(
+                                (Expression initializer) -> initializer.accept(this, context),
+                                expr.getInitializer().get().getValues());
+            } else {
+                initializers = Collections.emptyList();
             }
             TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
             if (arrayType == null) {

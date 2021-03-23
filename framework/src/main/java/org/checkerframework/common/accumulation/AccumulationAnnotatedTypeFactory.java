@@ -9,7 +9,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -322,7 +321,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
         List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
         if (values == null) {
-            return new ArrayList<>(0);
+            return Collections.emptyList();
         } else {
             return values;
         }
@@ -639,11 +638,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (AnnotationUtils.areSame(anno, bottom)) {
             return "false";
         } else if (isPredicate(anno)) {
-            if (AnnotationUtils.hasElementValue(anno, "value")) {
-                return AnnotationUtils.getElementValue(anno, "value", String.class, false);
-            } else {
-                return "";
-            }
+            String result =
+                    AnnotationUtils.getElementValueOrNull(anno, "value", String.class, false);
+            return result == null ? "" : result;
         } else if (isAccumulatorAnnotation(anno)) {
             List<String> values = getAccumulatedValues(anno);
             StringJoiner sj = new StringJoiner(" && ");

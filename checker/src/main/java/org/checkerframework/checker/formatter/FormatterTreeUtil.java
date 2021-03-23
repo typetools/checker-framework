@@ -9,7 +9,6 @@ import java.util.IllegalFormatException;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.NullType;
@@ -47,24 +46,20 @@ public class FormatterTreeUtil {
 
     /** The value() element/field of an @Format annotation. */
     protected final ExecutableElement formatValueElement;
-
     /** The value() element/field of an @InvalidFormat annotation. */
     protected final ExecutableElement invalidFormatValueElement;
-
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
-        formatValueElement =
-                TreeUtils.getMethod(Format.class.getCanonicalName(), "value", 0, processingEnv);
+        formatValueElement = TreeUtils.getMethod(Format.class, "value", 0, processingEnv);
         invalidFormatValueElement =
-                TreeUtils.getMethod(
-                        InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
+                TreeUtils.getMethod(InvalidFormat.class, "value", 0, processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        Format.class.getCanonicalName(),
+                        Format.class,
                         "value",
                         0,
                         processingEnv);
@@ -505,9 +500,7 @@ public class FormatterTreeUtil {
      */
     @SuppressWarnings("GetClassOnEnum")
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        @SuppressWarnings("unchecked")
-        List<AnnotationValue> list =
-                (List<AnnotationValue>) anno.getElementValues().get(formatValueElement).getValue();
-        return AnnotationUtils.annotationValueListToEnumArray(list, ConversionCategory.class);
+        return AnnotationUtils.getElementValueEnumArray(
+                anno, formatValueElement, ConversionCategory.class);
     }
 }

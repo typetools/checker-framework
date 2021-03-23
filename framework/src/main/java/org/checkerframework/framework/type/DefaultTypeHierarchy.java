@@ -501,14 +501,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         }
 
         final TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();
-        List<Integer> covariantArgIndexes = null;
         AnnotationMirror covam =
                 supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
 
-        if (covam != null) {
-            covariantArgIndexes =
-                    AnnotationUtils.getElementValueArray(covam, "value", Integer.class, false);
-        }
+        List<Integer> covariantArgIndexes =
+                (covam == null)
+                        ? null
+                        : AnnotationUtils.getElementValueArray(
+                                covam, "value", Integer.class, false);
 
         for (int i = 0; i < supertypeTypeArgs.size(); i++) {
             final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);

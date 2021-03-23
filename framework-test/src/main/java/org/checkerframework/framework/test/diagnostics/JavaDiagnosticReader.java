@@ -14,6 +14,7 @@ import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * This class reads expected javac diagnostics from a single file. Its implementation is as an
@@ -63,14 +64,14 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * @return the TestDiagnosticLines from the input files
      */
     public static List<TestDiagnostic> readDiagnosticFiles(Iterable<? extends File> files) {
-        List<JavaDiagnosticReader> readers = new ArrayList<>();
-        for (File file : files) {
-            readers.add(
-                    new JavaDiagnosticReader(
-                            file,
-                            (filename, line, lineNumber) ->
-                                    TestDiagnosticUtils.fromDiagnosticFileLine(line)));
-        }
+        List<JavaDiagnosticReader> readers =
+                SystemUtil.mapList(
+                        (File file) ->
+                                new JavaDiagnosticReader(
+                                        file,
+                                        (filename, line, lineNumber) ->
+                                                TestDiagnosticUtils.fromDiagnosticFileLine(line)),
+                        files);
         return readDiagnostics(readers);
     }
 

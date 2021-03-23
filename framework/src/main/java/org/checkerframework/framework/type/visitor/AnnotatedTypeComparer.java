@@ -20,10 +20,24 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public abstract class AnnotatedTypeComparer<R>
         extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
-    /** Compares two annotated type mirrors. */
+    /**
+     * Compares two annotated type mirrors.
+     *
+     * @param type a type
+     * @param p a type
+     * @return the result of comparing the two types
+     */
     protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
 
-    /** Supplies the logic to reduce on how to combine two R objects. */
+    // The reason for this inelegant method name is that subtype AnnotatedTypeCombiner has a
+    // `combine` method that means something else.
+    /**
+     * Supplies the logic to reduce on how to combine two values of type {@code R}.
+     *
+     * @param r1 the first value
+     * @param r2 the second value
+     * @return the result of combining the two values
+     */
     protected abstract R combineRs(R r1, R r2);
 
     protected R scan(

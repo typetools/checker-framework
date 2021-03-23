@@ -131,6 +131,13 @@ public abstract class AnnotatedTypeMirror {
     /** Actual type wrapped with this AnnotatedTypeMirror. */
     protected final TypeMirror underlyingType;
 
+    /**
+     * Saves the result of {@code underlyingType.toString().hashcode()} to use when computing the
+     * hash code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot
+     * be saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
+     */
+    private int underlyingTypeHashCode = -1;
+
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
     // the class name of Annotation instead.
@@ -816,6 +823,19 @@ public abstract class AnnotatedTypeMirror {
         return objectType;
     }
 
+    /**
+     * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
+     * the result in a field so that it isn't recomputed each time.
+     *
+     * @return the result of calling {@code underlyingType.toString().hashcode()}
+     */
+    public int getUnderlyingTypeHashCode() {
+        if (underlyingTypeHashCode == -1) {
+            underlyingTypeHashCode = underlyingType.toString().hashCode();
+        }
+        return underlyingTypeHashCode;
+    }
+
     /** Represents a declared type (whether class or interface). */
     public static class AnnotatedDeclaredType extends AnnotatedTypeMirror {
 
@@ -1299,12 +1319,14 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
 
+        /**
+         * Returns the erased types corresponding to the given types.
+         *
+         * @param lst annotated type mirrors
+         * @return erased annotated type mirrors
+         */
         private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-            List<AnnotatedTypeMirror> erased = new ArrayList<>();
-            for (AnnotatedTypeMirror t : lst) {
-                erased.add(t.getErased());
-            }
-            return erased;
+            return SystemUtil.mapList(AnnotatedTypeMirror::getErased, lst);
         }
     }
 

@@ -8,11 +8,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -157,6 +159,37 @@ public class SystemUtil {
     }
 
     /**
+     * Creates a conjunction or disjunction, like "a", "a or b", and "a, b, or c". Obeys the "serial
+     * comma" or "Oxford comma" rule and puts a comma after every element when the list has size 3
+     * or larger.
+     *
+     * @param conjunction the conjunction word, like "and" or "or"
+     * @param elements the elements of the conjunction or disjunction
+     * @return a conjunction or disjunction string
+     */
+    public static String conjunction(String conjunction, List<?> elements) {
+        int size = elements.size();
+        if (size == 0) {
+            throw new IllegalArgumentException("no elements passed to conjunction()");
+        } else if (size == 1) {
+            return Objects.toString(elements.get(0));
+        } else if (size == 2) {
+            return elements.get(0) + " " + conjunction + " " + elements.get(1);
+        }
+
+        StringJoiner sj = new StringJoiner(", ");
+        for (int i = 0; i < size - 1; i++) {
+            sj.add(Objects.toString(elements.get(i)));
+        }
+        sj.add(conjunction + " " + elements.get(size - 1));
+        return sj.toString();
+    }
+
+    ///
+    /// Array and collection methods
+    ///
+
+    /**
      * Concatenates two arrays. Can be invoked varargs-style.
      *
      * @param <T> the type of the array elements
@@ -205,58 +238,121 @@ public class SystemUtil {
     }
 
     /**
-     * Creates a conjunction or disjunction, like "a", "a or b", and "a, b, or c". Obeys the "serial
-     * comma" or "Oxford comma" rule and puts a comma after every element when the list has size 3
-     * or larger.
-     *
-     * @param conjunction the conjunction word, like "and" or "or"
-     * @param elements the elements of the conjunction or disjunction
-     * @return a conjunction or disjunction string
-     */
-    public static String conjunction(String conjunction, List<?> elements) {
-        int size = elements.size();
-        if (size == 0) {
-            throw new IllegalArgumentException("no elements passed to conjunction()");
-        } else if (size == 1) {
-            return Objects.toString(elements.get(0));
-        } else if (size == 2) {
-            return elements.get(0) + " " + conjunction + " " + elements.get(1);
-        }
-
-        StringJoiner sj = new StringJoiner(", ");
-        for (int i = 0; i < size - 1; i++) {
-            sj.add(Objects.toString(elements.get(i)));
-        }
-        sj.add(conjunction + " " + elements.get(size - 1));
-        return sj.toString();
-    }
-
-    /**
-     * Applies the function to each element of the given collection, producing a list of the
-     * results.
+     * Applies the function to each element of the given iterable, producing a list of the results.
      *
      * <p>The point of this method is to make mapping operations more concise. Import it with
      *
      * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
      *
-     * @param <FROM> the type of elements of the given collection
+     * @param <FROM> the type of elements of the given iterable
      * @param <TO> the type of elements of the result list
      * @param f a function
-     * @param c a collection
-     * @return a list of the results of applying {@code f} to the elements of {@code list}
+     * @param iterable an iterable
+     * @return a list of the results of applying {@code f} to the elements of {@code iterable}
      */
     public static <
                     @KeyForBottom FROM extends @UnknownKeyFor Object,
                     @KeyForBottom TO extends @UnknownKeyFor Object>
-            List<TO> mapList(Function<? super FROM, ? extends TO> f, Collection<FROM> c) {
-        // This implementation uses a for loop and is likely more efficient than using streams, both
-        // because it doesn't create stream objects and because it creates an ArrayList of the
-        // appropriate size.
-        List<TO> result = new ArrayList<>(c.size());
-        for (FROM elt : c) {
+            List<TO> mapList(Function<? super FROM, ? extends TO> f, Iterable<FROM> iterable) {
+        List<TO> result;
+
+        if (iterable instanceof RandomAccess) {
+            // Per the Javadoc of RandomAccess, an indexed for loop is faster than a foreach loop.
+            List<FROM> list = (List<FROM>) iterable;
+            int size = list.size();
+            result = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                result.add(f.apply(list.get(i)));
+            }
+            return result;
+        }
+
+        if (iterable instanceof Collection) {
+            result = new ArrayList<>(((Collection<?>) iterable).size());
+        } else {
+            result = new ArrayList<>(); // no information about size is available
+        }
+        for (FROM elt : iterable) {
             result.add(f.apply(elt));
         }
         return result;
+    }
+
+    /**
+     * Applies the function to each element of the given array, producing a list of the results.
+     *
+     * <p>The point of this method is to make mapping operations more concise. Import it with
+     *
+     * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
+     *
+     * @param <FROM> the type of elements of the given array
+     * @param <TO> the type of elements of the result list
+     * @param f a function
+     * @param a an array
+     * @return a list of the results of applying {@code f} to the elements of {@code a}
+     */
+    public static <
+                    @KeyForBottom FROM extends @UnknownKeyFor Object,
+                    @KeyForBottom TO extends @UnknownKeyFor Object>
+            List<TO> mapList(Function<? super FROM, ? extends TO> f, FROM[] a) {
+        int size = a.length;
+        List<TO> result = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            result.add(f.apply(a[i]));
+        }
+        return result;
+    }
+
+    /**
+     * Returns an array consisting of n copies of the specified object.
+     *
+     * @param <T> the class of the object to copy. The returned array's element type is the
+     *     <em>run-time</em> type of {@code o}.
+     * @param n the number of elements in the returned array
+     * @param o the element to appear repeatedly in the returned array; must not be null
+     * @return an array consisting of n copies of the specified object
+     */
+    public static <T extends Object> T[] nCopies(int n, T o) {
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) Array.newInstance(o.getClass(), n);
+        Arrays.fill(result, o);
+        return result;
+    }
+
+    /**
+     * Concatenates an array and an element into a new array.
+     *
+     * @param <T> the type of the array elements
+     * @param array the array
+     * @param lastElt the new last elemeent
+     * @return a new array containing the array elements and the last element, in that order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] append(T[] array, T lastElt) {
+        @SuppressWarnings({"unchecked", "nullness:assignment.type.incompatible"})
+        T[] result = Arrays.copyOf(array, array.length + 1);
+        result[array.length] = lastElt;
+        return result;
+    }
+
+    /**
+     * Returns true if the arrays contain the same contents.
+     *
+     * @param <T> the type of the array contents
+     * @param arr1 an array
+     * @param arr2 an array
+     * @return true if the arrays contain the same contents
+     */
+    public static <T> boolean sameContents(T[] arr1, T[] arr2) {
+        List<T> list1 = Arrays.asList(arr1);
+        List<T> list2 = Arrays.asList(arr2);
+        return list1.containsAll(list2) && list2.containsAll(list1);
+
+        // // Alterate implementation, which is more efficient if the arrays are large:
+        // Note: this sorts the arrays as a side effect.
+        // Arrays.sort(arr1);
+        // Arrays.sort(arr2);
+        // return Arrays.equals(arr1, arr2);
     }
 
     ///
