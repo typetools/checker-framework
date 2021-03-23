@@ -334,6 +334,26 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Viewpoint-adapts the Java expressions in annotations written on the return type of the method
+     * declaration to the body of the method. This means the parameter syntax is converted to the
+     * names of the parameter.
+     *
+     * @param methodDeclTree a method declaration
+     * @param atm the method return type; is side-effected by this method
+     */
+    public void atReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+        if (!hasDependentType(atm)) {
+            return;
+        }
+
+        convertAnnotatedTypeMirror(
+                stringExpr ->
+                        StringToJavaExpression.atMethodBody(
+                                stringExpr, methodDeclTree, factory.getChecker()),
+                atm);
+    }
+
+    /**
      * Standardizes the Java expressions in annotations to a class declaration.
      *
      * @param type the type of the type declaration; is side-effected by this method
@@ -349,24 +369,6 @@ public class DependentTypesHelper {
                         StringToJavaExpression.atTypeDecl(
                                 stringExpr, typeElt, factory.getChecker()),
                 type);
-    }
-
-    /**
-     * Standardizes the Java expressions in annotations to the method declaration.
-     *
-     * @param methodDeclTree a method declaration
-     * @param atm the method return type; is side-effected by this method
-     */
-    public void atReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
-        if (!hasDependentType(atm)) {
-            return;
-        }
-
-        convertAnnotatedTypeMirror(
-                stringExpr ->
-                        StringToJavaExpression.atMethodBody(
-                                stringExpr, methodDeclTree, factory.getChecker()),
-                atm);
     }
 
     /** A set containing {@link Tree.Kind#METHOD} and {@link Tree.Kind#LAMBDA_EXPRESSION}. */
