@@ -639,11 +639,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (AnnotationUtils.areSame(anno, bottom)) {
             return "false";
         } else if (isPredicate(anno)) {
-            if (AnnotationUtils.hasElementValue(anno, "value")) {
-                return AnnotationUtils.getElementValue(anno, "value", String.class, false);
-            } else {
-                return "";
-            }
+            String result =
+                    AnnotationUtils.getElementValueOrNull(anno, "value", String.class, false);
+            return result == null ? "" : result;
         } else if (isAccumulatorAnnotation(anno)) {
             List<String> values = getAccumulatedValues(anno);
             StringJoiner sj = new StringJoiner(" && ");
