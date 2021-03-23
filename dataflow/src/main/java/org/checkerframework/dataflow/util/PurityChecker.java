@@ -288,7 +288,6 @@ public class PurityChecker {
 
         @Override
         public Void visitAssignment(AssignmentTree node, Void ignore) {
-            System.out.printf("PurityChecker.visitAssignment(%s)%n", node);
             ExpressionTree variable = node.getVariable();
             assignmentCheck(variable);
             return super.visitAssignment(node, ignore);
