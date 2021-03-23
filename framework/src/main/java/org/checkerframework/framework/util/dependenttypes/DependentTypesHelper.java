@@ -82,20 +82,12 @@ import org.plumelib.util.StringsPlume;
  *       </ul>
  *       Java expressions are always standardized by this class, but only sometimes
  *       viewpoint-adapted or delocalized.
- *       <p>Standardizes/canonicalizes the expressions in the annotations such that two expression
- *       strings that are equivalent are made to be equal. For example, an instance field f may
- *       appear in an expression string as "f" or "this.f"; this class standardizes both strings to
- *       "this.f". It also standardizes formal parameter references such as "#2" to the formal
- *       parameter name.
- *   <li>Viewpoint-adapts an {@link AnnotationMirror} {@code am}, creating a new one whose Java
- *       expression elements are viewpoint-adapted versions of {@code am}'s. See {@link
- *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}. Subclasses can
- *       specialize this process by overriding methods in this class.
- *   <li>Changes invalid expression strings to an error string that includes the reason why the
- *       expression is invalid. For example, {@code @KeyFor("m")} would be changed to
- *       {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a
- *       valid identifier. This allows subtyping checks to assume that if two strings are equal and
- *       not errors, they reference the same valid Java expression.
+ *   <li>If any of the conversions above results in an invalid expression, this class changes
+ *       invalid expression strings to an error string that includes the reason why the expression
+ *       is invalid. For example, {@code @KeyFor("m")} would be changed to {@code @KeyFor("[error
+ *       for expression: m error: m: identifier not found]")} if m is not a valid identifier. This
+ *       allows subtyping checks to assume that if two strings are equal and not errors, they
+ *       reference the same valid Java expression.
  *   <li>Checks annotated types for error strings that have been added by this class and issues an
  *       error if any are found.
  * </ol>
@@ -224,6 +216,10 @@ public class DependentTypesHelper {
         assert hasDependentAnnotations();
         return new DependentTypesTreeAnnotator(factory, this);
     }
+
+    ///
+    /// Methods that convert annotations
+    ///
 
     /**
      * Viewpoint-adapts the dependent type annotations on the bounds of the type parameters of a
@@ -836,6 +832,10 @@ public class DependentTypesHelper {
             return super.scan(type, func);
         }
     }
+
+    ///
+    /// Methods that check and report errors
+    ///
 
     /**
      * Reports an expression.unparsable.type.invalid error for each Java expression in the given
