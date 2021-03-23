@@ -35,7 +35,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The SameLen Checker is used to determine whether there are multiple fixed-length sequences (such
@@ -187,8 +186,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // if the sets do not intersect.
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
+            if (areSameByClass(a1, SameLen.class) && areSameByClass(a2, SameLen.class)) {
                 List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
 
@@ -214,8 +212,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // top if they do not intersect.
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
+            if (areSameByClass(a1, SameLen.class) && areSameByClass(a2, SameLen.class)) {
                 List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
 
@@ -249,8 +246,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (areSameByClass(subAnno, PolySameLen.class)) {
                 return areSameByClass(superAnno, PolySameLen.class);
-            } else if (AnnotationUtils.hasElementValue(subAnno, "value")
-                    && AnnotationUtils.hasElementValue(superAnno, "value")) {
+            } else if (areSameByClass(subAnno, SameLen.class)
+                    && areSameByClass(superAnno, SameLen.class)) {
                 List<String> subArrays =
                         ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
                 List<String> superArrays =
