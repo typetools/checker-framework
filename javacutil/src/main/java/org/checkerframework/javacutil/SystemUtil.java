@@ -213,6 +213,7 @@ public class SystemUtil {
     /**
      * Returns true if the given list is sorted.
      *
+     * @param <T> the component type of the list
      * @param values a list
      * @return true if the list is sorted
      */
@@ -247,6 +248,7 @@ public class SystemUtil {
     /**
      * Returns true if the given list is sorted and has no duplicates
      *
+     * @param <T> the component type of the list
      * @param values a list
      * @return true if the list is sorted and has no duplicates
      */
