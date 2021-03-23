@@ -431,7 +431,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * exist. Clients should call {@link #getFromValueFromIntRange} if it might not exist.
      *
      * @param intRangeAnno an IntRange annotation
-     * @param defaultValue the value to retur if there is no from() element/field
+     * @param defaultValue the value to return if there is no from() element/field
      * @return its from() element/field
      */
     protected long getIntRangeFromValue(AnnotationMirror intRangeAnno, long defaultValue) {
