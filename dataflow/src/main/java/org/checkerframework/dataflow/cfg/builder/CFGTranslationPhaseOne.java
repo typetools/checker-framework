@@ -3766,15 +3766,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /**
-     * Returns the TypeMirror for the given class, or {@code null} if the type is not present in the
-     * current compilation.
+     * Returns the TypeMirror for the given class, or {@code null} if the type is not present.
      *
-     * <p>This can be used to handle system types that are not present in all environments (see <a
-     * href="https://github.com/typetools/checker-framework/issues/4452">Issue 4452</a> for an
-     * example).
+     * <p>This can be used to handle system types that are not present. For example, in Java code
+     * that is translated to JavaScript using j2cl, the custom bootclasspath contains APIs that are
+     * emulated in JavaScript, so some types such as OutOfMemoryError are deliberately not present.
      *
      * @param clazz a class, which must have a canonical name
-     * @return the TypeMirror for the class
+     * @return the TypeMirror for the class, or {@code null} if the type is not present
      */
     private @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
         String name = clazz.getCanonicalName();
