@@ -40,7 +40,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
      * if the annotation was imported or not.
      */
     private Map<String, TypeElement> allAnnotations;
-    /** Utility class for working with {@link Element}s. */
+    /** Utility class for working with Elements. */
     private Elements elements;
 
     /**

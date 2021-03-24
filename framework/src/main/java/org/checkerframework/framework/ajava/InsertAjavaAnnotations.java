@@ -52,7 +52,7 @@ import org.checkerframework.javacutil.BugInCF;
 
 /** Inserts annotations from an ajava file into a Java file. */
 public class InsertAjavaAnnotations {
-    /** Utility class for working with {@link Element}s. */
+    /** Utility class for working with Elements. */
     private Elements elements;
 
     /**
@@ -387,7 +387,7 @@ public class InsertAjavaAnnotations {
      * @return a map from names to TypeElement, for all annotations imported by the annotation file.
      *     Two entries for each annotation: one for the simple name and another for the
      *     fully-qualified name, with the same value.
-     * @see #allAnnotations
+     * @param cu tmp
      */
     private Map<String, TypeElement> getAllAnnotations(CompilationUnit cu) {
         Map<String, TypeElement> result = new HashMap<>();
@@ -640,6 +640,9 @@ public class InsertAjavaAnnotations {
      *
      * <p>For each file in the second argument, checks if an ajava file from the first argument
      * matches it. For each such file, inserts all its annotations into the Java file.
+     *
+     * @param args command line arguments, the first element should be a path to ajava files and the
+     *     second should be the directory containing Java files to insert into
      */
     public static void main(String[] args) {
         if (args.length != 2) {
