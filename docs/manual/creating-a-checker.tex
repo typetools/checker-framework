@@ -2269,13 +2269,19 @@ The three APIs use some common idioms and conventions; knowing them will
 help you to create your checker.
 
 \emph{Type-checking}:
-Do not use \code{instanceof} to determine the class of a \<TypeMirror> or \<Element>,
+Do not use \code{instanceof} to determine the kind of a \<TypeMirror> or \<Element>,
 because you cannot necessarily predict the run-time type of the object that
-implements an interface.  Instead, use the
+implements an interface. For example, \<type instanceof DeclaredType> and \<type instanceof UnionType>
+both return true if \<type> is an \<com.sun.tools.javac.code.Type.UnionClassType> object.
+
+Instead, use the
 \sunjavadoc{java.compiler/javax/lang/model/type/TypeMirror.html\#getKind()}{TypeMirror.getKind()}
 or
 \sunjavadoc{java.compiler/javax/lang/model/element/Element.html\#getKind()}{Element.getKind()}
-method.
+method.  For example, if \<type> is an \<com.sun.tools.javac.code.Type.UnionClassType> object, then
+\<expr.getKind() == TypeKind.DECLARED> is false and \<expr.getKind() == TypeKind.UNION> is true.
+
+
 For \<Tree>s, you can use either \<Tree.getKind()> or \<instanceof>.
 
 \emph{Visitors and Scanners}:
