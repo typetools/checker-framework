@@ -1,14 +1,16 @@
 package org.checkerframework.dataflow.cfg.builder;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnionTypeTree;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A TryCatchFrame contains an ordered list of catch labels that apply to exceptions with specific
@@ -18,16 +20,19 @@ class TryCatchFrame implements TryFrame {
     /** The Types utilities. */
     protected final Types types;
 
-    /** An ordered list of pairs because catch blocks are ordered. */
-    protected final List<Pair<TypeMirror, Label>> catchLabels;
+    /**
+     * A mapping from type tree (of a catch clause) to label. It is ordered list because catch
+     * blocks are ordered.
+     */
+    protected final List<Pair<Tree, Label>> catchLabels;
 
     /**
      * Construct a TryCatchFrame.
      *
      * @param types the Types utilities
-     * @param catchLabels the catch labels
+     * @param catchLabels a mapping from type tree (of a catch clause) to label
      */
-    public TryCatchFrame(Types types, List<Pair<TypeMirror, Label>> catchLabels) {
+    public TryCatchFrame(Types types, List<Pair<Tree, Label>> catchLabels) {
         this.types = types;
         this.catchLabels = catchLabels;
     }
@@ -38,7 +43,7 @@ class TryCatchFrame implements TryFrame {
             return "TryCatchFrame: no catch labels.";
         } else {
             StringJoiner sb = new StringJoiner(System.lineSeparator(), "TryCatchFrame: ", "");
-            for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
+            for (Pair<Tree, Label> ptml : this.catchLabels) {
                 sb.add(ptml.first.toString() + " -> " + ptml.second.toString());
             }
             return sb.toString();
@@ -59,7 +64,7 @@ class TryCatchFrame implements TryFrame {
         // 1) An exception parameter in a catch block must be either
         //    a declared type or a union composed of declared types,
         //    all of which are subtypes of Throwable.
-        // 2) A thrown type must either be a declared type or a variable
+        // 2) A thrown type must either be a declared type or a type variable
         //    that extends a declared type, which is a subtype of Throwable.
         //
         // Under those assumptions, if the thrown type (or its bound) is
@@ -79,24 +84,31 @@ class TryCatchFrame implements TryFrame {
         DeclaredType declaredThrown = (DeclaredType) thrown;
         assert thrown != null : "thrown type must be bounded by a declared type";
 
-        for (Pair<TypeMirror, Label> pair : catchLabels) {
-            TypeMirror caught = pair.first;
+        for (Pair<Tree, Label> pair : catchLabels) {
+            Tree catchTypeTree = pair.first;
+            Tree.Kind catchTypeKind = catchTypeTree.getKind();
+
             boolean canApply = false;
 
-            if (caught instanceof DeclaredType) {
-                DeclaredType declaredCaught = (DeclaredType) caught;
-                if (types.isSubtype(declaredThrown, declaredCaught)) {
+            if (catchTypeKind != Tree.Kind.UNION_TYPE) {
+                DeclaredType caught = (DeclaredType) TreeUtils.typeOf(catchTypeTree);
+                if (types.isSubtype(declaredThrown, caught)) {
                     // No later catch blocks can apply.
                     labels.add(pair.second);
                     return true;
-                } else if (types.isSubtype(declaredCaught, declaredThrown)) {
+                } else if (types.isSubtype(caught, declaredThrown)) {
                     canApply = true;
                 }
             } else {
-                assert caught instanceof UnionType
-                        : "caught type must be a union or a declared type";
-                UnionType caughtUnion = (UnionType) caught;
-                for (TypeMirror alternative : caughtUnion.getAlternatives()) {
+                // catchTypeKind == Tree.Kind.UNION_TYPE
+
+                // Ideally `TreeUtils.typeOf(catchTypeTree)` would be a UnionType, but I have
+                // observed it being a DeclaredType that is the LUB of the alternatives, so
+                // process each alternative individually.
+                UnionTypeTree unionTypeTree = (UnionTypeTree) catchTypeTree;
+
+                for (Tree alternativeTree : unionTypeTree.getTypeAlternatives()) {
+                    TypeMirror alternative = TreeUtils.typeOf(alternativeTree);
                     assert alternative instanceof DeclaredType
                             : "alternatives of an caught union type must be declared types";
                     DeclaredType declaredAlt = (DeclaredType) alternative;
