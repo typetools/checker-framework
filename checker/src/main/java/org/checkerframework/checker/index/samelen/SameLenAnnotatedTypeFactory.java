@@ -75,6 +75,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @{@link PolySameLen} annotation. */
     private final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
 
+    /** Predicates about method calls. */
     private final IndexMethodIdentifier imf = new IndexMethodIdentifier(this);
 
     /** Create a new SameLenAnnotatedTypeFactory. */
