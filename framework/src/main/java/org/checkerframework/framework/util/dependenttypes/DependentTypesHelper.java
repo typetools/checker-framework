@@ -63,7 +63,7 @@ import org.plumelib.util.StringsPlume;
  * expression strings. This class performs four main functions:
  *
  * <ol>
- *   <li>Converts the expressions strings in an {@link AnnotationMirror} {@code am}, by creating a
+ *   <li>Converts the expression strings in an {@link AnnotationMirror} {@code am}, by creating a
  *       new annotation whose Java expression elements are the result of the converson. See {@link
  *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}. Subclasses can
  *       specialize this process by overriding methods in this class. Conversion include:
