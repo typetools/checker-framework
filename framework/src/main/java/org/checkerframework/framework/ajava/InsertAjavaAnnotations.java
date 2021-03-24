@@ -39,7 +39,6 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -48,7 +47,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.framework.stub.AnnotationFileParser;
 
 /** Inserts annotations from an ajava file into a Java file. */
 public class InsertAjavaAnnotations {
@@ -243,7 +242,7 @@ public class InsertAjavaAnnotations {
             defaultAction(node1, node2);
 
             // Gather annotations used in the ajava file.
-            allAnnotations = getAllAnnotations(node1);
+            allAnnotations = getImportedAnnotations(node1);
 
             // Move any annotations that appear in the declaration position but belong only in the
             // type position.
@@ -383,187 +382,59 @@ public class InsertAjavaAnnotations {
         }
     }
 
-    // TODO: BEGIN from AnnotationFileParser. Factor out of both.
-    //
-    //
-    //
-    //
     /**
-     * Temp.
+     * Returns all annotations imported by the annotation file as a mapping from simple and
+     * qualified names to TypeElements.
      *
+     * @param cu compilation unit to extract imports from
      * @return a map from names to TypeElement, for all annotations imported by the annotation file.
      *     Two entries for each annotation: one for the simple name and another for the
      *     fully-qualified name, with the same value.
-     * @param cu tmp
      */
-    private Map<String, TypeElement> getAllAnnotations(CompilationUnit cu) {
+    private Map<String, TypeElement> getImportedAnnotations(CompilationUnit cu) {
         Map<String, TypeElement> result = new HashMap<>();
         if (cu.getImports() == null) {
             return result;
         }
 
         for (ImportDeclaration importDecl : cu.getImports()) {
-            try {
-                if (importDecl.isAsterisk()) {
-                    @SuppressWarnings("signature" // https://tinyurl.com/cfissue/3094:
-                    // com.github.javaparser.ast.expr.Name inherits toString,
-                    // so there can be no annotation for it
-                    )
-                    @DotSeparatedIdentifiers String imported = importDecl.getName().toString();
-                    if (importDecl.isStatic()) {
-                        // Wildcard import of members of a type (class or interface)
-                        TypeElement element = getTypeElement(imported);
-                        if (element != null) {
-                            // Find nested annotations
-                            // Find compile time constant fields, or values of an enum
-                            putAllNew(result, annosInType(element));
-                        }
-
-                    } else {
-                        // Wildcard import of members of a package
-                        PackageElement element = findPackage(imported);
-                        if (element != null) {
-                            putAllNew(result, annosInPackage(element));
-                        }
+            if (importDecl.isAsterisk()) {
+                @SuppressWarnings("signature" // https://tinyurl.com/cfissue/3094:
+                // com.github.javaparser.ast.expr.Name inherits toString,
+                // so there can be no annotation for it
+                )
+                @DotSeparatedIdentifiers String imported = importDecl.getName().toString();
+                if (importDecl.isStatic()) {
+                    // Wildcard import of members of a type (class or interface)
+                    TypeElement element = elements.getTypeElement(imported);
+                    if (element != null) {
+                        // Find nested annotations
+                        result.putAll(AnnotationFileParser.annosInType(element));
                     }
+
                 } else {
-                    // A single (non-wildcard) import.
-                    @SuppressWarnings("signature" // importDecl is non-wildcard, so its name is
-                    // @FullyQualifiedName
-                    )
-                    @FullyQualifiedName String imported = importDecl.getNameAsString();
-
-                    final TypeElement importType = elements.getTypeElement(imported);
-                    if (importType == null && !importDecl.isStatic()) {
-                        // Class or nested class (according to JSL), but we can't resolve
-
-                        // stubWarnNotFound(importDecl, "type not found: " + imported);
-                    } else if (importType == null) {
-                        // static import of field or method.
-                    } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
-                        // Single annotation or nested annotation
-                        TypeElement annoElt = elements.getTypeElement(imported);
-                        if (annoElt != null) {
-                            putIfAbsent(result, annoElt.getSimpleName().toString(), annoElt);
-                        } else {
-                            // stubWarnNotFound(importDecl, "Could not load import: " + imported);
-                        }
-                    } else {
-                        // Class or nested class
-                        // TODO: Is this needed?
-                        // importedConstants.add(imported);
-                        // TypeElement element =
-                        // getTypeElement(imported, "Imported type not found");
-                        // importedTypes.put(element.getSimpleName().toString(), element);
+                    // Wildcard import of members of a package
+                    PackageElement element = elements.getPackageElement(imported);
+                    if (element != null) {
+                        result.putAll(AnnotationFileParser.annosInPackage(element));
                     }
                 }
-            } catch (AssertionError error) {
-                // stubWarnNotFound(importDecl, error.toString());
+            } else {
+                @SuppressWarnings("signature" // importDecl is non-wildcard, so its name is
+                // @FullyQualifiedName
+                )
+                @FullyQualifiedName String imported = importDecl.getNameAsString();
+                final TypeElement importType = elements.getTypeElement(imported);
+                if (importType != null && importType.getKind() == ElementKind.ANNOTATION_TYPE) {
+                    TypeElement annoElt = elements.getTypeElement(imported);
+                    if (annoElt != null) {
+                        result.put(annoElt.getSimpleName().toString(), annoElt);
+                    }
+                }
             }
         }
         return result;
     }
-
-    /**
-     * Returns the element for the given package.
-     *
-     * @param packageName the package's name
-     * @return the element for the given package
-     */
-    private PackageElement findPackage(String packageName) {
-        PackageElement packageElement = elements.getPackageElement(packageName);
-        // if (packageElement == null) {
-        // stubWarnNotFound(astNode, "Imported package not found: " + packageName);
-        // }
-        return packageElement;
-    }
-
-    /**
-     * Just like Map.putAll, but modifies existing values using {@link #putIfAbsent(Map, Object,
-     * Object)}.
-     *
-     * @param m the destination map
-     * @param m2 the source map
-     * @param <K> the key type for the maps
-     * @param <V> the value type for the maps
-     */
-    public static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
-        for (Map.Entry<K, V> e2 : m2.entrySet()) {
-            putIfAbsent(m, e2.getKey(), e2.getValue());
-        }
-    }
-
-    /**
-     * Get the type element for the given fully-qualified type name. If none is found, issue a
-     * warning and return null.
-     *
-     * @param typeName a type name
-     * @return the type element for the given fully-qualified type name, or null
-     */
-    private TypeElement getTypeElement(@FullyQualifiedName String typeName) {
-        TypeElement classElement = elements.getTypeElement(typeName);
-        return classElement;
-    }
-
-    /**
-     * All annotations defined in the package (but not those nested within classes in the package).
-     * Keys are both fully-qualified and simple names.
-     *
-     * @param packageElement a package
-     * @return a map from annotation name to TypeElement
-     */
-    private Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
-        return createNameToAnnotationMap(
-                ElementFilter.typesIn(packageElement.getEnclosedElements()));
-    }
-
-    /**
-     * All annotations declared (directly) within a class. Keys are both fully-qualified and simple
-     * names.
-     *
-     * @param typeElement a type
-     * @return a map from annotation name to TypeElement
-     */
-    private Map<String, TypeElement> annosInType(TypeElement typeElement) {
-        return createNameToAnnotationMap(ElementFilter.typesIn(typeElement.getEnclosedElements()));
-    }
-
-    /**
-     * All annotations declared within any of the given elements.
-     *
-     * @param typeElements the elements whose annotations to retrieve
-     * @return a map from annotation names (both fully-qualified and simple names) to TypeElement
-     */
-    public static Map<String, TypeElement> createNameToAnnotationMap(
-            List<TypeElement> typeElements) {
-        Map<String, TypeElement> result = new HashMap<>();
-        for (TypeElement typeElm : typeElements) {
-            if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
-                putIfAbsent(result, typeElm.getSimpleName().toString(), typeElm);
-                putIfAbsent(result, typeElm.getQualifiedName().toString(), typeElm);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Just like Map.put, but does not override any existing value in the map.
-     *
-     * @param <K> the key type
-     * @param <V> the value type
-     * @param m a map
-     * @param key a key
-     * @param value the value to associate with the key, if the key isn't already in the map
-     */
-    private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
-        if (key == null) {
-            throw new BugInCF("AnnotationFileParser: key is null for value " + value);
-        }
-        if (!m.containsKey(key)) {
-            m.put(key, value);
-        }
-    }
-    // TODO: END from AnnotationFileParser
 
     /**
      * Inserts all annotations from the ajava file read from the stream {@code annotationFile} into

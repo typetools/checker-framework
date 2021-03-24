@@ -18,6 +18,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.framework.stub.AnnotationFileParser;
 
 /**
  * Moves annotations in a JavaParser AST from declaration position onto the types they correspond
@@ -135,32 +136,28 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     }
 
     /**
-     * Checks if the current instance of Java recognizes a JavaParser annotation. Returns the
-     * TypeElement of the annotation if so, and null othrewise.
+     * Returns the TypeElement for an annotation if it could be found and null otherwise.
      *
-     * @param annotation a JavaParser annotation expression
-     * @return the TypeElement corresponding to {@code annotation} if it could be found, and null
-     *     otherwise
+     * <p>If {@code annotation} was listed in the file's imports, returns its value in {@link
+     * #allAnnotations}. If it wasn't imported but its element could still be found, adds the new
+     * TypeElement to {@link #allAnnotations} and returns it.
+     *
+     * @param annotation a JavaParser annotation
+     * @return the TypeElement for {@code annotation} if it could be found, null otherwise
      */
     private @Nullable TypeElement getAnnotationDeclaration(AnnotationExpr annotation) {
-        // TODO: Rewrite comments so not specefic to AnnotationFileParser.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
         TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
         if (annoTypeElt == null) {
-            // If the annotation was not imported, then #getAllAnnotations did not add it to the
-            // allAnnotations field. This code adds the annotation when it is encountered
-            // (i.e. here).
-            // Note that this does not call AnnotationFileParser#getTypeElement to avoid a spurious
-            // diagnostic if the annotation is actually unknown.
             annoTypeElt = elements.getTypeElement(annoNameFq);
             if (annoTypeElt == null) {
-                // Not a supported annotation -> ignore
+                // Not a supported annotation.
                 return null;
             }
-            InsertAjavaAnnotations.putAllNew(
+            AnnotationFileParser.putAllNew(
                     allAnnotations,
-                    InsertAjavaAnnotations.createNameToAnnotationMap(
+                    AnnotationFileParser.createNameToAnnotationMap(
                             Collections.singletonList(annoTypeElt)));
         }
 
