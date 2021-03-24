@@ -19,10 +19,39 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 
+/**
+ * Moves annotations in a JavaParser AST from declaration position onto the types they correspond
+ * to.
+ *
+ * <p>When parsing a method or file in Java such as {@code @Tainted String myField}, JavaParser
+ * doesn't know if {@code @Tainted} belongs to the field declaration itself or to the type {@code
+ * String}, so it makes it a declaration annotation. Where the annotation actually belongs depends
+ * on the type of the annotation, which JavaParser doesn't have access to.
+ *
+ * <p>For each such annotation, this class checks if the current instance of Java recognizes it.
+ * Since this file should be run as part of the Checker Framework, in particular this will include
+ * all Checker Framework annotations. If it recognizes the annotation, and it can only appear on the
+ * field or method type and not the declaration, then it moves the annotation to the type position.
+ */
 public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
+    /**
+     * Annotations imported by the file, stored as a mapping from names to the TypeElements for the
+     * annotations. When checking an annotation in the file, the annotations in this field determine
+     * if the annotation was imported or not.
+     */
     private Map<String, TypeElement> allAnnotations;
+    /** Utility class for working with {@link Element}s. */
     private Elements elements;
 
+    /**
+     * Constructs a {@code TypeAnnotationMover}. The {@code allAnnotations} parameter should contain
+     * all the annotations imported by the file to be visited. When examining an annotation in the
+     * file, looks up the name in {@code allAnnotations} to find the TypeElement for the annotation.
+     *
+     * @param allAnnotations mapping from annotation names to TypeElements for the annotations for
+     *     each annotation imported by the file
+     * @param elements instance of {@code Element}s
+     */
     public TypeAnnotationMover(Map<String, TypeElement> allAnnotations, Elements elements) {
         this.allAnnotations = new HashMap<>(allAnnotations);
         this.elements = elements;
@@ -70,6 +99,16 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
         annosToMove.forEach(anno -> type.asClassOrInterfaceType().addAnnotation(anno));
     }
 
+    /**
+     * Given a JavaParser node for a declaration and the type of Element that declaration
+     * represents, returns a List of annotations currently in declaration position that can't
+     * possibly be declaration annotations for that type of declaration.
+     *
+     * @param node JavaParser node for declaration
+     * @param declarationType the type of declaration {@code node} represents
+     * @return a list of annotations in declaration position that should be on the declaration's
+     *     type
+     */
     private List<AnnotationExpr> getAnnotationsToMove(
             NodeWithAnnotations<?> node, ElementType declarationType) {
         List<AnnotationExpr> annosToMove = new ArrayList<>();
@@ -82,6 +121,12 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
         return annosToMove;
     }
 
+    /**
+     * Removes all annotations from {@code node} that appear in {@code annosToRemove}
+     *
+     * @param node a node with annotations
+     * @param annosToRemove list of annotations to remove
+     */
     private void removeAnnotations(
             NodeWithAnnotations<?> node, List<AnnotationExpr> annosToRemove) {
         NodeList<AnnotationExpr> newAnnos = new NodeList<>(node.getAnnotations());
@@ -89,6 +134,14 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
         node.setAnnotations(newAnnos);
     }
 
+    /**
+     * Checks if the current instance of Java recognizes a JavaParser annotation. Returns the
+     * TypeElement of the annotation if so, and null othrewise.
+     *
+     * @param annotation a JavaParser annotation expression
+     * @return the TypeElement corresponding to {@code annotation} if it could be found, and null
+     *     otherwise
+     */
     private @Nullable TypeElement getAnnotationDeclaration(AnnotationExpr annotation) {
         // TODO: Rewrite comments so not specefic to AnnotationFileParser.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
@@ -114,6 +167,17 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
         return annoTypeElt;
     }
 
+    /**
+     * Returns if {@code annotation} could be declaration annotation for {@code declarationType}.
+     * This would be the case if the annotation isn't recognized at all, or if it was recognized and
+     * has {@code declarationType} as one of its targets.
+     *
+     * @param annotation a JavaParser annotation expression
+     * @param declarationType the declaration type to check if {@code annotation} might be a
+     *     declaration annotation for
+     * @return false unless {@code annotation} definitely cannot be a declaration annotation for
+     *     {@code declarationType}
+     */
     private boolean isPossiblyDeclarationAnnotation(
             AnnotationExpr annotation, ElementType declarationType) {
         TypeElement annotationType = getAnnotationDeclaration(annotation);
@@ -124,6 +188,17 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
         return isPossiblyDeclarationAnnotation(annotationType, declarationType);
     }
 
+    /**
+     * Returns whether the annotation represented by {@code annotationDeclaration} might be a
+     * declaration for {@code declarationType}. This holds if {@code declarationType} is a target of
+     * the annotation, or if {@code ElementType.TYPE_USE} is not a target of the annotation.
+     *
+     * @param annotationDeclaration declaration for an annotation
+     * @param declarationType the declaration type to check if the annotation might be a declaration
+     *     annotation for
+     * @return true if {@code annotationDeclaration} contains {@code declarationType} as a target or
+     *     doesn't contain {@code ElemenType.TYPE_USE} as a target.
+     */
     private boolean isPossiblyDeclarationAnnotation(
             TypeElement annotationDeclaration, ElementType declarationType) {
         Target target = annotationDeclaration.getAnnotation(Target.class);

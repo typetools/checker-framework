@@ -365,6 +365,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Tests {@link org.checkerframework.framework.ajava.InsertAjavaAnnotations} if the checker has
+     * the "ajavaChecks" option.
+     *
+     * <p>Parses the current file with JavaParser. Removes all annotations and then tries to
+     * reinsert them. Tests if the ASTs are the same and crashes if not.
+     *
+     * <p>Subclasses may override this method to disable the test if even the option is provided.
+     */
     protected void testAnnotationInsertion() {
         if (!checker.hasOption("ajavaChecks") || root == null) {
             return;

@@ -50,10 +50,17 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 
+/** Inserts annotations from an ajava file into a Java file. */
 public class InsertAjavaAnnotations {
+    /** Utility class for working with {@link Element}s. */
     private Elements elements;
 
-    public static Elements createElements() {
+    /**
+     * Gets an instance of {@code Elements} from the current Java compiler.
+     *
+     * @return an instance of {@code Elements}
+     */
+    private static Elements createElements() {
         JavaCompiler compiler = javax.tools.ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
             System.err.println("Could not get compiler instance");
@@ -81,19 +88,42 @@ public class InsertAjavaAnnotations {
         return ((JavacTask) cTask).getElements();
     }
 
+    /**
+     * Constructs an {@code InsertAjavaAnnotations} using the given {@code Elements} instance.
+     *
+     * @param elements an instance of {@code Elements}
+     */
     public InsertAjavaAnnotations(Elements elements) {
         this.elements = elements;
     }
 
+    /** Represents some text to be inserted at a file and its location. */
     private static class Insertion {
+        /** Offset of the insertion in characters. */
         public int position;
+        /** The contents of the insertion. */
         public String contents;
+        /** Whether the insertion represents an object on its own line. */
         public boolean ownLine;
 
+        /**
+         * Constructs an insertion with the given position and contents.
+         *
+         * @param position offset of the insertion in the file
+         * @param contents contents of the insertion
+         */
         public Insertion(int position, String contents) {
             this(position, contents, false);
         }
 
+        /**
+         * Constructs an insertion with the given position and contents.
+         *
+         * @param position offset of the insertion in the file
+         * @param contents contents of the insertion
+         * @param ownLine true if this insertion represents an object on its own line (doesn't
+         *     affect the contents of the insertion)
+         */
         public Insertion(int position, String contents, boolean ownLine) {
             this.position = position;
             this.contents = contents;
@@ -106,6 +136,10 @@ public class InsertAjavaAnnotations {
         }
     }
 
+    /**
+     * Given two JavaParser ASTs representing the same Java file but with differing annotations,
+     * stores a list of {@link Insertion}s for all annotations in the first AST into the second AST.
+     */
     private class BuildInsertionsVisitor extends DoubleJavaParserVisitor {
         /**
          * The set of annotations found in the file. Keys are both fully-qualified and simple names.
@@ -117,11 +151,26 @@ public class InsertAjavaAnnotations {
          */
         private Map<String, TypeElement> allAnnotations;
 
+        /** The annotation insertions seen so far. */
         public List<Insertion> insertions;
+        /** A printer for annotations. */
         private PrettyPrinter printer;
+        /** The lines of the String representation of the second AST. */
         private List<String> lines;
+        /**
+         * Stores the offsets of the lines in the string representation of the second AST. At index
+         * i, stores the number of characters from the start of the file to the beginning of the ith
+         * line.
+         */
         private List<Integer> cumulativeLineSizes;
 
+        /**
+         * Constructs a {@code BuildInsertionsVisitor} where {@code destFileContents} is the String
+         * representation of the AST to insertion annotations to. When visiting a node pair, the
+         * second node must always be from an AST generated from this String.
+         *
+         * @param destFileContents the String the second vistide AST was parsed from
+         */
         public BuildInsertionsVisitor(String destFileContents) {
             allAnnotations = null;
             insertions = new ArrayList<>();
@@ -247,6 +296,14 @@ public class InsertAjavaAnnotations {
             }
         }
 
+        /**
+         * Creates an insertion for a collection of annotations. The annotations will appear on
+         * their own line unless any non-whitespace characters precede the insertion position on its
+         * own line.
+         *
+         * @param position the position of the insertion
+         * @param annotations List of annotations to insert
+         */
         private void addAnnotationOnOwnLine(Position position, List<AnnotationExpr> annotations) {
             String line = lines.get(position.line - 1);
             int insertionColumn = position.column - 1;
@@ -281,6 +338,15 @@ public class InsertAjavaAnnotations {
             }
         }
 
+        /**
+         * Creates an insertion for a collection of annotations at {@code position} + {@code
+         * offset}.
+         *
+         * @param position the position of the insertion
+         * @param annotations List of annotations to insert
+         * @param offset additional offset of the insertion after {@code position}
+         * @param addSpaceBefore if true, the insertion content will start with a space
+         */
         private void addAnnotations(
                 Position position,
                 Iterable<AnnotationExpr> annotations,
@@ -311,6 +377,18 @@ public class InsertAjavaAnnotations {
     }
 
     // TODO: BEGIN from AnnotationFileParser. Factor out of both.
+    //
+    //
+    //
+    //
+    /**
+     * Temp.
+     *
+     * @return a map from names to TypeElement, for all annotations imported by the annotation file.
+     *     Two entries for each annotation: one for the simple name and another for the
+     *     fully-qualified name, with the same value.
+     * @see #allAnnotations
+     */
     private Map<String, TypeElement> getAllAnnotations(CompilationUnit cu) {
         Map<String, TypeElement> result = new HashMap<>();
         if (cu.getImports() == null) {
@@ -480,15 +558,34 @@ public class InsertAjavaAnnotations {
     }
     // TODO: END from AnnotationFileParser
 
+    /**
+     * Inserts all annotations from the ajava file read from the stream {@code annotationFile} into
+     * a Java file with contents {@code fileContents} and returns the result.
+     *
+     * @param annotationFile input stream for an ajava file for {@code fileContents}
+     * @param fileContents contents of a Java file to insert annotations into
+     * @return a modified {@code fileContents} with annotations from {@code annotationFile} inserted
+     */
     public String insertAnnotations(InputStream annotationFile, String fileContents) {
         CompilationUnit annotationCu = StaticJavaParser.parse(annotationFile);
         CompilationUnit fileCu = StaticJavaParser.parse(fileContents);
         BuildInsertionsVisitor insertionVisitor = new BuildInsertionsVisitor(fileContents);
         annotationCu.accept(insertionVisitor, fileCu);
         List<Insertion> insertions = insertionVisitor.insertions;
+        // Insert annotations in reverse order of position. Making an insertion changes the offset
+        // values of everything after the insertion, so making the insertions in reverse order of
+        // removes the need to recalculate positions.
         insertions.sort(
                 (insertion1, insertion2) -> {
                     int cmp = Integer.compare(insertion1.position, insertion2.position);
+                    // Annotations belonging on their own line should be inserted before other
+                    // annotations. For example, in
+                    //
+                    // @Pure
+                    // @Tainted String myMethod();
+                    //
+                    // both annotations should be inserted at the same position (the start of
+                    // "String"), but @Pure should always appear first.
                     if (cmp == 0 && (insertion1.ownLine != insertion2.ownLine)) {
                         if (insertion1.ownLine) {
                             cmp = -1;
@@ -496,6 +593,7 @@ public class InsertAjavaAnnotations {
                             cmp = 1;
                         }
                     }
+
                     return -cmp;
                 });
         StringBuilder result = new StringBuilder(fileContents);
@@ -506,6 +604,13 @@ public class InsertAjavaAnnotations {
         return result.toString();
     }
 
+    /**
+     * Inserts all annotations from the ajava file at {@code annotationFilePath} to {@code
+     * javaFilePath}.
+     *
+     * @param annotationFilePath path to an ajava file for {@code javaFilePath}
+     * @param javaFilePath path to a Java file to insert annotation into
+     */
     public void insertAnnotations(String annotationFilePath, String javaFilePath) {
         try {
             Path path = Paths.get(javaFilePath);
@@ -524,9 +629,27 @@ public class InsertAjavaAnnotations {
         }
     }
 
+    /**
+     * Inserts annotations from ajava files into Java files in place.
+     *
+     * <p>The first argument is a file or directory containing ajava files. It may be a single ajava
+     * file or a directory containing ajava files.
+     *
+     * <p>The second argument is a Java file or a directory containing Java files to insert
+     * annotations into.
+     *
+     * <p>For each file in the second argument, checks if an ajava file from the first argument
+     * matches it. For each such file, inserts all its annotations into the Java file.
+     */
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.out.println(
+                    "Usage: java InsertAjavaAnnotations <ajava-directory> <java-file-directory");
+            System.exit(1);
+        }
+
         AnnotationFileStore annotationFiles = new AnnotationFileStore();
-        annotationFiles.addFile(new File(args[0]));
+        annotationFiles.addFileOrDirectory(new File(args[0]));
         InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
         FileVisitor<Path> visitor =
                 new SimpleFileVisitor<Path>() {
@@ -570,6 +693,7 @@ public class InsertAjavaAnnotations {
             Files.walkFileTree(Paths.get(args[1]), visitor);
         } catch (IOException e) {
             System.out.println("Error while adding annotations to: " + args[1]);
+            e.printStackTrace();
         }
     }
 }
