@@ -371,6 +371,13 @@ public class InsertAjavaAnnotations {
             insertions.add(new Insertion(absolutePosition, insertionContent.toString()));
         }
 
+        /**
+         * Converts a Position (which contains a line and column) to an absolute offset from the
+         * start of the file
+         *
+         * @param position a Position
+         * @return the total offset of the position from the start of the file
+         */
         private int getAbsolutePosition(Position position) {
             return cumulativeLineSizes.get(position.line - 1) + (position.column - 1);
         }
