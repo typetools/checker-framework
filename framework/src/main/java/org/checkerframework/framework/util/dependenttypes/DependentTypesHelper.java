@@ -517,7 +517,7 @@ public class DependentTypesHelper {
      *
      * <p>If a Java expression in {@code atm} references local variables (other than formal
      * parameters), the expression is removed from the annotation. This could result in dependent
-     * type annotations with empty lists of expressions. If this is a problem, subclasses can
+     * type annotations with empty lists of expressions. If this is a problem, a subclass can
      * override {@link #buildAnnotation(AnnotationMirror, Map)} to do something besides creating an
      * annotation with a empty list.
      *
@@ -610,7 +610,7 @@ public class DependentTypesHelper {
      * @param stringToJavaExpr function that converts strings to {@code JavaExpression}s
      * @param anno annotation mirror
      * @return an annotation created by applying {@code stringToJavaExpr} to all expression strings
-     *     in {@code anno}
+     *     in {@code anno}, or null if there would be no effect
      */
     public @Nullable AnnotationMirror convertAnnotationMirror(
             StringToJavaExpression stringToJavaExpr, AnnotationMirror anno) {
@@ -648,12 +648,11 @@ public class DependentTypesHelper {
     /**
      * This method is for subclasses to override to change JavaExpressions in some way before they
      * are inserted into new annotations. This method is called after parsing and
-     * viewpoint-adaptation have occurred. {@code javaExpr} may be a {@link PassThroughExpression}
-     * that results from a {@link JavaExpressionParseException}.
+     * viewpoint-adaptation have occurred. {@code javaExpr} may be a {@link PassThroughExpression}.
      *
      * <p>If {@code null} is returned then the expression is not added to the new annotation.
      *
-     * <p>This implementation returns the argument.
+     * <p>The default implementation returns the argument, but subclasses may override it.
      *
      * @param javaExpr a JavaExpression
      * @return a transformed JavaExpression or {@code null} if no transformation exists
@@ -663,12 +662,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Whether or not {@code expression} should be passed to the new annotation unchanged. The
-     * default implementation returns true if the {@code expression} is an expression error
+     * Whether or not {@code expression} should be passed to the new annotation unchanged. If this
+     * method returns true, the {@code expression} is not parsed.
+     *
+     * <p>The default implementation returns true if the {@code expression} is an expression error
      * according to {@link DependentTypesError#isExpressionError(String)}. Subclasses may override
      * this method to add additional logic.
-     *
-     * <p>If this method returns true, the {@code expression} is not parsed.
      *
      * @param expression an expression string in a dependent types annotation
      * @return whether or not {@code expression} should be passed through unchanged to the new
@@ -683,8 +682,10 @@ public class DependentTypesHelper {
      * elementMap}.
      *
      * @param originalAnno the annotation passed to {@link
-     *     #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}
-     * @param elementMap a mapping of element names of {@code originalAnno} to {@code
+     *     #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} (this method is a
+     *     helper method for {@link #convertAnnotationMirror(StringToJavaExpression,
+     *     AnnotationMirror)})
+     * @param elementMap a mapping from element names of {@code originalAnno} to {@code
      *     JavaExpression}s
      * @return an annotation created from {@code elementMap}
      */
@@ -732,7 +733,7 @@ public class DependentTypesHelper {
      * Creates a {@link JavaExpression} representing the exception thrown when parsing {@code
      * expression}.
      *
-     * @param expression an expression that cause {@code e} when parsed
+     * @param expression an expression that caused {@code e} when parsed
      * @param e the exception thrown when parsing {@code expression}
      * @return a java expression
      */
@@ -745,7 +746,7 @@ public class DependentTypesHelper {
      * Creates a {@link JavaExpression} representing the error caused when parsing {@code
      * expression}
      *
-     * @param expression an expression that cause {@code e} when parsed
+     * @param expression an expression that caused {@code error} when parsed
      * @param error the error message caused by {@code expression}
      * @return a java expression
      */
@@ -796,9 +797,9 @@ public class DependentTypesHelper {
                     AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
                 AnnotationMirror newAnno = func.apply(anno);
                 if (newAnno != null) {
-                    // This code must remove and then add, rather then call replace, because type
-                    // may have multiple annotations with the same class, but different elements.
-                    // (This is a bug; see
+                    // This code must remove and then add, rather than call `replace`, because a
+                    // type may have multiple annotations with the same class, but different
+                    // elements.  (This is a bug; see
                     // https://github.com/typetools/checker-framework/issues/4451.)
                     // AnnotatedTypeMirror#replace only removes one annotation that is in the same
                     // hierarchy as the passed argument.
@@ -863,7 +864,7 @@ public class DependentTypesHelper {
      * annotation that are an error string as specified by DependentTypesError#isExpressionError.
      *
      * @param am an annotation
-     * @return the list {@link DependentTypesError}s
+     * @return a list of {@link DependentTypesError}s for the error strings in the given annotation
      */
     private List<DependentTypesError> errorElements(AnnotationMirror am) {
         assert hasDependentAnnotations();
@@ -938,8 +939,8 @@ public class DependentTypesHelper {
 
         // Parameters and receivers are checked by visitVariable
         // So only type parameters and return type need to be checked here.
-        checkTypeVariablesForErrorExpressions(methodDeclTree, type);
 
+        checkTypeVariablesForErrorExpressions(methodDeclTree, type);
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
             AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodDeclTree);
@@ -1018,8 +1019,8 @@ public class DependentTypesHelper {
 
     /**
      * Appends list2 to list1 in a new list. If either list is empty, returns the other. Thus, the
-     * result may be aliased to one of the arguments and the client should only read, not write, the
-     * result.
+     * result may be aliased to one of the arguments and the client should only read, not write
+     * into, the result.
      *
      * @param list1 a list
      * @param list2 a list
