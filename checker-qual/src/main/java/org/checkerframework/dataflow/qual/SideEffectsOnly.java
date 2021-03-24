@@ -8,8 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * A method annotated with the declaration annotation {@code @SideEffectsOnly(A, B)} side-effects at
- * most the expressions A and B. All other expressions have the same value before and after a call.
+ * A method annotated with the declaration annotation {@code @SideEffectsOnly(A, B)} perfarms
+ * side-effects on at most the expressions A and B. All other expressions have the same value before
+ * and after a call.
  *
  * @checker_framework.manual #type-refinement-purity Side effects only
  */

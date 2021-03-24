@@ -187,8 +187,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Returns true if the method has the declaration annotation {@code @SideEffectsOnly}.
      *
-     * @param atypeFactory the type factory used to retrieve annotations on the method element
-     * @param method the method element
+     * @param atypeFactory the type factory used to retrieve annotations
+     * @param method a method
      * @return true if the method is annotated with {@code @SideEffectsOnly}
      */
     protected boolean isSideEffectsOnly(
@@ -210,9 +210,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *   <li>If the method is side-effect-free (as indicated by {@link
      *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
      *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
-     *   <li>If the method side-effects at most a limited set of expressions (specified as
-     *       annotation values of {@code @SideEffectsOnly}), then information about those
-     *       expressions is removed.
+     *   <li>If the method side-effects at most a limited set of expressions (specified by
+     *       {@code @SideEffectsOnly}), then information about those expressions is removed.
      *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
      *       if the method {@code n} cannot modify {@code a.f} (e.g., if {@code a} is a local
      *       variable or {@code this}, and {@code f} is final).
@@ -227,7 +226,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         ExecutableElement method = n.getTarget().getMethod();
 
         // List of expressions that this method side-effects (specified as arguments/elements of
-        // @SideEffectsOnly). If the List is empty, then there is no @SideEffectsOnly annotation.
+        // @SideEffectsOnly). If the list is empty, then there is no @SideEffectsOnly annotation.
         List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
         if (isSideEffectsOnly(atypeFactory, method)) {
             SourceChecker checker = analysis.checker;
