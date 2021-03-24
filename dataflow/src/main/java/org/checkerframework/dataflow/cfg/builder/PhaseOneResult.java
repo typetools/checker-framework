@@ -101,10 +101,12 @@ public class PhaseOneResult {
     /**
      * Returns a representation of a map, one entry per line.
      *
+     * @param <K> the key type of the map
+     * @param <V> the value type of the map
      * @param map a map
      * @return a representation of a map, one entry per line
      */
-    public <K, V> String mapToString(Map<K, V> map) {
+    private <K, V> String mapToString(Map<K, V> map) {
         if (map.isEmpty()) {
             return "{}";
         }
