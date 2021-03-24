@@ -320,16 +320,16 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     final TypeMirror nullPointerExceptionType;
 
     /** The OutOfMemoryError type. */
-    final TypeMirror outOfMemoryErrorType;
+    final @Nullable TypeMirror outOfMemoryErrorType;
 
     /** The ClassCircularityError type. */
-    final TypeMirror classCircularityErrorType;
+    final @Nullable TypeMirror classCircularityErrorType;
 
     /** The ClassFormatErrorType type. */
-    final TypeMirror classFormatErrorType;
+    final @Nullable TypeMirror classFormatErrorType;
 
     /** The NoClassDefFoundError type. */
-    final TypeMirror noClassDefFoundErrorType;
+    final @Nullable TypeMirror noClassDefFoundErrorType;
 
     /** The String type. */
     final TypeMirror stringType;
@@ -400,10 +400,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         iterableType = types.erasure(getTypeMirror(Iterable.class));
         negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
         nullPointerExceptionType = getTypeMirror(NullPointerException.class);
-        outOfMemoryErrorType = getTypeMirror(OutOfMemoryError.class);
-        classCircularityErrorType = getTypeMirror(ClassCircularityError.class);
-        classFormatErrorType = getTypeMirror(ClassFormatError.class);
-        noClassDefFoundErrorType = getTypeMirror(NoClassDefFoundError.class);
+        outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
+        classCircularityErrorType = maybeGetTypeMirror(ClassCircularityError.class);
+        classFormatErrorType = maybeGetTypeMirror(ClassFormatError.class);
+        noClassDefFoundErrorType = maybeGetTypeMirror(NoClassDefFoundError.class);
         stringType = getTypeMirror(String.class);
         throwableType = getTypeMirror(Throwable.class);
         uncheckedExceptionTypes = new LinkedHashSet<>(2);
@@ -411,7 +411,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         uncheckedExceptionTypes.add(getTypeMirror(Error.class));
         newArrayExceptionTypes = new LinkedHashSet<>(2);
         newArrayExceptionTypes.add(negativeArraySizeExceptionType);
-        newArrayExceptionTypes.add(outOfMemoryErrorType);
+        if (outOfMemoryErrorType != null) {
+            newArrayExceptionTypes.add(outOfMemoryErrorType);
+        }
     }
 
     /**
@@ -611,10 +613,18 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     protected NodeWithExceptionsHolder extendWithClassNameNode(ClassNameNode node) {
         Set<TypeMirror> thrownSet = new HashSet<>(4);
-        thrownSet.add(classCircularityErrorType);
-        thrownSet.add(classFormatErrorType);
-        thrownSet.add(noClassDefFoundErrorType);
-        thrownSet.add(outOfMemoryErrorType);
+        if (classCircularityErrorType != null) {
+            thrownSet.add(classCircularityErrorType);
+        }
+        if (classFormatErrorType != null) {
+            thrownSet.add(classFormatErrorType);
+        }
+        if (noClassDefFoundErrorType != null) {
+            thrownSet.add(noClassDefFoundErrorType);
+        }
+        if (outOfMemoryErrorType != null) {
+            thrownSet.add(outOfMemoryErrorType);
+        }
 
         return extendWithNodeWithExceptions(node, thrownSet);
     }
@@ -3753,5 +3763,25 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     private TypeMirror getTypeMirror(Class<?> clazz) {
         return TypesUtils.typeFromClass(clazz, types, elements);
+    }
+
+    /**
+     * Returns the TypeMirror for the given class, or {@code null} if the type is not present.
+     *
+     * <p>This can be used to handle system types that are not present. For example, in Java code
+     * that is translated to JavaScript using j2cl, the custom bootclasspath contains APIs that are
+     * emulated in JavaScript, so some types such as OutOfMemoryError are deliberately not present.
+     *
+     * @param clazz a class, which must have a canonical name
+     * @return the TypeMirror for the class, or {@code null} if the type is not present
+     */
+    private @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
+        String name = clazz.getCanonicalName();
+        assert name != null : clazz + " does not have a canonical name";
+        TypeElement element = elements.getTypeElement(name);
+        if (element == null) {
+            return null;
+        }
+        return element.asType();
     }
 }

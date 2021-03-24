@@ -243,7 +243,7 @@ public class ValueCheckerUtils {
      */
     public static List<Integer> getLengthsForStringValues(List<String> values) {
         List<Integer> lengths = SystemUtil.mapList(String::length, values);
-        return ValueCheckerUtils.removeDuplicates(lengths);
+        return SystemUtil.removeDuplicates(lengths);
     }
 
     /**
