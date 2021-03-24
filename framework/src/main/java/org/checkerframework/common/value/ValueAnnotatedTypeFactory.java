@@ -908,7 +908,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
+     * Returns a {@link DoubleVal} annotation using the values. If {@code values} is null, then
      * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
