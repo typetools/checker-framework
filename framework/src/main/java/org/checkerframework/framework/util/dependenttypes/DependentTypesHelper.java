@@ -210,12 +210,12 @@ public class DependentTypesHelper {
      * Viewpoint-adapts the dependent type annotations on the bounds of the type parameters of the
      * declaration of {@code typeUse} to {@code typeUse}.
      *
-     * @param typeUse a use of a type with type parameter bounds {@code bounds}
      * @param bounds annotated types of the bounds of the type parameters; its elements are
      *     side-effected by this method (but the list itself is not side-effected)
+     * @param typeUse a use of a type with type parameter bounds {@code bounds}
      */
     public void atParameterizedTypeUse(
-            TypeElement typeUse, List<AnnotatedTypeParameterBounds> bounds) {
+            List<AnnotatedTypeParameterBounds> bounds, TypeElement typeUse) {
         if (!hasDependentAnnotations()) {
             return;
         }
@@ -237,15 +237,15 @@ public class DependentTypesHelper {
      * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
      * type annotations. This method viewpoint-adapts the dependent type annotations.
      *
-     * @param methodInvocationTree use of the method
      * @param methodType type of the method invocation; is side-effected by this method
+     * @param methodInvocationTree use of the method
      */
     public void atMethodInvocation(
-            MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodType) {
+            AnnotatedExecutableType methodType, MethodInvocationTree methodInvocationTree) {
         if (!hasDependentAnnotations()) {
             return;
         }
-        atInvocation(methodInvocationTree, methodType);
+        atInvocation(methodType, methodInvocationTree);
     }
 
     /**
@@ -254,15 +254,15 @@ public class DependentTypesHelper {
      * <p>{@code constructorType} has been viewpoint-adapted to the call site, except for any
      * dependent type annotations. This method viewpoint-adapts the dependent type annotations.
      *
-     * @param newClassTree invocation of the constructor
      * @param constructorType type of the constructor invocation; is side-effected by this method
+     * @param newClassTree invocation of the constructor
      */
     public void atConstructorInvocation(
-            NewClassTree newClassTree, AnnotatedExecutableType constructorType) {
+            AnnotatedExecutableType constructorType, NewClassTree newClassTree) {
         if (!hasDependentAnnotations()) {
             return;
         }
-        atInvocation(newClassTree, constructorType);
+        atInvocation(constructorType, newClassTree);
     }
 
     /**
@@ -271,11 +271,11 @@ public class DependentTypesHelper {
      * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
      * type annotations. This method viewpoint-adapts the dependent type annotations.
      *
-     * @param tree invocation of the method or constructor
      * @param methodType type of the method or constructor invocation; is side-effected by this
      *     method
+     * @param tree invocation of the method or constructor
      */
-    private void atInvocation(ExpressionTree tree, AnnotatedExecutableType methodType) {
+    private void atInvocation(AnnotatedExecutableType methodType, ExpressionTree tree) {
         assert hasDependentAnnotations();
         Element methodElt = TreeUtils.elementFromUse(tree);
         // Because methodType is the type post type variable substitution, it has annotations from
@@ -324,10 +324,10 @@ public class DependentTypesHelper {
      * Viewpoint-adapts the Java expressions in annotations written on a field declaration to the
      * use at {@code fieldAccess}.
      *
-     * @param fieldAccess a field access
      * @param type its type; is side-effected by this method
+     * @param fieldAccess a field access
      */
-    public void atFieldAccess(MemberSelectTree fieldAccess, AnnotatedTypeMirror type) {
+    public void atFieldAccess(AnnotatedTypeMirror type, MemberSelectTree fieldAccess) {
         if (!hasDependentType(type)) {
             return;
         }
@@ -344,10 +344,10 @@ public class DependentTypesHelper {
      * declaration to the body of the method. This means the parameter syntax, e.g. "#2", is
      * converted to the names of the parameter.
      *
-     * @param methodDeclTree a method declaration
      * @param atm the method return type; is side-effected by this method
+     * @param methodDeclTree a method declaration
      */
-    public void atReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+    public void atReturnType(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
         if (!hasDependentType(atm)) {
             return;
         }
@@ -383,14 +383,14 @@ public class DependentTypesHelper {
 
     /**
      * Standardize the Java expressions in annotations in a variable declaration. Converts the
-     * parameter syntax to the parameter name.
+     * parameter syntax, e.g "#1", to the parameter name.
      *
-     * @param declarationTree the variable declaration
      * @param type the type of the variable declaration; is side-effected by this method
+     * @param declarationTree the variable declaration
      * @param variableElt the element of the variable declaration
      */
     public void atVariableDeclaration(
-            Tree declarationTree, AnnotatedTypeMirror type, VariableElement variableElt) {
+            AnnotatedTypeMirror type, Tree declarationTree, VariableElement variableElt) {
         if (!hasDependentType(type)) {
             return;
         }
@@ -459,10 +459,10 @@ public class DependentTypesHelper {
      * Standardize the Java expressions in annotations in the type of an expression. Converts the
      * parameter syntax to the parameter name.
      *
-     * @param tree an expression
      * @param annotatedType its type; is side-effected by this method
+     * @param tree an expression
      */
-    public void atExpression(ExpressionTree tree, AnnotatedTypeMirror annotatedType) {
+    public void atExpression(AnnotatedTypeMirror annotatedType, ExpressionTree tree) {
         if (!hasDependentType(annotatedType)) {
             return;
         }
@@ -510,7 +510,7 @@ public class DependentTypesHelper {
                     return;
                 }
 
-                atVariableDeclaration(declarationTree, type, (VariableElement) elt);
+                atVariableDeclaration(type, declarationTree, (VariableElement) elt);
                 return;
 
             default:
@@ -535,10 +535,10 @@ public class DependentTypesHelper {
      * override {@link #buildAnnotation(AnnotationMirror, Map)} to do something besides creating an
      * annotation with a empty list.
      *
-     * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
      * @param atm type to viewpoint-adapt; is side-effected by this method
+     * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
      */
-    public void delocalize(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+    public void delocalize(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
         if (!hasDependentType(atm)) {
             return;
         }
