@@ -450,18 +450,24 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the Java expressions in annotations in the type of an expression. Converts the
-     * parameter syntax to the parameter name.
+     * Standardize the Java expressions in annotations in written in the {@code expressionTree}.
+     * Also, converts the parameter syntax, e.g. "#1", to the parameter name.
+     *
+     * <p>{@code expressionTree} must be an expressions which can contain explicitly written
+     * annotations, namely a {@link NewClassTree}, {@link com.sun.source.tree.NewArrayTree}, or
+     * {@link com.sun.source.tree.TypeCastTree}. For example, this method standardizes the {@code
+     * KeyFor} annotation in {@code (@KeyFor("map") String) key }.
      *
      * @param annotatedType its type; is side-effected by this method
-     * @param tree an expression
+     * @param expressionTree a {@link NewClassTree}, {@link com.sun.source.tree.NewArrayTree}, or
+     *     {@link com.sun.source.tree.TypeCastTree}
      */
-    public void atExpression(AnnotatedTypeMirror annotatedType, ExpressionTree tree) {
+    public void atExpression(AnnotatedTypeMirror annotatedType, ExpressionTree expressionTree) {
         if (!hasDependentType(annotatedType)) {
             return;
         }
 
-        TreePath path = factory.getPath(tree);
+        TreePath path = factory.getPath(expressionTree);
         if (path == null) {
             return;
         }
