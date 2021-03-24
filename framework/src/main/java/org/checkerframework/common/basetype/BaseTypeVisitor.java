@@ -94,7 +94,6 @@ import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
-import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
 import org.checkerframework.framework.ajava.JavaParserUtils;
@@ -385,12 +384,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         CompilationUnit astWithoutAnnotations = originalAst.clone();
-        new ClearAnnotationsVisitor().visit(astWithoutAnnotations, null);
+        JavaParserUtils.clearAnnotations(astWithoutAnnotations);
         PrettyPrinter printer = new PrettyPrinter();
         String withoutAnnotations = printer.print(astWithoutAnnotations);
         String withAnnotations;
         try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
-            // TODO: Make inserter a field for reuse.
             withAnnotations =
                     new InsertAjavaAnnotations(elements)
                             .insertAnnotations(annotationInputStream, withoutAnnotations);
