@@ -520,6 +520,10 @@ public class DependentTypesHelper {
         }
     }
 
+    /** Thrown when a non-parameter local variable is found. */
+    @SuppressWarnings("serial")
+    private static class FoundLocalException extends RuntimeException {}
+
     /**
      * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
      * methodDeclTree}. This method changes occurrences of formal parameter names to the "#2"
@@ -544,10 +548,6 @@ public class DependentTypesHelper {
         List<FormalParameter> parameters = JavaExpression.getFormalParameters(methodElement);
         List<JavaExpression> paramsAsLocals =
                 JavaExpression.getParametersAsLocalVariables(methodElement);
-
-        /** Thrown when a non-parameter local variable is found. */
-        @SuppressWarnings("serial")
-        class FoundLocalException extends RuntimeException {}
 
         StringToJavaExpression stringToJavaExpr =
                 expression -> {
