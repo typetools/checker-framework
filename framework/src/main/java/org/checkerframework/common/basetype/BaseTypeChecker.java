@@ -47,6 +47,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -329,13 +330,28 @@ public abstract class BaseTypeChecker extends SourceChecker {
                     throw (RuntimeException) err;
                 }
             }
-            Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
+            Throwable cause;
+            String causeMessage;
+            if (t instanceof InvocationTargetException) {
+                cause = t.getCause();
+                if (cause == null || cause.getMessage() == null) {
+                    causeMessage = t.getMessage();
+                } else if (t.getMessage() == null) {
+                    causeMessage = cause.getMessage();
+                } else {
+                    causeMessage = t.getMessage() + ": " + cause.getMessage();
+                }
+            } else {
+                cause = t;
+                causeMessage = (cause == null) ? "null" : cause.getMessage();
+            }
             throw new BugInCF(
                     cause,
-                    "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                    "Error when invoking constructor %s(%s) on args %s; cause: %s",
                     name,
+                    StringsPlume.join(", ", paramTypes),
                     Arrays.toString(args),
-                    Arrays.toString(paramTypes));
+                    causeMessage);
         }
     }
 

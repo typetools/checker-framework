@@ -76,20 +76,51 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
+    /** A cache for the {@link #nCopiesEmptyStringCache} method. */
+    private static List<List<String>> nCopiesEmptyStringCache = new ArrayList<>(10);
+
+    static {
+        nCopiesEmptyStringCache.add(Collections.emptyList());
+        nCopiesEmptyStringCache.add(Collections.singletonList(""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(2, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(3, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(4, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(5, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(6, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(7, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(8, ""));
+        nCopiesEmptyStringCache.add(Collections.nCopies(9, ""));
+    };
+
+    /**
+     * Equivalent to {@code Collections.nCopies(n, "")}.
+     *
+     * @param n the length of the list
+     * @return an immutable list of {@code n} copies of {@code ""}
+     */
+    private static List<String> nCopiesEmptyString(int n) {
+        if (n < 10) {
+            return nCopiesEmptyStringCache.get(n);
+        } else {
+            return Collections.nCopies(n, "");
+        }
+    }
+
     /**
      * Create a UBQualifier from a @LTLengthOf annotation.
      *
-     * @param am a @LTLengthOf annotation
+     * @param ltLengthOfAnno a @LTLengthOf annotation
      * @param extraOffset the extra offset
      * @return a UBQualifier created from the @LTLengthOf annotation
      */
-    private static UBQualifier parseLTLengthOf(AnnotationMirror am, String extraOffset) {
+    private static UBQualifier parseLTLengthOf(
+            AnnotationMirror ltLengthOfAnno, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+                AnnotationUtils.getElementValueArray(ltLengthOfAnno, "value", String.class, false);
         List<String> offset =
-                AnnotationUtils.getElementValueArray(am, "offset", String.class, true);
+                AnnotationUtils.getElementValueArray(ltLengthOfAnno, "offset", String.class, true);
         if (offset.isEmpty()) {
-            offset = Collections.nCopies(sequences.size(), "");
+            offset = nCopiesEmptyString(sequences.size());
         }
         return createUBQualifier(sequences, offset, extraOffset);
     }
@@ -97,19 +128,22 @@ public abstract class UBQualifier {
     /**
      * Create a UBQualifier from a @SubstringIndexFor annotation.
      *
-     * @param am a @SubstringIndexFor annotation
+     * @param substringIndexForAnno a @SubstringIndexFor annotation
      * @param extraOffset the extra offset
      * @return a UBQualifier created from the @SubstringIndexFor annotation
      */
-    private static UBQualifier parseSubstringIndexFor(AnnotationMirror am, String extraOffset) {
+    private static UBQualifier parseSubstringIndexFor(
+            AnnotationMirror substringIndexForAnno, String extraOffset) {
         List<String> sequences =
-                AnnotationUtils.getElementValueArray(am, "value", String.class, false);
-        List<String> offset =
-                AnnotationUtils.getElementValueArray(am, "offset", String.class, false);
-        if (offset.isEmpty()) {
-            offset = Collections.nCopies(sequences.size(), "");
+                AnnotationUtils.getElementValueArray(
+                        substringIndexForAnno, "value", String.class, false);
+        List<String> offsets =
+                AnnotationUtils.getElementValueArray(
+                        substringIndexForAnno, "offset", String.class, false);
+        if (offsets.isEmpty()) {
+            offsets = nCopiesEmptyString(sequences.size());
         }
-        return createUBQualifier(sequences, offset, extraOffset);
+        return createUBQualifier(sequences, offsets, extraOffset);
     }
 
     /**
@@ -718,9 +752,9 @@ public abstract class UBQualifier {
 
             Map<String, Set<OffsetEquation>> lubMap = new HashMap<>();
             for (String sequence : sequences) {
-                Set<OffsetEquation> lub = new HashSet<>();
                 Set<OffsetEquation> offsets1 = map.get(sequence);
                 Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
+                Set<OffsetEquation> lub = new HashSet<>(offsets1.size() + offsets2.size());
                 for (OffsetEquation offset1 : offsets1) {
                     for (OffsetEquation offset2 : offsets2) {
                         if (offset2.lessThanOrEqual(offset1)) {
@@ -832,7 +866,7 @@ public abstract class UBQualifier {
             Set<String> sequences = new HashSet<>(map.keySet());
             sequences.addAll(otherLtl.map.keySet());
 
-            Map<String, Set<OffsetEquation>> glbMap = new HashMap<>();
+            Map<String, Set<OffsetEquation>> glbMap = new HashMap<>(sequences.size());
             for (String sequence : sequences) {
                 Set<OffsetEquation> glb = map.get(sequence);
                 Set<OffsetEquation> otherglb = otherLtl.map.get(sequence);

@@ -137,7 +137,7 @@ public enum ConversionCategory {
         if (types == null) {
             this.types = types;
         } else {
-            List<Class<?>> typesWithPrimitives = new ArrayList<>();
+            List<Class<?>> typesWithPrimitives = new ArrayList<>(types.length);
             for (Class<?> type : types) {
                 typesWithPrimitives.add(type);
                 Class<?> unwrapped = unwrapPrimitive(type);

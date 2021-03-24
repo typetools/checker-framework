@@ -101,8 +101,14 @@ import org.checkerframework.framework.type.QualifierHierarchy;
  */
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
+    /** The type factory associated with this transfer function. */
     private UpperBoundAnnotatedTypeFactory atypeFactory;
 
+    /**
+     * Creates a new UpperBoundTransfer.
+     *
+     * @param analysis the analysis for this transfer function
+     */
     public UpperBoundTransfer(CFAnalysis analysis) {
         super(analysis);
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
@@ -660,13 +666,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
         // Look up the SameLen type of the sequence.
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
-        List<String> sameLenSequences =
-                sameLenAnno == null
-                        ? new ArrayList<>()
-                        : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
-
-        if (!sameLenSequences.contains(sequenceJe.toString())) {
-            sameLenSequences.add(sequenceJe.toString());
+        List<String> sameLenSequences;
+        if (sameLenAnno == null) {
+            sameLenSequences = Collections.singletonList(sequenceJe.toString());
+        } else {
+            sameLenSequences =
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
+            if (!sameLenSequences.contains(sequenceJe.toString())) {
+                sameLenSequences.add(sequenceJe.toString());
+            }
         }
 
         List<String> offsets = Collections.nCopies(sameLenSequences.size(), "-1");

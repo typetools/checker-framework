@@ -368,9 +368,9 @@ public class AnnotationFileParser {
      * @return a list of fully-qualified member names
      */
     private static List<@FullyQualifiedName String> getImportableMembers(TypeElement typeElement) {
-        List<@FullyQualifiedName String> result = new ArrayList<>();
         List<VariableElement> memberElements =
                 ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+        List<@FullyQualifiedName String> result = new ArrayList<>();
         for (VariableElement varElement : memberElements) {
             if (varElement.getConstantValue() != null
                     || varElement.getKind() == ElementKind.ENUM_CONSTANT) {
@@ -935,7 +935,7 @@ public class AnnotationFileParser {
         annotateTypeParameters(decl, elt, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putMerge(annotationFileAnnos.atypes, elt, type);
-        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
+        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 warn(
@@ -966,7 +966,7 @@ public class AnnotationFileParser {
         annotate(type, decl.getAnnotations(), decl);
 
         putMerge(annotationFileAnnos.atypes, elt, type);
-        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
+        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 warn(

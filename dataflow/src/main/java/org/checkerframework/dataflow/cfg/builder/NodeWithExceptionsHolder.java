@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg.builder;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -51,6 +52,12 @@ class NodeWithExceptionsHolder extends ExtendedNode {
 
     @Override
     public String toStringDebug() {
-        return "NodeWithExceptionsHolder(" + node.toStringDebug() + ")";
+        StringJoiner sj = new StringJoiner(String.format("%n    "));
+        sj.add("NodeWithExceptionsHolder(" + node.toStringDebug() + ") {");
+        for (Map.Entry<TypeMirror, Set<Label>> entry : exceptions.entrySet()) {
+            sj.add(entry.getKey() + " => " + entry.getValue());
+        }
+        sj.add("}");
+        return sj.toString();
     }
 }

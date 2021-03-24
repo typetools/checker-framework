@@ -368,14 +368,12 @@ public class ForwardAnalysisImpl<
         switch (underlyingAST.getKind()) {
             case METHOD:
                 MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-                return SystemUtil.mapList(
-                        // TODO: document that LocalVariableNode has no block that it belongs to
-                        LocalVariableNode::new, tree.getParameters());
+                // TODO: document that LocalVariableNode has no block that it belongs to
+                return SystemUtil.mapList(LocalVariableNode::new, tree.getParameters());
             case LAMBDA:
                 LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-                return SystemUtil.mapList(
-                        // TODO: document that LocalVariableNode has no block that it belongs to
-                        LocalVariableNode::new, lambda.getParameters());
+                // TODO: document that LocalVariableNode has no block that it belongs to
+                return SystemUtil.mapList(LocalVariableNode::new, lambda.getParameters());
             default:
                 return Collections.emptyList();
         }

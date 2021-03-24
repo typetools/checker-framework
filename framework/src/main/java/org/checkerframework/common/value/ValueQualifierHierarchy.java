@@ -234,21 +234,23 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 case ValueAnnotatedTypeFactory.INTVAL_NAME:
                     List<Long> a1Values = ValueAnnotatedTypeFactory.getIntValues(a1);
                     List<Long> a2Values = ValueAnnotatedTypeFactory.getIntValues(a2);
-                    List<Long> newValues = new ArrayList<>();
+                    List<Long> newValues = new ArrayList<>(a1Values.size() + a2Values.size());
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
                     return atypeFactory.createIntValAnnotation(newValues);
                 case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
                     List<Integer> al1Values = ValueAnnotatedTypeFactory.getArrayLength(a1);
                     List<Integer> al2Values = ValueAnnotatedTypeFactory.getArrayLength(a2);
-                    List<Integer> newValuesAL = new ArrayList<>();
+                    List<Integer> newValuesAL =
+                            new ArrayList<>(al1Values.size() + al2Values.size());
                     newValuesAL.addAll(al1Values);
                     newValuesAL.addAll(al2Values);
                     return atypeFactory.createArrayLenAnnotation(newValuesAL);
                 case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                     List<String> string1Values = ValueAnnotatedTypeFactory.getStringValues(a1);
                     List<String> string2Values = ValueAnnotatedTypeFactory.getStringValues(a2);
-                    List<String> newStringValues = new ArrayList<>();
+                    List<String> newStringValues =
+                            new ArrayList<>(string1Values.size() + string2Values.size());
                     newStringValues.addAll(string1Values);
                     newStringValues.addAll(string2Values);
                     return atypeFactory.createStringAnnotation(newStringValues);

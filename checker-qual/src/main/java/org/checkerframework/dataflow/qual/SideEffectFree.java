@@ -29,7 +29,9 @@ import java.lang.annotation.Target;
  * of the following Java constructs:
  *
  * <ol>
- *   <li>Assignment to any expression, except for local variables and method parameters.
+ *   <li>Assignment to any expression, except for local variables and method parameters.<br>
+ *       (Note that storing into an array element, such a {@code a[i] = x}, is not an assignment to
+ *       a variable and is therefore forbidden.)
  *   <li>A method invocation of a method that is not {@code @SideEffectFree}.
  *   <li>Construction of a new object where the constructor is not {@code @SideEffectFree}.
  * </ol>

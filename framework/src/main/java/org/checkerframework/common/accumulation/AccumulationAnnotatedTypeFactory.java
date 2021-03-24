@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
@@ -199,7 +200,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      */
     public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
-        builder.setValue("value", ValueCheckerUtils.removeDuplicates(values));
+        builder.setValue("value", SystemUtil.removeDuplicates(values));
         return builder.build();
     }
 
@@ -638,11 +639,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (AnnotationUtils.areSame(anno, bottom)) {
             return "false";
         } else if (isPredicate(anno)) {
-            if (AnnotationUtils.hasElementValue(anno, "value")) {
-                return AnnotationUtils.getElementValue(anno, "value", String.class, false);
-            } else {
-                return "";
-            }
+            String result =
+                    AnnotationUtils.getElementValueOrNull(anno, "value", String.class, false);
+            return result == null ? "" : result;
         } else if (isAccumulatorAnnotation(anno)) {
             List<String> values = getAccumulatedValues(anno);
             StringJoiner sj = new StringJoiner(" && ");

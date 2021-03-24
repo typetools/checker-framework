@@ -40,7 +40,9 @@ import java.lang.annotation.Target;
  * of the following Java constructs:
  *
  * <ol>
- *   <li>Assignment to any expression, except for local variables (and method parameters).
+ *   <li>Assignment to any expression, except for local variables and method parameters.<br>
+ *       (Note that storing into an array element, such a {@code a[i] = x}, is not an assignment to
+ *       a variable and is therefore forbidden.)
  *   <li>A method invocation of a method that is not {@link Deterministic}.
  *   <li>Construction of a new object.
  *   <li>Catching any exceptions. This restriction prevents a method from obtaining a reference to a
@@ -60,9 +62,10 @@ import java.lang.annotation.Target;
  * </code></pre>
  * </ol>
  *
- * A constructor can be {@code @Pure}, but a constructor <em>invocation</em> is not deterministic
- * since it returns a different new object each time. TODO: Side-effect-free constructors could be
- * allowed to set their own fields.
+ * When a constructor is annotated as {@code Deterministic} (or {@code @Pure}), that means that all
+ * the fields are deterministic (the same values, if the arguments are the same). The constructed
+ * object itself is different. That is, a constructor <em>invocation</em> is never deterministic
+ * since it returns a different new object each time.
  *
  * <p>Note that the rules for checking currently imply that every {@code Deterministic} method is
  * also {@link SideEffectFree}. This might change in the future; in general, a deterministic method

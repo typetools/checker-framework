@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.tools.JavaFileManager;
@@ -190,7 +191,7 @@ public class CFGVisualizeLauncher {
             analysis.performAnalysis(cfg);
         }
 
-        Map<String, Object> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>(2);
         args.put("outdir", outputDir);
         args.put("verbose", verbose);
 
@@ -302,8 +303,7 @@ public class CFGVisualizeLauncher {
             analysis.performAnalysis(cfg);
         }
 
-        Map<String, Object> args = new HashMap<>();
-        args.put("verbose", verbose);
+        Map<String, Object> args = Collections.singletonMap("verbose", verbose);
 
         CFGVisualizer<V, S, T> viz = new StringCFGVisualizer<>();
         viz.init(args);

@@ -472,9 +472,9 @@ public abstract class AbstractAnalysis<
             depthFirstOrder = new IdentityHashMap<>();
 
             if (direction == Direction.FORWARD) {
-                queue = new PriorityQueue<>(11, new ForwardDFOComparator());
+                queue = new PriorityQueue<>(new ForwardDFOComparator());
             } else if (direction == Direction.BACKWARD) {
-                queue = new PriorityQueue<>(11, new BackwardDFOComparator());
+                queue = new PriorityQueue<>(new BackwardDFOComparator());
             } else {
                 throw new BugInCF("Unexpected Direction meet: " + direction.name());
             }

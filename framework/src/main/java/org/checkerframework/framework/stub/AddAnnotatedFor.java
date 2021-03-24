@@ -44,7 +44,7 @@ public class AddAnnotatedFor {
 
     static {
         Class<?> annotatedFor = org.checkerframework.framework.qual.AnnotatedFor.class;
-        Set<Annotation> annotatedForMetaAnnotations = new HashSet<>();
+        Set<Annotation> annotatedForMetaAnnotations = new HashSet<>(2);
         annotatedForMetaAnnotations.add(Annotations.aRetentionSource);
         annotatedForMetaAnnotations.add(
                 Annotations.createValueAnnotation(
@@ -91,7 +91,7 @@ public class AddAnnotatedFor {
      */
     public static void addAnnotatedFor(AScene scene) {
         for (AClass clazz : new HashSet<>(scene.classes.values())) {
-            Set<String> annotatedFor = new HashSet<>();
+            Set<String> annotatedFor = new HashSet<>(2); // usually few @AnnotatedFor are applicable
             clazz.accept(annotatedForVisitor, annotatedFor);
             if (!annotatedFor.isEmpty()) {
                 // Set eliminates duplicates, but it must be converted to List;

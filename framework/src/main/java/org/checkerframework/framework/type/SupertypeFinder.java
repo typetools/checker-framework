@@ -112,7 +112,7 @@ class SupertypeFinder {
          */
         @Override
         public List<AnnotatedTypeMirror> visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
+            List<AnnotatedTypeMirror> superTypes = new ArrayList<>(1);
             Set<AnnotationMirror> annotations = type.getAnnotations();
 
             // Find Boxed type

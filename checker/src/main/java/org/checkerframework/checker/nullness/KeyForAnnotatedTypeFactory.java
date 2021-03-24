@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -161,7 +162,7 @@ public class KeyForAnnotatedTypeFactory
      * @param values the values for the {@code @KeyFor} annotation
      * @return a {@code @KeyFor} annotation with the given values
      */
-    public AnnotationMirror createKeyForAnnotationMirrorWithValue(LinkedHashSet<String> values) {
+    public AnnotationMirror createKeyForAnnotationMirrorWithValue(Set<String> values) {
         // Create an AnnotationBuilder with the ArrayList
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), KeyFor.class);
         builder.setValue("value", values.toArray());
@@ -177,10 +178,7 @@ public class KeyForAnnotatedTypeFactory
      * @return a {@code @KeyFor} annotation with the given value
      */
     public AnnotationMirror createKeyForAnnotationMirrorWithValue(String value) {
-        // Create an ArrayList with the value
-        LinkedHashSet<String> values = new LinkedHashSet<>();
-        values.add(value);
-        return createKeyForAnnotationMirrorWithValue(values);
+        return createKeyForAnnotationMirrorWithValue(Collections.singleton(value));
     }
 
     /**
