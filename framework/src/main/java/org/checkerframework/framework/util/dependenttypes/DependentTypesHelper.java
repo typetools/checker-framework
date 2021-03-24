@@ -99,11 +99,9 @@ public class DependentTypesHelper {
     /** AnnotatedTypeFactory */
     protected final AnnotatedTypeFactory factory;
 
-    // TODO: Using classes and strings is inefficient. Instead this map should be
-    //  Map<String, List<ExecutableElement>, where the keys are annotation names and the values
-    // are a list of Java expression annotation elements.
-    /** Maps from an annotation class to the names of its elements that are Java expressions. */
-    private final Map<Class<? extends Annotation>, List<String>> annoToElements;
+    // TODO: Using strings is inefficient.  This should probably map to ExecutableElement instead.
+    /** Maps from an annotation name to the names of its elements that are Java expressions. */
+    private final Map<String, List<String>> annoToElements;
 
     /** This scans an annotated type and returns a list of {@link DependentTypesError}. */
     private final ExpressionErrorCollector expressionErrorCollector =
@@ -136,7 +134,7 @@ public class DependentTypesHelper {
         for (Class<? extends Annotation> expressionAnno : factory.getSupportedTypeQualifiers()) {
             List<String> elementList = getExpressionElementNames(expressionAnno);
             if (!elementList.isEmpty()) {
-                annoToElements.put(expressionAnno, elementList);
+                annoToElements.put(expressionAnno.getCanonicalName(), elementList);
             }
         }
 
@@ -184,12 +182,8 @@ public class DependentTypesHelper {
      * @return the elements of the annotation that are Java expressions
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
-        for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (factory.areSameByClass(am, clazz)) {
-                return annoToElements.get(clazz);
-            }
-        }
-        return Collections.emptyList();
+        return annoToElements.getOrDefault(
+                AnnotationUtils.annotationName(am), Collections.emptyList());
     }
 
     /**
@@ -847,10 +841,10 @@ public class DependentTypesHelper {
             errorTree = ((VariableTree) errorTree).getType();
             for (AnnotationTree annoTree : modifiers.getAnnotations()) {
                 String annoString = annoTree.toString();
-                for (Class<?> annoClazz : annoToElements.keySet()) {
+                for (String annoName : annoToElements.keySet()) {
                     // TODO: Simple string containment seems too simplistic.  At least check for a
                     // word boundary.
-                    if (annoString.contains(annoClazz.getSimpleName())) {
+                    if (annoString.contains(annoName)) {
                         errorTree = annoTree;
                         break;
                     }
@@ -998,12 +992,7 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return false;
         }
-        for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (factory.areSameByClass(am, clazz)) {
-                return true;
-            }
-        }
-        return false;
+        return annoToElements.containsKey(AnnotationUtils.annotationName(am));
     }
 
     /**
@@ -1067,7 +1056,7 @@ public class DependentTypesHelper {
                 return null;
             }
             Set<AnnotationMirror> replacements = AnnotationUtils.createAnnotationSet();
-            for (Class<? extends Annotation> vpa : annoToElements.keySet()) {
+            for (String vpa : annoToElements.keySet()) {
                 AnnotationMirror anno = from.getAnnotation(vpa);
                 if (anno != null) {
                     // Only replace annotations that might have been changed.
