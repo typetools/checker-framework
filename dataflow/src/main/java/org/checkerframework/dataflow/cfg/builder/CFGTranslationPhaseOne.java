@@ -175,7 +175,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -3124,7 +3123,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         // parameter is a union of types, calling getType() on the VariableTree can lose information
         // by yielding the LUB rather than a UnionType.
         List<Pair<Tree, Label>> catchLabels =
-                CollectionsPlume.mapList(
+                SystemUtil.mapList(
                         catchTree -> Pair.of(catchTree.getParameter().getType(), new Label()),
                         catches);
 
