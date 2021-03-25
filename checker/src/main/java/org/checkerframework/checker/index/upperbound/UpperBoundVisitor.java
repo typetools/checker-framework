@@ -111,22 +111,22 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Reports an error if the Java expression named by s is not effectively when parsed at the
-     * declaration of the given class.
+     * Reports an error if the Java expression named by s is not effectively final when parsed at
+     * the declaration of the given class.
      *
      * @param s a Java expression
      * @param classTree the expression is parsed with respect to this class
-     * @param whereToError the tree at which to possibly report an error
+     * @param whereToReportError the tree at which to possibly report an error
      */
     private void checkEffectivelyFinalAndParsable(
-            String s, ClassTree classTree, Tree whereToError) {
+            String s, ClassTree classTree, Tree whereToReportError) {
         JavaExpression je;
         try {
             je =
                     StringToJavaExpression.atTypeDecl(
                             s, TreeUtils.elementFromDeclaration(classTree), checker);
         } catch (JavaExpressionParseException e) {
-            checker.report(whereToError, e.getDiagMessage());
+            checker.report(whereToReportError, e.getDiagMessage());
             return;
         }
         Element element = null;
@@ -138,7 +138,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
         if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
-            checker.reportError(whereToError, NOT_FINAL, je);
+            checker.reportError(whereToReportError, NOT_FINAL, je);
         }
     }
 
