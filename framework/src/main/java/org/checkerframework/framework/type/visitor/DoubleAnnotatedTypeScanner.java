@@ -61,8 +61,8 @@ public abstract class DoubleAnnotatedTypeScanner<R>
      *
      * @param types1 types
      * @param types2 types
-     * @return the result of scanning and reducing all the types in {@code type1} and {@code type2}
-     *     or {@link #defaultResult} if they are empty
+     * @return the result of scanning and reducing all the types in {@code types1} and {@code
+     *     types2} or {@link #defaultResult} if they are empty
      */
     protected R scan(
             Iterable<? extends AnnotatedTypeMirror> types1,
