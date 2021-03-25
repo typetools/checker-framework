@@ -37,7 +37,11 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
 
-    /** Create a new SearchIndexAnnotatedTypeFactory. */
+    /**
+     * Create a new SearchIndexAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker associated with this
+     */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -109,6 +113,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     new HashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
             combinedArrays.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
 
+            // NegativeIndexFor <: SearchIndexFor.
             if (areSameByClass(a1, NegativeIndexFor.class)
                     || areSameByClass(a2, NegativeIndexFor.class)) {
                 return createNegativeIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));

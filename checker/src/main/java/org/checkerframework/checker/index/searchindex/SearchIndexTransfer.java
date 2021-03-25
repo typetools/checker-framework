@@ -59,11 +59,11 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                 ValueCheckerUtils.getExactValue(
                         left.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
         if (leftValue != null && leftValue == valueToCompareTo) {
-            AnnotationMirror rightSI =
+            AnnotationMirror rightSIF =
                     aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
-            if (rightSI != null) {
+            if (rightSIF != null) {
                 List<String> arrays =
-                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(rightSI);
+                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(rightSIF);
                 AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
                 store.insertValue(JavaExpression.fromNode(right), nif);
             }

@@ -709,7 +709,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             long valMin = Collections.min(values);
             long valMax = Collections.max(values);
@@ -724,6 +724,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Convert an {@code @IntRange} annotation to an {@code @IntVal} annotation, or to UNKNOWNVAL if
      * the input is too wide to be represented as an {@code @IntVal}.
+     *
+     * @param intRangeAnno an {@code @IntRange} annotation
+     * @return an {@code @IntVal} annotation corresponding to the argument
      */
     public AnnotationMirror convertIntRangeToIntVal(AnnotationMirror intRangeAnno) {
         Range range = getRange(intRangeAnno);
@@ -746,7 +749,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -789,7 +792,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             // Too many strings are replaced by their lengths
             List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -818,7 +821,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.isEmpty() || Collections.min(values) < 0) {
             return BOTTOMVAL;
         } else if (values.size() > MAX_VALUES) {
@@ -845,7 +848,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -874,7 +877,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.isEmpty()) {
             return BOTTOMVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
+        values = SystemUtil.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
@@ -1121,13 +1124,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * supports the {@code @IntVal} annotation.
      *
      * @param intAnno an {@code @IntVal} annotation, or null
+     * @return the possible values, deduplicated and sorted
      */
     public static List<Long> getIntValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
             return null;
         }
         List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1138,6 +1142,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * annotation so the argument is null.
      *
      * @param doubleAnno a {@code @DoubleVal} annotation, or null
+     * @return the possible values, deduplicated and sorted
      */
     public static List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
         if (doubleAnno == null) {
@@ -1145,7 +1150,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Double> list =
                 AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1156,6 +1161,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * constant-value annotation so the argument is null.
      *
      * @param arrayAnno an {@code @ArrayLen} annotation, or null
+     * @return the possible array lengths, deduplicated and sorted
      */
     public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
         if (arrayAnno == null) {
@@ -1163,7 +1169,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Integer> list =
                 AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 
@@ -1243,6 +1249,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * annotation so the argument is null.
      *
      * @param stringAnno a {@code @StringVal} annotation, or null
+     * @return the possible values, deduplicated and sorted
      */
     public static List<String> getStringValues(AnnotationMirror stringAnno) {
         if (stringAnno == null) {
@@ -1250,7 +1257,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<String> list =
                 AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, false);
-        list = ValueCheckerUtils.removeDuplicates(list);
+        list = SystemUtil.removeDuplicates(list);
         return list;
     }
 

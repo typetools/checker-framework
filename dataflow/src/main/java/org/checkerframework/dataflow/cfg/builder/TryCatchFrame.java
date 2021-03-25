@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
@@ -83,7 +84,7 @@ class TryCatchFrame implements TryFrame {
             TypeMirror caught = pair.first;
             boolean canApply = false;
 
-            if (caught instanceof DeclaredType) {
+            if (caught.getKind() == TypeKind.DECLARED) {
                 DeclaredType declaredCaught = (DeclaredType) caught;
                 if (types.isSubtype(declaredThrown, declaredCaught)) {
                     // No later catch blocks can apply.
@@ -93,11 +94,11 @@ class TryCatchFrame implements TryFrame {
                     canApply = true;
                 }
             } else {
-                assert caught instanceof UnionType
+                assert caught.getKind() == TypeKind.UNION
                         : "caught type must be a union or a declared type";
                 UnionType caughtUnion = (UnionType) caught;
                 for (TypeMirror alternative : caughtUnion.getAlternatives()) {
-                    assert alternative instanceof DeclaredType
+                    assert alternative.getKind() == TypeKind.DECLARED
                             : "alternatives of an caught union type must be declared types";
                     DeclaredType declaredAlt = (DeclaredType) alternative;
                     if (types.isSubtype(declaredThrown, declaredAlt)) {
