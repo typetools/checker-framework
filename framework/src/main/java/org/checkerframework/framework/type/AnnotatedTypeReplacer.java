@@ -53,7 +53,7 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
      * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
      *     AnnotatedTypeMirror, AnnotationMirror)} instead.
      */
-    @Deprecated
+    @Deprecated // 2021-03-25
     @SuppressWarnings("interning:not.interned") // assertion
     public static void replace(
             final AnnotatedTypeMirror from,
@@ -84,10 +84,10 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
     }
 
     /**
-     * If top != null, then only annotation in the hierarchy of top are affected; otherwise, all
-     * annotations are replaced.
+     * If {@code top != null}, then only annotations in the hierarchy of {@code top} are affected;
+     * otherwise, all annotations are replaced.
      *
-     * @param top if top != null, then only annotation in the hierarchy of top are replace;
+     * @param top if top != null, then only annotations in the hierarchy of top are replaced;
      *     otherwise, all annotations are replaced.
      */
     public void setTop(@Nullable AnnotationMirror top) {

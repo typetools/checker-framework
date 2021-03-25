@@ -32,7 +32,7 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
     private final QualifierHierarchy hierarchy;
 
     /**
-     * Create {@link AnnotatedTypeCombiner}
+     * Create an AnnotatedTypeCombiner.
      *
      * @param hierarchy the hierarchy used to the compute the GLB
      */
