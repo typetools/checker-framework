@@ -18,9 +18,9 @@ import org.checkerframework.javacutil.BugInCF;
  * recursing past the point at which their structure diverges.
  *
  * <p>If the default action does not return a result, then {@code R} should be {@link Void} and
- * {@link #DoubleAnnotatedTypeScanner()} should be used to construct the scanner. If the default
- * action returns a result, then specify a {@link #reduce} function and use {@link
- * #DoubleAnnotatedTypeScanner(Reduce, Object)}.
+ * {@code DoubleAnnotatedTypeScanner()} should be used to construct the scanner. If the default
+ * action returns a result, then specify a {@link #reduce} function and use {@code
+ * DoubleAnnotatedTypeScanner(Reduce, Object)}.
  *
  * @see AnnotatedTypeScanner
  * @param <R> the result of scanning the two {@code AnnotatedTypeMirror}s
