@@ -31,7 +31,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -251,15 +250,6 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public final boolean hasOrIsSubchecker;
 
-    /** The RequiresQualifier.expression argument/element. */
-    private final ExecutableElement requiresQualifierExpressionElement;
-    /** The EnsuresQualifier.expression argument/element. */
-    private final ExecutableElement ensuresQualifierExpressionElement;
-    /** The EnsuresQualifierIf.expression argument/element. */
-    private final ExecutableElement ensuresQualifierIfExpressionElement;
-    /** The EnsuresQualifierIf.result argument/element. */
-    private final ExecutableElement ensuresQualifierIfResultElement;
-
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -377,15 +367,6 @@ public abstract class GenericAnnotatedTypeFactory<
         hasOrIsSubchecker =
                 !this.getChecker().getSubcheckers().isEmpty()
                         || this.getChecker().getParentChecker() != null;
-
-        requiresQualifierExpressionElement =
-                TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
-        ensuresQualifierExpressionElement =
-                TreeUtils.getMethod(EnsuresQualifier.class, "expression", 0, processingEnv);
-        ensuresQualifierIfExpressionElement =
-                TreeUtils.getMethod(EnsuresQualifierIf.class, "expression", 0, processingEnv);
-        ensuresQualifierIfResultElement =
-                TreeUtils.getMethod(EnsuresQualifierIf.class, "result", 0, processingEnv);
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
