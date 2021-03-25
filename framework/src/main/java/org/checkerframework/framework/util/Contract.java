@@ -75,7 +75,7 @@ public abstract class Contract {
         /** The built-in framework qualifier for this contract. */
         public final Class<? extends Annotation> frameworkContractClass;
         /** The built-in framework qualifier for repeated occurrences of this contract. */
-        public final Class<? extends Annotation> frameworkContractsClass;
+        public final Class<? extends Annotation> frameworkContractListClass;
 
         /**
          * Create a new Kind.
@@ -83,18 +83,18 @@ public abstract class Contract {
          * @param errorKey used for constructing error messages
          * @param metaAnnotation the meta-annotation identifying annotations of this kind
          * @param frameworkContractClass the built-in framework qualifier for this contract
-         * @param frameworkContractsClass the built-in framework qualifier for repeated occurrences
-         *     of this contract
+         * @param frameworkContractListClass the built-in framework qualifier for repeated
+         *     occurrences of this contract
          */
         Kind(
                 String errorKey,
                 Class<? extends Annotation> metaAnnotation,
                 Class<? extends Annotation> frameworkContractClass,
-                Class<? extends Annotation> frameworkContractsClass) {
+                Class<? extends Annotation> frameworkContractListClass) {
             this.errorKey = errorKey;
             this.metaAnnotation = metaAnnotation;
             this.frameworkContractClass = frameworkContractClass;
-            this.frameworkContractsClass = frameworkContractsClass;
+            this.frameworkContractListClass = frameworkContractListClass;
         }
     }
 

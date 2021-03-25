@@ -748,6 +748,34 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, or return
+     * null if no such element exists. One element of the result has type {@code expectedType}.
+     *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
+     *
+     * @param anno the annotation whose element to access
+     * @param elementName the name of the element to access
+     * @param expectedType the component type of the element and of the return value
+     * @param <T> the class of the component type
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name, or null
+     */
+    public static <T> @Nullable List<T> getElementValueArrayOrNull(
+            AnnotationMirror anno,
+            CharSequence elementName,
+            Class<T> expectedType,
+            boolean useDefaults) {
+        // This implementation permits getElementValue a more detailed error message than if
+        // getElementValue called getElementValueOrNull and threw an error if the result was null.
+        try {
+            return getElementValueArray(anno, elementName, expectedType, useDefaults);
+        } catch (NoSuchElementException e) {
+            return null;
+        }
+    }
+
+    /**
      * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
      * enum of type {@code T}.
      *

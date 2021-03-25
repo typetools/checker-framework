@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -60,6 +61,19 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** An empty String list. */
     private static List<String> EMPTY_STRING_LIST = Collections.emptyList();
 
+    /** The ArrayLen.value argument/element. */
+    public final ExecutableElement arrayLenValueElement =
+            TreeUtils.getMethod(ArrayLen.class, "value", 0, processingEnv);
+    /** The ClassBound.value argument/element. */
+    public final ExecutableElement classBoundValueElement =
+            TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);
+    /** The ClassVal.value argument/element. */
+    public final ExecutableElement classValValueElement =
+            TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);
+    /** The StringVal.value argument/element. */
+    public final ExecutableElement stringValValueElement =
+            TreeUtils.getMethod(StringVal.class, "value", 0, processingEnv);
+
     /**
      * Create a new MethodValAnnotatedTypeFactory.
      *
@@ -90,15 +104,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param methodValAnno a {@code @MethodVal} annotation
      * @return the methods that the given {@code @MethodVal} represents
      */
-    static List<MethodSignature> getListOfMethodSignatures(AnnotationMirror methodValAnno) {
+    List<MethodSignature> getListOfMethodSignatures(AnnotationMirror methodValAnno) {
         List<String> methodNames =
                 AnnotationUtils.getElementValueArray(
-                        methodValAnno, "methodName", String.class, false);
+                        methodValAnno, methodValMethodNameElement, String.class);
         List<String> classNames =
                 AnnotationUtils.getElementValueArray(
-                        methodValAnno, "className", String.class, false);
+                        methodValAnno, methodValClassNameElement, String.class);
         List<Integer> params =
-                AnnotationUtils.getElementValueArray(methodValAnno, "params", Integer.class, false);
+                AnnotationUtils.getElementValueArray(
+                        methodValAnno, methodValParamsElement, Integer.class);
         List<MethodSignature> list = new ArrayList<>(methodNames.size());
         for (int i = 0; i < methodNames.size(); i++) {
             list.add(new MethodSignature(classNames.get(i), methodNames.get(i), params.get(i)));
@@ -145,7 +160,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         AnnotationMirror classValAnno = classAnno.getAnnotation(ClassVal.class);
         if (classValAnno != null) {
-            return AnnotationUtils.getElementValueArray(classValAnno, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(
+                    classValAnno, classValValueElement, String.class);
         } else if (mustBeExact) {
             return Collections.emptyList();
         }
@@ -153,7 +169,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
         if (classBoundAnno != null) {
             return AnnotationUtils.getElementValueArray(
-                    classBoundAnno, "value", String.class, false);
+                    classBoundAnno, classBoundValueElement, String.class);
         } else {
             return Collections.emptyList();
         }
@@ -170,7 +186,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedTypeMirror valueAnno = valueATF.getAnnotatedType(arg);
         AnnotationMirror annotation = valueAnno.getAnnotation(StringVal.class);
         if (annotation != null) {
-            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(
+                    annotation, stringValValueElement, String.class);
         } else {
             return EMPTY_STRING_LIST;
         }
@@ -409,7 +426,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationMirror arrayLenAnno = valueType.getAnnotation(ArrayLen.class);
                     if (arrayLenAnno != null) {
                         return AnnotationUtils.getElementValueArray(
-                                arrayLenAnno, "value", Integer.class, false);
+                                arrayLenAnno, arrayLenValueElement, Integer.class);
                     } else if (valueType.getAnnotation(BottomVal.class) != null) {
                         // happens in this case: (Class[]) null
                         return ZERO_LIST;

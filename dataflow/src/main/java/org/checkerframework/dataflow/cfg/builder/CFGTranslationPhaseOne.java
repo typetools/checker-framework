@@ -612,7 +612,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * @return the node holder
      */
     protected NodeWithExceptionsHolder extendWithClassNameNode(ClassNameNode node) {
-        Set<TypeMirror> thrownSet = new HashSet<>(4);
+        Set<TypeMirror> thrownSet = new LinkedHashSet<>(4);
         if (classCircularityErrorType != null) {
             thrownSet.add(classCircularityErrorType);
         }
@@ -1374,7 +1374,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
         Set<TypeMirror> thrownSet =
-                new HashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+                new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
         // Add exceptions explicitly mentioned in the throws clause.
         thrownSet.addAll(thrownTypes);
         // Add types to account for unchecked exceptions
@@ -2971,7 +2971,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
         Set<TypeMirror> thrownSet =
-                new HashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+                new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
         // Add exceptions explicitly mentioned in the throws clause.
         thrownSet.addAll(thrownTypes);
         // Add types to account for unchecked exceptions

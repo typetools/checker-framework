@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
@@ -47,6 +48,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror CLASSVAL_TOP =
             AnnotationBuilder.fromClass(elements, UnknownClass.class);
 
+    /** The ClassBound.value argument/element. */
+    private final ExecutableElement classBoundValueElement =
+            TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);;
+    /** The ClassVal.value argument/element. */
+    private final ExecutableElement classValValueElement =
+            TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);;
+
     /**
      * Create a new ClassValAnnotatedTypeFactory.
      *
@@ -54,6 +62,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+
         if (this.getClass() == ClassValAnnotatedTypeFactory.class) {
             this.postInit();
         }
@@ -101,10 +110,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return list of classnames in anno
      */
     public List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
-        if (areSameByClass(anno, ClassBound.class) || areSameByClass(anno, ClassVal.class)) {
-            return AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+        if (areSameByClass(anno, ClassBound.class)) {
+            return AnnotationUtils.getElementValueArray(anno, classBoundValueElement, String.class);
+        } else if (areSameByClass(anno, ClassVal.class)) {
+            return AnnotationUtils.getElementValueArray(anno, classValValueElement, String.class);
+        } else {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
     @Override
@@ -298,7 +310,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (annotation == null) {
                 return null;
             }
-            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, false);
+            return AnnotationUtils.getElementValueArray(
+                    annotation, valueATF.stringValValueElement, String.class);
         }
 
         // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type

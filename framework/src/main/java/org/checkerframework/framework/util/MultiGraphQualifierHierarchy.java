@@ -293,6 +293,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
             if (poly == null) {
                 return null;
             }
+            // Default value for `PolymorphicQualifier.value` is Annotation.class
             Name ret = AnnotationUtils.getElementValueClassName(poly, "value", true);
             return ret;
         }

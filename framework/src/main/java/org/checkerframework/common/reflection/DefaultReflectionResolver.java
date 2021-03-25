@@ -363,11 +363,14 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         debugReflection("MethodVal type system annotations: " + estimate);
 
         List<String> listClassNames =
-                AnnotationUtils.getElementValueArray(estimate, "className", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        estimate, reflectionFactory.methodValClassNameElement, String.class);
         List<String> listMethodNames =
-                AnnotationUtils.getElementValueArray(estimate, "methodName", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        estimate, reflectionFactory.methodValMethodNameElement, String.class);
         List<Integer> listParamLengths =
-                AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, false);
+                AnnotationUtils.getElementValueArray(
+                        estimate, reflectionFactory.methodValParamsElement, Integer.class);
         assert listClassNames.size() == listMethodNames.size()
                 && listClassNames.size() == listParamLengths.size();
 
@@ -463,9 +466,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         debugReflection("MethodVal type system annotations: " + estimate);
 
         List<String> listClassNames =
-                AnnotationUtils.getElementValueArray(estimate, "className", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        estimate, reflectionFactory.methodValClassNameElement, String.class);
         List<Integer> listParamLengths =
-                AnnotationUtils.getElementValueArray(estimate, "params", Integer.class, false);
+                AnnotationUtils.getElementValueArray(
+                        estimate, reflectionFactory.methodValParamsElement, Integer.class);
         assert listClassNames.size() == listParamLengths.size();
 
         List<JCNewClass> constructors = new ArrayList<>();

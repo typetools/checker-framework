@@ -149,7 +149,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
                 rolv =
                         new RangeOrListOfValues(
                                 RangeOrListOfValues.convertLongsToInts(
-                                        ValueAnnotatedTypeFactory.getIntValues(dimType)));
+                                        atypeFactory.getIntValues(dimType)));
             }
             if (rolv != null) {
                 AnnotationMirror newQual = rolv.createAnnotation(atypeFactory);
@@ -192,8 +192,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
                 }
                 AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                 if (arrayLen != null) {
-                    List<Integer> currentLengths =
-                            ValueAnnotatedTypeFactory.getArrayLength(arrayLen);
+                    List<Integer> currentLengths = atypeFactory.getArrayLength(arrayLen);
                     if (rolv != null) {
                         rolv.addAll(currentLengths);
                     } else {

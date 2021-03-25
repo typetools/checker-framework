@@ -47,8 +47,6 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        LessThanAnnotatedTypeFactory factory =
-                (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right < left
         // Refine right to @LessThan("left")
         JavaExpression leftJe = JavaExpression.fromNode(left);
@@ -56,8 +54,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             if (isDoubleOrFloatLiteral(leftJe)) {
                 return;
             }
-            List<String> lessThanExpressions =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
+            LessThanAnnotatedTypeFactory factory =
+                    (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
+            List<String> lessThanExpressions = factory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
@@ -83,8 +82,6 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // left >= right so right is less than left
         // Refine right to @LessThan("left + 1")
 
-        LessThanAnnotatedTypeFactory factory =
-                (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         // left > right so right is less than left
         // Refine right to @LessThan("left")
         JavaExpression leftJe = JavaExpression.fromNode(left);
@@ -92,8 +89,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             if (isDoubleOrFloatLiteral(leftJe)) {
                 return;
             }
-            List<String> lessThanExpressions =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
+            LessThanAnnotatedTypeFactory factory =
+                    (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
+            List<String> lessThanExpressions = factory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
@@ -147,7 +145,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         if (s != null && !s.isEmpty()) {
             LessThanAnnotatedTypeFactory factory =
                     (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-            return LessThanAnnotatedTypeFactory.getLessThanExpressions(
+            return factory.getLessThanExpressions(
                     factory.getQualifierHierarchy()
                             .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
         } else {

@@ -74,16 +74,21 @@ import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
+import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.NoQualifierParameter;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileElementTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -179,6 +184,47 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** The state of the visitor. */
     protected final VisitorState visitorState;
+
+    /** The AnnotatedFor.value argument/element. */
+    private final ExecutableElement annotatedForValueElement;
+    /** The EnsuresQualifier.expression field/element. */
+    final ExecutableElement ensuresQualifierExpressionElement;
+    /** The EnsuresQualifier.List.value field/element. */
+    final ExecutableElement ensuresQualifierListValueElement;
+    /** The EnsuresQualifierIf.expression field/element. */
+    final ExecutableElement ensuresQualifierIfExpressionElement;
+    /** The EnsuresQualifierIf.result argument/element. */
+    final ExecutableElement ensuresQualifierIfResultElement;
+    /** The EnsuresQualifierIf.List.value field/element. */
+    final ExecutableElement ensuresQualifierIfListValueElement;
+    /** The FieldInvariant.field argument/element. */
+    private final ExecutableElement fieldInvariantFieldElement;
+    /** The FieldInvariant.qualifier argument/element. */
+    @SuppressWarnings("UnusedVariable") // TEMPORARY
+    private final ExecutableElement fieldInvariantQualifierElement;
+    /** The MethodVal.className argument/element. */
+    public final ExecutableElement methodValClassNameElement;
+    /** The MethodVal.methodName argument/element. */
+    public final ExecutableElement methodValMethodNameElement;
+    /** The MethodVal.params argument/element. */
+    public final ExecutableElement methodValParamsElement;
+    /** The RequiresQualifier.expression field/element. */
+    final ExecutableElement requiresQualifierExpressionElement;
+    /** The RequiresQualifier.List.value field/element. */
+    final ExecutableElement requiresQualifierListValueElement;
+
+    /** The RequiresQualifier type. */
+    TypeMirror requiresQualifierTM;
+    /** The RequiresQualifier.List type. */
+    TypeMirror requiresQualifierListTM;
+    /** The EnsuresQualifier type. */
+    TypeMirror ensuresQualifierTM;
+    /** The EnsuresQualifier.List type. */
+    TypeMirror ensuresQualifierListTM;
+    /** The EnsuresQualifierIf type. */
+    TypeMirror ensuresQualifierIfTM;
+    /** The EnsuresQualifierIf.List type. */
+    TypeMirror ensuresQualifierIfListTM;
 
     /**
      * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -528,6 +574,45 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
 
         this.debugStubParser = checker.hasOption("stubDebug");
+
+        annotatedForValueElement =
+                TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
+        ensuresQualifierExpressionElement =
+                TreeUtils.getMethod(EnsuresQualifier.class, "expression", 0, processingEnv);
+        ensuresQualifierListValueElement =
+                TreeUtils.getMethod(EnsuresQualifier.List.class, "value", 0, processingEnv);
+        ensuresQualifierIfExpressionElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.class, "expression", 0, processingEnv);
+        ensuresQualifierIfResultElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.class, "result", 0, processingEnv);
+        ensuresQualifierIfListValueElement =
+                TreeUtils.getMethod(EnsuresQualifierIf.List.class, "value", 0, processingEnv);
+        fieldInvariantFieldElement =
+                TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
+        fieldInvariantQualifierElement =
+                TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
+        methodValClassNameElement =
+                TreeUtils.getMethod(MethodVal.class, "className", 0, processingEnv);
+        methodValMethodNameElement =
+                TreeUtils.getMethod(MethodVal.class, "methodName", 0, processingEnv);
+        methodValParamsElement = TreeUtils.getMethod(MethodVal.class, "params", 0, processingEnv);
+        requiresQualifierExpressionElement =
+                TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
+        requiresQualifierListValueElement =
+                TreeUtils.getMethod(RequiresQualifier.List.class, "value", 0, processingEnv);
+
+        requiresQualifierTM =
+                ElementUtils.getTypeElement(processingEnv, RequiresQualifier.class).asType();
+        requiresQualifierListTM =
+                ElementUtils.getTypeElement(processingEnv, RequiresQualifier.List.class).asType();
+        ensuresQualifierTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifier.class).asType();
+        ensuresQualifierListTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifier.List.class).asType();
+        ensuresQualifierIfTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.class).asType();
+        ensuresQualifierIfListTM =
+                ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.List.class).asType();
     }
 
     /**
@@ -1618,7 +1703,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
         List<String> fields =
-                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, false);
+                AnnotationUtils.getElementValueArray(
+                        fieldInvarAnno, fieldInvariantFieldElement, String.class);
         List<@CanonicalName Name> classes =
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
         List<AnnotationMirror> qualifiers =
@@ -4803,13 +4889,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Does {@code anno}, which is an {@link org.checkerframework.framework.qual.AnnotatedFor}
      * annotation, apply to this checker?
      *
-     * @param anno an {@link org.checkerframework.framework.qual.AnnotatedFor} annotation
+     * @param annotatedForAnno an {@link AnnotatedFor} annotation
      * @return whether {@code anno} applies to this checker
      */
-    public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror anno) {
-        List<String> annoForCheckers =
-                AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-        for (String annoForChecker : annoForCheckers) {
+    public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror annotatedForAnno) {
+        List<String> annotatedForCheckers =
+                AnnotationUtils.getElementValueArray(
+                        annotatedForAnno, annotatedForValueElement, String.class);
+        for (String annoForChecker : annotatedForCheckers) {
             if (checker.getUpstreamCheckerNames().contains(annoForChecker)
                     || CheckerMain.matchesFullyQualifiedProcessor(
                             annoForChecker, checker.getUpstreamCheckerNames(), true)) {
@@ -4817,5 +4904,51 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return false;
+    }
+
+    /**
+     * Get the {@code expression} field/element of the given contract annotation.
+     *
+     * @param contractAnno a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+     *     EnsuresQualifier}
+     * @return the {@code expression} field/element of the given annotation
+     */
+    public List<String> getContractExpressions(AnnotationMirror contractAnno) {
+        DeclaredType annoType = contractAnno.getAnnotationType();
+        if (types.isSameType(annoType, requiresQualifierTM)) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnno, requiresQualifierExpressionElement, String.class);
+        } else if (types.isSameType(annoType, ensuresQualifierTM)) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnno, ensuresQualifierExpressionElement, String.class);
+        } else if (types.isSameType(annoType, ensuresQualifierIfTM)) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnno, ensuresQualifierIfExpressionElement, String.class);
+        } else {
+            throw new BugInCF("Not a contract annotation: " + contractAnno);
+        }
+    }
+
+    /**
+     * Get the {@code value} field/element of the given contract list annotation.
+     *
+     * @param contractListAnno a {@link RequiresQualifier.List}, {@link EnsuresQualifier.List}, or
+     *     {@link EnsuresQualifier.List}
+     * @return the {@code value} field/element of the given annotation
+     */
+    public List<AnnotationMirror> getContractListValues(AnnotationMirror contractListAnno) {
+        DeclaredType annoType = contractListAnno.getAnnotationType();
+        if (types.isSameType(annoType, requiresQualifierListTM)) {
+            return AnnotationUtils.getElementValueArray(
+                    contractListAnno, requiresQualifierListValueElement, AnnotationMirror.class);
+        } else if (types.isSameType(annoType, ensuresQualifierListTM)) {
+            return AnnotationUtils.getElementValueArray(
+                    contractListAnno, ensuresQualifierListValueElement, AnnotationMirror.class);
+        } else if (types.isSameType(annoType, ensuresQualifierIfListTM)) {
+            return AnnotationUtils.getElementValueArray(
+                    contractListAnno, ensuresQualifierIfListValueElement, AnnotationMirror.class);
+        } else {
+            throw new BugInCF("Not a contract list annotation: " + contractListAnno);
+        }
     }
 }
