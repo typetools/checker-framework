@@ -19,39 +19,34 @@ type `String[]`, not `String`.  A conditinoal postcondition annotation's
 will not affect users (any programmer-written annotation that was legal before
 will still be legal), but it may affect checker implementations.
 
-Removed methods:
- * `AnnotationUtils.getElementValueArrayOrSingleton`
-
-Removed deprecated `PluginUtil` class.
-
-Method renamings:
- * `DefaultQualifierForUseTypeAnnotator.getSupportAnnosFromDefaultQualifierForUses` => `getDefaultQualifierForUses`
-
-
 `JavaExpressionParseUtil`:
 `JavaExpressionParseUtil#parse` no longer viewpoint-adapts Java expressions. It
-just converts the expression `String` to a `JavaExpressions`.  To that end,
+just converts the expression `String` to a `JavaExpression`.  To that end,
 `JavaExpressionParseUtil.JavaExpressionContext` has been removed and
 `JavaExpressionParseUtil#parse` no longer takes a context object.  Most calls to
 `JavaExpressionParseUtil#parse` should be replaced with a call to one of the
 methods in `StringToJavaExpressions`.
 
-Methods renamed in `DependentTypesHelper`:
- * `check*` => `check*ForErrorExpressions`
- * `viewpointAdaptConstructor` => `atConstructorInvocation`
- * `viewpointAdaptMethod` => `atMethodInvocation`
- * `viewpointAdaptTypeVariableBounds` => `atParameterizedTypeUse`
- * `standardizeClass` =>  `atTypeDecl`
- * `standardizeExpression` => `atExpression`
- * `standardizeFieldAccess` => `atFieldAccess`
- * `standardizeReturnType` => `atReturnType`
- * `standardizeVariable` => `atVariableDeclaration`
+Removed deprecated `PluginUtil` class.
 
-Removed methods `DependentTypesHelper`:
- * `standardizeNewClassTree`, use `atExpression` instead
- * `standardizeString`, override one of the methods explained in the Javadoc of
- instead convertAnnotationMirror
+Removed methods:
+ * `AnnotationUtils.getElementValueArrayOrSingleton`
+ * `DependentTypesHelper.standardizeNewClassTree`: use `atExpression` instead
+ * `DependentTypesHelper.standardizeString`: override one of the methods
+   explained in the Javadoc of `convertAnnotationMirror`
 
+Method renamings:
+ * `DefaultQualifierForUseTypeAnnotator.getSupportAnnosFromDefaultQualifierForUses` => `getDefaultQualifierForUses`
+ * In `DependentTypesHelper`:
+    * `check*` => `check*ForErrorExpressions`
+    * `viewpointAdaptConstructor` => `atConstructorInvocation`
+    * `viewpointAdaptMethod` => `atMethodInvocation`
+    * `viewpointAdaptTypeVariableBounds` => `atParameterizedTypeUse`
+    * `standardizeClass` =>  `atTypeDecl`
+    * `standardizeExpression` => `atExpression`
+    * `standardizeFieldAccess` => `atFieldAccess`
+    * `standardizeReturnType` => `atReturnType`
+    * `standardizeVariable` => `atVariableDeclaration`
 
 **Closed issues:**
 
