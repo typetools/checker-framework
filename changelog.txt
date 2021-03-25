@@ -19,6 +19,10 @@ type `String[]`, not `String`.  A conditinoal postcondition annotation's
 will not affect users (any programmer-written annotation that was legal before
 will still be legal), but it may affect checker implementations.
 
+Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
+class, the method `compare` was renamed `defaultAction`. The method `combineRs`
+was replaced by `reduce`.
+
 Removed methods:
  * `AnnotationUtils.getElementValueArrayOrSingleton`
 
