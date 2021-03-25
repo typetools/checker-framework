@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -14,7 +13,6 @@ import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.SubstringIndexUnknown;
 import org.checkerframework.checker.index.upperbound.UBQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
-import org.checkerframework.checker.index.upperbound.UpperBoundAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
@@ -22,7 +20,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Builds types with annotations from the Substring Index checker hierarchy, which contains
@@ -37,20 +34,6 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
 
-    /** The SubstringIndexFor.value argument/element. */
-    public final ExecutableElement substringIndexForValueElement =
-            TreeUtils.getMethod(SubstringIndexFor.class, "value", 0, processingEnv);
-    /** The SubstringIndexFor.offset argument/element. */
-    public final ExecutableElement substringIndexForOffsetElement =
-            TreeUtils.getMethod(SubstringIndexFor.class, "offset", 0, processingEnv);
-
-    /**
-     * A factory used for reading elements/fields from annotations.
-     *
-     * <p>This field is set by {@link IndexChecker#introduceSubcheckers}.
-     */
-    public UpperBoundAnnotatedTypeFactory upperBoundAtypeFactory;
-
     /**
      * Create a new SubstringIndexAnnotatedTypeFactory.
      *
@@ -58,9 +41,6 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      */
     public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-
-        IndexChecker indexChecker = (IndexChecker) checker.getUltimateParentChecker();
-        indexChecker.setSubstringIndexAtypeFactory(this);
 
         this.postInit();
     }
@@ -130,10 +110,10 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             }
             UBQualifier ubq1 =
                     UBQualifier.createUBQualifier(
-                            a1, upperBoundAtypeFactory, SubstringIndexAnnotatedTypeFactory.this);
+                            a1, (IndexChecker) checker.getUltimateParentChecker());
             UBQualifier ubq2 =
                     UBQualifier.createUBQualifier(
-                            a2, upperBoundAtypeFactory, SubstringIndexAnnotatedTypeFactory.this);
+                            a2, (IndexChecker) checker.getUltimateParentChecker());
             UBQualifier glb = ubq1.glb(ubq2);
             return convertUBQualifierToAnnotation(glb);
         }
@@ -154,10 +134,10 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             }
             UBQualifier ubq1 =
                     UBQualifier.createUBQualifier(
-                            a1, upperBoundAtypeFactory, SubstringIndexAnnotatedTypeFactory.this);
+                            a1, (IndexChecker) checker.getUltimateParentChecker());
             UBQualifier ubq2 =
                     UBQualifier.createUBQualifier(
-                            a2, upperBoundAtypeFactory, SubstringIndexAnnotatedTypeFactory.this);
+                            a2, (IndexChecker) checker.getUltimateParentChecker());
             UBQualifier lub = ubq1.lub(ubq2);
             return convertUBQualifierToAnnotation(lub);
         }
@@ -179,14 +159,10 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
             UBQualifier subtype =
                     UBQualifier.createUBQualifier(
-                            subAnno,
-                            upperBoundAtypeFactory,
-                            SubstringIndexAnnotatedTypeFactory.this);
+                            subAnno, (IndexChecker) checker.getUltimateParentChecker());
             UBQualifier supertype =
                     UBQualifier.createUBQualifier(
-                            superAnno,
-                            upperBoundAtypeFactory,
-                            SubstringIndexAnnotatedTypeFactory.this);
+                            superAnno, (IndexChecker) checker.getUltimateParentChecker());
             return subtype.isSubtype(supertype);
         }
     }

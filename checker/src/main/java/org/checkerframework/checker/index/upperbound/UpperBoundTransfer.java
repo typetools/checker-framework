@@ -291,12 +291,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         // larger > smaller
         UBQualifier largerQual =
                 UBQualifier.createUBQualifier(
-                        largerAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+                        largerAnno, (UpperBoundChecker) atypeFactory.getChecker());
         // larger + 1 >= smaller
         UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
         UBQualifier rightQualifier =
                 UBQualifier.createUBQualifier(
-                        smallerAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+                        smallerAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
         if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -323,10 +323,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             TransferInput<CFValue, CFStore> in) {
         UBQualifier leftQualifier =
                 UBQualifier.createUBQualifier(
-                        leftAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+                        leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier rightQualifier =
                 UBQualifier.createUBQualifier(
-                        rightAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+                        rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
         if (leftQualifier.isLessThanLengthQualifier()) {
@@ -415,10 +415,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store) {
         UBQualifier leftQualifier =
                 UBQualifier.createUBQualifier(
-                        leftAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+                        leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier rightQualifier =
                 UBQualifier.createUBQualifier(
-                        rightAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+                        rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier glb = rightQualifier.glb(leftQualifier);
         AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
@@ -479,7 +479,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (receiver != null && !receiver.containsUnknown()) {
             UBQualifier otherQualifier =
                     UBQualifier.createUBQualifier(
-                            otherNodeAnno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+                            otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker());
             String sequence = receiver.toString();
             // Check if otherNode + c - 1 < receiver.length
             if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
@@ -781,9 +781,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         || lowerBoundType.hasAnnotation(Positive.class))) {
             UBQualifier substringIndexQualifier =
                     UBQualifier.createUBQualifier(
-                            substringIndexAnno,
-                            atypeFactory,
-                            atypeFactory.substringIndexAtypeFactory);
+                            substringIndexAnno, (UpperBoundChecker) atypeFactory.getChecker());
             ubQualifier = ubQualifier.glb(substringIndexQualifier);
         }
         return ubQualifier;
@@ -831,8 +829,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (anno == null) {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
-        return UBQualifier.createUBQualifier(
-                anno, atypeFactory, atypeFactory.substringIndexAtypeFactory);
+        return UBQualifier.createUBQualifier(anno, (UpperBoundChecker) atypeFactory.getChecker());
     }
 
     private TransferResult<CFValue, CFStore> createTransferResult(
