@@ -12,7 +12,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -30,6 +29,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The transfer function for the SameLen checker. Contains three cases:
@@ -152,7 +152,8 @@ public class SameLenTransfer extends CFTransfer {
             return;
         }
         for (String exprString :
-                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno)) {
+                AnnotationUtils.getElementValueArray(
+                        sameLenAnno, aTypeFactory.sameLenValueElement, String.class)) {
             JavaExpression je;
             try {
                 je = aTypeFactory.parseJavaExpressionString(exprString, currentPath);
@@ -277,12 +278,14 @@ public class SameLenTransfer extends CFTransfer {
             // for other parameters in that annotation and propagate
             // default the other annotation so that it is symmetric
             AnnotatedTypeMirror atm = params.get(index);
-            AnnotationMirror anm = atm.getAnnotation(SameLen.class);
-            if (anm == null) {
+            AnnotationMirror sameLenAnno = atm.getAnnotation(SameLen.class);
+            if (sameLenAnno == null) {
                 continue;
             }
 
-            List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
+            List<String> values =
+                    AnnotationUtils.getElementValueArray(
+                            sameLenAnno, aTypeFactory.sameLenValueElement, String.class);
             for (String value : values) {
                 int otherParamIndex = paramNames.indexOf(value);
                 if (otherParamIndex == -1) {

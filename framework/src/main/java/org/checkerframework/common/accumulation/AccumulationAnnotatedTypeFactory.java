@@ -24,7 +24,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.returnsreceiver.qual.This;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
@@ -320,7 +319,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (!isAccumulatorAnnotation(anno)) {
             throw new BugInCF(anno + " isn't an accumulator annotation");
         }
-        List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
+        List<String> values =
+                AnnotationUtils.getElementValueArrayOrNull(anno, "value", String.class, false);
         if (values == null) {
             return Collections.emptyList();
         } else {

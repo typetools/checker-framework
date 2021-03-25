@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
@@ -34,6 +35,10 @@ public class IndexMethodIdentifier {
     /** The {@code java.lang.Math#max()} methods. */
     private final List<ExecutableElement> mathMaxMethods;
 
+    /** The LengthOf.value argument/element. */
+    private final ExecutableElement lengthOfValueElement;
+
+    /** The type factory. */
     private final AnnotatedTypeFactory factory;
 
     public IndexMethodIdentifier(AnnotatedTypeFactory factory) {
@@ -47,6 +52,8 @@ public class IndexMethodIdentifier {
 
         mathMinMethods = TreeUtils.getMethods("java.lang.Math", "min", 2, processingEnv);
         mathMaxMethods = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
+
+        lengthOfValueElement = TreeUtils.getMethod(LengthOf.class, "value", 0, processingEnv);
     }
 
     /** Returns true iff the argument is an invocation of Math.min. */
@@ -107,9 +114,8 @@ public class IndexMethodIdentifier {
         if (lengthOfAnno == null) {
             return false;
         }
-        List<String> values =
-                AnnotationUtils.getElementValueArray(lengthOfAnno, "value", String.class, false);
-        return values.contains("this");
+        AnnotationValue lengthOfValue = lengthOfAnno.getElementValues().get(lengthOfValueElement);
+        return AnnotationUtils.annotationValueContains(lengthOfValue, "this");
     }
 
     /**

@@ -40,6 +40,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -288,10 +289,14 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
         // larger > smaller
-        UBQualifier largerQual = UBQualifier.createUBQualifier(largerAnno);
+        UBQualifier largerQual =
+                UBQualifier.createUBQualifier(
+                        largerAnno, (UpperBoundChecker) atypeFactory.getChecker());
         // larger + 1 >= smaller
         UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(smallerAnno);
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        smallerAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
         if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -316,8 +321,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
+        UBQualifier leftQualifier =
+                UBQualifier.createUBQualifier(
+                        leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
         if (leftQualifier.isLessThanLengthQualifier()) {
@@ -404,8 +413,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Node right,
             AnnotationMirror rightAnno,
             CFStore store) {
-        UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
+        UBQualifier leftQualifier =
+                UBQualifier.createUBQualifier(
+                        leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier glb = rightQualifier.glb(leftQualifier);
         AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
@@ -464,7 +477,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
 
         if (receiver != null && !receiver.containsUnknown()) {
-            UBQualifier otherQualifier = UBQualifier.createUBQualifier(otherNodeAnno);
+            UBQualifier otherQualifier =
+                    UBQualifier.createUBQualifier(
+                            otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker());
             String sequence = receiver.toString();
             // Check if otherNode + c - 1 < receiver.length
             if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
@@ -624,19 +639,20 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         JavaExpression rightOp = JavaExpression.fromNode(n.getRightOperand());
 
                         if (rightOp.toString().equals(from)) {
+                            LessThanAnnotatedTypeFactory lessThanAtypeFactory =
+                                    atypeFactory.getLessThanAnnotatedTypeFactory();
                             AnnotationMirror lessThanType =
-                                    atypeFactory
-                                            .getLessThanAnnotatedTypeFactory()
+                                    lessThanAtypeFactory
                                             .getAnnotatedType(n.getLeftOperand().getTree())
                                             .getAnnotation(LessThan.class);
 
                             if (lessThanType != null
-                                    && LessThanAnnotatedTypeFactory.isLessThan(lessThanType, to)) {
+                                    && lessThanAtypeFactory.isLessThan(lessThanType, to)) {
                                 UBQualifier ltlA = UBQualifier.createUBQualifier(a, "0");
                                 leftWithOffset = leftWithOffset.glb(ltlA);
                             } else if (leftOp.toString().equals(to)
                                     || (lessThanType != null
-                                            && LessThanAnnotatedTypeFactory.isLessThanOrEqual(
+                                            && lessThanAtypeFactory.isLessThanOrEqual(
                                                     lessThanType, to))) {
                                 // It's necessary to check if leftOp == to because LessThan doesn't
                                 // infer that things are less than or equal to themselves.
@@ -671,7 +687,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             sameLenSequences = Collections.singletonList(sequenceJe.toString());
         } else {
             sameLenSequences =
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
+                    AnnotationUtils.getElementValueArray(
+                            sameLenAnno, atypeFactory.sameLenValueElement, String.class);
             if (!sameLenSequences.contains(sequenceJe.toString())) {
                 sameLenSequences.add(sequenceJe.toString());
             }
@@ -762,7 +779,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (substringIndexAnno != null
                 && (lowerBoundType.hasAnnotation(NonNegative.class)
                         || lowerBoundType.hasAnnotation(Positive.class))) {
-            UBQualifier substringIndexQualifier = UBQualifier.createUBQualifier(substringIndexAnno);
+            UBQualifier substringIndexQualifier =
+                    UBQualifier.createUBQualifier(
+                            substringIndexAnno, (UpperBoundChecker) atypeFactory.getChecker());
             ubQualifier = ubQualifier.glb(substringIndexQualifier);
         }
         return ubQualifier;
@@ -810,7 +829,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (anno == null) {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
-        return UBQualifier.createUBQualifier(anno);
+        return UBQualifier.createUBQualifier(anno, (UpperBoundChecker) atypeFactory.getChecker());
     }
 
     private TransferResult<CFValue, CFStore> createTransferResult(

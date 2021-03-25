@@ -56,8 +56,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             }
             LessThanAnnotatedTypeFactory factory =
                     (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-            List<String> lessThanExpressions =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
+            List<String> lessThanExpressions = factory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
@@ -92,8 +91,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             }
             LessThanAnnotatedTypeFactory factory =
                     (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-            List<String> lessThanExpressions =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
+            List<String> lessThanExpressions = factory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
                 // right is already bottom, nothing to refine.
                 return;
@@ -147,7 +145,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         if (s != null && !s.isEmpty()) {
             LessThanAnnotatedTypeFactory factory =
                     (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-            return LessThanAnnotatedTypeFactory.getLessThanExpressions(
+            return factory.getLessThanExpressions(
                     factory.getQualifierHierarchy()
                             .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
         } else {
