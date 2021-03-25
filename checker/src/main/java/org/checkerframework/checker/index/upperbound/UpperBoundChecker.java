@@ -50,8 +50,13 @@ public class UpperBoundChecker extends BaseTypeChecker {
     /** The LTEqLengthOf.value argument/element. */
     public @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
 
+    /**
+     * These collection classes have some subtypes whose length can change and some subtypes whose
+     * length cannot change. Warnings are skipped at uses of them.
+     */
     private HashSet<String> collectionBaseTypeNames;
 
+    /** Create a new UpperBoundChecker. */
     public UpperBoundChecker() {
         // These classes are bases for both mutable and immutable sequence collections, which
         // contain methods that change the length.
