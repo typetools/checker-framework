@@ -4242,7 +4242,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param to the annotated type mirror to which the annotations will be added
      * @param top the top type of the hierarchy whose annotations will be added
      */
-    @SuppressWarnings("interning:not.interned") // assertion
     public void replaceAnnotations(
             final AnnotatedTypeMirror from,
             final AnnotatedTypeMirror to,
