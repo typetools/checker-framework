@@ -38,26 +38,26 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror annotatedType) {
-        helper.atExpression(node, annotatedType);
+        helper.atExpression(annotatedType, node);
         return super.visitNewArray(node, annotatedType);
     }
 
     @Override
     public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror annotatedType) {
-        helper.atExpression(node, annotatedType);
+        helper.atExpression(annotatedType, node);
         return super.visitNewClass(node, annotatedType);
     }
 
     @Override
     public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror annotatedType) {
-        helper.atExpression(node, annotatedType);
+        helper.atExpression(annotatedType, node);
         return super.visitTypeCast(node, annotatedType);
     }
 
     @Override
     public Void visitVariable(VariableTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         VariableElement ele = TreeUtils.elementFromDeclaration(node);
-        helper.atVariableDeclaration(node, annotatedTypeMirror, ele);
+        helper.atVariableDeclaration(annotatedTypeMirror, node, ele);
         return super.visitVariable(node, annotatedTypeMirror);
     }
 
@@ -65,7 +65,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         Element ele = TreeUtils.elementFromUse(node);
         if (ele.getKind() == ElementKind.FIELD || ele.getKind() == ElementKind.ENUM_CONSTANT) {
-            helper.atVariableDeclaration(node, annotatedTypeMirror, (VariableElement) ele);
+            helper.atVariableDeclaration(annotatedTypeMirror, node, (VariableElement) ele);
         }
         return super.visitIdentifier(node, annotatedTypeMirror);
     }
@@ -74,7 +74,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     public Void visitMemberSelect(MemberSelectTree node, AnnotatedTypeMirror type) {
         Element ele = TreeUtils.elementFromUse(node);
         if (ele.getKind() == ElementKind.FIELD || ele.getKind() == ElementKind.ENUM_CONSTANT) {
-            helper.atFieldAccess(node, type);
+            helper.atFieldAccess(type, node);
         }
         return super.visitMemberSelect(node, type);
     }

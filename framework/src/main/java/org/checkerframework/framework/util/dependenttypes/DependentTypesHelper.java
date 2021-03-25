@@ -56,23 +56,27 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
- * expression strings. This class performs four main functions:
+ * expression strings. This class performs the following main functions:
  *
  * <ol>
  *   <li>Converts the expression strings in an {@link AnnotationMirror} {@code am}, by creating a
- *       new annotation whose Java expression elements are the result of the converson. See {@link
+ *       new annotation whose Java expression elements are the result of the conversion. See {@link
  *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}. Subclasses can
- *       specialize this process by overriding methods in this class. Conversion include:
- *       standardization, viewpoint-adaption, and delocalization.
+ *       specialize this process by overriding methods in this class. Methods in this class always
+ *       standardize Java expressions and may additionally viewpoint-adapt or delocalize
+ *       expressions. Below is an explanation of each kind of conversion.
  *       <ul>
  *         <li>Standardization: the expressions in the annotations are converted such that two
  *             expression strings that are equivalent are made to be equal. For example, an instance
  *             field f may appear in an expression string as "f" or "this.f"; this class
- *             standardizes both strings to "this.f".
+ *             standardizes both strings to "this.f". All dependent type annotations must be
+ *             standardized so that the implementation of {@link
+ *             org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
+ *             AnnotationMirror)} can assume that two expressions are equivalent if their string
+ *             representations are {@code equals()}.
  *         <li>Viewpoint-adaption: converts an expression to some use site. For example, in method
  *             bodies, formal parameter references such as "#2" are converted to the name of the
  *             formal parameter. Another example, is at method call site, "this" is converted to the
@@ -80,8 +84,6 @@ import org.plumelib.util.StringsPlume;
  *         <li>Delocalization: removes all expressions with references to local variables that are
  *             not parameters and changes parameters to the "#1" syntax.
  *       </ul>
- *       Java expressions are always standardized by this class, but only sometimes
- *       viewpoint-adapted or delocalized.
  *   <li>If any of the conversions above results in an invalid expression, this class changes
  *       invalid expression strings to an error string that includes the reason why the expression
  *       is invalid. For example, {@code @KeyFor("m")} would be changed to {@code @KeyFor("[error
@@ -102,9 +104,8 @@ public class DependentTypesHelper {
     protected final AnnotatedTypeFactory factory;
 
     // TODO: Using strings is inefficient.  This should probably map to ExecutableElement instead.
-    // Also, the key should be annotation names rather than classes.
-    /** Maps from an annotation class to the names of its elements that are Java expressions. */
-    private final Map<Class<? extends Annotation>, List<String>> annoToElements;
+    /** Maps from an annotation name to the names of its elements that are Java expressions. */
+    private final Map<String, List<String>> annoToElements;
 
     /** This scans an annotated type and returns a list of {@link DependentTypesError}. */
     private final ExpressionErrorCollector expressionErrorCollector =
@@ -122,20 +123,6 @@ public class DependentTypesHelper {
      */
     private final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
 
-    /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
-    private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
-            new SimpleAnnotatedTypeScanner<>(
-                    (type, unused) -> {
-                        for (AnnotationMirror annotationMirror : type.getAnnotations()) {
-                            if (isExpressionAnno(annotationMirror)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    },
-                    Boolean::logicalOr,
-                    false);
-
     /** The type mirror for java.lang.Object. */
     protected final TypeMirror objectTM;
 
@@ -151,7 +138,7 @@ public class DependentTypesHelper {
         for (Class<? extends Annotation> expressionAnno : factory.getSupportedTypeQualifiers()) {
             List<String> elementList = getExpressionElementNames(expressionAnno);
             if (!elementList.isEmpty()) {
-                annoToElements.put(expressionAnno, elementList);
+                annoToElements.put(expressionAnno.getCanonicalName(), elementList);
             }
         }
 
@@ -199,12 +186,8 @@ public class DependentTypesHelper {
      * @return the elements of the annotation that are Java expressions
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
-        for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (factory.areSameByClass(am, clazz)) {
-                return annoToElements.get(clazz);
-            }
-        }
-        return Collections.emptyList();
+        return annoToElements.getOrDefault(
+                AnnotationUtils.annotationName(am), Collections.emptyList());
     }
 
     /**
@@ -222,15 +205,15 @@ public class DependentTypesHelper {
     ///
 
     /**
-     * Viewpoint-adapts the dependent type annotations on the bounds of the type parameters of a
-     * type to {@code typeUse}.
+     * Viewpoint-adapts the dependent type annotations on the bounds of the type parameters of the
+     * declaration of {@code typeUse} to {@code typeUse}.
      *
-     * @param typeUse a use of the type with type parameter bounds {@code bounds}
      * @param bounds annotated types of the bounds of the type parameters; its elements are
      *     side-effected by this method (but the list itself is not side-effected)
+     * @param typeUse a use of a type with type parameter bounds {@code bounds}
      */
     public void atParameterizedTypeUse(
-            TypeElement typeUse, List<AnnotatedTypeParameterBounds> bounds) {
+            List<AnnotatedTypeParameterBounds> bounds, TypeElement typeUse) {
         if (!hasDependentAnnotations()) {
             return;
         }
@@ -252,15 +235,15 @@ public class DependentTypesHelper {
      * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
      * type annotations. This method viewpoint-adapts the dependent type annotations.
      *
-     * @param methodInvocationTree use of the method
      * @param methodType type of the method invocation; is side-effected by this method
+     * @param methodInvocationTree use of the method
      */
     public void atMethodInvocation(
-            MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodType) {
+            AnnotatedExecutableType methodType, MethodInvocationTree methodInvocationTree) {
         if (!hasDependentAnnotations()) {
             return;
         }
-        atInvocation(methodInvocationTree, methodType);
+        atInvocation(methodType, methodInvocationTree);
     }
 
     /**
@@ -269,15 +252,15 @@ public class DependentTypesHelper {
      * <p>{@code constructorType} has been viewpoint-adapted to the call site, except for any
      * dependent type annotations. This method viewpoint-adapts the dependent type annotations.
      *
-     * @param newClassTree invocation of the constructor
      * @param constructorType type of the constructor invocation; is side-effected by this method
+     * @param newClassTree invocation of the constructor
      */
     public void atConstructorInvocation(
-            NewClassTree newClassTree, AnnotatedExecutableType constructorType) {
+            AnnotatedExecutableType constructorType, NewClassTree newClassTree) {
         if (!hasDependentAnnotations()) {
             return;
         }
-        atInvocation(newClassTree, constructorType);
+        atInvocation(constructorType, newClassTree);
     }
 
     /**
@@ -286,11 +269,11 @@ public class DependentTypesHelper {
      * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
      * type annotations. This method viewpoint-adapts the dependent type annotations.
      *
-     * @param tree invocation of the method or constructor
      * @param methodType type of the method or constructor invocation; is side-effected by this
      *     method
+     * @param tree invocation of the method or constructor
      */
-    private void atInvocation(ExpressionTree tree, AnnotatedExecutableType methodType) {
+    private void atInvocation(AnnotatedExecutableType methodType, ExpressionTree tree) {
         assert hasDependentAnnotations();
         Element methodElt = TreeUtils.elementFromUse(tree);
         // Because methodType is the type post type variable substitution, it has annotations from
@@ -307,7 +290,8 @@ public class DependentTypesHelper {
         // So this implementation gets the declared type of the method, declaredMethodType,
         // viewpoint-adapts all dependent type annotations in declaredMethodType to the call site,
         // and then copies the viewpoint-adapted annotations from methodType except for types that
-        // are replace by type variable substitution.
+        // are replaced by type variable substitution. (Those annotations are viewpoint-adapted
+        // before type variable substitution.)
 
         // The annotations on `declaredMethodType` will be copied to `methodType`.
         AnnotatedExecutableType declaredMethodType =
@@ -338,10 +322,10 @@ public class DependentTypesHelper {
      * Viewpoint-adapts the Java expressions in annotations written on a field declaration to the
      * use at {@code fieldAccess}.
      *
-     * @param fieldAccess a field access
      * @param type its type; is side-effected by this method
+     * @param fieldAccess a field access
      */
-    public void atFieldAccess(MemberSelectTree fieldAccess, AnnotatedTypeMirror type) {
+    public void atFieldAccess(AnnotatedTypeMirror type, MemberSelectTree fieldAccess) {
         if (!hasDependentType(type)) {
             return;
         }
@@ -355,13 +339,13 @@ public class DependentTypesHelper {
 
     /**
      * Viewpoint-adapts the Java expressions in annotations written on the return type of the method
-     * declaration to the body of the method. This means the parameter syntax is converted to the
-     * names of the parameter.
+     * declaration to the body of the method. This means the parameter syntax, e.g. "#2", is
+     * converted to the names of the parameter.
      *
-     * @param methodDeclTree a method declaration
      * @param atm the method return type; is side-effected by this method
+     * @param methodDeclTree a method declaration
      */
-    public void atReturnType(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+    public void atReturnType(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
         if (!hasDependentType(atm)) {
             return;
         }
@@ -397,20 +381,21 @@ public class DependentTypesHelper {
 
     /**
      * Standardize the Java expressions in annotations in a variable declaration. Converts the
-     * parameter syntax to the parameter name.
+     * parameter syntax, e.g "#1", to the parameter name.
      *
-     * @param declarationTree the variable declaration
      * @param type the type of the variable declaration; is side-effected by this method
+     * @param declarationTree the variable declaration
      * @param variableElt the element of the variable declaration
      */
     public void atVariableDeclaration(
-            Tree declarationTree, AnnotatedTypeMirror type, VariableElement variableElt) {
+            AnnotatedTypeMirror type, Tree declarationTree, VariableElement variableElt) {
         if (!hasDependentType(type)) {
             return;
         }
 
         TreePath pathToVariableDecl = factory.getPath(declarationTree);
         if (pathToVariableDecl == null) {
+            // If this is a synthetic created by dataflow, the path will be null.
             return;
         }
         switch (variableElt.getKind()) {
@@ -469,18 +454,24 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the Java expressions in annotations in the type of an expression. Converts the
-     * parameter syntax to the parameter name.
+     * Standardize the Java expressions in annotations in written in the {@code expressionTree}.
+     * Also, converts the parameter syntax, e.g. "#1", to the parameter name.
      *
-     * @param tree an expression
+     * <p>{@code expressionTree} must be an expressions which can contain explicitly written
+     * annotations, namely a {@link NewClassTree}, {@link com.sun.source.tree.NewArrayTree}, or
+     * {@link com.sun.source.tree.TypeCastTree}. For example, this method standardizes the {@code
+     * KeyFor} annotation in {@code (@KeyFor("map") String) key }.
+     *
      * @param annotatedType its type; is side-effected by this method
+     * @param expressionTree a {@link NewClassTree}, {@link com.sun.source.tree.NewArrayTree}, or
+     *     {@link com.sun.source.tree.TypeCastTree}
      */
-    public void atExpression(ExpressionTree tree, AnnotatedTypeMirror annotatedType) {
+    public void atExpression(AnnotatedTypeMirror annotatedType, ExpressionTree expressionTree) {
         if (!hasDependentType(annotatedType)) {
             return;
         }
 
-        TreePath path = factory.getPath(tree);
+        TreePath path = factory.getPath(expressionTree);
         if (path == null) {
             return;
         }
@@ -490,8 +481,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the Java expressions in annotations in a type. Converts the parameter syntax to
-     * the parameter name.
+     * Standardize the Java expressions in annotations in a type. Converts the parameter syntax,
+     * e.g. "#2", to the parameter name.
      *
      * @param type the type to standardize; is side-effected by this method
      * @param elt the element whose type is {@code type}
@@ -523,7 +514,7 @@ public class DependentTypesHelper {
                     return;
                 }
 
-                atVariableDeclaration(declarationTree, type, (VariableElement) elt);
+                atVariableDeclaration(type, declarationTree, (VariableElement) elt);
                 return;
 
             default:
@@ -532,6 +523,10 @@ public class DependentTypesHelper {
                 break;
         }
     }
+
+    /** Thrown when a non-parameter local variable is found. */
+    @SuppressWarnings("serial")
+    private static class FoundLocalException extends RuntimeException {}
 
     /**
      * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
@@ -544,10 +539,10 @@ public class DependentTypesHelper {
      * override {@link #buildAnnotation(AnnotationMirror, Map)} to do something besides creating an
      * annotation with a empty list.
      *
-     * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
      * @param atm type to viewpoint-adapt; is side-effected by this method
+     * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
      */
-    public void delocalize(MethodTree methodDeclTree, AnnotatedTypeMirror atm) {
+    public void delocalize(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
         if (!hasDependentType(atm)) {
             return;
         }
@@ -558,15 +553,11 @@ public class DependentTypesHelper {
         List<JavaExpression> paramsAsLocals =
                 JavaExpression.getParametersAsLocalVariables(methodElement);
 
-        /** Thrown when a non-parameter local variable is found. */
-        @SuppressWarnings("serial")
-        class FoundLocalException extends RuntimeException {}
-
         StringToJavaExpression stringToJavaExpr =
                 expression -> {
-                    JavaExpression result;
+                    JavaExpression javaExpr;
                     try {
-                        result =
+                        javaExpr =
                                 StringToJavaExpression.atPath(
                                         expression, pathToMethodDecl, factory.getChecker());
                     } catch (JavaExpressionParseException ex) {
@@ -585,7 +576,7 @@ public class DependentTypesHelper {
                                 }
                             };
                     try {
-                        return jec.convert(result);
+                        return jec.convert(javaExpr);
                     } catch (FoundLocalException ex) {
                         return null;
                     }
@@ -622,7 +613,7 @@ public class DependentTypesHelper {
      *
      * <ul>
      *   <li>{@link #shouldPassThroughExpression(String)}: to control which expressions are skipped.
-     *       If this method returns false, then the expression string is not parsed and is included
+     *       If this method returns true, then the expression string is not parsed and is included
      *       in the new annotation unchanged.
      *   <li>{@link #transform(JavaExpression)}: make changes to the JavaExpression produced by
      *       {@code stringToJavaExpr}.
@@ -642,11 +633,11 @@ public class DependentTypesHelper {
         }
 
         Map<String, List<JavaExpression>> newElements = new HashMap<>();
-        for (String value : getListOfExpressionElements(anno)) {
+        for (String elementName : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
-                    AnnotationUtils.getElementValueArray(anno, value, String.class, true);
+                    AnnotationUtils.getElementValueArray(anno, elementName, String.class, true);
             List<JavaExpression> javaExprs = new ArrayList<>(expressionStrings.size());
-            newElements.put(value, javaExprs);
+            newElements.put(elementName, javaExprs);
             for (String expression : expressionStrings) {
                 JavaExpression result;
                 if (shouldPassThroughExpression(expression)) {
@@ -851,7 +842,7 @@ public class DependentTypesHelper {
         }
 
         List<DependentTypesError> errors = expressionErrorCollector.visit(atm);
-        if (errors == null || errors.isEmpty()) {
+        if (errors.isEmpty()) {
             return;
         }
 
@@ -860,10 +851,10 @@ public class DependentTypesHelper {
             errorTree = ((VariableTree) errorTree).getType();
             for (AnnotationTree annoTree : modifiers.getAnnotations()) {
                 String annoString = annoTree.toString();
-                for (Class<?> annoClazz : annoToElements.keySet()) {
+                for (String annoName : annoToElements.keySet()) {
                     // TODO: Simple string containment seems too simplistic.  At least check for a
                     // word boundary.
-                    if (annoString.contains(annoClazz.getSimpleName())) {
+                    if (annoString.contains(annoName)) {
                         errorTree = annoTree;
                         break;
                     }
@@ -929,8 +920,9 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getChecker();
-        String error = StringsPlume.joinLines(errors);
-        checker.reportError(errorTree, "flowexpr.parse.error", error);
+        for (DependentTypesError error : errors) {
+            checker.reportError(errorTree, "flowexpr.parse.error", error);
+        }
     }
 
     /**
@@ -1010,12 +1002,7 @@ public class DependentTypesHelper {
         if (!hasDependentAnnotations()) {
             return false;
         }
-        for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (factory.areSameByClass(am, clazz)) {
-                return true;
-            }
-        }
-        return false;
+        return annoToElements.containsKey(AnnotationUtils.annotationName(am));
     }
 
     /**
@@ -1067,45 +1054,47 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Copies annotations that might have been viewpoint-adapted from the visited type (the first
-     * formal parameter) to the second formal parameter.
+     * The underlying type of the second parameter is the result of applying type variable
+     * substitution to the visited type (the first parameter). This class copies annotations from
+     * the visited type to the second formal parameter except for annotations on types that have
+     * been substituted.
      */
     private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
         @Override
-        protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-            if (type == null || p == null) {
+        protected Void scan(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+            if (from == null || to == null) {
                 return null;
             }
-            Set<AnnotationMirror> replacement = AnnotationUtils.createAnnotationSet();
-            for (Class<? extends Annotation> vpa : annoToElements.keySet()) {
-                AnnotationMirror anno = type.getAnnotation(vpa);
+            Set<AnnotationMirror> replacements = AnnotationUtils.createAnnotationSet();
+            for (String vpa : annoToElements.keySet()) {
+                AnnotationMirror anno = from.getAnnotation(vpa);
                 if (anno != null) {
                     // Only replace annotations that might have been changed.
-                    replacement.add(anno);
+                    replacements.add(anno);
                 }
             }
-            p.replaceAnnotations(replacement);
-            if (type.getKind() != p.getKind()) {
-                // If the underlying types don't match, then this type has been substituted for a
-                // type variable, so don't recur. The primary annotation was copied because
-                // the type variable might have had a primary annotation at a use.
+            to.replaceAnnotations(replacements);
+            if (from.getKind() != to.getKind()) {
+                // If the underlying types don't match, then this from has been substituted for a
+                // from variable, so don't recur. The primary annotation was copied because
+                // the from variable might have had a primary annotation at a use.
                 // For example:
                 // <T> void method(@KeyFor("a") T t) {...}
                 // void use(@KeyFor("b") String s) {
-                //      method(s);  // the type of the parameter should be @KeyFor("a") String
+                //      method(s);  // the from of the parameter should be @KeyFor("a") String
                 // }
                 return null;
             }
-            return super.scan(type, p);
+            return super.scan(from, to);
         }
 
         @Override
-        protected Void compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-            if (type == null || p == null) {
+        protected Void compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+            if (type1 == null || type2 == null) {
                 return null;
             }
-            if (type.getKind() != p.getKind()) {
-                throw new BugInCF("Should be the same. type: %s p: %s ", type, p);
+            if (type1.getKind() != type2.getKind()) {
+                throw new BugInCF("Should be the same. type: %s p: %s ", type1, type2);
             }
             return null;
         }
@@ -1135,4 +1124,18 @@ public class DependentTypesHelper {
         // This is a test about this specific type.
         return hasDependentTypeScanner.visit(atm);
     }
+
+    /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
+    private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
+            new SimpleAnnotatedTypeScanner<>(
+                    (type, unused) -> {
+                        for (AnnotationMirror annotationMirror : type.getAnnotations()) {
+                            if (isExpressionAnno(annotationMirror)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    Boolean::logicalOr,
+                    false);
 }

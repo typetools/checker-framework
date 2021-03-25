@@ -711,7 +711,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-        dependentTypesHelper.atExpression(newClassTree, superResult);
+        dependentTypesHelper.atExpression(superResult, newClassTree);
         return superResult;
     }
 
@@ -1698,7 +1698,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
         ParameterizedExecutableType mType = super.constructorFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.atConstructorInvocation(tree, method);
+        dependentTypesHelper.atConstructorInvocation(method, tree);
         return mType;
     }
 
@@ -1711,7 +1711,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-        dependentTypesHelper.atReturnType(m, returnType);
+        dependentTypesHelper.atReturnType(returnType, m);
         return returnType;
     }
 
@@ -2004,7 +2004,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.atMethodInvocation(tree, method);
+        dependentTypesHelper.atMethodInvocation(method, tree);
         return mType;
     }
 
@@ -2020,7 +2020,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        dependentTypesHelper.atParameterizedTypeUse(element, f);
+        dependentTypesHelper.atParameterizedTypeUse(f, element);
         return f;
     }
 
