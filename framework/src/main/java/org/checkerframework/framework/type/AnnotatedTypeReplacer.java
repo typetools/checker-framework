@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
@@ -82,7 +83,14 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
         this.top = top;
     }
 
-    public void setTop(AnnotationMirror top) {
+    /**
+     * If top != null, then only annotation in the hierarchy of top are affected; otherwise, all
+     * annotations are replaced.
+     *
+     * @param top if top != null, then only annotation in the hierarchy of top are replace;
+     *     otherwise, all annotations are replaced.
+     */
+    public void setTop(@Nullable AnnotationMirror top) {
         this.top = top;
     }
 
