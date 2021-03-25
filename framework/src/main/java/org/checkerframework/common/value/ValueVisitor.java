@@ -221,7 +221,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     return null;
                 } else if (AnnotationUtils.areSameByName(
                         anno, ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
-                    List<Integer> arrayLens = ValueAnnotatedTypeFactory.getArrayLength(anno);
+                    List<Integer> arrayLens = getTypeFactory().getArrayLength(anno);
                     if (Collections.min(arrayLens) < 0) {
                         checker.reportWarning(
                                 node, "negative.arraylen", Collections.min(arrayLens));
@@ -241,7 +241,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 }
                 break;
             case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-                List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(anno);
+                List<String> regexes =
+                        AnnotationUtils.getElementValueArray(
+                                anno, atypeFactory.matchesRegexValueElement, String.class);
                 for (String regex : regexes) {
                     try {
                         Pattern.compile(regex);
