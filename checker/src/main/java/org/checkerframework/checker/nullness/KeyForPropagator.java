@@ -48,6 +48,12 @@ public class KeyForPropagator {
     /** Instance of {@link KeyForPropagationReplacer}. */
     private final KeyForPropagationReplacer replacer = new KeyForPropagationReplacer();
 
+    /**
+     * Creates a KeyForPropagator
+     *
+     * @param unknownKeyfor {@link org.checkerframework.checker.nullness.qual.UnknownKeyFor}
+     *     annotaion
+     */
     public KeyForPropagator(AnnotationMirror unknownKeyfor) {
         this.UNKNOWN_KEYFOR = unknownKeyfor;
     }
