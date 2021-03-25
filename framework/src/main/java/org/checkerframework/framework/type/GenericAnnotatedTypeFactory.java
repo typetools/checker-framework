@@ -2005,6 +2005,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return f;
     }
 
+    /**
+     * Returns the empty store.
+     *
+     * @return the empty store
+     */
     public Store getEmptyStore() {
         return emptyStore;
     }
