@@ -191,8 +191,8 @@ public abstract class Contract {
      * Viewpoint-adapt {@link #annotation} using {@code stringToJavaExpr}.
      *
      * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map = "map")},
-     * {@code annoFromContract} is {@code @KeyFor("map")}. This method applies {@code stringToJava}
-     * to "map" and returns a new {@code KeyFor} annotation with the result.
+     * {@code annotation} is {@code @KeyFor("map")}. This method applies {@code stringToJava} to
+     * "map" and returns a new {@code KeyFor} annotation with the result.
      *
      * @param factory used to get {@link DependentTypesHelper}
      * @param stringToJavaExpr function used to convert strings to {@link JavaExpression}s
