@@ -924,23 +924,27 @@ ajava file must contain the same source code as the sourec file with the followi
       @Nullable Object}.
 \end{itemize}
 
+
 \subsubsectionAndLabel{Inserting annotations from ajava files}{ajava-insert-annotations}
 
-The \code{InsertAjavaAnnotations.java} program takes a directory containing
-ajava files and a directory containing Java files and inserts all annotations
-from the ajava files into their corresponding Java files. This can be used to
+The \code{InsertAjavaAnnotations.java} program inserts annotations
+from ajava files into Java files.  This can be used to
 insert the annotations inferred by whole program inference into the source code
 of a program, similarly to the
-\code{insert-annotations-to-source} script from the Annotation File Utilities
-project.
+\ahref{https://checkerframework.org/annotation-file-utilities/\#insert-annotations-to-source}{\code{insert-annotations-to-source}
+  script} from the
+\ahref{https://checkerframework.org/annotation-file-utilities/}{Annotation
+  File Utilities project}.
 
-To use the insertion program, run the Java file with the \code{checker.jar} file
-in the classpath:
+Its arguments are a directory containing ajava files and a directory
+containing Java files.  The \code{checker.jar} file in the classpath.  Here
+is an example invocation:
 \begin{Verbatim}
   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
     org.checkerframework.framework.ajava.InsertAjavaAnnoations \
     <path-to-ajava-files> <path-to-java-files>
 \end{Verbatim}
+
 
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
 
