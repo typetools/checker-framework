@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -39,9 +40,11 @@ public class KeyForPropagator {
     }
 
     /**
-     * The top type of the KeyFor hierarchy, this class will replace @UnknownKeyFor annotations. It
-     * will also add annotations when they are missing for types that require primary annotation
-     * (i.e. not TypeVars, Wildcards, Intersections, or Unions).
+     * The top type of the KeyFor hierarchy.
+     *
+     * <p>This class will replace @UnknownKeyFor annotations. It will also add annotations when they
+     * are missing for types that require primary annotation (i.e. not TypeVars, Wildcards,
+     * Intersections, or Unions).
      */
     private final AnnotationMirror UNKNOWN_KEYFOR;
 
@@ -51,8 +54,7 @@ public class KeyForPropagator {
     /**
      * Creates a KeyForPropagator
      *
-     * @param unknownKeyfor {@link org.checkerframework.checker.nullness.qual.UnknownKeyFor}
-     *     annotaion
+     * @param unknownKeyfor an {@link UnknownKeyFor} annotation
      */
     public KeyForPropagator(AnnotationMirror unknownKeyfor) {
         this.UNKNOWN_KEYFOR = unknownKeyfor;
