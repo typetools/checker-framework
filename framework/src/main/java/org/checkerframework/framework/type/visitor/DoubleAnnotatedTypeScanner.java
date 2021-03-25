@@ -55,6 +55,15 @@ public abstract class DoubleAnnotatedTypeScanner<R>
      */
     protected abstract R defaultAction(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
 
+    /**
+     * Scans {@code types1} and {@code types2}. If they are empty, then {@link #defaultResult} is
+     * returned.
+     *
+     * @param types1 types
+     * @param types2 types
+     * @return the result of scanning and reducing all the types in {@code type1} and {@code type2}
+     *     or {@link #defaultResult} if they are empty
+     */
     protected R scan(
             Iterable<? extends AnnotatedTypeMirror> types1,
             Iterable<? extends AnnotatedTypeMirror> types2) {
@@ -87,7 +96,7 @@ public abstract class DoubleAnnotatedTypeScanner<R>
     }
 
     @Override
-    protected R scanAndReduce(
+    protected final R scanAndReduce(
             Iterable<? extends AnnotatedTypeMirror> types, AnnotatedTypeMirror p, R r) {
         throw new BugInCF(
                 "DoubleAnnotatedTypeScanner.scanAndReduce: "
