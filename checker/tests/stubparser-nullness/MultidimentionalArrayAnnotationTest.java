@@ -45,7 +45,6 @@ public class MultidimentionalArrayAnnotationTest {
     obj6 = method1();
     obj7 = method1();
     obj8 = method1();
-    ;
   }
 
   /*

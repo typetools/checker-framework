@@ -14,8 +14,7 @@ abstract class PptRelationMin {
 
     @NonNull Object o1 = ppt.children;
 
-    for (String rel : ppt.children)
-      ;
+    for (String rel : ppt.children) {}
 
     @NonNull Object o2 = ppt.children;
   }

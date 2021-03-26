@@ -151,7 +151,6 @@ public @Interned class InternedClass {
 
   void testCast(Object o) {
     Object i = (InternedClass) o;
-    if (i == this)
-      ;
+    if (i == this) {}
   }
 }

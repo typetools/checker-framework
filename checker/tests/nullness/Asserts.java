@@ -37,8 +37,7 @@ public class Asserts {
     if (!sameLength(seq1, seq2)) {
       return false;
     }
-    if (ne(seq1[0], seq2[0]))
-      ;
+    if (ne(seq1[0], seq2[0])) {}
     return true;
   }
 
@@ -59,15 +58,13 @@ public class Asserts {
     assert sameLength(seq1, seq2);
     // the @EnsuresNonNullIf is not taken from the assert, as it doesn't contain "nullness"
     // :: error: (accessing.nullable)
-    if (seq1[0])
-      ;
+    if (seq1[0]) {}
   }
 
   void testAssertGood(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
     assert sameLength(seq1, seq2) : "@AssumeAssertion(nullness)";
     // The explanation contains "nullness" and we therefore take the additional assumption
-    if (seq1[0])
-      ;
+    if (seq1[0]) {}
   }
 
   void testAssertAnd(@Nullable Object o) {

@@ -37,8 +37,7 @@ public class Issue1214 {
   static void forArray(String[] array) {
     int n = 0;
     try {
-      for (String s : array)
-        ;
+      for (String s : array) {}
     } catch (NullPointerException e) {
       n = 1;
     } catch (ArrayIndexOutOfBoundsException e) {
@@ -54,8 +53,7 @@ public class Issue1214 {
   static void forIterable(Iterable<String> itr) {
     int n = 0;
     try {
-      for (String s : itr)
-        ;
+      for (String s : itr) {}
     } catch (NullPointerException e) {
       n = 1;
     } catch (Exception e) {

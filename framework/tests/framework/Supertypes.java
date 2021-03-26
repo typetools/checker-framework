@@ -71,24 +71,16 @@ public class Supertypes {
   }
 
   void ListIterable() {
-    for (String s : a1)
-      ;
-    for (String s : a2)
-      ;
-    for (String s : b1)
-      ;
-    for (String s : b2)
-      ;
+    for (String s : a1) {}
+    for (String s : a2) {}
+    for (String s : b1) {}
+    for (String s : b2) {}
 
     // :: error: (enhancedfor.type.incompatible)
-    for (@Odd String s : a1)
-      ;
+    for (@Odd String s : a1) {}
     // :: error: (enhancedfor.type.incompatible)
-    for (@Odd String s : a2)
-      ;
-    for (@Odd String s : b1)
-      ;
-    for (@Odd String s : b2)
-      ;
+    for (@Odd String s : a2) {}
+    for (@Odd String s : b1) {}
+    for (@Odd String s : b2) {}
   }
 }

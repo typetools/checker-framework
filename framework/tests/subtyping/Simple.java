@@ -6,8 +6,7 @@ abstract class BasicFunctionality {
 
   @Encrypted String encrypt(String s) {
     byte[] b = s.getBytes();
-    for (int i = 0; i < b.length; b[i++]++)
-      ;
+    for (int i = 0; i < b.length; b[i++]++) {}
     // :: warning: (cast.unsafe)
     return (@Encrypted String) new String(b);
   }

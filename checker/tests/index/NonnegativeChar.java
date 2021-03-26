@@ -4,8 +4,7 @@ import org.checkerframework.checker.index.qual.PolyLowerBound;
 
 public class NonnegativeChar {
   void foreach(char[] array) {
-    for (char value : array)
-      ;
+    for (char value : array) {}
   }
 
   char constant() {
