@@ -7,8 +7,8 @@
  */
 
 public class Other {
-    void foo() {
-        Test other = null;
-        Test2 other2 = null;
-    }
+  void foo() {
+    Test other = null;
+    Test2 other2 = null;
+  }
 }

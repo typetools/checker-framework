@@ -18,5 +18,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(Mass.class)
 @SuppressWarnings("checkstyle:typename")
 public @interface g {
-    Prefix value() default Prefix.one;
+  Prefix value() default Prefix.one;
 }

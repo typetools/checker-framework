@@ -11,22 +11,22 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  * so that the order of subcheckers is tested.
  */
 public class CompoundChecker extends BaseTypeChecker {
-    @Override
-    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        LinkedHashSet<Class<? extends BaseTypeChecker>> subcheckers = new LinkedHashSet<>();
-        subcheckers.addAll(super.getImmediateSubcheckerClasses());
-        subcheckers.add(AliasingChecker.class);
-        subcheckers.add(AnotherCompoundChecker.class);
-        return subcheckers;
-    }
+  @Override
+  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    LinkedHashSet<Class<? extends BaseTypeChecker>> subcheckers = new LinkedHashSet<>();
+    subcheckers.addAll(super.getImmediateSubcheckerClasses());
+    subcheckers.add(AliasingChecker.class);
+    subcheckers.add(AnotherCompoundChecker.class);
+    return subcheckers;
+  }
 
-    @Override
-    protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new BaseTypeVisitor<CompoundCheckerAnnotatedTypeFactory>(this) {
-            @Override
-            protected CompoundCheckerAnnotatedTypeFactory createTypeFactory() {
-                return new CompoundCheckerAnnotatedTypeFactory(checker);
-            }
-        };
-    }
+  @Override
+  protected BaseTypeVisitor<?> createSourceVisitor() {
+    return new BaseTypeVisitor<CompoundCheckerAnnotatedTypeFactory>(this) {
+      @Override
+      protected CompoundCheckerAnnotatedTypeFactory createTypeFactory() {
+        return new CompoundCheckerAnnotatedTypeFactory(checker);
+      }
+    };
+  }
 }

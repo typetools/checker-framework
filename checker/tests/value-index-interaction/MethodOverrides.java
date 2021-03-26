@@ -7,13 +7,13 @@
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 
 public class MethodOverrides {
-    @GTENegativeOne int read() {
-        return -1;
-    }
+  @GTENegativeOne int read() {
+    return -1;
+  }
 }
 
 class MethodOverrides2 extends MethodOverrides {
-    int read() {
-        return -1;
-    }
+  int read() {
+    return -1;
+  }
 }

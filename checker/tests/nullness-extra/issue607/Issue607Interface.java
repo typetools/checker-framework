@@ -1,3 +1,3 @@
 interface Issue607Interface {
-    Object method(Object string);
+  Object method(Object string);
 }

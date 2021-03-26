@@ -17,5 +17,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Temperature.class)
 public @interface K {
-    Prefix value() default Prefix.one;
+  Prefix value() default Prefix.one;
 }

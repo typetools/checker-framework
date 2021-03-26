@@ -16,19 +16,19 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @Category(WholeProgramInferenceTestCheckerJaifsTest.class)
 public class WholeProgramInferenceTestCheckerJaifsTest extends CheckerFrameworkPerDirectoryTest {
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceTestCheckerJaifsTest(List<File> testFiles) {
-        super(
-                testFiles,
-                WholeProgramInferenceTestChecker.class,
-                "wpi-testchecker/non-annotated",
-                "-Anomsgtext",
-                "-Ainfer=jaifs",
-                "-Awarns");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public WholeProgramInferenceTestCheckerJaifsTest(List<File> testFiles) {
+    super(
+        testFiles,
+        WholeProgramInferenceTestChecker.class,
+        "wpi-testchecker/non-annotated",
+        "-Anomsgtext",
+        "-Ainfer=jaifs",
+        "-Awarns");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"wpi-testchecker/non-annotated"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"wpi-testchecker/non-annotated"};
+  }
 }

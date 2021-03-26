@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Issue395 {
 
-    Object[] testMethod() {
-        return new Object[] {new ArrayList<>()};
-    }
+  Object[] testMethod() {
+    return new Object[] {new ArrayList<>()};
+  }
 }

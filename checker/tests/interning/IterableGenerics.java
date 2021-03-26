@@ -1,11 +1,13 @@
 public class IterableGenerics {
-    interface Data extends Iterable<String> {}
+  interface Data extends Iterable<String> {}
 
-    <T extends Data> void typeParam(T t) {
-        for (String s : t) ;
-    }
+  <T extends Data> void typeParam(T t) {
+    for (String s : t)
+      ;
+  }
 
-    void wildcard(Iterable<? extends Data> t) {
-        for (Object a : t.iterator().next()) ;
-    }
+  void wildcard(Iterable<? extends Data> t) {
+    for (Object a : t.iterator().next())
+      ;
+  }
 }

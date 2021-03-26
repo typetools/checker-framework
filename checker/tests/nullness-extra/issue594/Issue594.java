@@ -9,11 +9,11 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue594<T> {
-    private @Nullable T result = null;
+  private @Nullable T result = null;
 
-    // Should return @Nullable T
-    private T getResult() {
-        // :: error: (return.type.incompatible)
-        return result;
-    }
+  // Should return @Nullable T
+  private T getResult() {
+    // :: error: (return.type.incompatible)
+    return result;
+  }
 }

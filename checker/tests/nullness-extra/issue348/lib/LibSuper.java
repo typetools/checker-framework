@@ -1,6 +1,6 @@
 package lib;
 
 public class LibSuper {
-    @Anno
-    public void foo() {}
+  @Anno
+  public void foo() {}
 }

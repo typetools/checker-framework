@@ -3,35 +3,36 @@ import org.checkerframework.checker.index.qual.LowerBoundBottom;
 import org.checkerframework.checker.index.qual.PolyLowerBound;
 
 public class NonnegativeChar {
-    void foreach(char[] array) {
-        for (char value : array) ; // line 7
-    }
+  void foreach(char[] array) {
+    for (char value : array)
+      ;
+  }
 
-    char constant() {
-        return Character.MAX_VALUE; // line 11
-    }
+  char constant() {
+    return Character.MAX_VALUE;
+  }
 
-    char conversion(int i) {
-        return (char) i; // line 15
-    }
+  char conversion(int i) {
+    return (char) i;
+  }
 
-    public void takeList(ArrayList<Character> z) {}
+  public void takeList(ArrayList<Character> z) {}
 
-    public void passList() {
-        takeList(new ArrayList<Character>()); // line 20
-    }
+  public void passList() {
+    takeList(new ArrayList<Character>());
+  }
 
-    static class CustomList extends ArrayList<Character> {}
+  static class CustomList extends ArrayList<Character> {}
 
-    public void passCustomList() {
-        takeList(new CustomList()); // line 25
-    }
+  public void passCustomList() {
+    takeList(new CustomList());
+  }
 
-    public @LowerBoundBottom char bottomLB(@LowerBoundBottom char c) {
-        return c; // line 29
-    }
+  public @LowerBoundBottom char bottomLB(@LowerBoundBottom char c) {
+    return c;
+  }
 
-    public @PolyLowerBound char polyLB(@PolyLowerBound char c) {
-        return c; // line 32
-    }
+  public @PolyLowerBound char polyLB(@PolyLowerBound char c) {
+    return c;
+  }
 }

@@ -6,17 +6,17 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 public abstract class Issue887 {
-    void test() {
-        // :: error: (argument.type.incompatible) :: error: (type.argument.type.incompatible)
-        method(foo(null).get(0));
-        methodNullable(fooNullable(null).get(0));
-    }
+  void test() {
+    // :: error: (argument.type.incompatible) :: error: (type.argument.type.incompatible)
+    method(foo(null).get(0));
+    methodNullable(fooNullable(null).get(0));
+  }
 
-    void method(Number o) {}
+  void method(Number o) {}
 
-    void methodNullable(@Nullable Number o) {}
+  void methodNullable(@Nullable Number o) {}
 
-    abstract <T extends Number> List<? extends T> foo(T t);
+  abstract <T extends Number> List<? extends T> foo(T t);
 
-    abstract <T extends @Nullable Number> List<? extends T> fooNullable(T t);
+  abstract <T extends @Nullable Number> List<? extends T> fooNullable(T t);
 }

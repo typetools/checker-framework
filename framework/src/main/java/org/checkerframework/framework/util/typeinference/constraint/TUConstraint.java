@@ -36,50 +36,49 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
  * would be @Nullable String and both arguments would be valid.
  */
 public abstract class TUConstraint {
-    /**
-     * An AnnotatedTypeVariable representing a target type parameter for which we are inferring a
-     * type argument. This is the T in the TUConstraints.
-     */
-    public final AnnotatedTypeVariable typeVariable;
+  /**
+   * An AnnotatedTypeVariable representing a target type parameter for which we are inferring a type
+   * argument. This is the T in the TUConstraints.
+   */
+  public final AnnotatedTypeVariable typeVariable;
 
-    /**
-     * A type used to infer an argument for the typeVariable T. This would be the U in the
-     * TUConstraints.
-     */
-    public final AnnotatedTypeMirror relatedType;
+  /**
+   * A type used to infer an argument for the typeVariable T. This would be the U in the
+   * TUConstraints.
+   */
+  public final AnnotatedTypeMirror relatedType;
 
-    /** Whether or not U is a type from an argument to the method. */
-    public final boolean uIsArg;
+  /** Whether or not U is a type from an argument to the method. */
+  public final boolean uIsArg;
 
-    protected TUConstraint(
-            final AnnotatedTypeVariable typeVariable,
-            final AnnotatedTypeMirror relatedType,
-            boolean uIsArg) {
-        this.typeVariable = typeVariable;
-        this.relatedType = relatedType;
-        this.uIsArg = uIsArg;
+  protected TUConstraint(
+      final AnnotatedTypeVariable typeVariable,
+      final AnnotatedTypeMirror relatedType,
+      boolean uIsArg) {
+    this.typeVariable = typeVariable;
+    this.relatedType = relatedType;
+    this.uIsArg = uIsArg;
 
-        TypeArgInferenceUtil.checkForUninferredTypes(relatedType);
+    TypeArgInferenceUtil.checkForUninferredTypes(relatedType);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object thatObject) {
+    if (this == thatObject) {
+      return true;
+    } // else
+
+    if (thatObject == null || this.getClass() != thatObject.getClass()) {
+      return false;
     }
 
-    @Override
-    public boolean equals(@Nullable Object thatObject) {
-        if (this == thatObject) {
-            return true;
-        } // else
+    final TUConstraint that = (TUConstraint) thatObject;
 
-        if (thatObject == null || this.getClass() != thatObject.getClass()) {
-            return false;
-        }
+    return this.typeVariable.equals(that.typeVariable) && this.relatedType.equals(that.relatedType);
+  }
 
-        final TUConstraint that = (TUConstraint) thatObject;
-
-        return this.typeVariable.equals(that.typeVariable)
-                && this.relatedType.equals(that.relatedType);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.getClass(), typeVariable, relatedType);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.getClass(), typeVariable, relatedType);
+  }
 }

@@ -7,21 +7,21 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class SignednessTest extends CheckerFrameworkPerDirectoryTest {
 
-    /**
-     * Create a SignednessTest.
-     *
-     * @param testFiles the files containing test code, which will be type-checked
-     */
-    public SignednessTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.checker.signedness.SignednessChecker.class,
-                "signedness",
-                "-Anomsgtext");
-    }
+  /**
+   * Create a SignednessTest.
+   *
+   * @param testFiles the files containing test code, which will be type-checked
+   */
+  public SignednessTest(List<File> testFiles) {
+    super(
+        testFiles,
+        org.checkerframework.checker.signedness.SignednessChecker.class,
+        "signedness",
+        "-Anomsgtext");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"signedness", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"signedness", "all-systems"};
+  }
 }

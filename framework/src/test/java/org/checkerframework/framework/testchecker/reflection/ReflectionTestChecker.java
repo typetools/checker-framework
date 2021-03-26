@@ -6,8 +6,8 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 /** Checker for a simple type system to test reflection resolution. */
 public class ReflectionTestChecker extends BaseTypeChecker {
 
-    @Override
-    protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new ReflectionTestVisitor(this);
-    }
+  @Override
+  protected BaseTypeVisitor<?> createSourceVisitor() {
+    return new ReflectionTestVisitor(this);
+  }
 }

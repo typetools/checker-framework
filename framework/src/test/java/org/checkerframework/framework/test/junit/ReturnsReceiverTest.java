@@ -13,18 +13,18 @@ import org.junit.runners.Parameterized.Parameters;
  * case, create a Java file in that directory.
  */
 public class ReturnsReceiverTest extends CheckerFrameworkPerDirectoryTest {
-    public ReturnsReceiverTest(List<File> testFiles) {
-        super(
-                testFiles,
-                ReturnsReceiverChecker.class,
-                "returnsreceiver",
-                "-Anomsgtext",
-                "-Astubs=stubs/",
-                "-nowarn");
-    }
+  public ReturnsReceiverTest(List<File> testFiles) {
+    super(
+        testFiles,
+        ReturnsReceiverChecker.class,
+        "returnsreceiver",
+        "-Anomsgtext",
+        "-Astubs=stubs/",
+        "-nowarn");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"returnsreceiver", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"returnsreceiver", "all-systems"};
+  }
 }
