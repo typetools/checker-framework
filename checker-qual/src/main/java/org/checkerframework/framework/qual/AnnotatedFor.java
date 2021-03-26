@@ -28,14 +28,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.PACKAGE})
 public @interface AnnotatedFor {
-    /**
-     * Returns the type systems for which the class has been annotated. Legal arguments are any
-     * string that may be passed to the {@code -processor} command-line argument: the
-     * fully-qualified class name for the checker, or a shorthand for built-in checkers. Using the
-     * annotation with no arguments, as in {@code @AnnotatedFor({})}, has no effect.
-     *
-     * @return the type systems for which the class has been annotated
-     * @checker_framework.manual #shorthand-for-checkers Short names for built-in checkers
-     */
-    String[] value();
+  /**
+   * Returns the type systems for which the class has been annotated. Legal arguments are any string
+   * that may be passed to the {@code -processor} command-line argument: the fully-qualified class
+   * name for the checker, or a shorthand for built-in checkers. Using the annotation with no
+   * arguments, as in {@code @AnnotatedFor({})}, has no effect.
+   *
+   * @return the type systems for which the class has been annotated
+   * @checker_framework.manual #shorthand-for-checkers Short names for built-in checkers
+   */
+  String[] value();
 }

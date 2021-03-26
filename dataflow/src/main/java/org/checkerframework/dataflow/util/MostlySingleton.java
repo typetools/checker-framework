@@ -9,60 +9,60 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public final class MostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
-    /** Create a MostlySingleton. */
-    public MostlySingleton() {
-        super(State.EMPTY);
-    }
+  /** Create a MostlySingleton. */
+  public MostlySingleton() {
+    super(State.EMPTY);
+  }
 
-    /** Create a MostlySingleton. */
-    public MostlySingleton(T value) {
-        super(State.SINGLETON, value);
-    }
+  /** Create a MostlySingleton. */
+  public MostlySingleton(T value) {
+    super(State.SINGLETON, value);
+  }
 
-    @Override
-    public boolean add(T e) {
-        switch (state) {
-            case EMPTY:
-                state = State.SINGLETON;
-                value = e;
-                return true;
-            case SINGLETON:
-                assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
-                if (value.equals(e)) {
-                    return false;
-                }
-                makeNonSingleton();
-                // fall through
-            case ANY:
-                assert set != null : "@AssumeAssertion(nullness): ANY => value != null";
-                return set.add(e);
-            default:
-                throw new BugInCF("Unhandled state " + state);
-        }
-    }
-
-    /** Switch the representation of this from SINGLETON to ANY. */
-    private void makeNonSingleton() {
-        state = State.ANY;
-        set = new LinkedHashSet<>();
+  @Override
+  public boolean add(T e) {
+    switch (state) {
+      case EMPTY:
+        state = State.SINGLETON;
+        value = e;
+        return true;
+      case SINGLETON:
         assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
-        set.add(value);
-        value = null;
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        switch (state) {
-            case EMPTY:
-                return false;
-            case SINGLETON:
-                assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
-                return value.equals(o);
-            case ANY:
-                assert set != null : "@AssumeAssertion(nullness): set initialized before";
-                return set.contains(o);
-            default:
-                throw new BugInCF("Unhandled state " + state);
+        if (value.equals(e)) {
+          return false;
         }
+        makeNonSingleton();
+        // fall through
+      case ANY:
+        assert set != null : "@AssumeAssertion(nullness): ANY => value != null";
+        return set.add(e);
+      default:
+        throw new BugInCF("Unhandled state " + state);
     }
+  }
+
+  /** Switch the representation of this from SINGLETON to ANY. */
+  private void makeNonSingleton() {
+    state = State.ANY;
+    set = new LinkedHashSet<>();
+    assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
+    set.add(value);
+    value = null;
+  }
+
+  @Override
+  public boolean contains(Object o) {
+    switch (state) {
+      case EMPTY:
+        return false;
+      case SINGLETON:
+        assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
+        return value.equals(o);
+      case ANY:
+        assert set != null : "@AssumeAssertion(nullness): set initialized before";
+        return set.contains(o);
+      default:
+        throw new BugInCF("Unhandled state " + state);
+    }
+  }
 }

@@ -6,16 +6,14 @@ import java.util.*;
 
 // A simple (potential) false positive case with mutliple filters.
 public class SimpleFalsePositive {
-    void test(AmazonEC2 ec2Client, String namePrefix) {
-        DescribeImagesRequest request =
-                new DescribeImagesRequest()
-                        .withOwners("martin")
-                        .withFilters(
-                                Arrays.asList(
-                                        new Filter("platform", Arrays.asList("windows")),
-                                        new Filter(
-                                                "name",
-                                                Arrays.asList(String.format("%s*", namePrefix)))));
-        DescribeImagesResult result = ec2Client.describeImages(request);
-    }
+  void test(AmazonEC2 ec2Client, String namePrefix) {
+    DescribeImagesRequest request =
+        new DescribeImagesRequest()
+            .withOwners("martin")
+            .withFilters(
+                Arrays.asList(
+                    new Filter("platform", Arrays.asList("windows")),
+                    new Filter("name", Arrays.asList(String.format("%s*", namePrefix)))));
+    DescribeImagesResult result = ec2Client.describeImages(request);
+  }
 }

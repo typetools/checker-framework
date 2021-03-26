@@ -1,16 +1,16 @@
-OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[value, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[value, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
 found   : @UnknownVal int @UnknownVal []
 required: @UnknownVal int []
-OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[index, searchindex, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, searchindex, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
 found   : @SearchIndexUnknown int @SearchIndexUnknown []
 required: @SearchIndexBottom int @SearchIndexUnknown []
-OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[index, samelen, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, samelen, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
 found   : @SameLenUnknown int @SameLen("y") []
 required: @SameLenUnknown int @SameLenBottom []
-OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[index, lowerbound, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, lowerbound, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
 found   : @LowerBoundUnknown int @LowerBoundUnknown []
 required: @GTENegativeOne int @LowerBoundUnknown []
-OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[index, upperbound, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, upperbound, allcheckers]:assignment.type.incompatible] incompatible types in assignment.
 found   : @UpperBoundUnknown int @UpperBoundUnknown []
 required: @UpperBoundBottom int @UpperBoundUnknown []
 5 errors

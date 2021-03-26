@@ -5,19 +5,19 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 // https://github.com/typetools/checker-framework/issues/602
 // @skip-test
 public class Issue602 {
-    @PolyNull String id(@PolyNull String o) {
-        return o;
-    }
+  @PolyNull String id(@PolyNull String o) {
+    return o;
+  }
 
-    void loop(boolean condition) {
-        @NonNull String notNull = "hello";
-        String nullable = "";
-        while (condition) {
-            // :: error: (assignment.type.incompatible)
-            notNull = nullable;
-            // :: error: (assignment.type.incompatible)
-            notNull = id(nullable);
-            nullable = null;
-        }
+  void loop(boolean condition) {
+    @NonNull String notNull = "hello";
+    String nullable = "";
+    while (condition) {
+      // :: error: (assignment.type.incompatible)
+      notNull = nullable;
+      // :: error: (assignment.type.incompatible)
+      notNull = id(nullable);
+      nullable = null;
     }
+  }
 }

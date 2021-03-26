@@ -3,14 +3,14 @@
  * classes and fields.
  */
 @interface Anno {
-    class Inner {}
+  class Inner {}
 
-    int con = 5;
+  int con = 5;
 
-    int value();
+  int value();
 }
 
 class Use {
-    @Anno(0)
-    Object o;
+  @Anno(0)
+  Object o;
 }

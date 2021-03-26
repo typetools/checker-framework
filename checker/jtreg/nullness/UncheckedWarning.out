@@ -1,2 +1,2 @@
-UncheckedWarning.java:16:16: compiler.warn.prob.found.req: (compiler.misc.unchecked.assign), java.util.List, java.util.List<T>
+UncheckedWarning.java:16:12: compiler.warn.prob.found.req: (compiler.misc.unchecked.assign), java.util.List, java.util.List<T>
 1 warning

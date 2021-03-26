@@ -16,38 +16,38 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class BooleanLiteralNode extends ValueLiteralNode {
 
-    /**
-     * Create a new BooleanLiteralNode.
-     *
-     * @param t the tree for the literal value
-     */
-    public BooleanLiteralNode(LiteralTree t) {
-        super(t);
-        assert t.getKind() == Tree.Kind.BOOLEAN_LITERAL;
-    }
+  /**
+   * Create a new BooleanLiteralNode.
+   *
+   * @param t the tree for the literal value
+   */
+  public BooleanLiteralNode(LiteralTree t) {
+    super(t);
+    assert t.getKind() == Tree.Kind.BOOLEAN_LITERAL;
+  }
 
-    @Override
-    public Boolean getValue() {
-        return (Boolean) tree.getValue();
-    }
+  @Override
+  public Boolean getValue() {
+    return (Boolean) tree.getValue();
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitBooleanLiteral(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitBooleanLiteral(this, p);
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        // test that obj is a BooleanLiteralNode
-        if (!(obj instanceof BooleanLiteralNode)) {
-            return false;
-        }
-        // super method compares values
-        return super.equals(obj);
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    // test that obj is a BooleanLiteralNode
+    if (!(obj instanceof BooleanLiteralNode)) {
+      return false;
     }
+    // super method compares values
+    return super.equals(obj);
+  }
 
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.emptyList();
-    }
+  @Override
+  public Collection<Node> getOperands() {
+    return Collections.emptyList();
+  }
 }

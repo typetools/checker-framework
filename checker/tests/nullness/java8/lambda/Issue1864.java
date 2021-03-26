@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.function.Supplier;
 
 abstract class Issue1864 {
-    interface A {}
+  interface A {}
 
-    abstract <T extends A> List<T> g();
+  abstract <T extends A> List<T> g();
 
-    abstract void h(Supplier<Iterable<A>> s);
+  abstract void h(Supplier<Iterable<A>> s);
 
-    void f() {
-        Iterable<A> xs = g();
-        h(() -> xs);
-    }
+  void f() {
+    Iterable<A> xs = g();
+    h(() -> xs);
+  }
 }

@@ -2,13 +2,13 @@
 
 public class TestValOf<T extends Enum<T>> {
 
-    private final Class<T> enumClass;
+  private final Class<T> enumClass;
 
-    private TestValOf(Class<T> enumClass) {
-        this.enumClass = enumClass;
-    }
+  private TestValOf(Class<T> enumClass) {
+    this.enumClass = enumClass;
+  }
 
-    T foo(String value) {
-        return Enum.valueOf(enumClass, value);
-    }
+  T foo(String value) {
+    return Enum.valueOf(enumClass, value);
+  }
 }

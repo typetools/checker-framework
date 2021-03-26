@@ -1,4 +1,4 @@
 public class Uninit5 {
-    // :: error: (initialization.field.uninitialized)
-    String x;
+  // :: error: (initialization.field.uninitialized)
+  String x;
 }

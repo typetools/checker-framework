@@ -13,60 +13,59 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public class A2FReducer implements AFReducer {
 
-    protected final A2FReducingVisitor visitor;
+  protected final A2FReducingVisitor visitor;
 
-    public A2FReducer(final AnnotatedTypeFactory typeFactory) {
-        this.visitor = new A2FReducingVisitor(typeFactory);
+  public A2FReducer(final AnnotatedTypeFactory typeFactory) {
+    this.visitor = new A2FReducingVisitor(typeFactory);
+  }
+
+  @Override
+  public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints) {
+    if (constraint instanceof A2F) {
+      final A2F a2f = (A2F) constraint;
+      visitor.visit(a2f.argument, a2f.formalParameter, newConstraints);
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Given an A2F constraint of the form: A2F( typeFromMethodArgument, typeFromFormalParameter )
+   *
+   * <p>A2FReducingVisitor visits the constraint as follows: visit ( typeFromMethodArgument,
+   * typeFromFormalParameter, newConstraints )
+   *
+   * <p>The visit method will determine if the given constraint should either:
+   *
+   * <ul>
+   *   <li>be discarded -- in this case, the visitor just returns
+   *   <li>reduced to a simpler constraint or set of constraints -- in this case, the new constraint
+   *       or set of constraints is added to newConstraints
+   * </ul>
+   */
+  private static class A2FReducingVisitor extends AFReducingVisitor {
+
+    public A2FReducingVisitor(AnnotatedTypeFactory typeFactory) {
+      super(A2F.class, typeFactory);
     }
 
     @Override
-    public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints) {
-        if (constraint instanceof A2F) {
-            final A2F a2f = (A2F) constraint;
-            visitor.visit(a2f.argument, a2f.formalParameter, newConstraints);
-            return true;
-
-        } else {
-            return false;
-        }
+    public AFConstraint makeConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+      return new A2F(subtype, supertype);
     }
 
-    /**
-     * Given an A2F constraint of the form: A2F( typeFromMethodArgument, typeFromFormalParameter )
-     *
-     * <p>A2FReducingVisitor visits the constraint as follows: visit ( typeFromMethodArgument,
-     * typeFromFormalParameter, newConstraints )
-     *
-     * <p>The visit method will determine if the given constraint should either:
-     *
-     * <ul>
-     *   <li>be discarded -- in this case, the visitor just returns
-     *   <li>reduced to a simpler constraint or set of constraints -- in this case, the new
-     *       constraint or set of constraints is added to newConstraints
-     * </ul>
-     */
-    private static class A2FReducingVisitor extends AFReducingVisitor {
-
-        public A2FReducingVisitor(AnnotatedTypeFactory typeFactory) {
-            super(A2F.class, typeFactory);
-        }
-
-        @Override
-        public AFConstraint makeConstraint(
-                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-            return new A2F(subtype, supertype);
-        }
-
-        @Override
-        public AFConstraint makeInverseConstraint(
-                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-            return new F2A(subtype, supertype);
-        }
-
-        @Override
-        public AFConstraint makeEqualityConstraint(
-                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-            return new FIsA(supertype, subtype);
-        }
+    @Override
+    public AFConstraint makeInverseConstraint(
+        AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+      return new F2A(subtype, supertype);
     }
+
+    @Override
+    public AFConstraint makeEqualityConstraint(
+        AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+      return new FIsA(supertype, subtype);
+    }
+  }
 }

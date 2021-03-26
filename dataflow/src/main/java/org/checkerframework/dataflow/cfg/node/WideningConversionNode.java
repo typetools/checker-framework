@@ -18,52 +18,52 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class WideningConversionNode extends Node {
 
-    protected final Tree tree;
-    protected final Node operand;
+  protected final Tree tree;
+  protected final Node operand;
 
-    public WideningConversionNode(Tree tree, Node operand, TypeMirror type) {
-        super(type);
-        assert TypesUtils.isPrimitive(type) : "non-primitive type in widening conversion";
-        this.tree = tree;
-        this.operand = operand;
-    }
+  public WideningConversionNode(Tree tree, Node operand, TypeMirror type) {
+    super(type);
+    assert TypesUtils.isPrimitive(type) : "non-primitive type in widening conversion";
+    this.tree = tree;
+    this.operand = operand;
+  }
 
-    public Node getOperand() {
-        return operand;
-    }
+  public Node getOperand() {
+    return operand;
+  }
 
-    @Override
-    public Tree getTree() {
-        return tree;
-    }
+  @Override
+  public Tree getTree() {
+    return tree;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitWideningConversion(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitWideningConversion(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "WideningConversion(" + getOperand() + ", " + type + ")";
-    }
+  @Override
+  public String toString() {
+    return "WideningConversion(" + getOperand() + ", " + type + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof WideningConversionNode)) {
-            return false;
-        }
-        WideningConversionNode other = (WideningConversionNode) obj;
-        return getOperand().equals(other.getOperand())
-                && TypesUtils.areSamePrimitiveTypes(getType(), other.getType());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof WideningConversionNode)) {
+      return false;
     }
+    WideningConversionNode other = (WideningConversionNode) obj;
+    return getOperand().equals(other.getOperand())
+        && TypesUtils.areSamePrimitiveTypes(getType(), other.getType());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(WideningConversionNode.class, getOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(WideningConversionNode.class, getOperand());
+  }
 
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(getOperand());
-    }
+  @Override
+  public Collection<Node> getOperands() {
+    return Collections.singletonList(getOperand());
+  }
 }

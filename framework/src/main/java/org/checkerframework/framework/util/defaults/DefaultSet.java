@@ -10,15 +10,15 @@ import org.plumelib.util.StringsPlume;
 @SuppressWarnings("serial")
 class DefaultSet extends TreeSet<Default> {
 
-    /** Creates a DefaultSet. */
-    public DefaultSet() {
-        super(Default::compareTo);
-    }
+  /** Creates a DefaultSet. */
+  public DefaultSet() {
+    super(Default::compareTo);
+  }
 
-    @Override
-    public String toString() {
-        return "DefaultSet( " + StringsPlume.join(", ", this) + " )";
-    }
+  @Override
+  public String toString() {
+    return "DefaultSet( " + StringsPlume.join(", ", this) + " )";
+  }
 
-    public static final DefaultSet EMPTY = new DefaultSet();
+  public static final DefaultSet EMPTY = new DefaultSet();
 }

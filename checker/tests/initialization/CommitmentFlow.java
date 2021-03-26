@@ -4,22 +4,21 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class CommitmentFlow {
 
-    @NonNull CommitmentFlow t;
+  @NonNull CommitmentFlow t;
 
-    public CommitmentFlow(CommitmentFlow arg) {
-        t = arg;
-    }
+  public CommitmentFlow(CommitmentFlow arg) {
+    t = arg;
+  }
 
-    void foo(
-            @UnknownInitialization CommitmentFlow mystery,
-            @Initialized CommitmentFlow triedAndTrue) {
-        CommitmentFlow local = null;
+  void foo(
+      @UnknownInitialization CommitmentFlow mystery, @Initialized CommitmentFlow triedAndTrue) {
+    CommitmentFlow local = null;
 
-        local = mystery;
-        // :: error: (method.invocation.invalid)
-        local.hashCode();
+    local = mystery;
+    // :: error: (method.invocation.invalid)
+    local.hashCode();
 
-        local = triedAndTrue;
-        local.hashCode(); // should determine that it is Initialized based on flow
-    }
+    local = triedAndTrue;
+    local.hashCode(); // should determine that it is Initialized based on flow
+  }
 }

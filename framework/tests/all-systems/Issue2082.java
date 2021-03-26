@@ -4,5 +4,5 @@
 import java.util.concurrent.Callable;
 
 public class Issue2082 {
-    Callable foo = () -> 0;
+  Callable foo = () -> 0;
 }

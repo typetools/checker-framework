@@ -23,10 +23,10 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class TwoCheckers {
 
-    void client(String a) {
-        // :: error: (argument.type.incompatible)
-        requiresUntainted(a);
-    }
+  void client(String a) {
+    // :: error: (argument.type.incompatible)
+    requiresUntainted(a);
+  }
 
-    void requiresUntainted(@Untainted String b) {}
+  void requiresUntainted(@Untainted String b) {}
 }

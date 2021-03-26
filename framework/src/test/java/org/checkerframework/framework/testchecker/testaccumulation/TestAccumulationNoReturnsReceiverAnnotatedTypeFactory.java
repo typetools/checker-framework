@@ -7,13 +7,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * receiver support, to enable the checker's auto-discovery of its AnnotatedTypeFactory to succeed.
  */
 public class TestAccumulationNoReturnsReceiverAnnotatedTypeFactory
-        extends TestAccumulationAnnotatedTypeFactory {
-    /**
-     * Create a new accumulation checker's annotated type factory.
-     *
-     * @param checker the checker
-     */
-    public TestAccumulationNoReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
-    }
+    extends TestAccumulationAnnotatedTypeFactory {
+  /**
+   * Create a new accumulation checker's annotated type factory.
+   *
+   * @param checker the checker
+   */
+  public TestAccumulationNoReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
+    super(checker);
+  }
 }

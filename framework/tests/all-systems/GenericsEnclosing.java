@@ -7,19 +7,19 @@ import java.util.TreeMap;
  * <p>Also see regex/GenericsEnclosing for a test case for the Regex Checker.
  */
 public class GenericsEnclosing extends TreeMap<String, String> {
-    class Inner {
-        void foo() {
-            put("string", "string".toString());
-            put("string", "string");
-            GenericsEnclosing.this.put("string", "string".toString());
-            GenericsEnclosing.this.put("string", "string");
-        }
+  class Inner {
+    void foo() {
+      put("string", "string".toString());
+      put("string", "string");
+      GenericsEnclosing.this.put("string", "string".toString());
+      GenericsEnclosing.this.put("string", "string");
     }
+  }
 }
 
 class OtherUse {
-    void m(GenericsEnclosing p) {
-        p.put("string", "string".toString());
-        p.put("string", "string");
-    }
+  void m(GenericsEnclosing p) {
+    p.put("string", "string".toString());
+    p.put("string", "string");
+  }
 }

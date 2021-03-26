@@ -5,10 +5,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue849 {
-    class Gen<T> {}
+  class Gen<T> {}
 
-    void nullness(Gen<Gen<@NonNull Object>> genGenNonNull) {
-        // :: error: (assignment.type.incompatible)
-        Gen<@Nullable ? extends @Nullable Gen<@Nullable Object>> a = genGenNonNull;
-    }
+  void nullness(Gen<Gen<@NonNull Object>> genGenNonNull) {
+    // :: error: (assignment.type.incompatible)
+    Gen<@Nullable ? extends @Nullable Gen<@Nullable Object>> a = genGenNonNull;
+  }
 }

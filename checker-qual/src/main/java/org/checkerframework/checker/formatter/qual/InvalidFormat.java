@@ -20,10 +20,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownFormat.class)
 public @interface InvalidFormat {
-    /**
-     * Using a value of the annotated type as the first argument to {@link
-     * java.util.Formatter#format(String, Object...) Formatter.format} or similar methods will lead
-     * to this exception message.
-     */
-    String value();
+  /**
+   * Using a value of the annotated type as the first argument to {@link
+   * java.util.Formatter#format(String, Object...) Formatter.format} or similar methods will lead to
+   * this exception message.
+   */
+  String value();
 }

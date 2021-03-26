@@ -8,20 +8,20 @@ import org.checkerframework.common.value.qual.IntVal;
 
 public class ValueCheck {
 
-    // return value should be @Sibling1 @IntVal(5) int
-    int getSibling1withValue5() {
-        return ((@Sibling1 int) 5);
-    }
+  // return value should be @Sibling1 @IntVal(5) int
+  int getSibling1withValue5() {
+    return ((@Sibling1 int) 5);
+  }
 
-    void requireSibling1(@Sibling1 int x) {}
+  void requireSibling1(@Sibling1 int x) {}
 
-    void requireIntVal5(@IntVal(5) int x) {}
+  void requireIntVal5(@IntVal(5) int x) {}
 
-    void test() {
-        int x = getSibling1withValue5();
-        // :: warning: argument.type.incompatible
-        requireSibling1(x);
-        // :: warning: argument.type.incompatible
-        requireIntVal5(x);
-    }
+  void test() {
+    int x = getSibling1withValue5();
+    // :: warning: argument.type.incompatible
+    requireSibling1(x);
+    // :: warning: argument.type.incompatible
+    requireIntVal5(x);
+  }
 }

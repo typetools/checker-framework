@@ -23,55 +23,55 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
  */
 public abstract class AccumulationChecker extends BaseTypeChecker {
 
-    /** Set of alias analyses that are enabled in this particular accumulation checker. */
-    private EnumSet<AliasAnalysis> aliasAnalyses;
+  /** Set of alias analyses that are enabled in this particular accumulation checker. */
+  private EnumSet<AliasAnalysis> aliasAnalyses;
 
-    /** Constructs a new AccumulationChecker. */
-    protected AccumulationChecker() {
-        super();
-        this.aliasAnalyses = createAliasAnalyses();
+  /** Constructs a new AccumulationChecker. */
+  protected AccumulationChecker() {
+    super();
+    this.aliasAnalyses = createAliasAnalyses();
+  }
+
+  @Override
+  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
+        super.getImmediateSubcheckerClasses();
+    if (isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
+      checkers.add(ReturnsReceiverChecker.class);
     }
+    return checkers;
+  }
 
-    @Override
-    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-                super.getImmediateSubcheckerClasses();
-        if (isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
-            checkers.add(ReturnsReceiverChecker.class);
-        }
-        return checkers;
-    }
-
+  /**
+   * The alias analyses that an accumulation checker can support. To add support for a new alias
+   * analysis, add a new item to this enum and then implement any functionality of the checker
+   * behind a call to {@link #isEnabled(AliasAnalysis)}.
+   */
+  public enum AliasAnalysis {
     /**
-     * The alias analyses that an accumulation checker can support. To add support for a new alias
-     * analysis, add a new item to this enum and then implement any functionality of the checker
-     * behind a call to {@link #isEnabled(AliasAnalysis)}.
+     * An alias analysis that detects methods that always return their own receiver (i.e. whose
+     * return value and receiver are aliases).
      */
-    public enum AliasAnalysis {
-        /**
-         * An alias analysis that detects methods that always return their own receiver (i.e. whose
-         * return value and receiver are aliases).
-         */
-        RETURNS_RECEIVER
-    }
+    RETURNS_RECEIVER
+  }
 
-    /**
-     * Get the alias analyses that this checker should employ.
-     *
-     * @return the alias analyses
-     */
-    protected EnumSet<AliasAnalysis> createAliasAnalyses(
-            @UnderInitialization AccumulationChecker this) {
-        return EnumSet.of(AliasAnalysis.RETURNS_RECEIVER);
-    }
+  /**
+   * Get the alias analyses that this checker should employ.
+   *
+   * @return the alias analyses
+   */
+  protected EnumSet<AliasAnalysis> createAliasAnalyses(
+      @UnderInitialization AccumulationChecker this) {
+    return EnumSet.of(AliasAnalysis.RETURNS_RECEIVER);
+  }
 
-    /**
-     * Check whether the given alias analysis is enabled by this particular accumulation checker.
-     *
-     * @param aliasAnalysis the analysis to check
-     * @return true iff the analysis is enabled
-     */
-    public boolean isEnabled(AliasAnalysis aliasAnalysis) {
-        return aliasAnalyses.contains(aliasAnalysis);
-    }
+  /**
+   * Check whether the given alias analysis is enabled by this particular accumulation checker.
+   *
+   * @param aliasAnalysis the analysis to check
+   * @return true iff the analysis is enabled
+   */
+  public boolean isEnabled(AliasAnalysis aliasAnalysis) {
+    return aliasAnalyses.contains(aliasAnalysis);
+  }
 }
