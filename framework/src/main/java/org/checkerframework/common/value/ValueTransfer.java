@@ -160,7 +160,7 @@ public class ValueTransfer extends CFTransfer {
         }
         String annoName = AnnotationUtils.annotationName(anno);
         if (annoName.equals(ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
-            return ValueAnnotatedTypeFactory.getArrayLength(anno);
+            return atypeFactory.getArrayLength(anno);
         } else if (annoName.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             return Collections.emptyList();
         }
@@ -212,7 +212,7 @@ public class ValueTransfer extends CFTransfer {
             case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
                 return Collections.emptyList();
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                return ValueAnnotatedTypeFactory.getStringValues(anno);
+                return atypeFactory.getStringValues(anno);
             default:
                 // Do nothing.
         }
@@ -263,7 +263,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror boolAnno =
                 AnnotationUtils.getAnnotationByName(
                         value.getAnnotations(), ValueAnnotatedTypeFactory.BOOLVAL_NAME);
-        return ValueAnnotatedTypeFactory.getBooleanValue(boolAnno);
+        return atypeFactory.getBooleanValue(boolAnno);
     }
 
     /**
@@ -279,7 +279,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror intAnno =
                 AnnotationUtils.getAnnotationByName(
                         value.getAnnotations(), ValueAnnotatedTypeFactory.BOOLVAL_NAME);
-        return ValueAnnotatedTypeFactory.getBooleanValues(intAnno);
+        return atypeFactory.getBooleanValues(intAnno);
     }
 
     /** Get possible char values from annotation @IntRange or @IntVal. */
@@ -291,7 +291,7 @@ public class ValueTransfer extends CFTransfer {
                 AnnotationUtils.getAnnotationByName(
                         value.getAnnotations(), ValueAnnotatedTypeFactory.INTVAL_NAME);
         if (intAnno != null) {
-            return ValueAnnotatedTypeFactory.getCharValues(intAnno);
+            return atypeFactory.getCharValues(intAnno);
         }
 
         if (atypeFactory.isIntRange(value.getAnnotations())) {
@@ -350,10 +350,10 @@ public class ValueTransfer extends CFTransfer {
         }
         List<? extends Number> values;
         if (AnnotationUtils.areSameByName(valueAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
-            values = ValueAnnotatedTypeFactory.getIntValues(valueAnno);
+            values = atypeFactory.getIntValues(valueAnno);
         } else if (AnnotationUtils.areSameByName(
                 valueAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
-            values = ValueAnnotatedTypeFactory.getDoubleValues(valueAnno);
+            values = atypeFactory.getDoubleValues(valueAnno);
         } else {
             return null;
         }
@@ -383,10 +383,10 @@ public class ValueTransfer extends CFTransfer {
         } else if (atypeFactory.isIntRange(val)) {
             range = atypeFactory.getRange(val);
         } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
-            List<Long> values = ValueAnnotatedTypeFactory.getIntValues(val);
+            List<Long> values = atypeFactory.getIntValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
-            List<Double> values = ValueAnnotatedTypeFactory.getDoubleValues(val);
+            List<Double> values = atypeFactory.getDoubleValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             return Range.NOTHING;
@@ -576,7 +576,7 @@ public class ValueTransfer extends CFTransfer {
             rolv = new RangeOrListOfValues(atypeFactory.getRange(lengthAnno));
         } else if (AnnotationUtils.areSameByName(
                 lengthAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
-            List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
+            List<Long> lengthValues = atypeFactory.getIntValues(lengthAnno);
             rolv = new RangeOrListOfValues(RangeOrListOfValues.convertLongsToInts(lengthValues));
         } else {
             return;

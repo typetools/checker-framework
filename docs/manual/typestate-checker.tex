@@ -12,13 +12,17 @@ the file will lead to a run-time error.  It would be better for the type
 system to warn about such problems, or guarantee their absence, at compile
 time.
 
-Just as you can extend the Subtyping Checker to create a type-checker, you can
-extend a typestate checker to create a type-checker that supports typestate
-analysis.
-%% As of April 2020, this URL (first created in Dec 2008) on longer exists.
-% An extensible typestate analysis by Adam Warski that builds on
-% the Checker Framework is available at
-% \myurl{http://www.warski.org/typestate.html}.
+Accumulation analysis (\chapterpageref{accumulation-checker}) is a special
+case of typestate analysis.  One instantiation of it is the Called Methods
+Checker (\chapterpageref{called-methods-checker}), which can check any
+property of the form ``call method A before method B''.  It also ensures
+that builders are used correctly.
+
+The Java Typestate Checker
+(\url{https://github.com/jdmota/java-typestate-checker}) ensures that
+methods are called in the correct order. The sequences of method calls
+allowed are specified in a protocol file which is associated with a Java
+class by adding a \<@Typestate> annotation to the class.
 
 
 \subsectionAndLabel{Comparison to flow-sensitive type refinement}{typestate-vs-type-refinement}

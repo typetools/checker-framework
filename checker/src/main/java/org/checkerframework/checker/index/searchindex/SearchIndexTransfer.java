@@ -12,6 +12,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The transfer function for the SearchIndexFor checker. Allows {@link SearchIndexFor} to be refined
@@ -63,7 +64,8 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                     aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
             if (rightSIF != null) {
                 List<String> arrays =
-                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(rightSIF);
+                        AnnotationUtils.getElementValueArray(
+                                rightSIF, aTypeFactory.searchIndexForValueElement, String.class);
                 AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
                 store.insertValue(JavaExpression.fromNode(right), nif);
             }

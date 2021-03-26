@@ -64,6 +64,15 @@ public abstract class JavaExpressionVisitor<R, P> {
     protected abstract R visitFieldAccess(FieldAccess fieldAccessExpr, P p);
 
     /**
+     * Visit a {@link FormalParameter}.
+     *
+     * @param parameterExpr the JavaExpression to visit
+     * @param p the parameter to pass to the visit method
+     * @return the result of visiting the {@code parameterExpr}
+     */
+    protected abstract R visitFormalParameter(FormalParameter parameterExpr, P p);
+
+    /**
      * Visit a {@link LocalVariable}.
      *
      * @param localVarExpr the JavaExpression to visit

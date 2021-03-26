@@ -31,7 +31,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -101,8 +100,8 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -251,15 +250,6 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public final boolean hasOrIsSubchecker;
 
-    /** The RequiresQualifier.expression argument/element. */
-    private final ExecutableElement requiresQualifierExpressionElement;
-    /** The EnsuresQualifier.expression argument/element. */
-    private final ExecutableElement ensuresQualifierExpressionElement;
-    /** The EnsuresQualifierIf.expression argument/element. */
-    private final ExecutableElement ensuresQualifierIfExpressionElement;
-    /** The EnsuresQualifierIf.result argument/element. */
-    private final ExecutableElement ensuresQualifierIfResultElement;
-
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -377,15 +367,6 @@ public abstract class GenericAnnotatedTypeFactory<
         hasOrIsSubchecker =
                 !this.getChecker().getSubcheckers().isEmpty()
                         || this.getChecker().getParentChecker() != null;
-
-        requiresQualifierExpressionElement =
-                TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
-        ensuresQualifierExpressionElement =
-                TreeUtils.getMethod(EnsuresQualifier.class, "expression", 0, processingEnv);
-        ensuresQualifierIfExpressionElement =
-                TreeUtils.getMethod(EnsuresQualifierIf.class, "expression", 0, processingEnv);
-        ensuresQualifierIfResultElement =
-                TreeUtils.getMethod(EnsuresQualifierIf.class, "result", 0, processingEnv);
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -711,7 +692,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-        dependentTypesHelper.standardizeNewClassTree(newClassTree, superResult);
+        dependentTypesHelper.atExpression(superResult, newClassTree);
         return superResult;
     }
 
@@ -970,16 +951,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
             throws JavaExpressionParseException {
-        TypeMirror enclosingClass = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
 
-        JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
-        JavaExpressionParseUtil.JavaExpressionContext context =
-                new JavaExpressionParseUtil.JavaExpressionContext(
-                        r,
-                        JavaExpression.getParametersOfEnclosingMethod(currentPath),
-                        this.getChecker());
-
-        return JavaExpressionParseUtil.parse(expression, context, currentPath);
+        return StringToJavaExpression.atPath(expression, currentPath, checker);
     }
 
     /**
@@ -1706,7 +1679,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
         ParameterizedExecutableType mType = super.constructorFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.viewpointAdaptConstructor(tree, method);
+        dependentTypesHelper.atConstructorInvocation(method, tree);
         return mType;
     }
 
@@ -1719,7 +1692,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-        dependentTypesHelper.standardizeReturnType(m, returnType);
+        dependentTypesHelper.atReturnType(returnType, m);
         return returnType;
     }
 
@@ -2005,14 +1978,14 @@ public abstract class GenericAnnotatedTypeFactory<
         applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
-        dependentTypesHelper.standardizeVariable(type, elt);
+        dependentTypesHelper.atLocalVariable(type, elt);
     }
 
     @Override
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.viewpointAdaptMethod(tree, method);
+        dependentTypesHelper.atMethodInvocation(method, tree);
         return mType;
     }
 
@@ -2028,10 +2001,15 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f);
+        dependentTypesHelper.atParameterizedTypeUse(f, element);
         return f;
     }
 
+    /**
+     * Returns the empty store.
+     *
+     * @return the empty store
+     */
     public Store getEmptyStore() {
         return emptyStore;
     }

@@ -1,15 +1,19 @@
 package org.checkerframework.framework.util;
 
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -71,7 +75,7 @@ public abstract class Contract {
         /** The built-in framework qualifier for this contract. */
         public final Class<? extends Annotation> frameworkContractClass;
         /** The built-in framework qualifier for repeated occurrences of this contract. */
-        public final Class<? extends Annotation> frameworkContractsClass;
+        public final Class<? extends Annotation> frameworkContractListClass;
 
         /**
          * Create a new Kind.
@@ -79,18 +83,18 @@ public abstract class Contract {
          * @param errorKey used for constructing error messages
          * @param metaAnnotation the meta-annotation identifying annotations of this kind
          * @param frameworkContractClass the built-in framework qualifier for this contract
-         * @param frameworkContractsClass the built-in framework qualifier for repeated occurrences
-         *     of this contract
+         * @param frameworkContractListClass the built-in framework qualifier for repeated
+         *     occurrences of this contract
          */
         Kind(
                 String errorKey,
                 Class<? extends Annotation> metaAnnotation,
                 Class<? extends Annotation> frameworkContractClass,
-                Class<? extends Annotation> frameworkContractsClass) {
+                Class<? extends Annotation> frameworkContractListClass) {
             this.errorKey = errorKey;
             this.metaAnnotation = metaAnnotation;
             this.frameworkContractClass = frameworkContractClass;
-            this.frameworkContractsClass = frameworkContractsClass;
+            this.frameworkContractListClass = frameworkContractListClass;
         }
     }
 
@@ -181,6 +185,36 @@ public abstract class Contract {
         return String.format(
                 "%s{expressionString=%s, annotation=%s, contractAnnotation=%s}",
                 getClass().getSimpleName(), expressionString, annotation, contractAnnotation);
+    }
+
+    /**
+     * Viewpoint-adapt {@link #annotation} using {@code stringToJavaExpr}.
+     *
+     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map = "map")},
+     * {@code annotation} is {@code @KeyFor("map")}. This method applies {@code stringToJava} to
+     * "map" and returns a new {@code KeyFor} annotation with the result.
+     *
+     * @param factory used to get {@link DependentTypesHelper}
+     * @param stringToJavaExpr function used to convert strings to {@link JavaExpression}s
+     * @param errorTree if non-null, where to report any errors that occur when parsing the
+     *     dependent type annotation; if null, report no errors
+     * @return the viewpoint-adapted annotation, or {@link #annotation} if it is not a dependent
+     *     type annotation
+     */
+    public AnnotationMirror viewpointAdaptDependentTypeAnnotation(
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> factory,
+            StringToJavaExpression stringToJavaExpr,
+            @Nullable Tree errorTree) {
+        DependentTypesHelper dependentTypesHelper = factory.getDependentTypesHelper();
+        AnnotationMirror standardized =
+                dependentTypesHelper.convertAnnotationMirror(stringToJavaExpr, annotation);
+        if (standardized == null) {
+            return annotation;
+        }
+        if (errorTree != null) {
+            dependentTypesHelper.checkAnnotationForErrorExpressions(standardized, errorTree);
+        }
+        return standardized;
     }
 
     /** A precondition contract. */
