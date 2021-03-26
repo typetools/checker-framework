@@ -2,9 +2,10 @@ package org.checkerframework.framework.type;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
+import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -20,7 +21,7 @@ import org.checkerframework.javacutil.BugInCF;
  * visitType.accept(new AnnotatedTypeReplacer(), parameter);
  * }</pre>
  */
-public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
+public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
 
     /**
      * Replaces or adds all annotations from {@code from} to {@code to}. Annotations from {@code
@@ -29,7 +30,10 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
      *
      * @param from the annotated type mirror from which to take new annotations
      * @param to the annotated type mirror to which the annotations will be added
+     * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
+     *     AnnotatedTypeMirror)} instead.
      */
+    @Deprecated
     @SuppressWarnings("interning:not.interned") // assertion
     public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (from == to) {
@@ -46,7 +50,10 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
      * @param from the annotated type mirror from which to take new annotations
      * @param to the annotated type mirror to which the annotations will be added
      * @param top the top type of the hierarchy whose annotations will be added
+     * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
+     *     AnnotatedTypeMirror, AnnotationMirror)} instead.
      */
+    @Deprecated // 2021-03-25
     @SuppressWarnings("interning:not.interned") // assertion
     public static void replace(
             final AnnotatedTypeMirror from,
@@ -59,7 +66,7 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
     }
 
     /** If top != null we replace only the annotations in the hierarchy of top. */
-    private final AnnotationMirror top;
+    private AnnotationMirror top;
 
     /** Construct an AnnotatedTypeReplacer that will replace all annotations. */
     public AnnotatedTypeReplacer() {
@@ -76,19 +83,25 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
         this.top = top;
     }
 
+    /**
+     * If {@code top != null}, then only annotations in the hierarchy of {@code top} are affected;
+     * otherwise, all annotations are replaced.
+     *
+     * @param top if top != null, then only annotations in the hierarchy of top are replaced;
+     *     otherwise, all annotations are replaced.
+     */
+    public void setTop(@Nullable AnnotationMirror top) {
+        this.top = top;
+    }
+
     @SuppressWarnings("interning:not.interned") // assertion
     @Override
-    protected Void compare(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+    protected Void defaultAction(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
         assert from != to;
         if (from != null && to != null) {
             replaceAnnotations(from, to);
         }
         return null;
-    }
-
-    @Override
-    protected Void combineRs(Void r1, Void r2) {
-        return r1;
     }
 
     /**

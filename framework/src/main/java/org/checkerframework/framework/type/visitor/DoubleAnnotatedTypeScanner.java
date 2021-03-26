@@ -12,56 +12,76 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * A TypeVisitor that takes two AnnotatedTypeMirrors as parameters, and visits them simultaneously.
- * Both AnnotatedTypeMirrors must have the same structure, or a subclass must arrange not to
- * continue recursing past the point at which their structure diverges.
+ * An {@link AnnotatedTypeScanner} that scans two {@link AnnotatedTypeMirror}s simultaneously and
+ * performs {@link #defaultAction(AnnotatedTypeMirror, AnnotatedTypeMirror)} on the pair. Both
+ * AnnotatedTypeMirrors must have the same structure, or a subclass must arrange not to continue
+ * recursing past the point at which their structure diverges.
+ *
+ * <p>If the default action does not return a result, then {@code R} should be {@link Void} and
+ * {@code DoubleAnnotatedTypeScanner()} should be used to construct the scanner. If the default
+ * action returns a result, then specify a {@link #reduce} function and use {@code
+ * DoubleAnnotatedTypeScanner(Reduce, Object)}.
  *
  * @see AnnotatedTypeScanner
+ * @param <R> the result of scanning the two {@code AnnotatedTypeMirror}s
  */
-public abstract class AnnotatedTypeComparer<R>
+public abstract class DoubleAnnotatedTypeScanner<R>
         extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
-    /**
-     * Compares two annotated type mirrors.
-     *
-     * @param type a type
-     * @param p a type
-     * @return the result of comparing the two types
-     */
-    protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
 
-    // The reason for this inelegant method name is that subtype AnnotatedTypeCombiner has a
-    // `combine` method that means something else.
     /**
-     * Supplies the logic to reduce on how to combine two values of type {@code R}.
-     *
-     * @param r1 the first value
-     * @param r2 the second value
-     * @return the result of combining the two values
+     * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it
+     * is nonnull; otherwise the second result is returned. The default result is {@code null}.
      */
-    protected abstract R combineRs(R r1, R r2);
+    protected DoubleAnnotatedTypeScanner() {
+        super();
+    }
 
+    /**
+     * Creates a scanner with the given {@code reduce} function and {@code defaultResult}.
+     *
+     * @param reduce function used to combine the results of scan
+     * @param defaultResult result to use by default
+     */
+    protected DoubleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
+        super(reduce, defaultResult);
+    }
+
+    /**
+     * Called by default for any visit method that is not overridden.
+     *
+     * @param type the type to visit
+     * @param p a visitor-specified parameter
+     * @return a visitor-specified result
+     */
+    protected abstract R defaultAction(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
+
+    /**
+     * Scans {@code types1} and {@code types2}. If they are empty, then {@link #defaultResult} is
+     * returned.
+     *
+     * @param types1 types
+     * @param types2 types
+     * @return the result of scanning and reducing all the types in {@code types1} and {@code
+     *     types2} or {@link #defaultResult} if they are empty
+     */
     protected R scan(
-            Iterable<? extends AnnotatedTypeMirror> types,
-            Iterable<? extends AnnotatedTypeMirror> p) {
-        if (types == null) {
-            return null;
+            Iterable<? extends AnnotatedTypeMirror> types1,
+            Iterable<? extends AnnotatedTypeMirror> types2) {
+        if (types1 == null || types2 == null) {
+            return defaultResult;
         }
-        R r = null;
+        R r = defaultResult;
         boolean first = true;
-        Iterator<? extends AnnotatedTypeMirror> tIter = types.iterator(), pIter = p.iterator();
-        while (tIter.hasNext() && pIter.hasNext()) {
+        Iterator<? extends AnnotatedTypeMirror> iter1 = types1.iterator();
+        Iterator<? extends AnnotatedTypeMirror> iter2 = types2.iterator();
+        while (iter1.hasNext() && iter2.hasNext()) {
             r =
                     (first
-                            ? scan(tIter.next(), pIter.next())
-                            : scanAndReduce(tIter.next(), pIter.next(), r));
+                            ? scan(iter1.next(), iter2.next())
+                            : scanAndReduce(iter1.next(), iter2.next(), r));
             first = false;
         }
         return r;
-    }
-
-    @Override
-    protected R reduce(R r1, R r2) {
-        return combineRs(r1, r2);
     }
 
     /**
@@ -76,17 +96,17 @@ public abstract class AnnotatedTypeComparer<R>
     }
 
     @Override
-    protected R scanAndReduce(
+    protected final R scanAndReduce(
             Iterable<? extends AnnotatedTypeMirror> types, AnnotatedTypeMirror p, R r) {
         throw new BugInCF(
-                "AnnotatedTypeComparer.scanAndReduce: "
+                "DoubleAnnotatedTypeScanner.scanAndReduce: "
                         + p
                         + " is not Iterable<? extends AnnotatedTypeMirror>");
     }
 
     @Override
     protected R scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-        return reduce(super.scan(type, p), compare(type, p));
+        return reduce(super.scan(type, p), defaultAction(type, p));
     }
 
     @Override

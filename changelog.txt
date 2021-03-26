@@ -27,6 +27,10 @@ just converts the expression `String` to a `JavaExpression`.  To that end,
 `JavaExpressionParseUtil#parse` should be replaced with a call to one of the
 methods in `StringToJavaExpressions`.
 
+Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
+class, the method `compare` was renamed `defaultAction`. The method `combineRs`
+was replaced by `reduce`.
+
 Removed deprecated `PluginUtil` class.
 
 Removed methods:
