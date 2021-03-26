@@ -77,6 +77,7 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -97,9 +98,10 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -690,7 +692,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-        dependentTypesHelper.standardizeNewClassTree(newClassTree, superResult);
+        dependentTypesHelper.atExpression(superResult, newClassTree);
         return superResult;
     }
 
@@ -949,16 +951,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
             throws JavaExpressionParseException {
-        TypeMirror enclosingClass = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
 
-        JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
-        JavaExpressionParseUtil.JavaExpressionContext context =
-                new JavaExpressionParseUtil.JavaExpressionContext(
-                        r,
-                        JavaExpression.getParametersOfEnclosingMethod(currentPath),
-                        this.getChecker());
-
-        return JavaExpressionParseUtil.parse(expression, context, currentPath);
+        return StringToJavaExpression.atPath(expression, currentPath, checker);
     }
 
     /**
@@ -1685,7 +1679,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
         ParameterizedExecutableType mType = super.constructorFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.viewpointAdaptConstructor(tree, method);
+        dependentTypesHelper.atConstructorInvocation(method, tree);
         return mType;
     }
 
@@ -1698,7 +1692,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-        dependentTypesHelper.standardizeReturnType(m, returnType);
+        dependentTypesHelper.atReturnType(returnType, m);
         return returnType;
     }
 
@@ -1984,14 +1978,14 @@ public abstract class GenericAnnotatedTypeFactory<
         applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
-        dependentTypesHelper.standardizeVariable(type, elt);
+        dependentTypesHelper.atLocalVariable(type, elt);
     }
 
     @Override
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        dependentTypesHelper.viewpointAdaptMethod(tree, method);
+        dependentTypesHelper.atMethodInvocation(method, tree);
         return mType;
     }
 
@@ -2007,10 +2001,15 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        dependentTypesHelper.viewpointAdaptTypeVariableBounds(element, f);
+        dependentTypesHelper.atParameterizedTypeUse(f, element);
         return f;
     }
 
+    /**
+     * Returns the empty store.
+     *
+     * @return the empty store
+     */
     public Store getEmptyStore() {
         return emptyStore;
     }
@@ -2654,6 +2653,67 @@ public abstract class GenericAnnotatedTypeFactory<
             return parentAtf.getSharedCFGForTree(tree);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * If kind = CONDITIONALPOSTCONDITION, return the result element, e.g. {@link
+     * EnsuresQualifierIf#result}. Otherwise, return null.
+     *
+     * @param kind the kind of {@code contractAnnotation}
+     * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+     *     EnsuresQualifierIf}
+     * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have
+     *     a {@code result} element
+     */
+    public Boolean getEnsuresQualifierIfResult(
+            Contract.Kind kind, AnnotationMirror contractAnnotation) {
+        if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
+            if (contractAnnotation instanceof EnsuresQualifierIf) {
+                // It's the framework annotation @EnsuresQualifierIf
+                return AnnotationUtils.getElementValueBoolean(
+                        contractAnnotation,
+                        ensuresQualifierIfResultElement,
+                        /*default is irrelevant*/ false);
+            } else {
+                // It's a checker-specific annotation such as @EnsuresMinLenIf
+                return AnnotationUtils.getElementValue(
+                        contractAnnotation, "result", Boolean.class, false);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * If {@code contractAnnotation} is a framework annotation, return its {@code expression}
+     * element. Otherwise, {@code contractAnnotation} is defined in a checker. If kind =
+     * CONDITIONALPOSTCONDITION, return its {@code expression} element, else return its {@code
+     * value} element.
+     *
+     * @param kind the kind of {@code contractAnnotation}
+     * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+     *     EnsuresQualifierIf}
+     * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have
+     *     a {@code result} element
+     */
+    public List<String> getContractExpressions(
+            Contract.Kind kind, AnnotationMirror contractAnnotation) {
+        if (contractAnnotation instanceof RequiresQualifier) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, requiresQualifierExpressionElement, String.class);
+        } else if (contractAnnotation instanceof EnsuresQualifier) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, ensuresQualifierExpressionElement, String.class);
+        } else if (contractAnnotation instanceof EnsuresQualifierIf) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, ensuresQualifierIfExpressionElement, String.class);
+        } else if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, "expression", String.class, true);
+        } else {
+            return AnnotationUtils.getElementValueArray(
+                    contractAnnotation, "value", String.class, true);
         }
     }
 }

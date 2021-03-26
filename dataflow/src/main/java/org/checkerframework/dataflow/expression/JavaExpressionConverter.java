@@ -80,6 +80,11 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
     }
 
     @Override
+    protected JavaExpression visitFormalParameter(FormalParameter parameterExpr, Void unused) {
+        return parameterExpr;
+    }
+
+    @Override
     protected JavaExpression visitLocalVariable(LocalVariable localVarExpr, Void unused) {
         return localVarExpr;
     }

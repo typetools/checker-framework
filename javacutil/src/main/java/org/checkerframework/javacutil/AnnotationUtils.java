@@ -34,8 +34,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
@@ -43,6 +41,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
@@ -683,7 +682,19 @@ public class AnnotationUtils {
         for (ExecutableElement elem : valmap.keySet()) {
             if (elem.getSimpleName().contentEquals(elementName)) {
                 AnnotationValue val = valmap.get(elem);
-                return expectedType.cast(val.getValue());
+                try {
+                    return expectedType.cast(val.getValue());
+                } catch (ClassCastException e) {
+                    throw new BugInCF(
+                            "getElementValue(%s, %s, %s, %s): val=%s, val.getValue()=%s [%s]",
+                            anno,
+                            elementName,
+                            expectedType,
+                            useDefaults,
+                            val,
+                            val.getValue(),
+                            val.getValue().getClass());
+                }
             }
         }
         throw new NoSuchElementException(
@@ -702,6 +713,7 @@ public class AnnotationUtils {
          *
          * @param message the detail message
          */
+        @Pure
         public NoSuchElementException(String message) {
             super(message);
         }
@@ -730,6 +742,34 @@ public class AnnotationUtils {
         // getElementValue called getElementValueOrNull and threw an error if the result was null.
         try {
             return getElementValue(anno, elementName, expectedType, useDefaults);
+        } catch (NoSuchElementException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, or return
+     * null if no such element exists. One element of the result has type {@code expectedType}.
+     *
+     * <p>This method is intended only for use by the framework. A checker implementation should use
+     * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
+     *
+     * @param anno the annotation whose element to access
+     * @param elementName the name of the element to access
+     * @param expectedType the component type of the element and of the return value
+     * @param <T> the class of the component type
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name, or null
+     */
+    public static <T> @Nullable List<T> getElementValueArrayOrNull(
+            AnnotationMirror anno,
+            CharSequence elementName,
+            Class<T> expectedType,
+            boolean useDefaults) {
+        // This implementation permits getElementValue a more detailed error message than if
+        // getElementValue called getElementValueOrNull and threw an error if the result was null.
+        try {
+            return getElementValueArray(anno, elementName, expectedType, useDefaults);
         } catch (NoSuchElementException e) {
             return null;
         }
@@ -808,47 +848,6 @@ public class AnnotationUtils {
             }
         }
         return result;
-    }
-
-    // TODO: Make a version of this method that takes an ExecutableElement?
-    /**
-     * Get the element with the name {@code elementName} of the annotation {@code anno}. The element
-     * has type {@code expectedType} or array of {@code expectedType}.
-     *
-     * <p>Parameter useDefaults is used to determine whether default values should be used for
-     * annotation values. Finding defaults requires more computation, so should be false when no
-     * defaulting is needed.
-     *
-     * <p>This method is intended only for use by the framework. A checker implementation should use
-     * {@code anno.getElementValues().get(someElement).getValue();}.
-     *
-     * @param anno the annotation to disassemble
-     * @param elementName the name of the element to access
-     * @param expectedType the type used to cast the return type
-     * @param <T> the class of the type
-     * @param useDefaults whether to apply default values to the element
-     * @return the value of the element with the given name; it is a new list, so it is safe for
-     *     clients to side-effect
-     */
-    public static <T> List<T> getElementValueArrayOrSingleton(
-            AnnotationMirror anno,
-            CharSequence elementName,
-            Class<T> expectedType,
-            boolean useDefaults) {
-        for (ExecutableElement annoElement :
-                ElementFilter.methodsIn(
-                        anno.getAnnotationType().asElement().getEnclosedElements())) {
-            if (annoElement.getSimpleName().contentEquals(elementName)) {
-                TypeMirror elementType = annoElement.getReturnType();
-                if (elementType.getKind() == TypeKind.ARRAY) {
-                    return getElementValueArray(anno, elementName, expectedType, useDefaults);
-                } else {
-                    return Collections.singletonList(
-                            getElementValue(anno, elementName, expectedType, useDefaults));
-                }
-            }
-        }
-        throw new BugInCF("no " + elementName + " element in " + anno);
     }
 
     /**
@@ -980,6 +979,24 @@ public class AnnotationUtils {
             return defaultValue;
         } else {
             return expectedType.cast(av.getValue());
+        }
+    }
+
+    /**
+     * Get the given boolean element of the annotation {@code anno}.
+     *
+     * @param anno the annotation whose element to access
+     * @param element the element to access
+     * @param defaultValue the value to return if the element is not present
+     * @return the value of the element with the given name
+     */
+    public static boolean getElementValueBoolean(
+            AnnotationMirror anno, ExecutableElement element, boolean defaultValue) {
+        AnnotationValue av = anno.getElementValues().get(element);
+        if (av == null) {
+            return defaultValue;
+        } else {
+            return (boolean) av.getValue();
         }
     }
 

@@ -75,7 +75,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, UnitsBottom.class);
 
     /** the UnitsMultiple.prefix argument/element. */
-    private final ExecutableElement unitsMultiplePrefixElement;
+    private final ExecutableElement unitsMultiplePrefixElement =
+            TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
 
     /**
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
@@ -92,9 +93,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
         // use true to enable flow inference, false to disable it
         super(checker, false);
-
-        unitsMultiplePrefixElement =
-                TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
 
         this.postInit();
     }

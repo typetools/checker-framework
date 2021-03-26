@@ -5,7 +5,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +31,7 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -40,6 +40,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -53,8 +54,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -175,34 +174,22 @@ public class LockAnnotatedTypeFactory
             }
 
             @Override
-            protected String standardizeString(
-                    String expression, JavaExpressionContext context, TreePath localVarPath) {
-                if (DependentTypesError.isExpressionError(expression)) {
-                    return expression;
+            protected boolean shouldPassThroughExpression(String expression) {
+                // There is no expression to use to replace <self> here, so just pass the
+                // expression along.
+                return super.shouldPassThroughExpression(expression)
+                        || LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches();
+            }
+
+            @Override
+            protected @Nullable JavaExpression transform(JavaExpression javaExpr) {
+                if (javaExpr instanceof Unknown || isExpressionEffectivelyFinal(javaExpr)) {
+                    return javaExpr;
                 }
 
-                // Adds logic to parse <self> expression, which only the Lock Checker uses.
-                if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
-                    return expression;
-                }
-
-                try {
-                    JavaExpression result =
-                            JavaExpressionParseUtil.parse(expression, context, localVarPath);
-                    if (result == null) {
-                        return new DependentTypesError(expression, /*error message=*/ " ")
-                                .toString();
-                    }
-                    if (!isExpressionEffectivelyFinal(result)) {
-                        // If the expression isn't effectively final, then return the
-                        // NOT_EFFECTIVELY_FINAL error string.
-                        return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
-                                .toString();
-                    }
-                    return result.toString();
-                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                    return new DependentTypesError(expression, e).toString();
-                }
+                // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL
+                // error string.
+                return createError(javaExpr.toString(), NOT_EFFECTIVELY_FINAL);
             }
         };
     }

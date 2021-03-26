@@ -18,6 +18,22 @@ please send us a link and a short description.
 % Sections are added to this chapter in reverse chronological order, at the top.
 
 
+\sectionAndLabel{Determinism checker}{deteriminism-checker}
+
+The
+\href{https://github.com/t-rasmud/checker-framework/tree/nondet-checker}{Determinism
+  Checker} ensures that a program is deterministic across executions.  A
+determinismic program is easier to test, and it is easier to debug (such as
+comparing executions).
+
+The Determinism Checker focuses on sequential programs.  It detects
+determinism due to the iteration order of a hash table (or on any other
+property of hash codes), default formatting (such as Java's
+\<Object.toString()>, which includes a memory address), \<random>,
+date-and-time functions, and accessing system properties such as the file
+system or environment variables.
+
+
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
 
 The

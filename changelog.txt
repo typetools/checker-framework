@@ -1,4 +1,4 @@
-Version 3.11.1, April 1, 2021
+Version 3.12.0, April 1, 2021
 
 **User-visible changes:**
 
@@ -13,7 +13,44 @@ stands for (only) the `null` value.
 
 **Implementation details:**
 
+A precondition or normal postcondition annotation's `value` element must have
+type `String[]`, not `String`.  A conditinoal postcondition annotation's
+`expression` element must have type `String[]`, not `String`.  These changes
+will not affect users (any programmer-written annotation that was legal before
+will still be legal), but it may affect checker implementations.
+
+`JavaExpressionParseUtil`:
+`JavaExpressionParseUtil#parse` no longer viewpoint-adapts Java expressions. It
+just converts the expression `String` to a `JavaExpression`.  To that end,
+`JavaExpressionParseUtil.JavaExpressionContext` has been removed and
+`JavaExpressionParseUtil#parse` no longer takes a context object.  Most calls to
+`JavaExpressionParseUtil#parse` should be replaced with a call to one of the
+methods in `StringToJavaExpressions`.
+
+Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
+class, the method `compare` was renamed `defaultAction`. The method `combineRs`
+was replaced by `reduce`.
+
 Removed deprecated `PluginUtil` class.
+
+Removed methods:
+ * `AnnotationUtils.getElementValueArrayOrSingleton`
+ * `DependentTypesHelper.standardizeNewClassTree`: use `atExpression` instead
+ * `DependentTypesHelper.standardizeString`: override one of the methods
+   explained in the Javadoc of `convertAnnotationMirror`
+
+Method renamings:
+ * `DefaultQualifierForUseTypeAnnotator.getSupportAnnosFromDefaultQualifierForUses` => `getDefaultQualifierForUses`
+ * In `DependentTypesHelper`:
+    * `check*` => `check*ForErrorExpressions`
+    * `viewpointAdaptConstructor` => `atConstructorInvocation`
+    * `viewpointAdaptMethod` => `atMethodInvocation`
+    * `viewpointAdaptTypeVariableBounds` => `atParameterizedTypeUse`
+    * `standardizeClass` =>  `atTypeDecl`
+    * `standardizeExpression` => `atExpression`
+    * `standardizeFieldAccess` => `atFieldAccess`
+    * `standardizeReturnType` => `atReturnType`
+    * `standardizeVariable` => `atVariableDeclaration`
 
 **Closed issues:**
 

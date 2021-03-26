@@ -44,7 +44,9 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 anm = null;
             }
 
-            if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, subSeq.to)) {
+            LessThanAnnotatedTypeFactory factory = getTypeFactory();
+
+            if (anm == null || !factory.isLessThanOrEqual(anm, subSeq.to)) {
                 // issue an error
                 checker.reportError(
                         valueTree,
@@ -72,8 +74,10 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         // Also skip the check if the only expression is "a + 1" and the valueTree
         // is "a".
         List<String> expressions =
-                LessThanAnnotatedTypeFactory.getLessThanExpressions(
-                        varType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN));
+                getTypeFactory()
+                        .getLessThanExpressions(
+                                varType.getEffectiveAnnotationInHierarchy(
+                                        atypeFactory.LESS_THAN_UNKNOWN));
         if (expressions != null) {
             boolean isLessThan = true;
             for (String expression : expressions) {
@@ -113,8 +117,8 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 exprType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN);
 
         if (exprLTAnno != null) {
-            List<String> initialAnnotations =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(exprLTAnno);
+            LessThanAnnotatedTypeFactory factory = getTypeFactory();
+            List<String> initialAnnotations = factory.getLessThanExpressions(exprLTAnno);
 
             if (initialAnnotations != null) {
                 List<String> updatedAnnotations =
