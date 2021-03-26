@@ -32,195 +32,190 @@ import org.checkerframework.framework.stub.AnnotationFileParser;
  * declaration target.
  */
 public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
-    /**
-     * Annotations imported by the file, stored as a mapping from names to the TypeElements for the
-     * annotations.
-     */
-    private Map<String, TypeElement> allAnnotations;
-    /** Element utilities. */
-    private Elements elements;
+  /**
+   * Annotations imported by the file, stored as a mapping from names to the TypeElements for the
+   * annotations.
+   */
+  private Map<String, TypeElement> allAnnotations;
+  /** Element utilities. */
+  private Elements elements;
 
-    /**
-     * Constructs a {@code TypeAnnotationMover}. The {@code allAnnotations} parameter should contain
-     * all the annotations imported by the file to be visited. When examining an annotation in the
-     * file, looks up the name in {@code allAnnotations} to find the TypeElement for the annotation.
-     *
-     * @param allAnnotations mapping from annotation name to TypeElement for the annotations
-     *     imported by the file
-     * @param elements Element utilities
-     */
-    public TypeAnnotationMover(Map<String, TypeElement> allAnnotations, Elements elements) {
-        this.allAnnotations = new HashMap<>(allAnnotations);
-        this.elements = elements;
+  /**
+   * Constructs a {@code TypeAnnotationMover}. The {@code allAnnotations} parameter should contain
+   * all the annotations imported by the file to be visited. When examining an annotation in the
+   * file, looks up the name in {@code allAnnotations} to find the TypeElement for the annotation.
+   *
+   * @param allAnnotations mapping from annotation name to TypeElement for the annotations imported
+   *     by the file
+   * @param elements Element utilities
+   */
+  public TypeAnnotationMover(Map<String, TypeElement> allAnnotations, Elements elements) {
+    this.allAnnotations = new HashMap<>(allAnnotations);
+    this.elements = elements;
+  }
+
+  @Override
+  public void visit(FieldDeclaration node, Void p) {
+    // Use the type of the first declared variable in the field declaration.
+    Type type = node.getVariable(0).getType();
+    if (!type.isClassOrInterfaceType()) {
+      return;
     }
 
-    @Override
-    public void visit(FieldDeclaration node, Void p) {
-        // Use the type of the first declared variable in the field declaration.
-        Type type = node.getVariable(0).getType();
-        if (!type.isClassOrInterfaceType()) {
-            return;
-        }
-
-        if (isMultiPartName(type)) {
-            return;
-        }
-
-        List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.FIELD);
-        if (annosToMove.isEmpty()) {
-            return;
-        }
-
-        removeAnnotations(node, annosToMove);
-        annosToMove.forEach(anno -> type.asClassOrInterfaceType().addAnnotation(anno));
+    if (isMultiPartName(type)) {
+      return;
     }
 
-    @Override
-    public void visit(MethodDeclaration node, Void p) {
-        Type type = node.getType();
-        if (!type.isClassOrInterfaceType()) {
-            return;
-        }
-
-        if (isMultiPartName(type)) {
-            return;
-        }
-
-        List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.METHOD);
-        if (annosToMove.isEmpty()) {
-            return;
-        }
-
-        removeAnnotations(node, annosToMove);
-        annosToMove.forEach(anno -> type.asClassOrInterfaceType().addAnnotation(anno));
+    List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.FIELD);
+    if (annosToMove.isEmpty()) {
+      return;
     }
 
-    /**
-     * Given a declaration, returns a List of annotations currently in declaration position that
-     * can't possibly be declaration annotations for that type of declaration.
-     *
-     * @param node JavaParser node for declaration
-     * @param declarationType the type of declaration {@code node} represents
-     * @return a list of annotations in declaration position that should be on the declaration's
-     *     type
-     */
-    private List<AnnotationExpr> getAnnotationsToMove(
-            NodeWithAnnotations<?> node, ElementType declarationType) {
-        List<AnnotationExpr> annosToMove = new ArrayList<>();
-        for (AnnotationExpr annotation : node.getAnnotations()) {
-            if (!isPossiblyDeclarationAnnotation(annotation, declarationType)) {
-                annosToMove.add(annotation);
-            }
-        }
+    removeAnnotations(node, annosToMove);
+    annosToMove.forEach(anno -> type.asClassOrInterfaceType().addAnnotation(anno));
+  }
 
-        return annosToMove;
+  @Override
+  public void visit(MethodDeclaration node, Void p) {
+    Type type = node.getType();
+    if (!type.isClassOrInterfaceType()) {
+      return;
     }
 
-    /**
-     * Removes all annotations from {@code node} that appear in {@code annosToRemove}
-     *
-     * @param node a node with annotations
-     * @param annosToRemove list of annotations to remove
-     */
-    private void removeAnnotations(
-            NodeWithAnnotations<?> node, List<AnnotationExpr> annosToRemove) {
-        NodeList<AnnotationExpr> newAnnos = new NodeList<>(node.getAnnotations());
-        newAnnos.removeIf(anno -> annosToRemove.contains(anno));
-        node.setAnnotations(newAnnos);
+    if (isMultiPartName(type)) {
+      return;
     }
 
-    /**
-     * Returns the TypeElement for an annotation, or null if it cannot be found.
-     *
-     * <p>If {@code annotation} was listed in the file's imports, returns its value in {@link
-     * #allAnnotations}. If it wasn't imported but its element could still be found, adds the new
-     * TypeElement to {@link #allAnnotations} and returns it.
-     *
-     * @param annotation a JavaParser annotation
-     * @return the TypeElement for {@code annotation}, or null if it cannot be found
-     */
-    private @Nullable TypeElement getAnnotationDeclaration(AnnotationExpr annotation) {
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
-        TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
-        if (annoTypeElt == null) {
-            annoTypeElt = elements.getTypeElement(annoNameFq);
-            if (annoTypeElt == null) {
-                // Not a supported annotation.
-                return null;
-            }
-            AnnotationFileParser.putAllNew(
-                    allAnnotations,
-                    AnnotationFileParser.createNameToAnnotationMap(
-                            Collections.singletonList(annoTypeElt)));
-        }
-
-        return annoTypeElt;
+    List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.METHOD);
+    if (annosToMove.isEmpty()) {
+      return;
     }
 
-    /**
-     * Returns if {@code annotation} could be a declaration annotation for {@code declarationType}.
-     * This would be the case if the annotation isn't recognized at all, or if it was recognized and
-     * has {@code declarationType} as one of its targets.
-     *
-     * @param annotation a JavaParser annotation expression
-     * @param declarationType the declaration type to check if {@code annotation} might be a
-     *     declaration annotation for
-     * @return false unless {@code annotation} definitely cannot be a declaration annotation for
-     *     {@code declarationType}
-     */
-    private boolean isPossiblyDeclarationAnnotation(
-            AnnotationExpr annotation, ElementType declarationType) {
-        TypeElement annotationType = getAnnotationDeclaration(annotation);
-        if (annotationType == null) {
-            return true;
-        }
+    removeAnnotations(node, annosToMove);
+    annosToMove.forEach(anno -> type.asClassOrInterfaceType().addAnnotation(anno));
+  }
 
-        return isPossiblyDeclarationAnnotation(annotationType, declarationType);
+  /**
+   * Given a declaration, returns a List of annotations currently in declaration position that can't
+   * possibly be declaration annotations for that type of declaration.
+   *
+   * @param node JavaParser node for declaration
+   * @param declarationType the type of declaration {@code node} represents
+   * @return a list of annotations in declaration position that should be on the declaration's type
+   */
+  private List<AnnotationExpr> getAnnotationsToMove(
+      NodeWithAnnotations<?> node, ElementType declarationType) {
+    List<AnnotationExpr> annosToMove = new ArrayList<>();
+    for (AnnotationExpr annotation : node.getAnnotations()) {
+      if (!isPossiblyDeclarationAnnotation(annotation, declarationType)) {
+        annosToMove.add(annotation);
+      }
     }
 
-    /**
-     * Returns whether the annotation represented by {@code annotationDeclaration} might be a
-     * declaration annotation for {@code declarationType}. This holds if {@code declarationType} is
-     * a target of the annotation, or if {@code ElementType.TYPE_USE} is not a target of the
-     * annotation.
-     *
-     * @param annotationDeclaration declaration for an annotation
-     * @param declarationType the declaration type to check if the annotation might be a declaration
-     *     annotation for
-     * @return true if {@code annotationDeclaration} contains {@code declarationType} as a target or
-     *     doesn't contain {@code ElementType.TYPE_USE} as a target
-     */
-    private boolean isPossiblyDeclarationAnnotation(
-            TypeElement annotationDeclaration, ElementType declarationType) {
-        Target target = annotationDeclaration.getAnnotation(Target.class);
-        if (target == null) {
-            return true;
-        }
+    return annosToMove;
+  }
 
-        boolean hasTypeUse = false;
-        for (ElementType elementType : target.value()) {
-            if (elementType == ElementType.TYPE_USE) {
-                hasTypeUse = true;
-            }
+  /**
+   * Removes all annotations from {@code node} that appear in {@code annosToRemove}
+   *
+   * @param node a node with annotations
+   * @param annosToRemove list of annotations to remove
+   */
+  private void removeAnnotations(NodeWithAnnotations<?> node, List<AnnotationExpr> annosToRemove) {
+    NodeList<AnnotationExpr> newAnnos = new NodeList<>(node.getAnnotations());
+    newAnnos.removeIf(anno -> annosToRemove.contains(anno));
+    node.setAnnotations(newAnnos);
+  }
 
-            if (elementType == declarationType) {
-                return true;
-            }
-        }
-
-        return !hasTypeUse;
+  /**
+   * Returns the TypeElement for an annotation, or null if it cannot be found.
+   *
+   * <p>If {@code annotation} was listed in the file's imports, returns its value in {@link
+   * #allAnnotations}. If it wasn't imported but its element could still be found, adds the new
+   * TypeElement to {@link #allAnnotations} and returns it.
+   *
+   * @param annotation a JavaParser annotation
+   * @return the TypeElement for {@code annotation}, or null if it cannot be found
+   */
+  private @Nullable TypeElement getAnnotationDeclaration(AnnotationExpr annotation) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
+    TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
+    if (annoTypeElt == null) {
+      annoTypeElt = elements.getTypeElement(annoNameFq);
+      if (annoTypeElt == null) {
+        // Not a supported annotation.
+        return null;
+      }
+      AnnotationFileParser.putAllNew(
+          allAnnotations,
+          AnnotationFileParser.createNameToAnnotationMap(Collections.singletonList(annoTypeElt)));
     }
 
-    /**
-     * Returns whether {@code type} has a name containing multiple parts separated by dots, e.g.
-     * "java.lang.String".
-     *
-     * @param type a JavaParser type node
-     * @return true if {@code type} has a multi-part name
-     */
-    private boolean isMultiPartName(Type type) {
-        return type.isClassOrInterfaceType()
-                && type.asClassOrInterfaceType().getScope().isPresent();
+    return annoTypeElt;
+  }
+
+  /**
+   * Returns if {@code annotation} could be a declaration annotation for {@code declarationType}.
+   * This would be the case if the annotation isn't recognized at all, or if it was recognized and
+   * has {@code declarationType} as one of its targets.
+   *
+   * @param annotation a JavaParser annotation expression
+   * @param declarationType the declaration type to check if {@code annotation} might be a
+   *     declaration annotation for
+   * @return false unless {@code annotation} definitely cannot be a declaration annotation for
+   *     {@code declarationType}
+   */
+  private boolean isPossiblyDeclarationAnnotation(
+      AnnotationExpr annotation, ElementType declarationType) {
+    TypeElement annotationType = getAnnotationDeclaration(annotation);
+    if (annotationType == null) {
+      return true;
     }
+
+    return isPossiblyDeclarationAnnotation(annotationType, declarationType);
+  }
+
+  /**
+   * Returns whether the annotation represented by {@code annotationDeclaration} might be a
+   * declaration annotation for {@code declarationType}. This holds if {@code declarationType} is a
+   * target of the annotation, or if {@code ElementType.TYPE_USE} is not a target of the annotation.
+   *
+   * @param annotationDeclaration declaration for an annotation
+   * @param declarationType the declaration type to check if the annotation might be a declaration
+   *     annotation for
+   * @return true if {@code annotationDeclaration} contains {@code declarationType} as a target or
+   *     doesn't contain {@code ElementType.TYPE_USE} as a target
+   */
+  private boolean isPossiblyDeclarationAnnotation(
+      TypeElement annotationDeclaration, ElementType declarationType) {
+    Target target = annotationDeclaration.getAnnotation(Target.class);
+    if (target == null) {
+      return true;
+    }
+
+    boolean hasTypeUse = false;
+    for (ElementType elementType : target.value()) {
+      if (elementType == ElementType.TYPE_USE) {
+        hasTypeUse = true;
+      }
+
+      if (elementType == declarationType) {
+        return true;
+      }
+    }
+
+    return !hasTypeUse;
+  }
+
+  /**
+   * Returns whether {@code type} has a name containing multiple parts separated by dots, e.g.
+   * "java.lang.String".
+   *
+   * @param type a JavaParser type node
+   * @return true if {@code type} has a multi-part name
+   */
+  private boolean isMultiPartName(Type type) {
+    return type.isClassOrInterfaceType() && type.asClassOrInterfaceType().getScope().isPresent();
+  }
 }
