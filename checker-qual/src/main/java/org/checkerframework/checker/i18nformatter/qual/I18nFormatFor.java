@@ -31,13 +31,13 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(I18nUnknownFormat.class)
 public @interface I18nFormatFor {
-    /**
-     * Indicates which formal parameter is the arguments to the format method. The value should be
-     * {@code #} followed by the 1-based index of the formal parameter that is the arguments to the
-     * format method, e.g., {@code "#2"}.
-     *
-     * @return {@code #} followed by the 1-based index of the formal parameter that is the arguments
-     *     to the format method
-     */
-    String value();
+  /**
+   * Indicates which formal parameter is the arguments to the format method. The value should be
+   * {@code #} followed by the 1-based index of the formal parameter that is the arguments to the
+   * format method, e.g., {@code "#2"}.
+   *
+   * @return {@code #} followed by the 1-based index of the formal parameter that is the arguments
+   *     to the format method
+   */
+  String value();
 }

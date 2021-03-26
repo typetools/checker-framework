@@ -4,25 +4,25 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class Issue811 {
-    static class T {
-        void xyz() {}
-    }
+  static class T {
+    void xyz() {}
+  }
 
-    interface U {
-        void method();
-    }
+  interface U {
+    void method();
+  }
 
-    private final @NonNull T tField;
-    private U uField;
+  private final @NonNull T tField;
+  private U uField;
 
-    public Issue811(@NonNull T t) {
-        tField = t;
-        uField =
-                new U() {
-                    @Override
-                    public void method() {
-                        tField.xyz();
-                    }
-                };
-    }
+  public Issue811(@NonNull T t) {
+    tField = t;
+    uField =
+        new U() {
+          @Override
+          public void method() {
+            tField.xyz();
+          }
+        };
+  }
 }

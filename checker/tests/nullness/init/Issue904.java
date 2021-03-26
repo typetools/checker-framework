@@ -2,22 +2,22 @@
 // https://github.com/typetools/checker-framework/issues/904
 
 public class Issue904 {
-    final Object mBar;
-    final Runnable mRunnable =
-            new Runnable() {
-                @Override
-                public void run() {
-                    // :: error: (dereference.of.nullable)
-                    mBar.toString();
-                }
-            };
+  final Object mBar;
+  final Runnable mRunnable =
+      new Runnable() {
+        @Override
+        public void run() {
+          // :: error: (dereference.of.nullable)
+          mBar.toString();
+        }
+      };
 
-    public Issue904() {
-        mRunnable.run();
-        mBar = "";
-    }
+  public Issue904() {
+    mRunnable.run();
+    mBar = "";
+  }
 
-    public static void main(String[] args) {
-        new Issue904();
-    }
+  public static void main(String[] args) {
+    new Issue904();
+  }
 }

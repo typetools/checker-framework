@@ -18,71 +18,71 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class InstanceOfNode extends Node {
 
-    /** The value being tested. */
-    protected final Node operand;
+  /** The value being tested. */
+  protected final Node operand;
 
-    /** The reference type being tested against. */
-    protected final TypeMirror refType;
+  /** The reference type being tested against. */
+  protected final TypeMirror refType;
 
-    /** The tree associated with this node. */
-    protected final InstanceOfTree tree;
+  /** The tree associated with this node. */
+  protected final InstanceOfTree tree;
 
-    /** For Types.isSameType. */
-    protected final Types types;
+  /** For Types.isSameType. */
+  protected final Types types;
 
-    /** Create an InstanceOfNode. */
-    public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
-        super(types.getPrimitiveType(TypeKind.BOOLEAN));
-        assert tree.getKind() == Tree.Kind.INSTANCE_OF;
-        this.tree = (InstanceOfTree) tree;
-        this.operand = operand;
-        this.refType = refType;
-        this.types = types;
+  /** Create an InstanceOfNode. */
+  public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
+    super(types.getPrimitiveType(TypeKind.BOOLEAN));
+    assert tree.getKind() == Tree.Kind.INSTANCE_OF;
+    this.tree = (InstanceOfTree) tree;
+    this.operand = operand;
+    this.refType = refType;
+    this.types = types;
+  }
+
+  public Node getOperand() {
+    return operand;
+  }
+
+  /** The reference type being tested against. */
+  public TypeMirror getRefType() {
+    return refType;
+  }
+
+  @Override
+  public InstanceOfTree getTree() {
+    return tree;
+  }
+
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitInstanceOf(this, p);
+  }
+
+  @Override
+  public String toString() {
+    return "(" + getOperand() + " instanceof " + TypesUtils.simpleTypeName(getRefType()) + ")";
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof InstanceOfNode)) {
+      return false;
     }
+    InstanceOfNode other = (InstanceOfNode) obj;
+    // TODO: TypeMirror.equals may be too restrictive.
+    // Check whether Types.isSameType is the better comparison.
+    return getOperand().equals(other.getOperand())
+        && types.isSameType(getRefType(), other.getRefType());
+  }
 
-    public Node getOperand() {
-        return operand;
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(InstanceOfNode.class, getOperand());
+  }
 
-    /** The reference type being tested against. */
-    public TypeMirror getRefType() {
-        return refType;
-    }
-
-    @Override
-    public InstanceOfTree getTree() {
-        return tree;
-    }
-
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitInstanceOf(this, p);
-    }
-
-    @Override
-    public String toString() {
-        return "(" + getOperand() + " instanceof " + TypesUtils.simpleTypeName(getRefType()) + ")";
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof InstanceOfNode)) {
-            return false;
-        }
-        InstanceOfNode other = (InstanceOfNode) obj;
-        // TODO: TypeMirror.equals may be too restrictive.
-        // Check whether Types.isSameType is the better comparison.
-        return getOperand().equals(other.getOperand())
-                && types.isSameType(getRefType(), other.getRefType());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(InstanceOfNode.class, getOperand());
-    }
-
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(getOperand());
-    }
+  @Override
+  public Collection<Node> getOperands() {
+    return Collections.singletonList(getOperand());
+  }
 }

@@ -13,32 +13,31 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  */
 public class SyntheticArrays {
 
-    /**
-     * Returns true if this combination of type/elem represents an array.clone.
-     *
-     * @param type a type with a method/field of elem
-     * @param elem an element which is a member of type
-     * @return true if this combination of type/elem represents an array.clone
-     */
-    public static boolean isArrayClone(final AnnotatedTypeMirror type, final Element elem) {
-        return type.getKind() == TypeKind.ARRAY
-                && elem.getKind() == ElementKind.METHOD
-                && elem.getSimpleName().contentEquals("clone");
-    }
+  /**
+   * Returns true if this combination of type/elem represents an array.clone.
+   *
+   * @param type a type with a method/field of elem
+   * @param elem an element which is a member of type
+   * @return true if this combination of type/elem represents an array.clone
+   */
+  public static boolean isArrayClone(final AnnotatedTypeMirror type, final Element elem) {
+    return type.getKind() == TypeKind.ARRAY
+        && elem.getKind() == ElementKind.METHOD
+        && elem.getSimpleName().contentEquals("clone");
+  }
 
-    /**
-     * Returns the annotated type of methodElem with its return type replaced by newReturnType.
-     *
-     * @param methodElem identifies a method that should have an AnnotatedArrayType as its return
-     *     type
-     * @param newReturnType identifies a type that should replace methodElem's return type
-     * @return the annotated type of methodElem with its return type replaced by newReturnType
-     */
-    public static AnnotatedExecutableType replaceReturnType(
-            final Element methodElem, final AnnotatedArrayType newReturnType) {
-        final AnnotatedExecutableType method =
-                (AnnotatedExecutableType) newReturnType.atypeFactory.getAnnotatedType(methodElem);
-        method.returnType = newReturnType;
-        return method;
-    }
+  /**
+   * Returns the annotated type of methodElem with its return type replaced by newReturnType.
+   *
+   * @param methodElem identifies a method that should have an AnnotatedArrayType as its return type
+   * @param newReturnType identifies a type that should replace methodElem's return type
+   * @return the annotated type of methodElem with its return type replaced by newReturnType
+   */
+  public static AnnotatedExecutableType replaceReturnType(
+      final Element methodElem, final AnnotatedArrayType newReturnType) {
+    final AnnotatedExecutableType method =
+        (AnnotatedExecutableType) newReturnType.atypeFactory.getAnnotatedType(methodElem);
+    method.returnType = newReturnType;
+    return method;
+  }
 }

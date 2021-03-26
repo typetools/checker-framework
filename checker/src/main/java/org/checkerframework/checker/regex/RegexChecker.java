@@ -16,12 +16,12 @@ import org.checkerframework.framework.qual.StubFiles;
  */
 @StubFiles("apache-xerces.astub")
 @RelevantJavaTypes({
-    CharSequence.class,
-    // javax.swing.text.Segment.class
-    char.class,
-    Character.class,
-    Pattern.class,
-    Matcher.class,
-    MatchResult.class
+  CharSequence.class,
+  // javax.swing.text.Segment.class
+  char.class,
+  Character.class,
+  Pattern.class,
+  Matcher.class,
+  MatchResult.class
 })
 public class RegexChecker extends BaseTypeChecker {}

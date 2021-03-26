@@ -7,21 +7,17 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class LockTest extends CheckerFrameworkPerDirectoryTest {
 
-    /**
-     * Create a LockTest.
-     *
-     * @param testFiles the files containing test code, which will be type-checked
-     */
-    public LockTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.checker.lock.LockChecker.class,
-                "lock",
-                "-Anomsgtext");
-    }
+  /**
+   * Create a LockTest.
+   *
+   * @param testFiles the files containing test code, which will be type-checked
+   */
+  public LockTest(List<File> testFiles) {
+    super(testFiles, org.checkerframework.checker.lock.LockChecker.class, "lock", "-Anomsgtext");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"lock", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"lock", "all-systems"};
+  }
 }

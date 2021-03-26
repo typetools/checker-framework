@@ -4,15 +4,15 @@ import org.checkerframework.framework.qual.HasQualifierParameter;
 @HasQualifierParameter(Tainted.class)
 public class InnerHasQualifierParameter {
 
-    @HasQualifierParameter(Tainted.class)
-    interface TestInterface {
-        public void testMethod();
-    }
+  @HasQualifierParameter(Tainted.class)
+  interface TestInterface {
+    public void testMethod();
+  }
 
-    public void test() {
-        TestInterface test =
-                new TestInterface() {
-                    public void testMethod() {}
-                };
-    }
+  public void test() {
+    TestInterface test =
+        new TestInterface() {
+          public void testMethod() {}
+        };
+  }
 }

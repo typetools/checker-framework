@@ -11,10 +11,10 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 public class EnumStubTest {
-    void test() {
-        requireEnum(SampleEnum.FIRST);
-        requireEnum(SampleEnum.SECOND);
-    }
+  void test() {
+    requireEnum(SampleEnum.FIRST);
+    requireEnum(SampleEnum.SECOND);
+  }
 
-    void requireEnum(@Untainted SampleEnum sEnum) {}
+  void requireEnum(@Untainted SampleEnum sEnum) {}
 }

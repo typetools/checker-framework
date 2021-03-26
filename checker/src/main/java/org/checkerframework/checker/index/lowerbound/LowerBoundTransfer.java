@@ -159,759 +159,748 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class LowerBoundTransfer extends IndexAbstractTransfer {
 
-    /** The canonical {@link GTENegativeOne} annotation. */
-    public final AnnotationMirror GTEN1;
-    /** The canonical {@link NonNegative} annotation. */
-    public final AnnotationMirror NN;
-    /** The canonical {@link Positive} annotation. */
-    public final AnnotationMirror POS;
-    /** The canonical {@link LowerBoundUnknown} annotation. */
-    public final AnnotationMirror UNKNOWN;
+  /** The canonical {@link GTENegativeOne} annotation. */
+  public final AnnotationMirror GTEN1;
+  /** The canonical {@link NonNegative} annotation. */
+  public final AnnotationMirror NN;
+  /** The canonical {@link Positive} annotation. */
+  public final AnnotationMirror POS;
+  /** The canonical {@link LowerBoundUnknown} annotation. */
+  public final AnnotationMirror UNKNOWN;
 
-    // The ATF (Annotated Type Factory).
-    private LowerBoundAnnotatedTypeFactory aTypeFactory;
+  // The ATF (Annotated Type Factory).
+  private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
-    public LowerBoundTransfer(CFAnalysis analysis) {
-        super(analysis);
-        aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
-        // Initialize qualifiers.
-        GTEN1 = aTypeFactory.GTEN1;
-        NN = aTypeFactory.NN;
-        POS = aTypeFactory.POS;
-        UNKNOWN = aTypeFactory.UNKNOWN;
+  public LowerBoundTransfer(CFAnalysis analysis) {
+    super(analysis);
+    aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+    // Initialize qualifiers.
+    GTEN1 = aTypeFactory.GTEN1;
+    NN = aTypeFactory.NN;
+    POS = aTypeFactory.POS;
+    UNKNOWN = aTypeFactory.UNKNOWN;
+  }
+
+  /**
+   * Refines GTEN1 to NN if it is not equal to -1, and NN to Pos if it is not equal to 0. Implements
+   * case 7.
+   *
+   * @param mLiteral a potential literal
+   * @param otherNode the node on the other side of the ==/!=
+   * @param otherAnno the annotation of the other side of the ==/!=
+   */
+  private void notEqualToValue(
+      Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
+
+    Long integerLiteral =
+        ValueCheckerUtils.getExactValue(
+            mLiteral.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+
+    if (integerLiteral == null) {
+      return;
+    }
+    long intLiteral = integerLiteral.longValue();
+
+    if (intLiteral == 0) {
+      if (aTypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
+        List<Node> internals = splitAssignments(otherNode);
+        for (Node internal : internals) {
+          JavaExpression je = JavaExpression.fromNode(internal);
+          store.insertValue(je, POS);
+        }
+      }
+    } else if (intLiteral == -1) {
+      if (aTypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
+        List<Node> internals = splitAssignments(otherNode);
+        for (Node internal : internals) {
+          JavaExpression je = JavaExpression.fromNode(internal);
+          store.insertValue(je, NN);
+        }
+      }
+    }
+  }
+
+  /**
+   * Implements the transfer rules for both equal nodes and not-equals nodes (i.e. cases 5, 6, 32).
+   */
+  @Override
+  protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
+      TransferResult<CFValue, CFStore> result,
+      Node firstNode,
+      Node secondNode,
+      CFValue firstValue,
+      CFValue secondValue,
+      boolean notEqualTo) {
+    result =
+        super.strengthenAnnotationOfEqualTo(
+            result, firstNode, secondNode, firstValue, secondValue, notEqualTo);
+
+    IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, secondNode, firstNode);
+    if (rfi.leftAnno == null || rfi.rightAnno == null) {
+      return result;
     }
 
-    /**
-     * Refines GTEN1 to NN if it is not equal to -1, and NN to Pos if it is not equal to 0.
-     * Implements case 7.
-     *
-     * @param mLiteral a potential literal
-     * @param otherNode the node on the other side of the ==/!=
-     * @param otherAnno the annotation of the other side of the ==/!=
+    // There is also special processing to look
+    // for literals on one side of the equals and a GTEN1 or NN on the other, so that
+    // those types can be promoted in the branch where their values are not equal to certain
+    // literals.
+    CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
+    notEqualToValue(rfi.left, rfi.right, rfi.rightAnno, notEqualsStore);
+    notEqualToValue(rfi.right, rfi.left, rfi.leftAnno, notEqualsStore);
+
+    notEqualsLessThan(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, notEqualsStore);
+    notEqualsLessThan(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, notEqualsStore);
+
+    return rfi.newResult;
+  }
+
+  /** Implements case 32. */
+  private void notEqualsLessThan(
+      Node leftNode,
+      AnnotationMirror leftAnno,
+      Node otherNode,
+      AnnotationMirror otherAnno,
+      CFStore store) {
+    if (!isNonNegative(leftAnno) || !isNonNegative(otherAnno)) {
+      return;
+    }
+    JavaExpression otherJe = JavaExpression.fromNode(otherNode);
+    if (aTypeFactory
+        .getLessThanAnnotatedTypeFactory()
+        .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
+      store.insertValue(otherJe, POS);
+    }
+  }
+
+  /**
+   * The implementation of the algorithm for refining a &gt; test. Changes the type of left (the
+   * greater one) to one closer to bottom than the type of right. Can't call the promote function
+   * from the ATF directly because a new expression isn't introduced here - the modifications have
+   * to be made to an existing one.
+   *
+   * <p>This implements parts of cases 1, 2, 3, and 4 using the decomposition strategy described in
+   * the Javadoc of this class.
+   */
+  @Override
+  protected void refineGT(
+      Node left,
+      AnnotationMirror leftAnno,
+      Node right,
+      AnnotationMirror rightAnno,
+      CFStore store,
+      TransferInput<CFValue, CFStore> in) {
+
+    if (rightAnno == null || leftAnno == null) {
+      return;
+    }
+
+    JavaExpression leftJe = JavaExpression.fromNode(left);
+
+    if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
+      store.insertValue(leftJe, NN);
+      return;
+    }
+    if (AnnotationUtils.areSame(rightAnno, NN)) {
+      store.insertValue(leftJe, POS);
+      return;
+    }
+    if (AnnotationUtils.areSame(rightAnno, POS)) {
+      store.insertValue(leftJe, POS);
+      return;
+    }
+  }
+
+  /**
+   * Refines left to exactly the level of right, since in the worst case they're equal. Modifies an
+   * existing type in the store, but has to be careful not to overwrite a more precise existing
+   * type.
+   *
+   * <p>This implements parts of cases 1, 2, 3, and 4 using the decomposition strategy described in
+   * this class's Javadoc.
+   */
+  @Override
+  protected void refineGTE(
+      Node left,
+      AnnotationMirror leftAnno,
+      Node right,
+      AnnotationMirror rightAnno,
+      CFStore store,
+      TransferInput<CFValue, CFStore> in) {
+
+    if (rightAnno == null || leftAnno == null) {
+      return;
+    }
+
+    JavaExpression leftJe = JavaExpression.fromNode(left);
+
+    AnnotationMirror newLBType =
+        aTypeFactory.getQualifierHierarchy().greatestLowerBound(rightAnno, leftAnno);
+
+    store.insertValue(leftJe, newLBType);
+  }
+
+  /**
+   * Returns an annotation mirror representing the result of subtracting one from {@code oldAnm}.
+   */
+  private AnnotationMirror anmAfterSubtractingOne(AnnotationMirror oldAnm) {
+    if (isPositive(oldAnm)) {
+      return NN;
+    } else if (isNonNegative(oldAnm)) {
+      return GTEN1;
+    } else {
+      return UNKNOWN;
+    }
+  }
+
+  /** Returns an annotation mirror representing the result of adding one to {@code oldAnm}. */
+  private AnnotationMirror anmAfterAddingOne(AnnotationMirror oldAnm) {
+    if (isNonNegative(oldAnm)) {
+      return POS;
+    } else if (isGTEN1(oldAnm)) {
+      return NN;
+    } else {
+      return UNKNOWN;
+    }
+  }
+
+  /**
+   * Helper method for getAnnotationForPlus. Handles addition of constants (cases 8 and 9).
+   *
+   * @param val the integer value of the constant
+   * @param nonLiteralType the type of the side of the expression that isn't a constant
+   */
+  private AnnotationMirror getAnnotationForLiteralPlus(int val, AnnotationMirror nonLiteralType) {
+    if (val == -2) {
+      if (isPositive(nonLiteralType)) {
+        return GTEN1;
+      }
+    } else if (val == -1) {
+      return anmAfterSubtractingOne(nonLiteralType);
+    } else if (val == 0) {
+      return nonLiteralType;
+    } else if (val == 1) {
+      return anmAfterAddingOne(nonLiteralType);
+    } else if (val >= 2) {
+      if (isGTEN1(nonLiteralType)) {
+        // 2 + a positive, or a non-negative, or a non-negative-1 is a positive
+        return POS;
+      }
+    }
+    return UNKNOWN;
+  }
+
+  /**
+   * getAnnotationForPlus handles the following cases (cases 10-12 above):
+   *
+   * <pre>
+   *      8. lit -2 + pos &rarr; gte-1
+   *      lit -1 + * &rarr; call demote
+   *      lit 0 + * &rarr; *
+   *      lit 1 + * &rarr; call promote
+   *      9. lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
+   *      let all other lits, including sets, fall through:
+   *      10. pos + pos &rarr; pos
+   *      11. nn + * &rarr; *
+   *      12. pos + gte-1 &rarr; nn
+   *      * + * &rarr; lbu
+   *  </pre>
+   */
+  private AnnotationMirror getAnnotationForPlus(
+      BinaryOperationNode binaryOpNode, TransferInput<CFValue, CFStore> p) {
+
+    Node leftExprNode = binaryOpNode.getLeftOperand();
+    Node rightExprNode = binaryOpNode.getRightOperand();
+
+    AnnotationMirror leftAnno = getLowerBoundAnnotation(leftExprNode, p);
+
+    // Check if the right side's value is known at compile time.
+    Long valRight =
+        ValueCheckerUtils.getExactValue(
+            rightExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valRight != null) {
+      return getAnnotationForLiteralPlus(valRight.intValue(), leftAnno);
+    }
+
+    AnnotationMirror rightAnno = getLowerBoundAnnotation(rightExprNode, p);
+
+    // Check if the left side's value is known at compile time.
+    Long valLeft =
+        ValueCheckerUtils.getExactValue(
+            leftExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valLeft != null) {
+      return getAnnotationForLiteralPlus(valLeft.intValue(), rightAnno);
+    }
+
+    /* This section is handling the generic cases:
+     *      pos + pos -> pos
+     *      nn + * -> *
+     *      pos + gte-1 -> nn
      */
-    private void notEqualToValue(
-            Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
-
-        Long integerLiteral =
-                ValueCheckerUtils.getExactValue(
-                        mLiteral.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
-
-        if (integerLiteral == null) {
-            return;
-        }
-        long intLiteral = integerLiteral.longValue();
-
-        if (intLiteral == 0) {
-            if (aTypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
-                List<Node> internals = splitAssignments(otherNode);
-                for (Node internal : internals) {
-                    JavaExpression je = JavaExpression.fromNode(internal);
-                    store.insertValue(je, POS);
-                }
-            }
-        } else if (intLiteral == -1) {
-            if (aTypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
-                List<Node> internals = splitAssignments(otherNode);
-                for (Node internal : internals) {
-                    JavaExpression je = JavaExpression.fromNode(internal);
-                    store.insertValue(je, NN);
-                }
-            }
-        }
+    if (aTypeFactory.areSameByClass(leftAnno, Positive.class)
+        && aTypeFactory.areSameByClass(rightAnno, Positive.class)) {
+      return POS;
     }
 
-    /**
-     * Implements the transfer rules for both equal nodes and not-equals nodes (i.e. cases 5, 6,
-     * 32).
+    if (aTypeFactory.areSameByClass(leftAnno, NonNegative.class)) {
+      return rightAnno;
+    }
+
+    if (aTypeFactory.areSameByClass(rightAnno, NonNegative.class)) {
+      return leftAnno;
+    }
+
+    if ((isPositive(leftAnno) && isGTEN1(rightAnno))
+        || (isGTEN1(leftAnno) && isPositive(rightAnno))) {
+      return NN;
+    }
+    return UNKNOWN;
+  }
+
+  /**
+   * getAnnotationForMinus handles the following cases:
+   *
+   * <pre>
+   *      * - lit &rarr; call plus(*, -1 * the value of the lit)
+   *      * - * &rarr; lbu
+   *      13. if the LessThan type checker can establish that the left side of the expression is &gt; the right side,
+   *      returns POS.
+   *      14. if the LessThan type checker can establish that the left side of the expression is &ge; the right side,
+   *      returns NN.
+   *      15. special handling for when the left side is the length of an array or String that's stored as a field,
+   *      and the right side is a compile time constant. Do we need this?
+   *  </pre>
+   */
+  private AnnotationMirror getAnnotationForMinus(
+      BinaryOperationNode minusNode, TransferInput<CFValue, CFStore> p) {
+
+    // Check if the right side's value is known at compile time.
+    Long valRight =
+        ValueCheckerUtils.getExactValue(
+            minusNode.getRightOperand().getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valRight != null) {
+      AnnotationMirror leftAnno = getLowerBoundAnnotation(minusNode.getLeftOperand(), p);
+      // Instead of a separate method for subtraction, add the negative of a constant.
+      AnnotationMirror result = getAnnotationForLiteralPlus(-1 * valRight.intValue(), leftAnno);
+
+      Tree leftExpr = minusNode.getLeftOperand().getTree();
+      Integer minLen = null;
+      // Check if the left side is a field access of an array's length,
+      // or invocation of String.length. If so,
+      // try to look up the MinLen of the array, and potentially keep
+      // this either NN or POS instead of GTEN1 or LBU.
+      if (leftExpr.getKind() == Tree.Kind.MEMBER_SELECT) {
+        MemberSelectTree mstree = (MemberSelectTree) leftExpr;
+        minLen = aTypeFactory.getMinLenFromMemberSelectTree(mstree);
+      } else if (leftExpr.getKind() == Tree.Kind.METHOD_INVOCATION) {
+        MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
+        minLen = aTypeFactory.getMinLenFromMethodInvocationTree(mitree);
+      }
+
+      if (minLen != null) {
+        result = aTypeFactory.anmFromVal(minLen - valRight);
+      }
+      return result;
+    }
+
+    OffsetEquation leftExpression =
+        OffsetEquation.createOffsetFromNode(minusNode.getLeftOperand(), aTypeFactory, '+');
+    if (leftExpression != null) {
+      if (aTypeFactory
+          .getLessThanAnnotatedTypeFactory()
+          .isLessThan(minusNode.getRightOperand().getTree(), leftExpression.toString())) {
+        return POS;
+      }
+
+      if (aTypeFactory
+          .getLessThanAnnotatedTypeFactory()
+          .isLessThanOrEqual(minusNode.getRightOperand().getTree(), leftExpression.toString())) {
+        return NN;
+      }
+    }
+
+    // The checker can't reason about arbitrary (i.e. non-literal)
+    // things that are being subtracted, so it gives up.
+    return UNKNOWN;
+  }
+
+  /**
+   * Helper function for getAnnotationForMultiply. Handles compile-time known constants.
+   *
+   * @param val the integer value of the constant
+   * @param nonLiteralType the type of the side of the expression that isn't a constant
+   */
+  private AnnotationMirror getAnnotationForLiteralMultiply(
+      int val, AnnotationMirror nonLiteralType) {
+    if (val == 0) {
+      return NN;
+    } else if (val == 1) {
+      return nonLiteralType;
+    } else if (val > 1) {
+      if (isNonNegative(nonLiteralType)) {
+        return nonLiteralType;
+      }
+    }
+    return UNKNOWN;
+  }
+
+  /**
+   * getAnnotationForMultiply handles the following cases:
+   *
+   * <pre>
+   *        * * lit 0 &rarr; nn (=0)
+   *        16. * * lit 1 &rarr; *
+   *        17. pos * pos &rarr; pos
+   *        18. pos * nn &rarr; nn
+   *        19. nn * nn &rarr; nn
+   *        * * * &rarr; lbu
+   *  </pre>
+   *
+   * Also handles a special case involving Math.random (case 20).
+   */
+  private AnnotationMirror getAnnotationForMultiply(
+      NumericalMultiplicationNode node, TransferInput<CFValue, CFStore> p) {
+
+    // Special handling for multiplying an array length by a Math.random().
+    AnnotationMirror randomSpecialCaseResult = aTypeFactory.checkForMathRandomSpecialCase(node);
+    if (randomSpecialCaseResult != null) {
+      return randomSpecialCaseResult;
+    }
+
+    AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
+
+    // Check if the right side's value is known at compile time.
+    Long valRight =
+        ValueCheckerUtils.getExactValue(
+            node.getRightOperand().getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valRight != null) {
+      return getAnnotationForLiteralMultiply(valRight.intValue(), leftAnno);
+    }
+
+    AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
+    // Check if the left side's value is known at compile time.
+    Long valLeft =
+        ValueCheckerUtils.getExactValue(
+            node.getLeftOperand().getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valLeft != null) {
+      return getAnnotationForLiteralMultiply(valLeft.intValue(), rightAnno);
+    }
+
+    /* This section handles generic annotations:
+     *   pos * pos -> pos
+     *   nn * pos -> nn (elided, since positives are also non-negative)
+     *   nn * nn -> nn
      */
-    @Override
-    protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
-            TransferResult<CFValue, CFStore> result,
-            Node firstNode,
-            Node secondNode,
-            CFValue firstValue,
-            CFValue secondValue,
-            boolean notEqualTo) {
-        result =
-                super.strengthenAnnotationOfEqualTo(
-                        result, firstNode, secondNode, firstValue, secondValue, notEqualTo);
+    if (isPositive(leftAnno) && isPositive(rightAnno)) {
+      return POS;
+    }
+    if (isNonNegative(leftAnno) && isNonNegative(rightAnno)) {
+      return NN;
+    }
+    return UNKNOWN;
+  }
 
-        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, secondNode, firstNode);
-        if (rfi.leftAnno == null || rfi.rightAnno == null) {
-            return result;
-        }
+  /** When the value on the left is known at compile time. */
+  private AnnotationMirror addAnnotationForLiteralDivideLeft(int val, AnnotationMirror rightAnno) {
+    if (val == 0) {
+      return NN;
+    } else if (val == 1) {
+      if (isNonNegative(rightAnno)) {
+        return NN;
+      } else {
+        // (1 / x) can't be outside the range [-1, 1] when x is an integer.
+        return GTEN1;
+      }
+    }
+    return UNKNOWN;
+  }
 
-        // There is also special processing to look
-        // for literals on one side of the equals and a GTEN1 or NN on the other, so that
-        // those types can be promoted in the branch where their values are not equal to certain
-        // literals.
-        CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
-        notEqualToValue(rfi.left, rfi.right, rfi.rightAnno, notEqualsStore);
-        notEqualToValue(rfi.right, rfi.left, rfi.leftAnno, notEqualsStore);
+  /** When the value on the right is known at compile time. */
+  private AnnotationMirror addAnnotationForLiteralDivideRight(int val, AnnotationMirror leftAnno) {
+    if (val == 0) {
+      // Reaching this indicates a divide by zero error. If the value is zero, then this is
+      // division by zero. Division by zero is treated as bottom so that users aren't warned
+      // about dead code that's dividing by zero. This code assumes that non-dead code won't
+      // include literal divide by zeros...
+      return aTypeFactory.BOTTOM;
+    } else if (val == 1) {
+      return leftAnno;
+    } else if (val >= 2) {
+      if (isNonNegative(leftAnno)) {
+        return NN;
+      }
+    }
+    return UNKNOWN;
+  }
 
-        notEqualsLessThan(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, notEqualsStore);
-        notEqualsLessThan(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, notEqualsStore);
+  /**
+   * getAnnotationForDivide handles the following cases (21-26).
+   *
+   * <pre>
+   *      lit 0 / * &rarr; nn (=0)
+   *      * / lit 0 &rarr; pos
+   *      lit 1 / {pos, nn} &rarr; nn
+   *      lit 1 / * &rarr; gten1
+   *      * / lit 1 &rarr; *
+   *      {pos, nn} / lit &gt;1 &rarr; nn
+   *      pos / {pos, nn} &rarr; nn (can round to zero)
+   *      * / {pos, nn} &rarr; *
+   *      * / * &rarr; lbu
+   *  </pre>
+   */
+  private AnnotationMirror getAnnotationForDivide(
+      IntegerDivisionNode node, TransferInput<CFValue, CFStore> p) {
 
-        return rfi.newResult;
+    AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
+
+    // Check if the right side's value is known at compile time.
+    Long valRight =
+        ValueCheckerUtils.getExactValue(
+            node.getRightOperand().getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valRight != null) {
+      return addAnnotationForLiteralDivideRight(valRight.intValue(), leftAnno);
     }
 
-    /** Implements case 32. */
-    private void notEqualsLessThan(
-            Node leftNode,
-            AnnotationMirror leftAnno,
-            Node otherNode,
-            AnnotationMirror otherAnno,
-            CFStore store) {
-        if (!isNonNegative(leftAnno) || !isNonNegative(otherAnno)) {
-            return;
-        }
-        JavaExpression otherJe = JavaExpression.fromNode(otherNode);
-        if (aTypeFactory
-                .getLessThanAnnotatedTypeFactory()
-                .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
-            store.insertValue(otherJe, POS);
-        }
+    AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
+
+    // Check if the left side's value is known at compile time.
+    Long valLeft =
+        ValueCheckerUtils.getExactValue(
+            node.getLeftOperand().getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valLeft != null) {
+      return addAnnotationForLiteralDivideLeft(valLeft.intValue(), leftAnno);
     }
 
-    /**
-     * The implementation of the algorithm for refining a &gt; test. Changes the type of left (the
-     * greater one) to one closer to bottom than the type of right. Can't call the promote function
-     * from the ATF directly because a new expression isn't introduced here - the modifications have
-     * to be made to an existing one.
-     *
-     * <p>This implements parts of cases 1, 2, 3, and 4 using the decomposition strategy described
-     * in the Javadoc of this class.
+    /* This section handles generic annotations:
+     *    pos / {pos, nn} -> nn (can round to zero)
+     *    * / {pos, nn} -> *
      */
-    @Override
-    protected void refineGT(
-            Node left,
-            AnnotationMirror leftAnno,
-            Node right,
-            AnnotationMirror rightAnno,
-            CFStore store,
-            TransferInput<CFValue, CFStore> in) {
+    if (isPositive(leftAnno) && isNonNegative(rightAnno)) {
+      return NN;
+    }
+    if (isNonNegative(rightAnno)) {
+      return leftAnno;
+    }
+    // Everything else is unknown.
+    return UNKNOWN;
+  }
 
-        if (rightAnno == null || leftAnno == null) {
-            return;
-        }
+  /** A remainder with 1 or -1 as the divisor always results in zero. */
+  private AnnotationMirror addAnnotationForLiteralRemainder(int val) {
+    if (val == 1 || val == -1) {
+      return NN;
+    }
+    return UNKNOWN;
+  }
 
-        JavaExpression leftJe = JavaExpression.fromNode(left);
+  /** Adds a default NonNegative annotation to every character. Implements case 33. */
+  @Override
+  protected void addInformationFromPreconditions(
+      CFStore info,
+      AnnotatedTypeFactory factory,
+      UnderlyingAST.CFGMethod method,
+      MethodTree methodTree,
+      ExecutableElement methodElement) {
+    super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);
 
-        if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
-            store.insertValue(leftJe, NN);
-            return;
-        }
-        if (AnnotationUtils.areSame(rightAnno, NN)) {
-            store.insertValue(leftJe, POS);
-            return;
-        }
-        if (AnnotationUtils.areSame(rightAnno, POS)) {
-            store.insertValue(leftJe, POS);
-            return;
-        }
+    List<? extends VariableTree> paramTrees = methodTree.getParameters();
+
+    for (VariableTree variableTree : paramTrees) {
+      if (TreeUtils.typeOf(variableTree).getKind() == TypeKind.CHAR) {
+        JavaExpression je = JavaExpression.fromVariableTree(variableTree);
+        info.insertValuePermitNondeterministic(je, aTypeFactory.NN);
+      }
+    }
+  }
+
+  /**
+   * getAnnotationForRemainder handles these cases:
+   *
+   * <pre>
+   *      27. * % 1/-1 &rarr; nn
+   *      28. pos/nn % * &rarr; nn
+   *      29. gten1 % * &rarr; gten1
+   *      * % * &rarr; lbu
+   * </pre>
+   */
+  public AnnotationMirror getAnnotationForRemainder(
+      IntegerRemainderNode node, TransferInput<CFValue, CFStore> p) {
+
+    AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
+
+    // Check if the right side's value is known at compile time.
+    Long valRight =
+        ValueCheckerUtils.getExactValue(
+            node.getRightOperand().getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+    if (valRight != null) {
+      return addAnnotationForLiteralRemainder(valRight.intValue());
     }
 
-    /**
-     * Refines left to exactly the level of right, since in the worst case they're equal. Modifies
-     * an existing type in the store, but has to be careful not to overwrite a more precise existing
-     * type.
-     *
-     * <p>This implements parts of cases 1, 2, 3, and 4 using the decomposition strategy described
-     * in this class's Javadoc.
-     */
-    @Override
-    protected void refineGTE(
-            Node left,
-            AnnotationMirror leftAnno,
-            Node right,
-            AnnotationMirror rightAnno,
-            CFStore store,
-            TransferInput<CFValue, CFStore> in) {
-
-        if (rightAnno == null || leftAnno == null) {
-            return;
-        }
-
-        JavaExpression leftJe = JavaExpression.fromNode(left);
-
-        AnnotationMirror newLBType =
-                aTypeFactory.getQualifierHierarchy().greatestLowerBound(rightAnno, leftAnno);
-
-        store.insertValue(leftJe, newLBType);
+    /* This section handles generic annotations:
+          pos/nn % * -> nn
+          gten1 % * -> gten1
+    */
+    if (isNonNegative(leftAnno)) {
+      return NN;
+    }
+    if (isGTEN1(leftAnno)) {
+      return GTEN1;
     }
 
-    /**
-     * Returns an annotation mirror representing the result of subtracting one from {@code oldAnm}.
-     */
-    private AnnotationMirror anmAfterSubtractingOne(AnnotationMirror oldAnm) {
-        if (isPositive(oldAnm)) {
-            return NN;
-        } else if (isNonNegative(oldAnm)) {
-            return GTEN1;
-        } else {
-            return UNKNOWN;
-        }
+    // Everything else is unknown.
+    return UNKNOWN;
+  }
+
+  /** Handles shifts (case 30). * &gt;&gt; NonNegative &rarr; NonNegative */
+  private AnnotationMirror getAnnotationForRightShift(
+      BinaryOperationNode node, TransferInput<CFValue, CFStore> p) {
+    AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
+    AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
+
+    if (isNonNegative(leftAnno)) {
+      if (isNonNegative(rightAnno)) {
+        return NN;
+      }
+    }
+    return UNKNOWN;
+  }
+
+  /**
+   * Handles masking (case 31). Particularly, handles the following cases: * &amp; NonNegative
+   * &rarr; NonNegative
+   */
+  private AnnotationMirror getAnnotationForAnd(
+      BitwiseAndNode node, TransferInput<CFValue, CFStore> p) {
+
+    AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
+    if (isNonNegative(rightAnno)) {
+      return NN;
     }
 
-    /** Returns an annotation mirror representing the result of adding one to {@code oldAnm}. */
-    private AnnotationMirror anmAfterAddingOne(AnnotationMirror oldAnm) {
-        if (isNonNegative(oldAnm)) {
-            return POS;
-        } else if (isGTEN1(oldAnm)) {
-            return NN;
-        } else {
-            return UNKNOWN;
-        }
+    AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
+    if (isNonNegative(leftAnno)) {
+      return NN;
     }
+    return UNKNOWN;
+  }
 
-    /**
-     * Helper method for getAnnotationForPlus. Handles addition of constants (cases 8 and 9).
-     *
-     * @param val the integer value of the constant
-     * @param nonLiteralType the type of the side of the expression that isn't a constant
-     */
-    private AnnotationMirror getAnnotationForLiteralPlus(int val, AnnotationMirror nonLiteralType) {
-        if (val == -2) {
-            if (isPositive(nonLiteralType)) {
-                return GTEN1;
-            }
-        } else if (val == -1) {
-            return anmAfterSubtractingOne(nonLiteralType);
-        } else if (val == 0) {
-            return nonLiteralType;
-        } else if (val == 1) {
-            return anmAfterAddingOne(nonLiteralType);
-        } else if (val >= 2) {
-            if (isGTEN1(nonLiteralType)) {
-                // 2 + a positive, or a non-negative, or a non-negative-1 is a positive
-                return POS;
-            }
-        }
-        return UNKNOWN;
-    }
+  /**
+   * Returns true if the argument is the @Positive type annotation.
+   *
+   * @param anm the annotation to test
+   * @return true if the the argument is the @Positive type annotation
+   */
+  private boolean isPositive(AnnotationMirror anm) {
+    return aTypeFactory.areSameByClass(anm, Positive.class);
+  }
 
-    /**
-     * getAnnotationForPlus handles the following cases (cases 10-12 above):
-     *
-     * <pre>
-     *      8. lit -2 + pos &rarr; gte-1
-     *      lit -1 + * &rarr; call demote
-     *      lit 0 + * &rarr; *
-     *      lit 1 + * &rarr; call promote
-     *      9. lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
-     *      let all other lits, including sets, fall through:
-     *      10. pos + pos &rarr; pos
-     *      11. nn + * &rarr; *
-     *      12. pos + gte-1 &rarr; nn
-     *      * + * &rarr; lbu
-     *  </pre>
-     */
-    private AnnotationMirror getAnnotationForPlus(
-            BinaryOperationNode binaryOpNode, TransferInput<CFValue, CFStore> p) {
+  /**
+   * Returns true if the argument is the @NonNegative type annotation (or a stronger one).
+   *
+   * @param anm the annotation to test
+   * @return true if the the argument is the @NonNegative type annotation
+   */
+  private boolean isNonNegative(AnnotationMirror anm) {
+    return aTypeFactory.areSameByClass(anm, NonNegative.class) || isPositive(anm);
+  }
 
-        Node leftExprNode = binaryOpNode.getLeftOperand();
-        Node rightExprNode = binaryOpNode.getRightOperand();
+  /**
+   * Returns true if the argument is the @GTENegativeOne type annotation (or a stronger one).
+   *
+   * @param anm the annotation to test
+   * @return true if the the argument is the @GTENegativeOne type annotation
+   */
+  private boolean isGTEN1(AnnotationMirror anm) {
+    return aTypeFactory.areSameByClass(anm, GTENegativeOne.class) || isNonNegative(anm);
+  }
 
-        AnnotationMirror leftAnno = getLowerBoundAnnotation(leftExprNode, p);
+  private AnnotationMirror getLowerBoundAnnotation(
+      Node subNode, TransferInput<CFValue, CFStore> p) {
+    CFValue value = p.getValueOfSubNode(subNode);
+    return getLowerBoundAnnotation(value);
+  }
 
-        // Check if the right side's value is known at compile time.
-        Long valRight =
-                ValueCheckerUtils.getExactValue(
-                        rightExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valRight != null) {
-            return getAnnotationForLiteralPlus(valRight.intValue(), leftAnno);
-        }
+  private AnnotationMirror getLowerBoundAnnotation(CFValue cfValue) {
+    return aTypeFactory
+        .getQualifierHierarchy()
+        .findAnnotationInHierarchy(cfValue.getAnnotations(), aTypeFactory.UNKNOWN);
+  }
 
-        AnnotationMirror rightAnno = getLowerBoundAnnotation(rightExprNode, p);
+  @Override
+  public TransferResult<CFValue, CFStore> visitNumericalAddition(
+      NumericalAdditionNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> result = super.visitNumericalAddition(n, p);
+    AnnotationMirror newAnno = getAnnotationForPlus(n, p);
+    return createNewResult(result, newAnno);
+  }
 
-        // Check if the left side's value is known at compile time.
-        Long valLeft =
-                ValueCheckerUtils.getExactValue(
-                        leftExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valLeft != null) {
-            return getAnnotationForLiteralPlus(valLeft.intValue(), rightAnno);
-        }
+  @Override
+  public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
+      NumericalSubtractionNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> result = super.visitNumericalSubtraction(n, p);
+    AnnotationMirror newAnno = getAnnotationForMinus(n, p);
+    return createNewResult(result, newAnno);
+  }
 
-        /* This section is handling the generic cases:
-         *      pos + pos -> pos
-         *      nn + * -> *
-         *      pos + gte-1 -> nn
-         */
-        if (aTypeFactory.areSameByClass(leftAnno, Positive.class)
-                && aTypeFactory.areSameByClass(rightAnno, Positive.class)) {
-            return POS;
-        }
+  @Override
+  public TransferResult<CFValue, CFStore> visitNumericalMultiplication(
+      NumericalMultiplicationNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> result = super.visitNumericalMultiplication(n, p);
+    AnnotationMirror newAnno = getAnnotationForMultiply(n, p);
+    return createNewResult(result, newAnno);
+  }
 
-        if (aTypeFactory.areSameByClass(leftAnno, NonNegative.class)) {
-            return rightAnno;
-        }
+  @Override
+  public TransferResult<CFValue, CFStore> visitIntegerDivision(
+      IntegerDivisionNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> result = super.visitIntegerDivision(n, p);
+    AnnotationMirror newAnno = getAnnotationForDivide(n, p);
+    return createNewResult(result, newAnno);
+  }
 
-        if (aTypeFactory.areSameByClass(rightAnno, NonNegative.class)) {
-            return leftAnno;
-        }
+  @Override
+  public TransferResult<CFValue, CFStore> visitIntegerRemainder(
+      IntegerRemainderNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> transferResult = super.visitIntegerRemainder(n, p);
+    AnnotationMirror resultAnno = getAnnotationForRemainder(n, p);
+    return createNewResult(transferResult, resultAnno);
+  }
 
-        if ((isPositive(leftAnno) && isGTEN1(rightAnno))
-                || (isGTEN1(leftAnno) && isPositive(rightAnno))) {
-            return NN;
-        }
-        return UNKNOWN;
-    }
+  @Override
+  public TransferResult<CFValue, CFStore> visitSignedRightShift(
+      SignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> transferResult = super.visitSignedRightShift(n, p);
+    AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
+    return createNewResult(transferResult, resultAnno);
+  }
 
-    /**
-     * getAnnotationForMinus handles the following cases:
-     *
-     * <pre>
-     *      * - lit &rarr; call plus(*, -1 * the value of the lit)
-     *      * - * &rarr; lbu
-     *      13. if the LessThan type checker can establish that the left side of the expression is &gt; the right side,
-     *      returns POS.
-     *      14. if the LessThan type checker can establish that the left side of the expression is &ge; the right side,
-     *      returns NN.
-     *      15. special handling for when the left side is the length of an array or String that's stored as a field,
-     *      and the right side is a compile time constant. Do we need this?
-     *  </pre>
-     */
-    private AnnotationMirror getAnnotationForMinus(
-            BinaryOperationNode minusNode, TransferInput<CFValue, CFStore> p) {
+  @Override
+  public TransferResult<CFValue, CFStore> visitUnsignedRightShift(
+      UnsignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> transferResult = super.visitUnsignedRightShift(n, p);
+    AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
+    return createNewResult(transferResult, resultAnno);
+  }
 
-        // Check if the right side's value is known at compile time.
-        Long valRight =
-                ValueCheckerUtils.getExactValue(
-                        minusNode.getRightOperand().getTree(),
-                        aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valRight != null) {
-            AnnotationMirror leftAnno = getLowerBoundAnnotation(minusNode.getLeftOperand(), p);
-            // Instead of a separate method for subtraction, add the negative of a constant.
-            AnnotationMirror result =
-                    getAnnotationForLiteralPlus(-1 * valRight.intValue(), leftAnno);
+  @Override
+  public TransferResult<CFValue, CFStore> visitBitwiseAnd(
+      BitwiseAndNode n, TransferInput<CFValue, CFStore> p) {
+    TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseAnd(n, p);
+    AnnotationMirror resultAnno = getAnnotationForAnd(n, p);
+    return createNewResult(transferResult, resultAnno);
+  }
 
-            Tree leftExpr = minusNode.getLeftOperand().getTree();
-            Integer minLen = null;
-            // Check if the left side is a field access of an array's length,
-            // or invocation of String.length. If so,
-            // try to look up the MinLen of the array, and potentially keep
-            // this either NN or POS instead of GTEN1 or LBU.
-            if (leftExpr.getKind() == Tree.Kind.MEMBER_SELECT) {
-                MemberSelectTree mstree = (MemberSelectTree) leftExpr;
-                minLen = aTypeFactory.getMinLenFromMemberSelectTree(mstree);
-            } else if (leftExpr.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
-                minLen = aTypeFactory.getMinLenFromMethodInvocationTree(mitree);
-            }
-
-            if (minLen != null) {
-                result = aTypeFactory.anmFromVal(minLen - valRight);
-            }
-            return result;
-        }
-
-        OffsetEquation leftExpression =
-                OffsetEquation.createOffsetFromNode(minusNode.getLeftOperand(), aTypeFactory, '+');
-        if (leftExpression != null) {
-            if (aTypeFactory
-                    .getLessThanAnnotatedTypeFactory()
-                    .isLessThan(minusNode.getRightOperand().getTree(), leftExpression.toString())) {
-                return POS;
-            }
-
-            if (aTypeFactory
-                    .getLessThanAnnotatedTypeFactory()
-                    .isLessThanOrEqual(
-                            minusNode.getRightOperand().getTree(), leftExpression.toString())) {
-                return NN;
-            }
-        }
-
-        // The checker can't reason about arbitrary (i.e. non-literal)
-        // things that are being subtracted, so it gives up.
-        return UNKNOWN;
-    }
-
-    /**
-     * Helper function for getAnnotationForMultiply. Handles compile-time known constants.
-     *
-     * @param val the integer value of the constant
-     * @param nonLiteralType the type of the side of the expression that isn't a constant
-     */
-    private AnnotationMirror getAnnotationForLiteralMultiply(
-            int val, AnnotationMirror nonLiteralType) {
-        if (val == 0) {
-            return NN;
-        } else if (val == 1) {
-            return nonLiteralType;
-        } else if (val > 1) {
-            if (isNonNegative(nonLiteralType)) {
-                return nonLiteralType;
-            }
-        }
-        return UNKNOWN;
-    }
-
-    /**
-     * getAnnotationForMultiply handles the following cases:
-     *
-     * <pre>
-     *        * * lit 0 &rarr; nn (=0)
-     *        16. * * lit 1 &rarr; *
-     *        17. pos * pos &rarr; pos
-     *        18. pos * nn &rarr; nn
-     *        19. nn * nn &rarr; nn
-     *        * * * &rarr; lbu
-     *  </pre>
-     *
-     * Also handles a special case involving Math.random (case 20).
-     */
-    private AnnotationMirror getAnnotationForMultiply(
-            NumericalMultiplicationNode node, TransferInput<CFValue, CFStore> p) {
-
-        // Special handling for multiplying an array length by a Math.random().
-        AnnotationMirror randomSpecialCaseResult = aTypeFactory.checkForMathRandomSpecialCase(node);
-        if (randomSpecialCaseResult != null) {
-            return randomSpecialCaseResult;
-        }
-
-        AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
-
-        // Check if the right side's value is known at compile time.
-        Long valRight =
-                ValueCheckerUtils.getExactValue(
-                        node.getRightOperand().getTree(),
-                        aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valRight != null) {
-            return getAnnotationForLiteralMultiply(valRight.intValue(), leftAnno);
-        }
-
-        AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
-        // Check if the left side's value is known at compile time.
-        Long valLeft =
-                ValueCheckerUtils.getExactValue(
-                        node.getLeftOperand().getTree(),
-                        aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valLeft != null) {
-            return getAnnotationForLiteralMultiply(valLeft.intValue(), rightAnno);
-        }
-
-        /* This section handles generic annotations:
-         *   pos * pos -> pos
-         *   nn * pos -> nn (elided, since positives are also non-negative)
-         *   nn * nn -> nn
-         */
-        if (isPositive(leftAnno) && isPositive(rightAnno)) {
-            return POS;
-        }
-        if (isNonNegative(leftAnno) && isNonNegative(rightAnno)) {
-            return NN;
-        }
-        return UNKNOWN;
-    }
-
-    /** When the value on the left is known at compile time. */
-    private AnnotationMirror addAnnotationForLiteralDivideLeft(
-            int val, AnnotationMirror rightAnno) {
-        if (val == 0) {
-            return NN;
-        } else if (val == 1) {
-            if (isNonNegative(rightAnno)) {
-                return NN;
-            } else {
-                // (1 / x) can't be outside the range [-1, 1] when x is an integer.
-                return GTEN1;
-            }
-        }
-        return UNKNOWN;
-    }
-
-    /** When the value on the right is known at compile time. */
-    private AnnotationMirror addAnnotationForLiteralDivideRight(
-            int val, AnnotationMirror leftAnno) {
-        if (val == 0) {
-            // Reaching this indicates a divide by zero error. If the value is zero, then this is
-            // division by zero. Division by zero is treated as bottom so that users aren't warned
-            // about dead code that's dividing by zero. This code assumes that non-dead code won't
-            // include literal divide by zeros...
-            return aTypeFactory.BOTTOM;
-        } else if (val == 1) {
-            return leftAnno;
-        } else if (val >= 2) {
-            if (isNonNegative(leftAnno)) {
-                return NN;
-            }
-        }
-        return UNKNOWN;
-    }
-
-    /**
-     * getAnnotationForDivide handles the following cases (21-26).
-     *
-     * <pre>
-     *      lit 0 / * &rarr; nn (=0)
-     *      * / lit 0 &rarr; pos
-     *      lit 1 / {pos, nn} &rarr; nn
-     *      lit 1 / * &rarr; gten1
-     *      * / lit 1 &rarr; *
-     *      {pos, nn} / lit &gt;1 &rarr; nn
-     *      pos / {pos, nn} &rarr; nn (can round to zero)
-     *      * / {pos, nn} &rarr; *
-     *      * / * &rarr; lbu
-     *  </pre>
-     */
-    private AnnotationMirror getAnnotationForDivide(
-            IntegerDivisionNode node, TransferInput<CFValue, CFStore> p) {
-
-        AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
-
-        // Check if the right side's value is known at compile time.
-        Long valRight =
-                ValueCheckerUtils.getExactValue(
-                        node.getRightOperand().getTree(),
-                        aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valRight != null) {
-            return addAnnotationForLiteralDivideRight(valRight.intValue(), leftAnno);
-        }
-
-        AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
-
-        // Check if the left side's value is known at compile time.
-        Long valLeft =
-                ValueCheckerUtils.getExactValue(
-                        node.getLeftOperand().getTree(),
-                        aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valLeft != null) {
-            return addAnnotationForLiteralDivideLeft(valLeft.intValue(), leftAnno);
-        }
-
-        /* This section handles generic annotations:
-         *    pos / {pos, nn} -> nn (can round to zero)
-         *    * / {pos, nn} -> *
-         */
-        if (isPositive(leftAnno) && isNonNegative(rightAnno)) {
-            return NN;
-        }
-        if (isNonNegative(rightAnno)) {
-            return leftAnno;
-        }
-        // Everything else is unknown.
-        return UNKNOWN;
-    }
-
-    /** A remainder with 1 or -1 as the divisor always results in zero. */
-    private AnnotationMirror addAnnotationForLiteralRemainder(int val) {
-        if (val == 1 || val == -1) {
-            return NN;
-        }
-        return UNKNOWN;
-    }
-
-    /** Adds a default NonNegative annotation to every character. Implements case 33. */
-    @Override
-    protected void addInformationFromPreconditions(
-            CFStore info,
-            AnnotatedTypeFactory factory,
-            UnderlyingAST.CFGMethod method,
-            MethodTree methodTree,
-            ExecutableElement methodElement) {
-        super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);
-
-        List<? extends VariableTree> paramTrees = methodTree.getParameters();
-
-        for (VariableTree variableTree : paramTrees) {
-            if (TreeUtils.typeOf(variableTree).getKind() == TypeKind.CHAR) {
-                JavaExpression je = JavaExpression.fromVariableTree(variableTree);
-                info.insertValuePermitNondeterministic(je, aTypeFactory.NN);
-            }
-        }
-    }
-
-    /**
-     * getAnnotationForRemainder handles these cases:
-     *
-     * <pre>
-     *      27. * % 1/-1 &rarr; nn
-     *      28. pos/nn % * &rarr; nn
-     *      29. gten1 % * &rarr; gten1
-     *      * % * &rarr; lbu
-     * </pre>
-     */
-    public AnnotationMirror getAnnotationForRemainder(
-            IntegerRemainderNode node, TransferInput<CFValue, CFStore> p) {
-
-        AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
-
-        // Check if the right side's value is known at compile time.
-        Long valRight =
-                ValueCheckerUtils.getExactValue(
-                        node.getRightOperand().getTree(),
-                        aTypeFactory.getValueAnnotatedTypeFactory());
-        if (valRight != null) {
-            return addAnnotationForLiteralRemainder(valRight.intValue());
-        }
-
-        /* This section handles generic annotations:
-              pos/nn % * -> nn
-              gten1 % * -> gten1
-        */
-        if (isNonNegative(leftAnno)) {
-            return NN;
-        }
-        if (isGTEN1(leftAnno)) {
-            return GTEN1;
-        }
-
-        // Everything else is unknown.
-        return UNKNOWN;
-    }
-
-    /** Handles shifts (case 30). * &gt;&gt; NonNegative &rarr; NonNegative */
-    private AnnotationMirror getAnnotationForRightShift(
-            BinaryOperationNode node, TransferInput<CFValue, CFStore> p) {
-        AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
-        AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
-
-        if (isNonNegative(leftAnno)) {
-            if (isNonNegative(rightAnno)) {
-                return NN;
-            }
-        }
-        return UNKNOWN;
-    }
-
-    /**
-     * Handles masking (case 31). Particularly, handles the following cases: * &amp; NonNegative
-     * &rarr; NonNegative
-     */
-    private AnnotationMirror getAnnotationForAnd(
-            BitwiseAndNode node, TransferInput<CFValue, CFStore> p) {
-
-        AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
-        if (isNonNegative(rightAnno)) {
-            return NN;
-        }
-
-        AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
-        if (isNonNegative(leftAnno)) {
-            return NN;
-        }
-        return UNKNOWN;
-    }
-
-    /**
-     * Returns true if the argument is the @Positive type annotation.
-     *
-     * @param anm the annotation to test
-     * @return true if the the argument is the @Positive type annotation
-     */
-    private boolean isPositive(AnnotationMirror anm) {
-        return aTypeFactory.areSameByClass(anm, Positive.class);
-    }
-
-    /**
-     * Returns true if the argument is the @NonNegative type annotation (or a stronger one).
-     *
-     * @param anm the annotation to test
-     * @return true if the the argument is the @NonNegative type annotation
-     */
-    private boolean isNonNegative(AnnotationMirror anm) {
-        return aTypeFactory.areSameByClass(anm, NonNegative.class) || isPositive(anm);
-    }
-
-    /**
-     * Returns true if the argument is the @GTENegativeOne type annotation (or a stronger one).
-     *
-     * @param anm the annotation to test
-     * @return true if the the argument is the @GTENegativeOne type annotation
-     */
-    private boolean isGTEN1(AnnotationMirror anm) {
-        return aTypeFactory.areSameByClass(anm, GTENegativeOne.class) || isNonNegative(anm);
-    }
-
-    private AnnotationMirror getLowerBoundAnnotation(
-            Node subNode, TransferInput<CFValue, CFStore> p) {
-        CFValue value = p.getValueOfSubNode(subNode);
-        return getLowerBoundAnnotation(value);
-    }
-
-    private AnnotationMirror getLowerBoundAnnotation(CFValue cfValue) {
-        return aTypeFactory
-                .getQualifierHierarchy()
-                .findAnnotationInHierarchy(cfValue.getAnnotations(), aTypeFactory.UNKNOWN);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitNumericalAddition(
-            NumericalAdditionNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> result = super.visitNumericalAddition(n, p);
-        AnnotationMirror newAnno = getAnnotationForPlus(n, p);
-        return createNewResult(result, newAnno);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
-            NumericalSubtractionNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> result = super.visitNumericalSubtraction(n, p);
-        AnnotationMirror newAnno = getAnnotationForMinus(n, p);
-        return createNewResult(result, newAnno);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitNumericalMultiplication(
-            NumericalMultiplicationNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> result = super.visitNumericalMultiplication(n, p);
-        AnnotationMirror newAnno = getAnnotationForMultiply(n, p);
-        return createNewResult(result, newAnno);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitIntegerDivision(
-            IntegerDivisionNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> result = super.visitIntegerDivision(n, p);
-        AnnotationMirror newAnno = getAnnotationForDivide(n, p);
-        return createNewResult(result, newAnno);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitIntegerRemainder(
-            IntegerRemainderNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> transferResult = super.visitIntegerRemainder(n, p);
-        AnnotationMirror resultAnno = getAnnotationForRemainder(n, p);
-        return createNewResult(transferResult, resultAnno);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitSignedRightShift(
-            SignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> transferResult = super.visitSignedRightShift(n, p);
-        AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
-        return createNewResult(transferResult, resultAnno);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitUnsignedRightShift(
-            UnsignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> transferResult = super.visitUnsignedRightShift(n, p);
-        AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
-        return createNewResult(transferResult, resultAnno);
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitBitwiseAnd(
-            BitwiseAndNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseAnd(n, p);
-        AnnotationMirror resultAnno = getAnnotationForAnd(n, p);
-        return createNewResult(transferResult, resultAnno);
-    }
-
-    /**
-     * Create a new transfer result based on the original result and the new annotation.
-     *
-     * @param result the original result
-     * @param resultAnno the new annotation
-     * @return the new transfer result
-     */
-    private TransferResult<CFValue, CFStore> createNewResult(
-            TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
-        CFValue newResultValue =
-                analysis.createSingleAnnotationValue(
-                        resultAnno, result.getResultValue().getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
-    }
+  /**
+   * Create a new transfer result based on the original result and the new annotation.
+   *
+   * @param result the original result
+   * @param resultAnno the new annotation
+   * @return the new transfer result
+   */
+  private TransferResult<CFValue, CFStore> createNewResult(
+      TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
+    CFValue newResultValue =
+        analysis.createSingleAnnotationValue(
+            resultAnno, result.getResultValue().getUnderlyingType());
+    return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+  }
 }

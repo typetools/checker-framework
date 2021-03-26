@@ -2,13 +2,13 @@
 // https://github.com/typetools/checker-framework/issues/1043
 
 public class Issue1043 {
-    <T> boolean foo(Class<T> p) {
-        return true;
-    }
+  <T> boolean foo(Class<T> p) {
+    return true;
+  }
 
-    void bar(Object p) {}
+  void bar(Object p) {}
 
-    void baz() {
-        bar(foo(this.getClass()) ? "a" : "b");
-    }
+  void baz() {
+    bar(foo(this.getClass()) ? "a" : "b");
+  }
 }

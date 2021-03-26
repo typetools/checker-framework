@@ -5,16 +5,16 @@ import java.util.function.Consumer;
 
 public class Issue807 {
 
-    class MyEntry<K, V> {
-        MyEntry(MyEntry<? extends K, ? extends V> e) {}
-    }
+  class MyEntry<K, V> {
+    MyEntry(MyEntry<? extends K, ? extends V> e) {}
+  }
 
-    <K, V> Consumer<MyEntry<K, V>> entryConsumer(Consumer<? super MyEntry<K, V>> action) {
-        // The "new MyEntry" isn't a subtype of "? super MyEntry" in
-        // most type systems. Suppress that error, as it's not the
-        // point of this test.
-        @SuppressWarnings("all")
-        Consumer<MyEntry<K, V>> res = e -> action.accept(new MyEntry<>(e));
-        return res;
-    }
+  <K, V> Consumer<MyEntry<K, V>> entryConsumer(Consumer<? super MyEntry<K, V>> action) {
+    // The "new MyEntry" isn't a subtype of "? super MyEntry" in
+    // most type systems. Suppress that error, as it's not the
+    // point of this test.
+    @SuppressWarnings("all")
+    Consumer<MyEntry<K, V>> res = e -> action.accept(new MyEntry<>(e));
+    return res;
+  }
 }

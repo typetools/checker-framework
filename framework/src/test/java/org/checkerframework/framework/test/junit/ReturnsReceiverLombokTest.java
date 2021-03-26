@@ -12,27 +12,27 @@ import org.junit.runners.Parameterized.Parameters;
  * package before running the test and the returns receiver checker will run on the generated codes.
  */
 public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest {
-    public ReturnsReceiverLombokTest(List<File> testFiles) {
-        super(
-                testFiles,
-                ReturnsReceiverChecker.class,
-                "returnsreceiverdelomboked",
-                "-Anomsgtext",
-                "-nowarn",
-                "-AsuppressWarnings=type.anno.before.modifier");
-    }
+  public ReturnsReceiverLombokTest(List<File> testFiles) {
+    super(
+        testFiles,
+        ReturnsReceiverChecker.class,
+        "returnsreceiverdelomboked",
+        "-Anomsgtext",
+        "-nowarn",
+        "-AsuppressWarnings=type.anno.before.modifier");
+  }
 
-    @Override
-    public void run() {
-        // Only run if delomboked codes have been created.
-        if (!new File("tests/returnsreceiverdelomboked/").exists()) {
-            throw new RuntimeException("delombok task must be run before this test.");
-        }
-        super.run();
+  @Override
+  public void run() {
+    // Only run if delomboked codes have been created.
+    if (!new File("tests/returnsreceiverdelomboked/").exists()) {
+      throw new RuntimeException("delombok task must be run before this test.");
     }
+    super.run();
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"returnsreceiverdelomboked"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"returnsreceiverdelomboked"};
+  }
 }

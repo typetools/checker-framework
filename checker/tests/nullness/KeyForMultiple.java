@@ -9,37 +9,35 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 
 public class KeyForMultiple {
 
-    void m1() {
+  void m1() {
 
-        Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
+    Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
 
-        Map<@KeyFor({"sharedBooks"}) String, Integer> sharedCounts1 = new HashMap<>();
-        Set<@KeyFor({"sharedCounts1"}) String> sharedCountsKeys1 = sharedCounts1.keySet();
-    }
+    Map<@KeyFor({"sharedBooks"}) String, Integer> sharedCounts1 = new HashMap<>();
+    Set<@KeyFor({"sharedCounts1"}) String> sharedCountsKeys1 = sharedCounts1.keySet();
+  }
 
-    void m2() {
+  void m2() {
 
-        Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
+    Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
 
-        Map<@KeyFor({"sharedBooks"}) String, Integer> sharedCounts1 = new HashMap<>();
-        Set<@KeyFor({"sharedBooks", "sharedCounts1"}) String> otherChars1 = sharedCounts1.keySet();
-    }
+    Map<@KeyFor({"sharedBooks"}) String, Integer> sharedCounts1 = new HashMap<>();
+    Set<@KeyFor({"sharedBooks", "sharedCounts1"}) String> otherChars1 = sharedCounts1.keySet();
+  }
 
-    void m3() {
+  void m3() {
 
-        Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
+    Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
 
-        Map<@KeyFor({"sharedBooks", "sharedCounts2"}) String, Integer> sharedCounts2 =
-                new HashMap<>();
-        Set<@KeyFor({"sharedCounts2"}) String> sharedCountsKeys2 = sharedCounts2.keySet();
-    }
+    Map<@KeyFor({"sharedBooks", "sharedCounts2"}) String, Integer> sharedCounts2 = new HashMap<>();
+    Set<@KeyFor({"sharedCounts2"}) String> sharedCountsKeys2 = sharedCounts2.keySet();
+  }
 
-    void m4() {
+  void m4() {
 
-        Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
+    Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
 
-        Map<@KeyFor({"sharedBooks", "sharedCounts2"}) String, Integer> sharedCounts2 =
-                new HashMap<>();
-        Set<@KeyFor({"sharedBooks", "sharedCounts2"}) String> otherChars2 = sharedCounts2.keySet();
-    }
+    Map<@KeyFor({"sharedBooks", "sharedCounts2"}) String, Integer> sharedCounts2 = new HashMap<>();
+    Set<@KeyFor({"sharedBooks", "sharedCounts2"}) String> otherChars2 = sharedCounts2.keySet();
+  }
 }

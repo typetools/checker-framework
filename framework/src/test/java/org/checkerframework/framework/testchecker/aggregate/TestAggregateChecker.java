@@ -10,8 +10,8 @@ import org.checkerframework.framework.source.SourceChecker;
 /** Basic aggregate checker. */
 public class TestAggregateChecker extends AggregateChecker {
 
-    @Override
-    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        return Arrays.asList(ValueChecker.class, AliasingChecker.class);
-    }
+  @Override
+  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+    return Arrays.asList(ValueChecker.class, AliasingChecker.class);
+  }
 }

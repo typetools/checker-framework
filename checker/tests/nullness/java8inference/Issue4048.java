@@ -6,15 +6,15 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 abstract class Issue4048 {
-    @Nullable Number m1(List<? extends Number> numbers) {
-        return getOnlyElement1(numbers);
-    }
+  @Nullable Number m1(List<? extends Number> numbers) {
+    return getOnlyElement1(numbers);
+  }
 
-    abstract <T> @Nullable T getOnlyElement1(Iterable<T> values);
+  abstract <T> @Nullable T getOnlyElement1(Iterable<T> values);
 
-    @Nullable Number m2(List<? extends Number> numbers) {
-        return getOnlyElement2(numbers);
-    }
+  @Nullable Number m2(List<? extends Number> numbers) {
+    return getOnlyElement2(numbers);
+  }
 
-    abstract <T> @Nullable T getOnlyElement2(Iterable<? extends T> values);
+  abstract <T> @Nullable T getOnlyElement2(Iterable<? extends T> values);
 }

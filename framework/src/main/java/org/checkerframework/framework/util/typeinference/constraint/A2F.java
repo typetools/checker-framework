@@ -10,24 +10,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  */
 public class A2F extends AFConstraint {
 
-    /** Create a constraint with an argument less than a formal. */
-    public A2F(AnnotatedTypeMirror argument, AnnotatedTypeMirror formalParameter) {
-        super(argument, formalParameter);
-    }
+  /** Create a constraint with an argument less than a formal. */
+  public A2F(AnnotatedTypeMirror argument, AnnotatedTypeMirror formalParameter) {
+    super(argument, formalParameter);
+  }
 
-    @Override
-    public TUConstraint toTUConstraint() {
-        return new TSuperU((AnnotatedTypeVariable) formalParameter, argument, true);
-    }
+  @Override
+  public TUConstraint toTUConstraint() {
+    return new TSuperU((AnnotatedTypeVariable) formalParameter, argument, true);
+  }
 
-    @Override
-    protected A2F construct(
-            AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
-        return new A2F(newArgument, newFormalParameter);
-    }
+  @Override
+  protected A2F construct(AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
+    return new A2F(newArgument, newFormalParameter);
+  }
 
-    @Override
-    public String toString() {
-        return "A2F( " + argument + " << " + formalParameter + " )";
-    }
+  @Override
+  public String toString() {
+    return "A2F( " + argument + " << " + formalParameter + " )";
+  }
 }

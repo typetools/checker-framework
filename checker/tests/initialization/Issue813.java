@@ -6,21 +6,21 @@ import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
 public class Issue813 {
-    static interface MyInterface {}
+  static interface MyInterface {}
 
-    static class MyClass {
-        MyClass(@UnderInitialization MyInterface stuff) {}
+  static class MyClass {
+    MyClass(@UnderInitialization MyInterface stuff) {}
+  }
+
+  static class Fails implements MyInterface {
+    @NotOnlyInitialized MyClass bar = new MyClass(this);
+  }
+
+  static class Works implements MyInterface {
+    @NotOnlyInitialized MyClass bar;
+
+    {
+      bar = new MyClass(this); // works
     }
-
-    static class Fails implements MyInterface {
-        @NotOnlyInitialized MyClass bar = new MyClass(this);
-    }
-
-    static class Works implements MyInterface {
-        @NotOnlyInitialized MyClass bar;
-
-        {
-            bar = new MyClass(this); // works
-        }
-    }
+  }
 }

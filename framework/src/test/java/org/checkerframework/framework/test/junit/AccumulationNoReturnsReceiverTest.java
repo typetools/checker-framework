@@ -12,19 +12,19 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class AccumulationNoReturnsReceiverTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public AccumulationNoReturnsReceiverTest(List<File> testFiles) {
-        super(
-                testFiles,
-                TestAccumulationNoReturnsReceiverChecker.class,
-                "accumulation-norr",
-                "-Anomsgtext",
-                "-encoding",
-                "UTF-8");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public AccumulationNoReturnsReceiverTest(List<File> testFiles) {
+    super(
+        testFiles,
+        TestAccumulationNoReturnsReceiverChecker.class,
+        "accumulation-norr",
+        "-Anomsgtext",
+        "-encoding",
+        "UTF-8");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"accumulation-norr", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"accumulation-norr", "all-systems"};
+  }
 }

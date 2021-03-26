@@ -39,48 +39,48 @@ import java.lang.annotation.Target;
 @InheritedAnnotation
 @Repeatable(EnsuresQualifierIf.List.class)
 public @interface EnsuresQualifierIf {
-    /**
-     * Returns the Java expressions for which the qualifier holds if the method terminates with
-     * return value {@link #result()}.
-     *
-     * @return the Java expressions for which the qualifier holds if the method terminates with
-     *     return value {@link #result()}
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] expression();
+  /**
+   * Returns the Java expressions for which the qualifier holds if the method terminates with return
+   * value {@link #result()}.
+   *
+   * @return the Java expressions for which the qualifier holds if the method terminates with return
+   *     value {@link #result()}
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] expression();
 
-    /**
-     * Returns the qualifier that is guaranteed to hold if the method terminates with return value
-     * {@link #result()}.
-     *
-     * @return the qualifier that is guaranteed to hold if the method terminates with return value
-     *     {@link #result()}
-     */
-    Class<? extends Annotation> qualifier();
+  /**
+   * Returns the qualifier that is guaranteed to hold if the method terminates with return value
+   * {@link #result()}.
+   *
+   * @return the qualifier that is guaranteed to hold if the method terminates with return value
+   *     {@link #result()}
+   */
+  Class<? extends Annotation> qualifier();
 
-    /**
-     * Returns the return value of the method that needs to hold for the postcondition to hold.
-     *
-     * @return the return value of the method that needs to hold for the postcondition to hold
-     */
-    boolean result();
+  /**
+   * Returns the return value of the method that needs to hold for the postcondition to hold.
+   *
+   * @return the return value of the method that needs to hold for the postcondition to hold
+   */
+  boolean result();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresQualifierIf} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresQualifierIf} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD})
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresQualifierIf} annotation repeatable.
+     * Return the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresQualifierIf} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD})
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Return the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresQualifierIf[] value();
-    }
+    EnsuresQualifierIf[] value();
+  }
 }

@@ -6,11 +6,11 @@
  */
 
 public enum TimeUnitRange {
-    YEAR,
-    YEAR_TO_MONTH,
-    MONTH;
+  YEAR,
+  YEAR_TO_MONTH,
+  MONTH;
 
-    public static TimeUnitRange of(Object endUnit) {
-        throw new Error("body is irrelevant");
-    }
+  public static TimeUnitRange of(Object endUnit) {
+    throw new Error("body is irrelevant");
+  }
 }

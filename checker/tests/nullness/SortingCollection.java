@@ -11,13 +11,13 @@ import java.util.TreeSet;
 
 public class SortingCollection<T> {
 
-    class MergingIterator {
-        private final PollableTreeSet<String> queue = null;
+  class MergingIterator {
+    private final PollableTreeSet<String> queue = null;
 
-        public boolean hasNext() {
-            return !queue.isEmpty();
-        }
+    public boolean hasNext() {
+      return !queue.isEmpty();
     }
+  }
 
-    static class PollableTreeSet<T> extends TreeSet<T> {}
+  static class PollableTreeSet<T> extends TreeSet<T> {}
 }

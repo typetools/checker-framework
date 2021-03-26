@@ -1,14 +1,14 @@
 // @skip-test Fails, but commented out to avoid breaking the build
 public class GenericCast<T> {
 
-    @SuppressWarnings("unchecked")
-    T tObject = (T) new Object();
+  @SuppressWarnings("unchecked")
+  T tObject = (T) new Object();
 
-    T field1 = tObject;
+  T field1 = tObject;
 
-    T field2;
+  T field2;
 
-    GenericCast() {
-        field2 = tObject;
-    }
+  GenericCast() {
+    field2 = tObject;
+  }
 }
