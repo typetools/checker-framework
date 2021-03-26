@@ -5,29 +5,29 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Uninit12 {
 
-    // :: error: (initialization.static.field.uninitialized)
-    static Object f;
+  // :: error: (initialization.static.field.uninitialized)
+  static Object f;
 
-    public Uninit12() {
-        f.toString();
-    }
+  public Uninit12() {
+    f.toString();
+  }
 
-    static Object g = new Object();
+  static Object g = new Object();
 
-    static Object h;
+  static Object h;
 
-    static {
-        h = new Object();
-    }
+  static {
+    h = new Object();
+  }
 }
 
 class Uninit12_OK {
 
-    static Object g = new Object();
+  static Object g = new Object();
 
-    static Object h;
+  static Object h;
 
-    static {
-        h = new Object();
-    }
+  static {
+    h = new Object();
+  }
 }

@@ -18,6 +18,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface NoDefaultQualifierForUse {
-    /** Top qualifier in hierarchies for which no default annotation for use should be applied. */
-    Class<? extends Annotation>[] value() default {};
+  /** Top qualifier in hierarchies for which no default annotation for use should be applied. */
+  Class<? extends Annotation>[] value() default {};
 }

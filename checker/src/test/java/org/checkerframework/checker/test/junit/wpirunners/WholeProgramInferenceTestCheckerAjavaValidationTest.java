@@ -14,33 +14,32 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @Category(WholeProgramInferenceTestCheckerAjavaTest.class)
 public class WholeProgramInferenceTestCheckerAjavaValidationTest
-        extends CheckerFrameworkPerDirectoryTest {
+    extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceTestCheckerAjavaValidationTest(List<File> testFiles) {
-        super(
-                testFiles,
-                WholeProgramInferenceTestChecker.class,
-                "wpi-testchecker/annotated",
-                "-Anomsgtext",
-                "-Aajava=tests/wpi-testchecker/inference-output",
-                "-Awarns");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public WholeProgramInferenceTestCheckerAjavaValidationTest(List<File> testFiles) {
+    super(
+        testFiles,
+        WholeProgramInferenceTestChecker.class,
+        "wpi-testchecker/annotated",
+        "-Anomsgtext",
+        "-Aajava=tests/wpi-testchecker/inference-output",
+        "-Awarns");
+  }
 
-    @Override
-    public void run() {
-        // Only run if annotated files have been created.
-        // See wholeProgramInferenceTests task.
-        if (!new File("tests/wpi-testchecker/annotated/").exists()) {
-            throw new RuntimeException(
-                    WholeProgramInferenceTestCheckerAjavaTest.class
-                            + " must be run before this test.");
-        }
-        super.run();
+  @Override
+  public void run() {
+    // Only run if annotated files have been created.
+    // See wholeProgramInferenceTests task.
+    if (!new File("tests/wpi-testchecker/annotated/").exists()) {
+      throw new RuntimeException(
+          WholeProgramInferenceTestCheckerAjavaTest.class + " must be run before this test.");
     }
+    super.run();
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"wpi-testchecker/annotated/"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"wpi-testchecker/annotated/"};
+  }
 }

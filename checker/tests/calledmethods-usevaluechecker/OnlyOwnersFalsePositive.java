@@ -7,9 +7,9 @@ import java.util.Collections;
 // that.
 // Originally, we required with/setFilters && with/setOwners.
 public class OnlyOwnersFalsePositive {
-    void test(AmazonEC2 ec2Client) {
-        DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest();
-        describeImagesRequest.setOwners(Collections.singleton("self"));
-        DescribeImagesResult describeImagesResult = ec2Client.describeImages(describeImagesRequest);
-    }
+  void test(AmazonEC2 ec2Client) {
+    DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest();
+    describeImagesRequest.setOwners(Collections.singleton("self"));
+    DescribeImagesResult describeImagesResult = ec2Client.describeImages(describeImagesRequest);
+  }
 }

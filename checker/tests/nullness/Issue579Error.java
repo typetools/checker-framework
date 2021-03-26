@@ -5,12 +5,12 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class Issue579Error {
 
-    public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
-        // :: error: (type.argument.type.incompatible)
-        bar(flag ? real : other);
-    }
+  public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
+    // :: error: (type.argument.type.incompatible)
+    bar(flag ? real : other);
+  }
 
-    <@NonNull Q extends @NonNull Object> void bar(Generic<? extends Q> parm) {}
+  <@NonNull Q extends @NonNull Object> void bar(Generic<? extends Q> parm) {}
 
-    interface Generic<F> {}
+  interface Generic<F> {}
 }

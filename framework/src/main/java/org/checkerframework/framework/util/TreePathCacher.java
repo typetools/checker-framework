@@ -18,98 +18,98 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
-    private final Map<Tree, TreePath> foundPaths = new HashMap<>(32);
+  private final Map<Tree, TreePath> foundPaths = new HashMap<>(32);
 
-    /**
-     * The TreePath of the previous tree scanned. It is always set back to null after a scan has
-     * completed.
-     */
-    private TreePath path;
+  /**
+   * The TreePath of the previous tree scanned. It is always set back to null after a scan has
+   * completed.
+   */
+  private TreePath path;
 
-    /**
-     * Returns true if the tree is cached.
-     *
-     * @param target the tree to search for
-     * @return true if the tree is cached
-     */
-    public boolean isCached(Tree target) {
-        return foundPaths.containsKey(target);
+  /**
+   * Returns true if the tree is cached.
+   *
+   * @param target the tree to search for
+   * @return true if the tree is cached
+   */
+  public boolean isCached(Tree target) {
+    return foundPaths.containsKey(target);
+  }
+
+  /**
+   * Adds the given key and value to the cache.
+   *
+   * @param target the tree to add
+   * @param path the path to cache
+   */
+  public void addPath(Tree target, TreePath path) {
+    foundPaths.put(target, path);
+  }
+
+  /**
+   * Return the TreePath for a Tree.
+   *
+   * @param root the compilation unit to search in
+   * @param target the target tree to look for
+   * @return the TreePath corresponding to target, or null if target is not found in the compilation
+   *     root
+   */
+  public @Nullable TreePath getPath(CompilationUnitTree root, @FindDistinct Tree target) {
+    // This method uses try/catch and the private {@code Result} exception for control flow to
+    // stop the superclass from scanning other subtrees when target is found.
+
+    if (foundPaths.containsKey(target)) {
+      return foundPaths.get(target);
     }
 
-    /**
-     * Adds the given key and value to the cache.
-     *
-     * @param target the tree to add
-     * @param path the path to cache
-     */
-    public void addPath(Tree target, TreePath path) {
-        foundPaths.put(target, path);
+    TreePath path = new TreePath(root);
+    if (path.getLeaf() == target) {
+      return path;
     }
 
-    /**
-     * Return the TreePath for a Tree.
-     *
-     * @param root the compilation unit to search in
-     * @param target the target tree to look for
-     * @return the TreePath corresponding to target, or null if target is not found in the
-     *     compilation root
-     */
-    public @Nullable TreePath getPath(CompilationUnitTree root, @FindDistinct Tree target) {
-        // This method uses try/catch and the private {@code Result} exception for control flow to
-        // stop the superclass from scanning other subtrees when target is found.
+    try {
+      this.scan(path, target);
+    } catch (Result result) {
+      return result.path;
+    }
+    // If a path wasn't found, cache null so the whole compilation unit isn't searched again.
+    foundPaths.put(target, null);
+    return null;
+  }
 
-        if (foundPaths.containsKey(target)) {
-            return foundPaths.get(target);
-        }
+  private static class Result extends Error {
+    private static final long serialVersionUID = 4948452207518392627L;
+    TreePath path;
 
-        TreePath path = new TreePath(root);
-        if (path.getLeaf() == target) {
-            return path;
-        }
+    Result(TreePath path) {
+      this.path = path;
+    }
+  }
 
-        try {
-            this.scan(path, target);
-        } catch (Result result) {
-            return result.path;
-        }
-        // If a path wasn't found, cache null so the whole compilation unit isn't searched again.
-        foundPaths.put(target, null);
-        return null;
+  public void clear() {
+    foundPaths.clear();
+  }
+
+  /** Scan a single node. The current path is updated for the duration of the scan. */
+  @SuppressWarnings("interning:not.interned") // assertion
+  @Override
+  public TreePath scan(Tree tree, Tree target) {
+    TreePath prev = path;
+    if (tree != null && foundPaths.get(tree) == null) {
+      TreePath current = new TreePath(path, tree);
+      foundPaths.put(tree, current);
+      path = current;
+    } else {
+      this.path = foundPaths.get(tree);
     }
 
-    private static class Result extends Error {
-        private static final long serialVersionUID = 4948452207518392627L;
-        TreePath path;
-
-        Result(TreePath path) {
-            this.path = path;
-        }
+    if (tree == target) {
+      throw new Result(path);
     }
-
-    public void clear() {
-        foundPaths.clear();
+    try {
+      return super.scan(tree, target);
+    } finally {
+      this.path = prev;
     }
-
-    /** Scan a single node. The current path is updated for the duration of the scan. */
-    @SuppressWarnings("interning:not.interned") // assertion
-    @Override
-    public TreePath scan(Tree tree, Tree target) {
-        TreePath prev = path;
-        if (tree != null && foundPaths.get(tree) == null) {
-            TreePath current = new TreePath(path, tree);
-            foundPaths.put(tree, current);
-            path = current;
-        } else {
-            this.path = foundPaths.get(tree);
-        }
-
-        if (tree == target) {
-            throw new Result(path);
-        }
-        try {
-            return super.scan(tree, target);
-        } finally {
-            this.path = prev;
-        }
-    }
+  }
 }

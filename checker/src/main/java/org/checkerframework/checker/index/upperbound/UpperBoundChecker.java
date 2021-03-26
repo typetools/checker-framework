@@ -25,80 +25,79 @@ import org.checkerframework.javacutil.TreeUtils;
  * @checker_framework.manual #index-checker Index Checker
  */
 @RelevantJavaTypes({
-    Byte.class,
-    Short.class,
-    Integer.class,
-    Long.class,
-    Character.class,
-    byte.class,
-    short.class,
-    int.class,
-    long.class,
-    char.class,
+  Byte.class,
+  Short.class,
+  Integer.class,
+  Long.class,
+  Character.class,
+  byte.class,
+  short.class,
+  int.class,
+  long.class,
+  char.class,
 })
 @SuppressWarningsPrefix({"index", "upperbound"})
 public class UpperBoundChecker extends BaseTypeChecker {
-    /** The SubstringIndexFor.value argument/element. */
-    public @MonotonicNonNull ExecutableElement substringIndexForValueElement;
-    /** The SubstringIndexFor.offset argument/element. */
-    public @MonotonicNonNull ExecutableElement substringIndexForOffsetElement;
+  /** The SubstringIndexFor.value argument/element. */
+  public @MonotonicNonNull ExecutableElement substringIndexForValueElement;
+  /** The SubstringIndexFor.offset argument/element. */
+  public @MonotonicNonNull ExecutableElement substringIndexForOffsetElement;
 
-    /** The LTLengthOf.value argument/element. */
-    public @MonotonicNonNull ExecutableElement ltLengthOfValueElement;
-    /** The LTLengthOf.offset argument/element. */
-    public @MonotonicNonNull ExecutableElement ltLengthOfOffsetElement;
-    /** The LTEqLengthOf.value argument/element. */
-    public @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
+  /** The LTLengthOf.value argument/element. */
+  public @MonotonicNonNull ExecutableElement ltLengthOfValueElement;
+  /** The LTLengthOf.offset argument/element. */
+  public @MonotonicNonNull ExecutableElement ltLengthOfOffsetElement;
+  /** The LTEqLengthOf.value argument/element. */
+  public @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
 
-    /**
-     * These collection classes have some subtypes whose length can change and some subtypes whose
-     * length cannot change. Warnings are skipped at uses of them.
-     */
-    private HashSet<String> collectionBaseTypeNames;
+  /**
+   * These collection classes have some subtypes whose length can change and some subtypes whose
+   * length cannot change. Warnings are skipped at uses of them.
+   */
+  private HashSet<String> collectionBaseTypeNames;
 
-    /** Create a new UpperBoundChecker. */
-    public UpperBoundChecker() {
-        // These classes are bases for both mutable and immutable sequence collections, which
-        // contain methods that change the length.
-        // Upper bound checker warnings are skipped at uses of them.
-        Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
-        collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
-        for (Class<?> collectionBaseClass : collectionBaseClasses) {
-            collectionBaseTypeNames.add(collectionBaseClass.getName());
-        }
+  /** Create a new UpperBoundChecker. */
+  public UpperBoundChecker() {
+    // These classes are bases for both mutable and immutable sequence collections, which
+    // contain methods that change the length.
+    // Upper bound checker warnings are skipped at uses of them.
+    Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
+    collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
+    for (Class<?> collectionBaseClass : collectionBaseClasses) {
+      collectionBaseTypeNames.add(collectionBaseClass.getName());
     }
+  }
 
-    @Override
-    public void initChecker() {
-        super.initChecker();
-        substringIndexForValueElement =
-                TreeUtils.getMethod(SubstringIndexFor.class, "value", 0, processingEnv);
-        substringIndexForOffsetElement =
-                TreeUtils.getMethod(SubstringIndexFor.class, "offset", 0, processingEnv);
-        ltLengthOfValueElement = TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
-        ltLengthOfOffsetElement = TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
-        ltEqLengthOfValueElement =
-                TreeUtils.getMethod(LTEqLengthOf.class, "value", 0, processingEnv);
-    }
+  @Override
+  public void initChecker() {
+    super.initChecker();
+    substringIndexForValueElement =
+        TreeUtils.getMethod(SubstringIndexFor.class, "value", 0, processingEnv);
+    substringIndexForOffsetElement =
+        TreeUtils.getMethod(SubstringIndexFor.class, "offset", 0, processingEnv);
+    ltLengthOfValueElement = TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
+    ltLengthOfOffsetElement = TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
+    ltEqLengthOfValueElement = TreeUtils.getMethod(LTEqLengthOf.class, "value", 0, processingEnv);
+  }
 
-    @Override
-    public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
-        if (collectionBaseTypeNames.contains(typeName)) {
-            return true;
-        }
-        return super.shouldSkipUses(typeName);
+  @Override
+  public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
+    if (collectionBaseTypeNames.contains(typeName)) {
+      return true;
     }
+    return super.shouldSkipUses(typeName);
+  }
 
-    @Override
-    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-                super.getImmediateSubcheckerClasses();
-        checkers.add(SubstringIndexChecker.class);
-        checkers.add(SearchIndexChecker.class);
-        checkers.add(SameLenChecker.class);
-        checkers.add(LowerBoundChecker.class);
-        checkers.add(ValueChecker.class);
-        checkers.add(LessThanChecker.class);
-        return checkers;
-    }
+  @Override
+  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
+        super.getImmediateSubcheckerClasses();
+    checkers.add(SubstringIndexChecker.class);
+    checkers.add(SearchIndexChecker.class);
+    checkers.add(SameLenChecker.class);
+    checkers.add(LowerBoundChecker.class);
+    checkers.add(ValueChecker.class);
+    checkers.add(LessThanChecker.class);
+    return checkers;
+  }
 }

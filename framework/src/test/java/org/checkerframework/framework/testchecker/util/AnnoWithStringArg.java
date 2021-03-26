@@ -8,5 +8,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(Unqualified.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface AnnoWithStringArg {
-    String value();
+  String value();
 }

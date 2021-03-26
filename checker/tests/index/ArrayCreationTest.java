@@ -4,8 +4,8 @@ import org.checkerframework.checker.index.qual.SameLen;
 // makes both @SameLen of each other.
 
 public class ArrayCreationTest {
-    void test(int[] a, int[] d) {
-        int[] b = new int[a.length];
-        int @SameLen({"a", "b"}) [] c = b;
-    }
+  void test(int[] a, int[] d) {
+    int[] b = new int[a.length];
+    int @SameLen({"a", "b"}) [] c = b;
+  }
 }

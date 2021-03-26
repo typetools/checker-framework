@@ -3,7 +3,7 @@ import java.util.List;
 
 public class SymbolError {
 
-    void test() {
-        List<String> lst = new LinkedList<String>(null) {};
-    }
+  void test() {
+    List<String> lst = new LinkedList<String>(null) {};
+  }
 }

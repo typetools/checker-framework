@@ -4,19 +4,19 @@ import org.checkerframework.checker.index.qual.Positive;
 
 public class SpecialTransfersForEquality {
 
-    void gteN1Test(@GTENegativeOne int y) {
-        int[] arr = new int[10];
-        if (-1 != y) {
-            @NonNegative int z = y;
-            if (z < 10) {
-                int k = arr[z];
-            }
-        }
+  void gteN1Test(@GTENegativeOne int y) {
+    int[] arr = new int[10];
+    if (-1 != y) {
+      @NonNegative int z = y;
+      if (z < 10) {
+        int k = arr[z];
+      }
     }
+  }
 
-    void nnTest(@NonNegative int i) {
-        if (i != 0) {
-            @Positive int m = i;
-        }
+  void nnTest(@NonNegative int i) {
+    if (i != 0) {
+      @Positive int m = i;
     }
+  }
 }

@@ -4,46 +4,46 @@
 package org.jro.tests.checkerfwk.utils;
 
 public class Issue3681 {
-    interface PartialFunction<T, R> {
-        R apply(T t);
+  interface PartialFunction<T, R> {
+    R apply(T t);
 
-        boolean isDefinedAt(T value);
-    }
+    boolean isDefinedAt(T value);
+  }
 
-    interface Either<L, R> {
-        R get();
+  interface Either<L, R> {
+    R get();
 
-        boolean isRight();
-    }
+    boolean isRight();
+  }
 
-    public static <L, R> PartialFunction<Either<L, R>, R> createKeepRight() {
-        return new PartialFunction<>() {
+  public static <L, R> PartialFunction<Either<L, R>, R> createKeepRight() {
+    return new PartialFunction<>() {
 
-            @Override
-            public R apply(final Either<L, R> either) {
-                return either.get();
-            }
+      @Override
+      public R apply(final Either<L, R> either) {
+        return either.get();
+      }
 
-            @Override
-            public boolean isDefinedAt(final Either<L, R> value) {
-                return value.isRight();
-            }
-        };
-    }
+      @Override
+      public boolean isDefinedAt(final Either<L, R> value) {
+        return value.isRight();
+      }
+    };
+  }
 
-    public static <L, R>
-            PartialFunction<Either<L, ? extends R>, ? extends R> createRCovariantKeepRight() {
-        return new PartialFunction<>() {
+  public static <L, R>
+      PartialFunction<Either<L, ? extends R>, ? extends R> createRCovariantKeepRight() {
+    return new PartialFunction<>() {
 
-            @Override
-            public R apply(final Either<L, ? extends R> either) {
-                return either.get();
-            }
+      @Override
+      public R apply(final Either<L, ? extends R> either) {
+        return either.get();
+      }
 
-            @Override
-            public boolean isDefinedAt(final Either<L, ? extends R> value) {
-                return value.isRight();
-            }
-        };
-    }
+      @Override
+      public boolean isDefinedAt(final Either<L, ? extends R> value) {
+        return value.isRight();
+      }
+    };
+  }
 }

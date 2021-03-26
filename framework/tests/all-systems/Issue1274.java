@@ -3,21 +3,21 @@
 
 @SuppressWarnings("all") // Just check for crashes
 public class Issue1274 {
-    static class Mine<T> {
-        static <S> Mine<S> of(S p1, S p2) {
-            return null;
-        }
+  static class Mine<T> {
+    static <S> Mine<S> of(S p1, S p2) {
+      return null;
     }
+  }
 
-    class Two<U, V> {}
+  class Two<U, V> {}
 
-    class C extends Two<Float, Float> {}
+  class C extends Two<Float, Float> {}
 
-    class D extends Two<String, String> {}
+  class D extends Two<String, String> {}
 
-    class Crash {
-        {
-            Mine.of(new C(), new D());
-        }
+  class Crash {
+    {
+      Mine.of(new C(), new D());
     }
+  }
 }

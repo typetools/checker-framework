@@ -2,161 +2,161 @@ import org.checkerframework.checker.signedness.qual.*;
 
 public class BinaryOperations {
 
-    public void DivModTest(
-            @Unsigned int unsigned,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void DivModTest(
+      @Unsigned int unsigned,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        @Unsigned int unsignedresult;
-        @UnknownSignedness int unknownresult;
+    @Unsigned int unsignedresult;
+    @UnknownSignedness int unknownresult;
 
-        // :: error: (operation.unsignedrhs)
-        unknownresult = unknown / unsigned;
+    // :: error: (operation.unsignedrhs)
+    unknownresult = unknown / unsigned;
 
-        // :: error: (operation.unsignedlhs)
-        unknownresult = unsigned / unknown;
+    // :: error: (operation.unsignedlhs)
+    unknownresult = unsigned / unknown;
 
-        // :: error: (operation.unsignedlhs)
-        unsignedresult = unsigned / constant;
+    // :: error: (operation.unsignedlhs)
+    unsignedresult = unsigned / constant;
 
-        // :: error: (operation.unsignedrhs)
-        unsignedresult = constant / unsigned;
+    // :: error: (operation.unsignedrhs)
+    unsignedresult = constant / unsigned;
 
-        // :: error: (operation.unsignedrhs)
-        unknownresult = unknown / polysigned;
+    // :: error: (operation.unsignedrhs)
+    unknownresult = unknown / polysigned;
 
-        // :: error: (operation.unsignedlhs)
-        unknownresult = polysigned / unknown;
+    // :: error: (operation.unsignedlhs)
+    unknownresult = polysigned / unknown;
 
-        // :: error: (operation.unsignedlhs)
-        unknownresult = polysigned / constant;
+    // :: error: (operation.unsignedlhs)
+    unknownresult = polysigned / constant;
 
-        // :: error: (operation.unsignedrhs)
-        unknownresult = constant / polysigned;
+    // :: error: (operation.unsignedrhs)
+    unknownresult = constant / polysigned;
 
-        // :: error: (operation.unsignedrhs)
-        unknownresult = unknown % unsigned;
+    // :: error: (operation.unsignedrhs)
+    unknownresult = unknown % unsigned;
 
-        // :: error: (operation.unsignedlhs)
-        unknownresult = unsigned % unknown;
+    // :: error: (operation.unsignedlhs)
+    unknownresult = unsigned % unknown;
 
-        // :: error: (operation.unsignedrhs)
-        unknownresult = unknown % polysigned;
+    // :: error: (operation.unsignedrhs)
+    unknownresult = unknown % polysigned;
 
-        // :: error: (operation.unsignedlhs)
-        unknownresult = polysigned % unknown;
+    // :: error: (operation.unsignedlhs)
+    unknownresult = polysigned % unknown;
 
-        // :: error: (operation.unsignedlhs)
-        unsignedresult = unsigned % constant;
+    // :: error: (operation.unsignedlhs)
+    unsignedresult = unsigned % constant;
 
-        // :: error: (operation.unsignedrhs)
-        unsignedresult = constant % unsigned;
+    // :: error: (operation.unsignedrhs)
+    unsignedresult = constant % unsigned;
 
-        // :: error: (operation.unsignedlhs)
-        unknownresult = polysigned % constant;
+    // :: error: (operation.unsignedlhs)
+    unknownresult = polysigned % constant;
 
-        // :: error: (operation.unsignedrhs)
-        unknownresult = constant % polysigned;
-    }
+    // :: error: (operation.unsignedrhs)
+    unknownresult = constant % polysigned;
+  }
 
-    public void SignedRightShiftTest(
-            @Unsigned int unsigned,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void SignedRightShiftTest(
+      @Unsigned int unsigned,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        @Unsigned int unsignedresult;
-        @PolySigned int polysignedresult;
-        @UnknownSignedness int unknownresult;
-        int result;
+    @Unsigned int unsignedresult;
+    @PolySigned int polysignedresult;
+    @UnknownSignedness int unknownresult;
+    int result;
 
-        // :: error: (shift.signed)
-        unsignedresult = unsigned >> constant;
+    // :: error: (shift.signed)
+    unsignedresult = unsigned >> constant;
 
-        result = constant >> unsigned;
+    result = constant >> unsigned;
 
-        // :: error: (shift.signed)
-        polysignedresult = polysigned >> constant;
+    // :: error: (shift.signed)
+    polysignedresult = polysigned >> constant;
 
-        result = constant >> polysigned;
+    result = constant >> polysigned;
 
-        // :: error: (shift.signed)
-        unsignedresult = unsigned >> unknown;
+    // :: error: (shift.signed)
+    unsignedresult = unsigned >> unknown;
 
-        unknownresult = unknown >> unsigned;
+    unknownresult = unknown >> unsigned;
 
-        // :: error: (shift.signed)
-        polysignedresult = polysigned >> unknown;
+    // :: error: (shift.signed)
+    polysignedresult = polysigned >> unknown;
 
-        unknownresult = unknown >> polysigned;
-    }
+    unknownresult = unknown >> polysigned;
+  }
 
-    public void UnsignedRightShiftTest(
-            @Signed int signed,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void UnsignedRightShiftTest(
+      @Signed int signed,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        @PolySigned int polysignedresult;
-        @UnknownSignedness int unknownresult;
-        int result;
+    @PolySigned int polysignedresult;
+    @UnknownSignedness int unknownresult;
+    int result;
 
-        // :: error: (shift.unsigned)
-        result = signed >>> constant;
+    // :: error: (shift.unsigned)
+    result = signed >>> constant;
 
-        result = constant >>> signed;
+    result = constant >>> signed;
 
-        // :: error: (shift.unsigned)
-        result = signed >>> unknown;
+    // :: error: (shift.unsigned)
+    result = signed >>> unknown;
 
-        unknownresult = unknown >>> signed;
+    unknownresult = unknown >>> signed;
 
-        // :: error: (shift.unsigned)
-        polysignedresult = polysigned >>> constant;
+    // :: error: (shift.unsigned)
+    polysignedresult = polysigned >>> constant;
 
-        result = constant >>> polysigned;
+    result = constant >>> polysigned;
 
-        // :: error: (shift.unsigned)
-        polysignedresult = polysigned >>> unknown;
+    // :: error: (shift.unsigned)
+    polysignedresult = polysigned >>> unknown;
 
-        unknownresult = unknown >>> polysigned;
-    }
+    unknownresult = unknown >>> polysigned;
+  }
 
-    public void LeftShiftTest(
-            @Signed int signed,
-            @Unsigned int unsigned,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void LeftShiftTest(
+      @Signed int signed,
+      @Unsigned int unsigned,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        @PolySigned int polysignedresult;
-        @UnknownSignedness int unknownresult;
-        @Unsigned int unsignedresult;
-        int result;
+    @PolySigned int polysignedresult;
+    @UnknownSignedness int unknownresult;
+    @Unsigned int unsignedresult;
+    int result;
 
-        result = signed << constant;
+    result = signed << constant;
 
-        result = constant << signed;
+    result = constant << signed;
 
-        result = signed << unknown;
+    result = signed << unknown;
 
-        unknownresult = unknown << signed;
+    unknownresult = unknown << signed;
 
-        unsignedresult = unsigned << constant;
+    unsignedresult = unsigned << constant;
 
-        result = constant << unsigned;
+    result = constant << unsigned;
 
-        unsignedresult = unsigned << unknown;
+    unsignedresult = unsigned << unknown;
 
-        unknownresult = unknown << unsigned;
+    unknownresult = unknown << unsigned;
 
-        polysignedresult = polysigned << constant;
+    polysignedresult = polysigned << constant;
 
-        result = constant << polysigned;
+    result = constant << polysigned;
 
-        polysignedresult = polysigned << unknown;
+    polysignedresult = polysigned << unknown;
 
-        unknownresult = unknown << polysigned;
-    }
+    unknownresult = unknown << polysigned;
+  }
 }

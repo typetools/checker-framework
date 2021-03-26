@@ -654,7 +654,6 @@ subprojects {
 
         doFirst {
             args += "${formatScriptsHome}/check-google-java-format.py"
-            args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
         ignoreExitValue = true
@@ -672,7 +671,6 @@ subprojects {
         executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
-            args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
     }

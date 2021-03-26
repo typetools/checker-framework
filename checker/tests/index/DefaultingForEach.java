@@ -7,16 +7,16 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 
 class DefaultForEach {
 
-    @DefaultQualifier(NonNegative.class)
-    static int[] foo() {
-        throw new RuntimeException();
-    }
+  @DefaultQualifier(NonNegative.class)
+  static int[] foo() {
+    throw new RuntimeException();
+  }
 
-    void bar() {
-        for (Integer p : foo()) {
-            // :: error: assignment.type.incompatible
-            @Positive int x = p;
-            @NonNegative int y = p;
-        }
+  void bar() {
+    for (Integer p : foo()) {
+      // :: error: assignment.type.incompatible
+      @Positive int x = p;
+      @NonNegative int y = p;
     }
+  }
 }

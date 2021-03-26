@@ -8,5 +8,5 @@ interface MyInterface<T> {}
 // issue a valid type checking error for this code, so suppress any warnings.
 @SuppressWarnings("all")
 public class Issue691<T> implements MyInterface<T> {
-    MyInterface<?> mi = new Issue691<>();
+  MyInterface<?> mi = new Issue691<>();
 }

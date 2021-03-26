@@ -7,13 +7,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Issue953 {
-    public static void test() {
-        List<String> initial = new ArrayList<>();
-        List<Integer> counts =
-                initial.stream().skip(1).map(l -> count("", l)).collect(Collectors.toList());
-    }
+  public static void test() {
+    List<String> initial = new ArrayList<>();
+    List<Integer> counts =
+        initial.stream().skip(1).map(l -> count("", l)).collect(Collectors.toList());
+  }
 
-    private static int count(String s, String l) {
-        return 0;
-    }
+  private static int count(String s, String l) {
+    return 0;
+  }
 }

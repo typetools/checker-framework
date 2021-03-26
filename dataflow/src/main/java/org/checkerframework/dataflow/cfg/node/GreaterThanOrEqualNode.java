@@ -14,33 +14,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class GreaterThanOrEqualNode extends BinaryOperationNode {
 
-    public GreaterThanOrEqualNode(BinaryTree tree, Node left, Node right) {
-        super(tree, left, right);
-        assert tree.getKind() == Kind.GREATER_THAN_EQUAL;
-    }
+  public GreaterThanOrEqualNode(BinaryTree tree, Node left, Node right) {
+    super(tree, left, right);
+    assert tree.getKind() == Kind.GREATER_THAN_EQUAL;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitGreaterThanOrEqual(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitGreaterThanOrEqual(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " >= " + getRightOperand() + ")";
-    }
+  @Override
+  public String toString() {
+    return "(" + getLeftOperand() + " >= " + getRightOperand() + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof GreaterThanOrEqualNode)) {
-            return false;
-        }
-        GreaterThanOrEqualNode other = (GreaterThanOrEqualNode) obj;
-        return getLeftOperand().equals(other.getLeftOperand())
-                && getRightOperand().equals(other.getRightOperand());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof GreaterThanOrEqualNode)) {
+      return false;
     }
+    GreaterThanOrEqualNode other = (GreaterThanOrEqualNode) obj;
+    return getLeftOperand().equals(other.getLeftOperand())
+        && getRightOperand().equals(other.getRightOperand());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getLeftOperand(), getRightOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getLeftOperand(), getRightOperand());
+  }
 }

@@ -3,17 +3,17 @@
 
 public class Issue1397 {
 
-    class Box<T> {}
+  class Box<T> {}
 
-    abstract class CrashCompound {
-        abstract <T> T chk(T in);
+  abstract class CrashCompound {
+    abstract <T> T chk(T in);
 
-        abstract <T> T unbox(Box<T> p);
+    abstract <T> T unbox(Box<T> p);
 
-        @SuppressWarnings("units")
-        void foo(Box<Boolean> bb) {
-            boolean res = false;
-            res |= chk(unbox(bb));
-        }
+    @SuppressWarnings("units")
+    void foo(Box<Boolean> bb) {
+      boolean res = false;
+      res |= chk(unbox(bb));
     }
+  }
 }

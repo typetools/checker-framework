@@ -13,24 +13,24 @@ import org.checkerframework.framework.flow.CFValue;
 /** Accumulates the names of fields that are initialized. */
 public class InitializedFieldsTransfer extends AccumulationTransfer {
 
-    /**
-     * Create an InitializedFieldsTransfer.
-     *
-     * @param analysis the analysis
-     */
-    public InitializedFieldsTransfer(final CFAnalysis analysis) {
-        super(analysis);
-    }
+  /**
+   * Create an InitializedFieldsTransfer.
+   *
+   * @param analysis the analysis
+   */
+  public InitializedFieldsTransfer(final CFAnalysis analysis) {
+    super(analysis);
+  }
 
-    @Override
-    public TransferResult<CFValue, CFStore> visitAssignment(
-            final AssignmentNode node, final TransferInput<CFValue, CFStore> input) {
-        TransferResult<CFValue, CFStore> result = super.visitAssignment(node, input);
-        Node lhs = node.getTarget();
-        if (lhs instanceof FieldAccessNode) {
-            FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
-            accumulate(fieldAccess.getReceiver(), result, fieldAccess.getFieldName());
-        }
-        return result;
+  @Override
+  public TransferResult<CFValue, CFStore> visitAssignment(
+      final AssignmentNode node, final TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitAssignment(node, input);
+    Node lhs = node.getTarget();
+    if (lhs instanceof FieldAccessNode) {
+      FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
+      accumulate(fieldAccess.getReceiver(), result, fieldAccess.getFieldName());
     }
+    return result;
+  }
 }

@@ -16,19 +16,13 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @Category(WholeProgramInferenceNullnessJaifsTest.class)
 public class WholeProgramInferenceNullnessJaifsTest extends CheckerFrameworkPerDirectoryTest {
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceNullnessJaifsTest(List<File> testFiles) {
-        super(
-                testFiles,
-                NullnessChecker.class,
-                "nullness",
-                "-Anomsgtext",
-                "-Ainfer=jaifs",
-                "-Awarns");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public WholeProgramInferenceNullnessJaifsTest(List<File> testFiles) {
+    super(testFiles, NullnessChecker.class, "nullness", "-Anomsgtext", "-Ainfer=jaifs", "-Awarns");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"wpi-nullness/non-annotated"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"wpi-nullness/non-annotated"};
+  }
 }

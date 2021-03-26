@@ -17,83 +17,80 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 
 /** A live variable transfer function. */
 public class LiveVarTransfer
-        extends AbstractNodeVisitor<
-                TransferResult<LiveVarValue, LiveVarStore>,
-                TransferInput<LiveVarValue, LiveVarStore>>
-        implements BackwardTransferFunction<LiveVarValue, LiveVarStore> {
+    extends AbstractNodeVisitor<
+        TransferResult<LiveVarValue, LiveVarStore>, TransferInput<LiveVarValue, LiveVarStore>>
+    implements BackwardTransferFunction<LiveVarValue, LiveVarStore> {
 
-    @Override
-    public LiveVarStore initialNormalExitStore(
-            UnderlyingAST underlyingAST, @Nullable List<ReturnNode> returnNodes) {
-        return new LiveVarStore();
-    }
+  @Override
+  public LiveVarStore initialNormalExitStore(
+      UnderlyingAST underlyingAST, @Nullable List<ReturnNode> returnNodes) {
+    return new LiveVarStore();
+  }
 
-    @Override
-    public LiveVarStore initialExceptionalExitStore(UnderlyingAST underlyingAST) {
-        return new LiveVarStore();
-    }
+  @Override
+  public LiveVarStore initialExceptionalExitStore(UnderlyingAST underlyingAST) {
+    return new LiveVarStore();
+  }
 
-    @Override
-    public RegularTransferResult<LiveVarValue, LiveVarStore> visitNode(
-            Node n, TransferInput<LiveVarValue, LiveVarStore> p) {
-        return new RegularTransferResult<>(null, p.getRegularStore());
-    }
+  @Override
+  public RegularTransferResult<LiveVarValue, LiveVarStore> visitNode(
+      Node n, TransferInput<LiveVarValue, LiveVarStore> p) {
+    return new RegularTransferResult<>(null, p.getRegularStore());
+  }
 
-    @Override
-    public RegularTransferResult<LiveVarValue, LiveVarStore> visitAssignment(
-            AssignmentNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
-        RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
-                (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitAssignment(n, p);
-        processLiveVarInAssignment(
-                n.getTarget(), n.getExpression(), transferResult.getRegularStore());
-        return transferResult;
-    }
+  @Override
+  public RegularTransferResult<LiveVarValue, LiveVarStore> visitAssignment(
+      AssignmentNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
+    RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
+        (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitAssignment(n, p);
+    processLiveVarInAssignment(n.getTarget(), n.getExpression(), transferResult.getRegularStore());
+    return transferResult;
+  }
 
-    @Override
-    public RegularTransferResult<LiveVarValue, LiveVarStore> visitStringConcatenateAssignment(
-            StringConcatenateAssignmentNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
-        RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
-                (RegularTransferResult<LiveVarValue, LiveVarStore>)
-                        super.visitStringConcatenateAssignment(n, p);
-        processLiveVarInAssignment(
-                n.getLeftOperand(), n.getRightOperand(), transferResult.getRegularStore());
-        return transferResult;
-    }
+  @Override
+  public RegularTransferResult<LiveVarValue, LiveVarStore> visitStringConcatenateAssignment(
+      StringConcatenateAssignmentNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
+    RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
+        (RegularTransferResult<LiveVarValue, LiveVarStore>)
+            super.visitStringConcatenateAssignment(n, p);
+    processLiveVarInAssignment(
+        n.getLeftOperand(), n.getRightOperand(), transferResult.getRegularStore());
+    return transferResult;
+  }
 
-    @Override
-    public RegularTransferResult<LiveVarValue, LiveVarStore> visitMethodInvocation(
-            MethodInvocationNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
-        RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
-                (RegularTransferResult<LiveVarValue, LiveVarStore>)
-                        super.visitMethodInvocation(n, p);
-        LiveVarStore store = transferResult.getRegularStore();
-        for (Node arg : n.getArguments()) {
-            store.addUseInExpression(arg);
-        }
-        return transferResult;
+  @Override
+  public RegularTransferResult<LiveVarValue, LiveVarStore> visitMethodInvocation(
+      MethodInvocationNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
+    RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
+        (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitMethodInvocation(n, p);
+    LiveVarStore store = transferResult.getRegularStore();
+    for (Node arg : n.getArguments()) {
+      store.addUseInExpression(arg);
     }
+    return transferResult;
+  }
 
-    @Override
-    public RegularTransferResult<LiveVarValue, LiveVarStore> visitObjectCreation(
-            ObjectCreationNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
-        RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
-                (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitObjectCreation(n, p);
-        LiveVarStore store = transferResult.getRegularStore();
-        for (Node arg : n.getArguments()) {
-            store.addUseInExpression(arg);
-        }
-        return transferResult;
+  @Override
+  public RegularTransferResult<LiveVarValue, LiveVarStore> visitObjectCreation(
+      ObjectCreationNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
+    RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
+        (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitObjectCreation(n, p);
+    LiveVarStore store = transferResult.getRegularStore();
+    for (Node arg : n.getArguments()) {
+      store.addUseInExpression(arg);
     }
+    return transferResult;
+  }
 
-    /**
-     * Update the information of live variables from an assignment statement.
-     *
-     * @param variable the variable that should be killed
-     * @param expression the expression in which the variables should be added
-     * @param store the live variable store
-     */
-    private void processLiveVarInAssignment(Node variable, Node expression, LiveVarStore store) {
-        store.killLiveVar(new LiveVarValue(variable));
-        store.addUseInExpression(expression);
-    }
+  /**
+   * Update the information of live variables from an assignment statement.
+   *
+   * @param variable the variable that should be killed
+   * @param expression the expression in which the variables should be added
+   * @param store the live variable store
+   */
+  private void processLiveVarInAssignment(Node variable, Node expression, LiveVarStore store) {
+    store.killLiveVar(new LiveVarValue(variable));
+    store.addUseInExpression(expression);
+  }
 }

@@ -5,5 +5,5 @@ import java.util.List;
 import java.util.Map;
 
 public class Issue696 {
-    public static void test(final List<? extends Map.Entry<byte[], byte[]>> input) {}
+  public static void test(final List<? extends Map.Entry<byte[], byte[]>> input) {}
 }
