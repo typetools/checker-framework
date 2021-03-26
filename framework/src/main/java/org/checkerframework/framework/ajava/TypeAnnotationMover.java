@@ -24,24 +24,20 @@ import org.checkerframework.framework.stub.AnnotationFileParser;
  * Moves annotations in a JavaParser AST from declaration position onto the types they correspond
  * to.
  *
- * <p>When parsing a method or file in Java such as {@code @Tainted String myField}, JavaParser
- * doesn't know if {@code @Tainted} belongs to the field declaration itself or to the type {@code
- * String}, so it makes it a declaration annotation. Where the annotation actually belongs depends
- * on the type of the annotation, which JavaParser doesn't have access to.
+ * <p>When parsing a method or field such as {@code @Tainted String myField}, JavaParser puts all
+ * annotations on the declaration.
  *
- * <p>For each such annotation, this class checks if the current instance of Java recognizes it.
- * Since this file should be run as part of the Checker Framework, in particular this will include
- * all Checker Framework annotations. If it recognizes the annotation, and it can only appear on the
- * field or method type and not the declaration, then it moves the annotation to the type position.
+ * <p>For each non-declaration annotation on a method or field declaration, this class moves it to
+ * the type position. A non-declaration annotation is one with a {@code TYPE_USE} target but no
+ * declaration target.
  */
 public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     /**
      * Annotations imported by the file, stored as a mapping from names to the TypeElements for the
-     * annotations. When checking an annotation in the file, the annotations in this field determine
-     * if the annotation was imported or not.
+     * annotations.
      */
     private Map<String, TypeElement> allAnnotations;
-    /** Utility class for working with Elements. */
+    /** Element utilities. */
     private Elements elements;
 
     /**
@@ -49,9 +45,9 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
      * all the annotations imported by the file to be visited. When examining an annotation in the
      * file, looks up the name in {@code allAnnotations} to find the TypeElement for the annotation.
      *
-     * @param allAnnotations mapping from annotation names to TypeElements for the annotations for
-     *     each annotation imported by the file
-     * @param elements instance of {@code Element}s
+     * @param allAnnotations mapping from annotation name to TypeElement for the annotations
+     *     imported by the file
+     * @param elements Element utilities
      */
     public TypeAnnotationMover(Map<String, TypeElement> allAnnotations, Elements elements) {
         this.allAnnotations = new HashMap<>(allAnnotations);
