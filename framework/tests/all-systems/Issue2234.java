@@ -5,12 +5,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 class Issue2234Super<T> {
-    Issue2234Super(List<Integer> p) {}
+  Issue2234Super(List<Integer> p) {}
 }
 
 @SuppressWarnings("unchecked") // raw supertype
 class Issue2234Sub extends Issue2234Super {
-    Issue2234Sub() {
-        super(new LinkedList<>());
-    }
+  Issue2234Sub() {
+    super(new LinkedList<>());
+  }
 }

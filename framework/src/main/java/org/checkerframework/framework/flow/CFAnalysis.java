@@ -12,26 +12,25 @@ import org.checkerframework.javacutil.Pair;
 /** The default org.checkerframework.dataflow analysis used in the Checker Framework. */
 public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
-    public CFAnalysis(
-            BaseTypeChecker checker,
-            GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-            List<Pair<VariableElement, CFValue>> fieldValues) {
-        super(checker, factory, fieldValues);
-    }
+  public CFAnalysis(
+      BaseTypeChecker checker,
+      GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
+      List<Pair<VariableElement, CFValue>> fieldValues) {
+    super(checker, factory, fieldValues);
+  }
 
-    @Override
-    public CFStore createEmptyStore(boolean sequentialSemantics) {
-        return new CFStore(this, sequentialSemantics);
-    }
+  @Override
+  public CFStore createEmptyStore(boolean sequentialSemantics) {
+    return new CFStore(this, sequentialSemantics);
+  }
 
-    @Override
-    public CFStore createCopiedStore(CFStore s) {
-        return new CFStore(s);
-    }
+  @Override
+  public CFStore createCopiedStore(CFStore s) {
+    return new CFStore(s);
+  }
 
-    @Override
-    public CFValue createAbstractValue(
-            Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
-        return defaultCreateAbstractValue(this, annotations, underlyingType);
-    }
+  @Override
+  public CFValue createAbstractValue(Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
+    return defaultCreateAbstractValue(this, annotations, underlyingType);
+  }
 }

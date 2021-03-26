@@ -32,6 +32,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface TargetLocations {
-    /** Type uses at which the qualifier is permitted to be written in source code. */
-    TypeUseLocation[] value();
+  /** Type uses at which the qualifier is permitted to be written in source code. */
+  TypeUseLocation[] value();
 }

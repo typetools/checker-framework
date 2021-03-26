@@ -3,9 +3,9 @@
 
 public class Issue376 {
 
-    interface I {}
+  interface I {}
 
-    <Q extends Enum<Q> & I> void m(Class<Q> clazz, String name) {
-        I i = Enum.valueOf(clazz, name);
-    }
+  <Q extends Enum<Q> & I> void m(Class<Q> clazz, String name) {
+    I i = Enum.valueOf(clazz, name);
+  }
 }

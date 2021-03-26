@@ -29,4 +29,4 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  * @param <S> the store type used in the analysis
  */
 public interface TransferFunction<V extends AbstractValue<V>, S extends Store<S>>
-        extends NodeVisitor<TransferResult<V, S>, TransferInput<V, S>> {}
+    extends NodeVisitor<TransferResult<V, S>, TransferInput<V, S>> {}

@@ -5,11 +5,11 @@
 
 public class InferTypeArgsConditionalExpression {
 
-    public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
-        bar(flag ? real : other);
-    }
+  public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
+    bar(flag ? real : other);
+  }
 
-    <Q> void bar(Generic<? extends Q> param) {}
+  <Q> void bar(Generic<? extends Q> param) {}
 
-    interface Generic<F> {}
+  interface Generic<F> {}
 }

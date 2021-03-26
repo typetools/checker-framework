@@ -6,16 +6,16 @@ import java.util.Optional;
  */
 public class Marks4 {
 
-    String getDefault() {
-        return "Fozzy Bear";
-    }
+  String getDefault() {
+    return "Fozzy Bear";
+  }
 
-    String process_bad(String s) {
-        // :: warning: (introduce.eliminate)
-        return Optional.ofNullable(s).orElseGet(this::getDefault);
-    }
+  String process_bad(String s) {
+    // :: warning: (introduce.eliminate)
+    return Optional.ofNullable(s).orElseGet(this::getDefault);
+  }
 
-    String process_good(String s) {
-        return (s != null) ? s : getDefault();
-    }
+  String process_good(String s) {
+    return (s != null) ? s : getDefault();
+  }
 }

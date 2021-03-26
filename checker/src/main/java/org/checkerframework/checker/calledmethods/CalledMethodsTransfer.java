@@ -12,27 +12,27 @@ import org.checkerframework.framework.flow.CFValue;
 /** A transfer function that accumulates the names of methods called. */
 public class CalledMethodsTransfer extends AccumulationTransfer {
 
-    /**
-     * Create a new CalledMethodsTransfer.
-     *
-     * @param analysis the analysis
-     */
-    public CalledMethodsTransfer(final CFAnalysis analysis) {
-        super(analysis);
-    }
+  /**
+   * Create a new CalledMethodsTransfer.
+   *
+   * @param analysis the analysis
+   */
+  public CalledMethodsTransfer(final CFAnalysis analysis) {
+    super(analysis);
+  }
 
-    @Override
-    public TransferResult<CFValue, CFStore> visitMethodInvocation(
-            final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
-        TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
-        Node receiver = node.getTarget().getReceiver();
-        if (receiver != null) {
-            String methodName = node.getTarget().getMethod().getSimpleName().toString();
-            methodName =
-                    ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
-                            .adjustMethodNameUsingValueChecker(methodName, node.getTree());
-            accumulate(receiver, result, methodName);
-        }
-        return result;
+  @Override
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(
+      final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
+    Node receiver = node.getTarget().getReceiver();
+    if (receiver != null) {
+      String methodName = node.getTarget().getMethod().getSimpleName().toString();
+      methodName =
+          ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
+              .adjustMethodNameUsingValueChecker(methodName, node.getTree());
+      accumulate(receiver, result, methodName);
     }
+    return result;
+  }
 }

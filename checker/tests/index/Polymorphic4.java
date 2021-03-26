@@ -4,10 +4,10 @@ import org.checkerframework.common.value.qual.PolyValue;
 
 public class Polymorphic4 {
 
-    public static String @PolyValue [] quantify(String @PolyValue [] vars) {
+  public static String @PolyValue [] quantify(String @PolyValue [] vars) {
 
-        String[] result = new String[vars.length];
+    String[] result = new String[vars.length];
 
-        return result;
-    }
+    return result;
+  }
 }

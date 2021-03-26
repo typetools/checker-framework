@@ -7,11 +7,11 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class Issue556a {
 
-    public static final Issue556a SELF = new Issue556a();
-    private static final Object OBJ = new Object();
+  public static final Issue556a SELF = new Issue556a();
+  private static final Object OBJ = new Object();
 
-    private Issue556a() {
-        // :: error: (assignment.type.incompatible)
-        @NonNull Object o = OBJ;
-    }
+  private Issue556a() {
+    // :: error: (assignment.type.incompatible)
+    @NonNull Object o = OBJ;
+  }
 }

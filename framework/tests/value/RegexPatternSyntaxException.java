@@ -3,6 +3,6 @@
 import org.checkerframework.common.value.qual.*;
 
 public class RegexPatternSyntaxException {
-    // :: warning: invalid.matches.regex
-    void stringConstants(@MatchesRegex("(a*") String a) {}
+  // :: warning: invalid.matches.regex
+  void stringConstants(@MatchesRegex("(a*") String a) {}
 }

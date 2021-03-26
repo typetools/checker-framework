@@ -4,15 +4,15 @@ import org.checkerframework.checker.nullness.qual.*;
 
 @AutoValue
 abstract class NonAVBuilder {
-    abstract String name();
+  abstract String name();
 
-    public Builder toBuilder() {
-        return new Builder(this);
-    }
+  public Builder toBuilder() {
+    return new Builder(this);
+  }
 
-    // NOT an AutoValue builder
-    static final class Builder {
+  // NOT an AutoValue builder
+  static final class Builder {
 
-        Builder(NonAVBuilder b) {}
-    }
+    Builder(NonAVBuilder b) {}
+  }
 }

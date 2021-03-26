@@ -4,7 +4,7 @@ import org.checkerframework.checker.tainting.qual.Tainted;
 // https://github.com/typetools/checker-framework/issues/275
 // Not tainting-specific, but a convenient location.
 public class NestedTypeConstructor {
-    class Inner {
-        @Tainted Inner() {}
-    }
+  class Inner {
+    @Tainted Inner() {}
+  }
 }

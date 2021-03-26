@@ -61,141 +61,139 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * declaration annotation phase before classes are analyzed.
  */
 public abstract class AbstractTypeProcessor extends AbstractProcessor {
-    /**
-     * The set of fully-qualified element names that should be type-checked. We store the names of
-     * the elements, in order to prevent possible confusion between different Element
-     * instantiations.
-     */
-    private final Set<Name> elements = new HashSet<>();
+  /**
+   * The set of fully-qualified element names that should be type-checked. We store the names of the
+   * elements, in order to prevent possible confusion between different Element instantiations.
+   */
+  private final Set<Name> elements = new HashSet<>();
 
-    /**
-     * Method {@link #typeProcessingStart()} must be invoked exactly once, before any invocation of
-     * {@link #typeProcess(TypeElement, TreePath)}.
-     */
-    private boolean hasInvokedTypeProcessingStart = false;
+  /**
+   * Method {@link #typeProcessingStart()} must be invoked exactly once, before any invocation of
+   * {@link #typeProcess(TypeElement, TreePath)}.
+   */
+  private boolean hasInvokedTypeProcessingStart = false;
 
-    /**
-     * Method {@link #typeProcessingOver} must be invoked exactly once, after the last invocation of
-     * {@link #typeProcess(TypeElement, TreePath)}.
-     */
-    private boolean hasInvokedTypeProcessingOver = false;
+  /**
+   * Method {@link #typeProcessingOver} must be invoked exactly once, after the last invocation of
+   * {@link #typeProcess(TypeElement, TreePath)}.
+   */
+  private boolean hasInvokedTypeProcessingOver = false;
 
-    /** The TaskListener registered for completion of attribution. */
-    private final AttributionTaskListener listener = new AttributionTaskListener();
+  /** The TaskListener registered for completion of attribution. */
+  private final AttributionTaskListener listener = new AttributionTaskListener();
 
-    /** Constructor for subclasses to call. */
-    protected AbstractTypeProcessor() {}
+  /** Constructor for subclasses to call. */
+  protected AbstractTypeProcessor() {}
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>Register a TaskListener that will get called after FLOW.
-     */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Register a TaskListener that will get called after FLOW.
+   */
+  @Override
+  public synchronized void init(ProcessingEnvironment env) {
+    super.init(env);
+    JavacTask.instance(env).addTaskListener(listener);
+    Context ctx = ((JavacProcessingEnvironment) processingEnv).getContext();
+    JavaCompiler compiler = JavaCompiler.instance(ctx);
+    compiler.shouldStopPolicyIfNoError =
+        CompileState.max(compiler.shouldStopPolicyIfNoError, CompileState.FLOW);
+    compiler.shouldStopPolicyIfError =
+        CompileState.max(compiler.shouldStopPolicyIfError, CompileState.FLOW);
+  }
+
+  /**
+   * The use of this method is obsolete in type processors. The method is called during declaration
+   * annotation processing phase only. It registers the names of elements to process.
+   */
+  @Override
+  public final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    for (TypeElement elem : ElementFilter.typesIn(roundEnv.getRootElements())) {
+      elements.add(elem.getQualifiedName());
+    }
+    return false;
+  }
+
+  /**
+   * A method to be called once before the first call to typeProcess.
+   *
+   * <p>Subclasses may override this method to do any initialization work.
+   */
+  public void typeProcessingStart() {}
+
+  /**
+   * Processes a fully-analyzed class that contains a supported annotation (see {@link
+   * #getSupportedAnnotationTypes()}).
+   *
+   * <p>The passed class is always valid type-checked Java code.
+   *
+   * @param element element of the analyzed class
+   * @param tree the tree path to the element, with the leaf being a {@link ClassTree}
+   */
+  public abstract void typeProcess(TypeElement element, TreePath tree);
+
+  /**
+   * A method to be called once all the classes are processed.
+   *
+   * <p>Subclasses may override this method to do any aggregate analysis (e.g. generate report,
+   * persistence) or resource deallocation.
+   *
+   * <p>Method {@link #getCompilerLog()} can be used to access the number of compiler errors.
+   */
+  public void typeProcessingOver() {}
+
+  /**
+   * Return the compiler log, which contains errors and warnings.
+   *
+   * @return the compiler log, which contains errors and warnings
+   */
+  @SideEffectFree
+  public Log getCompilerLog() {
+    return Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
+  }
+
+  /** A task listener that invokes the processor whenever a class is fully analyzed. */
+  private final class AttributionTaskListener implements TaskListener {
+
     @Override
-    public synchronized void init(ProcessingEnvironment env) {
-        super.init(env);
-        JavacTask.instance(env).addTaskListener(listener);
-        Context ctx = ((JavacProcessingEnvironment) processingEnv).getContext();
-        JavaCompiler compiler = JavaCompiler.instance(ctx);
-        compiler.shouldStopPolicyIfNoError =
-                CompileState.max(compiler.shouldStopPolicyIfNoError, CompileState.FLOW);
-        compiler.shouldStopPolicyIfError =
-                CompileState.max(compiler.shouldStopPolicyIfError, CompileState.FLOW);
+    public void finished(TaskEvent e) {
+      if (e.getKind() != TaskEvent.Kind.ANALYZE) {
+        return;
+      }
+
+      if (!hasInvokedTypeProcessingStart) {
+        typeProcessingStart();
+        hasInvokedTypeProcessingStart = true;
+      }
+
+      if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
+        typeProcessingOver();
+        hasInvokedTypeProcessingOver = true;
+      }
+
+      if (e.getTypeElement() == null) {
+        throw new BugInCF("event task without a type element");
+      }
+      if (e.getCompilationUnit() == null) {
+        throw new BugInCF("event task without compilation unit");
+      }
+
+      if (!elements.remove(e.getTypeElement().getQualifiedName())) {
+        return;
+      }
+
+      TypeElement elem = e.getTypeElement();
+      TreePath p = Trees.instance(processingEnv).getPath(elem);
+
+      typeProcess(elem, p);
+
+      if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
+        typeProcessingOver();
+        hasInvokedTypeProcessingOver = true;
+      }
     }
 
-    /**
-     * The use of this method is obsolete in type processors. The method is called during
-     * declaration annotation processing phase only. It registers the names of elements to process.
-     */
     @Override
-    public final boolean process(
-            Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (TypeElement elem : ElementFilter.typesIn(roundEnv.getRootElements())) {
-            elements.add(elem.getQualifiedName());
-        }
-        return false;
-    }
-
-    /**
-     * A method to be called once before the first call to typeProcess.
-     *
-     * <p>Subclasses may override this method to do any initialization work.
-     */
-    public void typeProcessingStart() {}
-
-    /**
-     * Processes a fully-analyzed class that contains a supported annotation (see {@link
-     * #getSupportedAnnotationTypes()}).
-     *
-     * <p>The passed class is always valid type-checked Java code.
-     *
-     * @param element element of the analyzed class
-     * @param tree the tree path to the element, with the leaf being a {@link ClassTree}
-     */
-    public abstract void typeProcess(TypeElement element, TreePath tree);
-
-    /**
-     * A method to be called once all the classes are processed.
-     *
-     * <p>Subclasses may override this method to do any aggregate analysis (e.g. generate report,
-     * persistence) or resource deallocation.
-     *
-     * <p>Method {@link #getCompilerLog()} can be used to access the number of compiler errors.
-     */
-    public void typeProcessingOver() {}
-
-    /**
-     * Return the compiler log, which contains errors and warnings.
-     *
-     * @return the compiler log, which contains errors and warnings
-     */
-    @SideEffectFree
-    public Log getCompilerLog() {
-        return Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
-    }
-
-    /** A task listener that invokes the processor whenever a class is fully analyzed. */
-    private final class AttributionTaskListener implements TaskListener {
-
-        @Override
-        public void finished(TaskEvent e) {
-            if (e.getKind() != TaskEvent.Kind.ANALYZE) {
-                return;
-            }
-
-            if (!hasInvokedTypeProcessingStart) {
-                typeProcessingStart();
-                hasInvokedTypeProcessingStart = true;
-            }
-
-            if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
-                typeProcessingOver();
-                hasInvokedTypeProcessingOver = true;
-            }
-
-            if (e.getTypeElement() == null) {
-                throw new BugInCF("event task without a type element");
-            }
-            if (e.getCompilationUnit() == null) {
-                throw new BugInCF("event task without compilation unit");
-            }
-
-            if (!elements.remove(e.getTypeElement().getQualifiedName())) {
-                return;
-            }
-
-            TypeElement elem = e.getTypeElement();
-            TreePath p = Trees.instance(processingEnv).getPath(elem);
-
-            typeProcess(elem, p);
-
-            if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
-                typeProcessingOver();
-                hasInvokedTypeProcessingOver = true;
-            }
-        }
-
-        @Override
-        public void started(TaskEvent e) {}
-    }
+    public void started(TaskEvent e) {}
+  }
 }

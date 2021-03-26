@@ -60,10 +60,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.ANNOTATION_TYPE})
 public @interface PostconditionAnnotation {
-    /**
-     * The qualifier that will be established as a postcondition.
-     *
-     * <p>This element is analogous to {@link EnsuresQualifier#qualifier()}.
-     */
-    Class<? extends Annotation> qualifier();
+  /**
+   * The qualifier that will be established as a postcondition.
+   *
+   * <p>This element is analogous to {@link EnsuresQualifier#qualifier()}.
+   */
+  Class<? extends Annotation> qualifier();
 }

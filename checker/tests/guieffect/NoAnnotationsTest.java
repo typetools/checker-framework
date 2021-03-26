@@ -1,3 +1,3 @@
 public class NoAnnotationsTest {
-    public boolean b;
+  public boolean b;
 }

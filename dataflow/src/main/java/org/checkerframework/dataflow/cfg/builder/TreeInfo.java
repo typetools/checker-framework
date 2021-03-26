@@ -4,11 +4,11 @@ import javax.lang.model.type.TypeMirror;
 
 /** A tuple with 4 named elements. */
 interface TreeInfo {
-    boolean isBoxed();
+  boolean isBoxed();
 
-    boolean isNumeric();
+  boolean isNumeric();
 
-    boolean isBoolean();
+  boolean isBoolean();
 
-    TypeMirror unboxedType();
+  TypeMirror unboxedType();
 }

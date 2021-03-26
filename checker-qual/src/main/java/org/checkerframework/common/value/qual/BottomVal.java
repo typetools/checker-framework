@@ -21,17 +21,17 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @SubtypeOf({
-    ArrayLen.class,
-    BoolVal.class,
-    DoubleVal.class,
-    IntVal.class,
-    StringVal.class,
-    MatchesRegex.class,
-    ArrayLenRange.class,
-    IntRange.class,
-    IntRangeFromPositive.class,
-    IntRangeFromGTENegativeOne.class,
-    IntRangeFromNonNegative.class
+  ArrayLen.class,
+  BoolVal.class,
+  DoubleVal.class,
+  IntVal.class,
+  StringVal.class,
+  MatchesRegex.class,
+  ArrayLenRange.class,
+  IntRange.class,
+  IntRangeFromPositive.class,
+  IntRangeFromGTENegativeOne.class,
+  IntRangeFromNonNegative.class
 })
 @InvisibleQualifier
 public @interface BottomVal {}

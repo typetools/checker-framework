@@ -19,8 +19,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf(UnknownVal.class)
 public @interface ArrayLenRange {
-    /** Smallest value in the range, inclusive. */
-    int from() default 0;
-    /** Largest value in the range, inclusive. */
-    int to() default Integer.MAX_VALUE;
+  /** Smallest value in the range, inclusive. */
+  int from() default 0;
+  /** Largest value in the range, inclusive. */
+  int to() default Integer.MAX_VALUE;
 }

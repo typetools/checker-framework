@@ -21,9 +21,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface StubFiles {
-    /**
-     * Stub file names. These are basenames: they include the extension (usually ".astub"), but no
-     * directory component.
-     */
-    String[] value();
+  /**
+   * Stub file names. These are basenames: they include the extension (usually ".astub"), but no
+   * directory component.
+   */
+  String[] value();
 }

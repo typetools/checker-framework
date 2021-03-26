@@ -1,5 +1,5 @@
-NPE2Test.java:3:43: compiler.err.proc.messager: (assignment.type.incompatible)
-NPE2Test.java:8:46: compiler.err.proc.messager: (assignment.type.incompatible)
-NPE2Test.java:13:46: compiler.err.proc.messager: (assignment.type.incompatible)
-NPE2Test.java:16:44: compiler.err.proc.messager: (assignment.type.incompatible)
+NPE2Test.java:3:39: compiler.err.proc.messager: (assignment.type.incompatible)
+NPE2Test.java:8:42: compiler.err.proc.messager: (assignment.type.incompatible)
+NPE2Test.java:13:42: compiler.err.proc.messager: (assignment.type.incompatible)
+NPE2Test.java:16:40: compiler.err.proc.messager: (assignment.type.incompatible)
 4 errors

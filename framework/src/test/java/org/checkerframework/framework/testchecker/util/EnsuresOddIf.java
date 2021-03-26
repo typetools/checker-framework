@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @ConditionalPostconditionAnnotation(qualifier = Odd.class)
 @InheritedAnnotation
 public @interface EnsuresOddIf {
-    String[] expression();
+  String[] expression();
 
-    boolean result();
+  boolean result();
 }
