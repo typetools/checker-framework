@@ -2,15 +2,15 @@
 @SuppressWarnings("initialization.")
 public class Issue1590a {
 
-    private String a;
+  private String a;
 
-    // :: error: (initialization.fields.uninitialized)
-    public Issue1590a() {
-        // :: error: (method.invocation.invalid)
-        init();
-    }
+  // :: error: (initialization.fields.uninitialized)
+  public Issue1590a() {
+    // :: error: (method.invocation.invalid)
+    init();
+  }
 
-    public void init() {
-        a = "gude";
-    }
+  public void init() {
+    a = "gude";
+  }
 }

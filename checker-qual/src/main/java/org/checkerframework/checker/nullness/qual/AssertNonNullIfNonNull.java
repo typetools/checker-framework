@@ -40,10 +40,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface AssertNonNullIfNonNull {
 
-    /**
-     * Java expression(s) that are non-null after the method returns a non-null value.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] value();
+  /**
+   * Java expression(s) that are non-null after the method returns a non-null value.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] value();
 }

@@ -36,17 +36,17 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(LTEqLengthOf.class)
 public @interface LTLengthOf {
-    /** Sequences, each of which is longer than the annotated expression's value. */
-    @JavaExpression
-    public String[] value();
+  /** Sequences, each of which is longer than the annotated expression's value. */
+  @JavaExpression
+  public String[] value();
 
-    /**
-     * This expression plus the annotated expression is less than the length of the sequence. The
-     * {@code offset} element must ether be empty or the same length as {@code value}.
-     *
-     * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
-     * expressions. For example, {@code @LessThanLengthOf(value = "a", offset = "x + y + 2"}}.
-     */
-    @JavaExpression
-    String[] offset() default {};
+  /**
+   * This expression plus the annotated expression is less than the length of the sequence. The
+   * {@code offset} element must ether be empty or the same length as {@code value}.
+   *
+   * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
+   * expressions. For example, {@code @LessThanLengthOf(value = "a", offset = "x + y + 2"}}.
+   */
+  @JavaExpression
+  String[] offset() default {};
 }

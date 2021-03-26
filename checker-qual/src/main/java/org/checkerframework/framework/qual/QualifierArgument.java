@@ -37,10 +37,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface QualifierArgument {
-    /**
-     * Specifies the name of the argument of the qualifier, that is passed the values held in the
-     * annotated element. If the value is omitted or is empty, then the name of the annotated
-     * element is used as the argument name.
-     */
-    String value() default "";
+  /**
+   * Specifies the name of the argument of the qualifier, that is passed the values held in the
+   * annotated element. If the value is omitted or is empty, then the name of the annotated element
+   * is used as the argument name.
+   */
+  String value() default "";
 }

@@ -3,6 +3,6 @@
 // If GwiParent is read from bytecode, the error occurs.
 
 public class GenericWildcardInheritance extends GwiParent {
-    @Override
-    public void syntaxError(Recognizer<?> recognizer) {}
+  @Override
+  public void syntaxError(Recognizer<?> recognizer) {}
 }

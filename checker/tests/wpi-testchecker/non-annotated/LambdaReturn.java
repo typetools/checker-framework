@@ -4,15 +4,15 @@
 import java.io.FileFilter;
 
 public class LambdaReturn {
-    void test() {
-        FileFilter docxFilter =
-                pathname -> {
-                    // We only want to process *.docx files, everything else can be skipped.
-                    if (pathname.isFile() && pathname.getName().matches(".*\\.docx")) {
-                        return true;
-                    }
+  void test() {
+    FileFilter docxFilter =
+        pathname -> {
+          // We only want to process *.docx files, everything else can be skipped.
+          if (pathname.isFile() && pathname.getName().matches(".*\\.docx")) {
+            return true;
+          }
 
-                    return false;
-                };
-    }
+          return false;
+        };
+  }
 }

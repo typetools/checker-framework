@@ -11,18 +11,18 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class NullnessPermitClearPropertyTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public NullnessPermitClearPropertyTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.checker.nullness.NullnessChecker.class,
-                "nullness",
-                "-Anomsgtext",
-                "-Alint=permitClearProperty");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public NullnessPermitClearPropertyTest(List<File> testFiles) {
+    super(
+        testFiles,
+        org.checkerframework.checker.nullness.NullnessChecker.class,
+        "nullness",
+        "-Anomsgtext",
+        "-Alint=permitClearProperty");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"nullness-permitClearProperty"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"nullness-permitClearProperty"};
+  }
 }

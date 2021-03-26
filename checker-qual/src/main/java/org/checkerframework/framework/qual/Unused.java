@@ -39,9 +39,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface Unused {
-    /**
-     * The field that is annotated with @Unused may not be accessed via a receiver that is annotated
-     * with the "when" annotation.
-     */
-    Class<? extends Annotation> when();
+  /**
+   * The field that is annotated with @Unused may not be accessed via a receiver that is annotated
+   * with the "when" annotation.
+   */
+  Class<? extends Annotation> when();
 }

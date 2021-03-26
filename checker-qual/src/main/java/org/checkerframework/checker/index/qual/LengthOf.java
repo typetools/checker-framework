@@ -29,6 +29,6 @@ import java.lang.annotation.Target;
 // read it.
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER, ElementType.METHOD})
 public @interface LengthOf {
-    /** Sequences that the annotated expression is equal to the length of. */
-    String[] value();
+  /** Sequences that the annotated expression is equal to the length of. */
+  String[] value();
 }

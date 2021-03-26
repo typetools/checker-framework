@@ -1,6 +1,6 @@
 package lib;
 
 public class Lib {
-    @Anno
-    public static void foo() {}
+  @Anno
+  public static void foo() {}
 }

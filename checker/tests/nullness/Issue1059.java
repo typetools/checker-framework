@@ -5,18 +5,18 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue1059 {
-    @Nullable Object f;
+  @Nullable Object f;
 
-    @EnsuresNonNull({"f"})
-    void foo() {
-        f = new Object();
-    }
+  @EnsuresNonNull({"f"})
+  void foo() {
+    f = new Object();
+  }
 
-    void bar() {
-        switch (this.hashCode()) {
-            case 1:
-                foo();
-                Object dada = f.toString();
-        }
+  void bar() {
+    switch (this.hashCode()) {
+      case 1:
+        foo();
+        Object dada = f.toString();
     }
+  }
 }

@@ -6,8 +6,8 @@
  */
 
 public class Driver {
-    void test() {
-        Object o = null;
-        String v = String.valueOf(o);
-    }
+  void test() {
+    Object o = null;
+    String v = String.valueOf(o);
+  }
 }

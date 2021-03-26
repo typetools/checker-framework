@@ -23,18 +23,17 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownMethod.class})
 public @interface MethodVal {
-    /**
-     * The <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">binary
-     * name</a> of the class that declares this method.
-     */
-    String[] className();
+  /**
+   * The <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">binary
+   * name</a> of the class that declares this method.
+   */
+  String[] className();
 
-    /**
-     * The name of the method that this Method object represents. Use {@code <init>} for
-     * constructors.
-     */
-    String[] methodName();
+  /**
+   * The name of the method that this Method object represents. Use {@code <init>} for constructors.
+   */
+  String[] methodName();
 
-    /** The number of parameters to the method. */
-    int[] params();
+  /** The number of parameters to the method. */
+  int[] params();
 }

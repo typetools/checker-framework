@@ -1,2 +1,2 @@
-Foo.java:15:20: compiler.err.proc.messager: (flowexpr.parse.error)
+Foo.java:15:18: compiler.err.proc.messager: (flowexpr.parse.error)
 1 error

@@ -8,26 +8,26 @@ import java.util.Optional;
 @SuppressWarnings("optional.parameter")
 public class Marks3bJdk11 {
 
-    class Task {}
+  class Task {}
 
-    class Executor {
-        void runTask(Task t) {}
+  class Executor {
+    void runTask(Task t) {}
+  }
+
+  Executor executor = new Executor();
+
+  void bad2(Optional<Task> oTask) {
+    // :: warning: (prefer.ifpresent)
+    if (!oTask.isEmpty()) {
+      executor.runTask(oTask.get());
     }
+  }
 
-    Executor executor = new Executor();
-
-    void bad2(Optional<Task> oTask) {
-        // :: warning: (prefer.ifpresent)
-        if (!oTask.isEmpty()) {
-            executor.runTask(oTask.get());
-        }
+  void bad3(Optional<Task> oTask) {
+    // :: warning: (prefer.ifpresent)
+    if (oTask.isEmpty()) {
+    } else {
+      executor.runTask(oTask.get());
     }
-
-    void bad3(Optional<Task> oTask) {
-        // :: warning: (prefer.ifpresent)
-        if (oTask.isEmpty()) {
-        } else {
-            executor.runTask(oTask.get());
-        }
-    }
+  }
 }

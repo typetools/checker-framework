@@ -2,8 +2,8 @@
 // https://github.com/typetools/checker-framework/issues/502
 
 public class Issue502 {
-    @Override
-    public String toString() {
-        return "";
-    }
+  @Override
+  public String toString() {
+    return "";
+  }
 }

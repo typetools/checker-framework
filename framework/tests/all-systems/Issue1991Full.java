@@ -6,21 +6,21 @@ import java.io.Serializable;
 @SuppressWarnings("all") // Check for crashes only
 abstract class Issue1991Full {
 
-    abstract void g(A obj);
+  abstract void g(A obj);
 
-    static class A {
-        A(C<?, ?> c) {}
-    }
+  static class A {
+    A(C<?, ?> c) {}
+  }
 
-    interface B extends C<D, E> {}
+  interface B extends C<D, E> {}
 
-    interface C<X extends Comparable<? super X>, Y extends Serializable> {}
+  interface C<X extends Comparable<? super X>, Y extends Serializable> {}
 
-    public class E implements Serializable {}
+  public class E implements Serializable {}
 
-    abstract static class D implements Comparable<D>, Serializable {}
+  abstract static class D implements Comparable<D>, Serializable {}
 
-    void f(B b) {
-        g(new A(b));
-    }
+  void f(B b) {
+    g(new A(b));
+  }
 }

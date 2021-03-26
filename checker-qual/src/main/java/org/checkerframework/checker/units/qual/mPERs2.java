@@ -18,5 +18,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(Acceleration.class)
 @SuppressWarnings("checkstyle:typename")
 public @interface mPERs2 {
-    Prefix value() default Prefix.one;
+  Prefix value() default Prefix.one;
 }

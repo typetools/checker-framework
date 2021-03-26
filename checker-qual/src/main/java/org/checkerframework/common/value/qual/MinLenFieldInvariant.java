@@ -20,15 +20,15 @@ import org.checkerframework.framework.qual.FieldInvariant;
 @Inherited
 public @interface MinLenFieldInvariant {
 
-    /**
-     * Min length of the array. Must be greater than the min length of the array as declared in the
-     * superclass.
-     */
-    int[] minLen();
+  /**
+   * Min length of the array. Must be greater than the min length of the array as declared in the
+   * superclass.
+   */
+  int[] minLen();
 
-    /**
-     * The field that has an array length qualifier in the class on which the field invariant is
-     * written. The field must be final and declared in a superclass.
-     */
-    String[] field();
+  /**
+   * The field that has an array length qualifier in the class on which the field invariant is
+   * written. The field must be final and declared in a superclass.
+   */
+  String[] field();
 }

@@ -8,7 +8,7 @@
  *
  */
 public class Class1 {
-    Class1() {
-        super(this);
-    }
+  Class1() {
+    super(this);
+  }
 }

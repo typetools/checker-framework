@@ -21,31 +21,31 @@
 public class TryFinally {}
 
 class TestCabsentFabsent {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private final String foo;
+  private final String foo;
 
-    public TestCabsentFabsent() {
-        this.foo = getFoo();
-    }
+  public TestCabsentFabsent() {
+    this.foo = getFoo();
+  }
 }
 
 class TestCabsentFnoaction {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private final String foo;
+  private final String foo;
 
-    public TestCabsentFnoaction() {
-        try {
-            this.foo = getFoo();
-        } finally {
-            // no action in finally clause
-        }
+  public TestCabsentFnoaction() {
+    try {
+      this.foo = getFoo();
+    } finally {
+      // no action in finally clause
     }
+  }
 }
 
 // Not legal in Java: error: variable foo might not have been initialized
@@ -217,233 +217,233 @@ class TestCabsentFnoaction {
 // }
 
 class TestCabsentFabsentNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCabsentFabsentNonfinal() {
-        this.foo = getFoo();
-    }
+  public TestCabsentFabsentNonfinal() {
+    this.foo = getFoo();
+  }
 }
 
 class TestCabsentFnoactionNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCabsentFnoactionNonfinal() {
-        try {
-            this.foo = getFoo();
-        } finally {
-            // no action in finally clause
-        }
+  public TestCabsentFnoactionNonfinal() {
+    try {
+      this.foo = getFoo();
+    } finally {
+      // no action in finally clause
     }
+  }
 }
 
 class TestCtnoactionFabsentNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
-    // :: error: initialization.fields.uninitialized
-    public TestCtnoactionFabsentNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Throwable t) {
-            // no action on exception
-        }
+  private String foo;
+  // :: error: initialization.fields.uninitialized
+  public TestCtnoactionFabsentNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Throwable t) {
+      // no action on exception
     }
+  }
 }
 
 class TestCtnoactionFnoactionNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
-    // :: error: initialization.fields.uninitialized
-    public TestCtnoactionFnoactionNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Throwable t) {
-            // no action on exception
-        } finally {
-            // no action in finally clause
-        }
+  private String foo;
+  // :: error: initialization.fields.uninitialized
+  public TestCtnoactionFnoactionNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Throwable t) {
+      // no action on exception
+    } finally {
+      // no action in finally clause
     }
+  }
 }
 
 class TestCtmethodFabsentNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCtmethodFabsentNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Throwable t) {
-            this.foo = getFoo();
-        }
+  public TestCtmethodFabsentNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Throwable t) {
+      this.foo = getFoo();
     }
+  }
 }
 
 class TestCtmethodFnoactionNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCtmethodFnoactionNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Throwable t) {
-            this.foo = getFoo();
-        } finally {
-            // no action in finally clause
-        }
+  public TestCtmethodFnoactionNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Throwable t) {
+      this.foo = getFoo();
+    } finally {
+      // no action in finally clause
     }
+  }
 }
 
 class TestCtstringFabsentNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCtstringFabsentNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Throwable t) {
-            this.foo = "foo";
-        }
+  public TestCtstringFabsentNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Throwable t) {
+      this.foo = "foo";
     }
+  }
 }
 
 class TestCtstringFnoactionNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCtstringFnoactionNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Throwable t) {
-            this.foo = "foo";
-        } finally {
-            // no action in finally clause
-        }
+  public TestCtstringFnoactionNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Throwable t) {
+      this.foo = "foo";
+    } finally {
+      // no action in finally clause
     }
+  }
 }
 
 class TestCenoactionFabsentNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
-    // :: error: initialization.fields.uninitialized
-    public TestCenoactionFabsentNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Exception t) {
-            // no action on exception
-        }
+  private String foo;
+  // :: error: initialization.fields.uninitialized
+  public TestCenoactionFabsentNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Exception t) {
+      // no action on exception
     }
+  }
 }
 
 class TestCenoactionFnoactionNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
-    // :: error: initialization.fields.uninitialized
-    public TestCenoactionFnoactionNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Exception t) {
-            // no action on exception
-        } finally {
-            // no action in finally clause
-        }
+  private String foo;
+  // :: error: initialization.fields.uninitialized
+  public TestCenoactionFnoactionNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Exception t) {
+      // no action on exception
+    } finally {
+      // no action in finally clause
     }
+  }
 }
 
 class TestCemethodFabsentNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCemethodFabsentNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Exception t) {
-            this.foo = getFoo();
-        }
+  public TestCemethodFabsentNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Exception t) {
+      this.foo = getFoo();
     }
+  }
 }
 
 class TestCemethodFnoactionNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCemethodFnoactionNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Exception t) {
-            this.foo = getFoo();
-        } finally {
-            // no action in finally clause
-        }
+  public TestCemethodFnoactionNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Exception t) {
+      this.foo = getFoo();
+    } finally {
+      // no action in finally clause
     }
+  }
 }
 
 class TestCestringFabsentNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCestringFabsentNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Exception t) {
-            this.foo = "foo";
-        }
+  public TestCestringFabsentNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Exception t) {
+      this.foo = "foo";
     }
+  }
 }
 
 class TestCestringFnoactionNonfinal {
-    static String getFoo() {
-        return "foo";
-    }
+  static String getFoo() {
+    return "foo";
+  }
 
-    private String foo;
+  private String foo;
 
-    public TestCestringFnoactionNonfinal() {
-        try {
-            this.foo = getFoo();
-        } catch (Exception t) {
-            this.foo = "foo";
-        } finally {
-            // no action in finally clause
-        }
+  public TestCestringFnoactionNonfinal() {
+    try {
+      this.foo = getFoo();
+    } catch (Exception t) {
+      this.foo = "foo";
+    } finally {
+      // no action in finally clause
     }
+  }
 }

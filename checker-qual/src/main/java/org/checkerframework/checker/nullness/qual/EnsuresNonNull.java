@@ -45,31 +45,31 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 @Repeatable(EnsuresNonNull.List.class)
 public @interface EnsuresNonNull {
-    /**
-     * Returns Java expressions that are {@link NonNull} after successful method termination.
-     *
-     * @return Java expressions that are {@link NonNull} after successful method termination
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] value();
+  /**
+   * Returns Java expressions that are {@link NonNull} after successful method termination.
+   *
+   * @return Java expressions that are {@link NonNull} after successful method termination
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] value();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresNonNull} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresNonNull} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @PostconditionAnnotation(qualifier = NonNull.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresNonNull} annotation repeatable.
+     * Returns the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresNonNull} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @PostconditionAnnotation(qualifier = NonNull.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Returns the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresNonNull[] value();
-    }
+    EnsuresNonNull[] value();
+  }
 }

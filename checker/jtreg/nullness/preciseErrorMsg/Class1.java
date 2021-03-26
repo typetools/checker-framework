@@ -11,6 +11,6 @@
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 public class Class1 {
-    @RequiresNonNull("instanceField")
-    public static void foo() {}
+  @RequiresNonNull("instanceField")
+  public static void foo() {}
 }

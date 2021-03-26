@@ -76,212 +76,210 @@ import org.checkerframework.javacutil.TreeUtils;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({"checker"})
 public class FactoryTestChecker extends BaseTypeChecker {
-    SourceChecker checker;
+  SourceChecker checker;
+
+  @Override
+  public void initChecker() {
+    super.initChecker();
+
+    // Find factory constructor
+    String checkerClassName = getOption("checker");
+    try {
+      if (checkerClassName != null) {
+        Class<?> checkerClass = Class.forName(checkerClassName);
+        Constructor<?> constructor = checkerClass.getConstructor();
+        Object o = constructor.newInstance();
+        if (o instanceof SourceChecker) {
+          checker = (SourceChecker) o;
+        }
+      }
+    } catch (Exception e) {
+      throw new BugInCF("Couldn't load " + checkerClassName + " class.");
+    }
+  }
+
+  /*
+  @Override
+  public AnnotatedTypeFactory createTypeFactory() {
+      return checker.createTypeFactory();
+  }*/
+
+  @Override
+  public Properties getMessagesProperties() {
+    // We don't have any properties
+    Properties prop = new Properties();
+    prop.setProperty(
+        "type.unexpected",
+        "unexpected type for the given tree%n"
+            + "Tree       : %s%n"
+            + "Found      : %s%n"
+            + "Expected   : %s%n");
+    return prop;
+  }
+
+  @Override
+  protected BaseTypeVisitor<?> createSourceVisitor() {
+    return new ToStringVisitor(this);
+  }
+
+  /** Builds the expected type for the trees from the source file of the tree compilation unit. */
+  // This method is extremely ugly
+  private Map<TreeSpec, String> buildExpected(CompilationUnitTree tree) {
+    Map<TreeSpec, String> expected = new HashMap<>();
+    try {
+      JavaFileObject o = tree.getSourceFile();
+      File sourceFile = new File(o.toUri());
+      LineNumberReader reader = new LineNumberReader(new FileReader(sourceFile));
+      String line = reader.readLine();
+      Pattern prevsubtreePattern = Pattern.compile("\\s*///(.*)-:-(.*)");
+      Pattern prevfulltreePattern = Pattern.compile("\\s*///(.*)");
+      Pattern subtreePattern = Pattern.compile("(.*)///(.*)-:-(.*)");
+      Pattern fulltreePattern = Pattern.compile("(.*)///(.*)");
+      while (line != null) {
+        Matcher prevsubtreeMatcher = prevsubtreePattern.matcher(line);
+        Matcher prevfulltreeMatcher = prevfulltreePattern.matcher(line);
+        Matcher subtreeMatcher = subtreePattern.matcher(line);
+        Matcher fulltreeMatcher = fulltreePattern.matcher(line);
+        if (prevsubtreeMatcher.matches()) {
+          String treeString = prevsubtreeMatcher.group(1).trim();
+          if (treeString.endsWith(";")) {
+            treeString = treeString.substring(0, treeString.length() - 1);
+          }
+          TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber() + 1);
+          expected.put(treeSpec, canonizeTypeString(prevsubtreeMatcher.group(2)));
+        } else if (prevfulltreeMatcher.matches()) {
+          String treeString = reader.readLine().trim();
+          if (treeString.endsWith(";")) {
+            treeString = treeString.substring(0, treeString.length() - 1);
+          }
+          TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
+          expected.put(treeSpec, canonizeTypeString(prevfulltreeMatcher.group(1)));
+        } else if (subtreeMatcher.matches()) {
+          String treeString = subtreeMatcher.group(2).trim();
+          if (treeString.endsWith(";")) {
+            treeString = treeString.substring(0, treeString.length() - 1);
+          }
+          TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
+          expected.put(treeSpec, canonizeTypeString(subtreeMatcher.group(3)));
+        } else if (fulltreeMatcher.matches()) {
+          String treeString = fulltreeMatcher.group(1).trim();
+          if (treeString.endsWith(";")) {
+            treeString = treeString.substring(0, treeString.length() - 1);
+          }
+          TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
+          expected.put(treeSpec, canonizeTypeString(fulltreeMatcher.group(2)));
+        }
+        line = reader.readLine();
+      }
+      reader.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return expected;
+  }
+
+  /** A method to canonize the tree representation. */
+  private static String canonizeTreeString(String str) {
+    String canon = str.trim();
+    Pattern pattern = Pattern.compile("(@\\S+)\\(\\)");
+    Matcher matcher = pattern.matcher(canon);
+    while (matcher.find()) {
+      canon = matcher.replaceFirst(matcher.group(1));
+      matcher.reset(canon);
+    }
+    return canon.trim();
+  }
+
+  /**
+   * A method to canonize type string representation. It removes any unnecessary white spaces and
+   * finds the type simple name instead of the fully qualified name.
+   *
+   * @param str the type string representation
+   * @return a canonical representation of the type
+   */
+  private static String canonizeTypeString(String str) {
+    String canon = str.trim();
+    canon = canon.replaceAll("\\s+", " ");
+    // Remove spaces between [ ]
+    canon = canon.replaceAll("\\[\\s+", "[");
+    canon = canon.replaceAll("\\s+\\]", "]");
+
+    // Remove spaces between < >
+    canon = canon.replaceAll("<\\s+", "<");
+    canon = canon.replaceAll("\\s+>", ">");
+
+    // Take simply names!
+    canon = canon.replaceAll("[^\\<]*\\.(?=\\w)", "");
+    return canon;
+  }
+
+  /**
+   * A data structure that encapsulate a string and the line number that string appears in the
+   * buffer
+   */
+  private static class TreeSpec {
+    public final String treeString;
+    public final long lineNumber;
+
+    public TreeSpec(String treeString, long lineNumber) {
+      this.treeString = canonizeTreeString(treeString);
+      this.lineNumber = lineNumber;
+    }
 
     @Override
-    public void initChecker() {
-        super.initChecker();
-
-        // Find factory constructor
-        String checkerClassName = getOption("checker");
-        try {
-            if (checkerClassName != null) {
-                Class<?> checkerClass = Class.forName(checkerClassName);
-                Constructor<?> constructor = checkerClass.getConstructor();
-                Object o = constructor.newInstance();
-                if (o instanceof SourceChecker) {
-                    checker = (SourceChecker) o;
-                }
-            }
-        } catch (Exception e) {
-            throw new BugInCF("Couldn't load " + checkerClassName + " class.");
-        }
-    }
-
-    /*
-    @Override
-    public AnnotatedTypeFactory createTypeFactory() {
-        return checker.createTypeFactory();
-    }*/
-
-    @Override
-    public Properties getMessagesProperties() {
-        // We don't have any properties
-        Properties prop = new Properties();
-        prop.setProperty(
-                "type.unexpected",
-                "unexpected type for the given tree%n"
-                        + "Tree       : %s%n"
-                        + "Found      : %s%n"
-                        + "Expected   : %s%n");
-        return prop;
+    public int hashCode() {
+      return Objects.hash(treeString, lineNumber);
     }
 
     @Override
-    protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new ToStringVisitor(this);
+    public boolean equals(Object o) {
+      if (o instanceof TreeSpec) {
+        TreeSpec other = (TreeSpec) o;
+        return treeString.equals(other.treeString) && lineNumber == other.lineNumber;
+      }
+      return false;
     }
 
-    /** Builds the expected type for the trees from the source file of the tree compilation unit. */
-    // This method is extremely ugly
-    private Map<TreeSpec, String> buildExpected(CompilationUnitTree tree) {
-        Map<TreeSpec, String> expected = new HashMap<>();
-        try {
-            JavaFileObject o = tree.getSourceFile();
-            File sourceFile = new File(o.toUri());
-            LineNumberReader reader = new LineNumberReader(new FileReader(sourceFile));
-            String line = reader.readLine();
-            Pattern prevsubtreePattern = Pattern.compile("\\s*///(.*)-:-(.*)");
-            Pattern prevfulltreePattern = Pattern.compile("\\s*///(.*)");
-            Pattern subtreePattern = Pattern.compile("(.*)///(.*)-:-(.*)");
-            Pattern fulltreePattern = Pattern.compile("(.*)///(.*)");
-            while (line != null) {
-                Matcher prevsubtreeMatcher = prevsubtreePattern.matcher(line);
-                Matcher prevfulltreeMatcher = prevfulltreePattern.matcher(line);
-                Matcher subtreeMatcher = subtreePattern.matcher(line);
-                Matcher fulltreeMatcher = fulltreePattern.matcher(line);
-                if (prevsubtreeMatcher.matches()) {
-                    String treeString = prevsubtreeMatcher.group(1).trim();
-                    if (treeString.endsWith(";")) {
-                        treeString = treeString.substring(0, treeString.length() - 1);
-                    }
-                    TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber() + 1);
-                    expected.put(treeSpec, canonizeTypeString(prevsubtreeMatcher.group(2)));
-                } else if (prevfulltreeMatcher.matches()) {
-                    String treeString = reader.readLine().trim();
-                    if (treeString.endsWith(";")) {
-                        treeString = treeString.substring(0, treeString.length() - 1);
-                    }
-                    TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
-                    expected.put(treeSpec, canonizeTypeString(prevfulltreeMatcher.group(1)));
-                } else if (subtreeMatcher.matches()) {
-                    String treeString = subtreeMatcher.group(2).trim();
-                    if (treeString.endsWith(";")) {
-                        treeString = treeString.substring(0, treeString.length() - 1);
-                    }
-                    TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
-                    expected.put(treeSpec, canonizeTypeString(subtreeMatcher.group(3)));
-                } else if (fulltreeMatcher.matches()) {
-                    String treeString = fulltreeMatcher.group(1).trim();
-                    if (treeString.endsWith(";")) {
-                        treeString = treeString.substring(0, treeString.length() - 1);
-                    }
-                    TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
-                    expected.put(treeSpec, canonizeTypeString(fulltreeMatcher.group(2)));
-                }
-                line = reader.readLine();
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return expected;
+    @Override
+    public String toString() {
+      return lineNumber + ":" + treeString;
+    }
+  }
+
+  /**
+   * A specialized visitor that compares the actual and expected types for the specified trees and
+   * report an error if they differ
+   */
+  private class ToStringVisitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
+    Map<TreeSpec, String> expected;
+
+    public ToStringVisitor(BaseTypeChecker checker) {
+      super(checker);
+      this.expected = buildExpected(root);
     }
 
-    /** A method to canonize the tree representation. */
-    private static String canonizeTreeString(String str) {
-        String canon = str.trim();
-        Pattern pattern = Pattern.compile("(@\\S+)\\(\\)");
-        Matcher matcher = pattern.matcher(canon);
-        while (matcher.find()) {
-            canon = matcher.replaceFirst(matcher.group(1));
-            matcher.reset(canon);
+    @Override
+    public Void scan(Tree tree, Void p) {
+      if (TreeUtils.isExpressionTree(tree)) {
+        ExpressionTree expTree = (ExpressionTree) tree;
+        TreeSpec treeSpec =
+            new TreeSpec(
+                expTree.toString().trim(), root.getLineMap().getLineNumber(((JCTree) expTree).pos));
+        if (expected.containsKey(treeSpec)) {
+          String actualType = canonizeTypeString(atypeFactory.getAnnotatedType(expTree).toString());
+          String expectedType = expected.get(treeSpec);
+          if (!actualType.equals(expectedType)) {
+
+            // The key is added above using a setProperty call, which is not supported
+            // by the CompilerMessagesChecker.
+            @SuppressWarnings("compilermessages")
+            @CompilerMessageKey String key = "type.unexpected";
+            FactoryTestChecker.this.reportError(
+                tree, key, tree.toString(), actualType, expectedType);
+          }
         }
-        return canon.trim();
+      }
+      return super.scan(tree, p);
     }
-
-    /**
-     * A method to canonize type string representation. It removes any unnecessary white spaces and
-     * finds the type simple name instead of the fully qualified name.
-     *
-     * @param str the type string representation
-     * @return a canonical representation of the type
-     */
-    private static String canonizeTypeString(String str) {
-        String canon = str.trim();
-        canon = canon.replaceAll("\\s+", " ");
-        // Remove spaces between [ ]
-        canon = canon.replaceAll("\\[\\s+", "[");
-        canon = canon.replaceAll("\\s+\\]", "]");
-
-        // Remove spaces between < >
-        canon = canon.replaceAll("<\\s+", "<");
-        canon = canon.replaceAll("\\s+>", ">");
-
-        // Take simply names!
-        canon = canon.replaceAll("[^\\<]*\\.(?=\\w)", "");
-        return canon;
-    }
-
-    /**
-     * A data structure that encapsulate a string and the line number that string appears in the
-     * buffer
-     */
-    private static class TreeSpec {
-        public final String treeString;
-        public final long lineNumber;
-
-        public TreeSpec(String treeString, long lineNumber) {
-            this.treeString = canonizeTreeString(treeString);
-            this.lineNumber = lineNumber;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(treeString, lineNumber);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof TreeSpec) {
-                TreeSpec other = (TreeSpec) o;
-                return treeString.equals(other.treeString) && lineNumber == other.lineNumber;
-            }
-            return false;
-        }
-
-        @Override
-        public String toString() {
-            return lineNumber + ":" + treeString;
-        }
-    }
-
-    /**
-     * A specialized visitor that compares the actual and expected types for the specified trees and
-     * report an error if they differ
-     */
-    private class ToStringVisitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
-        Map<TreeSpec, String> expected;
-
-        public ToStringVisitor(BaseTypeChecker checker) {
-            super(checker);
-            this.expected = buildExpected(root);
-        }
-
-        @Override
-        public Void scan(Tree tree, Void p) {
-            if (TreeUtils.isExpressionTree(tree)) {
-                ExpressionTree expTree = (ExpressionTree) tree;
-                TreeSpec treeSpec =
-                        new TreeSpec(
-                                expTree.toString().trim(),
-                                root.getLineMap().getLineNumber(((JCTree) expTree).pos));
-                if (expected.containsKey(treeSpec)) {
-                    String actualType =
-                            canonizeTypeString(atypeFactory.getAnnotatedType(expTree).toString());
-                    String expectedType = expected.get(treeSpec);
-                    if (!actualType.equals(expectedType)) {
-
-                        // The key is added above using a setProperty call, which is not supported
-                        // by the CompilerMessagesChecker.
-                        @SuppressWarnings("compilermessages")
-                        @CompilerMessageKey String key = "type.unexpected";
-                        FactoryTestChecker.this.reportError(
-                                tree, key, tree.toString(), actualType, expectedType);
-                    }
-                }
-            }
-            return super.scan(tree, p);
-        }
-    }
+  }
 }

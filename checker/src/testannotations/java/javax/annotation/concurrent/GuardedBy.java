@@ -21,11 +21,11 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.FIELD})
 @PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
-    /**
-     * The Java expressions that need to be held.
-     *
-     * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
-     *     Java expressions</a>
-     */
-    String[] value() default {};
+  /**
+   * The Java expressions that need to be held.
+   *
+   * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
+   *     Java expressions</a>
+   */
+  String[] value() default {};
 }

@@ -13,46 +13,46 @@ class MyExplicitArray<MEA extends String> {}
 
 public class UpperBoundDefaulting {
 
-    public <UAL extends String> void explicitUpperBoundTypeVar() {
-        MyArrayList<@UbBottom ? extends @UbBottom Object> eubBottomToBottom =
-                // :: error: (assignment.type.incompatible)
-                new MyArrayList<UAL>();
-
-        MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom =
-                new MyArrayList<UAL>();
-
-        MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom =
-                // :: error: (assignment.type.incompatible)
-                new MyArrayList<UAL>();
-    }
-
-    public void implicitsWildcard(MyArrayList<?> myArrayList) {
-
-        @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iwLowerBoundIncompatible = myArrayList;
-
-        @UbTop MyArrayList<@UbBottom ? extends @UbExplicit String> iwLowerBoundCompatible = myArrayList;
-
-        @UbTop MyArrayList<@UbBottom ? extends @UbImplicit String> iwLowerBoundStillCompatible =
-                // :: error: (assignment.type.incompatible)
-                myArrayList;
-    }
-
-    public void implicitExtendBoundedWildcard(MyArrayList<? extends String> iebList) {
-
-        @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iebLowerBoundIncompatible = iebList;
-
-        MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom = iebList;
-
+  public <UAL extends String> void explicitUpperBoundTypeVar() {
+    MyArrayList<@UbBottom ? extends @UbBottom Object> eubBottomToBottom =
         // :: error: (assignment.type.incompatible)
-        MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom = iebList;
-    }
+        new MyArrayList<UAL>();
 
-    public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) {
-        @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
+    MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom =
+        new MyArrayList<UAL>();
 
-        // Upper bound: GLB(@UbExplicit, @UbImplicit), Lower bound: @UbBottom.
-        @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible = elbList;
+    MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom =
+        // :: error: (assignment.type.incompatible)
+        new MyArrayList<UAL>();
+  }
 
-        @UbTop MyArrayList<@UbExplicit ? super @UbBottom String> iebLowerBoundCompatible = elbList;
-    }
+  public void implicitsWildcard(MyArrayList<?> myArrayList) {
+
+    @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iwLowerBoundIncompatible = myArrayList;
+
+    @UbTop MyArrayList<@UbBottom ? extends @UbExplicit String> iwLowerBoundCompatible = myArrayList;
+
+    @UbTop MyArrayList<@UbBottom ? extends @UbImplicit String> iwLowerBoundStillCompatible =
+        // :: error: (assignment.type.incompatible)
+        myArrayList;
+  }
+
+  public void implicitExtendBoundedWildcard(MyArrayList<? extends String> iebList) {
+
+    @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iebLowerBoundIncompatible = iebList;
+
+    MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom = iebList;
+
+    // :: error: (assignment.type.incompatible)
+    MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom = iebList;
+  }
+
+  public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) {
+    @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
+
+    // Upper bound: GLB(@UbExplicit, @UbImplicit), Lower bound: @UbBottom.
+    @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible = elbList;
+
+    @UbTop MyArrayList<@UbExplicit ? super @UbBottom String> iebLowerBoundCompatible = elbList;
+  }
 }

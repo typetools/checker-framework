@@ -60,11 +60,11 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PreconditionAnnotation(qualifier = NonNull.class)
 public @interface RequiresNonNull {
-    /**
-     * The Java expressions that need to be {@link
-     * org.checkerframework.checker.nullness.qual.NonNull}.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] value();
+  /**
+   * The Java expressions that need to be {@link
+   * org.checkerframework.checker.nullness.qual.NonNull}.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] value();
 }

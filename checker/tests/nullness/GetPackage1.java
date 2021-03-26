@@ -4,9 +4,9 @@
 
 public class GetPackage {
 
-    void callGetPackage() {
+  void callGetPackage() {
 
-        @NonNull Package p1 = GetPackage.class.getPackage();
-        @NonNull Package p2 = java.util.List.class.getPackage();
-    }
+    @NonNull Package p1 = GetPackage.class.getPackage();
+    @NonNull Package p2 = java.util.List.class.getPackage();
+  }
 }

@@ -8,7 +8,7 @@
 import java.util.AbstractList;
 
 public abstract class MyListGeneric<T> extends AbstractList<T> {
-    public MyListGeneric() {
-        clear();
-    }
+  public MyListGeneric() {
+    clear();
+  }
 }

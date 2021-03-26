@@ -18,48 +18,46 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory> {
-    public SameLenVisitor(BaseTypeChecker checker) {
-        super(checker);
-    }
+  public SameLenVisitor(BaseTypeChecker checker) {
+    super(checker);
+  }
 
-    /**
-     * Merges SameLen annotations, then calls super.
-     *
-     * <p>{@inheritDoc}
-     */
-    @Override
-    protected void commonAssignmentCheck(
-            AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType,
-            Tree valueTree,
-            @CompilerMessageKey String errorKey,
-            Object... extraArgs) {
-        if (IndexUtil.isSequenceType(valueType.getUnderlyingType())
-                && TreeUtils.isExpressionTree(valueTree)
-                // if both annotations are @PolySameLen, there is nothing to do
-                && !(valueType.hasAnnotation(PolySameLen.class)
-                        && varType.hasAnnotation(PolySameLen.class))) {
+  /**
+   * Merges SameLen annotations, then calls super.
+   *
+   * <p>{@inheritDoc}
+   */
+  @Override
+  protected void commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    if (IndexUtil.isSequenceType(valueType.getUnderlyingType())
+        && TreeUtils.isExpressionTree(valueTree)
+        // if both annotations are @PolySameLen, there is nothing to do
+        && !(valueType.hasAnnotation(PolySameLen.class)
+            && varType.hasAnnotation(PolySameLen.class))) {
 
-            JavaExpression rhs = JavaExpression.fromTree((ExpressionTree) valueTree);
-            if (rhs != null && SameLenAnnotatedTypeFactory.mayAppearInSameLen(rhs)) {
-                String rhsExpr = rhs.toString();
-                AnnotationMirror sameLenAnno = valueType.getAnnotation(SameLen.class);
-                Collection<String> exprs;
-                if (sameLenAnno == null) {
-                    exprs = Collections.singletonList(rhsExpr);
-                } else {
-                    exprs =
-                            new TreeSet<>(
-                                    AnnotationUtils.getElementValueArray(
-                                            sameLenAnno,
-                                            atypeFactory.sameLenValueElement,
-                                            String.class));
-                    exprs.add(rhsExpr);
-                }
-                AnnotationMirror newSameLen = atypeFactory.createSameLen(exprs);
-                valueType.replaceAnnotation(newSameLen);
-            }
+      JavaExpression rhs = JavaExpression.fromTree((ExpressionTree) valueTree);
+      if (rhs != null && SameLenAnnotatedTypeFactory.mayAppearInSameLen(rhs)) {
+        String rhsExpr = rhs.toString();
+        AnnotationMirror sameLenAnno = valueType.getAnnotation(SameLen.class);
+        Collection<String> exprs;
+        if (sameLenAnno == null) {
+          exprs = Collections.singletonList(rhsExpr);
+        } else {
+          exprs =
+              new TreeSet<>(
+                  AnnotationUtils.getElementValueArray(
+                      sameLenAnno, atypeFactory.sameLenValueElement, String.class));
+          exprs.add(rhsExpr);
         }
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+        AnnotationMirror newSameLen = atypeFactory.createSameLen(exprs);
+        valueType.replaceAnnotation(newSameLen);
+      }
     }
+    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+  }
 }

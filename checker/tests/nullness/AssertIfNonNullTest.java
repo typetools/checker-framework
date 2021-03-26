@@ -3,15 +3,15 @@ import org.checkerframework.dataflow.qual.Pure;
 
 public class AssertIfNonNullTest {
 
-    Long id;
+  Long id;
 
-    public AssertIfNonNullTest(Long id) {
-        this.id = id;
-    }
+  public AssertIfNonNullTest(Long id) {
+    this.id = id;
+  }
 
-    @AssertNonNullIfNonNull("id")
-    @Pure
-    public @Nullable Long getId() {
-        return id;
-    }
+  @AssertNonNullIfNonNull("id")
+  @Pure
+  public @Nullable Long getId() {
+    return id;
+  }
 }

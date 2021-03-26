@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 // Eventually, the test should work when executed on >= Java 8.
 // @skip-test
 public final class Issue404 {
-    public Set<String> uniqueTrimmed(final Collection<String> strings) {
-        return strings.stream().map(String::trim).collect(Collectors.toSet());
-    }
+  public Set<String> uniqueTrimmed(final Collection<String> strings) {
+    return strings.stream().map(String::trim).collect(Collectors.toSet());
+  }
 }

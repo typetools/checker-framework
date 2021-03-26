@@ -1,4 +1,4 @@
 public class DA {
-    @Decl(flag = true)
-    void foo() {}
+  @Decl(flag = true)
+  void foo() {}
 }

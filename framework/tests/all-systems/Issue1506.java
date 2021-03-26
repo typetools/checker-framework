@@ -6,12 +6,12 @@ import java.util.ArrayList;
 
 @SuppressWarnings("all") // just check for crashes.
 public class Issue1506 {
-    static void m() {
-        ArrayList<? super Exception> l = new ArrayList<>();
-        try {
-            throw new IOException();
-        } catch (RuntimeException | IOException e) {
-            l.add(e);
-        }
+  static void m() {
+    ArrayList<? super Exception> l = new ArrayList<>();
+    try {
+      throw new IOException();
+    } catch (RuntimeException | IOException e) {
+      l.add(e);
     }
+  }
 }
