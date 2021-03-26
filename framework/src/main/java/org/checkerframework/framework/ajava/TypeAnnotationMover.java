@@ -159,7 +159,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     }
 
     /**
-     * Returns if {@code annotation} could be declaration annotation for {@code declarationType}.
+     * Returns if {@code annotation} could be a declaration annotation for {@code declarationType}.
      * This would be the case if the annotation isn't recognized at all, or if it was recognized and
      * has {@code declarationType} as one of its targets.
      *
