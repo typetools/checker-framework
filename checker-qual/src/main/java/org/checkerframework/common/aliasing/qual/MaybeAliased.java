@@ -23,6 +23,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @DefaultFor(
-        value = {TypeUseLocation.UPPER_BOUND, TypeUseLocation.LOWER_BOUND},
-        types = Void.class)
+    value = {TypeUseLocation.UPPER_BOUND, TypeUseLocation.LOWER_BOUND},
+    types = Void.class)
 public @interface MaybeAliased {}

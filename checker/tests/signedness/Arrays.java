@@ -1,5 +1,5 @@
 public class Arrays {
-    void test() {
-        Object[] os = new Double[234];
-    }
+  void test() {
+    Object[] os = new Double[234];
+  }
 }

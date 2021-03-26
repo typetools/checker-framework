@@ -5,14 +5,14 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /** Visitor for a simple type system to test reflection resolution. */
 public final class ReflectionTestVisitor
-        extends BaseTypeVisitor<ReflectionTestAnnotatedTypeFactory> {
+    extends BaseTypeVisitor<ReflectionTestAnnotatedTypeFactory> {
 
-    public ReflectionTestVisitor(BaseTypeChecker checker) {
-        super(checker);
-    }
+  public ReflectionTestVisitor(BaseTypeChecker checker) {
+    super(checker);
+  }
 
-    @Override
-    protected ReflectionTestAnnotatedTypeFactory createTypeFactory() {
-        return new ReflectionTestAnnotatedTypeFactory(checker);
-    }
+  @Override
+  protected ReflectionTestAnnotatedTypeFactory createTypeFactory() {
+    return new ReflectionTestAnnotatedTypeFactory(checker);
+  }
 }

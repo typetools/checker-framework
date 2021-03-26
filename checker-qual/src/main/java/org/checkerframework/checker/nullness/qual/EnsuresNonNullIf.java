@@ -76,38 +76,38 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 @Repeatable(EnsuresNonNullIf.List.class)
 public @interface EnsuresNonNullIf {
-    /**
-     * Returns Java expression(s) that are non-null after the method returns the given result.
-     *
-     * @return Java expression(s) that are non-null after the method returns the given result
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] expression();
+  /**
+   * Returns Java expression(s) that are non-null after the method returns the given result.
+   *
+   * @return Java expression(s) that are non-null after the method returns the given result
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] expression();
 
-    /**
-     * Returns the return value of the method under which the postcondition holds.
-     *
-     * @return the return value of the method under which the postcondition holds
-     */
-    boolean result();
+  /**
+   * Returns the return value of the method under which the postcondition holds.
+   *
+   * @return the return value of the method under which the postcondition holds
+   */
+  boolean result();
 
+  /**
+   * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
+     * Returns the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Returns the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresNonNullIf[] value();
-    }
+    EnsuresNonNullIf[] value();
+  }
 }

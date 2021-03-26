@@ -7,25 +7,25 @@ import org.checkerframework.checker.optional.qual.Present;
 @SuppressWarnings("optional.parameter")
 public class JdkCheck11 {
 
-    String isEmptyTest1(Optional<String> pos, String fallback) {
-        if (pos.isEmpty()) {
-            return fallback;
-        }
-        return pos.get();
+  String isEmptyTest1(Optional<String> pos, String fallback) {
+    if (pos.isEmpty()) {
+      return fallback;
     }
+    return pos.get();
+  }
 
-    String orElseThrowTest1(@Present Optional<String> pos) {
-        return pos.orElseThrow();
-    }
+  String orElseThrowTest1(@Present Optional<String> pos) {
+    return pos.orElseThrow();
+  }
 
-    String orElseThrowTest2(Optional<String> mos) {
-        // :: error: (method.invocation.invalid)
-        return mos.orElseThrow();
-    }
+  String orElseThrowTest2(Optional<String> mos) {
+    // :: error: (method.invocation.invalid)
+    return mos.orElseThrow();
+  }
 
-    String orElseThrowTestFlow(Optional<String> mos) {
-        // :: error: (method.invocation.invalid)
-        mos.orElseThrow();
-        return mos.get();
-    }
+  String orElseThrowTestFlow(Optional<String> mos) {
+    // :: error: (method.invocation.invalid)
+    mos.orElseThrow();
+    return mos.get();
+  }
 }

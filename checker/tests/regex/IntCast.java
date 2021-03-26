@@ -1,6 +1,6 @@
 public class IntCast {
 
-    int m() {
-        return (int) '\n';
-    }
+  int m() {
+    return (int) '\n';
+  }
 }

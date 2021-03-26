@@ -79,6 +79,6 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
 // @RelevantJavaTypes annotations appear on other checkers.
 public class IndexChecker extends UpperBoundChecker {
 
-    /** Creates the Index Checker. */
-    public IndexChecker() {}
+  /** Creates the Index Checker. */
+  public IndexChecker() {}
 }

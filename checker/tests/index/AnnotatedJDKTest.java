@@ -2,9 +2,9 @@ import java.io.PrintWriter;
 
 public class AnnotatedJDKTest {
 
-    public void printWriterWrite(PrintWriter writer) {
-        writer.write(-1);
+  public void printWriterWrite(PrintWriter writer) {
+    writer.write(-1);
 
-        writer.write(8);
-    }
+    writer.write(8);
+  }
 }

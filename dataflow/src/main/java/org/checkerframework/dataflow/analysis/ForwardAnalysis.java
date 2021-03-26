@@ -14,17 +14,15 @@ import org.checkerframework.javacutil.Pair;
  * @param <T> the forward transfer function type that is used to approximated runtime behavior
  */
 public interface ForwardAnalysis<
-                V extends AbstractValue<V>,
-                S extends Store<S>,
-                T extends ForwardTransferFunction<V, S>>
-        extends Analysis<V, S, T> {
+        V extends AbstractValue<V>, S extends Store<S>, T extends ForwardTransferFunction<V, S>>
+    extends Analysis<V, S, T> {
 
-    /**
-     * Get stores at return statements. These stores are transfer results at return node. Thus for a
-     * forward analysis, these stores contain the analyzed flow information from entry nodes to
-     * return nodes.
-     *
-     * @return the transfer results for each return node in the CFG
-     */
-    List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores();
+  /**
+   * Get stores at return statements. These stores are transfer results at return node. Thus for a
+   * forward analysis, these stores contain the analyzed flow information from entry nodes to return
+   * nodes.
+   *
+   * @return the transfer results for each return node in the CFG
+   */
+  List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores();
 }

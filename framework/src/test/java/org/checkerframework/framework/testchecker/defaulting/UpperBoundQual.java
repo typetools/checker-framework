@@ -13,31 +13,31 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 /** Created by jburke on 9/29/14. */
 public class UpperBoundQual {
 
-    @DefaultQualifierInHierarchy
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @SubtypeOf({})
-    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UbTop {}
+  @DefaultQualifierInHierarchy
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @SubtypeOf({})
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public static @interface UbTop {}
 
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @SubtypeOf(UbTop.class)
-    @DefaultFor(TypeUseLocation.IMPLICIT_UPPER_BOUND)
-    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UbImplicit {}
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @SubtypeOf(UbTop.class)
+  @DefaultFor(TypeUseLocation.IMPLICIT_UPPER_BOUND)
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public static @interface UbImplicit {}
 
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @SubtypeOf(UbTop.class)
-    @DefaultFor(TypeUseLocation.EXPLICIT_UPPER_BOUND)
-    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UbExplicit {}
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @SubtypeOf(UbTop.class)
+  @DefaultFor(TypeUseLocation.EXPLICIT_UPPER_BOUND)
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public static @interface UbExplicit {}
 
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @SubtypeOf({UbImplicit.class, UbExplicit.class})
-    @DefaultFor(TypeUseLocation.LOWER_BOUND)
-    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UbBottom {}
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @SubtypeOf({UbImplicit.class, UbExplicit.class})
+  @DefaultFor(TypeUseLocation.LOWER_BOUND)
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public static @interface UbBottom {}
 }

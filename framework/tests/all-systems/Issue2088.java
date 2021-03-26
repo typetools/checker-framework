@@ -7,25 +7,25 @@ import java.lang.reflect.Type;
 @SuppressWarnings({"unchecked", "all"}) // Check for crashes only
 abstract class Issue2088 {
 
-    interface A<K extends Comparable<K>> {}
+  interface A<K extends Comparable<K>> {}
 
-    interface B extends A<Long> {}
+  interface B extends A<Long> {}
 
-    interface C<P extends B, E extends B> {
-        interface F<T extends C<?, ?>> {}
+  interface C<P extends B, E extends B> {
+    interface F<T extends C<?, ?>> {}
+  }
+
+  interface D {}
+
+  static class Key<T> {
+    static Key<?> get(Type type) {
+      return null;
     }
+  }
 
-    interface D {}
+  abstract ParameterizedType n(Type o, Class<?> r, Type... a);
 
-    static class Key<T> {
-        static Key<?> get(Type type) {
-            return null;
-        }
-    }
-
-    abstract ParameterizedType n(Type o, Class<?> r, Type... a);
-
-    <X extends B, Y extends C<?, X>, Z extends Y> void f(Class<Y> c) {
-        Key<C.F<Z>> f = (Key<C.F<Z>>) Key.get(n(C.class, C.F.class, c));
-    }
+  <X extends B, Y extends C<?, X>, Z extends Y> void f(Class<Y> c) {
+    Key<C.F<Z>> f = (Key<C.F<Z>>) Key.get(n(C.class, C.F.class, c));
+  }
 }

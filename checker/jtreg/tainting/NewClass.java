@@ -8,13 +8,13 @@
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class NewClass {
-    public NewClass(Object param) {}
+  public NewClass(Object param) {}
 
-    Object get(@Untainted Object o) {
-        return o;
-    }
+  Object get(@Untainted Object o) {
+    return o;
+  }
 
-    void test() {
-        NewClass newClass = new NewClass(get(get("")));
-    }
+  void test() {
+    NewClass newClass = new NewClass(get(get("")));
+  }
 }

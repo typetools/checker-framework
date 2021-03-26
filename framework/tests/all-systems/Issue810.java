@@ -6,6 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class Issue810 {
-    Map<String, String> m = new HashMap<>();
-    Set<String> n = m.keySet();
+  Map<String, String> m = new HashMap<>();
+  Set<String> n = m.keySet();
 }

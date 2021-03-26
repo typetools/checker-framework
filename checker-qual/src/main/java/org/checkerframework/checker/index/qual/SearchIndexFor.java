@@ -22,10 +22,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(SearchIndexUnknown.class)
 public @interface SearchIndexFor {
-    /**
-     * Sequences for which the annotated expression has the type of the result of a call to {@link
-     * java.util.Arrays#binarySearch(Object[],Object) {@code Arrays.binarySearch}}.
-     */
-    @JavaExpression
-    public String[] value();
+  /**
+   * Sequences for which the annotated expression has the type of the result of a call to {@link
+   * java.util.Arrays#binarySearch(Object[],Object) {@code Arrays.binarySearch}}.
+   */
+  @JavaExpression
+  public String[] value();
 }

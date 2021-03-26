@@ -3,11 +3,11 @@
 package org.checkerframework.framework.testchecker.lib;
 
 public class Issue3105Fields {
-    public static final String FIELD1 = "foo";
+  public static final String FIELD1 = "foo";
 
-    public static final String FIELD2;
+  public static final String FIELD2;
 
-    static {
-        FIELD2 = "bar";
-    }
+  static {
+    FIELD2 = "bar";
+  }
 }

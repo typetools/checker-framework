@@ -15,6 +15,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface DefaultQualifierForUse {
-    /** Qualifier to add to all unannotated uses of the type with this declaration annotation. */
-    Class<? extends Annotation>[] value() default {};
+  /** Qualifier to add to all unannotated uses of the type with this declaration annotation. */
+  Class<? extends Annotation>[] value() default {};
 }

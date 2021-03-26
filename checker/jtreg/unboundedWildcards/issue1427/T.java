@@ -7,7 +7,7 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker T.java
  */
 public class T {
-    {
-        Three.c().g().f().build();
-    }
+  {
+    Three.c().g().f().build();
+  }
 }

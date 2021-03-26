@@ -5,7 +5,7 @@ import java.util.Collections;
 
 public class Issue370 {
 
-    <T> Iterable<T> foo() {
-        return Collections.<T>emptyList();
-    }
+  <T> Iterable<T> foo() {
+    return Collections.<T>emptyList();
+  }
 }

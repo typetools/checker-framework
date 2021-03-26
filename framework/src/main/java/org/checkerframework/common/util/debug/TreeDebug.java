@@ -39,91 +39,91 @@ import javax.lang.model.util.ElementFilter;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class TreeDebug extends AbstractProcessor {
 
-    protected Visitor createSourceVisitor(CompilationUnitTree root) {
-        return new Visitor();
-    }
+  protected Visitor createSourceVisitor(CompilationUnitTree root) {
+    return new Visitor();
+  }
 
-    private static final String LINE_SEPARATOR = System.lineSeparator();
+  private static final String LINE_SEPARATOR = System.lineSeparator();
 
-    public static class Visitor extends TreePathScanner<Void, Void> {
+  public static class Visitor extends TreePathScanner<Void, Void> {
 
-        private final StringBuilder buf;
+    private final StringBuilder buf;
 
-        public Visitor() {
-            buf = new StringBuilder();
-        }
-
-        @Override
-        public Void scan(Tree node, Void p) {
-
-            // Indent according to subtrees.
-            if (getCurrentPath() != null) {
-                for (TreePath tp = getCurrentPath(); tp != null; tp = tp.getParentPath()) {
-                    buf.append("  ");
-                }
-            }
-
-            // Add node kind to the buffer.
-            if (node == null) {
-                buf.append("null");
-            } else {
-                buf.append(node.getKind());
-            }
-            buf.append(LINE_SEPARATOR);
-
-            // Visit subtrees.
-            super.scan(node, p);
-
-            // Display and clear the buffer.
-            System.out.print(buf.toString());
-            buf.setLength(0);
-
-            return null;
-        }
-
-        /**
-         * Splices additional information for a node into the buffer.
-         *
-         * @param text additional information for the node
-         */
-        private final void insert(Object text) {
-            buf.insert(buf.length() - 1, " ");
-            buf.insert(buf.length() - 1, text);
-        }
-
-        @Override
-        public Void visitIdentifier(IdentifierTree node, Void p) {
-            insert(node);
-            return super.visitIdentifier(node, p);
-        }
-
-        @Override
-        public Void visitMemberSelect(MemberSelectTree node, Void p) {
-            insert(node.getExpression() + "." + node.getIdentifier());
-            return super.visitMemberSelect(node, p);
-        }
-
-        @Override
-        public Void visitNewArray(NewArrayTree node, Void p) {
-            insert(((JCNewArray) node).annotations);
-            insert("|");
-            insert(((JCNewArray) node).dimAnnotations);
-            return super.visitNewArray(node, p);
-        }
-
-        @Override
-        public Void visitLiteral(LiteralTree node, Void p) {
-            insert(node.getValue());
-            return super.visitLiteral(node, p);
-        }
+    public Visitor() {
+      buf = new StringBuilder();
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (TypeElement element : ElementFilter.typesIn(roundEnv.getRootElements())) {
-            TreePath path = Trees.instance(processingEnv).getPath(element);
-            new Visitor().scan(path, null);
+    public Void scan(Tree node, Void p) {
+
+      // Indent according to subtrees.
+      if (getCurrentPath() != null) {
+        for (TreePath tp = getCurrentPath(); tp != null; tp = tp.getParentPath()) {
+          buf.append("  ");
         }
-        return false;
+      }
+
+      // Add node kind to the buffer.
+      if (node == null) {
+        buf.append("null");
+      } else {
+        buf.append(node.getKind());
+      }
+      buf.append(LINE_SEPARATOR);
+
+      // Visit subtrees.
+      super.scan(node, p);
+
+      // Display and clear the buffer.
+      System.out.print(buf.toString());
+      buf.setLength(0);
+
+      return null;
     }
+
+    /**
+     * Splices additional information for a node into the buffer.
+     *
+     * @param text additional information for the node
+     */
+    private final void insert(Object text) {
+      buf.insert(buf.length() - 1, " ");
+      buf.insert(buf.length() - 1, text);
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree node, Void p) {
+      insert(node);
+      return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree node, Void p) {
+      insert(node.getExpression() + "." + node.getIdentifier());
+      return super.visitMemberSelect(node, p);
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree node, Void p) {
+      insert(((JCNewArray) node).annotations);
+      insert("|");
+      insert(((JCNewArray) node).dimAnnotations);
+      return super.visitNewArray(node, p);
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree node, Void p) {
+      insert(node.getValue());
+      return super.visitLiteral(node, p);
+    }
+  }
+
+  @Override
+  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    for (TypeElement element : ElementFilter.typesIn(roundEnv.getRootElements())) {
+      TreePath path = Trees.instance(processingEnv).getPath(element);
+      new Visitor().scan(path, null);
+    }
+    return false;
+  }
 }

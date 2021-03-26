@@ -16,5 +16,5 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PreconditionAnnotation(qualifier = Odd.class)
 public @interface RequiresOdd {
-    String[] value();
+  String[] value();
 }

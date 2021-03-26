@@ -7,12 +7,12 @@ import org.checkerframework.framework.flow.CFAnalysis;
  * checker without support for the Returns Receiver Checker.
  */
 public class TestAccumulationNoReturnsReceiverTransfer extends TestAccumulationTransfer {
-    /**
-     * default constructor
-     *
-     * @param analysis the analysis
-     */
-    public TestAccumulationNoReturnsReceiverTransfer(CFAnalysis analysis) {
-        super(analysis);
-    }
+  /**
+   * default constructor
+   *
+   * @param analysis the analysis
+   */
+  public TestAccumulationNoReturnsReceiverTransfer(CFAnalysis analysis) {
+    super(analysis);
+  }
 }

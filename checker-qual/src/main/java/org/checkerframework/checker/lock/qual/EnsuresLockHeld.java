@@ -23,34 +23,34 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 @Repeatable(EnsuresLockHeld.List.class)
 public @interface EnsuresLockHeld {
-    /**
-     * Returns Java expressions whose values are locks that are held after successful method
-     * termination.
-     *
-     * @return Java expressions whose values are locks that are held after successful method
-     *     termination
-     * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
-     *     Java expressions</a>
-     */
-    String[] value();
+  /**
+   * Returns Java expressions whose values are locks that are held after successful method
+   * termination.
+   *
+   * @return Java expressions whose values are locks that are held after successful method
+   *     termination
+   * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
+   *     Java expressions</a>
+   */
+  String[] value();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresLockHeld} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresLockHeld} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @PostconditionAnnotation(qualifier = LockHeld.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresLockHeld} annotation repeatable.
+     * Return the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresLockHeld} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @PostconditionAnnotation(qualifier = LockHeld.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Return the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresLockHeld[] value();
-    }
+    EnsuresLockHeld[] value();
+  }
 }

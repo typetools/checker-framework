@@ -4,11 +4,11 @@ import lombok.Builder;
 
 @Builder
 public class LombokBuilderExample {
-    @lombok.NonNull Object foo;
-    @lombok.NonNull Object bar;
+  @lombok.NonNull Object foo;
+  @lombok.NonNull Object bar;
 
-    static void test() {
-        // :: error: (finalizer.invocation.invalid)
-        builder().build();
-    }
+  static void test() {
+    // :: error: (finalizer.invocation.invalid)
+    builder().build();
+  }
 }
