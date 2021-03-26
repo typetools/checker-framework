@@ -96,9 +96,8 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     }
 
     /**
-     * Given a JavaParser node for a declaration and the type of Element that declaration
-     * represents, returns a List of annotations currently in declaration position that can't
-     * possibly be declaration annotations for that type of declaration.
+     * Given a declaration, returns a List of annotations currently in declaration position that
+     * can't possibly be declaration annotations for that type of declaration.
      *
      * @param node JavaParser node for declaration
      * @param declarationType the type of declaration {@code node} represents
@@ -131,14 +130,14 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     }
 
     /**
-     * Returns the TypeElement for an annotation if it could be found and null otherwise.
+     * Returns the TypeElement for an annotation, or null if it cannot be found.
      *
      * <p>If {@code annotation} was listed in the file's imports, returns its value in {@link
      * #allAnnotations}. If it wasn't imported but its element could still be found, adds the new
      * TypeElement to {@link #allAnnotations} and returns it.
      *
      * @param annotation a JavaParser annotation
-     * @return the TypeElement for {@code annotation} if it could be found, null otherwise
+     * @return the TypeElement for {@code annotation}, or null if it cannot be found
      */
     private @Nullable TypeElement getAnnotationDeclaration(AnnotationExpr annotation) {
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
