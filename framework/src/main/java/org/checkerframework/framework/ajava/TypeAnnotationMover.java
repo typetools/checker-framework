@@ -181,14 +181,15 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
     /**
      * Returns whether the annotation represented by {@code annotationDeclaration} might be a
-     * declaration for {@code declarationType}. This holds if {@code declarationType} is a target of
-     * the annotation, or if {@code ElementType.TYPE_USE} is not a target of the annotation.
+     * declaration annotation for {@code declarationType}. This holds if {@code declarationType} is
+     * a target of the annotation, or if {@code ElementType.TYPE_USE} is not a target of the
+     * annotation.
      *
      * @param annotationDeclaration declaration for an annotation
      * @param declarationType the declaration type to check if the annotation might be a declaration
      *     annotation for
      * @return true if {@code annotationDeclaration} contains {@code declarationType} as a target or
-     *     doesn't contain {@code ElemenType.TYPE_USE} as a target.
+     *     doesn't contain {@code ElementType.TYPE_USE} as a target
      */
     private boolean isPossiblyDeclarationAnnotation(
             TypeElement annotationDeclaration, ElementType declarationType) {
