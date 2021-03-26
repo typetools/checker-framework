@@ -65,6 +65,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -1473,6 +1474,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * A scanner used to combine annotations from two AnnotatedTypeMirrors. The scanner requires
+     * {@link #qualHierarchy}, which is set in {@link #postInit()} rather than the construtor, so
+     * lazily initialize this field before use.
+     */
+    private @MonotonicNonNull AnnotatedTypeCombiner annotatedTypeCombiner = null;
+
+    /**
      * Merges types from annotation files for {@code elt} into {@code type} by taking the greatest
      * lower bound of the annotations in both.
      *
@@ -1490,9 +1498,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (type == null) {
             return typeFromFile;
         }
+        if (annotatedTypeCombiner == null) {
+            annotatedTypeCombiner = new AnnotatedTypeCombiner(qualHierarchy);
+        }
         // Must merge (rather than only take the annotation file type if it is a subtype)
         // to support WPI.
-        AnnotatedTypeCombiner.combine(typeFromFile, type, this.getQualifierHierarchy());
+        annotatedTypeCombiner.visit(typeFromFile, type);
         return type;
     }
 
@@ -4201,6 +4212,43 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return found;
+    }
+
+    /**
+     * A scanner that replaces annotations in one type with annotations from another. Used by {@link
+     * #replaceAnnotations(AnnotatedTypeMirror, AnnotatedTypeMirror)} and {@link
+     * #replaceAnnotations(AnnotatedTypeMirror, AnnotatedTypeMirror, AnnotationMirror)}.
+     */
+    private final AnnotatedTypeReplacer annotatedTypeReplacer = new AnnotatedTypeReplacer();
+
+    /**
+     * Replaces or adds all annotations from {@code from} to {@code to}. Annotations from {@code
+     * from} will be used everywhere they exist, but annotations in {@code to} will be kept anywhere
+     * that {@code from} is unannotated.
+     *
+     * @param from the annotated type mirror from which to take new annotations
+     * @param to the annotated type mirror to which the annotations will be added
+     */
+    public void replaceAnnotations(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+        annotatedTypeReplacer.visit(from, to);
+    }
+
+    /**
+     * Replaces or adds annotations in {@code top}'s hierarchy from {@code from} to {@code to}.
+     * Annotations from {@code from} will be used everywhere they exist, but annotations in {@code
+     * to} will be kept anywhere that {@code from} is unannotated.
+     *
+     * @param from the annotated type mirror from which to take new annotations
+     * @param to the annotated type mirror to which the annotations will be added
+     * @param top the top type of the hierarchy whose annotations will be added
+     */
+    public void replaceAnnotations(
+            final AnnotatedTypeMirror from,
+            final AnnotatedTypeMirror to,
+            final AnnotationMirror top) {
+        annotatedTypeReplacer.setTop(top);
+        annotatedTypeReplacer.visit(from, to);
+        annotatedTypeReplacer.setTop(null);
     }
 
     /** The implementation of the visitor for #containsUninferredTypeArguments. */

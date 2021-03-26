@@ -98,7 +98,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1365,9 +1364,9 @@ public class AnnotationFileParser {
                 for (AnnotatedTypeVariable typePar : typeParameters) {
                     if (typeUtils.isSameType(
                             typePar.getUnderlyingType(), atype.getUnderlyingType())) {
-                        AnnotatedTypeReplacer.replace(
+                        atypeFactory.replaceAnnotations(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
-                        AnnotatedTypeReplacer.replace(
+                        atypeFactory.replaceAnnotations(
                                 typePar.getLowerBound(), typeVarUse.getLowerBound());
                     }
                 }
@@ -2695,7 +2694,7 @@ public class AnnotationFileParser {
             // If the newType is from a JDK stub file, then keep the existing type.  This
             // way user supplied stub files override JDK stub files.
             if (!isJdkAsStub) {
-                AnnotatedTypeReplacer.replace(newType, existingType);
+                atypeFactory.replaceAnnotations(newType, existingType);
             }
             m.put(key, existingType);
         } else {
