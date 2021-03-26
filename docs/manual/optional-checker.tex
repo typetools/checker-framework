@@ -69,10 +69,14 @@ These qualifiers make up the Optional type system:
 % "Present" in the names of all the annotations.
 \item[\refqualclass{checker/optional/qual}{MaybePresent}]
   The annotated \<Optional> container may or may not contain a value.
-  This is the default type.
+  This is the default type, so programmers do not have to write it.
 
 \item[\refqualclass{checker/optional/qual}{Present}]
   The annotated \<Optional> container definitely contains a (non-null) value.
+
+\item[\refqualclass{checker/optional/qual}{OptionalBottom}]
+  The annotated expression evaluates to \<null> rather than to an \<Optional> container.
+  Programmers rarely write this annotation.
 
 \item[\refqualclass{checker/optional/qual}{PolyPresent}]
   indicates qualifier polymorphism.

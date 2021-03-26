@@ -119,12 +119,12 @@ public class ContractsFromMethod {
         result.addAll(getContract(kind, frameworkContractAnno, clazz));
 
         // Check for a framework-defined wrapper around contract annotations.
-        AnnotationMirror frameworkContractAnnos =
-                factory.getDeclAnnotation(executableElement, kind.frameworkContractsClass);
-        if (frameworkContractAnnos != null) {
+        // The result is RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
+        AnnotationMirror frameworkContractListAnno =
+                factory.getDeclAnnotation(executableElement, kind.frameworkContractListClass);
+        if (frameworkContractListAnno != null) {
             List<AnnotationMirror> frameworkContractAnnoList =
-                    AnnotationUtils.getElementValueArray(
-                            frameworkContractAnnos, "value", AnnotationMirror.class, false);
+                    factory.getContractListValues(frameworkContractListAnno);
             for (AnnotationMirror a : frameworkContractAnnoList) {
                 result.addAll(getContract(kind, a, clazz));
             }
@@ -142,16 +142,19 @@ public class ContractsFromMethod {
             if (enforcedQualifier == null) {
                 continue;
             }
-            List<String> expressions =
-                    AnnotationUtils.getElementValueArrayOrSingleton(
-                            anno, kind.expressionElementName, String.class, true);
+            List<String> expressions = factory.getContractExpressions(kind, anno);
             Collections.sort(expressions);
-            Boolean annoResult =
-                    AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
+            Boolean ensuresQualifierIfResult = factory.getEnsuresQualifierIfResult(kind, anno);
+
             for (String expr : expressions) {
                 T contract =
                         clazz.cast(
-                                Contract.create(kind, expr, enforcedQualifier, anno, annoResult));
+                                Contract.create(
+                                        kind,
+                                        expr,
+                                        enforcedQualifier,
+                                        anno,
+                                        ensuresQualifierIfResult));
                 result.add(contract);
             }
         }
@@ -174,24 +177,29 @@ public class ContractsFromMethod {
         if (contractAnnotation == null) {
             return Collections.emptySet();
         }
+
         AnnotationMirror enforcedQualifier =
                 getQualifierEnforcedByContractAnnotation(contractAnnotation);
         if (enforcedQualifier == null) {
             return Collections.emptySet();
         }
-        Set<T> result = new LinkedHashSet<>();
-        List<String> expressions =
-                AnnotationUtils.getElementValueArray(
-                        contractAnnotation, "expression", String.class, false);
+
+        List<String> expressions = factory.getContractExpressions(contractAnnotation);
         Collections.sort(expressions);
-        Boolean annoResult =
-                AnnotationUtils.getElementValueOrNull(
-                        contractAnnotation, "result", Boolean.class, false);
+
+        Boolean ensuresQualifierIfResult =
+                factory.getEnsuresQualifierIfResult(kind, contractAnnotation);
+
+        Set<T> result = new LinkedHashSet<>();
         for (String expr : expressions) {
             T contract =
                     clazz.cast(
                             Contract.create(
-                                    kind, expr, enforcedQualifier, contractAnnotation, annoResult));
+                                    kind,
+                                    expr,
+                                    enforcedQualifier,
+                                    contractAnnotation,
+                                    ensuresQualifierIfResult));
             result.add(contract);
         }
         return result;

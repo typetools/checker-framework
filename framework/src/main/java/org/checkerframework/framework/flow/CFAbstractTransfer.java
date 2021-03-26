@@ -61,7 +61,6 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -73,9 +72,8 @@ import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -563,50 +561,31 @@ public abstract class CFAbstractTransfer<
             MethodTree methodDeclTree,
             ExecutableElement methodElement) {
         ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
-        JavaExpressionContext methodUseContext = null;
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
-
+        StringToJavaExpression stringToJavaExpr =
+                stringExpr ->
+                        StringToJavaExpression.atMethodBody(
+                                stringExpr, methodDeclTree, analysis.checker);
         for (Precondition p : preconditions) {
-            String expressionString = p.expressionString;
-            AnnotationMirror annotation = p.annotation;
-
-            if (methodUseContext == null) {
-                methodUseContext =
-                        JavaExpressionContext.buildContextForMethodDeclaration(
-                                methodDeclTree, analysis.checker);
-            }
-
-            annotation = viewpointAdaptAnnoFromContract(annotation, methodUseContext);
-
+            String stringExpr = p.expressionString;
+            AnnotationMirror annotation =
+                    p.viewpointAdaptDependentTypeAnnotation(
+                            analysis.atypeFactory, stringToJavaExpr, /*errorTree=*/ null);
+            JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                JavaExpression exprJe =
-                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
-                initialStore.insertValuePermitNondeterministic(exprJe, annotation);
+                exprJe =
+                        StringToJavaExpression.atMethodBody(
+                                stringExpr, methodDeclTree, analysis.checker);
             } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
+                continue;
             }
+            initialStore.insertValuePermitNondeterministic(exprJe, annotation);
         }
-    }
-
-    /**
-     * Viewpoint-adapts a type qualifier annotation obtained from a contract.
-     *
-     * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map =
-     * "this.map")}, this method viewpoint-adapts {@code @KeyFor("this.map")} to the given context.
-     *
-     * @param annoFromContract an annotation from a contract
-     * @param jeContext the context to use for standardization
-     * @return the standardized annotation, or the argument if it does not need standardization
-     */
-    private AnnotationMirror viewpointAdaptAnnoFromContract(
-            AnnotationMirror annoFromContract, JavaExpressionContext jeContext) {
-        // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
-        return analysis.dependentTypesHelper.viewpointAdaptQualifierFromContract(
-                annoFromContract, jeContext, /*errorTree=*/ null);
     }
 
     /**
@@ -881,10 +860,14 @@ public abstract class CFAbstractTransfer<
      * Takes a node, and either returns the node itself again (as a singleton list), or if the node
      * is an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively
      * to the rhs -- that is, the rhs may not appear in the result, but rather its lhs and rhs may).
+     *
+     * @param node possibly an assignment node
+     * @return a list containing all the right- and left-hand sides in the given assignment node; it
+     *     contains just the node itself if it is not an assignment)
      */
     protected List<Node> splitAssignments(Node node) {
         if (node instanceof AssignmentNode) {
-            List<Node> result = new ArrayList<>();
+            List<Node> result = new ArrayList<>(2);
             AssignmentNode a = (AssignmentNode) node;
             result.add(a.getTarget());
             result.addAll(splitAssignments(a.getExpression()));
@@ -1194,30 +1177,20 @@ public abstract class CFAbstractTransfer<
             S elseStore,
             Set<? extends Contract> postconditions) {
 
-        // These lazily initialized variables are needed only if the method has any contracts.
-        JavaExpressionContext methodUseContext = null; // lazily initialized, then non-null
-
+        StringToJavaExpression stringToJavaExpr =
+                stringExpr ->
+                        StringToJavaExpression.atMethodInvocation(
+                                stringExpr, invocationNode, analysis.checker);
         for (Contract p : postconditions) {
+            // Viewpoint-adapt to the method use (the call site).
+            AnnotationMirror anno =
+                    p.viewpointAdaptDependentTypeAnnotation(
+                            analysis.atypeFactory, stringToJavaExpr, /*errorTree=*/ null);
+
             String expressionString = p.expressionString;
-            AnnotationMirror anno = p.annotation;
-
-            if (methodUseContext == null) {
-                // Set the lazily initialized variables.
-                SourceChecker checker = analysis.checker;
-
-                methodUseContext =
-                        JavaExpressionContext.buildContextForMethodUse(invocationNode, checker);
-            }
-
-            // Standardize with respect to the method use (the call site).
-            AnnotationMirror standardizedUse =
-                    viewpointAdaptAnnoFromContract(anno, methodUseContext);
-
-            anno = standardizedUse;
-
             try {
-                JavaExpression je =
-                        JavaExpressionParseUtil.parse(expressionString, methodUseContext);
+                JavaExpression je = stringToJavaExpr.toJavaExpression(expressionString);
+
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call

@@ -35,6 +35,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
@@ -129,6 +130,13 @@ public abstract class AnnotatedTypeMirror {
 
     /** Actual type wrapped with this AnnotatedTypeMirror. */
     protected final TypeMirror underlyingType;
+
+    /**
+     * Saves the result of {@code underlyingType.toString().hashcode()} to use when computing the
+     * hash code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot
+     * be saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
+     */
+    private int underlyingTypeHashCode = -1;
 
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
@@ -380,6 +388,22 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
+     * {@code annoName} if one exists, null otherwise.
+     *
+     * @param annoName annotation name
+     * @return the annotation mirror for annoName
+     */
+    public AnnotationMirror getAnnotation(String annoName) {
+        for (AnnotationMirror annoMirror : annotations) {
+            if (AnnotationUtils.areSameByName(annoMirror, annoName)) {
+                return annoMirror;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the set of explicitly written annotations on this type that are supported by this
      * checker. This is useful to check the validity of annotations explicitly present on a type, as
      * flow inference might add annotations that were not previously present. Note that since
@@ -604,8 +628,8 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Adds those annotations to the current type, for which no annotation from the same qualifier
-     * hierarchy is present.
+     * Adds each of the given annotations to the current type, only if no annotation from the same
+     * qualifier hierarchy is present.
      *
      * @param annotations the annotations to add
      */
@@ -815,6 +839,19 @@ public abstract class AnnotatedTypeMirror {
         return objectType;
     }
 
+    /**
+     * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
+     * the result in a field so that it isn't recomputed each time.
+     *
+     * @return the result of calling {@code underlyingType.toString().hashcode()}
+     */
+    public int getUnderlyingTypeHashCode() {
+        if (underlyingTypeHashCode == -1) {
+            underlyingTypeHashCode = underlyingType.toString().hashCode();
+        }
+        return underlyingTypeHashCode;
+    }
+
     /** Represents a declared type (whether class or interface). */
     public static class AnnotatedDeclaredType extends AnnotatedTypeMirror {
 
@@ -915,10 +952,8 @@ public abstract class AnnotatedTypeMirror {
                     // TODO: check that all args are really declarations
                     typeArgs = Collections.unmodifiableList(ts);
                 } else {
-                    List<AnnotatedTypeMirror> uses = new ArrayList<>();
-                    for (AnnotatedTypeMirror t : ts) {
-                        uses.add(t.asUse());
-                    }
+                    List<AnnotatedTypeMirror> uses =
+                            SystemUtil.mapList(AnnotatedTypeMirror::asUse, ts);
                     typeArgs = Collections.unmodifiableList(uses);
                 }
             }
@@ -1300,12 +1335,14 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
 
+        /**
+         * Returns the erased types corresponding to the given types.
+         *
+         * @param lst annotated type mirrors
+         * @return erased annotated type mirrors
+         */
         private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-            List<AnnotatedTypeMirror> erased = new ArrayList<>();
-            for (AnnotatedTypeMirror t : lst) {
-                erased.add(t.getErased());
-            }
-            return erased;
+            return SystemUtil.mapList(AnnotatedTypeMirror::getErased, lst);
         }
     }
 
@@ -2118,10 +2155,9 @@ public abstract class AnnotatedTypeMirror {
             if (bounds == null) {
                 List<? extends TypeMirror> ubounds =
                         ((IntersectionType) underlyingType).getBounds();
-                List<AnnotatedTypeMirror> res = new ArrayList<>(ubounds.size());
-                for (TypeMirror bnd : ubounds) {
-                    res.add(createType(bnd, atypeFactory, false));
-                }
+                List<AnnotatedTypeMirror> res =
+                        SystemUtil.mapList(
+                                (TypeMirror bnd) -> createType(bnd, atypeFactory, false), ubounds);
                 bounds = Collections.unmodifiableList(res);
                 fixupBoundAnnotations();
             }
@@ -2215,10 +2251,12 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedDeclaredType> getAlternatives() {
             if (alternatives == null) {
                 List<? extends TypeMirror> ualts = ((UnionType) underlyingType).getAlternatives();
-                List<AnnotatedDeclaredType> res = new ArrayList<>(ualts.size());
-                for (TypeMirror alt : ualts) {
-                    res.add((AnnotatedDeclaredType) createType(alt, atypeFactory, false));
-                }
+                List<AnnotatedDeclaredType> res =
+                        SystemUtil.mapList(
+                                (TypeMirror alt) ->
+                                        (AnnotatedDeclaredType)
+                                                createType(alt, atypeFactory, false),
+                                ualts);
                 alternatives = Collections.unmodifiableList(res);
             }
             return alternatives;

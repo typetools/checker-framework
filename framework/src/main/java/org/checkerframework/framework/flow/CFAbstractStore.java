@@ -284,7 +284,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             arrayValues.clear();
 
             // update method values
-            methodValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+            methodValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
         }
 
         // store information about method call if possible

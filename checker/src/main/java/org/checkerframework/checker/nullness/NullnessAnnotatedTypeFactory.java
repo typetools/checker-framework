@@ -18,7 +18,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -189,9 +188,9 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
-                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/annotations
-                    "org.jspecify.annotations.Nullable",
-                    "org.jspecify.annotations.NullnessUnspecified",
+                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
+                    "org.jspecify.nullness.Nullable",
+                    "org.jspecify.nullness.NullnessUnspecified",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
@@ -209,7 +208,7 @@ public class NullnessAnnotatedTypeFactory
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
+        Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>(4);
         tempNullnessAnnos.add(NonNull.class);
         tempNullnessAnnos.add(MonotonicNonNull.class);
         tempNullnessAnnos.add(Nullable.class);
@@ -803,9 +802,7 @@ public class NullnessAnnotatedTypeFactory
         String expression = receiver + "." + fieldElement.getSimpleName();
         builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
-        List<AnnotationMirror> result = new ArrayList<>(1);
-        result.add(am);
-        return result;
+        return Collections.singletonList(am);
     }
 
     @Override
@@ -845,8 +842,6 @@ public class NullnessAnnotatedTypeFactory
         String expression = receiver + "." + fieldElement.getSimpleName();
         builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
-        List<AnnotationMirror> result = new ArrayList<>(1);
-        result.add(am);
-        return result;
+        return Collections.singletonList(am);
     }
 }

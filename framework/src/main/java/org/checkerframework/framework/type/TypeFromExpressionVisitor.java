@@ -349,11 +349,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // to ensure that the structure of the wildcard will match that created by
         // BoundsInitializer/createType.
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
-            AnnotatedTypeReplacer.replace(bound, ((AnnotatedWildcardType) result).getSuperBound());
+            f.replaceAnnotations(bound, ((AnnotatedWildcardType) result).getSuperBound());
 
         } else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
-            AnnotatedTypeReplacer.replace(
-                    bound, ((AnnotatedWildcardType) result).getExtendsBound());
+            f.replaceAnnotations(bound, ((AnnotatedWildcardType) result).getExtendsBound());
         }
         return result;
     }

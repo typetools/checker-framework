@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
@@ -82,9 +82,6 @@ public class CaseNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<>(2);
-        list.add(getSwitchOperand());
-        list.add(getCaseOperand());
-        return list;
+        return Arrays.asList(getSwitchOperand(), getCaseOperand());
     }
 }

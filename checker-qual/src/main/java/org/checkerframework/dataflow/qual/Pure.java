@@ -11,6 +11,9 @@ import java.lang.annotation.Target;
  * Deterministic}. The more important of these, when performing pluggable type-checking, is usually
  * {@link SideEffectFree}.
  *
+ * <p>For a discussion of the meaning of {@code Pure} on a constructor, see the documentation of
+ * {@link Deterministic}.
+ *
  * <p>This annotation is inherited by subtypes, just as if it were meta-annotated with
  * {@code @InheritedAnnotation}.
  *

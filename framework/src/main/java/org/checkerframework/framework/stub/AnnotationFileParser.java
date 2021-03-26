@@ -98,7 +98,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -367,9 +366,9 @@ public class AnnotationFileParser {
      * @return a list of fully-qualified member names
      */
     private static List<@FullyQualifiedName String> getImportableMembers(TypeElement typeElement) {
-        List<@FullyQualifiedName String> result = new ArrayList<>();
         List<VariableElement> memberElements =
                 ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+        List<@FullyQualifiedName String> result = new ArrayList<>();
         for (VariableElement varElement : memberElements) {
             if (varElement.getConstantValue() != null
                     || varElement.getKind() == ElementKind.ENUM_CONSTANT) {
@@ -934,7 +933,7 @@ public class AnnotationFileParser {
         annotateTypeParameters(decl, elt, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putMerge(annotationFileAnnos.atypes, elt, type);
-        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
+        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 warn(
@@ -965,7 +964,7 @@ public class AnnotationFileParser {
         annotate(type, decl.getAnnotations(), decl);
 
         putMerge(annotationFileAnnos.atypes, elt, type);
-        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
+        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 warn(
@@ -1364,9 +1363,9 @@ public class AnnotationFileParser {
                 for (AnnotatedTypeVariable typePar : typeParameters) {
                     if (typeUtils.isSameType(
                             typePar.getUnderlyingType(), atype.getUnderlyingType())) {
-                        AnnotatedTypeReplacer.replace(
+                        atypeFactory.replaceAnnotations(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
-                        AnnotatedTypeReplacer.replace(
+                        atypeFactory.replaceAnnotations(
                                 typePar.getLowerBound(), typeVarUse.getLowerBound());
                     }
                 }
@@ -2694,7 +2693,7 @@ public class AnnotationFileParser {
             // If the newType is from a JDK stub file, then keep the existing type.  This
             // way user supplied stub files override JDK stub files.
             if (!isJdkAsStub) {
-                AnnotatedTypeReplacer.replace(newType, existingType);
+                atypeFactory.replaceAnnotations(newType, existingType);
             }
             m.put(key, existingType);
         } else {

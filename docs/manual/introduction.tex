@@ -188,6 +188,9 @@ Alternately, you can build the latest development version from source
 \textbf{Requirement:}
 % Keep in sync with build.gradle and SourceChecker.init.
 You must have \textbf{JDK 8} or \textbf{JDK 11} installed.
+% Possible replacement for the above.
+% You must have a supported LTS JDK installed: \textbf{JDK 8} or \textbf{JDK 11}.
+The Checker Framework processes code written for either of those versions.
 
 The installation process has two required steps and one
 optional step.
@@ -220,9 +223,13 @@ Framework tutorial}, which demonstrates the Nullness, Regex, and Tainting Checke
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
+\label{version-number}
 The Checker Framework is released on a monthly schedule.  The minor version
 (the middle number in the version number) is incremented if there are any
-incompatibilities with the previous version, including in user-visible
+incompatibilities
+% Sometimes, we permit trivial incompatibilities, or ones that are unlikely
+% to affect users, without changing the minor version.
+with the previous version, including in user-visible
 behavior or in methods that a checker implementation might call.
 
 

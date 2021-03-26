@@ -89,6 +89,8 @@ public class ItselfExpressionCases {
             // :: error: (contracts.precondition.not.satisfied)
             o.foo();
             synchronized (somelock) {
+                // o.foo() requires o.somelock is held, not this.somelock.
+                // :: error: (contracts.precondition.not.satisfied)
                 o.foo();
             }
         }

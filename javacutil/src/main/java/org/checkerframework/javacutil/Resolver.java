@@ -28,6 +28,7 @@ import java.util.Arrays;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -181,7 +182,8 @@ public class Resolver {
     }
 
     /**
-     * Finds the field with name {@code name} in a given type.
+     * Finds the field with name {@code name} in {@code type} or a superclass or superinterface of
+     * {@code type}.
      *
      * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
      * for name resolution.
@@ -203,7 +205,7 @@ public class Resolver {
                             names.fromString(name),
                             Kinds.KindSelector.VAR);
 
-            if (res.getKind() == ElementKind.FIELD) {
+            if (res.getKind().isField()) {
                 return (VariableElement) res;
             } else if (res.getKind() == ElementKind.OTHER && ACCESSERROR.isInstance(res)) {
                 // Return the inaccessible field that was found
@@ -297,12 +299,15 @@ public class Resolver {
      * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
      * for name resolution.
      *
+     * <p>(This method takes into account autoboxing.)
+     *
      * @param methodName name of the method to find
      * @param receiverType type of the receiver of the method
      * @param path tree path
+     * @param argumentTypes types of arguments passed to the method call
      * @return the method element (if found)
      */
-    public Element findMethod(
+    public @Nullable ExecutableElement findMethod(
             String methodName,
             TypeMirror receiverType,
             TreePath path,
@@ -338,12 +343,16 @@ public class Resolver {
                                 allowBoxing,
                                 useVarargs);
                 setField(resolve, "currentResolutionContext", oldContext);
-                return result;
+                if (result.getKind() == ElementKind.METHOD
+                        || result.getKind() == ElementKind.CONSTRUCTOR) {
+                    return (ExecutableElement) result;
+                }
+                return null;
             } catch (Throwable t) {
                 Error err =
                         new AssertionError(
                                 String.format(
-                                        "Unexpected Reflection error in findMethod(%s, %s, ..., %s)",
+                                        "Unexpected reflection error in findMethod(%s, %s, ..., %s)",
                                         methodName,
                                         receiverType,
                                         // path
@@ -430,10 +439,11 @@ public class Resolver {
             return res;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new BugInCF(
-                    String.format(
-                            "Unexpected Reflection error in wrapInvocation(%s, %s, %s)",
-                            receiver, method, Arrays.toString(args)),
-                    e);
+                    e,
+                    "Unexpected reflection error in wrapInvocation(%s, %s, %s)",
+                    receiver,
+                    method,
+                    Arrays.toString(args));
         }
     }
 }

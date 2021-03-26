@@ -38,7 +38,7 @@ dependencies {
     // See the comment in ../build.gradle in the shadowJar block.
     implementation 'org.plumelib:plume-util:1.4.1'
     implementation 'org.plumelib:reflection-util:1.0.3'
-    implementation 'io.github.classgraph:classgraph:4.8.102'
+    implementation 'io.github.classgraph:classgraph:4.8.103'
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
     // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
@@ -138,7 +138,7 @@ task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {
 
 compileJava.dependsOn(checkDependencies)
 
-task allSourcesJar(type: Jar) {
+task allSourcesJar(type: Jar, group: 'Build') {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "framework-source.jar"
@@ -147,7 +147,7 @@ task allSourcesJar(type: Jar) {
             project(':javacutil').sourceSets.main.allJava)
 }
 
-task allJavadocJar(type: Jar) {
+task allJavadocJar(type: Jar, group: 'Build') {
     description 'Creates javadoc jar include Javadoc for all of the framework'
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")

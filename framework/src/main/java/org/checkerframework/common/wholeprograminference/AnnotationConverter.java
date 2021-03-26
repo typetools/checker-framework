@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Type.ArrayType;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
@@ -49,7 +49,7 @@ public class AnnotationConverter {
                         String.format(
                                 "annotationMirrorToAnnotation %s [%s] keyset=%s",
                                 am, am.getClass(), am.getElementValues().keySet()));
-        Map<String, AnnotationFieldType> fieldTypes = new HashMap<>();
+        Map<String, AnnotationFieldType> fieldTypes = new HashMap<>(am.getElementValues().size());
         // Handling cases where there are fields in annotations.
         for (ExecutableElement ee : am.getElementValues().keySet()) {
             AnnotationFieldType aft = getAnnotationFieldType(ee);
@@ -59,24 +59,20 @@ public class AnnotationConverter {
 
         // Now, we handle the values of those types below
         Map<? extends ExecutableElement, ? extends AnnotationValue> values = am.getElementValues();
-        Map<String, Object> newValues = new HashMap<>();
+        Map<String, Object> newValues = new HashMap<>(values.size());
         for (ExecutableElement ee : values.keySet()) {
             Object value = values.get(ee).getValue();
             if (value instanceof List) {
+                // If we have a List here, then it is a List of AnnotationValue.
+                // Convert each AnnotationValue to its respective Java type.
                 @SuppressWarnings("unchecked")
-                List<Object> valueList = (List<Object>) value;
-                List<Object> newList = new ArrayList<>();
-                // If we have a List here, then it is a List of AnnotatedValue.
-                // Converting each AnnotatedValue to its respective Java type:
-                for (Object o : valueList) {
-                    newList.add(((AnnotationValue) o).getValue());
-                }
-                value = newList;
+                List<AnnotationValue> valueList = (List<AnnotationValue>) value;
+                value = SystemUtil.mapList(AnnotationValue::getValue, valueList);
             } else if (value instanceof TypeMirror) {
                 try {
                     value = Class.forName(TypesUtils.binaryName((TypeMirror) value));
                 } catch (ClassNotFoundException e) {
-                    throw new BugInCF(String.format("value = %s [%s]", value, value.getClass()), e);
+                    throw new BugInCF(e, "value = %s [%s]", value, value.getClass());
                 }
             }
             newValues.put(ee.getSimpleName().toString(), value);
