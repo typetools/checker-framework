@@ -46,14 +46,12 @@ public class ParameterExpression {
 
     @EnsuresNonNull("param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
     public void m6a(Object param) {
         param = new Object();
     }
 
     @EnsuresNonNull("param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
     public void m6b(Object param) {
         // :: error: (assignment.type.incompatible)
         param = null;
@@ -61,15 +59,19 @@ public class ParameterExpression {
 
     @EnsuresNonNull("param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
     public void m6c(@Nullable Object param) {
         param = new Object();
     }
 
     @EnsuresNonNull("param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
     public void m6d(@Nullable Object param) {
+        param = null;
+    }
+
+    @EnsuresNonNull("param.toString()")
+    // :: error: (flowexpr.parse.error)
+    public void m6e(@Nullable Object param) {
         param = null;
     }
 
@@ -108,7 +110,6 @@ public class ParameterExpression {
 
     @RequiresNonNull("param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
     public void m9(Object param) {}
 
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
@@ -126,7 +127,6 @@ public class ParameterExpression {
 
     @EnsuresNonNullIf(result = true, expression = "param")
     // :: error: (flowexpr.parse.error)
-    // :: warning: (expression.parameter.name.invalid)
     public boolean m12(Object param) {
         param = new Object();
         return true;

@@ -24,6 +24,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -38,6 +39,18 @@ import org.checkerframework.javacutil.TypesUtils;
 public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFactory> {
     public FormatterVisitor(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
+        if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
+            int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
+            if (formatStringIndex == -1) {
+                checker.reportError(node, "format.method.invalid", methodElement.getSimpleName());
+            }
+        }
+        return super.visitMethod(node, p);
     }
 
     @Override
@@ -185,7 +198,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
      * parameters. In other words, {@code invocationTree} forwards {@code enclosingMethod}'s
      * arguments.
      *
-     * <p>Only arguments from the last String formal parameter onward count.
+     * <p>Only arguments from the first String formal parameter onward count. Returns false if there
+     * is no String formal parameter.
      *
      * @param invocationTree an invocation of a method
      * @param enclosingMethod the method that contains the call
@@ -198,34 +212,62 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         if (enclosingMethod == null) {
             return false;
         }
+
         ExecutableElement enclosingMethodElement =
                 TreeUtils.elementFromDeclaration(enclosingMethod);
+        int paramIndex = formatStringIndex(enclosingMethodElement);
+        if (paramIndex == -1) {
+            return false;
+        }
+
+        ExecutableElement calledMethodElement = TreeUtils.elementFromUse(invocationTree);
+        int callIndex = formatStringIndex(calledMethodElement);
+        if (callIndex == -1) {
+            throw new BugInCF(
+                    "Method "
+                            + calledMethodElement
+                            + " is annotated @FormatMethod but has no String formal parameter");
+        }
 
         List<? extends ExpressionTree> args = invocationTree.getArguments();
         List<? extends VariableTree> params = enclosingMethod.getParameters();
-        List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
 
-        // Strip off leading Locale arguments.
-        if (!args.isEmpty() && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
-            args = args.subList(1, args.size());
-        }
-        if (!params.isEmpty()
-                && TypesUtils.isDeclaredOfName(paramElements.get(0).asType(), "java.util.Locale")) {
-            params = params.subList(1, params.size());
-        }
-
-        if (args.size() != params.size()) {
+        if (params.size() - paramIndex != args.size() - callIndex) {
             return false;
         }
-        for (int i = 0; i < args.size(); i++) {
-            ExpressionTree arg = args.get(i);
-            if (!(arg instanceof IdentifierTree
-                    && ((IdentifierTree) arg).getName() == params.get(i).getName())) {
+        while (paramIndex < params.size()) {
+            ExpressionTree argTree = args.get(callIndex);
+            if (argTree.getKind() != Tree.Kind.IDENTIFIER) {
                 return false;
             }
+            VariableTree param = params.get(paramIndex);
+            if (param.getName() != ((IdentifierTree) argTree).getName()) {
+                return false;
+            }
+            paramIndex++;
+            callIndex++;
         }
 
         return true;
+    }
+
+    // TODO: Should this be the last String argument?  That would require that every method
+    // annotated with @FormatMethod uses varargs syntax.
+    /**
+     * Returns the index of the format string of a method: the first formal parameter with declared
+     * type String.
+     *
+     * @param m a method
+     * @return the index of the last String formal parameter, or -1 if none
+     */
+    public static int formatStringIndex(ExecutableElement m) {
+        List<? extends VariableElement> params = m.getParameters();
+        for (int i = 0; i < params.size(); i++) {
+            if (TypesUtils.isString(params.get(i).asType())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override

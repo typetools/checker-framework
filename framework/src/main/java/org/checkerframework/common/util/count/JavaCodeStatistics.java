@@ -16,6 +16,7 @@ import java.util.List;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -58,6 +59,10 @@ public class JavaCodeStatistics extends SourceChecker {
      */
     int numberOfIndexWarningSuppressions = 0;
 
+    /** The SuppressWarnings.value field/element. */
+    final ExecutableElement suppressWarningsValueElement =
+            TreeUtils.getMethod(SuppressWarnings.class, "value", 0, processingEnv);
+
     /** Creates a JavaCodeStatistics. */
     public JavaCodeStatistics() {
         // This checker never issues any warnings, so don't warn about
@@ -99,7 +104,7 @@ public class JavaCodeStatistics extends SourceChecker {
                     .equals(SuppressWarnings.class.getCanonicalName())) {
                 List<String> keys =
                         AnnotationUtils.getElementValueArray(
-                                annotationMirror, "value", String.class, true);
+                                annotationMirror, suppressWarningsValueElement, String.class);
                 for (String foundKey : keys) {
                     for (String indexKey : warningKeys) {
                         if (foundKey.startsWith(indexKey)) {

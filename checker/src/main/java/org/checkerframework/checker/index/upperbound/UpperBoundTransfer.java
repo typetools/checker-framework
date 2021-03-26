@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.upperbound;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -39,7 +40,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -101,8 +102,14 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
  */
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
+    /** The type factory associated with this transfer function. */
     private UpperBoundAnnotatedTypeFactory atypeFactory;
 
+    /**
+     * Creates a new UpperBoundTransfer.
+     *
+     * @param analysis the analysis for this transfer function
+     */
     public UpperBoundTransfer(CFAnalysis analysis) {
         super(analysis);
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
@@ -282,10 +289,14 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
         // larger > smaller
-        UBQualifier largerQual = UBQualifier.createUBQualifier(largerAnno);
+        UBQualifier largerQual =
+                UBQualifier.createUBQualifier(
+                        largerAnno, (UpperBoundChecker) atypeFactory.getChecker());
         // larger + 1 >= smaller
         UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(smallerAnno);
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        smallerAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
         if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -310,8 +321,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
+        UBQualifier leftQualifier =
+                UBQualifier.createUBQualifier(
+                        leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
         if (leftQualifier.isLessThanLengthQualifier()) {
@@ -398,8 +413,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Node right,
             AnnotationMirror rightAnno,
             CFStore store) {
-        UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
+        UBQualifier leftQualifier =
+                UBQualifier.createUBQualifier(
+                        leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        UBQualifier rightQualifier =
+                UBQualifier.createUBQualifier(
+                        rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
         UBQualifier glb = rightQualifier.glb(leftQualifier);
         AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
@@ -458,7 +477,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
 
         if (receiver != null && !receiver.containsUnknown()) {
-            UBQualifier otherQualifier = UBQualifier.createUBQualifier(otherNodeAnno);
+            UBQualifier otherQualifier =
+                    UBQualifier.createUBQualifier(
+                            otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker());
             String sequence = receiver.toString();
             // Check if otherNode + c - 1 < receiver.length
             if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
@@ -521,13 +542,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Return the result of adding i to j, when expression i has type @LTLengthOf(value = "f2",
-     * offset = "f1.length") int and expression j is less than or equal to the length of f1, then
-     * the type of i + j is @LTLengthOf("f2").
+     * Return the result of adding i to j.
      *
-     * <p>Similarly, return the result of adding i to j, when expression i has type @LTLengthOf
-     * (value = "f2", offset = "f1.length - 1") int and expression j is less than the length of f1,
-     * then the type of i + j is @LTLengthOf("f2").
+     * <p>When expression i has type {@code @LTLengthOf(value = "f2", offset = "f1.length") int} and
+     * expression j is less than or equal to the length of f1, then the type of i + j
+     * is @LTLengthOf("f2").
+     *
+     * <p>When expression i has type {@code @LTLengthOf (value = "f2", offset = "f1.length - 1")
+     * int} and expression j is less than the length of f1, then the type of i + j
+     * is @LTLengthOf("f2").
      *
      * @param i the type of the expression added to j
      * @param j the type of the expression added to i
@@ -535,18 +558,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      */
     private UBQualifier removeSequenceLengths(LessThanLengthOf i, LessThanLengthOf j) {
         List<String> lessThan = new ArrayList<>();
-        List<String> lessThanOrEqaul = new ArrayList<>();
+        List<String> lessThanOrEqual = new ArrayList<>();
         for (String sequence : i.getSequences()) {
             if (i.isLessThanLengthOf(sequence)) {
                 lessThan.add(sequence);
             } else if (i.hasSequenceWithOffset(sequence, -1)) {
-                lessThanOrEqaul.add(sequence);
+                lessThanOrEqual.add(sequence);
             }
         }
         // Creates a qualifier that is the same a j with the array.length offsets removed. If
         // an offset doesn't have an array.length, then the offset/array pair is removed. If
         // there are no such pairs, Unknown is returned.
-        UBQualifier lessThanEqQ = j.removeSequenceLengthAccess(lessThanOrEqaul);
+        UBQualifier lessThanEqQ = j.removeSequenceLengthAccess(lessThanOrEqual);
         // Creates a qualifier that is the same a j with the array.length - 1 offsets removed. If
         // an offset doesn't have an array.length, then the offset/array pair is removed. If
         // there are no such pairs, Unknown is returned.
@@ -604,11 +627,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         return createTransferResult(n, in, leftWithOffset);
                     }
 
-                    JavaExpressionContext context =
-                            Subsequence.getContextFromJavaExpression(je, atypeFactory.getChecker());
-
                     Subsequence subsequence =
-                            Subsequence.getSubsequenceFromReceiver(je, atypeFactory, context);
+                            Subsequence.getSubsequenceFromReceiver(je, atypeFactory);
 
                     if (subsequence != null) {
                         String from = subsequence.from;
@@ -619,19 +639,20 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         JavaExpression rightOp = JavaExpression.fromNode(n.getRightOperand());
 
                         if (rightOp.toString().equals(from)) {
+                            LessThanAnnotatedTypeFactory lessThanAtypeFactory =
+                                    atypeFactory.getLessThanAnnotatedTypeFactory();
                             AnnotationMirror lessThanType =
-                                    atypeFactory
-                                            .getLessThanAnnotatedTypeFactory()
+                                    lessThanAtypeFactory
                                             .getAnnotatedType(n.getLeftOperand().getTree())
                                             .getAnnotation(LessThan.class);
 
                             if (lessThanType != null
-                                    && LessThanAnnotatedTypeFactory.isLessThan(lessThanType, to)) {
+                                    && lessThanAtypeFactory.isLessThan(lessThanType, to)) {
                                 UBQualifier ltlA = UBQualifier.createUBQualifier(a, "0");
                                 leftWithOffset = leftWithOffset.glb(ltlA);
                             } else if (leftOp.toString().equals(to)
                                     || (lessThanType != null
-                                            && LessThanAnnotatedTypeFactory.isLessThanOrEqual(
+                                            && lessThanAtypeFactory.isLessThanOrEqual(
                                                     lessThanType, to))) {
                                 // It's necessary to check if leftOp == to because LessThan doesn't
                                 // infer that things are less than or equal to themselves.
@@ -661,19 +682,19 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
         // Look up the SameLen type of the sequence.
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
-        List<String> sameLenSequences =
-                sameLenAnno == null
-                        ? new ArrayList<>()
-                        : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
-
-        if (!sameLenSequences.contains(sequenceJe.toString())) {
-            sameLenSequences.add(sequenceJe.toString());
+        List<String> sameLenSequences;
+        if (sameLenAnno == null) {
+            sameLenSequences = Collections.singletonList(sequenceJe.toString());
+        } else {
+            sameLenSequences =
+                    AnnotationUtils.getElementValueArray(
+                            sameLenAnno, atypeFactory.sameLenValueElement, String.class);
+            if (!sameLenSequences.contains(sequenceJe.toString())) {
+                sameLenSequences.add(sequenceJe.toString());
+            }
         }
 
-        ArrayList<String> offsets = new ArrayList<>(sameLenSequences.size());
-        for (@SuppressWarnings("unused") String s : sameLenSequences) {
-            offsets.add("-1");
-        }
+        List<String> offsets = Collections.nCopies(sameLenSequences.size(), "-1");
 
         if (CFAbstractStore.canInsertJavaExpression(sequenceJe)) {
             UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenSequences, offsets);
@@ -758,7 +779,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (substringIndexAnno != null
                 && (lowerBoundType.hasAnnotation(NonNegative.class)
                         || lowerBoundType.hasAnnotation(Positive.class))) {
-            UBQualifier substringIndexQualifier = UBQualifier.createUBQualifier(substringIndexAnno);
+            UBQualifier substringIndexQualifier =
+                    UBQualifier.createUBQualifier(
+                            substringIndexAnno, (UpperBoundChecker) atypeFactory.getChecker());
             ubQualifier = ubQualifier.glb(substringIndexQualifier);
         }
         return ubQualifier;
@@ -806,7 +829,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (anno == null) {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
-        return UBQualifier.createUBQualifier(anno);
+        return UBQualifier.createUBQualifier(anno, (UpperBoundChecker) atypeFactory.getChecker());
     }
 
     private TransferResult<CFValue, CFStore> createTransferResult(

@@ -62,22 +62,12 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
 # ---------------------------------------------------------------------------------
 
 # The location the test site is built in
-HTTP_PATH_TO_DEV_SITE = "https://checkerframework.org/dev"
-FILE_PATH_TO_DEV_SITE = "/cse/www2/types/checker-framework/dev"
+DEV_SITE_URL = "https://checkerframework.org/dev"
+DEV_SITE_DIR = "/cse/www2/types/checker-framework/dev"
 
 # The location the test site is pushed to when it is ready
-HTTP_PATH_TO_LIVE_SITE = "https://checkerframework.org"
-FILE_PATH_TO_LIVE_SITE = "/cse/www2/types/checker-framework"
-
-SONATYPE_CLOSING_DIRECTIONS_URL = (
-    "http://central.sonatype.org/pages/releasing-the-deployment.html"
-)
-SONATYPE_RELEASE_DIRECTIONS_URL = (
-    "http://central.sonatype.org/pages/releasing-the-deployment.html"
-)
-SONATYPE_DROPPING_DIRECTIONS_URL = (
-    "http://central.sonatype.org/pages/releasing-the-deployment.html"
-)
+LIVE_SITE_URL = "https://checkerframework.org"
+LIVE_SITE_DIR = "/cse/www2/types/checker-framework"
 
 # Per-user directory for the temporary files created by the release process
 # ("USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566.
@@ -104,10 +94,10 @@ INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 # The central repositories for Checker Framework related projects
 LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
-LIVE_PLUME_SCRIPTS = "https://github.com/plume-lib/plume-scripts"
-LIVE_CHECKLINK = "https://github.com/plume-lib/checklink"
-LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
-LIVE_STUBPARSER = "https://github.com/typetools/stubparser"
+PLUME_SCRIPTS_REPO = "https://github.com/plume-lib/plume-scripts"
+CHECKLINK_REPO = "https://github.com/plume-lib/checklink"
+PLUME_BIB_REPO = "https://github.com/mernst/plume-bib"
+STUBPARSER_REPO = "https://github.com/typetools/stubparser"
 
 # Location of the project directories in which we will build the actual projects.
 # When we build these projects are pushed to the INTERM repositories.
@@ -116,7 +106,7 @@ CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, "checker-framework")
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, "docs/developer/release")
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
-# If a new Gradle wrapper was recently installed, the first ./gradlew command outputs:
+# If a new Gradle wrapper was recently installed, the first ./gradlew command may output:
 #   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
 CF_VERSION_WARMUP = execute(
     "./gradlew version -q", True, True, TMP_DIR + "/checker-framework"
@@ -149,25 +139,19 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO),
 )
 
-AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
+AFU_LIVE_SITE = os.path.join(LIVE_SITE_DIR, "annotation-file-utilities")
 AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
 
-CHECKER_LIVE_SITE = FILE_PATH_TO_LIVE_SITE
-CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, "releases")
+CHECKER_LIVE_RELEASES_DIR = os.path.join(LIVE_SITE_DIR, "releases")
 
 os.environ["PARENT_DIR"] = BUILD_DIR
 os.environ["CHECKERFRAMEWORK"] = CHECKER_FRAMEWORK
-perl_libs = (
-    TMP_DIR
-    + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
-)
+perl_libs = TMP_DIR + "/homes/gws/mernst/bin/src/perl:/usr/share/perl5/"
 # Environment variables for tools needed during the build
 os.environ["PLUME_SCRIPTS"] = PLUME_SCRIPTS
 os.environ["CHECKLINK"] = CHECKLINK
 os.environ["BIBINPUTS"] = ".:" + PLUME_BIB
-os.environ[
-    "TEXINPUTS"
-] = ".:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:"
+os.environ["TEXINPUTS"] = ".:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:"
 os.environ["PERLLIB"] = getAndAppend("PERLLIB", ":") + perl_libs
 os.environ["PERL5LIB"] = getAndAppend("PERL5LIB", ":") + perl_libs
 # Still needed for santiy checks
@@ -178,11 +162,7 @@ EDITOR = os.getenv("EDITOR")
 if EDITOR is None:
     EDITOR = "emacs"
 
-PATH = (
-    os.environ["JAVA_HOME"]
-    + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:"
-    + os.environ["PATH"]
-)
+PATH = os.environ["JAVA_HOME"] + "/bin:" + os.environ["PATH"]
 PATH = PATH + ":/usr/bin"
 PATH = PATH + ":" + PLUME_SCRIPTS
 PATH = PATH + ":" + CHECKLINK
@@ -190,12 +170,5 @@ PATH = PATH + ":/homes/gws/mernst/.local/bin"  # for html5validator
 PATH = PATH + ":."
 os.environ["PATH"] = PATH
 
-# Tools that must be on your PATH (besides common *nix ones like grep)
+# Tools that must be on your PATH (besides common Unix ones like grep)
 TOOLS = ["hevea", "perl", "java", "latex", "mvn", "hg", "git", "html5validator", EDITOR]
-
-# Script option constants
-AFU_OPT = "annotation-file-utilities"
-CF_OPT = "checker-framework"
-ALL_OPT = "all"
-
-PROJECTS_TO_SHORTNAMES = [(AFU_OPT, "afu"), (CF_OPT, "cf")]

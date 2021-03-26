@@ -30,9 +30,8 @@ import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -82,7 +81,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 // If offsets are provided, there must be the same number of them as there are
                 // arrays.
                 List<String> sequences =
-                        AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 List<String> offsets =
                         AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
                 if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
@@ -102,32 +101,32 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String from = atypeFactory.hasSubsequenceFromValue(anno);
             String to = atypeFactory.hasSubsequenceToValue(anno);
 
-            // check that each expression is parseable in this context
+            // check that each expression is parsable at the declaration of this class
             ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-            JavaExpressionContext context =
-                    JavaExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
-            checkEffectivelyFinalAndParsable(seq, context, node);
-            checkEffectivelyFinalAndParsable(from, context, node);
-            checkEffectivelyFinalAndParsable(to, context, node);
+            checkEffectivelyFinalAndParsable(seq, enclosingClass, node);
+            checkEffectivelyFinalAndParsable(from, enclosingClass, node);
+            checkEffectivelyFinalAndParsable(to, enclosingClass, node);
         }
         return super.visitAnnotation(node, p);
     }
 
     /**
-     * Reports an error if the Java expression named by s is not effectively final at the current
-     * program location.
+     * Reports an error if the Java expression named by s is not effectively final when parsed at
+     * the declaration of the given class.
      *
      * @param s a Java expression
-     * @param context the JavaExpression context
-     * @param tree the tree at which to possibly report an error
+     * @param classTree the expression is parsed with respect to this class
+     * @param whereToReportError the tree at which to possibly report an error
      */
     private void checkEffectivelyFinalAndParsable(
-            String s, JavaExpressionContext context, Tree tree) {
+            String s, ClassTree classTree, Tree whereToReportError) {
         JavaExpression je;
         try {
-            je = JavaExpressionParseUtil.parse(s, context);
+            je =
+                    StringToJavaExpression.atTypeDecl(
+                            s, TreeUtils.elementFromDeclaration(classTree), checker);
         } catch (JavaExpressionParseException e) {
-            checker.report(tree, e.getDiagMessage());
+            checker.report(whereToReportError, e.getDiagMessage());
             return;
         }
         Element element = null;
@@ -139,7 +138,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
         if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
-            checker.reportError(tree, NOT_FINAL, je);
+            checker.reportError(whereToReportError, NOT_FINAL, je);
         }
     }
 
@@ -166,7 +165,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // 3. If neither of the above, issue an error that names the upper bound type.
 
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
-        UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
+        UBQualifier qualifier =
+                UBQualifier.createUBQualifier(
+                        indexType, atypeFactory.UNKNOWN, (UpperBoundChecker) checker);
         ValueAnnotatedTypeFactory valueFactory = atypeFactory.getValueAnnotatedTypeFactory();
         Long valMax = ValueCheckerUtils.getMaxValue(indexTree, valueFactory);
 
@@ -218,7 +219,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
             boolean ltelCheckFailed = true;
             if (anm != null) {
-                UBQualifier qual = UBQualifier.createUBQualifier(anm);
+                UBQualifier qual = UBQualifier.createUBQualifier(anm, (UpperBoundChecker) checker);
                 ltelCheckFailed = !qual.isLessThanOrEqualTo(subSeq.array);
             }
 
@@ -309,7 +310,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // The qualifier we need for an array is in the component type, not varType.
             AnnotatedTypeMirror componentType = ((AnnotatedArrayType) varType).getComponentType();
             UBQualifier qualifier =
-                    UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
+                    UBQualifier.createUBQualifier(
+                            componentType, atypeFactory.UNKNOWN, (UpperBoundChecker) checker);
             if (!qualifier.isLessThanLengthQualifier()) {
                 return false;
             }
@@ -321,7 +323,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return true;
         }
 
-        UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+        UBQualifier qualifier =
+                UBQualifier.createUBQualifier(
+                        varType, atypeFactory.UNKNOWN, (UpperBoundChecker) checker);
         return qualifier.isLessThanLengthQualifier()
                 && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
     }
@@ -363,18 +367,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return result;
     }
 
-    /**
-     * Given a Java expression, returns the additive inverse (the negation) as a String. Assumes
-     * that JavaExpressions do not contain multiplication.
-     *
-     * @param s a Java expression string
-     * @param context the parse context
-     * @return the string's additive inverse (its negation)
-     */
-    private String negateString(String s, JavaExpressionContext context) {
-        return Subsequence.negateString(s, context);
-    }
-
     /*
      *  Queries the Value Checker to determine if the maximum possible value of indexTree
      *  is less than the minimum possible length of arrTree, and returns true if so.
@@ -400,7 +392,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
 
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
-        UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
+        UBQualifier expQual =
+                UBQualifier.createUBQualifier(
+                        expType, atypeFactory.UNKNOWN, (UpperBoundChecker) checker);
 
         UBQualifier lessThanQual = atypeFactory.fromLessThan(valueExp, getCurrentPath());
         if (lessThanQual != null) {
@@ -482,16 +476,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
                 JavaExpression lhsSeqExpr =
                         parseJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                JavaExpressionContext context =
-                        Subsequence.getContextFromJavaExpression(lhsSeqExpr, checker);
                 Subsequence subSeq =
-                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory, context);
+                        Subsequence.getSubsequenceFromReceiver(lhsSeqExpr, atypeFactory);
 
                 if (subSeq != null) {
                     String from = subSeq.from;
                     String a = subSeq.array;
-
-                    if (expQual.hasSequenceWithOffset(a, negateString(from, context))) {
+                    if (expQual.hasSequenceWithOffset(a, Subsequence.negateString(from))) {
                         // This cast is safe because LTLs cannot contain duplicates.
                         // Note that this updates newLHS on each iteration from its old value,
                         // so even if there are multiple HSS arrays the result will be correct.

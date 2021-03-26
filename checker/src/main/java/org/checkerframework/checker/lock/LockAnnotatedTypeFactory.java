@@ -5,12 +5,12 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +31,7 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -39,6 +40,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -52,8 +54,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -161,7 +161,7 @@ public class LockAnnotatedTypeFactory
             protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
                 // If the error message is NOT_EFFECTIVELY_FINAL, then report
                 // lock.expression.not.final instead of expression.unparsable.type.invalid .
-                List<DependentTypesError> superErrors = new ArrayList<>();
+                List<DependentTypesError> superErrors = new ArrayList<>(errors.size());
                 for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
                         checker.reportError(
@@ -174,34 +174,22 @@ public class LockAnnotatedTypeFactory
             }
 
             @Override
-            protected String standardizeString(
-                    String expression, JavaExpressionContext context, TreePath localVarPath) {
-                if (DependentTypesError.isExpressionError(expression)) {
-                    return expression;
+            protected boolean shouldPassThroughExpression(String expression) {
+                // There is no expression to use to replace <self> here, so just pass the
+                // expression along.
+                return super.shouldPassThroughExpression(expression)
+                        || LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches();
+            }
+
+            @Override
+            protected @Nullable JavaExpression transform(JavaExpression javaExpr) {
+                if (javaExpr instanceof Unknown || isExpressionEffectivelyFinal(javaExpr)) {
+                    return javaExpr;
                 }
 
-                // Adds logic to parse <self> expression, which only the Lock Checker uses.
-                if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
-                    return expression;
-                }
-
-                try {
-                    JavaExpression result =
-                            JavaExpressionParseUtil.parse(expression, context, localVarPath);
-                    if (result == null) {
-                        return new DependentTypesError(expression, /*error message=*/ " ")
-                                .toString();
-                    }
-                    if (!isExpressionEffectivelyFinal(result)) {
-                        // If the expression isn't effectively final, then return the
-                        // NOT_EFFECTIVELY_FINAL error string.
-                        return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
-                                .toString();
-                    }
-                    return result.toString();
-                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-                    return new DependentTypesError(expression, e).toString();
-                }
+                // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL
+                // error string.
+                return createError(javaExpr.toString(), NOT_EFFECTIVELY_FINAL);
             }
         };
     }
@@ -497,7 +485,8 @@ public class LockAnnotatedTypeFactory
     SideEffectAnnotation methodSideEffectAnnotation(
             Element element, boolean issueErrorIfMoreThanOnePresent) {
         if (element != null) {
-            List<SideEffectAnnotation> sideEffectAnnotationPresent = new ArrayList<>();
+            Set<SideEffectAnnotation> sideEffectAnnotationPresent =
+                    EnumSet.noneOf(SideEffectAnnotation.class);
             for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
                 if (getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null) {
                     sideEffectAnnotationPresent.add(sea);
@@ -517,10 +506,10 @@ public class LockAnnotatedTypeFactory
                 // checker.reportError(element, "multiple.sideeffect.annotations");
             }
 
-            SideEffectAnnotation weakest = sideEffectAnnotationPresent.get(0);
+            SideEffectAnnotation weakest = null;
             // At least one side effect annotation was found. Return the weakest.
             for (SideEffectAnnotation sea : sideEffectAnnotationPresent) {
-                if (sea.isWeakerThan(weakest)) {
+                if (weakest == null || sea.isWeakerThan(weakest)) {
                     weakest = sea;
                 }
             }
@@ -554,12 +543,7 @@ public class LockAnnotatedTypeFactory
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
-        AnnotationValue av = am.getElementValues().get(guardSatisfiedValueElement);
-        if (av == null) {
-            return -1;
-        } else {
-            return (int) av.getValue();
-        }
+        return AnnotationUtils.getElementValueInt(am, guardSatisfiedValueElement, -1);
     }
 
     @Override
@@ -731,7 +715,7 @@ public class LockAnnotatedTypeFactory
         List<String> lockExpressions;
         if (value instanceof List) {
             lockExpressions =
-                    AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         } else if (value instanceof String) {
             lockExpressions = Collections.singletonList((String) value);
         } else {

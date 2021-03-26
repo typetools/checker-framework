@@ -37,7 +37,7 @@ public class Cve {
     }
 
     // Using impl class instead of interface
-    public static void onlyNames(AmazonEC2Client client) {
+    public static void onlyNamesImpl(AmazonEC2Client client) {
         // Should not be allowed unless .withOwner is also used
         DescribeImagesResult result =
                 client.describeImages(
@@ -46,7 +46,7 @@ public class Cve {
                                 .withFilters(new Filter("name").withValues(IMG_NAME)));
     }
 
-    public static void correct1(AmazonEC2Client client) {
+    public static void correct1Impl(AmazonEC2Client client) {
         DescribeImagesResult result =
                 client.describeImages(
                         new DescribeImagesRequest()
@@ -54,13 +54,13 @@ public class Cve {
                                 .withOwners("martin"));
     }
 
-    public static void correct2(AmazonEC2Client client) {
+    public static void correct2Impl(AmazonEC2Client client) {
         DescribeImagesResult result =
                 client.describeImages(new DescribeImagesRequest().withImageIds("myImageId"));
     }
 
     // Using async impl class
-    public static void onlyNames(AmazonEC2AsyncClient client) {
+    public static void onlyNamesAsync(AmazonEC2AsyncClient client) {
         // Should not be allowed unless .withOwner is also used
         DescribeImagesResult result =
                 client.describeImages(
@@ -69,7 +69,7 @@ public class Cve {
                                 .withFilters(new Filter("name").withValues(IMG_NAME)));
     }
 
-    public static void correct1(AmazonEC2AsyncClient client) {
+    public static void correct1Async(AmazonEC2AsyncClient client) {
         DescribeImagesResult result =
                 client.describeImages(
                         new DescribeImagesRequest()
@@ -77,8 +77,31 @@ public class Cve {
                                 .withOwners("martin"));
     }
 
-    public static void correct2(AmazonEC2AsyncClient client) {
+    public static void correct2Async(AmazonEC2AsyncClient client) {
         DescribeImagesResult result =
                 client.describeImages(new DescribeImagesRequest().withImageIds("myImageId"));
+    }
+
+    // Using async methods
+    public static void onlyNamesAsync2(AmazonEC2AsyncClient client) {
+        // Should not be allowed unless .withOwner is also used
+        Object result =
+                client.describeImagesAsync(
+                        new DescribeImagesRequest()
+                                // :: error: argument.type.incompatible
+                                .withFilters(new Filter("name").withValues(IMG_NAME)));
+    }
+
+    public static void correct1Async2(AmazonEC2AsyncClient client) {
+        Object result =
+                client.describeImagesAsync(
+                        new DescribeImagesRequest()
+                                .withFilters(new Filter("name").withValues(IMG_NAME))
+                                .withOwners("martin"));
+    }
+
+    public static void correct2Async2(AmazonEC2AsyncClient client) {
+        Object result =
+                client.describeImagesAsync(new DescribeImagesRequest().withImageIds("myImageId"));
     }
 }

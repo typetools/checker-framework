@@ -20,6 +20,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -136,7 +137,7 @@ public class ElementAnnotationUtil {
             TargetType... targetTypes) {
         final Map<TargetType, List<TypeCompound>> targetTypeToAnnos = new HashMap<>();
         for (TargetType targetType : targetTypes) {
-            targetTypeToAnnos.put(targetType, new ArrayList<>(10));
+            targetTypeToAnnos.put(targetType, new ArrayList<>());
         }
 
         for (final TypeCompound anno : annos) {
@@ -624,7 +625,24 @@ public class ElementAnnotationUtil {
          * @param format format string
          * @param args arguments to the format string
          */
+        @FormatMethod
         private UnexpectedAnnotationLocationException(String format, Object... args) {
+            super(String.format(format, args));
+        }
+    }
+
+    /** An ERROR TypeKind was found. */
+    @SuppressWarnings("serial")
+    public static class ErrorTypeKindException extends Error {
+
+        /**
+         * Creates an ErrorTypeKindException.
+         *
+         * @param format format string
+         * @param args arguments to the format string
+         */
+        @FormatMethod
+        public ErrorTypeKindException(String format, Object... args) {
             super(String.format(format, args));
         }
     }

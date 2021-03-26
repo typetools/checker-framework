@@ -70,12 +70,12 @@ class ValueTypeAnnotator extends TypeAnnotator {
         }
 
         if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
-            List<Long> values = ValueAnnotatedTypeFactory.getIntValues(anno);
+            List<Long> values = typeFactory.getIntValues(anno);
             if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
                 atm.replaceAnnotation(typeFactory.createIntRangeAnnotation(Range.create(values)));
             }
         } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
-            List<Integer> values = ValueAnnotatedTypeFactory.getArrayLength(anno);
+            List<Integer> values = typeFactory.getArrayLength(anno);
             if (values.isEmpty()) {
                 atm.replaceAnnotation(typeFactory.BOTTOMVAL);
             } else if (Collections.min(values) < 0) {
@@ -113,8 +113,8 @@ class ValueTypeAnnotator extends TypeAnnotator {
             }
         } else if (AnnotationUtils.areSameByName(
                 anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-            int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
-            int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+            int from = typeFactory.getArrayLenRangeFromValue(anno);
+            int to = typeFactory.getArrayLenRangeToValue(anno);
             if (from > to) {
                 // from > to either indicates a user error when writing an
                 // annotation or an error in the checker's implementation -
@@ -129,7 +129,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
         } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
             // The annotation is StringVal. If there are too many elements,
             // ArrayLen or ArrayLenRange is used.
-            List<String> values = ValueAnnotatedTypeFactory.getStringValues(anno);
+            List<String> values = typeFactory.getStringValues(anno);
 
             if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
                 List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -140,7 +140,9 @@ class ValueTypeAnnotator extends TypeAnnotator {
                 anno, ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME)) {
             // If the annotation contains an invalid regex, replace it with bottom. ValueVisitor
             // will issue a warning where the annotation was written.
-            List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(anno);
+            List<String> regexes =
+                    AnnotationUtils.getElementValueArray(
+                            anno, typeFactory.matchesRegexValueElement, String.class);
             for (String regex : regexes) {
                 try {
                     Pattern.compile(regex);

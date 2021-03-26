@@ -106,6 +106,10 @@ public class AnnotationClassLoader {
      */
     private final Set<Class<? extends Annotation>> supportedBundledAnnotationClasses;
 
+    /** The package separator: ".". */
+    private static final Pattern DOT_LITERAL_PATTERN =
+            Pattern.compile(Character.toString(DOT), Pattern.LITERAL);
+
     /**
      * Constructor for loading annotations defined for a checker.
      *
@@ -136,9 +140,7 @@ public class AnnotationClassLoader {
         // from the fully qualified package name, split it at every dot then add
         // to the list
         fullyQualifiedPackageNameSegments.addAll(
-                Arrays.asList(
-                        Pattern.compile(Character.toString(DOT), Pattern.LITERAL)
-                                .split(packageName)));
+                Arrays.asList(DOT_LITERAL_PATTERN.split(packageName)));
 
         classLoader = getClassLoader();
 
@@ -182,6 +184,9 @@ public class AnnotationClassLoader {
      *     or null if no jar or directory contains the qual package
      */
     private final @Nullable URL getURLFromClasspaths() {
+        // TODO: This method could probably be replaced with
+        // io.github.classgraph.ClassGraph#getClasspathURIs()
+
         // Debug use, uncomment if needed to see all of the classpaths (boot
         // classpath, extension classpath, and classpath)
         // printPaths();
@@ -471,9 +476,8 @@ public class AnnotationClassLoader {
         }
 
         // all paths in CLASSPATH, -cp, and -classpath
-        String[] javaclassPaths = System.getProperty("java.class.path").split(File.pathSeparator);
-        processingEnv.getMessager().printMessage(Kind.NOTE, "java classpaths:");
-        for (String path : javaclassPaths) {
+        processingEnv.getMessager().printMessage(Kind.NOTE, "java.class.path property:");
+        for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
         }
 

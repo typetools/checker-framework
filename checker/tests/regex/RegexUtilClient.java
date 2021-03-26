@@ -1,7 +1,7 @@
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
-public class RegexUtilTest {
+public class RegexUtilClient {
     void fullyQualifiedRegexUtil(String s) {
         if (org.checkerframework.checker.regex.util.RegexUtil.isRegex(s, 2)) {
             @Regex(2) String s2 = s;

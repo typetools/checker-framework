@@ -1,20 +1,12 @@
 package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.util.TreePath;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
@@ -29,37 +21,8 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     }
 
     @Override
-    protected String standardizeString(
-            final String expression,
-            JavaExpressionContext context,
-            @Nullable TreePath localVarPath) {
-        if (DependentTypesError.isExpressionError(expression)) {
-            return expression;
-        }
-        JavaExpression result;
-        try {
-            result = JavaExpressionParseUtil.parse(expression, context, localVarPath);
-        } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-            return new DependentTypesError(expression, e).toString();
-        }
-        if (result == null) {
-            return new DependentTypesError(expression, /*error message=*/ " ").toString();
-        }
-        if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
-            Object constant = ((FieldAccess) result).getField().getConstantValue();
-            if (constant != null && !(constant instanceof String)) {
-                return constant.toString();
-            }
-        }
-        // TODO: Maybe move this into the superclass standardizeString, then remove this class.
-        ValueAnnotatedTypeFactory vatf =
-                ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
-                        .getTypeFactoryOfSubchecker(ValueChecker.class);
-        if (vatf != null) {
-            result = ValueCheckerUtils.optimize(result, vatf);
-        }
-
-        return result.toString();
+    protected @Nullable JavaExpression transform(JavaExpression javaExpr) {
+        return ValueCheckerUtils.optimize(javaExpr, factory);
     }
 
     @Override

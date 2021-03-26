@@ -188,6 +188,9 @@ Alternately, you can build the latest development version from source
 \textbf{Requirement:}
 % Keep in sync with build.gradle and SourceChecker.init.
 You must have \textbf{JDK 8} or \textbf{JDK 11} installed.
+% Possible replacement for the above.
+% You must have a supported LTS JDK installed: \textbf{JDK 8} or \textbf{JDK 11}.
+The Checker Framework processes code written for either of those versions.
 
 The installation process has two required steps and one
 optional step.
@@ -197,7 +200,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.10.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.11.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -220,6 +223,14 @@ Framework tutorial}, which demonstrates the Nullness, Regex, and Tainting Checke
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
+\label{version-number}
+The Checker Framework is released on a monthly schedule.  The minor version
+(the middle number in the version number) is incremented if there are any
+incompatibilities
+% Sometimes, we permit trivial incompatibilities, or ones that are unlikely
+% to affect users, without changing the minor version.
+with the previous version, including in user-visible
+behavior or in methods that a checker implementation might call.
 
 
 \sectionAndLabel{Example use:  detecting a null pointer bug}{example-use}
@@ -370,6 +381,8 @@ To run a checker, run the compiler \code{javac} as usual,
 but either pass the \code{-processor \emph{plugin\_class}} command-line
 option, or use auto-discovery as described in
 Section~\ref{checker-auto-discovery}.
+(If your project already uses auto-discovery for some annotation processor,
+such as AutoValue, then you should use auto-discovery.)
 A concrete example of using \code{-processor} to run the Nullness Checker is:
 
 \begin{Verbatim}
@@ -639,6 +652,7 @@ Type-checking modes:  enable/disable functionality
   Section~\ref{whole-program-inference}.
   Using \<-Ainfer=jaifs> produces \<.jaif> files.
   Using \<-Ainfer=stubs> produces \<.astub> files.
+  Using \<-Ainfer=ajava> produces \<.ajava> files.
   You must also supply \<-Awarns>, or the inference output may be incomplete.
 \item \<-AshowSuppressWarningsStrings>
   With each warning, show all possible strings to suppress that warning.
@@ -784,7 +798,7 @@ checker is an ``annotation processor''.
   happens; \<-proc:none>
   means to skip checking; \<-proc:only> means to do only
   checking, without any subsequent compilation; see
-  Section~\ref{checker-auto-discovery}
+  Section~\ref{checker-auto-discovery}.
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
 \item \<-J> Supply an argument to the JVM that is running javac;
@@ -801,10 +815,16 @@ when running \<javac>.
 
 \subsectionAndLabel{Checker auto-discovery}{checker-auto-discovery}
 
-``Auto-discovery'' makes the \code{javac} compiler always run a checker
-plugin, even if you do not explicitly pass the \code{-processor}
-command-line option.  This can make your command line shorter, and ensures
+``Auto-discovery'' makes the \code{javac} compiler always run an
+annotation processor, such as a checker
+plugin without explicitly passing the \code{-processor}
+command-line option.  This can make your command line shorter, and it ensures
 that your code is checked even if you forget the command-line option.
+
+If the \<javac> command line specifies any \<-processor> command-line
+option, then auto-discovery is disabled.  This means that if your project
+currently uses auto-discovery, you should use auto-discovery for the
+Checker Framework too.
 
 \begin{sloppypar}
 To enable auto-discovery, place a configuration file named
@@ -832,7 +852,8 @@ annotation processing including all pluggable type-checking.
 %% Auto-discovering all the distributed checkers by default would be
 %% problematic:  the nullness and mutability checkers would issue lots of
 %% errors for unannotated code, and that would be irritating.  So, leave it
-%% up to the user to enable auto-discovery.  1.
+%% up to the user to enable auto-discovery.
+
 
 \subsectionAndLabel{Shorthand for built-in checkers}{shorthand-for-checkers}
 
@@ -1244,7 +1265,7 @@ guarantee that your program will not crash.
 
 \begin{itemize}
 \item
-  The \<-AskipUses> command-line argument (Section~\ref{skipuses}) skips
+  The \<-AskipUses> command-line argument (Section~\ref{askipuses}) skips
   checking all method calls to one or more classes.
 \item
   A stub file (Section~\ref{stub}) can override the library's annotations,
@@ -1539,7 +1560,7 @@ same methodology in different words.
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer
 % LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
 % LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics here''
-% LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
+% LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound ajava
 % LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
 % LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
 % LocalWords:  EnsuresNonNull EnsuresNonNullIf checkername orElseThrow
@@ -1548,4 +1569,4 @@ same methodology in different words.
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
 % LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
-% LocalWords:  specification''
+% LocalWords:  specification'' AwarnUnneededSuppressionsExceptions

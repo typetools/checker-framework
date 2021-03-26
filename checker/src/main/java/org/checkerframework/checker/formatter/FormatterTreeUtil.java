@@ -7,7 +7,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.IllegalFormatException;
 import java.util.List;
-import java.util.Locale;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -45,21 +44,22 @@ public class FormatterTreeUtil {
     /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
 
+    /** The value() element/field of an @Format annotation. */
+    protected final ExecutableElement formatValueElement;
     /** The value() element/field of an @InvalidFormat annotation. */
     protected final ExecutableElement invalidFormatValueElement;
-
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        formatValueElement = TreeUtils.getMethod(Format.class, "value", 0, processingEnv);
         invalidFormatValueElement =
-                TreeUtils.getMethod(
-                        InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
+                TreeUtils.getMethod(InvalidFormat.class, "value", 0, processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        Format.class.getCanonicalName(),
+                        Format.class,
                         "value",
                         0,
                         processingEnv);
@@ -176,18 +176,6 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Returns true if the given ExpressionTree has type java.util.Locale.
-     *
-     * @param e an expression
-     * @param atypeFactory the type factory
-     * @return true if the given ExpressionTree has type java.util.Locale
-     */
-    public static boolean isLocale(ExpressionTree e, AnnotatedTypeFactory atypeFactory) {
-        return (TypesUtils.getClassFromType(atypeFactory.getAnnotatedType(e).getUnderlyingType())
-                == Locale.class);
-    }
-
-    /**
      * Creates a new FormatCall, or returns null.
      *
      * @param invocationTree a method invocation, where the method is annotated @FormatMethod
@@ -202,20 +190,24 @@ public class FormatterTreeUtil {
             return null;
         }
 
-        // TODO figure out how to make passing of environment
-        // objects such as atypeFactory, processingEnv, ... nicer
-        List<? extends ExpressionTree> theargs;
-
-        theargs = invocationTree.getArguments();
-        if (isLocale(theargs.get(0), atypeFactory)) {
-            // call with Locale as first argument
-            theargs = theargs.subList(1, theargs.size());
+        ExecutableElement methodElement = TreeUtils.elementFromUse(invocationTree);
+        int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
+        if (formatStringIndex == -1) {
+            // Reporting the error is redundant if the method was declared in source code, because
+            // the visitor will have reported it; but it is necessary if the method was declared in
+            // byte code.
+            atypeFactory
+                    .getChecker()
+                    .reportError(
+                            invocationTree, "format.method.invalid", methodElement.getSimpleName());
+            return null;
         }
-
-        // TODO Check that the first parameter exists and is a string.
-        ExpressionTree formatStringTree = theargs.get(0);
+        ExpressionTree formatStringTree = invocationTree.getArguments().get(formatStringIndex);
         AnnotatedTypeMirror formatStringType = atypeFactory.getAnnotatedType(formatStringTree);
-        List<? extends ExpressionTree> args = theargs.subList(1, theargs.size());
+        List<? extends ExpressionTree> allArgs = invocationTree.getArguments();
+        List<? extends ExpressionTree> args =
+                allArgs.subList(formatStringIndex + 1, allArgs.size());
+
         return new FormatCall(
                 invocationTree, formatStringTree, formatStringType, args, atypeFactory);
     }
@@ -501,13 +493,14 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link Format} annotation, and returns its
-     * value.
+     * Returns the value of a {@code @}{@link Format} annotation.
+     *
+     * @param anno a {@code @}{@link Format} annotation
+     * @return the annotation's {@code value} element
      */
+    @SuppressWarnings("GetClassOnEnum")
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        List<ConversionCategory> list =
-                AnnotationUtils.getElementValueEnumArray(
-                        anno, "value", ConversionCategory.class, false);
-        return list.toArray(new ConversionCategory[] {});
+        return AnnotationUtils.getElementValueEnumArray(
+                anno, formatValueElement, ConversionCategory.class);
     }
 }

@@ -53,7 +53,7 @@ public class I18nFormatUtil {
         I18nConversion[] cs = MessageFormatParser.parse(format);
 
         int maxIndex = -1;
-        Map<Integer, I18nConversionCategory> conv = new HashMap<>();
+        Map<Integer, I18nConversionCategory> conv = new HashMap<>(cs.length);
 
         for (I18nConversion c : cs) {
             int index = c.index;

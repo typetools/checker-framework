@@ -6,6 +6,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -772,10 +773,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Set<AFConstraint> visited = new HashSet<>();
 
-        List<AFReducer> reducers = new ArrayList<>();
-        reducers.add(new A2FReducer(typeFactory));
-        reducers.add(new F2AReducer(typeFactory));
-        reducers.add(new FIsAReducer(typeFactory));
+        List<AFReducer> reducers =
+                Arrays.asList(
+                        new A2FReducer(typeFactory),
+                        new F2AReducer(typeFactory),
+                        new FIsAReducer(typeFactory));
 
         Set<AFConstraint> newConstraints = new HashSet<>(10);
         while (!toProcess.isEmpty()) {

@@ -1,7 +1,6 @@
 package org.checkerframework.framework.test.diagnostics;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -14,6 +13,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
@@ -241,7 +241,7 @@ public class TestDiagnosticUtils {
         }
         DiagnosticKind categoryEnum = DiagnosticKind.fromParseString(category);
         if (categoryEnum == null) {
-            throw new Error("Unparseable category: " + category);
+            throw new Error("Unparsable category: " + category);
         }
 
         return Pair.of(categoryEnum, isFixable);
@@ -314,10 +314,11 @@ public class TestDiagnosticUtils {
         if (trimmedLine.startsWith("// ::")) {
             String restOfLine = trimmedLine.substring(5); // drop the "// ::"
             String[] diagnosticStrs = restOfLine.split("::");
-            List<TestDiagnostic> diagnostics = new ArrayList<>(diagnosticStrs.length);
-            for (String diagnostic : diagnosticStrs) {
-                diagnostics.add(fromJavaFileComment(filename, errorLine, diagnostic));
-            }
+            List<TestDiagnostic> diagnostics =
+                    SystemUtil.mapList(
+                            (String diagnostic) ->
+                                    fromJavaFileComment(filename, errorLine, diagnostic),
+                            diagnosticStrs);
             return new TestDiagnosticLine(
                     filename, errorLine, line, Collections.unmodifiableList(diagnostics));
 
@@ -388,13 +389,12 @@ public class TestDiagnosticUtils {
     /**
      * Converts the given diagnostics to strings (as they would appear in a source file
      * individually).
+     *
+     * @param diagnostics a list of diagnostics
+     * @return a list of the diagnastics as they would appear in a source file
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        final List<String> strings = new ArrayList<>(diagnostics.size());
-        for (TestDiagnostic diagnostic : diagnostics) {
-            strings.add(diagnostic.toString());
-        }
-        return strings;
+        return SystemUtil.mapList(TestDiagnostic::toString, diagnostics);
     }
 
     public static void removeDiagnosticsOfKind(

@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * A transfer function that extends {@link CFAbstractTransfer} and tracks {@link
  * InitializationStore}s. In addition to the features of {@link CFAbstractTransfer}, this transfer
- * function also track which fields of the current class ('self' receiver) have been initialized.
+ * function also tracks which fields of the current class ('self' receiver) have been initialized.
  *
  * <p>More precisely, the following refinements are performed:
  *
@@ -136,7 +136,7 @@ public class InitializationTransfer<
                 // If the type is not completed yet, we might run
                 // into trouble. Skip the field.
                 // TODO: is there a nicer solution?
-                // This was raised by Issue 244.
+                // This was raised by Issue #244.
                 continue;
             }
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);

@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -418,16 +419,18 @@ public class RemoveAnnotationsForInference {
         if (suppressWarningsStrings == null) {
             return false;
         }
-        suppressWarningsStrings.replaceAll(RemoveAnnotationsForInference::checkerName);
+        List<String> checkerNames =
+                SystemUtil.mapList(
+                        RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
         // "allcheckers" suppresses all warnings.
-        if (suppressWarningsStrings.contains("allcheckers")) {
+        if (checkerNames.contains("allcheckers")) {
             return true;
         }
 
         // Try every element of suppressee's fully-qualified name.
         for (String suppressee : suppressees) {
             for (String fqPart : suppressee.split("\\.")) {
-                if (suppressWarningsStrings.contains(fqPart)) {
+                if (checkerNames.contains(fqPart)) {
                     return true;
                 }
             }
@@ -470,9 +473,7 @@ public class RemoveAnnotationsForInference {
                 || name.equals("javax.inject.Singleton")
                 || name.equals("Option")
                 || name.equals("org.plumelib.options.Option")) {
-            List<String> result = new ArrayList<>(1);
-            result.add("allcheckers");
-            return result;
+            return Collections.singletonList("allcheckers");
         }
 
         return null;
@@ -486,9 +487,7 @@ public class RemoveAnnotationsForInference {
      */
     private static List<String> annotationElementStrings(Expression e) {
         if (e instanceof StringLiteralExpr) {
-            List<String> result = new ArrayList<>(1);
-            result.add(((StringLiteralExpr) e).asString());
-            return result;
+            return Collections.singletonList(((StringLiteralExpr) e).asString());
         } else if (e instanceof ArrayInitializerExpr) {
             NodeList<Expression> values = ((ArrayInitializerExpr) e).getValues();
             List<String> result = new ArrayList<>(values.size());

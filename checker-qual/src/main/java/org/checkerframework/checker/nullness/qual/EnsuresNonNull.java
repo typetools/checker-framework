@@ -14,13 +14,14 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 // @EnsuresNonNull(expression="a.b.c")} implies that both {@code a.b} and {@code a.b.c} are
 // non-null.
 /**
- * Indicates that the value expressions are non-null, if the method terminates successfully.
+ * Indicates that the value expressions are non-null just after a method call, if the method
+ * terminates successfully.
  *
  * <p>This postcondition annotation is useful for methods that initialize a field:
  *
  * <pre><code>
  * {@literal @}EnsuresNonNull("theMap")
- *  public static void initialize() {
+ *  void initialize() {
  *    theMap = new HashMap&lt;&gt;();
  *  }
  * </code></pre>

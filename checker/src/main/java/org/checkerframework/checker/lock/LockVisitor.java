@@ -54,13 +54,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -610,8 +610,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             AnnotationMirror ensuresLockHeldAnno =
                     atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
-            List<String> expressions = new ArrayList<>();
 
+            List<String> expressions = new ArrayList<>();
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
                         AnnotationUtils.getElementValueArray(
@@ -1235,43 +1235,34 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         TreePath currentPath = getCurrentPath();
-        List<JavaExpression> params = JavaExpression.getParametersOfEnclosingMethod(currentPath);
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreePathUtil.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
                 JavaExpression.getPseudoReceiver(currentPath, enclosingType);
-        JavaExpressionContext exprContext =
-                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getChecker());
+
         JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;
         } else if (TreeUtils.isExpressionTree(tree)) {
             self = JavaExpression.fromTree((ExpressionTree) tree);
         } else {
-            self = new Unknown(TreeUtils.typeOf(tree));
+            self = new Unknown(tree);
         }
 
-        List<LockExpression> lockExpressions = new ArrayList<>();
-        for (String expression : expressions) {
-            lockExpressions.add(parseExpressionString(expression, exprContext, currentPath, self));
-        }
-        return lockExpressions;
+        return SystemUtil.mapList(
+                expression -> parseExpressionString(expression, currentPath, self), expressions);
     }
 
     /**
      * Parse a Java expression.
      *
      * @param expression the Java expression
-     * @param jeContext the Java Expression parsing context
      * @param path the path to the expression
      * @param itself the self expression
      * @return the parsed expression
      */
     private LockExpression parseExpressionString(
-            String expression,
-            JavaExpressionContext jeContext,
-            TreePath path,
-            JavaExpression itself) {
+            String expression, TreePath path, JavaExpression itself) {
 
         LockExpression lockExpression = new LockExpression(expression);
         if (DependentTypesError.isExpressionError(expression)) {
@@ -1293,20 +1284,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     }
                     return lockExpression;
                 } else {
-                    // TODO: The proper way to do this is to call
-                    // jeContext.copyChangeToParsingMemberOfReceiver to set the receiver to
-                    // the <self> expression, and then call JavaExpressionParseUtil.parse on the
-                    // remaining expression string with the new JavaExpressionContext. However,
-                    // this currently results in a JavaExpression that has a different
-                    // hash code than if the following JavaExpression is parsed directly, which
-                    // results in our inability to check that a lock expression is held as it does
-                    // not match anything in the store due to the hash code mismatch.  For now,
-                    // convert the "<self>" portion to the node's string representation, and parse
-                    // the entire string:
-
                     lockExpression.lockExpression =
-                            JavaExpressionParseUtil.parse(
-                                    itself.toString() + "." + remainingExpression, jeContext, path);
+                            StringToJavaExpression.atPath(
+                                    itself.toString() + "." + remainingExpression, path, checker);
                     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpression.lockExpression)) {
                         checker.reportError(
                                 path.getLeaf(),
@@ -1317,7 +1297,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             } else {
                 lockExpression.lockExpression =
-                        JavaExpressionParseUtil.parse(expression, jeContext, path);
+                        StringToJavaExpression.atPath(expression, path, checker);
                 return lockExpression;
             }
         } catch (JavaExpressionParseException ex) {
