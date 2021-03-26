@@ -1,2 +1,2 @@
-Issue347.java:33:9: compiler.err.proc.messager: [dereference.of.nullable] dereference of possibly-null reference nble
+Issue347.java:33:5: compiler.err.proc.messager: [dereference.of.nullable] dereference of possibly-null reference nble
 1 error
