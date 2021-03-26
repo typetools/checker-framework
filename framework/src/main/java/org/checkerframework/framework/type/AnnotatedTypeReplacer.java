@@ -5,7 +5,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
+import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.BugInCF;
  * visitType.accept(new AnnotatedTypeReplacer(), parameter);
  * }</pre>
  */
-public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
+public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
 
     /**
      * Replaces or adds all annotations from {@code from} to {@code to}. Annotations from {@code
@@ -96,17 +96,12 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
 
     @SuppressWarnings("interning:not.interned") // assertion
     @Override
-    protected Void compare(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+    protected Void defaultAction(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
         assert from != to;
         if (from != null && to != null) {
             replaceAnnotations(from, to);
         }
         return null;
-    }
-
-    @Override
-    protected Void combineRs(Void r1, Void r2) {
-        return r1;
     }
 
     /**

@@ -40,8 +40,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
@@ -1036,7 +1036,7 @@ public class DependentTypesHelper {
      * Copies annotations that might have been viewpoint adapted from the visited type (the first
      * formal parameter) to the second formal parameter.
      */
-    private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
+    private class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
             if (type == null || p == null) {
@@ -1066,18 +1066,13 @@ public class DependentTypesHelper {
         }
 
         @Override
-        protected Void compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
+        protected Void defaultAction(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
             if (type == null || p == null) {
                 return null;
             }
             if (type.getKind() != p.getKind()) {
                 throw new BugInCF("Should be the same. type: %s p: %s ", type, p);
             }
-            return null;
-        }
-
-        @Override
-        protected Void combineRs(Void r1, Void r2) {
             return null;
         }
     }
