@@ -2,9 +2,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class InferListParam<V> {
-    List<Integer> fieldValues;
+  List<Integer> fieldValues;
 
-    InferListParam() {
-        fieldValues = Collections.emptyList();
-    }
+  InferListParam() {
+    fieldValues = Collections.emptyList();
+  }
 }

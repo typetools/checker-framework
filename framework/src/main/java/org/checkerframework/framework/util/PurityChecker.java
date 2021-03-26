@@ -9,7 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  *     flow-sensitive analysis
  */
 public class PurityChecker extends BaseTypeChecker {
-    // There is no implementation here.
-    // It uses functionality from BaseTypeChecker, which itself calls
-    // dataflow's purity implementation.
+  // There is no implementation here.
+  // It uses functionality from BaseTypeChecker, which itself calls
+  // dataflow's purity implementation.
 }

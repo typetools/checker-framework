@@ -6,13 +6,13 @@
  * method type argument inference.
  */
 public class Compound {
-    public static void one() {
-        long total = 0;
-        total = two();
-        total += two();
-    }
+  public static void one() {
+    long total = 0;
+    total = two();
+    total += two();
+  }
 
-    private static <N> long two() {
-        return 0;
-    }
+  private static <N> long two() {
+    return 0;
+  }
 }

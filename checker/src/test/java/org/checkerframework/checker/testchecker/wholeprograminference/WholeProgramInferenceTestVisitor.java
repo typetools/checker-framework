@@ -12,29 +12,29 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 
 /** Visitor for a simple type system to test whole-program inference using .jaif files. */
 public class WholeProgramInferenceTestVisitor
-        extends BaseTypeVisitor<WholeProgramInferenceTestAnnotatedTypeFactory> {
+    extends BaseTypeVisitor<WholeProgramInferenceTestAnnotatedTypeFactory> {
 
-    public WholeProgramInferenceTestVisitor(BaseTypeChecker checker) {
-        super(checker);
-    }
+  public WholeProgramInferenceTestVisitor(BaseTypeChecker checker) {
+    super(checker);
+  }
 
-    @Override
-    protected WholeProgramInferenceTestAnnotatedTypeFactory createTypeFactory() {
-        return new WholeProgramInferenceTestAnnotatedTypeFactory(checker);
-    }
+  @Override
+  protected WholeProgramInferenceTestAnnotatedTypeFactory createTypeFactory() {
+    return new WholeProgramInferenceTestAnnotatedTypeFactory(checker);
+  }
 
-    @Override
-    public Void visitAnnotation(AnnotationTree node, Void p) {
-        Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
-        if (anno.toString().equals(DefaultType.class.getName())) {
-            checker.reportError(node, "annotation.not.allowed.in.src", anno.toString());
-        }
-        return super.visitAnnotation(node, p);
+  @Override
+  public Void visitAnnotation(AnnotationTree node, Void p) {
+    Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
+    if (anno.toString().equals(DefaultType.class.getName())) {
+      checker.reportError(node, "annotation.not.allowed.in.src", anno.toString());
     }
+    return super.visitAnnotation(node, p);
+  }
 
-    @Override
-    protected void checkConstructorResult(
-            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
-        // Skip this check.
-    }
+  @Override
+  protected void checkConstructorResult(
+      AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+    // Skip this check.
+  }
 }

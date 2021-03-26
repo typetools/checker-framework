@@ -3,16 +3,16 @@
 
 public class Issue341 {
 
-    static class Provider {
-        public final Object get = new Object();
-    }
+  static class Provider {
+    public final Object get = new Object();
+  }
 
-    Object execute(Provider p) {
-        final Object result;
-        try {
-            result = p.get;
-        } finally {
-        }
-        return result;
+  Object execute(Provider p) {
+    final Object result;
+    try {
+      result = p.get;
+    } finally {
     }
+    return result;
+  }
 }

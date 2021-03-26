@@ -11,55 +11,55 @@ import org.checkerframework.dataflow.analysis.Store.FlowRule;
  */
 public abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock {
 
-    /** Internal representation of the successor. */
-    protected @Nullable BlockImpl successor;
+  /** Internal representation of the successor. */
+  protected @Nullable BlockImpl successor;
 
-    /**
-     * The initial value for the rule below says that EACH store at the end of a single successor
-     * block flows to the corresponding store of the successor.
-     */
-    protected FlowRule flowRule = FlowRule.EACH_TO_EACH;
+  /**
+   * The initial value for the rule below says that EACH store at the end of a single successor
+   * block flows to the corresponding store of the successor.
+   */
+  protected FlowRule flowRule = FlowRule.EACH_TO_EACH;
 
-    /**
-     * Creates a new SingleSuccessorBlock.
-     *
-     * @param type the type of this basic block
-     */
-    protected SingleSuccessorBlockImpl(BlockType type) {
-        super(type);
+  /**
+   * Creates a new SingleSuccessorBlock.
+   *
+   * @param type the type of this basic block
+   */
+  protected SingleSuccessorBlockImpl(BlockType type) {
+    super(type);
+  }
+
+  @Override
+  public @Nullable Block getSuccessor() {
+    return successor;
+  }
+
+  @Override
+  public Set<Block> getSuccessors() {
+    if (successor == null) {
+      return Collections.emptySet();
+    } else {
+      return Collections.singleton(successor);
     }
+  }
 
-    @Override
-    public @Nullable Block getSuccessor() {
-        return successor;
-    }
+  /**
+   * Set a basic block as the successor of this block.
+   *
+   * @param successor the block that will be the successor of this
+   */
+  public void setSuccessor(BlockImpl successor) {
+    this.successor = successor;
+    successor.addPredecessor(this);
+  }
 
-    @Override
-    public Set<Block> getSuccessors() {
-        if (successor == null) {
-            return Collections.emptySet();
-        } else {
-            return Collections.singleton(successor);
-        }
-    }
+  @Override
+  public FlowRule getFlowRule() {
+    return flowRule;
+  }
 
-    /**
-     * Set a basic block as the successor of this block.
-     *
-     * @param successor the block that will be the successor of this
-     */
-    public void setSuccessor(BlockImpl successor) {
-        this.successor = successor;
-        successor.addPredecessor(this);
-    }
-
-    @Override
-    public FlowRule getFlowRule() {
-        return flowRule;
-    }
-
-    @Override
-    public void setFlowRule(FlowRule rule) {
-        flowRule = rule;
-    }
+  @Override
+  public void setFlowRule(FlowRule rule) {
+    flowRule = rule;
+  }
 }

@@ -42,8 +42,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({
-    FullyQualifiedName.class,
-    CanonicalNameOrEmpty.class,
-    CanonicalNameOrPrimitiveType.class
+  FullyQualifiedName.class,
+  CanonicalNameOrEmpty.class,
+  CanonicalNameOrPrimitiveType.class
 })
 public @interface CanonicalName {}

@@ -36,39 +36,37 @@ import java.lang.annotation.Target;
 @InheritedAnnotation
 @Repeatable(EnsuresQualifier.List.class)
 public @interface EnsuresQualifier {
-    /**
-     * Returns the Java expressions for which the qualifier holds after successful method
-     * termination.
-     *
-     * @return the Java expressions for which the qualifier holds after successful method
-     *     termination
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] expression();
+  /**
+   * Returns the Java expressions for which the qualifier holds after successful method termination.
+   *
+   * @return the Java expressions for which the qualifier holds after successful method termination
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] expression();
 
-    /**
-     * Returns the qualifier that is guaranteed to hold on successful termination of the method.
-     *
-     * @return the qualifier that is guaranteed to hold on successful termination of the method
-     */
-    Class<? extends Annotation> qualifier();
+  /**
+   * Returns the qualifier that is guaranteed to hold on successful termination of the method.
+   *
+   * @return the qualifier that is guaranteed to hold on successful termination of the method
+   */
+  Class<? extends Annotation> qualifier();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresQualifier} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresQualifier} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresQualifier} annotation repeatable.
+     * Return the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresQualifier} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Return the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresQualifier[] value();
-    }
+    EnsuresQualifier[] value();
+  }
 }

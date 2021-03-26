@@ -36,45 +36,45 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @InheritedAnnotation
 @Repeatable(EnsuresKeyForIf.List.class)
 public @interface EnsuresKeyForIf {
-    /** The value the method must return, in order for the postcondition to hold. */
-    boolean result();
+  /** The value the method must return, in order for the postcondition to hold. */
+  boolean result();
 
-    /**
-     * Java expressions that are keys in the given maps after the method returns the given result.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] expression();
+  /**
+   * Java expressions that are keys in the given maps after the method returns the given result.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] expression();
 
-    /**
-     * Returns Java expressions whose values are maps, each of which contains each expression value
-     * as a key (after the method returns the given result).
-     *
-     * @return Java expressions whose values are maps, each of which contains each expression value
-     *     as a key (after the method returns the given result)
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    @JavaExpression
-    @QualifierArgument("value")
-    String[] map();
+  /**
+   * Returns Java expressions whose values are maps, each of which contains each expression value as
+   * a key (after the method returns the given result).
+   *
+   * @return Java expressions whose values are maps, each of which contains each expression value as
+   *     a key (after the method returns the given result)
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  @JavaExpression
+  @QualifierArgument("value")
+  String[] map();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresKeyForIf} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresKeyForIf} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresKeyForIf} annotation repeatable.
+     * Returns the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresKeyForIf} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Returns the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresKeyForIf[] value();
-    }
+    EnsuresKeyForIf[] value();
+  }
 }

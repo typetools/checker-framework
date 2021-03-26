@@ -1,5 +1,5 @@
 public class ClassB {
-    public void test() {
-        Object @Nullable [] o;
-    }
+  public void test() {
+    Object @Nullable [] o;
+  }
 }

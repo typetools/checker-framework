@@ -22,38 +22,38 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @InheritedAnnotation
 @Repeatable(EnsuresInitializedFields.List.class)
 public @interface EnsuresInitializedFields {
-    /**
-     * The object whose fields this method initializes.
-     *
-     * @return object whose fields are initialized
-     */
-    public String[] value() default {"this"};
+  /**
+   * The object whose fields this method initializes.
+   *
+   * @return object whose fields are initialized
+   */
+  public String[] value() default {"this"};
 
-    /**
-     * Fields that this method initializes.
-     *
-     * @return fields that this method initializes
-     */
-    @QualifierArgument("value")
-    public String[] fields();
+  /**
+   * Fields that this method initializes.
+   *
+   * @return fields that this method initializes
+   */
+  @QualifierArgument("value")
+  public String[] fields();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresInitializedFields} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresInitializedFields} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @PostconditionAnnotation(qualifier = InitializedFields.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresInitializedFields} annotation repeatable.
+     * Return the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresInitializedFields} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @PostconditionAnnotation(qualifier = InitializedFields.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Return the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresInitializedFields[] value();
-    }
+    EnsuresInitializedFields[] value();
+  }
 }

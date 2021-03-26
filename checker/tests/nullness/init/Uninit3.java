@@ -1,3 +1,3 @@
 public class Uninit3 {
-    Object a = new Object();
+  Object a = new Object();
 }

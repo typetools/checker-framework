@@ -26,9 +26,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(LTLengthOf.class)
 public @interface LTOMLengthOf {
-    /**
-     * Sequences, each of whose lengths is at least 1 larger than the annotated expression's value.
-     */
-    @JavaExpression
-    public String[] value();
+  /**
+   * Sequences, each of whose lengths is at least 1 larger than the annotated expression's value.
+   */
+  @JavaExpression
+  public String[] value();
 }

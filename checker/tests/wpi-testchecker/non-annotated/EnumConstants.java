@@ -9,15 +9,15 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 
 public class EnumConstants {
-    enum MyEnum {
-        ONE,
-        TWO;
-    }
+  enum MyEnum {
+    ONE,
+    TWO;
+  }
 
-    void requiresS1(@Sibling1 MyEnum e) {}
+  void requiresS1(@Sibling1 MyEnum e) {}
 
-    void test() {
-        // :: warning: argument.type.incompatible
-        requiresS1(MyEnum.ONE);
-    }
+  void test() {
+    // :: warning: argument.type.incompatible
+    requiresS1(MyEnum.ONE);
+  }
 }

@@ -10,24 +10,24 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  */
 public class FIsA extends AFConstraint {
 
-    /** Create a constraint with an argument equal to a formal. */
-    public FIsA(AnnotatedTypeMirror parameter, AnnotatedTypeMirror argument) {
-        super(argument, parameter);
-    }
+  /** Create a constraint with an argument equal to a formal. */
+  public FIsA(AnnotatedTypeMirror parameter, AnnotatedTypeMirror argument) {
+    super(argument, parameter);
+  }
 
-    @Override
-    public TUConstraint toTUConstraint() {
-        return new TIsU((AnnotatedTypeVariable) formalParameter, argument, true);
-    }
+  @Override
+  public TUConstraint toTUConstraint() {
+    return new TIsU((AnnotatedTypeVariable) formalParameter, argument, true);
+  }
 
-    @Override
-    protected FIsA construct(
-            AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
-        return new FIsA(newFormalParameter, newArgument);
-    }
+  @Override
+  protected FIsA construct(
+      AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
+    return new FIsA(newFormalParameter, newArgument);
+  }
 
-    @Override
-    public String toString() {
-        return "FisA( " + formalParameter + " = " + argument + " )";
-    }
+  @Override
+  public String toString() {
+    return "FisA( " + formalParameter + " = " + argument + " )";
+  }
 }

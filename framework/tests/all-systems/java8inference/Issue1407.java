@@ -2,12 +2,12 @@
 // https://github.com/typetools/checker-framework/issues/1407
 
 abstract class Issue1407 {
-    abstract <T> T foo(T p1, T p2);
+  abstract <T> T foo(T p1, T p2);
 
-    abstract <T extends Number> T bar(int p1, T p2);
+  abstract <T extends Number> T bar(int p1, T p2);
 
-    @SuppressWarnings({"interning", "signedness"})
-    int demo() {
-        return foo(bar(5, 3), 3);
-    }
+  @SuppressWarnings({"interning", "signedness"})
+  int demo() {
+    return foo(bar(5, 3), 3);
+  }
 }

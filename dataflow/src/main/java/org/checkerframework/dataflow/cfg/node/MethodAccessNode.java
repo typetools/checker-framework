@@ -18,60 +18,60 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class MethodAccessNode extends Node {
 
-    protected final ExpressionTree tree;
-    protected final ExecutableElement method;
-    protected final Node receiver;
+  protected final ExpressionTree tree;
+  protected final ExecutableElement method;
+  protected final Node receiver;
 
-    // TODO: add method to get modifiers (static, access level, ..)
+  // TODO: add method to get modifiers (static, access level, ..)
 
-    public MethodAccessNode(ExpressionTree tree, Node receiver) {
-        super(TreeUtils.typeOf(tree));
-        assert TreeUtils.isMethodAccess(tree);
-        this.tree = tree;
-        assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-        this.method = (ExecutableElement) TreeUtils.elementFromUse(tree);
-        this.receiver = receiver;
+  public MethodAccessNode(ExpressionTree tree, Node receiver) {
+    super(TreeUtils.typeOf(tree));
+    assert TreeUtils.isMethodAccess(tree);
+    this.tree = tree;
+    assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
+    this.method = (ExecutableElement) TreeUtils.elementFromUse(tree);
+    this.receiver = receiver;
+  }
+
+  public ExecutableElement getMethod() {
+    return method;
+  }
+
+  public Node getReceiver() {
+    return receiver;
+  }
+
+  @Override
+  public Tree getTree() {
+    return tree;
+  }
+
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitMethodAccess(this, p);
+  }
+
+  @Override
+  public String toString() {
+    return getReceiver() + "." + method.getSimpleName();
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof MethodAccessNode)) {
+      return false;
     }
+    MethodAccessNode other = (MethodAccessNode) obj;
+    return getReceiver().equals(other.getReceiver()) && getMethod().equals(other.getMethod());
+  }
 
-    public ExecutableElement getMethod() {
-        return method;
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getReceiver(), getMethod());
+  }
 
-    public Node getReceiver() {
-        return receiver;
-    }
-
-    @Override
-    public Tree getTree() {
-        return tree;
-    }
-
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitMethodAccess(this, p);
-    }
-
-    @Override
-    public String toString() {
-        return getReceiver() + "." + method.getSimpleName();
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof MethodAccessNode)) {
-            return false;
-        }
-        MethodAccessNode other = (MethodAccessNode) obj;
-        return getReceiver().equals(other.getReceiver()) && getMethod().equals(other.getMethod());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getReceiver(), getMethod());
-    }
-
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(receiver);
-    }
+  @Override
+  public Collection<Node> getOperands() {
+    return Collections.singletonList(receiver);
+  }
 }

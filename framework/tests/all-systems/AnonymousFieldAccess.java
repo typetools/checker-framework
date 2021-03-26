@@ -1,12 +1,12 @@
 @SuppressWarnings("all") // Check for crashes.
 public class AnonymousFieldAccess {
-    static class SomeClass {
-        Object fieldInSomeClass;
-    }
+  static class SomeClass {
+    Object fieldInSomeClass;
+  }
 
-    void createTreeAnnotator() {
-        new SomeClass() {
-            Object f = fieldInSomeClass;
-        };
-    }
+  void createTreeAnnotator() {
+    new SomeClass() {
+      Object f = fieldInSomeClass;
+    };
+  }
 }
