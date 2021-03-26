@@ -10,7 +10,12 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** A local variable. */
+/**
+ * A local variable.
+ *
+ * <p>This class also represents a formal parameter expressed using its name. Class {@link
+ * FormalParameter} represents a formal parameter expressed using the "#2" notation.
+ */
 public class LocalVariable extends JavaExpression {
     /** The element for this local variable. */
     protected final Element element;
@@ -40,10 +45,21 @@ public class LocalVariable extends JavaExpression {
         if (!(obj instanceof LocalVariable)) {
             return false;
         }
-
         LocalVariable other = (LocalVariable) obj;
-        VarSymbol vs1 = (VarSymbol) this.element;
-        VarSymbol vs2 = (VarSymbol) other.element;
+
+        return sameElement(element, other.element);
+    }
+
+    /**
+     * Returns true if the two elements are the same.
+     *
+     * @param element1 the first element to compare
+     * @param element2 the second element to compare
+     * @return true if the two elements are the same
+     */
+    protected static boolean sameElement(Element element1, Element element2) {
+        VarSymbol vs1 = (VarSymbol) element1;
+        VarSymbol vs2 = (VarSymbol) element2;
         // The code below isn't just return vs1.equals(vs2) because an element might be
         // different between subcheckers.  The owner of a lambda parameter is the enclosing
         // method, so a local variable and a lambda parameter might have the same name and the
@@ -53,6 +69,11 @@ public class LocalVariable extends JavaExpression {
                 && vs1.owner.toString().equals(vs2.owner.toString());
     }
 
+    /**
+     * Returns the element for this variable.
+     *
+     * @return the element for this variable
+     */
     public Element getElement() {
         return element;
     }

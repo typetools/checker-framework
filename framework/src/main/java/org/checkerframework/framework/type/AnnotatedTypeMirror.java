@@ -388,6 +388,22 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
+     * {@code annoName} if one exists, null otherwise.
+     *
+     * @param annoName annotation name
+     * @return the annotation mirror for annoName
+     */
+    public AnnotationMirror getAnnotation(String annoName) {
+        for (AnnotationMirror annoMirror : annotations) {
+            if (AnnotationUtils.areSameByName(annoMirror, annoName)) {
+                return annoMirror;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the set of explicitly written annotations on this type that are supported by this
      * checker. This is useful to check the validity of annotations explicitly present on a type, as
      * flow inference might add annotations that were not previously present. Note that since

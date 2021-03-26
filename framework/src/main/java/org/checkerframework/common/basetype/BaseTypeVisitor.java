@@ -87,8 +87,6 @@ import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -130,8 +128,8 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -492,7 +490,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         AnnotatedDeclaredType classType = atypeFactory.getAnnotatedType(classTree);
-        atypeFactory.getDependentTypesHelper().checkClass(classTree, classType);
+        atypeFactory.getDependentTypesHelper().checkClassForErrorExpressions(classTree, classType);
         validateType(classTree, classType);
 
         Tree ext = classTree.getExtendsClause();
@@ -835,7 +833,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(thr);
             }
 
-            atypeFactory.getDependentTypesHelper().checkMethod(node, methodType);
+            atypeFactory.getDependentTypesHelper().checkMethodForErrorExpressions(node, methodType);
 
             // Check method overrides
             AnnotatedDeclaredType enclosingType =
@@ -1069,22 +1067,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (contracts.isEmpty()) {
             return;
         }
-
-        JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodDeclaration(methodTree, checker);
-
+        StringToJavaExpression stringToJavaExpr =
+                stringExpr -> StringToJavaExpression.atMethodBody(stringExpr, methodTree, checker);
         for (Contract contract : contracts) {
             String expressionString = contract.expressionString;
-            AnnotationMirror annotation = contract.annotation;
-
-            annotation =
-                    atypeFactory
-                            .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
+            AnnotationMirror annotation =
+                    contract.viewpointAdaptDependentTypeAnnotation(
+                            atypeFactory, stringToJavaExpr, methodTree);
 
             JavaExpression exprJe;
             try {
-                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
+                exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
             } catch (JavaExpressionParseException e) {
                 DiagMessage diagMessage = e.getDiagMessage();
                 if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
@@ -1380,7 +1373,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setAssignmentContext(Pair.of(node, variableType));
 
         try {
-            atypeFactory.getDependentTypesHelper().checkType(variableType, node);
+            atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, node);
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
                 commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
@@ -1789,27 +1782,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (preconditions.isEmpty()) {
             return;
         }
-        JavaExpressionContext jeContext =
-                JavaExpressionContext.buildContextForMethodUse(tree, checker);
 
-        if (jeContext == null) {
-            checker.reportError(tree, "flowexpr.parse.context.not.determined", tree);
-            return;
-        }
-
+        StringToJavaExpression stringToJavaExpr =
+                stringExpr -> StringToJavaExpression.atMethodInvocation(stringExpr, tree, checker);
         for (Contract c : preconditions) {
             Precondition p = (Precondition) c;
             String expressionString = p.expressionString;
-            AnnotationMirror anno = p.annotation;
-
-            anno =
-                    atypeFactory
-                            .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(anno, jeContext, tree);
-
+            AnnotationMirror anno =
+                    c.viewpointAdaptDependentTypeAnnotation(atypeFactory, stringToJavaExpr, tree);
             JavaExpression exprJe;
             try {
-                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
+                exprJe = StringToJavaExpression.atMethodInvocation(expressionString, tree, checker);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());
@@ -1957,7 +1940,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid) {
             AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
-            atypeFactory.getDependentTypesHelper().checkType(dt, node);
+            atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(dt, node);
             checkConstructorInvocation(dt, constructorType, node);
         }
         // Do not call super, as that would observe the arguments without
@@ -2217,7 +2200,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid && node.getType() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            atypeFactory.getDependentTypesHelper().checkType(arrayType, node);
+            atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(arrayType, node);
             if (node.getInitializers() != null) {
                 checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
             }
@@ -2407,7 +2390,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         if (atypeFactory.getDependentTypesHelper().hasDependentAnnotations()) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-            atypeFactory.getDependentTypesHelper().checkType(type, node.getType());
+            atypeFactory
+                    .getDependentTypesHelper()
+                    .checkTypeForErrorExpressions(type, node.getType());
         }
 
         if (node.getType().getKind() == Tree.Kind.INTERSECTION_TYPE) {
@@ -4327,31 +4312,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // where the contract was defined.  For example, methodTree might be an overriding
         // definition, and the contract might be for a superclass.
         MethodTree methodTree = visitorState.getMethodTree();
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
-        ThisReference receiverJe =
-                new ThisReference(methodType.getReceiverType().getUnderlyingType());
-        List<JavaExpression> parametersJe =
-                SystemUtil.mapList(LocalVariable::new, methodElt.getParameters());
 
-        JavaExpressionContext jeContext =
-                new JavaExpressionContext(receiverJe, parametersJe, checker);
+        StringToJavaExpression stringToJavaExpr =
+                expression -> {
+                    JavaExpression javaExpr =
+                            StringToJavaExpression.atMethodDecl(
+                                    expression, methodType.getElement(), checker);
+                    // methodType.getElement() is not necessarily the same method as methodTree, so
+                    // viewpoint-adapt it to methodTree.
+                    return javaExpr.atMethodBody(methodTree);
+                };
 
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>(contractSet.size());
         for (Contract p : contractSet) {
             String expressionString = p.expressionString;
-            AnnotationMirror annotation = p.annotation;
-
-            annotation =
-                    atypeFactory
-                            .getDependentTypesHelper()
-                            .viewpointAdaptQualifierFromContract(annotation, jeContext, methodTree);
-
+            AnnotationMirror annotation =
+                    p.viewpointAdaptDependentTypeAnnotation(
+                            atypeFactory, stringToJavaExpr, methodTree);
             JavaExpression exprJe;
             try {
                 // TODO: currently, these expressions are parsed many times.
                 // This could be optimized to store the result the first time.
                 // (same for other annotations)
-                exprJe = JavaExpressionParseUtil.parse(expressionString, jeContext);
+                exprJe = stringToJavaExpr.toJavaExpression(expressionString);
             } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(methodTree, e.getDiagMessage());
