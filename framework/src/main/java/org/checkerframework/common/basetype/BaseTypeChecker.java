@@ -44,8 +44,10 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -187,12 +189,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * <p>This method is protected so it can be overridden, but it should only be called internally
      * by the BaseTypeChecker.
      *
-     * <p>The BaseTypeChecker will not modify the list returned by this method.
+     * <p>The BaseTypeChecker will not modify the list returned by this method, but other clients do
+     * modify the list.
+     *
+     * @return the subchecker classes on which this checker depends
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         if (shouldResolveReflection()) {
             return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
         }
+        // The returned set will be modified by callees.
         return new LinkedHashSet<>();
     }
 
@@ -324,12 +330,28 @@ public abstract class BaseTypeChecker extends SourceChecker {
                     throw (RuntimeException) err;
                 }
             }
-            Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
+            Throwable cause;
+            String causeMessage;
+            if (t instanceof InvocationTargetException) {
+                cause = t.getCause();
+                if (cause == null || cause.getMessage() == null) {
+                    causeMessage = t.getMessage();
+                } else if (t.getMessage() == null) {
+                    causeMessage = cause.getMessage();
+                } else {
+                    causeMessage = t.getMessage() + ": " + cause.getMessage();
+                }
+            } else {
+                cause = t;
+                causeMessage = (cause == null) ? "null" : cause.getMessage();
+            }
             throw new BugInCF(
-                    String.format(
-                            "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
-                            name, Arrays.toString(args), Arrays.toString(paramTypes), cause),
-                    cause);
+                    cause,
+                    "Error when invoking constructor %s(%s) on args %s; cause: %s",
+                    name,
+                    StringsPlume.join(", ", paramTypes),
+                    Arrays.toString(args),
+                    causeMessage);
         }
     }
 
@@ -547,6 +569,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return this.suppressWarningsPrefixesOfSubcheckers;
     }
 
+    /** A cache for {@link #getUltimateParentChecker}. */
+    @MonotonicNonNull BaseTypeChecker ultimateParentChecker;
+
     /**
      * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker
      * that the user actually requested, i.e. the one with no parent. The ultimate parent might be
@@ -556,11 +581,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
      *     the ultimate parent checker
      */
     public BaseTypeChecker getUltimateParentChecker() {
-        BaseTypeChecker ultimateParent = this;
-        while (ultimateParent.getParentChecker() instanceof BaseTypeChecker) {
-            ultimateParent = (BaseTypeChecker) ultimateParent.getParentChecker();
+        if (ultimateParentChecker == null) {
+            ultimateParentChecker = this;
+            while (ultimateParentChecker.getParentChecker() instanceof BaseTypeChecker) {
+                ultimateParentChecker = (BaseTypeChecker) ultimateParentChecker.getParentChecker();
+            }
         }
-        return ultimateParent;
+
+        return ultimateParentChecker;
     }
 
     /**
@@ -803,11 +831,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     protected Object processArg(Object arg) {
         if (arg instanceof Collection) {
             Collection<?> carg = (Collection<?>) arg;
-            List<Object> newList = new ArrayList<>(carg.size());
-            for (Object o : carg) {
-                newList.add(processArg(o));
-            }
-            return newList;
+            return SystemUtil.mapList(this::processArg, carg);
         } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
             return getTypeFactory()
                     .getAnnotationFormatter()

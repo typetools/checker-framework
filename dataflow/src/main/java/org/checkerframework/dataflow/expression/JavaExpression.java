@@ -14,11 +14,13 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -42,12 +44,14 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
-// The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
-// "#1" for formal parameters.  However, there are no special subclasses (AST nodes) for those
-// extensions.
+// The Lock Checker also supports "<self>" as a JavaExpression, but that is implemented in the Lock
+// Checker.
+// There are no special subclasses (AST nodes) for "<self>".
 /**
  * This class represents a Java expression and its type. It does not represent all possible Java
  * expressions (for example, it does not represent a ternary conditional expression {@code ?:}; use
@@ -314,14 +318,10 @@ public abstract class JavaExpression {
             result = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            List<@Nullable JavaExpression> dimensions = new ArrayList<>();
-            for (Node dimension : an.getDimensions()) {
-                dimensions.add(fromNode(dimension));
-            }
-            List<JavaExpression> initializers = new ArrayList<>();
-            for (Node initializer : an.getInitializers()) {
-                initializers.add(fromNode(initializer));
-            }
+            List<@Nullable JavaExpression> dimensions =
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getDimensions());
+            List<JavaExpression> initializers =
+                    SystemUtil.mapList(JavaExpression::fromNode, an.getInitializers());
             result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
@@ -333,10 +333,8 @@ public abstract class JavaExpression {
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
             // Note that the method might be nondeterministic.
-            List<JavaExpression> parameters = new ArrayList<>();
-            for (Node p : mn.getArguments()) {
-                parameters.add(fromNode(p));
-            }
+            List<JavaExpression> parameters =
+                    SystemUtil.mapList(JavaExpression::fromNode, mn.getArguments());
             JavaExpression methodReceiver;
             if (ElementUtils.isStatic(invokedMethod)) {
                 methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
@@ -385,14 +383,20 @@ public abstract class JavaExpression {
 
             case NEW_ARRAY:
                 NewArrayTree newArrayTree = (NewArrayTree) tree;
-                List<@Nullable JavaExpression> dimensions = new ArrayList<>();
-                if (newArrayTree.getDimensions() != null) {
+                List<@Nullable JavaExpression> dimensions;
+                if (newArrayTree.getDimensions() == null) {
+                    dimensions = Collections.emptyList();
+                } else {
+                    dimensions = new ArrayList<>(newArrayTree.getDimensions().size());
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
                         dimensions.add(fromTree(dimension));
                     }
                 }
-                List<JavaExpression> initializers = new ArrayList<>();
-                if (newArrayTree.getInitializers() != null) {
+                List<JavaExpression> initializers;
+                if (newArrayTree.getInitializers() == null) {
+                    initializers = Collections.emptyList();
+                } else {
+                    initializers = new ArrayList<>(newArrayTree.getInitializers().size());
                     for (ExpressionTree initializer : newArrayTree.getInitializers()) {
                         initializers.add(fromTree(initializer));
                     }
@@ -407,10 +411,8 @@ public abstract class JavaExpression {
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
 
                 // Note that the method might be nondeterministic.
-                List<JavaExpression> parameters = new ArrayList<>();
-                for (ExpressionTree p : mn.getArguments()) {
-                    parameters.add(fromTree(p));
-                }
+                List<JavaExpression> parameters =
+                        SystemUtil.mapList(JavaExpression::fromTree, mn.getArguments());
                 JavaExpression methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
                     methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
@@ -565,21 +567,29 @@ public abstract class JavaExpression {
     }
 
     /**
-     * Returns the formal parameters of the method in which path is enclosed.
+     * Returns the parameters of {@code methodEle} as {@link LocalVariable}s.
      *
-     * @param path TreePath that is enclosed by the method
-     * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
+     * @param methodEle the method element
+     * @return list of parameters as {@link LocalVariable}s
      */
-    public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(TreePath path) {
-        MethodTree methodTree = TreePathUtil.enclosingMethod(path);
-        if (methodTree == null) {
-            return null;
+    public static List<JavaExpression> getParametersAsLocalVariables(ExecutableElement methodEle) {
+        return SystemUtil.mapList(LocalVariable::new, methodEle.getParameters());
+    }
+
+    /**
+     * Returns the parameters of {@code methodEle} as {@link FormalParameter}s.
+     *
+     * @param methodEle the method element
+     * @return list of parameters as {@link FormalParameter}s
+     */
+    public static List<FormalParameter> getFormalParameters(ExecutableElement methodEle) {
+        List<FormalParameter> parameters = new ArrayList<>(methodEle.getParameters().size());
+        int oneBasedIndex = 1;
+        for (VariableElement variableElement : methodEle.getParameters()) {
+            parameters.add(new FormalParameter(oneBasedIndex, variableElement));
+            oneBasedIndex++;
         }
-        List<JavaExpression> internalArguments = new ArrayList<>();
-        for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(fromNode(new LocalVariableNode(arg)));
-        }
-        return internalArguments;
+        return parameters;
     }
 
     ///
@@ -659,4 +669,131 @@ public abstract class JavaExpression {
      * @return the result of visiting this
      */
     public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
+
+    /**
+     * Viewpoint-adapts {@code this} to a field access with receiver {@code receiver}.
+     *
+     * @param receiver receiver of the field access
+     * @return viewpoint-adapted version of this
+     */
+    public JavaExpression atFieldAccess(JavaExpression receiver) {
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
+    }
+
+    /**
+     * Viewpoint-adapts {@code this} to the {@code methodTree} by converting any {@code
+     * FormalParameter} into {@code LocalVariable}s.
+     *
+     * @param methodTree method declaration tree
+     * @return viewpoint-adapted version of this
+     */
+    public final JavaExpression atMethodBody(MethodTree methodTree) {
+        List<JavaExpression> parametersJe =
+                SystemUtil.mapList(
+                        (VariableTree param) ->
+                                new LocalVariable(TreeUtils.elementFromDeclaration(param)),
+                        methodTree.getParameters());
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
+    }
+
+    /**
+     * Viewpoint-adapts {@code this} to the {@code methodInvocationTree}.
+     *
+     * @param methodInvocationTree method invocation
+     * @return viewpoint-adapted version of this
+     */
+    public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
+        JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
+        List<JavaExpression> argumentsJe =
+                argumentTreesToJavaExpressions(
+                        TreeUtils.elementFromUse(methodInvocationTree),
+                        methodInvocationTree.getArguments());
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+    }
+
+    /**
+     * Viewpoint-adapts {@code this} to the {@code invocationNode}.
+     *
+     * @param invocationNode method invocation
+     * @return viewpoint-adapted version of this
+     */
+    public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
+        JavaExpression receiverJe =
+                JavaExpression.fromNode(invocationNode.getTarget().getReceiver());
+        List<JavaExpression> argumentsJe =
+                SystemUtil.mapList(JavaExpression::fromNode, invocationNode.getArguments());
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+    }
+
+    /**
+     * Viewpoint-adapts {@code this} to the {@code newClassTree}.
+     *
+     * @param newClassTree constructor invocation
+     * @return viewpoint-adapted version of this
+     */
+    public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
+        JavaExpression receiverJe = JavaExpression.getReceiver(newClassTree);
+        List<JavaExpression> argumentsJe =
+                argumentTreesToJavaExpressions(
+                        TreeUtils.elementFromUse(newClassTree), newClassTree.getArguments());
+        return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+    }
+
+    /**
+     * Converts method or constructor arguments from Trees to JavaExpressions, accounting for
+     * varargs.
+     *
+     * @param method the method or constructor being invoked
+     * @param argTrees the arguments to the method or constructor
+     * @return the arguments, as JavaExpressions
+     */
+    private static List<JavaExpression> argumentTreesToJavaExpressions(
+            ExecutableElement method, List<? extends ExpressionTree> argTrees) {
+        if (isVarArgsInvocation(method, argTrees)) {
+            List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
+            for (int i = 0; i < method.getParameters().size() - 1; i++) {
+                result.add(JavaExpression.fromTree(argTrees.get(i)));
+            }
+
+            List<JavaExpression> varargArgs =
+                    new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
+            for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
+                varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
+            }
+            Element varargsElement = method.getParameters().get(method.getParameters().size() - 1);
+            TypeMirror tm = ElementUtils.getType(varargsElement);
+            result.add(new ArrayCreation(tm, Collections.emptyList(), varargArgs));
+
+            return result;
+        }
+
+        return SystemUtil.mapList(JavaExpression::fromTree, argTrees);
+    }
+
+    /**
+     * Returns true if method is a varargs method or constructor and its varargs arguments are not
+     * passed in an array.
+     *
+     * @param method the method or constructor
+     * @param args the arguments at the call site
+     * @return true if method is a varargs method and its varargs arguments are not passed in an
+     *     array
+     */
+    private static boolean isVarArgsInvocation(
+            ExecutableElement method, List<? extends ExpressionTree> args) {
+        if (!method.isVarArgs()) {
+            return false;
+        }
+        if (method.getParameters().size() != args.size()) {
+            return true;
+        }
+        TypeMirror lastArgType = TreeUtils.typeOf(args.get(args.size() - 1));
+        if (lastArgType.getKind() != TypeKind.ARRAY) {
+            return true;
+        }
+        List<? extends VariableElement> paramElts = method.getParameters();
+        VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
+        return TypesUtils.getArrayDepth(ElementUtils.getType(lastParamElt))
+                != TypesUtils.getArrayDepth(lastArgType);
+    }
 }

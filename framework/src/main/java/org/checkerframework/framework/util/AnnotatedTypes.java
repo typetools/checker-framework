@@ -44,7 +44,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
@@ -52,6 +51,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -222,25 +222,19 @@ public class AnnotatedTypes {
             return;
         }
 
-        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
-
         List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
-        Collections.sort(
-                orderedByDestination,
-                new Comparator<Pair<Integer, Integer>>() {
-                    @Override
-                    public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-                        return o1.second - o2.second;
-                    }
-                });
+        orderedByDestination.sort(Comparator.comparingInt(o -> o.second));
 
-        final List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
         if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
-            for (Pair<Integer, Integer> mapping : orderedByDestination) {
-                newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
-            }
+            List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+            List<AnnotatedTypeMirror> newTypeArgs =
+                    SystemUtil.mapList(
+                            mapping -> subTypeArgs.get(mapping.first).deepCopy(),
+                            orderedByDestination);
+            declaredAsSuper.setTypeArguments(newTypeArgs);
+        } else {
+            declaredAsSuper.setTypeArguments(Collections.emptyList());
         }
-        declaredAsSuper.setTypeArguments(newTypeArgs);
     }
 
     /** This method identifies wildcard types that are unbound. */
@@ -531,10 +525,10 @@ public class AnnotatedTypes {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
                         StringsPlume.joinLines(
-                                "Type arguments of a declaration should be type variables",
-                                "enclosingClassOfElem=" + enclosingClassOfElem,
-                                "enclosingType=" + enclosingType,
-                                "typeMirror=" + t));
+                                "Type arguments of a declaration should be type variables.",
+                                "  enclosingClassOfElem=" + enclosingClassOfElem,
+                                "  enclosingType=" + enclosingType,
+                                "  typeMirror=" + t));
             }
             ownerParams.add((AnnotatedTypeVariable) typeParam);
         }
@@ -548,14 +542,9 @@ public class AnnotatedTypes {
                             "baseType=" + base));
         }
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
-            List<AnnotatedTypeMirror> newBaseParams = new ArrayList<>();
-            for (AnnotatedTypeVariable arg : ownerParams) {
-                // If base type was raw and the type arguments are missing,
-                // set them to the erased type of the type variable.
-                // (which is the erased type of the upper bound.)
-                newBaseParams.add(arg.getErased());
-            }
-            baseParams = newBaseParams;
+            // If base type was raw and the type arguments are missing, set them to the erased
+            // type of the type variable (which is the erased type of the upper bound).
+            baseParams = SystemUtil.mapList(AnnotatedTypeVariable::getErased, ownerParams);
         }
 
         for (int i = 0; i < ownerParams.size(); ++i) {
@@ -830,9 +819,9 @@ public class AnnotatedTypes {
 
         for (AnnotatedTypeMirror bound : glb.getBounds()) {
             if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
-                AnnotatedTypeReplacer.replace(type1, bound);
+                atypeFactory.replaceAnnotations(type1, bound);
             } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
-                AnnotatedTypeReplacer.replace(type2, bound);
+                atypeFactory.replaceAnnotations(type2, bound);
             } else {
                 throw new BugInCF(
                         "Neither %s nor %s is one of the intersection bounds in %s. Bound: %s",
@@ -1003,10 +992,10 @@ public class AnnotatedTypes {
                             + " Arguments: "
                             + trees);
         }
-        List<AnnotatedTypeMirror> types = new ArrayList<>();
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                 atypeFactory.getVisitorState().getAssignmentContext();
 
+        List<AnnotatedTypeMirror> types = new ArrayList<>();
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);

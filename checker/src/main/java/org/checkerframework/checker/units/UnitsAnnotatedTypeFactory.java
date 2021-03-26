@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
@@ -47,6 +48,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
@@ -71,6 +73,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, UnknownUnits.class);
     protected final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, UnitsBottom.class);
+
+    /** the UnitsMultiple.prefix argument/element. */
+    private final ExecutableElement unitsMultiplePrefixElement =
+            TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
 
     /**
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
@@ -122,11 +128,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isUnitsMultiple(metaAnno)) {
                 // retrieve the Class of the base unit annotation
                 Name baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", false);
 
                 // retrieve the SI Prefix of the aliased annotation
                 Prefix prefix =
-                        AnnotationUtils.getElementValueEnum(metaAnno, "prefix", Prefix.class, true);
+                        AnnotationUtils.getElementValueEnum(
+                                metaAnno, unitsMultiplePrefixElement, Prefix.class, Prefix.one);
 
                 // Build a base unit annotation with the prefix applied
                 result =
@@ -166,6 +173,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (unitsRel == null) {
             unitsRel = new HashMap<>();
             // Always add the default units relations, for the standard units.
+            // Other code adds more relations.
             unitsRel.put(
                     UnitsRelationsDefault.class.getCanonicalName(),
                     new UnitsRelationsDefault().init(processingEnv));
@@ -310,7 +318,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // TODO: does every alias have to have Prefix?
                 // Retrieve the base unit annotation.
                 Name baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", false);
                 return baseUnitAnnoClass;
             }
         }
@@ -339,7 +347,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (areSameByClass(ama, unitsRelationsAnnoClass)) {
                 String theclassname =
-                        AnnotationUtils.getElementValueClassName(ama, "value", true).toString();
+                        AnnotationUtils.getElementValueClassName(ama, "value", false).toString();
                 if (!Signatures.isClassGetName(theclassname)) {
                     throw new UserError(
                             "Malformed class name \"%s\" should be in ClassGetName format in annotation %s",

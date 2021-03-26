@@ -44,21 +44,22 @@ public class FormatterTreeUtil {
     /** The processing environment. */
     public final ProcessingEnvironment processingEnv;
 
+    /** The value() element/field of an @Format annotation. */
+    protected final ExecutableElement formatValueElement;
     /** The value() element/field of an @InvalidFormat annotation. */
     protected final ExecutableElement invalidFormatValueElement;
-
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        formatValueElement = TreeUtils.getMethod(Format.class, "value", 0, processingEnv);
         invalidFormatValueElement =
-                TreeUtils.getMethod(
-                        InvalidFormat.class.getCanonicalName(), "value", 0, processingEnv);
+                TreeUtils.getMethod(InvalidFormat.class, "value", 0, processingEnv);
         /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
-                        Format.class.getCanonicalName(),
+                        Format.class,
                         "value",
                         0,
                         processingEnv);
@@ -492,13 +493,14 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link Format} annotation, and returns its
-     * value.
+     * Returns the value of a {@code @}{@link Format} annotation.
+     *
+     * @param anno a {@code @}{@link Format} annotation
+     * @return the annotation's {@code value} element
      */
+    @SuppressWarnings("GetClassOnEnum")
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        List<ConversionCategory> list =
-                AnnotationUtils.getElementValueEnumArray(
-                        anno, "value", ConversionCategory.class, false);
-        return list.toArray(new ConversionCategory[] {});
+        return AnnotationUtils.getElementValueEnumArray(
+                anno, formatValueElement, ConversionCategory.class);
     }
 }

@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -79,6 +80,9 @@ public class QualifierDefaults {
 
     /** Element utilities to use. */
     private final Elements elements;
+
+    /** The locations() element/field of a @DefaultQualifier annotation. */
+    protected final ExecutableElement defaultQualifierLocationsElement;
 
     /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
@@ -174,6 +178,12 @@ public class QualifierDefaults {
                 atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
                 atypeFactory.getChecker().useConservativeDefault("source");
+        this.defaultQualifierLocationsElement =
+                TreeUtils.getMethod(
+                        "org.checkerframework.framework.qual.DefaultQualifier",
+                        "locations",
+                        0,
+                        atypeFactory.getProcessingEnv());
     }
 
     @Override
@@ -521,7 +531,16 @@ public class QualifierDefaults {
         applyToTypeVar = false;
     }
 
-    // dq must be an AnnotationMirror that represent a @DefaultQualifier
+    /** The default {@code value} element for a @DefaultQualifier annotation. */
+    private static TypeUseLocation[] defaultQualifierValueDefault =
+            new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
+
+    /**
+     * Create a DefaultSet from a @DefaultQualifier annotation.
+     *
+     * @param dq a @DefaultQualifier annotation
+     * @return a DefaultSet corresponding to the @DefaultQualifier annotation
+     */
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
         Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
@@ -536,9 +555,12 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            List<TypeUseLocation> locations =
+            TypeUseLocation[] locations =
                     AnnotationUtils.getElementValueEnumArray(
-                            dq, "locations", TypeUseLocation.class, true);
+                            dq,
+                            defaultQualifierLocationsElement,
+                            TypeUseLocation.class,
+                            defaultQualifierValueDefault);
             DefaultSet ret = new DefaultSet();
             for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));

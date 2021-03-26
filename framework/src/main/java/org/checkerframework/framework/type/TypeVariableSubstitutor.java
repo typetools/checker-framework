@@ -109,9 +109,10 @@ public class TypeVariableSubstitutor {
          */
         public Visitor(
                 final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg, boolean copyArgument) {
-            elementToArgMap = new HashMap<>();
-            typeVars = new ArrayList<>();
-            typeMirrors = new ArrayList<>();
+            int size = typeParamToArg.size();
+            elementToArgMap = new HashMap<>(size);
+            typeVars = new ArrayList<>(size);
+            typeMirrors = new ArrayList<>(size);
 
             for (Map.Entry<TypeVariable, AnnotatedTypeMirror> paramToArg :
                     typeParamToArg.entrySet()) {
