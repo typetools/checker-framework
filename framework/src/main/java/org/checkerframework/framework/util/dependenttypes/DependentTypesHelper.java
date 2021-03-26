@@ -104,7 +104,10 @@ public class DependentTypesHelper {
     /** AnnotatedTypeFactory */
     protected final AnnotatedTypeFactory factory;
 
-    /** Maps from an annotation name to its elements that are Java expressions. */
+    /**
+     * Maps from an annotation name, the fully-qualified name of its class, to its elements that are
+     * Java expressions.
+     */
     private final Map<String, List<ExecutableElement>> annoToElements;
 
     /** This scans an annotated type and returns a list of {@link DependentTypesError}. */
@@ -137,7 +140,7 @@ public class DependentTypesHelper {
         this.annoToElements = new HashMap<>();
         for (Class<? extends Annotation> expressionAnno : factory.getSupportedTypeQualifiers()) {
             List<ExecutableElement> elementList =
-                    getExpressionElementNames(expressionAnno, factory.getProcessingEnv());
+                    getExpressionElements(expressionAnno, factory.getProcessingEnv());
             if (!elementList.isEmpty()) {
                 annoToElements.put(expressionAnno.getCanonicalName(), elementList);
             }
@@ -164,7 +167,7 @@ public class DependentTypesHelper {
      * @return a list of the elements in the annotation class that should be interpreted as Java
      *     expressions
      */
-    private static List<ExecutableElement> getExpressionElementNames(
+    private static List<ExecutableElement> getExpressionElements(
             Class<? extends Annotation> clazz, ProcessingEnvironment env) {
         Method[] methods = clazz.getMethods();
         if (methods == null) {

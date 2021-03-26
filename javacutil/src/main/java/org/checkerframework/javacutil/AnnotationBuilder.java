@@ -3,13 +3,12 @@ package org.checkerframework.javacutil;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -17,7 +16,6 @@ import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -286,15 +284,8 @@ public class AnnotationBuilder {
      */
     public void copyElementValuesFromAnnotation(
             AnnotationMirror valueHolder, String... ignorableElements) {
-        Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
-        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
-                valueHolder.getElementValues().entrySet()) {
-            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-            if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
-                continue;
-            }
-            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
-        }
+        List<ExecutableElement> elements = SystemUtil.mapList(this::findElement, ignorableElements);
+        copyElementValuesFromAnnotation(valueHolder, elements);
     }
 
     /**
@@ -306,7 +297,7 @@ public class AnnotationBuilder {
      * @param ignorableElements the elements that can be safely dropped
      */
     public void copyElementValuesFromAnnotation(
-            AnnotationMirror valueHolder, Set<ExecutableElement> ignorableElements) {
+            AnnotationMirror valueHolder, Collection<ExecutableElement> ignorableElements) {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                 valueHolder.getElementValues().entrySet()) {
             if (ignorableElements.contains(entry.getKey())) {
