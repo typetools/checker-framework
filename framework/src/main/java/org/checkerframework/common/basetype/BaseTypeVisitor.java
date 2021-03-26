@@ -4538,10 +4538,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     // **********************************************************************
-    // Overriding to avoid scan part of the tree
+    // Overriding to avoid visit part of the tree
     // **********************************************************************
 
-    /** Override Compilation Unit so we won't scan package names or imports. */
+    /** Override Compilation Unit so we won't visit package names or imports. */
     @Override
     public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
         Void r = scan(node.getPackageAnnotations(), p);
