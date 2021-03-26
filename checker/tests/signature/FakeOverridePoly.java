@@ -5,7 +5,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 
 public class FakeOverridePoly {
 
-    void m(@CanonicalName Name n) {
-        @CanonicalName String s = n.toString();
-    }
+  void m(@CanonicalName Name n) {
+    @CanonicalName String s = n.toString();
+  }
 }

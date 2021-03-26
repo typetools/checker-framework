@@ -4,14 +4,14 @@
 import org.checkerframework.dataflow.qual.Pure;
 
 interface IGeneric<V> {
-    @Pure
-    public V get();
+  @Pure
+  public V get();
 }
 
 interface IConcrete extends IGeneric<char[]> {}
 
 public class Issue1411 {
-    static void m(IConcrete ic) {
-        char[] val = ic.get();
-    }
+  static void m(IConcrete ic) {
+    char[] val = ic.get();
+  }
 }

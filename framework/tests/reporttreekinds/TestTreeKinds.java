@@ -3,9 +3,9 @@
  * org.checkerframework.checker/tests/src/tests/ReportTreeKindsTest.java
  */
 public class TestTreeKinds {
-    void test(boolean a, boolean b) {
-        // :: error: (Tree.Kind.WHILE_LOOP) :: error: (Tree.Kind.CONDITIONAL_AND)
-        while (a && b) {}
-        if (b) {}
-    }
+  void test(boolean a, boolean b) {
+    // :: error: (Tree.Kind.WHILE_LOOP) :: error: (Tree.Kind.CONDITIONAL_AND)
+    while (a && b) {}
+    if (b) {}
+  }
 }

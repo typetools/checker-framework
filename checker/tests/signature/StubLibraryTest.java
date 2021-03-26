@@ -5,13 +5,13 @@ import org.checkerframework.checker.signature.qual.*;
 
 public class StubLibraryTest {
 
-    void testJdk() {
-        @ClassGetName String s3 = String.class.getName();
-    }
+  void testJdk() {
+    @ClassGetName String s3 = String.class.getName();
+  }
 
-    //   void testBcel(ClassGen cg) {
-    //     @ClassGetName String cgn = cg.getClassName();
-    //     @BinaryName String bn = cg.getClassName();
-    //   }
+  //   void testBcel(ClassGen cg) {
+  //     @ClassGetName String cgn = cg.getClassName();
+  //     @BinaryName String bn = cg.getClassName();
+  //   }
 
 }

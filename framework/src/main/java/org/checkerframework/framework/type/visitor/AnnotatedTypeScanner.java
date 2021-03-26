@@ -87,278 +87,278 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  */
 public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
+  /**
+   * Reduces two results into a single result.
+   *
+   * @param <R> the result type
+   */
+  @FunctionalInterface
+  public interface Reduce<R> {
+
     /**
-     * Reduces two results into a single result.
+     * Returns the combination of two results.
      *
-     * @param <R> the result type
+     * @param r1 the first result
+     * @param r2 the second result
+     * @return the combination of the two results
      */
-    @FunctionalInterface
-    public interface Reduce<R> {
+    R reduce(R r1, R r2);
+  }
 
-        /**
-         * Returns the combination of two results.
-         *
-         * @param r1 the first result
-         * @param r2 the second result
-         * @return the combination of the two results
-         */
-        R reduce(R r1, R r2);
+  /** The reduce function to use. */
+  protected final Reduce<R> reduceFunction;
+
+  /** The result to return if no other result is provided. It should be immutable. */
+  protected final R defaultResult;
+
+  /**
+   * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction} is
+   * null, then the reduce function returns the first result if it is nonnull; otherwise the second
+   * result is returned.
+   *
+   * @param reduceFunction function used to combine two results
+   * @param defaultResult the result to return if a visit type method is not overridden; it should
+   *     be immutable
+   */
+  protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
+    if (reduceFunction == null) {
+      this.reduceFunction = (r1, r2) -> r1 == null ? r2 : r1;
+    } else {
+      this.reduceFunction = reduceFunction;
     }
+    this.defaultResult = defaultResult;
+  }
 
-    /** The reduce function to use. */
-    protected final Reduce<R> reduceFunction;
+  /**
+   * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction} is
+   * null, then the reduce function returns the first result if it is nonnull; otherwise the second
+   * result is returned. The default result is {@code null}
+   *
+   * @param reduceFunction function used to combine two results
+   */
+  protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction) {
+    this(reduceFunction, null);
+  }
 
-    /** The result to return if no other result is provided. It should be immutable. */
-    protected final R defaultResult;
+  /**
+   * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it is
+   * nonnull; otherwise the second result is returned.
+   *
+   * @param defaultResult the result to return if a visit type method is not overridden; it should
+   *     be immutable
+   */
+  protected AnnotatedTypeScanner(R defaultResult) {
+    this(null, defaultResult);
+  }
 
-    /**
-     * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction}
-     * is null, then the reduce function returns the first result if it is nonnull; otherwise the
-     * second result is returned.
-     *
-     * @param reduceFunction function used to combine two results
-     * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable
-     */
-    protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
-        if (reduceFunction == null) {
-            this.reduceFunction = (r1, r2) -> r1 == null ? r2 : r1;
-        } else {
-            this.reduceFunction = reduceFunction;
-        }
-        this.defaultResult = defaultResult;
+  /**
+   * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it is
+   * nonnull; otherwise the second result is returned. The default result is {@code null}.
+   */
+  protected AnnotatedTypeScanner() {
+    this(null, null);
+  }
+
+  // To prevent infinite loops
+  protected final IdentityHashMap<AnnotatedTypeMirror, R> visitedNodes = new IdentityHashMap<>();
+
+  /**
+   * Reset the scanner to allow reuse of the same instance. Subclasses should override this method
+   * to clear their additional state; they must call the super implementation.
+   */
+  public void reset() {
+    visitedNodes.clear();
+  }
+
+  /**
+   * Calls {@link #reset()} and then scans {@code type} using null as the parameter.
+   *
+   * @param type type to scan
+   * @return result of scanning {@code type}
+   */
+  @Override
+  public final R visit(AnnotatedTypeMirror type) {
+    return visit(type, null);
+  }
+
+  /**
+   * Calls {@link #reset()} and then scans {@code type} using {@code p} as the parameter.
+   *
+   * @param type the type to visit
+   * @param p a visitor-specified parameter
+   * @return result of scanning {@code type}
+   */
+  @Override
+  public final R visit(AnnotatedTypeMirror type, P p) {
+    reset();
+    return scan(type, p);
+  }
+
+  /**
+   * Scan {@code type} by calling {@code type.accept(this, p)}; this method may be overridden by
+   * subclasses.
+   *
+   * @param type type to scan
+   * @param p the parameter to use
+   * @return the result of visiting {@code type}
+   */
+  protected R scan(AnnotatedTypeMirror type, P p) {
+    return type.accept(this, p);
+  }
+
+  /**
+   * Scan all the types and returns the reduced result.
+   *
+   * @param types types to scan
+   * @param p the parameter to use
+   * @return the reduced result of scanning all the types
+   */
+  protected R scan(@Nullable Iterable<? extends AnnotatedTypeMirror> types, P p) {
+    if (types == null) {
+      return defaultResult;
     }
-
-    /**
-     * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction}
-     * is null, then the reduce function returns the first result if it is nonnull; otherwise the
-     * second result is returned. The default result is {@code null}
-     *
-     * @param reduceFunction function used to combine two results
-     */
-    protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction) {
-        this(reduceFunction, null);
+    R r = defaultResult;
+    boolean first = true;
+    for (AnnotatedTypeMirror type : types) {
+      r = (first ? scan(type, p) : scanAndReduce(type, p, r));
+      first = false;
     }
+    return r;
+  }
 
-    /**
-     * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it
-     * is nonnull; otherwise the second result is returned.
-     *
-     * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable
-     */
-    protected AnnotatedTypeScanner(R defaultResult) {
-        this(null, defaultResult);
+  protected R scanAndReduce(Iterable<? extends AnnotatedTypeMirror> types, P p, R r) {
+    return reduce(scan(types, p), r);
+  }
+
+  /**
+   * Scans {@code type} with the parameter {@code p} and reduces the result with {@code r}.
+   *
+   * @param type type to scan
+   * @param p parameter to use for when scanning {@code type}
+   * @param r result to combine with the result of scanning {@code type}
+   * @return the combination of {@code r} with the result of scanning {@code type}
+   */
+  protected R scanAndReduce(AnnotatedTypeMirror type, P p, R r) {
+    return reduce(scan(type, p), r);
+  }
+
+  /**
+   * Combines {@code r1} and {@code r2} and returns the result. The default implementation returns
+   * {@code r1} if it is not null; otherwise, it returns {@code r2}.
+   *
+   * @param r1 a result of scan, nonnull if {@link #defaultResult} is nonnull and this method never
+   *     returns null
+   * @param r2 a result of scan, nonnull if {@link #defaultResult} is nonnull and this method never
+   *     returns null
+   * @return the combination of {@code r1} and {@code r2}
+   */
+  protected R reduce(R r1, R r2) {
+    return reduceFunction.reduce(r1, r2);
+  }
+
+  @Override
+  public R visitDeclared(AnnotatedDeclaredType type, P p) {
+    // Only declared types with type arguments might be recursive,
+    // so only store those.
+    boolean shouldStoreType = !type.getTypeArguments().isEmpty();
+    if (shouldStoreType && visitedNodes.containsKey(type)) {
+      return visitedNodes.get(type);
     }
-
-    /**
-     * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it
-     * is nonnull; otherwise the second result is returned. The default result is {@code null}.
-     */
-    protected AnnotatedTypeScanner() {
-        this(null, null);
+    if (shouldStoreType) {
+      visitedNodes.put(type, defaultResult);
     }
-
-    // To prevent infinite loops
-    protected final IdentityHashMap<AnnotatedTypeMirror, R> visitedNodes = new IdentityHashMap<>();
-
-    /**
-     * Reset the scanner to allow reuse of the same instance. Subclasses should override this method
-     * to clear their additional state; they must call the super implementation.
-     */
-    public void reset() {
-        visitedNodes.clear();
-    }
-
-    /**
-     * Calls {@link #reset()} and then scans {@code type} using null as the parameter.
-     *
-     * @param type type to scan
-     * @return result of scanning {@code type}
-     */
-    @Override
-    public final R visit(AnnotatedTypeMirror type) {
-        return visit(type, null);
-    }
-
-    /**
-     * Calls {@link #reset()} and then scans {@code type} using {@code p} as the parameter.
-     *
-     * @param type the type to visit
-     * @param p a visitor-specified parameter
-     * @return result of scanning {@code type}
-     */
-    @Override
-    public final R visit(AnnotatedTypeMirror type, P p) {
-        reset();
-        return scan(type, p);
-    }
-
-    /**
-     * Scan {@code type} by calling {@code type.accept(this, p)}; this method may be overridden by
-     * subclasses.
-     *
-     * @param type type to scan
-     * @param p the parameter to use
-     * @return the result of visiting {@code type}
-     */
-    protected R scan(AnnotatedTypeMirror type, P p) {
-        return type.accept(this, p);
-    }
-
-    /**
-     * Scan all the types and returns the reduced result.
-     *
-     * @param types types to scan
-     * @param p the parameter to use
-     * @return the reduced result of scanning all the types
-     */
-    protected R scan(@Nullable Iterable<? extends AnnotatedTypeMirror> types, P p) {
-        if (types == null) {
-            return defaultResult;
-        }
-        R r = defaultResult;
-        boolean first = true;
-        for (AnnotatedTypeMirror type : types) {
-            r = (first ? scan(type, p) : scanAndReduce(type, p, r));
-            first = false;
-        }
-        return r;
-    }
-
-    protected R scanAndReduce(Iterable<? extends AnnotatedTypeMirror> types, P p, R r) {
-        return reduce(scan(types, p), r);
-    }
-
-    /**
-     * Scans {@code type} with the parameter {@code p} and reduces the result with {@code r}.
-     *
-     * @param type type to scan
-     * @param p parameter to use for when scanning {@code type}
-     * @param r result to combine with the result of scanning {@code type}
-     * @return the combination of {@code r} with the result of scanning {@code type}
-     */
-    protected R scanAndReduce(AnnotatedTypeMirror type, P p, R r) {
-        return reduce(scan(type, p), r);
-    }
-
-    /**
-     * Combines {@code r1} and {@code r2} and returns the result. The default implementation returns
-     * {@code r1} if it is not null; otherwise, it returns {@code r2}.
-     *
-     * @param r1 a result of scan, nonnull if {@link #defaultResult} is nonnull and this method
-     *     never returns null
-     * @param r2 a result of scan, nonnull if {@link #defaultResult} is nonnull and this method
-     *     never returns null
-     * @return the combination of {@code r1} and {@code r2}
-     */
-    protected R reduce(R r1, R r2) {
-        return reduceFunction.reduce(r1, r2);
-    }
-
-    @Override
-    public R visitDeclared(AnnotatedDeclaredType type, P p) {
-        // Only declared types with type arguments might be recursive,
-        // so only store those.
-        boolean shouldStoreType = !type.getTypeArguments().isEmpty();
-        if (shouldStoreType && visitedNodes.containsKey(type)) {
-            return visitedNodes.get(type);
-        }
-        if (shouldStoreType) {
-            visitedNodes.put(type, defaultResult);
-        }
-        R r = defaultResult;
-        if (type.getEnclosingType() != null) {
-            r = scan(type.getEnclosingType(), p);
-            if (shouldStoreType) {
-                visitedNodes.put(type, r);
-            }
-        }
-        r = scanAndReduce(type.getTypeArguments(), p, r);
-        if (shouldStoreType) {
-            visitedNodes.put(type, r);
-        }
-        return r;
-    }
-
-    @Override
-    public R visitIntersection(AnnotatedIntersectionType type, P p) {
-        if (visitedNodes.containsKey(type)) {
-            return visitedNodes.get(type);
-        }
-        visitedNodes.put(type, defaultResult);
-        R r = scan(type.getBounds(), p);
+    R r = defaultResult;
+    if (type.getEnclosingType() != null) {
+      r = scan(type.getEnclosingType(), p);
+      if (shouldStoreType) {
         visitedNodes.put(type, r);
-        return r;
+      }
     }
+    r = scanAndReduce(type.getTypeArguments(), p, r);
+    if (shouldStoreType) {
+      visitedNodes.put(type, r);
+    }
+    return r;
+  }
 
-    @Override
-    public R visitUnion(AnnotatedUnionType type, P p) {
-        if (visitedNodes.containsKey(type)) {
-            return visitedNodes.get(type);
-        }
-        visitedNodes.put(type, defaultResult);
-        R r = scan(type.getAlternatives(), p);
-        visitedNodes.put(type, r);
-        return r;
+  @Override
+  public R visitIntersection(AnnotatedIntersectionType type, P p) {
+    if (visitedNodes.containsKey(type)) {
+      return visitedNodes.get(type);
     }
+    visitedNodes.put(type, defaultResult);
+    R r = scan(type.getBounds(), p);
+    visitedNodes.put(type, r);
+    return r;
+  }
 
-    @Override
-    public R visitArray(AnnotatedArrayType type, P p) {
-        R r = scan(type.getComponentType(), p);
-        return r;
+  @Override
+  public R visitUnion(AnnotatedUnionType type, P p) {
+    if (visitedNodes.containsKey(type)) {
+      return visitedNodes.get(type);
     }
+    visitedNodes.put(type, defaultResult);
+    R r = scan(type.getAlternatives(), p);
+    visitedNodes.put(type, r);
+    return r;
+  }
 
-    @Override
-    public R visitExecutable(AnnotatedExecutableType type, P p) {
-        R r = scan(type.getReturnType(), p);
-        if (type.getReceiverType() != null) {
-            r = scanAndReduce(type.getReceiverType(), p, r);
-        }
-        r = scanAndReduce(type.getParameterTypes(), p, r);
-        r = scanAndReduce(type.getThrownTypes(), p, r);
-        r = scanAndReduce(type.getTypeVariables(), p, r);
-        return r;
-    }
+  @Override
+  public R visitArray(AnnotatedArrayType type, P p) {
+    R r = scan(type.getComponentType(), p);
+    return r;
+  }
 
-    @Override
-    public R visitTypeVariable(AnnotatedTypeVariable type, P p) {
-        if (visitedNodes.containsKey(type)) {
-            return visitedNodes.get(type);
-        }
-        visitedNodes.put(type, defaultResult);
-        R r = scan(type.getLowerBound(), p);
-        visitedNodes.put(type, r);
-        r = scanAndReduce(type.getUpperBound(), p, r);
-        visitedNodes.put(type, r);
-        return r;
+  @Override
+  public R visitExecutable(AnnotatedExecutableType type, P p) {
+    R r = scan(type.getReturnType(), p);
+    if (type.getReceiverType() != null) {
+      r = scanAndReduce(type.getReceiverType(), p, r);
     }
+    r = scanAndReduce(type.getParameterTypes(), p, r);
+    r = scanAndReduce(type.getThrownTypes(), p, r);
+    r = scanAndReduce(type.getTypeVariables(), p, r);
+    return r;
+  }
 
-    @Override
-    public R visitNoType(AnnotatedNoType type, P p) {
-        return defaultResult;
+  @Override
+  public R visitTypeVariable(AnnotatedTypeVariable type, P p) {
+    if (visitedNodes.containsKey(type)) {
+      return visitedNodes.get(type);
     }
+    visitedNodes.put(type, defaultResult);
+    R r = scan(type.getLowerBound(), p);
+    visitedNodes.put(type, r);
+    r = scanAndReduce(type.getUpperBound(), p, r);
+    visitedNodes.put(type, r);
+    return r;
+  }
 
-    @Override
-    public R visitNull(AnnotatedNullType type, P p) {
-        return defaultResult;
-    }
+  @Override
+  public R visitNoType(AnnotatedNoType type, P p) {
+    return defaultResult;
+  }
 
-    @Override
-    public R visitPrimitive(AnnotatedPrimitiveType type, P p) {
-        return defaultResult;
-    }
+  @Override
+  public R visitNull(AnnotatedNullType type, P p) {
+    return defaultResult;
+  }
 
-    @Override
-    public R visitWildcard(AnnotatedWildcardType type, P p) {
-        if (visitedNodes.containsKey(type)) {
-            return visitedNodes.get(type);
-        }
-        visitedNodes.put(type, defaultResult);
-        R r = scan(type.getExtendsBound(), p);
-        visitedNodes.put(type, r);
-        r = scanAndReduce(type.getSuperBound(), p, r);
-        visitedNodes.put(type, r);
-        return r;
+  @Override
+  public R visitPrimitive(AnnotatedPrimitiveType type, P p) {
+    return defaultResult;
+  }
+
+  @Override
+  public R visitWildcard(AnnotatedWildcardType type, P p) {
+    if (visitedNodes.containsKey(type)) {
+      return visitedNodes.get(type);
     }
+    visitedNodes.put(type, defaultResult);
+    R r = scan(type.getExtendsBound(), p);
+    visitedNodes.put(type, r);
+    r = scanAndReduce(type.getSuperBound(), p, r);
+    visitedNodes.put(type, r);
+    return r;
+  }
 }

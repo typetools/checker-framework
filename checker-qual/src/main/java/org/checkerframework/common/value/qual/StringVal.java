@@ -18,6 +18,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({UnknownVal.class})
 public @interface StringVal {
-    /** The values that the expression might evaluate to. */
-    String[] value();
+  /** The values that the expression might evaluate to. */
+  String[] value();
 }

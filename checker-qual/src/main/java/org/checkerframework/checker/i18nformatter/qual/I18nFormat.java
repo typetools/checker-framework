@@ -33,10 +33,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(I18nUnknownFormat.class)
 public @interface I18nFormat {
-    /**
-     * An array of {@link I18nConversionCategory}, indicating the types of legal remaining arguments
-     * when a value of the annotated type is used as the first argument to {@link
-     * java.text.MessageFormat#format(String, Object...) Message.format}.
-     */
-    I18nConversionCategory[] value();
+  /**
+   * An array of {@link I18nConversionCategory}, indicating the types of legal remaining arguments
+   * when a value of the annotated type is used as the first argument to {@link
+   * java.text.MessageFormat#format(String, Object...) Message.format}.
+   */
+  I18nConversionCategory[] value();
 }

@@ -1,4 +1,4 @@
-UseTest.java:8:21: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter middle of method.
+UseTest.java:8:17: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter middle of method.
 found   : @VariableNameDefaultTop int
 required: @VariableNameDefaultMiddle int
 1 error

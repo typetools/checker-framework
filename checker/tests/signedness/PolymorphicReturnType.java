@@ -5,8 +5,8 @@ import org.checkerframework.checker.signedness.qual.PolySigned;
 
 public class PolymorphicReturnType {
 
-    public @PolySigned byte get() {
-        // :: error: (return.type.incompatible)
-        return 0;
-    }
+  public @PolySigned byte get() {
+    // :: error: (return.type.incompatible)
+    return 0;
+  }
 }

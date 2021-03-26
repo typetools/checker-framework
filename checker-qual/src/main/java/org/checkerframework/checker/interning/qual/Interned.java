@@ -33,14 +33,14 @@ import org.checkerframework.framework.qual.TypeKind;
 @SubtypeOf(UnknownInterned.class)
 @QualifierForLiterals({LiteralKind.PRIMITIVE, LiteralKind.STRING}) // everything but NULL
 @DefaultFor(
-        typeKinds = {
-            TypeKind.BOOLEAN,
-            TypeKind.BYTE,
-            TypeKind.CHAR,
-            TypeKind.DOUBLE,
-            TypeKind.FLOAT,
-            TypeKind.INT,
-            TypeKind.LONG,
-            TypeKind.SHORT
-        })
+    typeKinds = {
+      TypeKind.BOOLEAN,
+      TypeKind.BYTE,
+      TypeKind.CHAR,
+      TypeKind.DOUBLE,
+      TypeKind.FLOAT,
+      TypeKind.INT,
+      TypeKind.LONG,
+      TypeKind.SHORT
+    })
 public @interface Interned {}

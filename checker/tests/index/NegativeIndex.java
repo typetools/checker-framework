@@ -4,8 +4,8 @@
 import org.checkerframework.common.value.qual.*;
 
 public class NegativeIndex {
-    @SuppressWarnings("lowerbound")
-    void m(int[] a) {
-        int x = a[-100];
-    }
+  @SuppressWarnings("lowerbound")
+  void m(int[] a) {
+    int x = a[-100];
+  }
 }

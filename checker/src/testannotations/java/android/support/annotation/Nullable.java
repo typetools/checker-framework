@@ -12,11 +12,11 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({
-    ElementType.METHOD,
-    ElementType.PARAMETER,
-    ElementType.FIELD,
-    ElementType.LOCAL_VARIABLE,
-    ElementType.ANNOTATION_TYPE,
-    ElementType.PACKAGE
+  ElementType.METHOD,
+  ElementType.PARAMETER,
+  ElementType.FIELD,
+  ElementType.LOCAL_VARIABLE,
+  ElementType.ANNOTATION_TYPE,
+  ElementType.PACKAGE
 })
 public @interface Nullable {}

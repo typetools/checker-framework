@@ -15,19 +15,19 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class ValueTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public ValueTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.common.value.ValueChecker.class,
-                "value",
-                "-Anomsgtext",
-                "-Astubs=tests/value/minints-stub.astub:tests/value/lowercase.astub",
-                "-A" + ValueChecker.REPORT_EVAL_WARNS);
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public ValueTest(List<File> testFiles) {
+    super(
+        testFiles,
+        org.checkerframework.common.value.ValueChecker.class,
+        "value",
+        "-Anomsgtext",
+        "-Astubs=tests/value/minints-stub.astub:tests/value/lowercase.astub",
+        "-A" + ValueChecker.REPORT_EVAL_WARNS);
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"value", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"value", "all-systems"};
+  }
 }

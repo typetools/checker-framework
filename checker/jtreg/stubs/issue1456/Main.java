@@ -12,17 +12,17 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class Main {
 
-    void test(Lib lib) {
-        @Untainted Object o = lib.object;
-        @Untainted byte @Untainted [] b = lib.byteArray;
-        @Untainted Object o1 = lib.object1;
-        @Untainted Object o2 = lib.object2;
-        @Untainted byte b2 = lib.byte1;
-        @Untainted byte @Untainted [] b3 = lib.byteArray2;
-        byte @Untainted [] @Untainted [] b4 = lib.byteArray3;
-    }
+  void test(Lib lib) {
+    @Untainted Object o = lib.object;
+    @Untainted byte @Untainted [] b = lib.byteArray;
+    @Untainted Object o1 = lib.object1;
+    @Untainted Object o2 = lib.object2;
+    @Untainted byte b2 = lib.byte1;
+    @Untainted byte @Untainted [] b3 = lib.byteArray2;
+    byte @Untainted [] @Untainted [] b4 = lib.byteArray3;
+  }
 
-    void test2(Lib l) {
-        Lib f = new Lib(l);
-    }
+  void test2(Lib l) {
+    Lib f = new Lib(l);
+  }
 }

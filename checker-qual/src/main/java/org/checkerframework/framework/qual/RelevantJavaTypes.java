@@ -27,17 +27,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Inherited
 public @interface RelevantJavaTypes {
-    /**
-     * Classes where a type annotation supported by this checker may be written.
-     *
-     * <p>{@code Object[].class} means that the checker processes all array types. No distinction
-     * among array types is currently made, and no other array class should be supplied to
-     * {@code @RelevantJavaTypes}.
-     *
-     * <p>If a checker processes both primitive and boxed types, both must be specified separately,
-     * for example as {@code int.class} and {@code Integer.class}.
-     *
-     * @return classes where a type annotation supported by this checker may be written
-     */
-    Class<?>[] value();
+  /**
+   * Classes where a type annotation supported by this checker may be written.
+   *
+   * <p>{@code Object[].class} means that the checker processes all array types. No distinction
+   * among array types is currently made, and no other array class should be supplied to
+   * {@code @RelevantJavaTypes}.
+   *
+   * <p>If a checker processes both primitive and boxed types, both must be specified separately,
+   * for example as {@code int.class} and {@code Integer.class}.
+   *
+   * @return classes where a type annotation supported by this checker may be written
+   */
+  Class<?>[] value();
 }

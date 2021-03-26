@@ -30,12 +30,12 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 public @interface CFComment {
-    /**
-     * Comments about Checker Framework annotations. The text is not interpreted by the Checker
-     * Framework.
-     *
-     * <p>If you prefix each comment by the name of the type system, the comments are easier to
-     * understand and search for.
-     */
-    String[] value();
+  /**
+   * Comments about Checker Framework annotations. The text is not interpreted by the Checker
+   * Framework.
+   *
+   * <p>If you prefix each comment by the name of the type system, the comments are easier to
+   * understand and search for.
+   */
+  String[] value();
 }

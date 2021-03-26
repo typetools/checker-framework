@@ -17,51 +17,51 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class NullChkNode extends Node {
 
-    protected final Tree tree;
-    protected final Node operand;
+  protected final Tree tree;
+  protected final Node operand;
 
-    public NullChkNode(Tree tree, Node operand) {
-        super(TreeUtils.typeOf(tree));
-        assert tree.getKind() == Kind.OTHER;
-        this.tree = tree;
-        this.operand = operand;
-    }
+  public NullChkNode(Tree tree, Node operand) {
+    super(TreeUtils.typeOf(tree));
+    assert tree.getKind() == Kind.OTHER;
+    this.tree = tree;
+    this.operand = operand;
+  }
 
-    public Node getOperand() {
-        return operand;
-    }
+  public Node getOperand() {
+    return operand;
+  }
 
-    @Override
-    public Tree getTree() {
-        return tree;
-    }
+  @Override
+  public Tree getTree() {
+    return tree;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitNullChk(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitNullChk(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "(+ " + getOperand() + ")";
-    }
+  @Override
+  public String toString() {
+    return "(+ " + getOperand() + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof NumericalPlusNode)) {
-            return false;
-        }
-        NumericalPlusNode other = (NumericalPlusNode) obj;
-        return getOperand().equals(other.getOperand());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof NumericalPlusNode)) {
+      return false;
     }
+    NumericalPlusNode other = (NumericalPlusNode) obj;
+    return getOperand().equals(other.getOperand());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(NullChkNode.class, getOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(NullChkNode.class, getOperand());
+  }
 
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(getOperand());
-    }
+  @Override
+  public Collection<Node> getOperands() {
+    return Collections.singletonList(getOperand());
+  }
 }

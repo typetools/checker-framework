@@ -3,14 +3,14 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class DotClass {
 
-    void test() {
-        doStuff(NonNull.class);
-    }
+  void test() {
+    doStuff(NonNull.class);
+  }
 
-    void doStuff(Class<? extends Annotation> cl) {}
+  void doStuff(Class<? extends Annotation> cl) {}
 
-    void access() {
-        Object.class.toString();
-        int.class.toString();
-    }
+  void access() {
+    Object.class.toString();
+    int.class.toString();
+  }
 }

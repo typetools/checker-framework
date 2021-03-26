@@ -7,21 +7,17 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class FenumTest extends CheckerFrameworkPerDirectoryTest {
 
-    /**
-     * Create a FenumTest.
-     *
-     * @param testFiles the files containing test code, which will be type-checked
-     */
-    public FenumTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.checker.fenum.FenumChecker.class,
-                "fenum",
-                "-Anomsgtext");
-    }
+  /**
+   * Create a FenumTest.
+   *
+   * @param testFiles the files containing test code, which will be type-checked
+   */
+  public FenumTest(List<File> testFiles) {
+    super(testFiles, org.checkerframework.checker.fenum.FenumChecker.class, "fenum", "-Anomsgtext");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"fenum", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"fenum", "all-systems"};
+  }
 }

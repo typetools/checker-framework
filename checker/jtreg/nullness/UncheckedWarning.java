@@ -10,17 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Test<T> {
-    List<T> foo() {
-        List<String> ret = new ArrayList<>();
-        ret.add("Hi there!");
-        return (List) ret;
-    }
+  List<T> foo() {
+    List<String> ret = new ArrayList<>();
+    ret.add("Hi there!");
+    return (List) ret;
+  }
 }
 
 public class UncheckedWarning {
-    public static void main(String[] args) {
-        Test<Integer> ti = new Test<>();
-        List<Integer> ls = ti.foo();
-        Integer i = ls.get(0);
-    }
+  public static void main(String[] args) {
+    Test<Integer> ti = new Test<>();
+    List<Integer> ls = ti.foo();
+    Integer i = ls.get(0);
+  }
 }

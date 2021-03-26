@@ -70,10 +70,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.PACKAGE})
 public @interface HasQualifierParameter {
 
-    /**
-     * Class of the top qualifier for the hierarchy for which this class has a qualifier parameter.
-     *
-     * @return the value
-     */
-    Class<? extends Annotation>[] value();
+  /**
+   * Class of the top qualifier for the hierarchy for which this class has a qualifier parameter.
+   *
+   * @return the value
+   */
+  Class<? extends Annotation>[] value();
 }

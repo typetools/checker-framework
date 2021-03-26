@@ -6,44 +6,44 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 class ClassA {
-    private @Nullable String value = null;
+  private @Nullable String value = null;
 
-    @EnsuresNonNull("value")
-    public void ensuresNonNull() {
-        value = "";
-    }
+  @EnsuresNonNull("value")
+  public void ensuresNonNull() {
+    value = "";
+  }
 
-    @RequiresNonNull("value")
-    public String getValue() {
-        return value;
-    }
+  @RequiresNonNull("value")
+  public String getValue() {
+    return value;
+  }
 }
 
 public class Issue391 {
-    ClassA field = new ClassA();
+  ClassA field = new ClassA();
 
-    @RequiresNonNull("field.value")
-    void method() {}
+  @RequiresNonNull("field.value")
+  void method() {}
 
-    @EnsuresNonNull("field.value")
-    void ensuresNonNull() {
-        field.ensuresNonNull();
-    }
+  @EnsuresNonNull("field.value")
+  void ensuresNonNull() {
+    field.ensuresNonNull();
+  }
 
-    void method2() {
-        ClassA a = new ClassA();
-        // :: error: (contracts.precondition.not.satisfied)
-        a.getValue();
-        // :: error: (contracts.precondition.not.satisfied)
-        method();
-    }
+  void method2() {
+    ClassA a = new ClassA();
+    // :: error: (contracts.precondition.not.satisfied)
+    a.getValue();
+    // :: error: (contracts.precondition.not.satisfied)
+    method();
+  }
 
-    void method3() {
-        ensuresNonNull();
-        method();
+  void method3() {
+    ensuresNonNull();
+    method();
 
-        ClassA a = new ClassA();
-        a.ensuresNonNull();
-        a.getValue();
-    }
+    ClassA a = new ClassA();
+    a.ensuresNonNull();
+    a.getValue();
+  }
 }
