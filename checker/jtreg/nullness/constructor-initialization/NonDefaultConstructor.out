@@ -1,3 +1,3 @@
-NonDefaultConstructor.java:15:12: compiler.err.proc.messager: [initialization.fields.uninitialized] the constructor does not initialize fields: nullObject
-NonDefaultConstructor.java:18:12: compiler.err.proc.messager: [initialization.fields.uninitialized] the constructor does not initialize fields: nullObject
+NonDefaultConstructor.java:15:10: compiler.err.proc.messager: [initialization.fields.uninitialized] the constructor does not initialize fields: nullObject
+NonDefaultConstructor.java:18:10: compiler.err.proc.messager: [initialization.fields.uninitialized] the constructor does not initialize fields: nullObject
 2 errors

@@ -20,160 +20,157 @@ import org.checkerframework.javacutil.Pair;
 
 public class Driver {
 
-    private static final PrintStream out = System.out;
+  private static final PrintStream out = System.out;
 
-    public static void main(String[] args) throws Exception {
-        if (args.length == 0 || args.length > 1) {
-            throw new IllegalArgumentException("Usage: java Driver <test-name>");
-        }
-        String name = args[0];
-        Class<?> clazz = Class.forName(name);
-        new Driver().runDriver(clazz.newInstance());
+  public static void main(String[] args) throws Exception {
+    if (args.length == 0 || args.length > 1) {
+      throw new IllegalArgumentException("Usage: java Driver <test-name>");
+    }
+    String name = args[0];
+    Class<?> clazz = Class.forName(name);
+    new Driver().runDriver(clazz.newInstance());
+  }
+
+  protected void runDriver(Object object) throws Exception {
+    int passed = 0, failed = 0;
+    Class<?> clazz = object.getClass();
+    out.println("Tests for " + clazz.getName());
+
+    // Find methods
+    for (Method method : clazz.getMethods()) {
+      List<Pair<String, TypeAnnotation.Position>> expected = expectedOf(method);
+      if (expected == null) {
+        continue;
+      }
+      if (method.getReturnType() != String.class) {
+        throw new IllegalArgumentException("Test method needs to return a string: " + method);
+      }
+      String testClass = PersistUtil.testClassOf(method);
+
+      try {
+        String compact = (String) method.invoke(object);
+        String fullFile = PersistUtil.wrap(compact);
+        ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
+        List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
+        ReferenceInfoUtil.compare(expected, actual, cf);
+        out.println("PASSED:  " + method.getName());
+        ++passed;
+      } catch (Throwable e) {
+        out.println("FAILED:  " + method.getName());
+        out.println("    " + e);
+        ++failed;
+      }
     }
 
-    protected void runDriver(Object object) throws Exception {
-        int passed = 0, failed = 0;
-        Class<?> clazz = object.getClass();
-        out.println("Tests for " + clazz.getName());
+    out.println();
+    int total = passed + failed;
+    out.println(total + " total tests: " + passed + " PASSED, " + failed + " FAILED");
 
-        // Find methods
-        for (Method method : clazz.getMethods()) {
-            List<Pair<String, TypeAnnotation.Position>> expected = expectedOf(method);
-            if (expected == null) {
-                continue;
-            }
-            if (method.getReturnType() != String.class) {
-                throw new IllegalArgumentException(
-                        "Test method needs to return a string: " + method);
-            }
-            String testClass = PersistUtil.testClassOf(method);
+    out.flush();
 
-            try {
-                String compact = (String) method.invoke(object);
-                String fullFile = PersistUtil.wrap(compact);
-                ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
-                List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
-                ReferenceInfoUtil.compare(expected, actual, cf);
-                out.println("PASSED:  " + method.getName());
-                ++passed;
-            } catch (Throwable e) {
-                out.println("FAILED:  " + method.getName());
-                out.println("    " + e);
-                ++failed;
-            }
-        }
+    if (failed != 0) {
+      throw new RuntimeException(failed + " tests failed");
+    }
+  }
 
-        out.println();
-        int total = passed + failed;
-        out.println(total + " total tests: " + passed + " PASSED, " + failed + " FAILED");
+  private List<Pair<String, TypeAnnotation.Position>> expectedOf(Method m) {
+    TADescription ta = m.getAnnotation(TADescription.class);
+    TADescriptions tas = m.getAnnotation(TADescriptions.class);
 
-        out.flush();
-
-        if (failed != 0) {
-            throw new RuntimeException(failed + " tests failed");
-        }
+    if (ta == null && tas == null) {
+      return null;
     }
 
-    private List<Pair<String, TypeAnnotation.Position>> expectedOf(Method m) {
-        TADescription ta = m.getAnnotation(TADescription.class);
-        TADescriptions tas = m.getAnnotation(TADescriptions.class);
+    List<Pair<String, TypeAnnotation.Position>> result = new ArrayList<>();
 
-        if (ta == null && tas == null) {
-            return null;
-        }
-
-        List<Pair<String, TypeAnnotation.Position>> result = new ArrayList<>();
-
-        if (ta != null) {
-            result.add(expectedOf(ta));
-        }
-
-        if (tas != null) {
-            for (TADescription a : tas.value()) {
-                result.add(expectedOf(a));
-            }
-        }
-
-        return result;
+    if (ta != null) {
+      result.add(expectedOf(ta));
     }
 
-    private Pair<String, TypeAnnotation.Position> expectedOf(TADescription d) {
-        String annoName = d.annotation();
-
-        TypeAnnotation.Position p = new TypeAnnotation.Position();
-        p.type = d.type();
-        if (d.offset() != NOT_SET) {
-            p.offset = d.offset();
-        }
-        if (d.lvarOffset().length != 0) {
-            p.lvarOffset = d.lvarOffset();
-        }
-        if (d.lvarLength().length != 0) {
-            p.lvarLength = d.lvarLength();
-        }
-        if (d.lvarIndex().length != 0) {
-            p.lvarIndex = d.lvarIndex();
-        }
-        if (d.boundIndex() != NOT_SET) {
-            p.bound_index = d.boundIndex();
-        }
-        if (d.paramIndex() != NOT_SET) {
-            p.parameter_index = d.paramIndex();
-        }
-        if (d.typeIndex() != NOT_SET) {
-            p.type_index = d.typeIndex();
-        }
-        if (d.exceptionIndex() != NOT_SET) {
-            p.exception_index = d.exceptionIndex();
-        }
-        if (d.genericLocation().length != 0) {
-            p.location =
-                    TypeAnnotation.Position.getTypePathFromBinary(
-                            wrapIntArray(d.genericLocation()));
-        }
-
-        return Pair.of(annoName, p);
+    if (tas != null) {
+      for (TADescription a : tas.value()) {
+        result.add(expectedOf(a));
+      }
     }
 
-    private List<Integer> wrapIntArray(int[] ints) {
-        List<Integer> list = new ArrayList<>(ints.length);
-        for (int i : ints) {
-            list.add(i);
-        }
-        return list;
+    return result;
+  }
+
+  private Pair<String, TypeAnnotation.Position> expectedOf(TADescription d) {
+    String annoName = d.annotation();
+
+    TypeAnnotation.Position p = new TypeAnnotation.Position();
+    p.type = d.type();
+    if (d.offset() != NOT_SET) {
+      p.offset = d.offset();
+    }
+    if (d.lvarOffset().length != 0) {
+      p.lvarOffset = d.lvarOffset();
+    }
+    if (d.lvarLength().length != 0) {
+      p.lvarLength = d.lvarLength();
+    }
+    if (d.lvarIndex().length != 0) {
+      p.lvarIndex = d.lvarIndex();
+    }
+    if (d.boundIndex() != NOT_SET) {
+      p.bound_index = d.boundIndex();
+    }
+    if (d.paramIndex() != NOT_SET) {
+      p.parameter_index = d.paramIndex();
+    }
+    if (d.typeIndex() != NOT_SET) {
+      p.type_index = d.typeIndex();
+    }
+    if (d.exceptionIndex() != NOT_SET) {
+      p.exception_index = d.exceptionIndex();
+    }
+    if (d.genericLocation().length != 0) {
+      p.location = TypeAnnotation.Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
     }
 
-    public static final int NOT_SET = -888;
+    return Pair.of(annoName, p);
+  }
+
+  private List<Integer> wrapIntArray(int[] ints) {
+    List<Integer> list = new ArrayList<>(ints.length);
+    for (int i : ints) {
+      list.add(i);
+    }
+    return list;
+  }
+
+  public static final int NOT_SET = -888;
 }
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @interface TADescription {
-    String annotation();
+  String annotation();
 
-    TargetType type();
+  TargetType type();
 
-    int offset() default Driver.NOT_SET;
+  int offset() default Driver.NOT_SET;
 
-    int[] lvarOffset() default {};
+  int[] lvarOffset() default {};
 
-    int[] lvarLength() default {};
+  int[] lvarLength() default {};
 
-    int[] lvarIndex() default {};
+  int[] lvarIndex() default {};
 
-    int boundIndex() default Driver.NOT_SET;
+  int boundIndex() default Driver.NOT_SET;
 
-    int paramIndex() default Driver.NOT_SET;
+  int paramIndex() default Driver.NOT_SET;
 
-    int typeIndex() default Driver.NOT_SET;
+  int typeIndex() default Driver.NOT_SET;
 
-    int exceptionIndex() default Driver.NOT_SET;
+  int exceptionIndex() default Driver.NOT_SET;
 
-    int[] genericLocation() default {};
+  int[] genericLocation() default {};
 }
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @interface TADescriptions {
-    TADescription[] value() default {};
+  TADescription[] value() default {};
 }

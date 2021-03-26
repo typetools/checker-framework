@@ -5,5 +5,5 @@
  */
 
 public class Driver2 {
-    void test() {}
+  void test() {}
 }

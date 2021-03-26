@@ -15,31 +15,31 @@ import org.checkerframework.javacutil.Pair;
  * stores and abstract values.
  */
 public class NullnessAnalysis
-        extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
+    extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
 
-    public NullnessAnalysis(
-            BaseTypeChecker checker,
-            NullnessAnnotatedTypeFactory factory,
-            List<Pair<VariableElement, NullnessValue>> fieldValues) {
-        super(checker, factory, fieldValues);
-    }
+  public NullnessAnalysis(
+      BaseTypeChecker checker,
+      NullnessAnnotatedTypeFactory factory,
+      List<Pair<VariableElement, NullnessValue>> fieldValues) {
+    super(checker, factory, fieldValues);
+  }
 
-    @Override
-    public NullnessStore createEmptyStore(boolean sequentialSemantics) {
-        return new NullnessStore(this, sequentialSemantics);
-    }
+  @Override
+  public NullnessStore createEmptyStore(boolean sequentialSemantics) {
+    return new NullnessStore(this, sequentialSemantics);
+  }
 
-    @Override
-    public NullnessStore createCopiedStore(NullnessStore s) {
-        return new NullnessStore(s);
-    }
+  @Override
+  public NullnessStore createCopiedStore(NullnessStore s) {
+    return new NullnessStore(s);
+  }
 
-    @Override
-    public NullnessValue createAbstractValue(
-            Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
-        if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
-            return null;
-        }
-        return new NullnessValue(this, annotations, underlyingType);
+  @Override
+  public NullnessValue createAbstractValue(
+      Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
+    if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
+      return null;
     }
+    return new NullnessValue(this, annotations, underlyingType);
+  }
 }

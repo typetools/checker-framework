@@ -3,10 +3,10 @@ package nullness;
 import java.util.regex.Pattern;
 
 public class NullnessRegexWithErrors {
-    String str = "(str";
+  String str = "(str";
 
-    void context() {
-        str = null;
-        Pattern.compile("\\I");
-    }
+  void context() {
+    str = null;
+    Pattern.compile("\\I");
+  }
 }

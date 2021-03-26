@@ -21,5 +21,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Regex.class)
 public @interface EnhancedRegex {
-    int[] value() default {0, 0};
+  int[] value() default {0, 0};
 }

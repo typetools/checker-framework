@@ -1,24 +1,24 @@
 import org.checkerframework.dataflow.qual.*;
 
 interface PureFunc {
-    @Pure
-    String doNothing();
+  @Pure
+  String doNothing();
 }
 
 class TestPure {
 
-    static String myMethod() {
-        return "";
-    }
+  static String myMethod() {
+    return "";
+  }
 
-    @Pure
-    static String myPureMethod() {
-        return "";
-    }
+  @Pure
+  static String myPureMethod() {
+    return "";
+  }
 
-    void context() {
-        PureFunc f1 = TestPure::myPureMethod;
-        // :: error: (purity.invalid.methodref)
-        PureFunc f2 = TestPure::myMethod;
-    }
+  void context() {
+    PureFunc f1 = TestPure::myPureMethod;
+    // :: error: (purity.invalid.methodref)
+    PureFunc f2 = TestPure::myMethod;
+  }
 }

@@ -3,7 +3,7 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 
 public class OuterClassWithTypeParam<T> {
-    public class InnerClass {
-        Object o = (@Sibling1 Object) null;
-    }
+  public class InnerClass {
+    Object o = (@Sibling1 Object) null;
+  }
 }

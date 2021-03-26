@@ -18,10 +18,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface CalledMethods {
-    /**
-     * The names of methods that have definetely been called.
-     *
-     * @return the names of methods that have definetely been called
-     */
-    String[] value();
+  /**
+   * The names of methods that have definetely been called.
+   *
+   * @return the names of methods that have definetely been called
+   */
+  String[] value();
 }

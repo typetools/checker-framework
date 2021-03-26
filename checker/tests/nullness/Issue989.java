@@ -13,15 +13,15 @@ interface ListWrapper989b<E> extends Serializable, List<@NonNull E> {}
 interface ListWrapper989c<E> extends Collection<@NonNull E>, Serializable, List<@NonNull E> {}
 
 public class Issue989 {
-    void usea(ListWrapper989a<Boolean> list) {
-        list.get(0);
-    }
+  void usea(ListWrapper989a<Boolean> list) {
+    list.get(0);
+  }
 
-    void useb(ListWrapper989b<Boolean> list) {
-        list.get(0);
-    }
+  void useb(ListWrapper989b<Boolean> list) {
+    list.get(0);
+  }
 
-    void usec(ListWrapper989c<Boolean> list) {
-        list.get(0);
-    }
+  void usec(ListWrapper989c<Boolean> list) {
+    list.get(0);
+  }
 }

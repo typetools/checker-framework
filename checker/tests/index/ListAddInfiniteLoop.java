@@ -2,9 +2,9 @@
 
 public class ListAddInfiniteLoop {
 
-    void ListLoop(List<Integer> list) {
-        while (true) {
-            list.add(4);
-        }
+  void ListLoop(List<Integer> list) {
+    while (true) {
+      list.add(4);
     }
+  }
 }

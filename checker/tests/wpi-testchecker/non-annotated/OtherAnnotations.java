@@ -5,38 +5,38 @@ import org.checkerframework.common.aliasing.qual.Unique;
 
 public class OtherAnnotations {
 
-    void requireSibling1(@Sibling1 int a) {}
+  void requireSibling1(@Sibling1 int a) {}
 
-    @Unique int x;
+  @Unique int x;
 
-    void assignX(@Sibling1 int y) {
-        x = y;
-    }
+  void assignX(@Sibling1 int y) {
+    x = y;
+  }
 
-    void useX() {
-        // :: warning: argument.type.incompatible
-        requireSibling1(x);
-    }
+  void useX() {
+    // :: warning: argument.type.incompatible
+    requireSibling1(x);
+  }
 
-    void methodWithAnnotatedParam(@Unique int z) {
-        // :: warning: argument.type.incompatible
-        requireSibling1(z);
-    }
+  void methodWithAnnotatedParam(@Unique int z) {
+    // :: warning: argument.type.incompatible
+    requireSibling1(z);
+  }
 
-    void useMethodWithAnnotatedParam(@Sibling1 int w) {
-        methodWithAnnotatedParam(w);
-    }
+  void useMethodWithAnnotatedParam(@Sibling1 int w) {
+    methodWithAnnotatedParam(w);
+  }
 
-    @Sibling1 int getSibling1() {
-        return 5;
-    }
+  @Sibling1 int getSibling1() {
+    return 5;
+  }
 
-    @Unique int getIntVal5() {
-        return getSibling1();
-    }
+  @Unique int getIntVal5() {
+    return getSibling1();
+  }
 
-    void useGetIntVal5() {
-        // :: warning: argument.type.incompatible
-        requireSibling1(getIntVal5());
-    }
+  void useGetIntVal5() {
+    // :: warning: argument.type.incompatible
+    requireSibling1(getIntVal5());
+  }
 }

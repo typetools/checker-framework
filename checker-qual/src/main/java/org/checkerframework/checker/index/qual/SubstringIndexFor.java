@@ -36,23 +36,23 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(SubstringIndexUnknown.class)
 public @interface SubstringIndexFor {
-    /**
-     * Sequences, each of which is longer than the annotated expression plus the corresponding
-     * {@code offset}. (Exception: the annotated expression is also allowed to have the value -1.)
-     */
-    @JavaExpression
-    public String[] value();
+  /**
+   * Sequences, each of which is longer than the annotated expression plus the corresponding {@code
+   * offset}. (Exception: the annotated expression is also allowed to have the value -1.)
+   */
+  @JavaExpression
+  public String[] value();
 
-    /**
-     * This expression plus the annotated expression is less than the length of the corresponding
-     * sequence in the {@code value} array. (Exception: the annotated expression is also allowed to
-     * have the value -1.)
-     *
-     * <p>The {@code offset} array must either be empty or the same length as {@code value}.
-     *
-     * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
-     * expressions. For example, {@code @SubstringIndexFor(value = "a", offset = "b.length() - 1")}.
-     */
-    @JavaExpression
-    public String[] offset();
+  /**
+   * This expression plus the annotated expression is less than the length of the corresponding
+   * sequence in the {@code value} array. (Exception: the annotated expression is also allowed to
+   * have the value -1.)
+   *
+   * <p>The {@code offset} array must either be empty or the same length as {@code value}.
+   *
+   * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
+   * expressions. For example, {@code @SubstringIndexFor(value = "a", offset = "b.length() - 1")}.
+   */
+  @JavaExpression
+  public String[] offset();
 }

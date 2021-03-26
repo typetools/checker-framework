@@ -2,11 +2,11 @@
 // https://github.com/typetools/checker-framework/issues/3302
 
 public class Issue3302 {
-    void foo(Bar<?, ?> b) {}
+  void foo(Bar<?, ?> b) {}
 
-    interface Bar<S, T extends Box<S> & A> {}
+  interface Bar<S, T extends Box<S> & A> {}
 
-    interface A {}
+  interface A {}
 
-    interface Box<U> {}
+  interface Box<U> {}
 }

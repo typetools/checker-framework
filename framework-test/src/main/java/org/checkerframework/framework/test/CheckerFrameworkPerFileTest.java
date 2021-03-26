@@ -47,64 +47,63 @@ import org.junit.runner.RunWith;
 @RunWith(PerFileSuite.class)
 public abstract class CheckerFrameworkPerFileTest {
 
-    /** The file containing test code, which will be type-checked. */
-    protected final File testFile;
+  /** The file containing test code, which will be type-checked. */
+  protected final File testFile;
 
-    /** The checker to use for tests. */
-    protected final Class<?> checker;
+  /** The checker to use for tests. */
+  protected final Class<?> checker;
 
-    /** The path, relative to currentDir/test to the directory containing test inputs. */
-    protected final String testDir;
+  /** The path, relative to currentDir/test to the directory containing test inputs. */
+  protected final String testDir;
 
-    /** Extra options to pass to javac when running the checker. */
-    protected final List<String> checkerOptions;
+  /** Extra options to pass to javac when running the checker. */
+  protected final List<String> checkerOptions;
 
-    /**
-     * Creates a new checker test.
-     *
-     * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
-     * Iterable, Iterable, List, boolean)} adds additional checker options.
-     *
-     * @param testFile the file containing test code, which will be type-checked
-     * @param checker the class for the checker to use
-     * @param testDir the path to the directory of test inputs
-     * @param checkerOptions options to pass to the compiler when running tests
-     */
-    protected CheckerFrameworkPerFileTest(
-            File testFile,
-            Class<? extends AbstractProcessor> checker,
-            String testDir,
-            String... checkerOptions) {
-        this.testFile = testFile;
-        this.checker = checker;
-        this.testDir = "tests" + File.separator + testDir;
-        this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
-    }
+  /**
+   * Creates a new checker test.
+   *
+   * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
+   * Iterable, Iterable, List, boolean)} adds additional checker options.
+   *
+   * @param testFile the file containing test code, which will be type-checked
+   * @param checker the class for the checker to use
+   * @param testDir the path to the directory of test inputs
+   * @param checkerOptions options to pass to the compiler when running tests
+   */
+  protected CheckerFrameworkPerFileTest(
+      File testFile,
+      Class<? extends AbstractProcessor> checker,
+      String testDir,
+      String... checkerOptions) {
+    this.testFile = testFile;
+    this.checker = checker;
+    this.testDir = "tests" + File.separator + testDir;
+    this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
+  }
 
-    @Test
-    public void run() {
-        boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
-        List<String> customizedOptions =
-                customizeOptions(Collections.unmodifiableList(checkerOptions));
-        TestConfiguration config =
-                TestConfigurationBuilder.buildDefaultConfiguration(
-                        testDir, testFile, checker, customizedOptions, shouldEmitDebugInfo);
-        TypecheckResult testResult = new TypecheckExecutor().runTest(config);
-        TestUtilities.assertTestDidNotFail(testResult);
-    }
+  @Test
+  public void run() {
+    boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
+    List<String> customizedOptions = customizeOptions(Collections.unmodifiableList(checkerOptions));
+    TestConfiguration config =
+        TestConfigurationBuilder.buildDefaultConfiguration(
+            testDir, testFile, checker, customizedOptions, shouldEmitDebugInfo);
+    TypecheckResult testResult = new TypecheckExecutor().runTest(config);
+    TestUtilities.assertTestDidNotFail(testResult);
+  }
 
-    /**
-     * Override this method if you would like to supply a checker command-line option that depends
-     * on the Java file passed to the test. That file name is available in field {@link #testFile}.
-     *
-     * <p>If you want to specify the same command-line option for all tests of a particular checker,
-     * then pass it to the {@link CheckerFrameworkPerFileTest} constructor.
-     *
-     * @param previousOptions the options specified in the constructor of the test previousOptions
-     *     is unmodifiable
-     * @return a new list of options or the original passed through
-     */
-    public List<String> customizeOptions(List<String> previousOptions) {
-        return previousOptions;
-    }
+  /**
+   * Override this method if you would like to supply a checker command-line option that depends on
+   * the Java file passed to the test. That file name is available in field {@link #testFile}.
+   *
+   * <p>If you want to specify the same command-line option for all tests of a particular checker,
+   * then pass it to the {@link CheckerFrameworkPerFileTest} constructor.
+   *
+   * @param previousOptions the options specified in the constructor of the test previousOptions is
+   *     unmodifiable
+   * @return a new list of options or the original passed through
+   */
+  public List<String> customizeOptions(List<String> previousOptions) {
+    return previousOptions;
+  }
 }

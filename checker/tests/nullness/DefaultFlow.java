@@ -3,19 +3,19 @@ import org.checkerframework.checker.nullness.qual.*;
 @org.checkerframework.framework.qual.DefaultQualifier(NonNull.class)
 public class DefaultFlow {
 
-    void test() {
+  void test() {
 
-        @Nullable String reader = null;
-        if (reader == null) {
-            return;
-        }
-
-        reader.startsWith("hello");
+    @Nullable String reader = null;
+    if (reader == null) {
+      return;
     }
 
-    void tesVariableInitialization() {
-        @Nullable Object elts = null;
-        assert elts != null : "@AssumeAssertion(nullness)";
-        @NonNull Object elem = elts;
-    }
+    reader.startsWith("hello");
+  }
+
+  void tesVariableInitialization() {
+    @Nullable Object elts = null;
+    assert elts != null : "@AssumeAssertion(nullness)";
+    @NonNull Object elem = elts;
+  }
 }

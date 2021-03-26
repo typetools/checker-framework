@@ -2,186 +2,186 @@ import org.checkerframework.checker.signedness.qual.*;
 
 public class DefaultsSignedness {
 
-    public void ConstantTest() {
+  public void ConstantTest() {
 
-        // Test bytes with literal values
-        @SignednessGlb byte conByte;
-        @SignednessBottom byte botByte;
+    // Test bytes with literal values
+    @SignednessGlb byte conByte;
+    @SignednessBottom byte botByte;
 
-        byte testByte = 0;
+    byte testByte = 0;
 
-        conByte = testByte;
+    conByte = testByte;
 
-        // :: error: (assignment.type.incompatible)
-        botByte = testByte;
+    // :: error: (assignment.type.incompatible)
+    botByte = testByte;
 
-        // Test shorts with literal values
-        @SignednessGlb short conShort;
-        @SignednessBottom short botShort;
+    // Test shorts with literal values
+    @SignednessGlb short conShort;
+    @SignednessBottom short botShort;
 
-        short testShort = 128;
+    short testShort = 128;
 
-        conShort = testShort;
+    conShort = testShort;
 
-        // :: error: (assignment.type.incompatible)
-        botShort = testShort;
+    // :: error: (assignment.type.incompatible)
+    botShort = testShort;
 
-        // Test ints with literal values
-        @SignednessGlb int conInt;
-        @SignednessBottom int botInt;
+    // Test ints with literal values
+    @SignednessGlb int conInt;
+    @SignednessBottom int botInt;
 
-        int testInt = 32768;
+    int testInt = 32768;
 
-        conInt = testInt;
+    conInt = testInt;
 
-        // :: error: (assignment.type.incompatible)
-        botInt = testInt;
+    // :: error: (assignment.type.incompatible)
+    botInt = testInt;
 
-        // Test longs with literal values
-        @SignednessGlb long conLong;
-        @SignednessBottom long botLong;
+    // Test longs with literal values
+    @SignednessGlb long conLong;
+    @SignednessBottom long botLong;
 
-        long testLong = 2147483648L;
+    long testLong = 2147483648L;
 
-        conLong = testLong;
+    conLong = testLong;
 
-        // :: error: (assignment.type.incompatible)
-        botLong = testLong;
+    // :: error: (assignment.type.incompatible)
+    botLong = testLong;
 
-        // Test chars with literal values
-        @SignednessGlb char conChar;
-        @SignednessBottom char botChar;
+    // Test chars with literal values
+    @SignednessGlb char conChar;
+    @SignednessBottom char botChar;
 
-        char testChar = 'a';
+    char testChar = 'a';
 
-        conChar = testChar;
+    conChar = testChar;
 
-        // :: error: (assignment.type.incompatible)
-        botChar = testChar;
-    }
+    // :: error: (assignment.type.incompatible)
+    botChar = testChar;
+  }
 
-    public void SignedTest(
-            byte testByte,
-            short testShort,
-            int testInt,
-            long testLong,
-            float testFloat,
-            double testDouble,
-            char testChar,
-            boolean testBool,
-            Byte testBoxedByte,
-            Short testBoxedShort,
-            Integer testBoxedInteger,
-            Long testBoxedLong) {
+  public void SignedTest(
+      byte testByte,
+      short testShort,
+      int testInt,
+      long testLong,
+      float testFloat,
+      double testDouble,
+      char testChar,
+      boolean testBool,
+      Byte testBoxedByte,
+      Short testBoxedShort,
+      Integer testBoxedInteger,
+      Long testBoxedLong) {
 
-        // Test bytes
-        @Signed byte sinByte;
-        @SignednessGlb byte conByte;
+    // Test bytes
+    @Signed byte sinByte;
+    @SignednessGlb byte conByte;
 
-        sinByte = testByte;
+    sinByte = testByte;
 
-        // :: error: (assignment.type.incompatible)
-        conByte = testByte;
+    // :: error: (assignment.type.incompatible)
+    conByte = testByte;
 
-        // Test shorts
-        @Signed short sinShort;
-        @SignednessGlb short conShort;
+    // Test shorts
+    @Signed short sinShort;
+    @SignednessGlb short conShort;
 
-        sinShort = testShort;
+    sinShort = testShort;
 
-        // :: error: (assignment.type.incompatible)
-        conShort = testShort;
+    // :: error: (assignment.type.incompatible)
+    conShort = testShort;
 
-        // Test ints
-        @Signed int sinInt;
-        @SignednessGlb int conInt;
+    // Test ints
+    @Signed int sinInt;
+    @SignednessGlb int conInt;
 
-        sinInt = testInt;
+    sinInt = testInt;
 
-        // :: error: (assignment.type.incompatible)
-        conInt = testInt;
+    // :: error: (assignment.type.incompatible)
+    conInt = testInt;
 
-        // Test longs
-        @Signed long sinLong;
-        @SignednessGlb long conLong;
+    // Test longs
+    @Signed long sinLong;
+    @SignednessGlb long conLong;
 
-        sinLong = testLong;
+    sinLong = testLong;
 
-        // :: error: (assignment.type.incompatible)
-        conLong = testLong;
+    // :: error: (assignment.type.incompatible)
+    conLong = testLong;
 
-        // Test floats
-        // :: error: (anno.on.irrelevant)
-        @Signed float sinFloat;
+    // Test floats
+    // :: error: (anno.on.irrelevant)
+    @Signed float sinFloat;
 
-        sinFloat = testFloat;
+    sinFloat = testFloat;
 
-        // Test doubles
-        // :: error: (anno.on.irrelevant)
-        @Signed double sinDouble;
+    // Test doubles
+    // :: error: (anno.on.irrelevant)
+    @Signed double sinDouble;
 
-        sinDouble = testDouble;
+    sinDouble = testDouble;
 
-        /*
-        // Test boxed bytes
-        @Signed Byte sinBoxedByte;
-        @SignednessGlb Byte conBoxedByte;
+    /*
+    // Test boxed bytes
+    @Signed Byte sinBoxedByte;
+    @SignednessGlb Byte conBoxedByte;
 
-        sinBoxedByte = testBoxedByte;
+    sinBoxedByte = testBoxedByte;
 
-        //// :: error: (assignment.type.incompatible)
-        conBoxedByte = testBoxedByte;
+    //// :: error: (assignment.type.incompatible)
+    conBoxedByte = testBoxedByte;
 
-        // Test boxed shorts
-        @Signed Short sinBoxedShort;
-        @SignednessGlb Short conBoxedShort;
+    // Test boxed shorts
+    @Signed Short sinBoxedShort;
+    @SignednessGlb Short conBoxedShort;
 
-        sinBoxedShort = testBoxedShort;
+    sinBoxedShort = testBoxedShort;
 
-        //// :: error: (assignment.type.incompatible)
-        conBoxedShort = testBoxedShort;
+    //// :: error: (assignment.type.incompatible)
+    conBoxedShort = testBoxedShort;
 
-        // Test boxed Integers
-        @Signed Integer sinBoxedInteger;
-        @SignednessGlb Integer conBoxedInteger;
+    // Test boxed Integers
+    @Signed Integer sinBoxedInteger;
+    @SignednessGlb Integer conBoxedInteger;
 
-        sinBoxedInteger = testBoxedInteger;
+    sinBoxedInteger = testBoxedInteger;
 
-        //// :: error: (assignment.type.incompatible)
-        conBoxedInteger = testBoxedInteger;
+    //// :: error: (assignment.type.incompatible)
+    conBoxedInteger = testBoxedInteger;
 
-        // Test boxed Longs
-        @Signed Long sinBoxedLong;
-        @SignednessGlb Long conBoxedLong;
+    // Test boxed Longs
+    @Signed Long sinBoxedLong;
+    @SignednessGlb Long conBoxedLong;
 
-        sinBoxedLong = testBoxedLong;
+    sinBoxedLong = testBoxedLong;
 
-        //// :: error: (assignment.type.incompatible)
-        conBoxedLong = testBoxedLong;
-        */
-    }
+    //// :: error: (assignment.type.incompatible)
+    conBoxedLong = testBoxedLong;
+    */
+  }
 
-    public void SignednessBottom() {
+  public void SignednessBottom() {
 
-        @SignednessBottom Object botObj;
+    @SignednessBottom Object botObj;
 
-        Object testObj = null;
+    Object testObj = null;
 
-        botObj = testObj;
-    }
+    botObj = testObj;
+  }
 
-    public void UnknownSignedness(Object testObj, @Unsigned int unsigned, @Signed int signed) {
+  public void UnknownSignedness(Object testObj, @Unsigned int unsigned, @Signed int signed) {
 
-        @UnknownSignedness Object unkObj;
-        @Signed Object sinObj;
+    @UnknownSignedness Object unkObj;
+    @Signed Object sinObj;
 
-        unkObj = testObj;
+    unkObj = testObj;
 
-        // :: error: (assignment.type.incompatible)
-        sinObj = testObj;
-    }
+    // :: error: (assignment.type.incompatible)
+    sinObj = testObj;
+  }
 
-    public void booleanProblem(@Unsigned int unsigned, @Signed int signed) {
-        boolean testBool = unsigned == 1 || signed > 1;
-    }
+  public void booleanProblem(@Unsigned int unsigned, @Signed int signed) {
+    boolean testBool = unsigned == 1 || signed > 1;
+  }
 }

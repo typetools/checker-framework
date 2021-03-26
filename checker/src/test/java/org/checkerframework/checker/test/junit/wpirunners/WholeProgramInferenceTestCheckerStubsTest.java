@@ -18,19 +18,19 @@ import org.junit.runners.Parameterized.Parameters;
 @Category(WholeProgramInferenceTestCheckerStubsTest.class)
 public class WholeProgramInferenceTestCheckerStubsTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceTestCheckerStubsTest(List<File> testFiles) {
-        super(
-                testFiles,
-                WholeProgramInferenceTestChecker.class,
-                "wpi-testchecker/non-annotated",
-                "-Anomsgtext",
-                "-Ainfer=stubs",
-                "-Awarns");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public WholeProgramInferenceTestCheckerStubsTest(List<File> testFiles) {
+    super(
+        testFiles,
+        WholeProgramInferenceTestChecker.class,
+        "wpi-testchecker/non-annotated",
+        "-Anomsgtext",
+        "-Ainfer=stubs",
+        "-Awarns");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"wpi-testchecker/non-annotated"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"wpi-testchecker/non-annotated"};
+  }
 }

@@ -5,17 +5,17 @@ import java.util.List;
 
 public class Issue1981 {
 
-    void test(List<Integer> ids) {
-        for (List<Integer> l : func2(func1(ids))) {}
-    }
+  void test(List<Integer> ids) {
+    for (List<Integer> l : func2(func1(ids))) {}
+  }
 
-    static <E extends Comparable<? super E>> List<E> func1(Iterable<? extends E> elements) {
-        // :: error: (return.type.incompatible)
-        return null;
-    }
+  static <E extends Comparable<? super E>> List<E> func1(Iterable<? extends E> elements) {
+    // :: error: (return.type.incompatible)
+    return null;
+  }
 
-    static <T> List<List<T>> func2(List<T> list) {
-        // :: error: (return.type.incompatible)
-        return null;
-    }
+  static <T> List<List<T>> func2(List<T> list) {
+    // :: error: (return.type.incompatible)
+    return null;
+  }
 }

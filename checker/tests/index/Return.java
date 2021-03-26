@@ -1,5 +1,5 @@
 public class Return {
-    int[] test() {
-        return null;
-    }
+  int[] test() {
+    return null;
+  }
 }

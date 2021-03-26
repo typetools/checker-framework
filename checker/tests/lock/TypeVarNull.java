@@ -1,3 +1,3 @@
 public class TypeVarNull<T> {
-    T t = null;
+  T t = null;
 }

@@ -3,12 +3,12 @@
 import org.checkerframework.checker.index.qual.*;
 
 public class SameLenSelf {
-    int @SameLen("this.field") [] field = new int[10];
-    int @SameLen("field2") [] field2 = new int[10];
-    int @SameLen("field3") [] field3 = field2;
+  int @SameLen("this.field") [] field = new int[10];
+  int @SameLen("field2") [] field2 = new int[10];
+  int @SameLen("field3") [] field3 = field2;
 
-    void foo(int[] b) {
-        int @SameLen("a") [] a = b;
-        int @SameLen("c") [] c = new int[10];
-    }
+  void foo(int[] b) {
+    int @SameLen("a") [] a = b;
+    int @SameLen("c") [] c = new int[10];
+  }
 }

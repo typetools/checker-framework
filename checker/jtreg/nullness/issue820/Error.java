@@ -10,5 +10,5 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 
 public class Error {
-    @NonNull Object o = null;
+  @NonNull Object o = null;
 }

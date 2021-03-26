@@ -2,7 +2,7 @@
 
 public class GenericEnum<T extends String> {
 
-    void test() {
-        T.format("");
-    }
+  void test() {
+    T.format("");
+  }
 }

@@ -1,25 +1,25 @@
 // Test case for (a part of) Issue 142:
 // https://github.com/typetools/checker-framework/issues/142
 public class GenericTest10 {
-    abstract static class Bijection<A, B> {
-        abstract B apply(A a);
+  abstract static class Bijection<A, B> {
+    abstract B apply(A a);
 
-        abstract A invert(B b);
+    abstract A invert(B b);
 
-        Bijection<B, A> inverse() {
-            return new Bijection<B, A>() {
-                A apply(B b) {
-                    return Bijection.this.invert(b);
-                }
-
-                B invert(A a) {
-                    return Bijection.this.apply(a);
-                }
-
-                Bijection<A, B> inverse() {
-                    return Bijection.this;
-                }
-            };
+    Bijection<B, A> inverse() {
+      return new Bijection<B, A>() {
+        A apply(B b) {
+          return Bijection.this.invert(b);
         }
+
+        B invert(A a) {
+          return Bijection.this.apply(a);
+        }
+
+        Bijection<A, B> inverse() {
+          return Bijection.this;
+        }
+      };
     }
+  }
 }

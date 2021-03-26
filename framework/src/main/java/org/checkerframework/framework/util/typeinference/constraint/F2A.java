@@ -10,24 +10,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  */
 public class F2A extends AFConstraint {
 
-    /** Create a constraint with an argument greater than a formal. */
-    public F2A(AnnotatedTypeMirror formalParameter, AnnotatedTypeMirror argument) {
-        super(argument, formalParameter);
-    }
+  /** Create a constraint with an argument greater than a formal. */
+  public F2A(AnnotatedTypeMirror formalParameter, AnnotatedTypeMirror argument) {
+    super(argument, formalParameter);
+  }
 
-    @Override
-    public TUConstraint toTUConstraint() {
-        return new TSubU((AnnotatedTypeVariable) formalParameter, argument, true);
-    }
+  @Override
+  public TUConstraint toTUConstraint() {
+    return new TSubU((AnnotatedTypeVariable) formalParameter, argument, true);
+  }
 
-    @Override
-    protected F2A construct(
-            AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
-        return new F2A(newFormalParameter, newArgument);
-    }
+  @Override
+  protected F2A construct(AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
+    return new F2A(newFormalParameter, newArgument);
+  }
 
-    @Override
-    public String toString() {
-        return "F2A( " + formalParameter + " << " + argument + " )";
-    }
+  @Override
+  public String toString() {
+    return "F2A( " + formalParameter + " << " + argument + " )";
+  }
 }

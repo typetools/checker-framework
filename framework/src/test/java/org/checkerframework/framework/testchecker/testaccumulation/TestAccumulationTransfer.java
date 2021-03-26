@@ -12,24 +12,24 @@ import org.checkerframework.framework.flow.CFValue;
 /** A basic transfer function that accumulates the names of methods called. */
 public class TestAccumulationTransfer extends AccumulationTransfer {
 
-    /**
-     * default constructor
-     *
-     * @param analysis the analysis
-     */
-    public TestAccumulationTransfer(final CFAnalysis analysis) {
-        super(analysis);
-    }
+  /**
+   * default constructor
+   *
+   * @param analysis the analysis
+   */
+  public TestAccumulationTransfer(final CFAnalysis analysis) {
+    super(analysis);
+  }
 
-    @Override
-    public TransferResult<CFValue, CFStore> visitMethodInvocation(
-            final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
-        TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
-        Node receiver = node.getTarget().getReceiver();
-        if (receiver != null) {
-            String methodName = node.getTarget().getMethod().getSimpleName().toString();
-            accumulate(receiver, result, methodName);
-        }
-        return result;
+  @Override
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(
+      final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
+    Node receiver = node.getTarget().getReceiver();
+    if (receiver != null) {
+      String methodName = node.getTarget().getMethod().getSimpleName().toString();
+      accumulate(receiver, result, methodName);
     }
+    return result;
+  }
 }

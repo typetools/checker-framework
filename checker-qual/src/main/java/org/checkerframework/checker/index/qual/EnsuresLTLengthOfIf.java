@@ -58,53 +58,53 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @InheritedAnnotation
 @Repeatable(EnsuresLTLengthOfIf.List.class)
 public @interface EnsuresLTLengthOfIf {
+  /**
+   * Java expression(s) that are less than the length of the given sequences after the method
+   * returns the given result.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] expression();
+
+  /** The return value of the method that needs to hold for the postcondition to hold. */
+  boolean result();
+
+  /**
+   * Sequences, each of which is longer than each of the expressions' value after the method returns
+   * the given result.
+   */
+  @JavaExpression
+  @QualifierArgument("value")
+  String[] targetValue();
+
+  /**
+   * This expression plus each of the expressions is less than the length of the sequence after the
+   * method returns the given result. The {@code offset} element must ether be empty or the same
+   * length as {@code targetValue}.
+   *
+   * @return the offset expressions
+   */
+  @JavaExpression
+  @QualifierArgument("offset")
+  String[] offset() default {};
+
+  /**
+   * A wrapper annotation that makes the {@link EnsuresLTLengthOfIf} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresLTLengthOfIf} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * Java expression(s) that are less than the length of the given sequences after the method
-     * returns the given result.
+     * Return the repeatable annotations.
      *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+     * @return the repeatable annotations
      */
-    String[] expression();
-
-    /** The return value of the method that needs to hold for the postcondition to hold. */
-    boolean result();
-
-    /**
-     * Sequences, each of which is longer than each of the expressions' value after the method
-     * returns the given result.
-     */
-    @JavaExpression
-    @QualifierArgument("value")
-    String[] targetValue();
-
-    /**
-     * This expression plus each of the expressions is less than the length of the sequence after
-     * the method returns the given result. The {@code offset} element must ether be empty or the
-     * same length as {@code targetValue}.
-     *
-     * @return the offset expressions
-     */
-    @JavaExpression
-    @QualifierArgument("offset")
-    String[] offset() default {};
-
-    /**
-     * A wrapper annotation that makes the {@link EnsuresLTLengthOfIf} annotation repeatable.
-     *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresLTLengthOfIf} annotation at the same location.
-     */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Return the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresLTLengthOfIf[] value();
-    }
+    EnsuresLTLengthOfIf[] value();
+  }
 }

@@ -19,5 +19,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(FenumTop.class)
 public @interface Fenum {
-    String value();
+  String value();
 }

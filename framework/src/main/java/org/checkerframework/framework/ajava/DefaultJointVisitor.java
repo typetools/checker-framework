@@ -134,256 +134,254 @@ import com.sun.source.tree.WildcardTree;
  * this class, extend it and override a {@code process} method.
  */
 public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
-    @Override
-    public void processAnnotation(AnnotationTree javacTree, NormalAnnotationExpr javaParserNode) {}
+  @Override
+  public void processAnnotation(AnnotationTree javacTree, NormalAnnotationExpr javaParserNode) {}
 
-    @Override
-    public void processAnnotation(AnnotationTree javacTree, MarkerAnnotationExpr javaParserNode) {}
+  @Override
+  public void processAnnotation(AnnotationTree javacTree, MarkerAnnotationExpr javaParserNode) {}
 
-    @Override
-    public void processAnnotation(
-            AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode) {}
+  @Override
+  public void processAnnotation(
+      AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode) {}
 
-    @Override
-    public void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {}
+  @Override
+  public void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {}
 
-    @Override
-    public void processArrayAccess(ArrayAccessTree javacTree, ArrayAccessExpr javaParserNode) {}
+  @Override
+  public void processArrayAccess(ArrayAccessTree javacTree, ArrayAccessExpr javaParserNode) {}
 
-    @Override
-    public void processArrayType(ArrayTypeTree javacTree, ArrayType javaParserNode) {}
+  @Override
+  public void processArrayType(ArrayTypeTree javacTree, ArrayType javaParserNode) {}
 
-    @Override
-    public void processAssert(AssertTree javacTree, AssertStmt javaParserNode) {}
+  @Override
+  public void processAssert(AssertTree javacTree, AssertStmt javaParserNode) {}
 
-    @Override
-    public void processAssignment(AssignmentTree javacTree, AssignExpr javaParserNode) {}
+  @Override
+  public void processAssignment(AssignmentTree javacTree, AssignExpr javaParserNode) {}
 
-    @Override
-    public void processBinary(BinaryTree javacTree, BinaryExpr javaParserNode) {}
+  @Override
+  public void processBinary(BinaryTree javacTree, BinaryExpr javaParserNode) {}
 
-    @Override
-    public void processBlock(BlockTree javacTree, BlockStmt javaParserNode) {}
+  @Override
+  public void processBlock(BlockTree javacTree, BlockStmt javaParserNode) {}
 
-    @Override
-    public void processBreak(BreakTree javacTree, BreakStmt javaParserNode) {}
+  @Override
+  public void processBreak(BreakTree javacTree, BreakStmt javaParserNode) {}
 
-    @Override
-    public void processCase(CaseTree javacTree, SwitchEntry javaParserNode) {}
+  @Override
+  public void processCase(CaseTree javacTree, SwitchEntry javaParserNode) {}
 
-    @Override
-    public void processCatch(CatchTree javacTree, CatchClause javaParserNode) {}
+  @Override
+  public void processCatch(CatchTree javacTree, CatchClause javaParserNode) {}
 
-    @Override
-    public void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode) {}
+  @Override
+  public void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode) {}
 
-    @Override
-    public void processClass(ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {}
+  @Override
+  public void processClass(ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {}
 
-    @Override
-    public void processClass(ClassTree javacTree, EnumDeclaration javaParserNode) {}
+  @Override
+  public void processClass(ClassTree javacTree, EnumDeclaration javaParserNode) {}
 
-    @Override
-    public void processCompilationUnit(
-            CompilationUnitTree javacTree, CompilationUnit javaParserNode) {}
+  @Override
+  public void processCompilationUnit(
+      CompilationUnitTree javacTree, CompilationUnit javaParserNode) {}
 
-    @Override
-    public void processConditionalExpression(
-            ConditionalExpressionTree javacTree, ConditionalExpr javaParserNode) {}
+  @Override
+  public void processConditionalExpression(
+      ConditionalExpressionTree javacTree, ConditionalExpr javaParserNode) {}
 
-    @Override
-    public void processContinue(ContinueTree javacTree, ContinueStmt javaParserNode) {}
+  @Override
+  public void processContinue(ContinueTree javacTree, ContinueStmt javaParserNode) {}
 
-    @Override
-    public void processDoWhileLoop(DoWhileLoopTree javacTree, DoStmt javaParserNode) {}
+  @Override
+  public void processDoWhileLoop(DoWhileLoopTree javacTree, DoStmt javaParserNode) {}
 
-    @Override
-    public void processEmptyStatement(EmptyStatementTree javacTree, EmptyStmt javaParserNode) {}
+  @Override
+  public void processEmptyStatement(EmptyStatementTree javacTree, EmptyStmt javaParserNode) {}
 
-    @Override
-    public void processEnhancedForLoop(EnhancedForLoopTree javacTree, ForEachStmt javaParserNode) {}
+  @Override
+  public void processEnhancedForLoop(EnhancedForLoopTree javacTree, ForEachStmt javaParserNode) {}
 
-    @Override
-    public void processExports(ExportsTree javacTree, ModuleExportsDirective javaParserNode) {}
+  @Override
+  public void processExports(ExportsTree javacTree, ModuleExportsDirective javaParserNode) {}
 
-    @Override
-    public void processExpressionStatemen(
-            ExpressionStatementTree javacTree, ExpressionStmt javaParserNode) {}
+  @Override
+  public void processExpressionStatemen(
+      ExpressionStatementTree javacTree, ExpressionStmt javaParserNode) {}
 
-    @Override
-    public void processForLoop(ForLoopTree javacTree, ForStmt javaParserNode) {}
+  @Override
+  public void processForLoop(ForLoopTree javacTree, ForStmt javaParserNode) {}
 
-    @Override
-    public void processIdentifier(IdentifierTree javacTree, ClassOrInterfaceType javaParserNode) {}
+  @Override
+  public void processIdentifier(IdentifierTree javacTree, ClassOrInterfaceType javaParserNode) {}
 
-    @Override
-    public void processIdentifier(IdentifierTree javacTree, Name javaParserNode) {}
+  @Override
+  public void processIdentifier(IdentifierTree javacTree, Name javaParserNode) {}
 
-    @Override
-    public void processIdentifier(IdentifierTree javacTree, NameExpr javaParserNode) {}
+  @Override
+  public void processIdentifier(IdentifierTree javacTree, NameExpr javaParserNode) {}
 
-    @Override
-    public void processIdentifier(IdentifierTree javacTree, SimpleName javaParserNode) {}
+  @Override
+  public void processIdentifier(IdentifierTree javacTree, SimpleName javaParserNode) {}
 
-    @Override
-    public void processIdentifier(IdentifierTree javacTree, SuperExpr javaParserNode) {}
+  @Override
+  public void processIdentifier(IdentifierTree javacTree, SuperExpr javaParserNode) {}
 
-    @Override
-    public void processIdentifier(IdentifierTree javacTree, ThisExpr javaParserNode) {}
+  @Override
+  public void processIdentifier(IdentifierTree javacTree, ThisExpr javaParserNode) {}
 
-    @Override
-    public void processIf(IfTree javacTree, IfStmt javaParserNode) {}
+  @Override
+  public void processIf(IfTree javacTree, IfStmt javaParserNode) {}
 
-    @Override
-    public void processImport(ImportTree javacTree, ImportDeclaration javaParserNode) {}
+  @Override
+  public void processImport(ImportTree javacTree, ImportDeclaration javaParserNode) {}
 
-    @Override
-    public void processInstanceOf(InstanceOfTree javacTree, InstanceOfExpr javaParserNode) {}
+  @Override
+  public void processInstanceOf(InstanceOfTree javacTree, InstanceOfExpr javaParserNode) {}
 
-    @Override
-    public void processIntersectionType(
-            IntersectionTypeTree javacTree, IntersectionType javaParserNode) {}
+  @Override
+  public void processIntersectionType(
+      IntersectionTypeTree javacTree, IntersectionType javaParserNode) {}
 
-    @Override
-    public void processLabeledStatement(
-            LabeledStatementTree javacTree, LabeledStmt javaParserNode) {}
+  @Override
+  public void processLabeledStatement(LabeledStatementTree javacTree, LabeledStmt javaParserNode) {}
 
-    @Override
-    public void processLambdaExpression(
-            LambdaExpressionTree javacTree, LambdaExpr javaParserNode) {}
+  @Override
+  public void processLambdaExpression(LambdaExpressionTree javacTree, LambdaExpr javaParserNode) {}
 
-    @Override
-    public void processLiteral(LiteralTree javacTree, BinaryExpr javaParserNode) {}
+  @Override
+  public void processLiteral(LiteralTree javacTree, BinaryExpr javaParserNode) {}
 
-    @Override
-    public void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode) {}
+  @Override
+  public void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode) {}
 
-    @Override
-    public void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode) {}
+  @Override
+  public void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode) {}
 
-    @Override
-    public void processMemberReference(
-            MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode) {}
+  @Override
+  public void processMemberReference(
+      MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode) {}
 
-    @Override
-    public void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode) {}
+  @Override
+  public void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode) {}
 
-    @Override
-    public void processMemberSelect(
-            MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode) {}
+  @Override
+  public void processMemberSelect(
+      MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode) {}
 
-    @Override
-    public void processMemberSelect(MemberSelectTree javacTree, FieldAccessExpr javaParserNode) {}
+  @Override
+  public void processMemberSelect(MemberSelectTree javacTree, FieldAccessExpr javaParserNode) {}
 
-    @Override
-    public void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode) {}
+  @Override
+  public void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode) {}
 
-    @Override
-    public void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode) {}
+  @Override
+  public void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode) {}
 
-    @Override
-    public void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode) {}
+  @Override
+  public void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode) {}
 
-    @Override
-    public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {}
+  @Override
+  public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {}
 
-    @Override
-    public void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode) {}
+  @Override
+  public void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode) {}
 
-    @Override
-    public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {}
+  @Override
+  public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {}
 
-    @Override
-    public void processMethodInvocation(
-            MethodInvocationTree javacTree, ExplicitConstructorInvocationStmt javaParserNode) {}
+  @Override
+  public void processMethodInvocation(
+      MethodInvocationTree javacTree, ExplicitConstructorInvocationStmt javaParserNode) {}
 
-    @Override
-    public void processMethodInvocation(
-            MethodInvocationTree javacTree, MethodCallExpr javaParserNode) {}
+  @Override
+  public void processMethodInvocation(
+      MethodInvocationTree javacTree, MethodCallExpr javaParserNode) {}
 
-    @Override
-    public void processModule(ModuleTree javacTree, ModuleDeclaration javaParserNode) {}
+  @Override
+  public void processModule(ModuleTree javacTree, ModuleDeclaration javaParserNode) {}
 
-    @Override
-    public void processNewClass(NewClassTree javacTree, ObjectCreationExpr javaParserNode) {}
+  @Override
+  public void processNewClass(NewClassTree javacTree, ObjectCreationExpr javaParserNode) {}
 
-    @Override
-    public void processOpens(OpensTree javacTree, ModuleOpensDirective javaParserNode) {}
+  @Override
+  public void processOpens(OpensTree javacTree, ModuleOpensDirective javaParserNode) {}
 
-    @Override
-    public void processOther(Tree javacTree, Node javaParserNode) {}
+  @Override
+  public void processOther(Tree javacTree, Node javaParserNode) {}
 
-    @Override
-    public void processPackage(PackageTree javacTree, PackageDeclaration javaParserNode) {}
+  @Override
+  public void processPackage(PackageTree javacTree, PackageDeclaration javaParserNode) {}
 
-    @Override
-    public void processParameterizedType(
-            ParameterizedTypeTree javacTree, ClassOrInterfaceType javaParserNode) {}
+  @Override
+  public void processParameterizedType(
+      ParameterizedTypeTree javacTree, ClassOrInterfaceType javaParserNode) {}
 
-    @Override
-    public void processParenthesized(ParenthesizedTree javacTree, EnclosedExpr javaParserNode) {}
+  @Override
+  public void processParenthesized(ParenthesizedTree javacTree, EnclosedExpr javaParserNode) {}
 
-    @Override
-    public void processPrimitiveType(PrimitiveTypeTree javacTree, PrimitiveType javaParserNode) {}
+  @Override
+  public void processPrimitiveType(PrimitiveTypeTree javacTree, PrimitiveType javaParserNode) {}
 
-    @Override
-    public void processPrimitiveType(PrimitiveTypeTree javacTree, VoidType javaParserNode) {}
+  @Override
+  public void processPrimitiveType(PrimitiveTypeTree javacTree, VoidType javaParserNode) {}
 
-    @Override
-    public void processProvides(ProvidesTree javacTree, ModuleProvidesDirective javaParserNode) {}
+  @Override
+  public void processProvides(ProvidesTree javacTree, ModuleProvidesDirective javaParserNode) {}
 
-    @Override
-    public void processRequires(RequiresTree javacTree, ModuleRequiresDirective javaParserNode) {}
+  @Override
+  public void processRequires(RequiresTree javacTree, ModuleRequiresDirective javaParserNode) {}
 
-    @Override
-    public void processReturn(ReturnTree javacTree, ReturnStmt javaParserNode) {}
+  @Override
+  public void processReturn(ReturnTree javacTree, ReturnStmt javaParserNode) {}
 
-    @Override
-    public void processSwitch(SwitchTree javacTree, SwitchStmt javaParserNode) {}
+  @Override
+  public void processSwitch(SwitchTree javacTree, SwitchStmt javaParserNode) {}
 
-    @Override
-    public void processSynchronized(SynchronizedTree javacTree, SynchronizedStmt javaParserNode) {}
+  @Override
+  public void processSynchronized(SynchronizedTree javacTree, SynchronizedStmt javaParserNode) {}
 
-    @Override
-    public void processThrow(ThrowTree javacTree, ThrowStmt javaParserNode) {}
+  @Override
+  public void processThrow(ThrowTree javacTree, ThrowStmt javaParserNode) {}
 
-    @Override
-    public void processTry(TryTree javacTree, TryStmt javaParserNode) {}
+  @Override
+  public void processTry(TryTree javacTree, TryStmt javaParserNode) {}
 
-    @Override
-    public void processTypeCast(TypeCastTree javacTree, CastExpr javaParserNode) {}
+  @Override
+  public void processTypeCast(TypeCastTree javacTree, CastExpr javaParserNode) {}
 
-    @Override
-    public void processTypeParameter(TypeParameterTree javacTree, TypeParameter javaParserNode) {}
+  @Override
+  public void processTypeParameter(TypeParameterTree javacTree, TypeParameter javaParserNode) {}
 
-    @Override
-    public void processUnary(UnaryTree javacTree, UnaryExpr javaParserNode) {}
+  @Override
+  public void processUnary(UnaryTree javacTree, UnaryExpr javaParserNode) {}
 
-    @Override
-    public void processUnionType(UnionTypeTree javacTree, UnionType javaParserNode) {}
+  @Override
+  public void processUnionType(UnionTypeTree javacTree, UnionType javaParserNode) {}
 
-    @Override
-    public void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode) {}
+  @Override
+  public void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode) {}
 
-    @Override
-    public void processVariable(VariableTree javacTree, EnumConstantDeclaration javaParserNode) {}
+  @Override
+  public void processVariable(VariableTree javacTree, EnumConstantDeclaration javaParserNode) {}
 
-    @Override
-    public void processVariable(VariableTree javacTree, Parameter javaParserNode) {}
+  @Override
+  public void processVariable(VariableTree javacTree, Parameter javaParserNode) {}
 
-    @Override
-    public void processVariable(VariableTree javacTree, ReceiverParameter javaParserNode) {}
+  @Override
+  public void processVariable(VariableTree javacTree, ReceiverParameter javaParserNode) {}
 
-    @Override
-    public void processVariable(VariableTree javacTree, VariableDeclarator javaParserNode) {}
+  @Override
+  public void processVariable(VariableTree javacTree, VariableDeclarator javaParserNode) {}
 
-    @Override
-    public void processWhileLoop(WhileLoopTree javacTree, WhileStmt javaParserNode) {}
+  @Override
+  public void processWhileLoop(WhileLoopTree javacTree, WhileStmt javaParserNode) {}
 
-    @Override
-    public void processWildcard(WildcardTree javacTree, WildcardType javaParserNode) {}
+  @Override
+  public void processWildcard(WildcardTree javacTree, WildcardType javaParserNode) {}
 
-    @Override
-    public void processCompoundAssignment(
-            CompoundAssignmentTree javacTree, AssignExpr javaParserNode) {}
+  @Override
+  public void processCompoundAssignment(
+      CompoundAssignmentTree javacTree, AssignExpr javaParserNode) {}
 }
