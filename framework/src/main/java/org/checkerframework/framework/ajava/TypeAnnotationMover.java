@@ -56,19 +56,18 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(FieldDeclaration node, Void p) {
-        // When adding annotations, it should be sufficient to add the annotations to the type of
-        // the first declared variable in the field declaration.
+        // Use the type of the first declared variable in the field declaration.
         Type type = node.getVariable(0).getType();
+        if (!type.isClassOrInterfaceType()) {
+            return;
+        }
+
         if (isMultiPartName(type)) {
             return;
         }
 
         List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.FIELD);
         if (annosToMove.isEmpty()) {
-            return;
-        }
-
-        if (!type.isClassOrInterfaceType()) {
             return;
         }
 
@@ -79,16 +78,16 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     @Override
     public void visit(MethodDeclaration node, Void p) {
         Type type = node.getType();
+        if (!type.isClassOrInterfaceType()) {
+            return;
+        }
+
         if (isMultiPartName(type)) {
             return;
         }
 
         List<AnnotationExpr> annosToMove = getAnnotationsToMove(node, ElementType.METHOD);
         if (annosToMove.isEmpty()) {
-            return;
-        }
-
-        if (!type.isClassOrInterfaceType()) {
             return;
         }
 
