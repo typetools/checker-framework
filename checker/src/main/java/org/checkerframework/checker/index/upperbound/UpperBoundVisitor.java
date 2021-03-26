@@ -30,9 +30,8 @@ import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -102,32 +101,32 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String from = atypeFactory.hasSubsequenceFromValue(anno);
             String to = atypeFactory.hasSubsequenceToValue(anno);
 
-            // check that each expression is parsable in this context
+            // check that each expression is parsable at the declaration of this class
             ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-            JavaExpressionContext context =
-                    JavaExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
-            checkEffectivelyFinalAndParsable(seq, context, node);
-            checkEffectivelyFinalAndParsable(from, context, node);
-            checkEffectivelyFinalAndParsable(to, context, node);
+            checkEffectivelyFinalAndParsable(seq, enclosingClass, node);
+            checkEffectivelyFinalAndParsable(from, enclosingClass, node);
+            checkEffectivelyFinalAndParsable(to, enclosingClass, node);
         }
         return super.visitAnnotation(node, p);
     }
 
     /**
-     * Reports an error if the Java expression named by s is not effectively final at the current
-     * program location.
+     * Reports an error if the Java expression named by s is not effectively final when parsed at
+     * the declaration of the given class.
      *
      * @param s a Java expression
-     * @param context the JavaExpression context
-     * @param tree the tree at which to possibly report an error
+     * @param classTree the expression is parsed with respect to this class
+     * @param whereToReportError the tree at which to possibly report an error
      */
     private void checkEffectivelyFinalAndParsable(
-            String s, JavaExpressionContext context, Tree tree) {
+            String s, ClassTree classTree, Tree whereToReportError) {
         JavaExpression je;
         try {
-            je = JavaExpressionParseUtil.parse(s, context);
+            je =
+                    StringToJavaExpression.atTypeDecl(
+                            s, TreeUtils.elementFromDeclaration(classTree), checker);
         } catch (JavaExpressionParseException e) {
-            checker.report(tree, e.getDiagMessage());
+            checker.report(whereToReportError, e.getDiagMessage());
             return;
         }
         Element element = null;
@@ -139,7 +138,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
         if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
-            checker.reportError(tree, NOT_FINAL, je);
+            checker.reportError(whereToReportError, NOT_FINAL, je);
         }
     }
 
