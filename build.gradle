@@ -42,7 +42,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.18.0.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -280,6 +280,11 @@ task maybeCloneAndBuildDependencies(type: Exec) {
         // the repository does not exist when building checker.jar.
     }
     executable 'checker/bin-devel/build.sh'
+    doLast{
+        if(!file(stubparserJar).exists()) {
+            throw new RuntimeException("Stubparser jar not found: " + stubparserJar)
+        }
+    }
 }
 
 task version(group: 'Documentation') {
