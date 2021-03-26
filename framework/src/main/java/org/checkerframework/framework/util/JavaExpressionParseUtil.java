@@ -32,7 +32,6 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -1095,25 +1094,6 @@ public class JavaExpressionParseUtil {
             }
             return null;
         }
-    }
-
-    /**
-     * Returns a list of 1-based indices of all formal parameters that occur in {@code s}. Each
-     * formal parameter occurs in s as a string like "#1" or "#4". This routine does not do proper
-     * parsing; for instance, if "#2" appears within a string in s, then 2 is in the result list.
-     * The result may contain duplicates.
-     *
-     * @param s a Java expression
-     * @return a list of 1-based indices of all formal parameters that occur in {@code s}
-     */
-    public static List<Integer> parameterIndices(String s) {
-        List<Integer> result = new ArrayList<>();
-        Matcher matcher = UNANCHORED_PARAMETER_PATTERN.matcher(s);
-        while (matcher.find()) {
-            int idx = Integer.parseInt(matcher.group(1));
-            result.add(idx);
-        }
-        return result;
     }
 
     /**
