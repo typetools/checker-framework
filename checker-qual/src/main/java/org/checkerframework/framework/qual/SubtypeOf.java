@@ -41,6 +41,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 @AnnotatedFor("nullness")
 public @interface SubtypeOf {
-    /** An array of the supertype qualifiers of the annotated qualifier. */
-    Class<? extends Annotation>[] value();
+  /** An array of the supertype qualifiers of the annotated qualifier. */
+  Class<? extends Annotation>[] value();
 }

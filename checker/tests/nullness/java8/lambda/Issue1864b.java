@@ -2,12 +2,12 @@
 // https://github.com/typetools/checker-framework/issues/1864
 
 public class Issue1864b {
-    interface Supplier {
-        Object get();
-    }
+  interface Supplier {
+    Object get();
+  }
 
-    Supplier foo() {
-        Object foo = new Object();
-        return () -> foo;
-    }
+  Supplier foo() {
+    Object foo = new Object();
+    return () -> foo;
+  }
 }

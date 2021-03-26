@@ -3,21 +3,21 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 public class MonotonicNonNullFieldTest {
-    class Data {
-        @MonotonicNonNull Object field;
-    }
+  class Data {
+    @MonotonicNonNull Object field;
+  }
 
-    void method(Object object) {}
+  void method(Object object) {}
 
-    @RequiresNonNull("#1.field")
-    void test(final Data data) {
-        method(data.field); // checks OK
+  @RequiresNonNull("#1.field")
+  void test(final Data data) {
+    method(data.field); // checks OK
 
-        Runnable callback =
-                new Runnable() {
-                    public void run() {
-                        method(data.field); // used to issue error
-                    }
-                };
-    }
+    Runnable callback =
+        new Runnable() {
+          public void run() {
+            method(data.field); // used to issue error
+          }
+        };
+  }
 }

@@ -19,31 +19,30 @@ import org.checkerframework.javacutil.Pair;
  */
 public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
 
-    public LockAnalysis(
-            BaseTypeChecker checker,
-            LockAnnotatedTypeFactory factory,
-            List<Pair<VariableElement, CFValue>> fieldValues) {
-        super(checker, factory, fieldValues);
-    }
+  public LockAnalysis(
+      BaseTypeChecker checker,
+      LockAnnotatedTypeFactory factory,
+      List<Pair<VariableElement, CFValue>> fieldValues) {
+    super(checker, factory, fieldValues);
+  }
 
-    @Override
-    public LockTransfer createTransferFunction() {
-        return new LockTransfer(this, (LockChecker) checker);
-    }
+  @Override
+  public LockTransfer createTransferFunction() {
+    return new LockTransfer(this, (LockChecker) checker);
+  }
 
-    @Override
-    public LockStore createEmptyStore(boolean sequentialSemantics) {
-        return new LockStore(this, sequentialSemantics);
-    }
+  @Override
+  public LockStore createEmptyStore(boolean sequentialSemantics) {
+    return new LockStore(this, sequentialSemantics);
+  }
 
-    @Override
-    public LockStore createCopiedStore(LockStore s) {
-        return new LockStore(this, s);
-    }
+  @Override
+  public LockStore createCopiedStore(LockStore s) {
+    return new LockStore(this, s);
+  }
 
-    @Override
-    public CFValue createAbstractValue(
-            Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
-        return defaultCreateAbstractValue(this, annotations, underlyingType);
-    }
+  @Override
+  public CFValue createAbstractValue(Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
+    return defaultCreateAbstractValue(this, annotations, underlyingType);
+  }
 }

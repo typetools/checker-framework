@@ -5,13 +5,13 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.util.RegexUtil;
 
 public class Issue3267 {
-    void foo(String s) {
-        if (RegexUtil.isRegex(s)) {
-        } else {
-        }
-        if (true) {
-            // :: error: (argument.type.incompatible)
-            Pattern.compile(s);
-        }
+  void foo(String s) {
+    if (RegexUtil.isRegex(s)) {
+    } else {
     }
+    if (true) {
+      // :: error: (argument.type.incompatible)
+      Pattern.compile(s);
+    }
+  }
 }

@@ -14,24 +14,24 @@ import org.checkerframework.framework.qual.StubFiles;
 @StubFiles({"reflection.astub"})
 public class ClassValChecker extends BaseTypeChecker {
 
-    @Override
-    protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new ClassValVisitor(this);
-    }
+  @Override
+  protected BaseTypeVisitor<?> createSourceVisitor() {
+    return new ClassValVisitor(this);
+  }
 
-    @Override
-    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        // Don't call super otherwise MethodVal will be added as a subChecker
-        // which creates a circular dependency.
-        LinkedHashSet<Class<? extends BaseTypeChecker>> subCheckers = new LinkedHashSet<>();
-        subCheckers.add(ValueChecker.class);
-        return subCheckers;
-    }
+  @Override
+  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    // Don't call super otherwise MethodVal will be added as a subChecker
+    // which creates a circular dependency.
+    LinkedHashSet<Class<? extends BaseTypeChecker>> subCheckers = new LinkedHashSet<>();
+    subCheckers.add(ValueChecker.class);
+    return subCheckers;
+  }
 
-    @Override
-    public boolean shouldResolveReflection() {
-        // Because this checker is a subchecker of MethodVal,
-        // reflection can't be resolved.
-        return false;
-    }
+  @Override
+  public boolean shouldResolveReflection() {
+    // Because this checker is a subchecker of MethodVal,
+    // reflection can't be resolved.
+    return false;
+  }
 }

@@ -8,7 +8,7 @@
  */
 
 public class View {
-    private static void createTable() {
-        ImporterManager.chooseAndImportFile("");
-    }
+  private static void createTable() {
+    ImporterManager.chooseAndImportFile("");
+  }
 }

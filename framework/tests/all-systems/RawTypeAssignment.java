@@ -10,15 +10,15 @@ class Components extends ArrayList {}
 // class Components extends ArrayList<Component> {}
 
 public class RawTypeAssignment {
-    static Components getComponents() {
-        return new Components();
-    }
+  static Components getComponents() {
+    return new Components();
+  }
 
-    static void addTimes(Calendar calendar) {
-        // Type systems may issue an error below because of a mismatch between the type arguments.
-        @SuppressWarnings("assignment.type.incompatible")
-        // :: warning: [unchecked] unchecked conversion
-        ArrayList<Component> clist = getComponents();
-        clist.get(0);
-    }
+  static void addTimes(Calendar calendar) {
+    // Type systems may issue an error below because of a mismatch between the type arguments.
+    @SuppressWarnings("assignment.type.incompatible")
+    // :: warning: [unchecked] unchecked conversion
+    ArrayList<Component> clist = getComponents();
+    clist.get(0);
+  }
 }

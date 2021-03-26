@@ -41,11 +41,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownKeyFor.class)
 public @interface KeyFor {
-    /**
-     * Java expression(s) that evaluate to a map for which the annotated type is a key.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    @JavaExpression
-    public String[] value();
+  /**
+   * Java expression(s) that evaluate to a map for which the annotated type is a key.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  @JavaExpression
+  public String[] value();
 }

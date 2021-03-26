@@ -23,83 +23,83 @@ import org.checkerframework.javacutil.BugInCF;
 @SuppressWarnings("nullness") // TODO
 abstract class ExtendedNode {
 
-    /** The basic block this extended node belongs to (as determined in phase two). */
-    protected BlockImpl block;
+  /** The basic block this extended node belongs to (as determined in phase two). */
+  protected BlockImpl block;
 
-    /** Type of this node. */
-    protected final ExtendedNodeType type;
+  /** Type of this node. */
+  protected final ExtendedNodeType type;
 
-    /** Does this node terminate the execution? (e.g., "System.exit()") */
-    protected boolean terminatesExecution = false;
+  /** Does this node terminate the execution? (e.g., "System.exit()") */
+  protected boolean terminatesExecution = false;
 
-    /**
-     * Create a new ExtendedNode.
-     *
-     * @param type the type of this node
-     */
-    protected ExtendedNode(ExtendedNodeType type) {
-        this.type = type;
-    }
+  /**
+   * Create a new ExtendedNode.
+   *
+   * @param type the type of this node
+   */
+  protected ExtendedNode(ExtendedNodeType type) {
+    this.type = type;
+  }
 
-    /** Extended node types (description see above). */
-    public enum ExtendedNodeType {
-        NODE,
-        EXCEPTION_NODE,
-        UNCONDITIONAL_JUMP,
-        CONDITIONAL_JUMP
-    }
+  /** Extended node types (description see above). */
+  public enum ExtendedNodeType {
+    NODE,
+    EXCEPTION_NODE,
+    UNCONDITIONAL_JUMP,
+    CONDITIONAL_JUMP
+  }
 
-    public ExtendedNodeType getType() {
-        return type;
-    }
+  public ExtendedNodeType getType() {
+    return type;
+  }
 
-    public boolean getTerminatesExecution() {
-        return terminatesExecution;
-    }
+  public boolean getTerminatesExecution() {
+    return terminatesExecution;
+  }
 
-    public void setTerminatesExecution(boolean terminatesExecution) {
-        this.terminatesExecution = terminatesExecution;
-    }
+  public void setTerminatesExecution(boolean terminatesExecution) {
+    this.terminatesExecution = terminatesExecution;
+  }
 
-    /**
-     * Returns the node contained in this extended node (only applicable if the type is {@code NODE}
-     * or {@code EXCEPTION_NODE}).
-     *
-     * @return the node contained in this extended node (only applicable if the type is {@code NODE}
-     *     or {@code EXCEPTION_NODE})
-     */
-    public Node getNode() {
-        throw new Error("Do not call");
-    }
+  /**
+   * Returns the node contained in this extended node (only applicable if the type is {@code NODE}
+   * or {@code EXCEPTION_NODE}).
+   *
+   * @return the node contained in this extended node (only applicable if the type is {@code NODE}
+   *     or {@code EXCEPTION_NODE})
+   */
+  public Node getNode() {
+    throw new Error("Do not call");
+  }
 
-    /**
-     * Returns the label associated with this extended node (only applicable if type is {@link
-     * ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
-     *
-     * @return the label associated with this extended node (only applicable if type is {@link
-     *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
-     */
-    public Label getLabel() {
-        throw new Error("Do not call");
-    }
+  /**
+   * Returns the label associated with this extended node (only applicable if type is {@link
+   * ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
+   *
+   * @return the label associated with this extended node (only applicable if type is {@link
+   *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
+   */
+  public Label getLabel() {
+    throw new Error("Do not call");
+  }
 
-    public BlockImpl getBlock() {
-        return block;
-    }
+  public BlockImpl getBlock() {
+    return block;
+  }
 
-    public void setBlock(BlockImpl b) {
-        this.block = b;
-    }
+  public void setBlock(BlockImpl b) {
+    this.block = b;
+  }
 
-    @Override
-    public String toString() {
-        throw new BugInCF("DO NOT CALL ExtendedNode.toString(). Write your own.");
-    }
+  @Override
+  public String toString() {
+    throw new BugInCF("DO NOT CALL ExtendedNode.toString(). Write your own.");
+  }
 
-    /**
-     * Returns a verbose string representation of this, useful for debugging.
-     *
-     * @return a string representation of this
-     */
-    public abstract String toStringDebug();
+  /**
+   * Returns a verbose string representation of this, useful for debugging.
+   *
+   * @return a string representation of this
+   */
+  public abstract String toStringDebug();
 }

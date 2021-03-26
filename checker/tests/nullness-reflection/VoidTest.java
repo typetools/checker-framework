@@ -1,6 +1,6 @@
 public class VoidTest {
 
-    Class<?> test() {
-        return void.class;
-    }
+  Class<?> test() {
+    return void.class;
+  }
 }

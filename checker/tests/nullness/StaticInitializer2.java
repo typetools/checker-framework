@@ -10,10 +10,10 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class StaticInitializer2 {
 
-    static String a;
+  static String a;
 
-    static {
-        // :: error: (dereference.of.nullable)
-        a.toString();
-    }
+  static {
+    // :: error: (dereference.of.nullable)
+    a.toString();
+  }
 }

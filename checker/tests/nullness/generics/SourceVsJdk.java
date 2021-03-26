@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Map;
 
 public class SourceVsJdk<K, V> {
-    public Map<K, V> getMap() {
-        return Collections.<K, V>emptyMap();
-    }
+  public Map<K, V> getMap() {
+    return Collections.<K, V>emptyMap();
+  }
 }

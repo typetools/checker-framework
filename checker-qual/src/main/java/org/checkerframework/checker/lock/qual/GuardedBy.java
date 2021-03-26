@@ -42,37 +42,37 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 // These are required because the default for local variables is @GuardedByUnknown, but if the local
 // variable is one of these type kinds, the default should be @GuardedByUnknown.
 @DefaultFor(
-        value = {TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND},
-        typeKinds = {
-            TypeKind.BOOLEAN,
-            TypeKind.BYTE,
-            TypeKind.CHAR,
-            TypeKind.DOUBLE,
-            TypeKind.FLOAT,
-            TypeKind.INT,
-            TypeKind.LONG,
-            TypeKind.SHORT
-        },
-        types = {String.class, Void.class})
+    value = {TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND},
+    typeKinds = {
+      TypeKind.BOOLEAN,
+      TypeKind.BYTE,
+      TypeKind.CHAR,
+      TypeKind.DOUBLE,
+      TypeKind.FLOAT,
+      TypeKind.INT,
+      TypeKind.LONG,
+      TypeKind.SHORT
+    },
+    types = {String.class, Void.class})
 @UpperBoundFor(
-        typeKinds = {
-            TypeKind.BOOLEAN,
-            TypeKind.BYTE,
-            TypeKind.CHAR,
-            TypeKind.DOUBLE,
-            TypeKind.FLOAT,
-            TypeKind.INT,
-            TypeKind.LONG,
-            TypeKind.SHORT
-        },
-        types = String.class)
+    typeKinds = {
+      TypeKind.BOOLEAN,
+      TypeKind.BYTE,
+      TypeKind.CHAR,
+      TypeKind.DOUBLE,
+      TypeKind.FLOAT,
+      TypeKind.INT,
+      TypeKind.LONG,
+      TypeKind.SHORT
+    },
+    types = String.class)
 public @interface GuardedBy {
-    /**
-     * The Java value expressions that need to be held.
-     *
-     * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
-     *     Java expressions</a>
-     */
-    @JavaExpression
-    String[] value() default {};
+  /**
+   * The Java value expressions that need to be held.
+   *
+   * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
+   *     Java expressions</a>
+   */
+  @JavaExpression
+  String[] value() default {};
 }

@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("all") // check for crashes
 public class Issue1331 {
-    List<Long> ll;
-    long result = getOnlyElement(ll.stream().collect(Collectors.toSet()));
+  List<Long> ll;
+  long result = getOnlyElement(ll.stream().collect(Collectors.toSet()));
 
-    static <T> T getOnlyElement(Iterable<T> iterable) {
-        return null;
-    }
+  static <T> T getOnlyElement(Iterable<T> iterable) {
+    return null;
+  }
 }

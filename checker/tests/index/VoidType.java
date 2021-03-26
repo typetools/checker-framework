@@ -1,3 +1,3 @@
 public class VoidType {
-    private Class<?> main_class = Void.TYPE;
+  private Class<?> main_class = Void.TYPE;
 }

@@ -1,5 +1,5 @@
 public class ValueCheckerProblem {
-    void test() {
-        Object o = new Object[][] {null};
-    }
+  void test() {
+    Object o = new Object[][] {null};
+  }
 }

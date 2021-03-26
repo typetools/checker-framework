@@ -13,9 +13,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class BinaryDefaultTestWithStub {
-    void test1(@NonNull BinaryDefaultTestInterface bar, @Nullable BinaryDefaultTestInterface bar2) {
-        @Nullable BinaryDefaultTestBinary foo = BinaryDefaultTestBinary.foo(bar);
-        @Nullable BinaryDefaultTestBinary baz = BinaryDefaultTestBinary.foo(bar2);
-        @NonNull BinaryDefaultTestBinary biz = BinaryDefaultTestBinary.foo(bar);
-    }
+  void test1(@NonNull BinaryDefaultTestInterface bar, @Nullable BinaryDefaultTestInterface bar2) {
+    @Nullable BinaryDefaultTestBinary foo = BinaryDefaultTestBinary.foo(bar);
+    @Nullable BinaryDefaultTestBinary baz = BinaryDefaultTestBinary.foo(bar2);
+    @NonNull BinaryDefaultTestBinary biz = BinaryDefaultTestBinary.foo(bar);
+  }
 }

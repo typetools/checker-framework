@@ -14,40 +14,40 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class ConditionalOrNode extends BinaryOperationNode {
 
-    /**
-     * Create a new ConditionalOrNode.
-     *
-     * @param tree the conditional-or tree for this node
-     * @param left the first argument
-     * @param right the second argument
-     */
-    public ConditionalOrNode(BinaryTree tree, Node left, Node right) {
-        super(tree, left, right);
-        assert tree.getKind() == Kind.CONDITIONAL_OR;
-    }
+  /**
+   * Create a new ConditionalOrNode.
+   *
+   * @param tree the conditional-or tree for this node
+   * @param left the first argument
+   * @param right the second argument
+   */
+  public ConditionalOrNode(BinaryTree tree, Node left, Node right) {
+    super(tree, left, right);
+    assert tree.getKind() == Kind.CONDITIONAL_OR;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitConditionalOr(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitConditionalOr(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " || " + getRightOperand() + ")";
-    }
+  @Override
+  public String toString() {
+    return "(" + getLeftOperand() + " || " + getRightOperand() + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof ConditionalOrNode)) {
-            return false;
-        }
-        ConditionalOrNode other = (ConditionalOrNode) obj;
-        return getLeftOperand().equals(other.getLeftOperand())
-                && getRightOperand().equals(other.getRightOperand());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof ConditionalOrNode)) {
+      return false;
     }
+    ConditionalOrNode other = (ConditionalOrNode) obj;
+    return getLeftOperand().equals(other.getLeftOperand())
+        && getRightOperand().equals(other.getRightOperand());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getLeftOperand(), getRightOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getLeftOperand(), getRightOperand());
+  }
 }

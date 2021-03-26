@@ -1,7 +1,7 @@
 public class Uninit2 {
-    Object a;
+  Object a;
 
-    Uninit2() {
-        a = new Object();
-    }
+  Uninit2() {
+    a = new Object();
+  }
 }

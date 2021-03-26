@@ -23,6 +23,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({UnknownVal.class})
 public @interface ArrayLen {
-    /** The possible lengths of the array. */
-    int[] value();
+  /** The possible lengths of the array. */
+  int[] value();
 }

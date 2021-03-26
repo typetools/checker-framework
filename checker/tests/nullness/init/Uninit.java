@@ -1,4 +1,4 @@
 public class Uninit {
-    // :: error: (initialization.field.uninitialized)
-    Object a;
+  // :: error: (initialization.field.uninitialized)
+  Object a;
 }

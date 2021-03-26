@@ -11,8 +11,8 @@ package annotatedfor;
 import annotatedforlib.Test;
 
 public class UseTest {
-    void test(Test<String> test) {
-        test.method1(null);
-        test.method2(null);
-    }
+  void test(Test<String> test) {
+    test.method1(null);
+    test.method2(null);
+  }
 }

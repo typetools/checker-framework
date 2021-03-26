@@ -7,24 +7,24 @@ import org.checkerframework.checker.regex.qual.*;
  * <p>Also see all-systems/GenericsEnclosing for the type-system independent test.
  */
 class MyG<X> {
-    X f;
+  X f;
 
-    void m(X p) {}
+  void m(X p) {}
 }
 
 class ExtMyG extends MyG<@Regex String> {
-    class EInner1 {
-        class EInner2 {
-            void bar() {
-                String s = f;
-                f = "hi";
-                // :: error: (assignment.type.incompatible)
-                f = "\\ no regex(";
+  class EInner1 {
+    class EInner2 {
+      void bar() {
+        String s = f;
+        f = "hi";
+        // :: error: (assignment.type.incompatible)
+        f = "\\ no regex(";
 
-                m("hi!");
-                // :: error: (argument.type.incompatible)
-                m("\\ no regex(");
-            }
-        }
+        m("hi!");
+        // :: error: (argument.type.incompatible)
+        m("\\ no regex(");
+      }
     }
+  }
 }
