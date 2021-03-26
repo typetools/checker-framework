@@ -11,9 +11,9 @@ import java.time.chrono.Chronology;
 import java.util.Comparator;
 
 public abstract class Issue573 implements Chronology {
-    Object o =
-            (Comparator<ChronoLocalDateTime<? extends ChronoLocalDate>> & Serializable)
-                    (dateTime1, dateTime2) -> {
-                        return 0;
-                    };
+  Object o =
+      (Comparator<ChronoLocalDateTime<? extends ChronoLocalDate>> & Serializable)
+          (dateTime1, dateTime2) -> {
+            return 0;
+          };
 }

@@ -15,14 +15,14 @@ import javax.lang.model.element.TypeElement;
 @SupportedAnnotationTypes("*")
 public class EmptyProcessor extends AbstractProcessor {
 
-    @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        System.out.println("Empty Processor run!");
-        return false;
-    }
+  @Override
+  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    System.out.println("Empty Processor run!");
+    return false;
+  }
 
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latest();
-    }
+  @Override
+  public SourceVersion getSupportedSourceVersion() {
+    return SourceVersion.latest();
+  }
 }

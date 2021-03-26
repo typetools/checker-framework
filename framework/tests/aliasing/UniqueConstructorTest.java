@@ -2,22 +2,22 @@ import org.checkerframework.common.aliasing.qual.Unique;
 
 public class UniqueConstructorTest {
 
-    @Unique UniqueConstructorTest() {
-        // Does not raise unique.leaked error since the parent constructor (Object) is unique
+  @Unique UniqueConstructorTest() {
+    // Does not raise unique.leaked error since the parent constructor (Object) is unique
+  }
+
+  class ParentClass extends UniqueConstructorTest {
+
+    ParentClass() {
+      // Does not raise unique.leaked error since the parent constructor is unique
     }
+  }
 
-    class ParentClass extends UniqueConstructorTest {
+  class ChildUniqueClass extends ParentClass {
 
-        ParentClass() {
-            // Does not raise unique.leaked error since the parent constructor is unique
-        }
+    // ::error: (unique.leaked)
+    @Unique ChildUniqueClass() {
+      // Raises unique.leaked error since the parent constructor is not unique
     }
-
-    class ChildUniqueClass extends ParentClass {
-
-        // ::error: (unique.leaked)
-        @Unique ChildUniqueClass() {
-            // Raises unique.leaked error since the parent constructor is not unique
-        }
-    }
+  }
 }

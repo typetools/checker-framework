@@ -6,7 +6,7 @@ import org.checkerframework.common.value.qual.StringVal;
 
 public class Issue3105StaticImport {
 
-    @StringVal("bar") String m2() {
-        return FIELD2;
-    }
+  @StringVal("bar") String m2() {
+    return FIELD2;
+  }
 }

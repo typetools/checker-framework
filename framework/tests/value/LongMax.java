@@ -9,8 +9,8 @@ import org.checkerframework.common.value.qual.IntRange;
 // the list of values.
 public class LongMax {
 
-    public void longMaxRange() {
-        @IntRange(from = 9223372036854775807l, to = 9223372036854775807l) long i = 9223372036854775807l;
-        @IntRange(from = 9223372036854775807l, to = 9223372036854775807l) long j = i;
-    }
+  public void longMaxRange() {
+    @IntRange(from = 9223372036854775807l, to = 9223372036854775807l) long i = 9223372036854775807l;
+    @IntRange(from = 9223372036854775807l, to = 9223372036854775807l) long j = i;
+  }
 }

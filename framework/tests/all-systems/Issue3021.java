@@ -5,9 +5,9 @@
 import org.checkerframework.common.aliasing.qual.MaybeAliased;
 
 public class Issue3021 {
-    <T> void make() {
-        new Lib<@MaybeAliased T>() {};
-    }
+  <T> void make() {
+    new Lib<@MaybeAliased T>() {};
+  }
 
-    class Lib<T> {}
+  class Lib<T> {}
 }

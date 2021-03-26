@@ -6,11 +6,11 @@ import java.lang.reflect.TypeVariable;
 
 @SuppressWarnings("all") // Just check for crashes.
 public class Bug4 {
-    Type resolveInternal(TypeVariable<?> var, Type[] types) {
-        return method(var.getGenericDeclaration(), var.getName(), types);
-    }
+  Type resolveInternal(TypeVariable<?> var, Type[] types) {
+    return method(var.getGenericDeclaration(), var.getName(), types);
+  }
 
-    static <D extends GenericDeclaration> TypeVariable<D> method(D d, String n, Type... bounds) {
-        throw new RuntimeException();
-    }
+  static <D extends GenericDeclaration> TypeVariable<D> method(D d, String n, Type... bounds) {
+    throw new RuntimeException();
+  }
 }

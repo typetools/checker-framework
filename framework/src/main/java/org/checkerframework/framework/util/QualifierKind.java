@@ -26,99 +26,99 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public @Interned interface QualifierKind extends Comparable<QualifierKind> {
 
-    /**
-     * Returns the canonical name of the annotation class of this.
-     *
-     * @return the canonical name of the annotation class of this
-     */
-    @Interned @CanonicalName String getName();
+  /**
+   * Returns the canonical name of the annotation class of this.
+   *
+   * @return the canonical name of the annotation class of this
+   */
+  @Interned @CanonicalName String getName();
 
-    /**
-     * Returns the annotation class for this.
-     *
-     * @return the annotation class for this
-     */
-    Class<? extends Annotation> getAnnotationClass();
+  /**
+   * Returns the annotation class for this.
+   *
+   * @return the annotation class for this
+   */
+  Class<? extends Annotation> getAnnotationClass();
 
-    /**
-     * Returns the top qualifier kind of the hierarchy to which this qualifier kind belongs.
-     *
-     * @return the top qualifier kind of the hierarchy to which this qualifier kind belongs
-     */
-    QualifierKind getTop();
+  /**
+   * Returns the top qualifier kind of the hierarchy to which this qualifier kind belongs.
+   *
+   * @return the top qualifier kind of the hierarchy to which this qualifier kind belongs
+   */
+  QualifierKind getTop();
 
-    /**
-     * Returns true if this is the top qualifier of its hierarchy.
-     *
-     * @return true if this is the top qualifier of its hierarchy
-     */
-    boolean isTop();
+  /**
+   * Returns true if this is the top qualifier of its hierarchy.
+   *
+   * @return true if this is the top qualifier of its hierarchy
+   */
+  boolean isTop();
 
-    /**
-     * Returns the bottom qualifier kind of the hierarchy to which this qualifier kind belongs.
-     *
-     * @return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs
-     */
-    QualifierKind getBottom();
+  /**
+   * Returns the bottom qualifier kind of the hierarchy to which this qualifier kind belongs.
+   *
+   * @return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs
+   */
+  QualifierKind getBottom();
 
-    /**
-     * Returns true if this is the bottom qualifier of its hierarchy.
-     *
-     * @return true if this is the bottom qualifier of its hierarchy
-     */
-    boolean isBottom();
+  /**
+   * Returns true if this is the bottom qualifier of its hierarchy.
+   *
+   * @return true if this is the bottom qualifier of its hierarchy
+   */
+  boolean isBottom();
 
-    /**
-     * Returns the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs,
-     * or null if one does not exist.
-     *
-     * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs,
-     *     or null if one does not exist
-     */
-    @Nullable QualifierKind getPolymorphic();
+  /**
+   * Returns the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs,
+   * or null if one does not exist.
+   *
+   * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs,
+   *     or null if one does not exist
+   */
+  @Nullable QualifierKind getPolymorphic();
 
-    /**
-     * Returns true if this is polymorphic.
-     *
-     * @return true if this is polymorphic
-     */
-    @Pure
-    boolean isPoly();
+  /**
+   * Returns true if this is polymorphic.
+   *
+   * @return true if this is polymorphic
+   */
+  @Pure
+  boolean isPoly();
 
-    /**
-     * Returns true if the annotation class this qualifier kind represents has annotation
-     * elements/arguments.
-     *
-     * @return true if the annotation class this qualifier kind represents has elements/arguments
-     */
-    boolean hasElements();
+  /**
+   * Returns true if the annotation class this qualifier kind represents has annotation
+   * elements/arguments.
+   *
+   * @return true if the annotation class this qualifier kind represents has elements/arguments
+   */
+  boolean hasElements();
 
-    /**
-     * All the qualifier kinds that are a strict super qualifier of this qualifier. Does not include
-     * this qualifier kind itself.
-     *
-     * @return all the qualifier kinds that are a strict super qualifier of this qualifier
-     */
-    Set<? extends QualifierKind> getStrictSuperTypes();
+  /**
+   * All the qualifier kinds that are a strict super qualifier of this qualifier. Does not include
+   * this qualifier kind itself.
+   *
+   * @return all the qualifier kinds that are a strict super qualifier of this qualifier
+   */
+  Set<? extends QualifierKind> getStrictSuperTypes();
 
-    /**
-     * Returns true if this and {@code other} are in the same hierarchy.
-     *
-     * @param other a qualifier kind
-     * @return true if this and {@code other} are in the same hierarchy
-     */
-    boolean isInSameHierarchyAs(QualifierKind other);
+  /**
+   * Returns true if this and {@code other} are in the same hierarchy.
+   *
+   * @param other a qualifier kind
+   * @return true if this and {@code other} are in the same hierarchy
+   */
+  boolean isInSameHierarchyAs(QualifierKind other);
 
-    /**
-     * Returns true if this qualifier kind is a subtype of or equal to {@code superQualKind}.
-     *
-     * @param superQualKind other qualifier kind
-     * @return true if this qualifier kind is a subtype of or equal to {@code superQualKind}
-     */
-    boolean isSubtypeOf(QualifierKind superQualKind);
+  /**
+   * Returns true if this qualifier kind is a subtype of or equal to {@code superQualKind}.
+   *
+   * @param superQualKind other qualifier kind
+   * @return true if this qualifier kind is a subtype of or equal to {@code superQualKind}
+   */
+  boolean isSubtypeOf(QualifierKind superQualKind);
 
-    @Override
-    default int compareTo(QualifierKind o) {
-        return this.getName().compareTo(o.getName());
-    }
+  @Override
+  default int compareTo(QualifierKind o) {
+    return this.getName().compareTo(o.getName());
+  }
 }

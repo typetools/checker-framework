@@ -35,185 +35,185 @@ import org.checkerframework.javacutil.Pair;
  * stores to access the {@link AnnotatedTypeFactory}, the qualifier hierarchy, etc.
  */
 public abstract class CFAbstractAnalysis<
-                V extends CFAbstractValue<V>,
-                S extends CFAbstractStore<V, S>,
-                T extends CFAbstractTransfer<V, S, T>>
-        extends ForwardAnalysisImpl<V, S, T> {
-    /** The qualifier hierarchy for which to track annotations. */
-    protected final QualifierHierarchy qualifierHierarchy;
+        V extends CFAbstractValue<V>,
+        S extends CFAbstractStore<V, S>,
+        T extends CFAbstractTransfer<V, S, T>>
+    extends ForwardAnalysisImpl<V, S, T> {
+  /** The qualifier hierarchy for which to track annotations. */
+  protected final QualifierHierarchy qualifierHierarchy;
 
-    /** The type hierarchy. */
-    protected final TypeHierarchy typeHierarchy;
+  /** The type hierarchy. */
+  protected final TypeHierarchy typeHierarchy;
 
-    /**
-     * The dependent type helper used to standardize both annotations belonging to the type
-     * hierarchy, and contract expressions.
-     */
-    protected final DependentTypesHelper dependentTypesHelper;
+  /**
+   * The dependent type helper used to standardize both annotations belonging to the type hierarchy,
+   * and contract expressions.
+   */
+  protected final DependentTypesHelper dependentTypesHelper;
 
-    /** A type factory that can provide static type annotations for AST Trees. */
-    protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
-            atypeFactory;
+  /** A type factory that can provide static type annotations for AST Trees. */
+  protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
+      atypeFactory;
 
-    /** A checker that contains command-line arguments and other information. */
-    protected final SourceChecker checker;
+  /** A checker that contains command-line arguments and other information. */
+  protected final SourceChecker checker;
 
-    /** Initial abstract types for fields. */
-    protected final List<Pair<VariableElement, V>> fieldValues;
+  /** Initial abstract types for fields. */
+  protected final List<Pair<VariableElement, V>> fieldValues;
 
-    /** The associated processing environment. */
-    protected final ProcessingEnvironment env;
+  /** The associated processing environment. */
+  protected final ProcessingEnvironment env;
 
-    /** Instance of the types utility. */
-    protected final Types types;
+  /** Instance of the types utility. */
+  protected final Types types;
 
-    /**
-     * Create a CFAbstractAnalysis.
-     *
-     * @param checker a checker that contains command-line arguments and other information
-     * @param factory an annotated type factory to introduce type and dataflow rules
-     * @param fieldValues initial abstract types for fields
-     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
-     */
-    protected CFAbstractAnalysis(
-            BaseTypeChecker checker,
-            GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-            List<Pair<VariableElement, V>> fieldValues,
-            int maxCountBeforeWidening) {
-        super(maxCountBeforeWidening);
-        env = checker.getProcessingEnvironment();
-        types = env.getTypeUtils();
-        qualifierHierarchy = factory.getQualifierHierarchy();
-        typeHierarchy = factory.getTypeHierarchy();
-        dependentTypesHelper = factory.getDependentTypesHelper();
-        this.atypeFactory = factory;
-        this.checker = checker;
-        this.transferFunction = createTransferFunction();
-        // TODO: remove parameter and set to empty list.
-        this.fieldValues = fieldValues;
+  /**
+   * Create a CFAbstractAnalysis.
+   *
+   * @param checker a checker that contains command-line arguments and other information
+   * @param factory an annotated type factory to introduce type and dataflow rules
+   * @param fieldValues initial abstract types for fields
+   * @param maxCountBeforeWidening number of times a block can be analyzed before widening
+   */
+  protected CFAbstractAnalysis(
+      BaseTypeChecker checker,
+      GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
+      List<Pair<VariableElement, V>> fieldValues,
+      int maxCountBeforeWidening) {
+    super(maxCountBeforeWidening);
+    env = checker.getProcessingEnvironment();
+    types = env.getTypeUtils();
+    qualifierHierarchy = factory.getQualifierHierarchy();
+    typeHierarchy = factory.getTypeHierarchy();
+    dependentTypesHelper = factory.getDependentTypesHelper();
+    this.atypeFactory = factory;
+    this.checker = checker;
+    this.transferFunction = createTransferFunction();
+    // TODO: remove parameter and set to empty list.
+    this.fieldValues = fieldValues;
+  }
+
+  protected CFAbstractAnalysis(
+      BaseTypeChecker checker,
+      GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
+      List<Pair<VariableElement, V>> fieldValues) {
+    this(
+        checker,
+        factory,
+        fieldValues,
+        factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
+  }
+
+  public void performAnalysis(ControlFlowGraph cfg, List<Pair<VariableElement, V>> fieldValues) {
+    this.fieldValues.clear();
+    this.fieldValues.addAll(fieldValues);
+    super.performAnalysis(cfg);
+  }
+
+  public List<Pair<VariableElement, V>> getFieldValues() {
+    return fieldValues;
+  }
+
+  /**
+   * Returns the transfer function to be used by the analysis.
+   *
+   * @return the transfer function to be used by the analysis
+   */
+  public T createTransferFunction() {
+    return atypeFactory.createFlowTransferFunction(this);
+  }
+
+  /**
+   * Returns an empty store of the appropriate type.
+   *
+   * @return an empty store of the appropriate type
+   */
+  public abstract S createEmptyStore(boolean sequentialSemantics);
+
+  /**
+   * Returns an identical copy of the store {@code s}.
+   *
+   * @return an identical copy of the store {@code s}
+   */
+  public abstract S createCopiedStore(S s);
+
+  /**
+   * Creates an abstract value from the annotated type mirror. The value contains the set of primary
+   * annotations on the type; unless, the type is an AnnotatedWildcardType. In that case, the
+   * annotations in the created value are the primary annotations on the extends bound. See {@link
+   * CFAbstractValue} for an explanation.
+   *
+   * @param type the type to convert into an abstract value
+   * @return an abstract value containing the given annotated {@code type}
+   */
+  public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
+    Set<AnnotationMirror> annos;
+    if (type.getKind() == TypeKind.WILDCARD) {
+      annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
+    } else {
+      annos = type.getAnnotations();
     }
+    return createAbstractValue(annos, type.getUnderlyingType());
+  }
 
-    protected CFAbstractAnalysis(
-            BaseTypeChecker checker,
-            GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-            List<Pair<VariableElement, V>> fieldValues) {
-        this(
-                checker,
-                factory,
-                fieldValues,
-                factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
+  /**
+   * Returns an abstract value containing the given {@code annotations} and {@code underlyingType}.
+   * Returns null if the annotation set has missing annotations.
+   *
+   * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
+   */
+  public abstract @Nullable V createAbstractValue(
+      Set<AnnotationMirror> annotations, TypeMirror underlyingType);
+
+  /** Default implementation for {@link #createAbstractValue(Set, TypeMirror)}. */
+  public CFValue defaultCreateAbstractValue(
+      CFAbstractAnalysis<CFValue, ?, ?> analysis,
+      Set<AnnotationMirror> annotations,
+      TypeMirror underlyingType) {
+    if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
+      return null;
     }
+    return new CFValue(analysis, annotations, underlyingType);
+  }
 
-    public void performAnalysis(ControlFlowGraph cfg, List<Pair<VariableElement, V>> fieldValues) {
-        this.fieldValues.clear();
-        this.fieldValues.addAll(fieldValues);
-        super.performAnalysis(cfg);
-    }
+  public TypeHierarchy getTypeHierarchy() {
+    return typeHierarchy;
+  }
 
-    public List<Pair<VariableElement, V>> getFieldValues() {
-        return fieldValues;
-    }
+  public GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
+      getTypeFactory() {
+    return atypeFactory;
+  }
 
-    /**
-     * Returns the transfer function to be used by the analysis.
-     *
-     * @return the transfer function to be used by the analysis
-     */
-    public T createTransferFunction() {
-        return atypeFactory.createFlowTransferFunction(this);
-    }
+  /**
+   * Returns an abstract value containing an annotated type with the annotation {@code anno}, and
+   * 'top' for all other hierarchies. The underlying type is {@code underlyingType}.
+   */
+  public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
+    QualifierHierarchy hierarchy = getTypeFactory().getQualifierHierarchy();
+    Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+    annos.addAll(hierarchy.getTopAnnotations());
+    AnnotationMirror f = hierarchy.findAnnotationInSameHierarchy(annos, anno);
+    annos.remove(f);
+    annos.add(anno);
+    return createAbstractValue(annos, underlyingType);
+  }
 
-    /**
-     * Returns an empty store of the appropriate type.
-     *
-     * @return an empty store of the appropriate type
-     */
-    public abstract S createEmptyStore(boolean sequentialSemantics);
+  /**
+   * Get the types utility.
+   *
+   * @return {@link #types}
+   */
+  public Types getTypes() {
+    return types;
+  }
 
-    /**
-     * Returns an identical copy of the store {@code s}.
-     *
-     * @return an identical copy of the store {@code s}
-     */
-    public abstract S createCopiedStore(S s);
-
-    /**
-     * Creates an abstract value from the annotated type mirror. The value contains the set of
-     * primary annotations on the type; unless, the type is an AnnotatedWildcardType. In that case,
-     * the annotations in the created value are the primary annotations on the extends bound. See
-     * {@link CFAbstractValue} for an explanation.
-     *
-     * @param type the type to convert into an abstract value
-     * @return an abstract value containing the given annotated {@code type}
-     */
-    public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
-        Set<AnnotationMirror> annos;
-        if (type.getKind() == TypeKind.WILDCARD) {
-            annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
-        } else {
-            annos = type.getAnnotations();
-        }
-        return createAbstractValue(annos, type.getUnderlyingType());
-    }
-
-    /**
-     * Returns an abstract value containing the given {@code annotations} and {@code
-     * underlyingType}. Returns null if the annotation set has missing annotations.
-     *
-     * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
-     */
-    public abstract @Nullable V createAbstractValue(
-            Set<AnnotationMirror> annotations, TypeMirror underlyingType);
-
-    /** Default implementation for {@link #createAbstractValue(Set, TypeMirror)}. */
-    public CFValue defaultCreateAbstractValue(
-            CFAbstractAnalysis<CFValue, ?, ?> analysis,
-            Set<AnnotationMirror> annotations,
-            TypeMirror underlyingType) {
-        if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
-            return null;
-        }
-        return new CFValue(analysis, annotations, underlyingType);
-    }
-
-    public TypeHierarchy getTypeHierarchy() {
-        return typeHierarchy;
-    }
-
-    public GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
-            getTypeFactory() {
-        return atypeFactory;
-    }
-
-    /**
-     * Returns an abstract value containing an annotated type with the annotation {@code anno}, and
-     * 'top' for all other hierarchies. The underlying type is {@code underlyingType}.
-     */
-    public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
-        QualifierHierarchy hierarchy = getTypeFactory().getQualifierHierarchy();
-        Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
-        annos.addAll(hierarchy.getTopAnnotations());
-        AnnotationMirror f = hierarchy.findAnnotationInSameHierarchy(annos, anno);
-        annos.remove(f);
-        annos.add(anno);
-        return createAbstractValue(annos, underlyingType);
-    }
-
-    /**
-     * Get the types utility.
-     *
-     * @return {@link #types}
-     */
-    public Types getTypes() {
-        return types;
-    }
-
-    /**
-     * Get the processing environment.
-     *
-     * @return {@link #env}
-     */
-    public ProcessingEnvironment getEnv() {
-        return env;
-    }
+  /**
+   * Get the processing environment.
+   *
+   * @return {@link #env}
+   */
+  public ProcessingEnvironment getEnv() {
+    return env;
+  }
 }

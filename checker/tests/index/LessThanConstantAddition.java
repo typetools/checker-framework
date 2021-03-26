@@ -2,9 +2,9 @@
 
 public class LessThanConstantAddition {
 
-    public static void checkedPow(int b) {
-        if (b <= 2) {
-            int c = (int) b;
-        }
+  public static void checkedPow(int b) {
+    if (b <= 2) {
+      int c = (int) b;
     }
+  }
 }

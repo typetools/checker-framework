@@ -1,4 +1,4 @@
-RequireCheckerPrefix.java:19:29: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+RequireCheckerPrefix.java:19:25: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
 found   : @Initialized @Nullable Object
 required: @UnknownInitialization @NonNull Object
 1 error

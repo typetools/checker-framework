@@ -16,23 +16,23 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
  */
 public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
 
-    protected final AnnotatedTypeFactory typeFactory;
+  protected final AnnotatedTypeFactory typeFactory;
 
-    protected TypeAnnotator(AnnotatedTypeFactory typeFactory) {
-        this.typeFactory = typeFactory;
-    }
+  protected TypeAnnotator(AnnotatedTypeFactory typeFactory) {
+    this.typeFactory = typeFactory;
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>If this method adds annotations to the type of method parameters, then {@link
-     * org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addComputedTypeAnnotations(Element,
-     * AnnotatedTypeMirror)} should be overriden and the same annotations added to the type of
-     * elements with kind {@link javax.lang.model.element.ElementKind#PARAMETER}. Likewise for
-     * return types.
-     */
-    @Override
-    public Void visitExecutable(AnnotatedExecutableType method, Void aVoid) {
-        return super.visitExecutable(method, aVoid);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * <p>If this method adds annotations to the type of method parameters, then {@link
+   * org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addComputedTypeAnnotations(Element,
+   * AnnotatedTypeMirror)} should be overriden and the same annotations added to the type of
+   * elements with kind {@link javax.lang.model.element.ElementKind#PARAMETER}. Likewise for return
+   * types.
+   */
+  @Override
+  public Void visitExecutable(AnnotatedExecutableType method, Void aVoid) {
+    return super.visitExecutable(method, aVoid);
+  }
 }

@@ -7,18 +7,18 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized;
 
 public class CalledMethodsUseValueCheckerTest extends CheckerFrameworkPerDirectoryTest {
-    public CalledMethodsUseValueCheckerTest(List<File> testFiles) {
-        super(
-                testFiles,
-                CalledMethodsChecker.class,
-                "calledmethods-usevaluechecker",
-                "-Anomsgtext",
-                "-AuseValueChecker",
-                "-nowarn");
-    }
+  public CalledMethodsUseValueCheckerTest(List<File> testFiles) {
+    super(
+        testFiles,
+        CalledMethodsChecker.class,
+        "calledmethods-usevaluechecker",
+        "-Anomsgtext",
+        "-AuseValueChecker",
+        "-nowarn");
+  }
 
-    @Parameterized.Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"calledmethods-usevaluechecker"};
-    }
+  @Parameterized.Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"calledmethods-usevaluechecker"};
+  }
 }

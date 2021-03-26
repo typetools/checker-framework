@@ -23,10 +23,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({UnknownVal.class})
 public @interface MatchesRegex {
-    /**
-     * A set of Java regular expressions.
-     *
-     * @return the regular expressions
-     */
-    String[] value();
+  /**
+   * A set of Java regular expressions.
+   *
+   * @return the regular expressions
+   */
+  String[] value();
 }

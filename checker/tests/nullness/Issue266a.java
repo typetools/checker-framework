@@ -4,18 +4,18 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue266a {
-    private final Object mBar;
+  private final Object mBar;
 
-    public Issue266a() {
-        mBar = "test";
-        Runnable runnable =
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        // unexpected [dereference.of.nullable] error here
-                        mBar.toString();
-                    }
-                };
-        runnable.run();
-    }
+  public Issue266a() {
+    mBar = "test";
+    Runnable runnable =
+        new Runnable() {
+          @Override
+          public void run() {
+            // unexpected [dereference.of.nullable] error here
+            mBar.toString();
+          }
+        };
+    runnable.run();
+  }
 }

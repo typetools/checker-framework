@@ -8,60 +8,60 @@ import org.checkerframework.checker.nullness.qual.*;
  */
 @AutoValue
 abstract class AnimalNoSet {
-    abstract String name();
+  abstract String name();
 
-    abstract @Nullable String habitat();
+  abstract @Nullable String habitat();
 
-    abstract int numberOfLegs();
+  abstract int numberOfLegs();
 
-    public String getStr() {
-        return "str";
-    }
+  public String getStr() {
+    return "str";
+  }
 
-    static Builder builder() {
-        return new AutoValue_AnimalNoSet.Builder();
-    }
+  static Builder builder() {
+    return new AutoValue_AnimalNoSet.Builder();
+  }
 
-    @AutoValue.Builder
-    abstract static class Builder {
+  @AutoValue.Builder
+  abstract static class Builder {
 
-        abstract Builder name(String value);
+    abstract Builder name(String value);
 
-        abstract Builder numberOfLegs(int value);
+    abstract Builder numberOfLegs(int value);
 
-        abstract Builder habitat(String value);
+    abstract Builder habitat(String value);
 
-        abstract AnimalNoSet build();
-    }
+    abstract AnimalNoSet build();
+  }
 
-    public static void buildSomethingWrong() {
-        Builder b = builder();
-        b.name("Frank");
-        // :: error: finalizer.invocation.invalid
-        b.build();
-    }
+  public static void buildSomethingWrong() {
+    Builder b = builder();
+    b.name("Frank");
+    // :: error: finalizer.invocation.invalid
+    b.build();
+  }
 
-    public static void buildSomethingRight() {
-        Builder b = builder();
-        b.name("Frank");
-        b.numberOfLegs(4);
-        b.build();
-    }
+  public static void buildSomethingRight() {
+    Builder b = builder();
+    b.name("Frank");
+    b.numberOfLegs(4);
+    b.build();
+  }
 
-    public static void buildSomethingRightIncludeOptional() {
-        Builder b = builder();
-        b.name("Frank");
-        b.numberOfLegs(4);
-        b.habitat("jungle");
-        b.build();
-    }
+  public static void buildSomethingRightIncludeOptional() {
+    Builder b = builder();
+    b.name("Frank");
+    b.numberOfLegs(4);
+    b.habitat("jungle");
+    b.build();
+  }
 
-    public static void buildSomethingWrongFluent() {
-        // :: error: finalizer.invocation.invalid
-        builder().name("Frank").build();
-    }
+  public static void buildSomethingWrongFluent() {
+    // :: error: finalizer.invocation.invalid
+    builder().name("Frank").build();
+  }
 
-    public static void buildSomethingRightFluent() {
-        builder().name("Jim").numberOfLegs(7).build();
-    }
+  public static void buildSomethingRightFluent() {
+    builder().name("Jim").numberOfLegs(7).build();
+  }
 }

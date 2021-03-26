@@ -5,19 +5,19 @@ import org.checkerframework.checker.index.qual.NonNegative;
 
 public class ArrayAssignmentSameLenComplex {
 
-    static class Partial {
-        private final int[] iValues;
+  static class Partial {
+    private final int[] iValues;
 
-        Partial(@NonNegative int n) {
-            iValues = new int[n];
-        }
+    Partial(@NonNegative int n) {
+      iValues = new int[n];
     }
+  }
 
-    private final Partial iBase;
-    private final @IndexFor("iBase.iValues") int iFieldIndex;
+  private final Partial iBase;
+  private final @IndexFor("iBase.iValues") int iFieldIndex;
 
-    ArrayAssignmentSameLenComplex(Partial partial, @IndexFor("#1.iValues") int fieldIndex) {
-        iBase = partial;
-        iFieldIndex = fieldIndex;
-    }
+  ArrayAssignmentSameLenComplex(Partial partial, @IndexFor("#1.iValues") int fieldIndex) {
+    iBase = partial;
+    iFieldIndex = fieldIndex;
+  }
 }

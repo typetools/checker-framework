@@ -1,2 +1,2 @@
-SymbolNotFoundErrors.java:8:5: compiler.err.cant.resolve.location: kindname.class, CCC, , , (compiler.misc.location: kindname.class, SymbolNotFoundErrors, null)
+SymbolNotFoundErrors.java:8:3: compiler.err.cant.resolve.location: kindname.class, CCC, , , (compiler.misc.location: kindname.class, SymbolNotFoundErrors, null)
 1 error

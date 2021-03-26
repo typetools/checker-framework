@@ -6,13 +6,13 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class TernaryNested {
-    Object foo(boolean b) {
-        Object o = b ? "" : (b ? "" : "");
-        return o;
-    }
+  Object foo(boolean b) {
+    Object o = b ? "" : (b ? "" : "");
+    return o;
+  }
 
-    void bar(List<Object> l, boolean b) {
-        Object o = b ? "" : (b ? "" : "");
-        l.add(o);
-    }
+  void bar(List<Object> l, boolean b) {
+    Object o = b ? "" : (b ? "" : "");
+    l.add(o);
+  }
 }

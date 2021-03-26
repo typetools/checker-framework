@@ -2,13 +2,13 @@
 // instead of "enum".
 
 public class DeviceTypeTest {
-    public enum DeviceType {
-        TRACKER;
-    }
+  public enum DeviceType {
+    TRACKER;
+  }
 
-    private final DeviceType deviceType;
+  private final DeviceType deviceType;
 
-    public DeviceTypeTest() {
-        deviceType = DeviceType.valueOf("tracker");
-    }
+  public DeviceTypeTest() {
+    deviceType = DeviceType.valueOf("tracker");
+  }
 }

@@ -4,5 +4,5 @@
 import java.util.*;
 
 public class AnonymousClassField {
-    public static final List foo = new ArrayList<String>() {};
+  public static final List foo = new ArrayList<String>() {};
 }
