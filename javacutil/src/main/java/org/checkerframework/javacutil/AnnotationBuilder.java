@@ -29,6 +29,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -286,7 +287,14 @@ public class AnnotationBuilder {
     public void copyElementValuesFromAnnotation(
             AnnotationMirror valueHolder, String... ignorableElements) {
         Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
-        copyElementValuesFromAnnotation(valueHolder, ignorableElementsSet);
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+                valueHolder.getElementValues().entrySet()) {
+            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
+            if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
+                continue;
+            }
+            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
+        }
     }
 
     /**
@@ -298,14 +306,13 @@ public class AnnotationBuilder {
      * @param ignorableElements the elements that can be safely dropped
      */
     public void copyElementValuesFromAnnotation(
-            AnnotationMirror valueHolder, Set<String> ignorableElements) {
-        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+            AnnotationMirror valueHolder, Set<ExecutableElement> ignorableElements) {
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                 valueHolder.getElementValues().entrySet()) {
-            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-            if (ignorableElements.contains(eltNameToCopy.toString())) {
+            if (ignorableElements.contains(entry.getKey())) {
                 continue;
             }
-            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
+            elementValues.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -349,7 +356,20 @@ public class AnnotationBuilder {
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
         ExecutableElement var = findElement(elementName);
-        TypeMirror expectedType = var.getReturnType();
+        return setValue(var, values);
+    }
+
+    /**
+     * Set the element to the given value.
+     *
+     * @param element the element
+     * @param values the new value for the element
+     * @return this
+     */
+    public AnnotationBuilder setValue(
+            ExecutableElement element, List<? extends @NonNull Object> values) {
+        assertNotBuilt();
+        TypeMirror expectedType = element.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
             throw new BugInCF("value is an array while expected type is not");
         }
@@ -361,7 +381,7 @@ public class AnnotationBuilder {
             avalues.add(createValue(v));
         }
         AnnotationValue aval = createValue(avalues);
-        elementValues.put(var, aval);
+        elementValues.put(element, aval);
         return this;
     }
 
