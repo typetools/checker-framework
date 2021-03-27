@@ -280,35 +280,17 @@ public class SystemUtil {
   }
 
   /**
-   * Replaces every (non-overlapping) match for a regexp.
+   * Replaces every (non-overlapping) match for a regexp. Like {@code String.replaceAll}, but
+   * slightly more efficient because the regex has been pre-compiled.
    *
    * @param s a string in which to replace
    * @param regex a regular expression
    * @param replacement the replacement for each match of the regular expression
    * @return the string, with each match for the regex replaced
    */
-  public static String replaceRegex(String s, String regex, String replacement) {
-    Pattern p = Pattern.compile(regex);
-    return replaceRegex(s, p, replacement);
-  }
-
-  /**
-   * Replaces every (non-overlapping) match for a regexp.
-   *
-   * @param s a string in which to replace
-   * @param p a regular expression
-   * @param replacement the replacement for each match of the regular expression
-   * @return the string, with each match for the regex replaced
-   */
-  public static String replaceRegex(String s, Pattern p, String replacement) {
-    Matcher m = p.matcher(s);
-    // In Java 9+, use StringBuilder instead of StringBuffer.
-    StringBuffer sb = new StringBuffer();
-    while (m.find()) {
-      m.appendReplacement(sb, replacement);
-    }
-    m.appendTail(sb);
-    return sb.toString();
+  public static String replaceAll(String s, Pattern regex, String replacement) {
+    Matcher m = regex.matcher(s);
+    return m.replaceAll(replacement);
   }
 
   ///

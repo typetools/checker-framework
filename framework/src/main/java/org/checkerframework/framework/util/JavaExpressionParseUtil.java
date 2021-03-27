@@ -143,7 +143,7 @@ public class JavaExpressionParseUtil {
       throws JavaExpressionParseException {
 
     String expressionWithParameterNames =
-        SystemUtil.replaceRegex(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
+        SystemUtil.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
       expr = StaticJavaParser.parseExpression(expressionWithParameterNames);
