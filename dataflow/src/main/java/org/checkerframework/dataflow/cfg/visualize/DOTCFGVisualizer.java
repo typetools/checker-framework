@@ -130,6 +130,7 @@ public class DOTCFGVisualizer<
       } else {
         sbDotNodes.append(strBlock).append("\"];");
       }
+      sbDotNodes.append(System.lineSeparator());
     }
     return sbDotNodes.toString();
   }
