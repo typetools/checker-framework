@@ -271,7 +271,8 @@ task cloneAndBuildDependencies(type: Exec, group: 'Build') {
     description 'Clones (or updates) and builds all dependencies'
     executable 'checker/bin-devel/build.sh'
 }
-task maybeCloneAndBuildDependencies(type: Exec) {
+
+task maybeCloneAndBuildDependencies() {
     // No group so it does not show up in the output of `gradlew tasks`
     description 'Clones (or updates) and builds all dependencies if they are not present.'
     onlyIf {
@@ -279,7 +280,28 @@ task maybeCloneAndBuildDependencies(type: Exec) {
         // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
         // the repository does not exist when building checker.jar.
     }
-    executable 'checker/bin-devel/build.sh'
+
+    doFirst {
+        if (file(stubparser).exists()) {
+            exec {
+                workingDir stubparser
+                executable 'git'
+                args = ['pull', '-q']
+                ignoreExitValue = true
+            }
+            exec {
+                workingDir stubparser
+                executable "${stubparser}/.travis-build-without-test.sh"
+            }
+        } else {
+            executable 'checker/bin-devel/build.sh'
+        }
+    }
+    doLast {
+        if (!file(stubparserJar).exists()) {
+            throw new RuntimeException("Can't find stubparser jar: " + stubparserJar)
+        }
+    }
 }
 
 task version(group: 'Documentation') {
