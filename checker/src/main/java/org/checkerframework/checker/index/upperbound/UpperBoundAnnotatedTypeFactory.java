@@ -459,13 +459,20 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
     @Override
     public Void visitLiteral(LiteralTree node, AnnotatedTypeMirror type) {
-      Object value = node.getValue();
-      if ((value instanceof Byte && ((Byte) value).byteValue() < 0)
-          || (value instanceof Short && ((Short) value).shortValue() < 0)
-          || (value instanceof Integer && ((Integer) value).intValue() < 0)
-          || (value instanceof Long && ((Long) value).longValue() < 0)) {
-        // A negative literal is not too large for any array.
-        type.addAnnotation(BOTTOM);
+      // A negative literal is not too large for any array.
+      switch (node.getKind()) {
+        case INT_LITERAL:
+          if (((Integer) node.getValue()).intValue() < 0) {
+            type.addAnnotation(BOTTOM);
+          }
+          break;
+        case LONG_LITERAL:
+          if (((Long) node.getValue()).longValue() < 0) {
+            type.addAnnotation(BOTTOM);
+          }
+          break;
+        default:
+          break;
       }
       return super.visitLiteral(node, type);
     }
