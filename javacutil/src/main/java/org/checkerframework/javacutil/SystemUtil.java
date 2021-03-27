@@ -279,6 +279,37 @@ public class SystemUtil {
     }
   }
 
+  /**
+   * Replaces every (non-overlapping) match for a regexp.
+   *
+   * @param s a string in which to replace
+   * @param regex a regular expression
+   * @param replacement the replacement for each match of the regular expression
+   * @return the string, with each match for the regex replaced
+   */
+  public static String replaceRegex(String s, String regex, String replacement) {
+    Pattern p = Pattern.compile(regex);
+    return replaceRegex(s, p, replacement);
+  }
+
+  /**
+   * Replaces every (non-overlapping) match for a regexp.
+   *
+   * @param s a string in which to replace
+   * @param p a regular expression
+   * @param replacement the replacement for each match of the regular expression
+   * @return the string, with each match for the regex replaced
+   */
+  public static String replaceRegex(String s, Pattern p, String replacement) {
+    Matcher m = p.matcher(s);
+    StringBuilder sb = new StringBuilder();
+    while (m.find()) {
+      m.appendReplacement(sb, replacement);
+    }
+    m.appendTail(sb);
+    return sb.toString();
+  }
+
   ///
   /// Array and collection methods
   ///
