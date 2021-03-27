@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.upperbound;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -454,6 +455,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
       }
       return super.visitMethodInvocation(tree, type);
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree node, AnnotatedTypeMirror type) {
+      Object value = node.getValue();
+      if ((value instanceof Byte && ((Byte) value).byteValue() < 0)
+          || (value instanceof Short && ((Short) value).shortValue() < 0)
+          || (value instanceof Integer && ((Integer) value).intValue() < 0)
+          || (value instanceof Long && ((Long) value).longValue() < 0)) {
+        // A negative literal is not too large for any array.
+        type.addAnnotation(BOTTOM);
+      }
+      return super.visitLiteral(node, type);
     }
 
     /* Handles case 3. */
