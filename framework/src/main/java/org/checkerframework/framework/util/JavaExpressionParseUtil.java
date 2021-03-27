@@ -102,10 +102,16 @@ public class JavaExpressionParseUtil {
    * Parsable replacement for formal parameter references. It is parsable because it is a Java
    * identifier.
    */
-  private static final String PARAMETER_REPLACEMENT = "_param_";
+  private static final String PARAMETER_PREFIX = "_param_";
 
-  /** The length of {@link #PARAMETER_REPLACEMENT}. */
-  private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
+  /** The length of {@link #PARAMETER_PREFIX}. */
+  private static final int PARAMETER_PREFIX_LENGTH = PARAMETER_PREFIX.length();
+
+  /** A pattern that matches the start of a formal parameter in "#2" syntax. */
+  private static Pattern FORMAL_PARAMETER = Pattern.compile("#(\\d)");
+
+  /** The replacement for a formal parameter in "#2" syntax. */
+  private static final String PARAMETER_REPLACEMENT = PARAMETER_PREFIX + "$1";
 
   /**
    * Parses a string to a {@link JavaExpression}.
@@ -136,9 +142,11 @@ public class JavaExpressionParseUtil {
       ProcessingEnvironment env)
       throws JavaExpressionParseException {
 
+    String expressionWithParameterNames =
+        SystemUtil.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
-      expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
+      expr = StaticJavaParser.parseExpression(expressionWithParameterNames);
     } catch (ParseProblemException e) {
       String extra = ".";
       if (!e.getProblems().isEmpty()) {
@@ -170,27 +178,6 @@ public class JavaExpressionParseUtil {
               result, result.getClass()));
     }
     return result;
-  }
-
-  /**
-   * Replaces every occurrence of "#NUMBER" with FormalParameter.PARAMETER_REPLACEMENT + "NUMBER"
-   * where NUMBER is the 1-based index of a formal parameter.
-   *
-   * <p>Note that this does replacement even within strings.
-   *
-   * @param expression a Java expression in which to replace
-   * @return the Java expression, with formal parameter references like "#2" replaced by an
-   *     identifier like "_param_2"
-   */
-  private static String replaceParameterSyntax(String expression) {
-    Pattern p = Pattern.compile("#(\\d)");
-    Matcher m = p.matcher(expression);
-    StringBuffer sb = new StringBuffer();
-    while (m.find()) {
-      m.appendReplacement(sb, PARAMETER_REPLACEMENT + m.group(1));
-    }
-    m.appendTail(sb);
-    return sb.toString();
   }
 
   /**
@@ -473,19 +460,19 @@ public class JavaExpressionParseUtil {
      * JavaExpression for the given parameter; that is, returns an element of {@code parameters}.
      * Otherwise, returns {@code null}.
      *
-     * @param s a String that starts with PARAMETER_REPLACEMENT
+     * @param s a String that starts with PARAMETER_PREFIX
      * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
      *     parameter
      */
     private @Nullable JavaExpression getParameterJavaExpression(String s) {
-      if (!s.startsWith(PARAMETER_REPLACEMENT)) {
+      if (!s.startsWith(PARAMETER_PREFIX)) {
         return null;
       }
       if (parameters == null) {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(s, "no parameters found"));
       }
-      int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
+      int idx = Integer.parseInt(s.substring(PARAMETER_PREFIX_LENGTH));
 
       if (idx == 0) {
         throw new ParseRuntimeException(
