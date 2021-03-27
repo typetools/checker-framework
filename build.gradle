@@ -319,6 +319,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
                 '-AwarnUnneededSuppressions',
         ]
         options.compilerArgs += args
+        memoryMaximumSize = '4g'
 
         if (isJava8) {
             options.compilerArgs += [
