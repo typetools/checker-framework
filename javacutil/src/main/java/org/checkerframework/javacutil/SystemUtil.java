@@ -302,7 +302,8 @@ public class SystemUtil {
    */
   public static String replaceRegex(String s, Pattern p, String replacement) {
     Matcher m = p.matcher(s);
-    StringBuilder sb = new StringBuilder();
+    // In Java 9+, use StringBuilder instead of StringBuffer.
+    StringBuffer sb = new StringBuffer();
     while (m.find()) {
       m.appendReplacement(sb, replacement);
     }
