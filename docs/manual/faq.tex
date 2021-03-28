@@ -1605,6 +1605,8 @@ To improve performance:
   If you compile all files in a large project, you will definitely notice a
   slowdown.  You should structure your build system to make compiling all
   files rare, by declaring dependencies and using caching.
+  (Note: Maven lacks dependency-driven build and caching.  If your project
+  uses Maven, consider switching to a more capable build system such as Gradle.)
   % (Note that some build systems have a bug, in that they unnecessarily always
   % re-run compilation that uses annotation processors.)
 \end{itemize}
