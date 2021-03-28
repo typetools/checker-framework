@@ -36,7 +36,7 @@ dependencies {
     // External dependencies:
     // If you add an external dependency, you must shadow its packages.
     // See the comment in ../build.gradle in the shadowJar block.
-    implementation 'org.plumelib:plume-util:1.4.1'
+    implementation 'org.plumelib:plume-util:1.5.0'
     implementation 'org.plumelib:reflection-util:1.0.3'
     implementation 'io.github.classgraph:classgraph:4.8.103'
 

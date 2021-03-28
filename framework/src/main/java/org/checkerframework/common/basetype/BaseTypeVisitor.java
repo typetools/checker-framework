@@ -129,10 +129,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.ArraysPlume;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -771,7 +772,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               || methodElement.getModifiers().contains(Modifier.NATIVE);
 
       List<String> formalParamNames =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (VariableTree param) -> param.getName().toString(), node.getParameters());
       checkContractsAtMethodDeclaration(node, methodElement, formalParamNames, abstractMethod);
 
@@ -1458,7 +1459,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     List<AnnotatedTypeParameterBounds> paramBounds =
-        SystemUtil.mapList(AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
+        CollectionsPlume.mapList(
+            AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
 
     ExecutableElement method = invokedMethod.getElement();
     CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
@@ -1782,7 +1784,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkVarargs(constructorType, node);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
-        SystemUtil.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
+        CollectionsPlume.mapList(
+            AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
 
     checkTypeArguments(
         node,
@@ -2642,7 +2645,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       String valueTypeString = pair.found;
       String varTypeString = pair.required;
       checker.reportError(
-          valueTree, errorKey, SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
+          valueTree, errorKey, ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
     }
   }
 

@@ -60,10 +60,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual
@@ -1197,7 +1197,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       self = new Unknown(tree);
     }
 
-    return SystemUtil.mapList(
+    return CollectionsPlume.mapList(
         expression -> parseExpressionString(expression, currentPath, self), expressions);
   }
 
