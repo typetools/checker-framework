@@ -476,8 +476,7 @@ public class JavaExpressionParseUtil {
       if (idx == 0) {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
-                "#0",
-                "\"this\" should be used for the receiver or \"#1\" for the first formal parameter"));
+                "#0", "Use \"this\" for the receiver or \"#1\" for the first formal parameter"));
       }
       if (idx > parameters.size()) {
         throw new ParseRuntimeException(
