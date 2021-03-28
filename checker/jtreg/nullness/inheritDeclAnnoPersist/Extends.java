@@ -35,8 +35,10 @@ public class Extends {
 
 class TestWrapper {
   public static String wrap(String... method) {
-    return String.join(
-        System.lineSeparator(),
-        CollectionsPlume.concatenate("class Test extends Super {", method, "}"));
+    return "class Test extends Super {"
+        + System.lineSeparator()
+        + String.join(System.lineSeparator(), method)
+        + System.lineSeparator()
+        + "}";
   }
 }

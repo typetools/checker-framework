@@ -244,7 +244,7 @@ public class ValueCheckerUtils {
    * @param <T> the type of elements in {@code values}
    * @param values a list of values
    * @return the values, with duplicates removed
-   * @deprecated use {@link CollectionsPlume.withoutDuplicates}
+   * @deprecated use {@code CollectionsPlume.withoutDuplicates}
    */
   @Deprecated // 2020-03-31
   public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
