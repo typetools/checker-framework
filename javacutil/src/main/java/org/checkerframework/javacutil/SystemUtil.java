@@ -279,6 +279,20 @@ public class SystemUtil {
     }
   }
 
+  /**
+   * Replaces every (non-overlapping) match for a regexp. Like {@code String.replaceAll}, but
+   * slightly more efficient because the regex has been pre-compiled.
+   *
+   * @param s a string in which to replace
+   * @param regex a regular expression
+   * @param replacement the replacement for each match of the regular expression
+   * @return the string, with each match for the regex replaced
+   */
+  public static String replaceAll(String s, Pattern regex, String replacement) {
+    Matcher m = regex.matcher(s);
+    return m.replaceAll(replacement);
+  }
+
   ///
   /// Array and collection methods
   ///
