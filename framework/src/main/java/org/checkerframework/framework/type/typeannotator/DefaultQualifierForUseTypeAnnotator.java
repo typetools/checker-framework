@@ -29,7 +29,11 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   /** The NoDefaultQualifierForUse.value field/element. */
   private ExecutableElement noDefaultQualifierForUseValueElement;
 
-  /** Creates an DefaultQualifierForUseTypeAnnotator for {@code typeFactory} */
+  /**
+   * Creates an DefaultQualifierForUseTypeAnnotator for {@code typeFactory}.
+   *
+   * @param typeFactory the type factory
+   */
   public DefaultQualifierForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
     super(typeFactory);
     ProcessingEnvironment processingEnv = typeFactory.getProcessingEnv();
