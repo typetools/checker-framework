@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -16,6 +18,7 @@ import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -32,7 +35,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -274,14 +276,20 @@ public class AnnotationBuilder {
    * doesn't exist in the annotation to be built, an error is raised unless the element is specified
    * in {@code ignorableElements}.
    *
-   * @param valueHolder the annotation that holds the values to be copied
-   * @param ignorableElements the elements that can be safely dropped
+   * @param other the annotation that holds the values to be copied; need not be an annotation of
+   *     the same type of the one being build
+   * @param ignorableElements the name of the elements of {@code other} that can be safely dropped
    */
-  public void copyElementValuesFromAnnotation(
-      AnnotationMirror valueHolder, String... ignorableElements) {
-    List<ExecutableElement> elements =
-        CollectionsPlume.mapList(this::findElement, ignorableElements);
-    copyElementValuesFromAnnotation(valueHolder, elements);
+  public void copyElementValuesFromAnnotation(AnnotationMirror other, String... ignorableElements) {
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+        other.getElementValues().entrySet()) {
+      Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
+      Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
+      if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
+        continue;
+      }
+      elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
+    }
   }
 
   /**
@@ -289,7 +297,8 @@ public class AnnotationBuilder {
    * doesn't exist in the annotation to be built, an error is raised unless the element is specified
    * in {@code ignorableElements}.
    *
-   * @param valueHolder the annotation that holds the values to be copied
+   * @param valueHolder the annotation that holds the values to be copied; must be the same type as
+   *     the annotation being built
    * @param ignorableElements the elements that can be safely dropped
    */
   public void copyElementValuesFromAnnotation(
