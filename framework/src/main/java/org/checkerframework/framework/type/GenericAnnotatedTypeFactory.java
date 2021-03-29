@@ -2138,7 +2138,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Adds default qualifiers bases on the underlying type of {@code type} to {@code type}. If {@code
+   * Adds default qualifiers based on the underlying type of {@code type} to {@code type}. If {@code
    * element} is a local variable, then the defaults are not added.
    *
    * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link
