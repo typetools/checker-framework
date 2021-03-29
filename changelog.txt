@@ -31,6 +31,9 @@ Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
 class, the method `compare` was renamed `defaultAction`. The method `combineRs`
 was replaced by `reduce`.
 
+Deprecated method `AnnotationUtils.getElementValuesWithDefaults`: use a
+method that takes an `ExecutableElement` instead.
+
 Removed deprecated `PluginUtil` class.
 
 Removed methods:
