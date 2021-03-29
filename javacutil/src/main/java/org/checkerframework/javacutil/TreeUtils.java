@@ -77,6 +77,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 
 /**
@@ -1193,7 +1194,7 @@ public final class TreeUtils {
    */
   public static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
       List<? extends AnnotationTree> annoTrees) {
-    return SystemUtil.mapList(TreeUtils::annotationFromAnnotationTree, annoTrees);
+    return CollectionsPlume.mapList(TreeUtils::annotationFromAnnotationTree, annoTrees);
   }
 
   /**

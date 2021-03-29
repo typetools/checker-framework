@@ -52,10 +52,10 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
@@ -697,7 +697,7 @@ public class DependentTypesHelper {
     builder.copyElementValuesFromAnnotation(originalAnno, elementMap.keySet());
     for (Map.Entry<String, List<JavaExpression>> entry : elementMap.entrySet()) {
       String value = entry.getKey();
-      List<String> strings = SystemUtil.mapList(JavaExpression::toString, entry.getValue());
+      List<String> strings = CollectionsPlume.mapList(JavaExpression::toString, entry.getValue());
       builder.setValue(value, strings);
     }
     return builder.build();

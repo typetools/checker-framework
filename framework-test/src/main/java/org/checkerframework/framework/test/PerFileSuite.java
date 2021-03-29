@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -21,6 +20,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
+import org.plumelib.util.CollectionsPlume;
 
 // TODO: large parts of this file are the same as PerDirectorySuite.java.
 // Reduce duplication by moving common parts to an abstract class.
@@ -85,7 +85,7 @@ public class PerFileSuite extends Suite {
     }
 
     List<Object[]> argumentLists =
-        SystemUtil.mapList((File javaFile) -> new Object[] {javaFile}, javaFiles);
+        CollectionsPlume.mapList((File javaFile) -> new Object[] {javaFile}, javaFiles);
 
     return argumentLists;
   }

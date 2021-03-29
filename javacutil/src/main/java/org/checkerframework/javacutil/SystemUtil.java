@@ -41,7 +41,9 @@ public class SystemUtil {
    * @param key system property to check
    * @return true if the system property is set to "true". Return false if the system property is
    *     not set or is set to "false". Otherwise, errs.
+   * @deprecated use UtilPlume.getBooleanSystemProperty
    */
+  @Deprecated // 2021-03-28
   public static boolean getBooleanSystemProperty(String key) {
     return Boolean.parseBoolean(System.getProperty(key, "false"));
   }
@@ -53,7 +55,9 @@ public class SystemUtil {
    * @param key system property to check
    * @param defaultValue value to use if the property is not set
    * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
+   * @deprecated use UtilPlume.getBooleanSystemProperty
    */
+  @Deprecated // 2021-03-28
   public static boolean getBooleanSystemProperty(String key, boolean defaultValue) {
     String value = System.getProperty(key);
     if (value == null) {
@@ -162,13 +166,15 @@ public class SystemUtil {
 
   /**
    * Creates a conjunction or disjunction, like "a", "a or b", and "a, b, or c". Obeys the "serial
-   * comma" or "Oxford comma" rule and puts a comma after every element when the list has size 3 or
-   * larger.
+   * comma" or "Oxford comma" rule: when the list has size 3 or larger, puts a comma after every
+   * element but the last.
    *
    * @param conjunction the conjunction word, like "and" or "or"
    * @param elements the elements of the conjunction or disjunction
    * @return a conjunction or disjunction string
+   * @deprecated use StringsPlume.conjuction
    */
+  @Deprecated // 2021-03-28
   public static String conjunction(String conjunction, List<?> elements) {
     int size = elements.size();
     if (size == 0) {
@@ -194,7 +200,9 @@ public class SystemUtil {
    * @param <T> the type of elements in {@code values}
    * @param values a list of values
    * @return the values, with duplicates removed
+   * @deprecated use CollectionsPlume.withoutDuplicates
    */
+  @Deprecated // 2021-03-28
   public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
     // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
     if (isSortedNoDuplicates(values)) {
@@ -215,7 +223,9 @@ public class SystemUtil {
    * @param <T> the component type of the list
    * @param values a list
    * @return true if the list is sorted
+   * @deprecated use CollectionsPlume.isSorted
    */
+  @Deprecated // 2021-03-28
   public static <T extends Comparable<T>> boolean isSorted(List<T> values) {
     if (values.isEmpty() || values.size() == 1) {
       return true;
@@ -250,7 +260,9 @@ public class SystemUtil {
    * @param <T> the component type of the list
    * @param values a list
    * @return true if the list is sorted and has no duplicates
+   * @deprecated use CollectionsPlume.isSortedNoDuplicates
    */
+  @Deprecated // 2021-03-28
   public static <T extends Comparable<T>> boolean isSortedNoDuplicates(List<T> values) {
     if (values.isEmpty() || values.size() == 1) {
       return true;
@@ -287,7 +299,9 @@ public class SystemUtil {
    * @param regex a regular expression
    * @param replacement the replacement for each match of the regular expression
    * @return the string, with each match for the regex replaced
+   * @deprecated use StringsPlume.relpaceall
    */
+  @Deprecated // 2021-03-28
   public static String replaceAll(String s, Pattern regex, String replacement) {
     Matcher m = regex.matcher(s);
     return m.replaceAll(replacement);
@@ -304,7 +318,9 @@ public class SystemUtil {
    * @param array1 the first array
    * @param array2 the second array
    * @return a new array containing the contents of the given arrays, in order
+   * @deprecated use StringsPlume.concatenate
    */
+  @Deprecated // 2021-03-28
   @SuppressWarnings("unchecked")
   public static <T> T[] concatenate(T[] array1, T... array2) {
     @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
@@ -320,7 +336,9 @@ public class SystemUtil {
    * @param list1 the first list
    * @param list2 the second list
    * @return a new list containing the contents of the given lists, in order
+   * @deprecated use StringsPlume.concatenate
    */
+  @Deprecated // 2021-03-28
   @SuppressWarnings("unchecked")
   public static <T> List<T> concatenate(Collection<T> list1, Collection<T> list2) {
     List<T> result = new ArrayList<>(list1.size() + list2.size());
@@ -336,7 +354,9 @@ public class SystemUtil {
    * @param list the list
    * @param lastElt the new last elemeent
    * @return a new list containing the list elements and the last element, in that order
+   * @deprecated use StringsPlume.append
    */
+  @Deprecated // 2021-03-28
   @SuppressWarnings("unchecked")
   public static <T> List<T> append(Collection<T> list, T lastElt) {
     List<T> result = new ArrayList<>(list.size() + 1);
@@ -357,7 +377,9 @@ public class SystemUtil {
    * @param f a function
    * @param iterable an iterable
    * @return a list of the results of applying {@code f} to the elements of {@code iterable}
+   * @deprecated use CollectionsPlume.mapList
    */
+  @Deprecated // 2021-03-28
   public static <
           @KeyForBottom FROM extends @UnknownKeyFor Object,
           @KeyForBottom TO extends @UnknownKeyFor Object>
@@ -398,7 +420,9 @@ public class SystemUtil {
    * @param f a function
    * @param a an array
    * @return a list of the results of applying {@code f} to the elements of {@code a}
+   * @deprecated use ArraysPlume.mapList
    */
+  @Deprecated // 2021-03-28
   public static <
           @KeyForBottom FROM extends @UnknownKeyFor Object,
           @KeyForBottom TO extends @UnknownKeyFor Object>
@@ -419,7 +443,9 @@ public class SystemUtil {
    * @param n the number of elements in the returned array
    * @param o the element to appear repeatedly in the returned array; must not be null
    * @return an array consisting of n copies of the specified object
+   * @deprecated use ArraysPlume.nCopies
    */
+  @Deprecated // 2021-03-28
   public static <T extends Object> T[] nCopies(int n, T o) {
     @SuppressWarnings("unchecked")
     T[] result = (T[]) Array.newInstance(o.getClass(), n);
@@ -434,7 +460,9 @@ public class SystemUtil {
    * @param array the array
    * @param lastElt the new last elemeent
    * @return a new array containing the array elements and the last element, in that order
+   * @deprecated use ArraysPlume.append
    */
+  @Deprecated // 2021-03-28
   @SuppressWarnings("unchecked")
   public static <T> T[] append(T[] array, T lastElt) {
     @SuppressWarnings({"unchecked", "nullness:assignment.type.incompatible"})
@@ -451,6 +479,7 @@ public class SystemUtil {
    * @param arr2 an array
    * @return true if the arrays contain the same contents
    */
+  @Deprecated // 2021-03-28
   public static <T> boolean sameContents(T[] arr1, T[] arr2) {
     List<T> list1 = Arrays.asList(arr1);
     List<T> list2 = Arrays.asList(arr2);

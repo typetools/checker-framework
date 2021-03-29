@@ -68,9 +68,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -142,7 +143,7 @@ public class JavaExpressionParseUtil {
       throws JavaExpressionParseException {
 
     String expressionWithParameterNames =
-        SystemUtil.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
+        StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
       expr = StaticJavaParser.parseExpression(expressionWithParameterNames);
@@ -681,7 +682,7 @@ public class JavaExpressionParseUtil {
 
       // parse argument list
       List<JavaExpression> arguments =
-          SystemUtil.mapList(argument -> argument.accept(this, null), expr.getArguments());
+          CollectionsPlume.mapList(argument -> argument.accept(this, null), expr.getArguments());
 
       ExecutableElement methodElement;
       try {
@@ -752,7 +753,7 @@ public class JavaExpressionParseUtil {
         Resolver resolver)
         throws JavaExpressionParseException {
 
-      List<TypeMirror> argumentTypes = SystemUtil.mapList(JavaExpression::getType, arguments);
+      List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
 
       if (receiverType.getKind() == TypeKind.ARRAY) {
         ExecutableElement element =
@@ -838,7 +839,7 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
       List<JavaExpression> dimensions =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (ArrayCreationLevel dimension) ->
                   dimension.getDimension().isPresent()
                       ? dimension.getDimension().get().accept(this, aVoid)
@@ -848,7 +849,7 @@ public class JavaExpressionParseUtil {
       List<JavaExpression> initializers;
       if (expr.getInitializer().isPresent()) {
         initializers =
-            SystemUtil.mapList(
+            CollectionsPlume.mapList(
                 (Expression initializer) -> initializer.accept(this, null),
                 expr.getInitializer().get().getValues());
       } else {

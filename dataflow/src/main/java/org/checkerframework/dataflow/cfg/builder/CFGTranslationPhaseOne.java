@@ -169,12 +169,12 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -2867,14 +2867,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     assert dimensions != null;
 
     List<Node> dimensionNodes =
-        SystemUtil.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
+        CollectionsPlume.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
 
     List<Node> initializerNodes;
     if (initializers == null) {
       initializerNodes = Collections.emptyList();
     } else {
       initializerNodes =
-          SystemUtil.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
+          CollectionsPlume.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
     }
 
     Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
@@ -3052,7 +3052,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             tree, "start of try statement #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
     List<Pair<TypeMirror, Label>> catchLabels =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (CatchTree c) -> {
               return Pair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label());
             },
