@@ -442,7 +442,13 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return builder.build();
     }
 
-    /** Returns the value of a PartialRegex annotation, if there is one in {@code type}. */
+    /**
+     * Returns the {@code value} element of a {@code @PartialRegex} annotation, if there is one in
+     * {@code type}.
+     *
+     * @param type a type
+     * @return the {@code value} element of a {@code @PartialRegex} annotation, or "" if none
+     */
     private String getPartialRegexValue(AnnotatedTypeMirror type) {
       AnnotationMirror partialRegexAnno = type.getAnnotation(PartialRegex.class);
       if (partialRegexAnno == null) {
