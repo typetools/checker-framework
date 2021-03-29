@@ -83,6 +83,8 @@ import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionScanner;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -121,7 +123,6 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -129,10 +130,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.ArraysPlume;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -771,7 +773,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               || methodElement.getModifiers().contains(Modifier.NATIVE);
 
       List<String> formalParamNames =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (VariableTree param) -> param.getName().toString(), node.getParameters());
       checkContractsAtMethodDeclaration(node, methodElement, formalParamNames, abstractMethod);
 
@@ -1033,32 +1035,44 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             formalParamNames.indexOf(expressionString) + 1);
       }
 
-      checkParametersAreEffectivelyFinal(methodTree, methodElement, expressionString);
+      checkParametersAreEffectivelyFinal(methodTree, exprJe);
     }
   }
 
   /**
-   * Check that the parameters used in {@code stringExpr} are effectively final for method {@code
-   * method}.
+   * Scans a {@link JavaExpression} and adds all the parameters in the {@code JavaExpression} to the
+   * passed set.
+   */
+  private final JavaExpressionScanner<Set<Element>> findParameters =
+      new JavaExpressionScanner<Set<Element>>() {
+        @Override
+        protected Void visitLocalVariable(LocalVariable localVarExpr, Set<Element> parameters) {
+          if (localVarExpr.getElement().getKind() == ElementKind.PARAMETER) {
+            parameters.add(localVarExpr.getElement());
+          }
+          return super.visitLocalVariable(localVarExpr, parameters);
+        }
+      };
+  /**
+   * Check that the parameters used in {@code javaExpression} are effectively final for method
+   * {@code method}.
    *
    * @param methodDeclTree a method declaration
-   * @param method the method
-   * @param stringExpr a Java expression
+   * @param javaExpression a Java expression
    */
   private void checkParametersAreEffectivelyFinal(
-      MethodTree methodDeclTree, ExecutableElement method, String stringExpr) {
+      MethodTree methodDeclTree, JavaExpression javaExpression) {
     // check that all parameters used in the expression are
     // effectively final, so that they cannot be modified
-    List<Integer> parameterIndices = JavaExpressionParseUtil.parameterIndices(stringExpr);
-    for (Integer idx : parameterIndices) {
-      if (idx > method.getParameters().size()) {
-        // If the index is too big, a parse error was issued in
-        // checkContractsAtMethodDeclaration.
-        continue;
-      }
-      VariableElement parameter = method.getParameters().get(idx - 1);
+    Set<Element> parameters = new HashSet<>(1);
+    findParameters.scan(javaExpression, parameters);
+    for (Element parameter : parameters) {
       if (!ElementUtils.isEffectivelyFinal(parameter)) {
-        checker.reportError(methodDeclTree, "flowexpr.parameter.not.final", "#" + idx, stringExpr);
+        checker.reportError(
+            methodDeclTree,
+            "flowexpr.parameter.not.final",
+            parameter.getSimpleName(),
+            javaExpression);
       }
     }
   }
@@ -1458,7 +1472,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     List<AnnotatedTypeParameterBounds> paramBounds =
-        SystemUtil.mapList(AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
+        CollectionsPlume.mapList(
+            AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
 
     ExecutableElement method = invokedMethod.getElement();
     CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
@@ -1782,7 +1797,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkVarargs(constructorType, node);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
-        SystemUtil.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
+        CollectionsPlume.mapList(
+            AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
 
     checkTypeArguments(
         node,
@@ -2642,7 +2658,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       String valueTypeString = pair.found;
       String varTypeString = pair.required;
       checker.reportError(
-          valueTree, errorKey, SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
+          valueTree, errorKey, ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
     }
   }
 
@@ -4246,7 +4262,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>This method is not called if {@link
    * BaseTypeValidator#shouldCheckTopLevelDeclaredOrPrimitiveType(AnnotatedTypeMirror, Tree)}
    * returns false -- by default, it is not called on the top level for locals and expressions. To
-   * enforce a type validity property everwhere, override methods such as {@link
+   * enforce a type validity property everywhere, override methods such as {@link
    * BaseTypeValidator#visitDeclared} rather than this method.
    *
    * @param declarationType the type of the class (TypeElement)

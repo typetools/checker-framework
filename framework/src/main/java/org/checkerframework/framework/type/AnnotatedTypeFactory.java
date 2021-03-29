@@ -118,7 +118,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
@@ -126,6 +125,8 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.ATypeElement;
 
@@ -635,7 +636,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             "The @Target meta-annotation on type qualifier "
                 + annotationClass.toString()
                 + " must not contain "
-                + SystemUtil.conjunction("or", badTargetValues)
+                + StringsPlume.conjunction("or", badTargetValues)
                 + ".";
         throw new TypeSystemError(msg);
       }
@@ -1701,7 +1702,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     List<@CanonicalName Name> classes =
         AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
     List<AnnotationMirror> qualifiers =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (Name name) ->
                 // Calling AnnotationBuilder.fromName (which ignores
                 // elements/fields) is acceptable because @FieldInvariant does not
@@ -2419,7 +2420,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       typeargs = Collections.emptyList();
     } else {
       typeargs =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (AnnotatedTypeVariable tv) -> typeVarMapping.get(tv.getUnderlyingType()),
               con.getTypeVariables());
       con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);

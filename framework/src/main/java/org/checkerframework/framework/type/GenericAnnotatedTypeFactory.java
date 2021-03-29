@@ -112,13 +112,13 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -602,7 +602,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // If an analysis couldn't be loaded reflectively, return the default.
     List<Pair<VariableElement, CFValue>> tmp =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (Pair<VariableElement, Value> fieldVal) ->
                 Pair.of(fieldVal.first, (CFValue) fieldVal.second),
             fieldValues);
@@ -2138,7 +2138,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Adds default qualifiers bases on the underlying type of {@code type} to {@code type}. If {@code
+   * Adds default qualifiers based on the underlying type of {@code type} to {@code type}. If {@code
    * element} is a local variable, then the defaults are not added.
    *
    * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link

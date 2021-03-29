@@ -44,9 +44,9 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -825,7 +825,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
   protected Object processArg(Object arg) {
     if (arg instanceof Collection) {
       Collection<?> carg = (Collection<?>) arg;
-      return SystemUtil.mapList(this::processArg, carg);
+      return CollectionsPlume.mapList(this::processArg, carg);
     } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
       return getTypeFactory()
           .getAnnotationFormatter()

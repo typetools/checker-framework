@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.expression;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class calls {@link #convert(JavaExpression)} on each subexpression of the {@link
@@ -34,7 +34,7 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    * @return the list of converted expressions
    */
   public List<@PolyNull JavaExpression> convert(List<@PolyNull JavaExpression> list) {
-    return SystemUtil.mapList(
+    return CollectionsPlume.mapList(
         (@PolyNull JavaExpression expression) -> {
           // Can't use a ternary operator because of:
           // https://github.com/typetools/checker-framework/issues/1170
