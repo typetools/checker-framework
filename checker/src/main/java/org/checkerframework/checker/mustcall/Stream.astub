@@ -1,0 +1,281 @@
+package java.io;
+
+import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
+
+class DataOutputStream extends FilterOutputStream implements DataOutput {
+    protected int written;
+    @MustCallAlias DataOutputStream(@MustCallAlias OutputStream arg0);
+    void write(int arg0) throws IOException;
+    void write(byte[] arg0, int arg1, int arg2) throws IOException;
+    void flush() throws IOException;
+    void writeBoolean(boolean arg0) throws IOException;
+    void writeByte(int arg0) throws IOException;
+    void writeShort(int arg0) throws IOException;
+    void writeChar(int arg0) throws IOException;
+    void writeInt(int arg0) throws IOException;
+    void writeLong(long arg0) throws IOException;
+    void writeFloat(float arg0) throws IOException;
+    void writeDouble(double arg0) throws IOException;
+    void writeBytes(String arg0) throws IOException;
+    void writeChars(String arg0) throws IOException;
+    void writeUTF(String arg0) throws IOException;
+    int size();
+}
+
+class RandomAccessFile {
+    @MustCallAlias FileChannel getChannel(@MustCallAlias RandomAccessFile this);
+    @MustCallAlias FileDescriptor getFD(@MustCallAlias RandomAccessFile this) throws IOException;
+}
+
+class OutputStream { }
+
+class InputStream { }
+
+class FilterOutputStream extends OutputStream {
+    protected OutputStream out;
+    @MustCallAlias FilterOutputStream(@MustCallAlias OutputStream arg0);
+    void write(int arg0) throws IOException;
+    void write(byte[] arg0) throws IOException;
+    void write(byte[] arg0, int arg1, int arg2) throws IOException;
+    void flush() throws IOException;
+    void close() throws IOException;
+}
+
+class PrintStream extends FilterOutputStream implements Appendable, Closeable {
+    @MustCallAlias PrintStream(@MustCallAlias OutputStream arg0);
+    @MustCallAlias PrintStream(@MustCallAlias OutputStream arg0, boolean arg1);
+    @MustCallAlias PrintStream(@MustCallAlias OutputStream arg0, boolean arg1, String arg2) throws UnsupportedEncodingException;
+    @MustCallAlias PrintStream(@MustCallAlias OutputStream arg0, boolean arg1, Charset arg2);
+    @NotOwning PrintStream printf(String arg0, Object[] arg1);
+    @NotOwning PrintStream printf(Locale arg0, String arg1, Object[] arg2);
+    @NotOwning PrintStream format(String arg0, Object[] arg1);
+    @NotOwning PrintStream format(Locale arg0, String arg1, Object[] arg2);
+    @NotOwning PrintStream append(CharSequence arg0);
+    @NotOwning PrintStream append(CharSequence arg0, int arg1, int arg2);
+    @NotOwning PrintStream append(char arg0);
+}
+
+class PushbackInputStream {
+    @MustCallAlias PushbackInputStream(@MustCallAlias InputStream in);
+    @MustCallAlias PushbackInputStream(@MustCallAlias InputStream in, int size);
+}
+
+class BufferedReader extends Reader {
+    @MustCallAlias BufferedReader(@MustCallAlias Reader arg0, int arg1);
+    @MustCallAlias BufferedReader(@MustCallAlias Reader arg0);
+    int read() throws IOException;
+    int read(char[] arg0, int arg1, int arg2) throws IOException;
+    String readLine() throws IOException;
+    long skip(long arg0) throws IOException;
+    boolean ready() throws IOException;
+    boolean markSupported();
+    void mark(int arg0) throws IOException;
+    void reset() throws IOException;
+    void close() throws IOException;
+    Stream<String> lines();
+}
+
+class BufferedOutputStream extends FilterOutputStream {
+    protected byte[] buf;
+    protected int count;
+    @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
+    @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0, int arg1);
+    void write(int arg0) throws IOException;
+    void write(byte[] arg0, int arg1, int arg2) throws IOException;
+    void flush() throws IOException;
+}
+
+class DataInputStream extends FilterInputStream implements DataInput {
+    @MustCallAlias DataInputStream(@MustCallAlias InputStream arg0);
+}
+
+class FilterInputStream extends InputStream {
+    protected InputStream in;
+    protected @MustCallAlias FilterInputStream(@MustCallAlias InputStream arg0);
+    int read() throws IOException;
+    int read(byte[] arg0) throws IOException;
+    int read(byte[] arg0, int arg1, int arg2) throws IOException;
+    long skip(long arg0) throws IOException;
+    int available() throws IOException;
+    void close() throws IOException;
+    void mark(int arg0);
+    void reset() throws IOException;
+    boolean markSupported();
+}
+
+class BufferedInputStream extends FilterInputStream {
+    protected byte[] buf;
+    protected int count;
+    protected int pos;
+    protected int markpos;
+    protected int marklimit;
+    @MustCallAlias BufferedInputStream(@MustCallAlias InputStream arg0);
+    @MustCallAlias BufferedInputStream(@MustCallAlias InputStream arg0, int arg1);
+    int read() throws IOException;
+    int read(byte[] arg0, int arg1, int arg2) throws IOException;
+    long skip(long arg0) throws IOException;
+    int available() throws IOException;
+    void mark(int arg0);
+    void reset() throws IOException;
+    boolean markSupported();
+    void close() throws IOException;
+}
+
+class FileOutputStream extends OutputStream {
+    // This constructor actually opens a new file (note that java.io.File doesn't need to be closed)
+    // and creates a new obligation.
+    FileOutputStream(String arg0) throws FileNotFoundException;
+    FileOutputStream(String arg0, boolean arg1) throws FileNotFoundException;
+    FileOutputStream(File arg0) throws FileNotFoundException;
+    FileOutputStream(File arg0, boolean arg1) throws FileNotFoundException;
+
+    // These do not - they create aliases to an existing, open file.
+    @MustCallAlias FileOutputStream(@MustCallAlias FileDescriptor arg0);
+    @MustCallAlias FileDescriptor getFD(@MustCallAlias FileOutputStream this) throws IOException;
+    @MustCallAlias FileChannel getChannel(@MustCallAlias FileOutputStream this);
+}
+
+class FileInputStream extends InputStream {
+    // This constructor actually opens a new file (note that java.io.File doesn't need to be closed)
+    // and creates a new obligation.
+    FileInputStream(String arg0) throws FileNotFoundException;
+    FileInputStream(File arg0) throws FileNotFoundException;
+
+    // These do not - they create aliases to an existing, open file.
+    @MustCallAlias FileInputStream(@MustCallAlias FileDescriptor arg0);
+    @MustCallAlias FileDescriptor getFD(@MustCallAlias FileInputStream this) throws IOException;
+    @MustCallAlias FileChannel getChannel(@MustCallAlias FileInputStream this);
+}
+
+class InputStreamReader extends Reader {
+    @MustCallAlias InputStreamReader(@MustCallAlias InputStream arg0);
+    @MustCallAlias InputStreamReader(@MustCallAlias InputStream arg0, String arg1) throws UnsupportedEncodingException;
+    @MustCallAlias InputStreamReader(@MustCallAlias InputStream arg0, Charset arg1);
+    @MustCallAlias InputStreamReader(@MustCallAlias InputStream arg0, CharsetDecoder arg1);
+    String getEncoding();
+    int read() throws IOException;
+    int read(char[] arg0, int arg1, int arg2) throws IOException;
+    boolean ready() throws IOException;
+    void close() throws IOException;
+}
+
+class BufferedWriter extends Writer {
+    @MustCallAlias BufferedWriter(@MustCallAlias Writer arg0);
+    @MustCallAlias BufferedWriter(@MustCallAlias Writer arg0, int arg1);
+    void write(int arg0) throws IOException;
+    void write(char[] arg0, int arg1, int arg2) throws IOException;
+    void write(String arg0, int arg1, int arg2) throws IOException;
+    void newLine() throws IOException;
+    void flush() throws IOException;
+    void close() throws IOException;
+}
+
+class PrintWriter extends Writer {
+    @MustCallAlias PrintWriter(@MustCallAlias Writer arg0);
+    @MustCallAlias PrintWriter(@MustCallAlias Writer arg0, boolean arg1);
+    @MustCallAlias PrintWriter(@MustCallAlias OutputStream arg0);
+    @MustCallAlias PrintWriter(@MustCallAlias OutputStream arg0, boolean arg1);
+    @MustCallAlias PrintWriter(@MustCallAlias OutputStream arg0, boolean arg1, Charset arg2);
+    PrintWriter(String arg0) throws FileNotFoundException;
+    PrintWriter(String arg0, String arg1) throws FileNotFoundException, UnsupportedEncodingException;
+    PrintWriter(String arg0, Charset arg1) throws IOException;
+    @MustCallAlias PrintWriter(@MustCallAlias File arg0) throws FileNotFoundException;
+    @MustCallAlias PrintWriter(@MustCallAlias File arg0, String arg1) throws FileNotFoundException, UnsupportedEncodingException;
+    @MustCallAlias PrintWriter(@MustCallAlias File arg0, Charset arg1) throws IOException;
+    @NotOwning PrintWriter printf(String arg0, Object[] arg1);
+    @NotOwning PrintWriter printf(Locale arg0, String arg1, Object[] arg2);
+    @NotOwning PrintWriter format(String arg0, Object[] arg1);
+    @NotOwning PrintWriter format(Locale arg0, String arg1, Object[] arg2);
+    @NotOwning PrintWriter append(CharSequence arg0);
+    @NotOwning PrintWriter append(CharSequence arg0, int arg1, int arg2);
+    @NotOwning PrintWriter append(char arg0);
+}
+
+class OutputStreamWriter extends Writer {
+    @MustCallAlias OutputStreamWriter(@MustCallAlias OutputStream arg0, String arg1) throws UnsupportedEncodingException;
+    @MustCallAlias OutputStreamWriter(@MustCallAlias OutputStream arg0);
+    @MustCallAlias OutputStreamWriter(@MustCallAlias OutputStream arg0, Charset arg1);
+    @MustCallAlias OutputStreamWriter(@MustCallAlias OutputStream arg0, CharsetEncoder arg1);
+    String getEncoding();
+    void write(int arg0) throws IOException;
+    void write(char[] arg0, int arg1, int arg2) throws IOException;
+    void write(String arg0, int arg1, int arg2) throws IOException;
+    @NotOwning Writer append(CharSequence arg0, int arg1, int arg2) throws IOException;
+    @NotOwning Writer append(CharSequence arg0) throws IOException;
+    void flush() throws IOException;
+    void close() throws IOException;
+}
+
+class Reader { }
+
+class Writer {
+    @NotOwning Writer append(CharSequence arg0) throws IOException;
+    @NotOwning Writer append(CharSequence arg0, int arg1, int arg2) throws IOException;
+    @NotOwning Writer append(char arg0) throws IOException;
+}
+
+class LineNumberReader {
+    @MustCallAlias LineNumberReader(@MustCallAlias Reader in);
+    @MustCallAlias LineNumberReader(@MustCallAlias Reader in);
+}
+
+package java.security;
+
+import org.checkerframework.checker.objectconstruction.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
+
+class DigestOutputStream extends FilterOutputStream {
+    protected MessageDigest digest;
+    @MustCallAlias DigestOutputStream(@MustCallAlias OutputStream arg0, MessageDigest arg1);
+    MessageDigest getMessageDigest();
+    void setMessageDigest(MessageDigest arg0);
+    void write(int arg0) throws IOException;
+    void write(byte[] arg0, int arg1, int arg2) throws IOException;
+    void on(boolean arg0);
+    String toString();
+}
+
+class DigestInputStream extends FilterInputStream {
+    @MustCallAlias DigestInputStream(@MustCallAlias InputStream arg0, MessageDigest arg1);
+}
+
+package java.util;
+
+class Scanner {
+    @MustCallAlias Scanner(@MustCallAlias File source);
+    @MustCallAlias Scanner(@MustCallAlias File source, String charsetName);
+    @MustCallAlias Scanner(@MustCallAlias InputStream in);
+    @MustCallAlias Scanner(@MustCallAlias InputStream source, String charsetName);
+    @MustCallAlias Scanner(@MustCallAlias Path source);
+    @MustCallAlias Scanner(@MustCallAlias Path source, String charsetName);
+    @MustCallAlias Scanner(@MustCallAlias Readable source);
+    @MustCallAlias Scanner(@MustCallAlias ReadableByteChannel source);
+    @MustCallAlias Scanner(@MustCallAlias ReadableByteChannel source, String charsetName);
+    @MustCall({}) Scanner(String source);
+}
+
+class Formatter implements Closeable, Flushable {
+    @PolyMustCall Formatter(@PolyMustCall Appendable arg0);
+    @PolyMustCall Formatter(@PolyMustCall Appendable arg0, Locale arg1);
+    @NotOwning Formatter format(String arg0, Object[] arg1);
+    @NotOwning Formatter format(Locale arg0, String arg1, Object[] arg2);
+}
+
+package java.util.zip;
+
+class CheckedInputStream extends FilterInputStream {
+    @MustCallAlias CheckedInputStream(@MustCallAlias InputStream arg0, Checksum arg1);
+}
+
+class GZIPInputStream extends InflaterInputStream {
+    @MustCallAlias GZIPInputStream​(@MustCallAlias InputStream in);
+    @MustCallAlias GZIPInputStream​(@MustCallAlias InputStream in, int size);
+}
+
+class GZIPOutputStream extends DeflaterOutputStream {
+    @MustCallAlias GZIPOutputStream​(@MustCallAlias OutputStream in);
+    @MustCallAlias GZIPOutputStream​(@MustCallAlias OutputStream in, boolean syncFlush);
+    @MustCallAlias GZIPOutputStream​(@MustCallAlias OutputStream in, int size);
+    @MustCallAlias GZIPOutputStream​(@MustCallAlias OutputStream in, int size, boolean syncFlush);
+}

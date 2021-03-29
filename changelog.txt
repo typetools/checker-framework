@@ -11,6 +11,10 @@ internally during whole-program inference.
 The Optional Checker supports a new annotation `@OptionalBottom` that
 stands for (only) the `null` value.
 
+The MustCall Checker over-approximates the methods that an object must call
+before it is de-allocated. This component checker is intended to be used
+as a subchecker by a resource leak checker, which is coming soon!
+
 **Implementation details:**
 
 A precondition or normal postcondition annotation's `value` element must have

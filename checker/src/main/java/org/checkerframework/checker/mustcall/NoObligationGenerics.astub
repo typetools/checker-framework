@@ -1,0 +1,12 @@
+import org.checkerframework.checker.mustcall.qual.*;
+
+package java.lang.management;
+
+class ManagementFactory {
+  // Declaring as
+  //   <T extends @MustCall({})> T
+  // didn't work; I'm not sure why.
+  public static <T> @MustCall({}) T newPlatformMXBeanProxy(MBeanServerConnection connection,
+                                           String mxbeanName,
+                                           Class<T> mxbeanInterface);
+}

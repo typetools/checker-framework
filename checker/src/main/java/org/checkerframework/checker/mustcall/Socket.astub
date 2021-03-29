@@ -1,0 +1,161 @@
+// DO NOT INCLUDE ANNOTATIONS THAT RELY ON ACCUMULATION FRAMES IN THIS FILE.
+// This file is loaded regardless of the -AnoAccumulationFrames option. All
+// assumptions that rely on the presence of accumulation frames (such as @MustCall({})
+// on unconnected sockets) MUST go in SocketAccumulationFrames.astub. CreatesObligation
+// okay, because the OCC turns that off anyway.
+
+package java.net;
+
+import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.checker.calledmethods.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
+
+class Socket implements Closeable {
+    // @MustCall({}) Socket();
+    // @MustCall({}) Socket(Proxy arg0);
+    protected Socket(SocketImpl arg0) throws SocketException;
+    Socket(String arg0, int arg1) throws UnknownHostException, IOException;
+    Socket(InetAddress arg0, int arg1) throws IOException;
+    Socket(String arg0, int arg1, InetAddress arg2, int arg3) throws IOException;
+    Socket(InetAddress arg0, int arg1, InetAddress arg2, int arg3) throws IOException;
+    @java.lang.Deprecated
+Socket(String arg0, int arg1, boolean arg2) throws IOException;
+    @java.lang.Deprecated
+Socket(InetAddress arg0, int arg1, boolean arg2) throws IOException;
+    @CreatesObligation
+    void connect(SocketAddress arg0) throws IOException;
+    @CreatesObligation
+    void connect(SocketAddress arg0, int arg1) throws IOException;
+    @CreatesObligation
+    void bind(SocketAddress arg0) throws IOException;
+    InetAddress getInetAddress();
+    InetAddress getLocalAddress();
+    int getPort();
+    int getLocalPort();
+    SocketAddress getRemoteSocketAddress();
+    SocketAddress getLocalSocketAddress();
+    @MustCallAlias SocketChannel getChannel(@MustCallAlias Socket this);
+    @MustCallAlias InputStream getInputStream(@MustCallAlias Socket this) throws IOException;
+    @MustCallAlias OutputStream getOutputStream(@MustCallAlias Socket this) throws IOException;
+    void setTcpNoDelay(boolean arg0) throws SocketException;
+    boolean getTcpNoDelay() throws SocketException;
+    void setSoLinger(boolean arg0, int arg1) throws SocketException;
+    int getSoLinger() throws SocketException;
+    void sendUrgentData(int arg0) throws IOException;
+    void setOOBInline(boolean arg0) throws SocketException;
+    boolean getOOBInline() throws SocketException;
+    void setSoTimeout(int arg0) throws SocketException;
+    int getSoTimeout() throws SocketException;
+    void setSendBufferSize(int arg0) throws SocketException;
+    int getSendBufferSize() throws SocketException;
+    void setReceiveBufferSize(int arg0) throws SocketException;
+    int getReceiveBufferSize() throws SocketException;
+    void setKeepAlive(boolean arg0) throws SocketException;
+    boolean getKeepAlive() throws SocketException;
+    void setTrafficClass(int arg0) throws SocketException;
+    int getTrafficClass() throws SocketException;
+    void setReuseAddress(boolean arg0) throws SocketException;
+    boolean getReuseAddress() throws SocketException;
+    void close() throws IOException;
+    void shutdownInput() throws IOException;
+    void shutdownOutput() throws IOException;
+    String toString();
+    boolean isConnected();
+    boolean isBound();
+
+    @EnsuresCalledMethodsIf(expression="this", result=true, methods={"close"})
+    boolean isClosed();
+
+    boolean isInputShutdown();
+    boolean isOutputShutdown();
+    static void setSocketImplFactory(SocketImplFactory arg0) throws IOException;
+    void setPerformancePreferences(int arg0, int arg1, int arg2);
+    <T> Socket setOption(SocketOption<T> arg0, T arg1) throws IOException;
+    <T> T getOption(SocketOption<T> arg0) throws IOException;
+    Set<SocketOption<?>> supportedOptions();
+}
+
+class ServerSocket implements Closeable {
+    // @MustCall({}) ServerSocket() throws IOException;
+    ServerSocket(int arg0) throws IOException;
+    ServerSocket(int arg0, int arg1) throws IOException;
+    ServerSocket(int arg0, int arg1, InetAddress arg2) throws IOException;
+    @CreatesObligation
+    void bind(SocketAddress arg0) throws IOException;
+    @CreatesObligation
+    void bind(SocketAddress arg0, int arg1) throws IOException;
+    InetAddress getInetAddress();
+    int getLocalPort();
+    SocketAddress getLocalSocketAddress();
+    Socket accept() throws IOException;
+    protected void implAccept(Socket arg0) throws IOException;
+    void close() throws IOException;
+    @MustCallAlias ServerSocketChannel getChannel(@MustCallAlias ServerSocket this);
+    boolean isBound();
+
+    @EnsuresCalledMethodsIf(expression="this", result=true, methods={"close"})
+    boolean isClosed();
+
+    void setSoTimeout(int arg0) throws SocketException;
+    int getSoTimeout() throws IOException;
+    void setReuseAddress(boolean arg0) throws SocketException;
+    boolean getReuseAddress() throws SocketException;
+    String toString();
+    static void setSocketFactory(SocketImplFactory arg0) throws IOException;
+    void setReceiveBufferSize(int arg0) throws SocketException;
+    int getReceiveBufferSize() throws SocketException;
+    void setPerformancePreferences(int arg0, int arg1, int arg2);
+    <T> ServerSocket setOption(SocketOption<T> arg0, T arg1) throws IOException;
+    <T> T getOption(SocketOption<T> arg0) throws IOException;
+    Set<SocketOption<?>> supportedOptions();
+}
+
+
+package javax.net.ssl;
+
+import org.checkerframework.checker.objectconstruction.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
+
+class SSLSocketFactory extends SocketFactory {
+    @MustCallAlias Socket createSocket(@MustCallAlias Socket arg0, String arg1, int arg2, boolean arg3) throws IOException;
+    @MustCallAlias Socket createSocket(@MustCallAlias Socket arg0, InputStream arg1, boolean arg2) throws IOException;
+}
+
+class SSLSocket { }
+
+class SSLServerSocket { }
+
+package javax.net;
+
+class SocketFactory {
+    // @Owning @MustCall({}) Socket createSocket() throws IOException;
+    @Owning Socket createSocket(String arg0, int arg1) throws IOException, UnknownHostException;
+    @Owning Socket createSocket(String arg0, int arg1, InetAddress arg2, int arg3) throws IOException, UnknownHostException;
+    @Owning Socket createSocket(InetAddress arg0, int arg1) throws IOException;
+    @Owning Socket createSocket(InetAddress arg0, int arg1, InetAddress arg2, int arg3) throws IOException;
+}
+
+class ServerSocketFactory {
+    protected ServerSocketFactory();
+    static ServerSocketFactory getDefault();
+    // @Owning @MustCall({}) ServerSocket createServerSocket() throws IOException;
+    @Owning ServerSocket createServerSocket(int arg0) throws IOException;
+    @Owning ServerSocket createServerSocket(int arg0, int arg1) throws IOException;
+    @Owning ServerSocket createServerSocket(int arg0, int arg1, InetAddress arg2) throws IOException;
+}
+
+
+package java.io;
+
+@InheritableMustCall("close")
+public interface Closeable {
+    void close() throws Exception;
+}
+
+package java.lang;
+
+// This produces too much noise, for now. Investigate it later.
+// @MustCall("close")
+public interface AutoCloseable {
+    void close() throws Exception;
+}
