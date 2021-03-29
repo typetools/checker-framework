@@ -1,6 +1,5 @@
 package org.checkerframework.framework.ajava;
 
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -34,7 +33,7 @@ import org.checkerframework.framework.stub.AnnotationFileParser;
 public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   /**
    * Annotations imported by the file, stored as a mapping from names to the TypeElements for the
-   * annotations.
+   * annotations. Contains entries for the simple and fully qualified names of each annotation.
    */
   private Map<String, TypeElement> allAnnotations;
   /** Element utilities. */
@@ -42,8 +41,10 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
   /**
    * Constructs a {@code TypeAnnotationMover}. The {@code allAnnotations} parameter should contain
-   * all the annotations imported by the file to be visited. When examining an annotation in the
-   * file, looks up the name in {@code allAnnotations} to find the TypeElement for the annotation.
+   * all the annotations imported by the file to be visited. There should be two entries for each
+   * annotation: the annotation's simple name and its fully-qualified name both mapped to its
+   * TypeElement. When examining an annotation in the file, looks up the name in {@code
+   * allAnnotations} to find the TypeElement for the annotation.
    *
    * @param allAnnotations mapping from annotation name to TypeElement for the annotations imported
    *     by the file
@@ -122,9 +123,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * @param annosToRemove list of annotations to remove
    */
   private void removeAnnotations(NodeWithAnnotations<?> node, List<AnnotationExpr> annosToRemove) {
-    NodeList<AnnotationExpr> newAnnos = new NodeList<>(node.getAnnotations());
-    newAnnos.removeIf(anno -> annosToRemove.contains(anno));
-    node.setAnnotations(newAnnos);
+    node.getAnnotations().removeAll(annosToRemove);
   }
 
   /**
@@ -211,6 +210,18 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   /**
    * Returns whether {@code type} has a name containing multiple parts separated by dots, e.g.
    * "java.lang.String".
+   *
+   * <p>Annotations should not be moved onto a Type for which this method returns true. A type like
+   * {@code @Anno java.lang.String} is illegal since the annotation should go directly next to the
+   * rightmost part of the fully qualified name, like {@code java.lang. @Anno String}. So if a file
+   * contains a declaration like {@code @Anno java.lang.String myField}, the annotation must belong
+   * to the declaration and not the type.
+   *
+   * <p>If a declaration contains an inner class type like {@code @Anno Outer.Inner myField}, it may
+   * be the case that {@code @Anno} belongs to the type {@code Outer}, not the declaration, and
+   * should be moved, but it's impossible to distinguish this from the above case using only the
+   * JavaParser AST for a file. To be safe, the annotation still shouldn't be moved, but this may
+   * lead to suboptimal formatting placing {@code @Anno} on its own line.
    *
    * @param type a JavaParser type node
    * @return true if {@code type} has a multi-part name
