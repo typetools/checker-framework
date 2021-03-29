@@ -890,7 +890,7 @@ public class AnnotationUtils {
    * rather than names.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
-   * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}.
+   * {@link #getElementValueClassNames(AnnotationMirror, ExecutableElement)}.
    *
    * @param anno the annotation whose field to access; it must be present in the annotation
    * @param annoElement the element/field of {@code anno} whose content is a list of classes
@@ -1176,6 +1176,25 @@ public class AnnotationUtils {
       result[i] = value;
     }
     return result;
+  }
+
+  /**
+   * Get the list of Names of the classes that are referenced by element {@code element}. It fails
+   * if the class wasn't found. Like {@link #getElementValueClassNames}, but returns classes rather
+   * than names.
+   *
+   * <p>This method is intended only for use by the framework. A checker implementation should use
+   * {@link #getElementValueClassNames(AnnotationMirror, ExecutableElement)}.
+   *
+   * @param anno the annotation whose field to access; it must be present in the annotation
+   * @param element the element/field of {@code anno} whose content is a list of classes
+   * @return the names of classes in {@code anno.annoElement}
+   */
+  public static List<@CanonicalName Name> getElementValueClassNames(
+      AnnotationMirror anno, ExecutableElement element) {
+    List<Type.ClassType> la = getElementValueArray(anno, element, Type.ClassType.class);
+    return CollectionsPlume.<Type.ClassType, @CanonicalName Name>mapList(
+        (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
   }
 
   // **********************************************************************

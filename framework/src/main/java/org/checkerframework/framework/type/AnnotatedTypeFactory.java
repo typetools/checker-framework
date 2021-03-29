@@ -204,12 +204,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** The FieldInvariant.qualifier argument/element. */
   @SuppressWarnings("UnusedVariable") // TEMPORARY
   private final ExecutableElement fieldInvariantQualifierElement;
+  /** The HasQualifierParameter.value field/element. */
+  private final ExecutableElement hasQualifierParameterValueElement;
   /** The MethodVal.className argument/element. */
   public final ExecutableElement methodValClassNameElement;
   /** The MethodVal.methodName argument/element. */
   public final ExecutableElement methodValMethodNameElement;
   /** The MethodVal.params argument/element. */
   public final ExecutableElement methodValParamsElement;
+  /** The NoQualifierParameter.value field/element. */
+  private final ExecutableElement noQualifierParameterValueElement;
   /** The RequiresQualifier.expression field/element. */
   final ExecutableElement requiresQualifierExpressionElement;
   /** The RequiresQualifier.List.value field/element. */
@@ -588,10 +592,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
     fieldInvariantQualifierElement =
         TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
+    hasQualifierParameterValueElement =
+        TreeUtils.getMethod(HasQualifierParameter.class, "value", 0, processingEnv);
     methodValClassNameElement = TreeUtils.getMethod(MethodVal.class, "className", 0, processingEnv);
     methodValMethodNameElement =
         TreeUtils.getMethod(MethodVal.class, "methodName", 0, processingEnv);
     methodValParamsElement = TreeUtils.getMethod(MethodVal.class, "params", 0, processingEnv);
+    noQualifierParameterValueElement =
+        TreeUtils.getMethod(NoQualifierParameter.class, "value", 0, processingEnv);
     requiresQualifierExpressionElement =
         TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
     requiresQualifierListValueElement =
@@ -1686,7 +1694,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * #getFieldInvariantDeclarationAnnotations()} to return their field invariants.
    *
    * @param element class for which to get invariants
-   * @return fields invariants for {@code element}
+   * @return field invariants for {@code element}
    */
   public FieldInvariants getFieldInvariants(TypeElement element) {
     if (element == null) {
@@ -1700,7 +1708,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotationUtils.getElementValueArray(
             fieldInvarAnno, fieldInvariantFieldElement, String.class);
     List<@CanonicalName Name> classes =
-        AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
+        AnnotationUtils.getElementValueClassNames(fieldInvarAnno, fieldInvariantQualifierElement);
     List<AnnotationMirror> qualifiers =
         CollectionsPlume.mapList(
             (Name name) ->
@@ -4029,7 +4037,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public boolean hasExplicitQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
     return AnnotationUtils.containsSame(
-        getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class), top);
+        getSupportedAnnotationsInElementAnnotation(
+            element, HasQualifierParameter.class, hasQualifierParameterValueElement),
+        top);
   }
 
   /**
@@ -4043,7 +4053,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public boolean hasExplicitNoQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
     return AnnotationUtils.containsSame(
-        getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class), top);
+        getSupportedAnnotationsInElementAnnotation(
+            element, NoQualifierParameter.class, noQualifierParameterValueElement),
+        top);
   }
 
   /**
@@ -4090,21 +4102,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
-    found.addAll(getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class));
+    found.addAll(
+        getSupportedAnnotationsInElementAnnotation(
+            element, HasQualifierParameter.class, hasQualifierParameterValueElement));
     Set<AnnotationMirror> hasQualifierParameterTops = AnnotationUtils.createAnnotationSet();
     PackageElement packageElement = ElementUtils.enclosingPackage(element);
 
     // Traverse all packages containing this element.
     while (packageElement != null) {
       Set<AnnotationMirror> packageDefaultTops =
-          getSupportedAnnotationsInElementAnnotation(packageElement, HasQualifierParameter.class);
+          getSupportedAnnotationsInElementAnnotation(
+              packageElement, HasQualifierParameter.class, hasQualifierParameterValueElement);
       hasQualifierParameterTops.addAll(packageDefaultTops);
 
       packageElement = ElementUtils.parentPackage(packageElement, elements);
     }
 
     Set<AnnotationMirror> noQualifierParamClasses =
-        getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class);
+        getSupportedAnnotationsInElementAnnotation(
+            element, NoQualifierParameter.class, noQualifierParameterValueElement);
     for (AnnotationMirror anno : hasQualifierParameterTops) {
       if (!AnnotationUtils.containsSame(noQualifierParamClasses, anno)) {
         found.add(anno);
@@ -4120,13 +4136,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param element the Element to check
    * @param annoClass the class for an annotation that's written on elements, whose value element is
-   *     a list of annotation classes
+   *     a list of annotation classes. It is always HasQualifierParameter or NoQualifierParameter
+   * @param valueElement the {@code value} field/element of an annotation with class {@code
+   *     annoClass}
    * @return the set of supported annotations with classes listed in the value element of an
    *     annotation with class {@code annoClass} on the {@code element}. Returns an empty set if
    *     {@code annoClass} is not written on {@code element} or {@code element} is null.
    */
   private Set<AnnotationMirror> getSupportedAnnotationsInElementAnnotation(
-      @Nullable Element element, Class<? extends Annotation> annoClass) {
+      @Nullable Element element,
+      Class<? extends Annotation> annoClass,
+      ExecutableElement valueElement) {
     if (element == null) {
       return Collections.emptySet();
     }
@@ -4138,7 +4158,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
     List<@CanonicalName Name> qualClasses =
-        AnnotationUtils.getElementValueClassNames(annotation, "value", true);
+        AnnotationUtils.getElementValueClassNames(annotation, valueElement);
     for (Name qual : qualClasses) {
       AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);
       if (isSupportedQualifier(annotationMirror)) {
