@@ -886,8 +886,7 @@ public class AnnotationUtils {
 
   /**
    * Get the list of Names of the classes that are referenced by element {@code elementName}. It
-   * fails if the class wasn't found. Like {@link #getElementValueClassNames}, but returns classes
-   * rather than names.
+   * fails if the class wasn't found.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
    * {@link #getElementValueClassNames(AnnotationMirror, ExecutableElement)}.
@@ -896,7 +895,9 @@ public class AnnotationUtils {
    * @param annoElement the element/field of {@code anno} whose content is a list of classes
    * @param useDefaults whether to apply default values to the element
    * @return the names of classes in {@code anno.annoElement}
+   * @deprecated use {@link #getElementValueClassNames(AnnotationMirror,ExecutableElement)}
    */
+  @Deprecated // 2021-03-29
   public static List<@CanonicalName Name> getElementValueClassNames(
       AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
     List<Type.ClassType> la =
@@ -1180,11 +1181,7 @@ public class AnnotationUtils {
 
   /**
    * Get the list of Names of the classes that are referenced by element {@code element}. It fails
-   * if the class wasn't found. Like {@link #getElementValueClassNames}, but returns classes rather
-   * than names.
-   *
-   * <p>This method is intended only for use by the framework. A checker implementation should use
-   * {@link #getElementValueClassNames(AnnotationMirror, ExecutableElement)}.
+   * if the class wasn't found.
    *
    * @param anno the annotation whose field to access; it must be present in the annotation
    * @param element the element/field of {@code anno} whose content is a list of classes

@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.DefaultQualifierForUse;
@@ -17,13 +19,24 @@ import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. */
 public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
 
+  /** The DefaultQualifierForUse.value field/element. */
+  private ExecutableElement defaultQualifierForUseValueElement;
+  /** The NoDefaultQualifierForUse.value field/element. */
+  private ExecutableElement noDefaultQualifierForUseValueElement;
+
   /** Creates an DefaultQualifierForUseTypeAnnotator for {@code typeFactory} */
   public DefaultQualifierForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
     super(typeFactory);
+    ProcessingEnvironment processingEnv = typeFactory.getProcessingEnv();
+    defaultQualifierForUseValueElement =
+        TreeUtils.getMethod(DefaultQualifierForUse.class, "value", 0, processingEnv);
+    noDefaultQualifierForUseValueElement =
+        TreeUtils.getMethod(NoDefaultQualifierForUse.class, "value", 0, processingEnv);
   }
 
   @Override
@@ -103,7 +116,8 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
       return Collections.emptySet();
     }
     return supportedAnnosFromAnnotationMirror(
-        AnnotationUtils.getElementValueClassNames(defaultQualifier, "value", true));
+        AnnotationUtils.getElementValueClassNames(
+            defaultQualifier, defaultQualifierForUseValueElement));
   }
 
   /**
@@ -116,7 +130,8 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
       return Collections.emptySet();
     }
     return supportedAnnosFromAnnotationMirror(
-        AnnotationUtils.getElementValueClassNames(noDefaultQualifier, "value", true));
+        AnnotationUtils.getElementValueClassNames(
+            noDefaultQualifier, noDefaultQualifierForUseValueElement));
   }
 
   /**
@@ -129,6 +144,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    *     annotationMirror}
    * @deprecated use {@link #supportedAnnosFromAnnotationMirror(List)}
    */
+  @SuppressWarnings("deprecation") // This method is itself deprecated.
   @Deprecated // 2021-03-21
   protected final AnnotationMirrorSet supportedAnnosFromAnnotationMirror(
       AnnotationMirror annotationMirror) {
