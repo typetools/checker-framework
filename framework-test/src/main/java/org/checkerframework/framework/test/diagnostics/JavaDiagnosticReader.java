@@ -14,7 +14,7 @@ import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class reads expected javac diagnostics from a single file. Its implementation is as an
@@ -63,7 +63,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
    */
   public static List<TestDiagnostic> readDiagnosticFiles(Iterable<? extends File> files) {
     List<JavaDiagnosticReader> readers =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (File file) ->
                 new JavaDiagnosticReader(
                     file,
