@@ -934,7 +934,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager.printMessage(Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
       return;
     }
-    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
+    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage() > .25) {
       messager.printMessage(
           Kind.WARNING,
           String.format(
