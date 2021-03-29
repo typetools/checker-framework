@@ -1197,6 +1197,9 @@ public class AnnotationUtils {
   public static @CanonicalName Name getElementValueClassName(
       AnnotationMirror anno, ExecutableElement element) {
     Type.ClassType ct = getElementValue(anno, element, Type.ClassType.class);
+    if (ct == null) {
+      throw new BugInCF("getElementValueClassName(%s, %s, ...)", anno, element);
+    }
     // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
     @CanonicalName Name result = ct.asElement().getQualifiedName();
     return result;
