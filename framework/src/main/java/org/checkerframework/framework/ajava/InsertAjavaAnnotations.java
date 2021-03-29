@@ -36,6 +36,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -63,7 +64,7 @@ public class InsertAjavaAnnotations {
     JavaCompiler compiler = javax.tools.ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
       System.err.println("Could not get compiler instance");
-      System.exit(0);
+      System.exit(1);
     }
 
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
@@ -133,6 +134,8 @@ public class InsertAjavaAnnotations {
   /**
    * Given two JavaParser ASTs representing the same Java file but with differing annotations,
    * stores a list of {@link Insertion}s for all annotations in the first AST into the second AST.
+   * To use this class, call {@link #visit(CompilationUnit, Node)} on a pair of ASTs and then use
+   * the contents of {@link #insertions}.
    */
   private class BuildInsertionsVisitor extends DoubleJavaParserVisitor {
     /**
@@ -180,75 +183,74 @@ public class InsertAjavaAnnotations {
     }
 
     @Override
-    public void defaultAction(Node node1, Node node2) {
-      if (!(node1 instanceof NodeWithAnnotations<?>)) {
+    public void defaultAction(Node src, Node dest) {
+      if (!(src instanceof NodeWithAnnotations<?>)) {
         return;
       }
 
-      NodeWithAnnotations<?> node1WithAnnos = (NodeWithAnnotations<?>) node1;
-      if (node1 instanceof MethodDeclaration) {
-        addAnnotationOnOwnLine(node2.getBegin().get(), node1WithAnnos.getAnnotations());
+      NodeWithAnnotations<?> srcWithAnnos = (NodeWithAnnotations<?>) src;
+      if (src instanceof MethodDeclaration) {
+        addAnnotationOnOwnLine(dest.getBegin().get(), srcWithAnnos.getAnnotations());
         return;
-      } else if (node1 instanceof FieldDeclaration) {
-        addAnnotationOnOwnLine(node2.getBegin().get(), node1WithAnnos.getAnnotations());
+      } else if (src instanceof FieldDeclaration) {
+        addAnnotationOnOwnLine(dest.getBegin().get(), srcWithAnnos.getAnnotations());
         return;
       }
 
       Position position;
-      if (node2 instanceof ClassOrInterfaceType) {
+      if (dest instanceof ClassOrInterfaceType) {
         // In a multi-part name like my.package.MyClass, annotations go directly in front of
         // MyClass instead of the full name.
-        position = ((ClassOrInterfaceType) node2).getName().getBegin().get();
+        position = ((ClassOrInterfaceType) dest).getName().getBegin().get();
       } else {
-        position = node2.getBegin().get();
+        position = dest.getBegin().get();
       }
 
-      addAnnotations(position, node1WithAnnos.getAnnotations(), 0, false);
+      addAnnotations(position, srcWithAnnos.getAnnotations(), 0, false);
     }
 
     @Override
-    public void visit(ArrayType node1, Node other) {
-      ArrayType node2 = (ArrayType) other;
+    public void visit(ArrayType src, Node other) {
+      ArrayType dest = (ArrayType) other;
       // The second component of this pair contains a list of ArrayBracketPairs from left to
-      // right. For example, if node1 contains String[][], then the list will contain the
+      // right. For example, if src contains String[][], then the list will contain the
       // types String[] and String[][]. To insert array annotations in the correct location,
       // we insert them directly to the right of the end of the previous element.
-      Pair<Type, List<ArrayType.ArrayBracketPair>> node1ArrayTypes =
-          ArrayType.unwrapArrayTypes(node1);
-      Pair<Type, List<ArrayType.ArrayBracketPair>> node2ArrayTypes =
-          ArrayType.unwrapArrayTypes(node2);
+      Pair<Type, List<ArrayType.ArrayBracketPair>> srcArrayTypes = ArrayType.unwrapArrayTypes(src);
+      Pair<Type, List<ArrayType.ArrayBracketPair>> destArrayTypes =
+          ArrayType.unwrapArrayTypes(dest);
       // The first annotations go directly after the element type.
-      Position firstPosition = node2ArrayTypes.a.getEnd().get();
-      addAnnotations(firstPosition, node1ArrayTypes.b.get(0).getAnnotations(), 1, false);
-      for (int i = 1; i < node1ArrayTypes.b.size(); i++) {
-        Position position = node2ArrayTypes.b.get(i - 1).getTokenRange().get().toRange().get().end;
-        addAnnotations(position, node1ArrayTypes.b.get(i).getAnnotations(), 1, true);
+      Position firstPosition = destArrayTypes.a.getEnd().get();
+      addAnnotations(firstPosition, srcArrayTypes.b.get(0).getAnnotations(), 1, false);
+      for (int i = 1; i < srcArrayTypes.b.size(); i++) {
+        Position position = destArrayTypes.b.get(i - 1).getTokenRange().get().toRange().get().end;
+        addAnnotations(position, srcArrayTypes.b.get(i).getAnnotations(), 1, true);
       }
 
       // Visit the component type.
-      node1ArrayTypes.a.accept(this, node2ArrayTypes.a);
+      srcArrayTypes.a.accept(this, destArrayTypes.a);
     }
 
     @Override
-    public void visit(final CompilationUnit node1, final Node other) {
-      CompilationUnit node2 = (CompilationUnit) other;
-      defaultAction(node1, node2);
+    public void visit(CompilationUnit src, Node other) {
+      CompilationUnit dest = (CompilationUnit) other;
+      defaultAction(src, dest);
 
       // Gather annotations used in the ajava file.
-      allAnnotations = getImportedAnnotations(node1);
+      allAnnotations = getImportedAnnotations(src);
 
       // Move any annotations that appear in the declaration position but belong only in the
       // type position.
-      node1.accept(new TypeAnnotationMover(allAnnotations, elements), null);
+      src.accept(new TypeAnnotationMover(allAnnotations, elements), null);
 
       // Transfer import statements from the ajava file to the Java file.
       Set<String> existingImports = new HashSet<>();
-      for (ImportDeclaration importDecl : node2.getImports()) {
+      for (ImportDeclaration importDecl : dest.getImports()) {
         existingImports.add(printer.print(importDecl));
       }
 
       List<String> newImports = new ArrayList<>();
-      for (ImportDeclaration importDecl : node1.getImports()) {
+      for (ImportDeclaration importDecl : src.getImports()) {
         String importString = printer.print(importDecl);
         if (!existingImports.contains(importString)) {
           newImports.add(importString);
@@ -258,13 +260,13 @@ public class InsertAjavaAnnotations {
       if (!newImports.isEmpty()) {
         int position;
         int lineBreaks;
-        if (!node2.getImports().isEmpty()) {
+        if (!dest.getImports().isEmpty()) {
           Position lastImportPosition =
-              node2.getImports().get(node2.getImports().size() - 1).getEnd().get();
+              dest.getImports().get(dest.getImports().size() - 1).getEnd().get();
           position = getAbsolutePosition(lastImportPosition) + 1;
           lineBreaks = 1;
-        } else if (node2.getPackageDeclaration().isPresent()) {
-          Position packagePosition = node2.getPackageDeclaration().get().getEnd().get();
+        } else if (dest.getPackageDeclaration().isPresent()) {
+          Position packagePosition = dest.getPackageDeclaration().get().getEnd().get();
           position = getAbsolutePosition(packagePosition) + 1;
           lineBreaks = 2;
         } else {
@@ -280,12 +282,11 @@ public class InsertAjavaAnnotations {
         insertions.add(new Insertion(position, insertionContent));
       }
 
-      node1.getModule().ifPresent(l -> l.accept(this, node2.getModule().get()));
-      node1
-          .getPackageDeclaration()
-          .ifPresent(l -> l.accept(this, node2.getPackageDeclaration().get()));
-      for (int i = 0; i < node1.getTypes().size(); i++) {
-        node1.getTypes().get(i).accept(this, node2.getTypes().get(i));
+      src.getModule().ifPresent(l -> l.accept(this, dest.getModule().get()));
+      src.getPackageDeclaration()
+          .ifPresent(l -> l.accept(this, dest.getPackageDeclaration().get()));
+      for (int i = 0; i < src.getTypes().size(); i++) {
+        src.getTypes().get(i).accept(this, dest.getTypes().get(i));
       }
     }
 
@@ -308,12 +309,9 @@ public class InsertAjavaAnnotations {
       }
 
       if (ownLine) {
-        StringBuilder insertionContent = new StringBuilder();
-        for (int i = 0; i < annotations.size(); i++) {
-          insertionContent.append(printer.print(annotations.get(i)));
-          if (i < annotations.size() - 1) {
-            insertionContent.append(" ");
-          }
+        StringJoiner insertionContent = new StringJoiner(" ");
+        for (AnnotationExpr annotation : annotations) {
+          insertionContent.add(printer.print(annotation));
         }
 
         if (insertionContent.length() == 0) {
@@ -321,10 +319,12 @@ public class InsertAjavaAnnotations {
         }
 
         String whitespaceCopy = line.substring(0, position.column - 1);
-        insertionContent.append(System.lineSeparator());
-        insertionContent.append(whitespaceCopy);
         int absolutePosition = getAbsolutePosition(position);
-        insertions.add(new Insertion(absolutePosition, insertionContent.toString(), true));
+        insertions.add(
+            new Insertion(
+                absolutePosition,
+                insertionContent.toString() + System.lineSeparator() + whitespaceCopy,
+                true));
       } else {
         addAnnotations(position, annotations, 0, false);
       }
@@ -416,7 +416,7 @@ public class InsertAjavaAnnotations {
         // @FullyQualifiedName
         )
         @FullyQualifiedName String imported = importDecl.getNameAsString();
-        final TypeElement importType = elements.getTypeElement(imported);
+        TypeElement importType = elements.getTypeElement(imported);
         if (importType != null && importType.getKind() == ElementKind.ANNOTATION_TYPE) {
           TypeElement annoElt = elements.getTypeElement(imported);
           if (annoElt != null) {
@@ -442,36 +442,48 @@ public class InsertAjavaAnnotations {
     BuildInsertionsVisitor insertionVisitor = new BuildInsertionsVisitor(fileContents);
     annotationCu.accept(insertionVisitor, fileCu);
     List<Insertion> insertions = insertionVisitor.insertions;
-    // Insert annotations in reverse order of position. Making an insertion changes the offset
-    // values of everything after the insertion, so making the insertions in reverse order of
-    // removes the need to recalculate positions.
-    insertions.sort(
-        (insertion1, insertion2) -> {
-          int cmp = Integer.compare(insertion1.position, insertion2.position);
-          // Annotations belonging on their own line should be inserted before other
-          // annotations. For example, in
-          //
-          // @Pure
-          // @Tainted String myMethod();
-          //
-          // both annotations should be inserted at the same position (the start of
-          // "String"), but @Pure should always appear first.
-          if (cmp == 0 && (insertion1.ownLine != insertion2.ownLine)) {
-            if (insertion1.ownLine) {
-              cmp = -1;
-            } else {
-              cmp = 1;
-            }
-          }
-
-          return -cmp;
-        });
+    insertions.sort(InsertAjavaAnnotations::compareInsertions);
     StringBuilder result = new StringBuilder(fileContents);
     for (Insertion insertion : insertions) {
       result.insert(insertion.position, insertion.contents);
     }
 
     return result.toString();
+  }
+
+  /**
+   * Compares two insertions in the reverse order of where their content should appear in the file.
+   * Making an insertion changes the offset values of all content after the insertion, so making the
+   * insertions in reverse order of appearance removes the need to recalculate the positions of
+   * other insertions.
+   *
+   * <p>The order in which insertions should appear is determined first by their absolute position
+   * in the file, and second by whether they have their own line. In a method like, ```
+   *
+   * <pre>{@code
+   * @Pure
+   * @Tainting String myMethod();
+   * }</pre>
+   *
+   * ``` both annotations should be inserted at the same location (right before "String"), but
+   * {@code @Pure} should always come first because it belongs on its own line.
+   *
+   * @param insertion1 the first insertion
+   * @param insertion2 the second insertion
+   * @return a negative integer, zero, or a positive integer if {@code insertion1} belongs before,
+   *     at the same position, or after {@code insertion2} respectively in the above ordering
+   */
+  private static int compareInsertions(Insertion insertion1, Insertion insertion2) {
+    int cmp = Integer.compare(insertion1.position, insertion2.position);
+    if (cmp == 0 && (insertion1.ownLine != insertion2.ownLine)) {
+      if (insertion1.ownLine) {
+        cmp = -1;
+      } else {
+        cmp = 1;
+      }
+    }
+
+    return -cmp;
   }
 
   /**

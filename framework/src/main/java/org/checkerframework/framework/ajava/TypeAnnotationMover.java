@@ -129,10 +129,6 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   /**
    * Returns the TypeElement for an annotation, or null if it cannot be found.
    *
-   * <p>If {@code annotation} was listed in the file's imports, returns its value in {@link
-   * #allAnnotations}. If it wasn't imported but its element could still be found, adds the new
-   * TypeElement to {@link #allAnnotations} and returns it.
-   *
    * @param annotation a JavaParser annotation
    * @return the TypeElement for {@code annotation}, or null if it cannot be found
    */
@@ -157,13 +153,14 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   /**
    * Returns if {@code annotation} could be a declaration annotation for {@code declarationType}.
    * This would be the case if the annotation isn't recognized at all, or if it was recognized and
-   * has {@code declarationType} as one of its targets.
+   * either has {@code declarationType} as one of its targets or has no {@code @Target}
+   * meta-annotation.
    *
    * @param annotation a JavaParser annotation expression
    * @param declarationType the declaration type to check if {@code annotation} might be a
    *     declaration annotation for
-   * @return false unless {@code annotation} definitely cannot be a declaration annotation for
-   *     {@code declarationType}
+   * @return true unless {@code annotation} definitely cannot be a declaration annotation for {@code
+   *     declarationType}
    */
   private boolean isPossiblyDeclarationAnnotation(
       AnnotationExpr annotation, ElementType declarationType) {
@@ -172,13 +169,14 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
       return true;
     }
 
-    return isPossiblyDeclarationAnnotation(annotationType, declarationType);
+    return isDeclarationAnnotation(annotationType, declarationType);
   }
 
   /**
    * Returns whether the annotation represented by {@code annotationDeclaration} might be a
    * declaration annotation for {@code declarationType}. This holds if {@code declarationType} is a
-   * target of the annotation, or if {@code ElementType.TYPE_USE} is not a target of the annotation.
+   * target of the annotation, or if {@code ElementType.TYPE_USE} is not a target of the annotation,
+   * or if the TypeElement has no {@code @Target} meta-annotation.
    *
    * @param annotationDeclaration declaration for an annotation
    * @param declarationType the declaration type to check if the annotation might be a declaration
@@ -186,7 +184,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * @return true if {@code annotationDeclaration} contains {@code declarationType} as a target or
    *     doesn't contain {@code ElementType.TYPE_USE} as a target
    */
-  private boolean isPossiblyDeclarationAnnotation(
+  private boolean isDeclarationAnnotation(
       TypeElement annotationDeclaration, ElementType declarationType) {
     Target target = annotationDeclaration.getAnnotation(Target.class);
     if (target == null) {
@@ -209,7 +207,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
   /**
    * Returns whether {@code type} has a name containing multiple parts separated by dots, e.g.
-   * "java.lang.String".
+   * "java.lang.String" or "Outer.Inner".
    *
    * <p>Annotations should not be moved onto a Type for which this method returns true. A type like
    * {@code @Anno java.lang.String} is illegal since the annotation should go directly next to the
