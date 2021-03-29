@@ -163,6 +163,7 @@ public class DependentTypesHelper {
    * expressions, namely those annotated with {@code @}{@link JavaExpression}.
    *
    * @param clazz annotation class
+   * @param env processing environment for getting the ExecutableElement
    * @return a list of the elements in the annotation class that should be interpreted as Java
    *     expressions
    */
