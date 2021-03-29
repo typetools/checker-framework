@@ -1180,6 +1180,29 @@ public class AnnotationUtils {
   }
 
   /**
+   * Get the Name of the class that is referenced by element {@code element}.
+   *
+   * <p>This is a convenience method for the most common use-case. It is like {@code
+   * getElementValue(anno, element, ClassType.class).getQualifiedName()}, but this method ensures
+   * consistent use of the qualified name.
+   *
+   * <p>This method is intended only for use by the framework. A checker implementation should use
+   * {@code anno.getElementValues().get(someElement).getValue().asElement().getQualifiedName();}.
+   *
+   * @param anno the annotation to disassemble
+   * @param element the element to access; it must be present in the annotation
+   * @return the name of the class that is referenced by element with the given name; may be an
+   *     empty name, for a local or anonymous class
+   */
+  public static @CanonicalName Name getElementValueClassName(
+      AnnotationMirror anno, ExecutableElement element) {
+    Type.ClassType ct = getElementValue(anno, element, Type.ClassType.class);
+    // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
+    @CanonicalName Name result = ct.asElement().getQualifiedName();
+    return result;
+  }
+
+  /**
    * Get the list of Names of the classes that are referenced by element {@code element}. It fails
    * if the class wasn't found.
    *

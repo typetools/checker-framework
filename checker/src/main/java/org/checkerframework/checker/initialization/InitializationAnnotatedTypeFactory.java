@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -89,6 +90,9 @@ public abstract class InitializationAnnotatedTypeFactory<
   /** {@link FBCBottom}. */
   protected final AnnotationMirror FBCBOTTOM;
 
+  /** The Unused.when field/element. */
+  protected final ExecutableElement unusedWhenElement;
+
   /** Cache for the initialization annotations. */
   protected final Set<Class<? extends Annotation>> initAnnos;
 
@@ -111,11 +115,13 @@ public abstract class InitializationAnnotatedTypeFactory<
   protected InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
 
+    UNKNOWN_INITIALIZATION = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
     INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
     UNDER_INITALIZATION = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
     NOT_ONLY_INITIALIZED = AnnotationBuilder.fromClass(elements, NotOnlyInitialized.class);
     FBCBOTTOM = AnnotationBuilder.fromClass(elements, FBCBottom.class);
-    UNKNOWN_INITIALIZATION = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
+
+    unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, processingEnv);
 
     Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>(4);
     tempInitAnnos.add(UnderInitialization.class);
@@ -636,7 +642,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       return false;
     }
 
-    Name when = AnnotationUtils.getElementValueClassName(unused, "when", false);
+    Name when = AnnotationUtils.getElementValueClassName(unused, unusedWhenElement);
     for (AnnotationMirror anno : receiverAnnos) {
       Name annoName = ((TypeElement) anno.getAnnotationType().asElement()).getQualifiedName();
       if (annoName.contentEquals(when)) {
