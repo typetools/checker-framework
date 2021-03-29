@@ -32,6 +32,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -278,7 +279,8 @@ public class AnnotationBuilder {
    */
   public void copyElementValuesFromAnnotation(
       AnnotationMirror valueHolder, String... ignorableElements) {
-    List<ExecutableElement> elements = SystemUtil.mapList(this::findElement, ignorableElements);
+    List<ExecutableElement> elements =
+        CollectionsPlume.mapList(this::findElement, ignorableElements);
     copyElementValuesFromAnnotation(valueHolder, elements);
   }
 

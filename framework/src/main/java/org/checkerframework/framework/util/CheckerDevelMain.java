@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.SystemPlume;
 
 /**
  * The main entry point to the Checker Framework, for use by Checker Framework developers.
@@ -42,7 +42,7 @@ public class CheckerDevelMain extends CheckerMain {
     final String pp = System.getProperty(PP_PROP);
     final String runtimeCp = System.getProperty(RUNTIME_CP_PROP);
     final String binDir = System.getProperty(BINARY_PROP);
-    final boolean verbose = SystemUtil.getBooleanSystemProperty(VERBOSE_PROP);
+    final boolean verbose = SystemPlume.getBooleanSystemProperty(VERBOSE_PROP);
 
     if (verbose) {
       System.out.println("CheckerDevelMain:");
