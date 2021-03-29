@@ -846,7 +846,10 @@ public class AnnotationUtils {
    * @param <T> the class of the type
    * @param useDefaults whether to apply default values to the element
    * @return the value of the element with the given name
+   * @deprecated use {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class)}
+   *     or {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class, Enum[])}
    */
+  @Deprecated // 2021-03-29
   public static <T extends Enum<T>> T[] getElementValueEnumArray(
       AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
     @SuppressWarnings("unchecked")
