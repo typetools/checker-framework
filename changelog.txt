@@ -52,6 +52,7 @@ Method renamings:
 
 Deprecated some overloads in `AnnotationUtils` that take a `CharSequence`
 (use an overload that takes an `ExecutablElement`):
+ * `getElementValuesWithDefaults`
  * `getElementValueEnum`
  * `getElementValueEnumArray`
 

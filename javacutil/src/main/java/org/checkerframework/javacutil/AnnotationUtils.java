@@ -111,14 +111,6 @@ public class AnnotationUtils {
       return false;
     }
 
-    // This commented implementation is less efficient.  It is also wrong:  it requires a
-    // particular order for fields, and it distinguishes the long constants "33" and "33L".
-    // Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
-    //         getElementValuesWithDefaults(a1);
-    // Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
-    //         getElementValuesWithDefaults(a2);
-    // return elval1.toString().equals(elval2.toString());
-
     return sameElementValues(a1, a2);
   }
 
@@ -609,7 +601,9 @@ public class AnnotationUtils {
    * @see JavacElements#getElementValuesWithDefaults(AnnotationMirror)
    * @param ad annotation to examine
    * @return the values of the annotation's elements, including defaults
+   * @deprecated use a method that takes an {@link ExecutableElement}
    */
+  @Deprecated // 2021-03-29; do not remove, just make private
   public static Map<? extends ExecutableElement, ? extends AnnotationValue>
       getElementValuesWithDefaults(AnnotationMirror ad) {
     Map<ExecutableElement, AnnotationValue> valMap = new HashMap<>();
@@ -670,7 +664,13 @@ public class AnnotationUtils {
       AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
     if (useDefaults) {
-      valmap = getElementValuesWithDefaults(anno);
+      @SuppressWarnings(
+          "deprecation" // remove when getElementValuesWithDefaults is made private and
+      // non-deprecated
+      )
+      Map<? extends ExecutableElement, ? extends AnnotationValue> valmapTmp =
+          getElementValuesWithDefaults(anno);
+      valmap = valmapTmp;
     } else {
       valmap = anno.getElementValues();
     }
