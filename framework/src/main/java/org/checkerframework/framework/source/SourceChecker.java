@@ -538,17 +538,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     int jreVersion = SystemUtil.getJreVersion();
     if (jreVersion < 8) {
       throw new UserError(
-          "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",
+          "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
           jreVersion);
     } else if (jreVersion > 12) {
       throw new UserError(
           String.format(
-              "The Checker Framework cannot be run with JDK 13+.  You are using version %d. Please use JDK 8 or JDK 11.",
+              "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
               jreVersion));
     } else if (jreVersion != 8 && jreVersion != 11) {
       message(
           Kind.WARNING,
-          "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
+          "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
           jreVersion);
     }
 
@@ -943,7 +943,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager.printMessage(
           Kind.WARNING,
           String.format(
-              "Memory constraints are impeding performance; please increase max heap size (max memory = %d, total memory = %d, free memory = %d)",
+              "Memory constraints are impeding performance; please increase max heap size"
+                  + " (max memory = %d, total memory = %d, free memory = %d)",
               Runtime.getRuntime().maxMemory(),
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
@@ -2029,7 +2030,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     Collection<String> prefixes = getSuppressWarningsPrefixes();
     if (prefixes.isEmpty() || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
       throw new BugInCF(
-          "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
+          "Checker must provide a SuppressWarnings prefix."
+              + " SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
     }
     if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
       return true;
@@ -2503,7 +2505,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
           String.format(
-              "The JVM ran out of memory.  Run with a larger max heap size (max memory = %d, total memory = %d, free memory = %d).",
+              "The JVM ran out of memory.  Run with a larger max heap size"
+                  + " (max memory = %d, total memory = %d, free memory = %d).",
               Runtime.getRuntime().maxMemory(),
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
