@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<svg width="12cm" height="5.8962cm" style="zoom:1" version="1.1" viewBox="358 100 248.21 294.81" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <metadata>
+        <rdf:RDF>
+            <cc:Work rdf:about="">
+                <dc:format>image/svg+xml</dc:format>
+                <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+                <dc:title/>
+            </cc:Work>
+        </rdf:RDF>
+    </metadata>
+    <g transform="translate(24.6 -19)">
+        <rect x="360" y="120" width="201" height="44" fill="#fff"/>
+        <rect x="340.92" y="120.09" width="240.37" height="43.817" fill="none" stroke="#7f7f7f" stroke-width="2.1826"/>
+        <text x="460.5" y="146.772" fill="#7f7f7f" font-family="'courier new'" font-size="14.323px" text-anchor="middle"><tspan x="460.5" y="146.772" fill="#7f7f7f" font-size="21.167px">@MustCallUnknown</tspan></text>
+    </g>
+    <text x="638.71808" y="257.31573" fill="#000000" font-family="'courier new'" font-size="12.8px"><tspan x="638.71808" y="257.31573"/></text>
+    <g transform="translate(27.142 -18.8)">
+        <line x1="460.5" x2="460.5" y1="200" y2="173.74" fill="none" stroke="#000" stroke-width="2"/>
+        <polygon points="465.5 176.24 460.5 173.74 455.5 176.24 460.5 166.24"/>
+        <polygon points="465.5 176.24 460.5 173.74 455.5 176.24 460.5 166.24" fill="none" stroke="#000" stroke-width="2"/>
+    </g>
+    <text x="638.71808" y="257.31573" fill="#000000" font-family="'courier new'" font-size="12.8px"><tspan x="638.71808" y="257.31573"/></text>
+    <text x="489.33737" y="376.5813" fill="#7f7f7f" font-family="'courier new'" font-size="15.804px" text-anchor="middle"><tspan x="489.33737" y="376.5813" fill="#000000" font-size="21.167px">@MustCall({})</tspan></text>
+    <path d="m604.17 233.4" fill="none" stroke="#000" stroke-width="1.4111px"/>
+    <g transform="translate(28.636 234.26)">
+        <rect x="185.22px" y="31.009px" width="249.1px" height="43.36px" fill="none" stroke="#000" stroke-width="1.0249"/>
+        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="310" y="58" font-size="21.167px">@MustCall("a")</tspan></text>
+    </g>
+    <g transform="translate(245.56 234.26)">
+        <rect x="257.39" y="31.009" width="246.7px" height="43.36" fill="none" stroke="#000" stroke-width="1.0249"/>
+        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="380" y="58" font-size="21.167px">@MustCall("b")</tspan></text>
+    </g>
+    <path d="m501.1 181.86" fill="none" stroke="#000" stroke-width="1.4111px"/>
+    <g transform="translate(143.34 150.35)">
+        <rect x="176.38px" y="31.124px" width="339.33px" height="43.13px" fill="none" stroke="#000" stroke-width="1.2545"/>
+        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="348.12827" y="55.567112" font-size="21.167px">@MustCall({"a", "b"})</tspan></text>
+    </g>
+    <g transform="matrix(.57938 .81506 -.81506 .57938 345.91 -247.02)">
+        <line x1="460.5" x2="460.5" y1="200" y2="173.74" fill="none" stroke="#000" stroke-width="2"/>
+        <polygon points="455.5 176.24 460.5 166.24 465.5 176.24 460.5 173.74"/>
+        <polygon points="455.5 176.24 460.5 166.24 465.5 176.24 460.5 173.74" fill="none" stroke="#000" stroke-width="2"/>
+    </g>
+    <path d="m452.18 242.76-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+    <path d="m450.68 243.06-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+    <g transform="matrix(-1 0 0 1 898.43 -3.701)">
+        <g transform="matrix(.57938 .81506 -.81506 .57938 347.02 -157.87)">
+            <line x1="460.5" x2="460.5" y1="200" y2="173.74" fill="none" stroke="#000" stroke-width="2"/>
+            <polygon points="465.5 176.24 460.5 173.74 455.5 176.24 460.5 166.24"/>
+            <polygon points="465.5 176.24 460.5 173.74 455.5 176.24 460.5 166.24" fill="none" stroke="#000" stroke-width="2"/>
+        </g>
+        <path d="m453.28 331.9-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+        <path d="m451.78 332.2-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+    </g>
+    <g transform="translate(78.376 -3.701)">
+        <g transform="matrix(.57938 .81506 -.81506 .57938 347.02 -157.87)">
+            <line x1="460.5" x2="460.5" y1="200" y2="173.74" fill="none" stroke="#000" stroke-width="2"/>
+            <polygon points="460.5 166.24 465.5 176.24 460.5 173.74 455.5 176.24"/>
+            <polygon points="460.5 166.24 465.5 176.24 460.5 173.74 455.5 176.24" fill="none" stroke="#000" stroke-width="2"/>
+        </g>
+        <path d="m453.28 331.9-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+        <path d="m451.78 332.2-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+    </g>
+    <rect x="358.75px" y="349.88px" width="265.91px" height="43.86px" fill="none" stroke="#000" stroke-width="1.0249"/>
+    <g transform="matrix(-1 0 0 1 981.48 -88.75)">
+        <g transform="matrix(.57938 .81506 -.81506 .57938 347.02 -157.87)">
+            <line x1="460.5" x2="460.5" y1="200" y2="173.74" fill="none" stroke="#000" stroke-width="2"/>
+            <polygon points="460.5 173.74 455.5 176.24 460.5 166.24 465.5 176.24"/>
+            <polygon points="460.5 173.74 455.5 176.24 460.5 166.24 465.5 176.24" fill="none" stroke="#000" stroke-width="2"/>
+        </g>
+        <path d="m453.28 331.9-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+        <path d="m451.78 332.2-30.11 20.419z" fill="none" stroke="#000" stroke-width="1.4746px"/>
+    </g>
+</svg>
