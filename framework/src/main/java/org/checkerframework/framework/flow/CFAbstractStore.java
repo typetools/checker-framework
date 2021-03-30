@@ -245,7 +245,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     JavaExpression exprJe = JavaExpressionParseUtil.parse(st, methodUseContext);
                     sideEffectsOnlyExpressions.add(exprJe);
                 } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-                    System.out.println(ex.getDiagMessage());
+                    checker.report(st, ex.getDiagMessage());
                     return;
                 }
             }
