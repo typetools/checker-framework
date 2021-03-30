@@ -81,7 +81,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod(UnitsMultiple.class, "quantity", 0, processingEnv);
   /** The UnitsRelations.value argument/element. */
   private final ExecutableElement unitsRelationsValueElement =
-      TreeUtils.getMethod(UnitsRelations.class, "value", 0, processingEnv);
+      TreeUtils.getMethod(
+          org.checkerframework.checker.units.qual.UnitsRelations.class, "value", 0, processingEnv);
 
   /**
    * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
