@@ -408,9 +408,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         return superRange.contains(subRange);
       } else {
         List<Object> superValues =
-            AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, true);
+            AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, false);
         List<Object> subValues =
-            AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
+            AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, false);
         return superValues.containsAll(subValues);
       }
     }
