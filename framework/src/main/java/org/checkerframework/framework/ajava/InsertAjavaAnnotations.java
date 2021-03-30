@@ -50,6 +50,7 @@ import javax.tools.ToolProvider;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
+import org.plumelib.util.FilesPlume;
 
 /** This program inserts annotations from an ajava file into a Java file. See {@link #main}. */
 public class InsertAjavaAnnotations {
@@ -136,15 +137,17 @@ public class InsertAjavaAnnotations {
 
   /**
    * Given two JavaParser ASTs representing the same Java file but with differing annotations,
-   * stores a list of {@link Insertion}s for all annotations in the first AST into the second AST.
-   * To use this class, call {@link #visit(CompilationUnit, Node)} on a pair of ASTs and then use
-   * the contents of {@link #insertions}.
+   * stores a list of {@link Insertion}s. The {@link Insertion}s represent how to textually modify
+   * the file of the second AST to insert all annotations in the first AST into the second AST, but
+   * this class doesn't modify the second AST itself. To use this class, call {@link
+   * #visit(CompilationUnit, Node)} on a pair of ASTs and then use the contents of {@link
+   * #insertions}.
    */
   private class BuildInsertionsVisitor extends DoubleJavaParserVisitor {
     /**
      * The set of annotations found in the file. Keys are both fully-qualified and simple names.
-     * There are two entries for each annotation: the annotation's simple name and its
-     * fully-qualified name.
+     * Contains an entry for the fully qualified name of each annotation and, if it was imported,
+     * its simple name.
      *
      * <p>The map is populated from import statements and also when parsing a file that uses the
      * fully qualified name of an annotation it doesn't import.
@@ -157,6 +160,8 @@ public class InsertAjavaAnnotations {
     private PrettyPrinter printer;
     /** The lines of the String representation of the second AST. */
     private List<String> lines;
+    /** The line separator used in the text the second AST was parsed from */
+    private String lineSeparator;
     /**
      * Stores the offsets of the lines in the string representation of the second AST. At index i,
      * stores the number of characters from the start of the file to the beginning of the ith line.
@@ -165,27 +170,24 @@ public class InsertAjavaAnnotations {
 
     /**
      * Constructs a {@code BuildInsertionsVisitor} where {@code destFileContents} is the String
-     * representation of the AST to insertion annotations into. When visiting a node pair, the
-     * second node must always be from an AST generated from this String.
+     * representation of the AST to insert annotation into, that uses the given line separator. When
+     * visiting a node pair, the second node must always be from an AST generated from this String.
      *
      * @param destFileContents the String the second vistide AST was parsed from
+     * @param lineSeparator the line separator that {@code destFileContents} uses
      */
-    public BuildInsertionsVisitor(String destFileContents) {
+    public BuildInsertionsVisitor(String destFileContents, String lineSeparator) {
       allAnnotations = null;
       insertions = new ArrayList<>();
       printer = new PrettyPrinter();
-      // TODO: Make this line separator agnostic, which would require keeping track of the position
-      // of the start of each line. Existing methods that convert files or Strings to lines don't
-      // keep track which line separator that was used at which line, such as Files.readAllLines,
-      // Files.lines, or Scanner.nextLine, so this would likely require an ad hoc line splitting
-      // method.
-      String[] lines = destFileContents.split(System.lineSeparator());
+      String[] lines = destFileContents.split(lineSeparator);
       this.lines = Arrays.asList(lines);
+      this.lineSeparator = lineSeparator;
       cumulativeLineSizes = new ArrayList<>();
       cumulativeLineSizes.add(0);
       for (int i = 1; i < lines.length; i++) {
         int lastSize = cumulativeLineSizes.get(i - 1);
-        int lastLineLength = lines[i - 1].length() + System.lineSeparator().length();
+        int lastLineLength = lines[i - 1].length() + lineSeparator.length();
         cumulativeLineSizes.add(lastSize + lastLineLength);
       }
     }
@@ -290,7 +292,7 @@ public class InsertAjavaAnnotations {
         String insertionContent = "";
         // In Java 11, use String::repeat.
         for (int i = 0; i < lineBreaksBeforeFirstImport; i++) {
-          insertionContent += System.lineSeparator();
+          insertionContent += lineSeparator;
         }
         insertionContent += String.join("", newImports);
 
@@ -306,9 +308,9 @@ public class InsertAjavaAnnotations {
     }
 
     /**
-     * Creates an insertion for a collection of annotations. The annotations will appear on their
-     * own line (unless any non-whitespace characters precede the insertion position on its own
-     * line).
+     * Creates an insertion for a collection of annotations and adds it to {@link #insertions}. The
+     * annotations will appear on their own line (unless any non-whitespace characters precede the
+     * insertion position on its own line).
      *
      * @param position the position of the insertion
      * @param annotations List of annotations to insert
@@ -339,7 +341,7 @@ public class InsertAjavaAnnotations {
         insertions.add(
             new Insertion(
                 filePosition,
-                insertionContent.toString() + System.lineSeparator() + leadingWhitespace,
+                insertionContent.toString() + lineSeparator + leadingWhitespace,
                 true));
       } else {
         addAnnotations(position, annotations, 0, false);
@@ -347,7 +349,8 @@ public class InsertAjavaAnnotations {
     }
 
     /**
-     * Creates an insertion for a collection of annotations at {@code position} + {@code offset}.
+     * Creates an insertion for a collection of annotations at {@code position} + {@code offset} and
+     * adds it to {@link #insertions}.
      *
      * @param position the position of the insertion
      * @param annotations List of annotations to insert
@@ -446,17 +449,21 @@ public class InsertAjavaAnnotations {
 
   /**
    * Inserts all annotations from the ajava file read from {@code annotationFile} into a Java file
-   * with contents {@code javaFileContents} and returns the resulting file contents.
+   * with contents {@code javaFileContents} that uses the given line separator and returns the
+   * resulting String.
    *
    * @param annotationFile input stream for an ajava file for {@code javaFileContents}
    * @param javaFileContents contents of a Java file to insert annotations into
+   * @param lineSeparator the line separator {@code javaFileContents} uses
    * @return a modified {@code javaFileContents} with annotations from {@code annotationFile}
    *     inserted
    */
-  public String insertAnnotations(InputStream annotationFile, String javaFileContents) {
+  public String insertAnnotations(
+      InputStream annotationFile, String javaFileContents, String lineSeparator) {
     CompilationUnit annotationCu = StaticJavaParser.parse(annotationFile);
     CompilationUnit javaCu = StaticJavaParser.parse(javaFileContents);
-    BuildInsertionsVisitor insertionVisitor = new BuildInsertionsVisitor(javaFileContents);
+    BuildInsertionsVisitor insertionVisitor =
+        new BuildInsertionsVisitor(javaFileContents, lineSeparator);
     annotationCu.accept(insertionVisitor, javaCu);
     List<Insertion> insertions = insertionVisitor.insertions;
     insertions.sort(InsertAjavaAnnotations::compareInsertions);
@@ -507,12 +514,13 @@ public class InsertAjavaAnnotations {
    */
   public void insertAnnotations(String annotationFilePath, String javaFilePath) {
     try {
-      Path path = Paths.get(javaFilePath);
-      String fileContents = new String(Files.readAllBytes(path));
+      File javaFile = new File(javaFilePath);
+      String fileContents = FilesPlume.readFile(javaFile);
+      String lineSeparator = FilesPlume.inferLineSeparator(annotationFilePath);
       FileInputStream annotationInputStream = new FileInputStream(annotationFilePath);
-      String result = insertAnnotations(annotationInputStream, fileContents);
+      String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
       annotationInputStream.close();
-      Files.write(path, result.getBytes());
+      FilesPlume.writeFile(javaFile, result);
     } catch (IOException e) {
       System.err.println(
           "Failed to insert annotations from file "
@@ -529,7 +537,7 @@ public class InsertAjavaAnnotations {
    * <p>The first argument is an ajava file or a directory containing ajava files.
    *
    * <p>The second argument is a Java file or a directory containing Java files to insert
-   * annotations into. The files must use the same line separator as the host system.
+   * annotations into.
    *
    * <p>For each Java file, checks if any ajava files from the first argument match it. For each
    * such ajava file, inserts all its annotations into the Java file.
