@@ -875,7 +875,9 @@ public class AnnotationUtils {
    * @param useDefaults whether to apply default values to the element
    * @return the name of the class that is referenced by element with the given name; may be an
    *     empty name, for a local or anonymous class
+   * @deprecated use an ExecutableElement
    */
+  @Deprecated // permitted for use by the framework
   public static @CanonicalName Name getElementValueClassName(
       AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
     Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
