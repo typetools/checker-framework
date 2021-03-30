@@ -580,9 +580,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       if (lowerBoundATF.isNonNegative(left)) {
         AnnotationMirror annotation = getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
-        // For non-negative numbers, right shift is equivalent to division by a power of two
+        // For non-negative numbers, right shift is equivalent to division by a power of two.
         // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
-        // differences
+        // differences.
         Long shiftAmount = ValueCheckerUtils.getExactValue(right, getValueAnnotatedTypeFactory());
         if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
           int divisor = 1 << shiftAmount;

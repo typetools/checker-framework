@@ -79,8 +79,7 @@ public class InitializationVisitor<
   @Override
   public void setRoot(CompilationUnitTree root) {
     // Clean up the cache of initialized fields once per compilation unit.
-    // Alternatively, but harder to determine, this could be done once per
-    // top-level class.
+    // Alternatively, but harder to determine, this could be done once per top-level class.
     initializedFields.clear();
     super.setRoot(root);
   }
@@ -88,8 +87,7 @@ public class InitializationVisitor<
   @Override
   protected void checkConstructorInvocation(
       AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
-    // receiver annotations for constructors are forbidden, therefore no
-    // check is necessary
+    // Receiver annotations for constructors are forbidden, therefore no check is necessary.
     // TODO: nested constructors can have receivers!
   }
 

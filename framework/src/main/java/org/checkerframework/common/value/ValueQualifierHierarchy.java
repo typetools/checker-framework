@@ -456,9 +456,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 superAnno, atypeFactory.matchesRegexValueElement, String.class);
         return strings.stream().allMatch(string -> regexes.stream().anyMatch(string::matches));
       case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-        // StringVal is a subtype of ArrayLen, if all the strings have one of the
-        // correct
-        // lengths
+        // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths.
         List<Integer> superIntValues = atypeFactory.getArrayLength(superAnno);
         List<String> subStringValues = atypeFactory.getStringValues(subAnno);
         for (String value : subStringValues) {
@@ -468,9 +466,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         }
         return true;
       case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-        // StringVal is a subtype of ArrayLenRange, if all the strings have a length in
-        // the
-        // range.
+        // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the range.
         Range superRange2 = atypeFactory.getRange(superAnno);
         List<String> subValues3 = atypeFactory.getStringValues(subAnno);
         for (String value : subValues3) {

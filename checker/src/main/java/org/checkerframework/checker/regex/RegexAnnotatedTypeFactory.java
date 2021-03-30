@@ -265,10 +265,9 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public int getGroupCount(AnnotationMirror anno) {
     AnnotationValue groupCountValue =
         AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValueElement);
-    // If group count value is null then there's no Regex annotation
-    // on the parameter so set the group count to 0. This would happen
-    // if a non-regex string is passed to Pattern.compile but warnings
-    // are suppressed.
+    // If group count value is null then there's no Regex annotation on the parameter so set the
+    // group count to 0. This would happen if a non-regex string is passed to Pattern.compile but
+    // warnings are suppressed.
     return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
   }
 
@@ -489,42 +488,42 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return getGroupCount(primaryRegexAnno);
     }
 
-    //         This won't work correctly until flow sensitivity is supported by the
-    //         the Regex Checker. For example:
+    // This won't work correctly until flow sensitivity is supported by the
+    // the Regex Checker. For example:
     //
-    //         char @Regex [] arr = {'r', 'e'};
-    //         arr[0] = '('; // type is still "char @Regex []", but this is no longer correct
+    //  char @Regex [] arr = {'r', 'e'};
+    //  arr[0] = '('; // type is still "char @Regex []", but this is no longer correct
     //
-    //         There are associated tests in tests/regex/Simple.java:testCharArrays
-    //         that can be uncommented when this is uncommented.
-    //        /**
-    //         * Case 4: a char array that as a String is a valid regular expression.
-    //         */
-    //        @Override
-    //        public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-    //            boolean isCharArray = ((ArrayType) type.getUnderlyingType())
-    //                    .getComponentType().getKind() == TypeKind.CHAR;
-    //            if (isCharArray && tree.getInitializers() != null) {
-    //                List<? extends ExpressionTree> initializers = tree.getInitializers();
-    //                StringBuilder charArray = new StringBuilder();
-    //                boolean allLiterals = true;
-    //                for (int i = 0; allLiterals && i < initializers.size(); i++) {
-    //                    ExpressionTree e = initializers.get(i);
-    //                    if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-    //                        charArray.append(((LiteralTree) e).getValue());
-    //                    } else if (getAnnotatedType(e).hasAnnotation(Regex.class)) {
-    //                        // if there's an @Regex char in the array then substitute
-    //                        // it with a .
-    //                        charArray.append('.');
-    //                    } else {
-    //                        allLiterals = false;
-    //                    }
-    //                }
-    //                if (allLiterals && RegexUtil.isRegex(charArray.toString())) {
-    //                    type.addAnnotation(Regex.class);
-    //                }
-    //            }
-    //            return super.visitNewArray(tree, type);
-    //        }
+    // There are associated tests in tests/regex/Simple.java:testCharArrays
+    // that can be uncommented when this is uncommented.
+    // /**
+    //  * Case 4: a char array that as a String is a valid regular expression.
+    //  */
+    // @Override
+    // public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+    //     boolean isCharArray = ((ArrayType) type.getUnderlyingType())
+    //             .getComponentType().getKind() == TypeKind.CHAR;
+    //     if (isCharArray && tree.getInitializers() != null) {
+    //         List<? extends ExpressionTree> initializers = tree.getInitializers();
+    //         StringBuilder charArray = new StringBuilder();
+    //         boolean allLiterals = true;
+    //         for (int i = 0; allLiterals && i < initializers.size(); i++) {
+    //             ExpressionTree e = initializers.get(i);
+    //             if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
+    //                 charArray.append(((LiteralTree) e).getValue());
+    //             } else if (getAnnotatedType(e).hasAnnotation(Regex.class)) {
+    //                 // if there's an @Regex char in the array then substitute
+    //                 // it with a .
+    //                 charArray.append('.');
+    //             } else {
+    //                 allLiterals = false;
+    //             }
+    //         }
+    //         if (allLiterals && RegexUtil.isRegex(charArray.toString())) {
+    //             type.addAnnotation(Regex.class);
+    //         }
+    //     }
+    //     return super.visitNewArray(tree, type);
+    // }
   }
 }

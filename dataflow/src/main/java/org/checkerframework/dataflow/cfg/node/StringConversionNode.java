@@ -24,10 +24,9 @@ public class StringConversionNode extends Node {
   protected final Tree tree;
   protected final Node operand;
 
-  // TODO: The type of a string conversion should be a final
-  // TypeMirror representing java.lang.String. Currently we require
-  // the caller to pass in a TypeMirror instead of creating one
-  // through the javax.lang.model.type.Types interface.
+  // TODO: The type of a string conversion should be a final TypeMirror representing
+  // java.lang.String. Currently we require the caller to pass in a TypeMirror instead of creating
+  // one through the javax.lang.model.type.Types interface.
   public StringConversionNode(Tree tree, Node operand, TypeMirror type) {
     super(type);
     this.tree = tree;

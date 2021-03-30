@@ -180,11 +180,10 @@ public class ExpectedErrors {
       return getSibling1();
     }
 
-    // It is problematic to automatically test whole-program inference for method
-    // params when suppressing warnings.
-    // Since we must use @SuppressWarnings() for the method,
-    // we won't be able to catch any error inside the method body.
-    // Verified manually that in the "annotated" folder param's type wasn't
+    // It is problematic to automatically test whole-program inference for method params when
+    // suppressing warnings.
+    // Since we must use @SuppressWarnings() for the method, we won't be able to catch any error
+    // inside the method body.  Verified manually that in the "annotated" folder param's type wasn't
     // updated.
     @SuppressWarnings("all")
     public void suppressWarningsMethodParams(int param) {}
@@ -201,9 +200,8 @@ public class ExpectedErrors {
     private String privateField;
     public String publicField;
 
-    // The types of both fields are not refined to @WholeProgramInferenceBottom,
-    // as whole-program inference never performs refinement in the presence
-    // of the null literal.
+    // The types of both fields are not refined to @WholeProgramInferenceBottom, as whole-program
+    // inference never performs refinement in the presence of the null literal.
     @SuppressWarnings("value")
     void assignFieldsToBottom() {
       privateField = null;

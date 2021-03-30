@@ -571,11 +571,10 @@ public class WholeProgramInferenceJavaParserStorage
       try {
         FileWriter writer = new FileWriter(outputPath);
 
-        // JavaParser can output using lexical preserving printing, which writes the file
-        // such that its formatting is close to the original source file it was parsed from
-        // as possible. Currently, this feature is very buggy and crashes when adding
-        // annotations in certain locations. This implementation could be used instead if
-        // it's fixed in JavaParser.
+        // JavaParser can output using lexical preserving printing, which writes the file such that
+        // its formatting is close to the original source file it was parsed from as
+        // possible. Currently, this feature is very buggy and crashes when adding annotations in
+        // certain locations. This implementation could be used instead if it's fixed in JavaParser.
         // LexicalPreservingPrinter.print(root.declaration, writer);
 
         PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());

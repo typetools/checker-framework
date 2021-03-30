@@ -201,9 +201,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
   /** Returns whether or not reflection should be resolved. */
   public boolean shouldResolveReflection() {
-    // Because this method is indirectly called by getSubcheckers and
-    // this.getOptions or this.hasOption
-    // also call getSubcheckers, super.getOptions is called here.
+    // Because this method is indirectly called by getSubcheckers and this.getOptions or
+    // this.hasOption also call getSubcheckers, super.getOptions is called here.
     return super.getOptions().containsKey("resolveReflection");
   }
 
@@ -512,14 +511,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     // Errors (or other messages) issued via
-    // SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
+    //   SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
     // are stored in messageStore until all checkers have processed this compilation unit.
     // All other messages are printed immediately.  This includes errors issued because the
     // checker threw an exception.
 
-    // In order to run the next checker on this compilation unit even if the previous
-    // issued errors, the next checker's errsOnLastExit needs to include all errors
-    // issued by previous checkers.
+    // In order to run the next checker on this compilation unit even if the previous issued errors,
+    // the next checker's errsOnLastExit needs to include all errors issued by previous checkers.
 
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
     Log log = Log.instance(context);

@@ -15,19 +15,16 @@ public class Issue306 {
 
   void fakeMethod() {
     // @MonotonicNonNull is not reflexive.
-    // However, it is the most specific type argument
-    // inferred for check. Therefore, an error is
+    // However, it is the most specific type argument inferred for check. Therefore, an error is
     // raised.
-    // We need a mechanism to not consider a
-    // qualifier in type inference.
+    // We need a mechanism to not consider a qualifier in type inference.
     check(x);
 
     // Ugly way around the problem:
     Issue306.<@Nullable Object>check(x);
 
-    // The following error has to be raised: from
-    // the signature it is not guaranteed that
-    // the parameter is returned.
+    // The following error has to be raised: from the signature it is not guaranteed that the
+    // parameter is returned.
     // :: error: (monotonic.type.incompatible)
     x = check(x);
   }
@@ -39,8 +36,7 @@ public class Issue306 {
     x = y;
     // :: error: (monotonic.type.incompatible)
     x = p;
-    // It would be nice not to raise the following
-    // error.
+    // It would be nice not to raise the following error.
     // :: error: (monotonic.type.incompatible)
     x = x;
   }

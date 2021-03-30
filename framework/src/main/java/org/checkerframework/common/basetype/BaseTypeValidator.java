@@ -302,7 +302,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     // We put this here because we don't want to put it in visitedNodes before calling
     // super (in the else branch) because that would cause the super implementation
-    // to detect that we've already visited type and to immediately return
+    // to detect that we've already visited type and to immediately return.
     visitedNodes.put(type, null);
 
     // We have a ParameterizedTypeTree -> visit it.
@@ -402,15 +402,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case SUPER_WILDCARD:
       case TYPE_PARAMETER:
         // Nothing to do.
-        // System.out.println("Found a: " + (tree instanceof
-        // ParameterizedTypeTree));
         break;
       default:
-        // the parameterized type is the result of some expression tree.
+        // The parameterized type is the result of some expression tree.
         // No need to do anything further.
         break;
-        // System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s%n",
-        //                 tree, tree.getKind());
     }
 
     return Pair.of(typeargtree, type);
