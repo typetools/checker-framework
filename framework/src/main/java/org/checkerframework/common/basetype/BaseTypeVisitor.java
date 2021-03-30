@@ -329,7 +329,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test if even the option is provided.
    */
   protected void testJointJavacJavaParserVisitor() {
-    if (!checker.hasOption("ajavaChecks") || root == null) {
+    if (root == null || !checker.hasOption("ajavaChecks")) {
       return;
     }
 
@@ -386,8 +386,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit astWithoutAnnotations = originalAst.clone();
     JavaParserUtils.clearAnnotations(astWithoutAnnotations);
-    PrettyPrinter printer = new PrettyPrinter();
-    String withoutAnnotations = printer.print(astWithoutAnnotations);
+    String withoutAnnotations = new PrettyPrinter().print(astWithoutAnnotations);
+
     String withAnnotations;
     try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
       withAnnotations =
@@ -403,6 +403,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } catch (ParseProblemException e) {
       throw new BugInCF("Failed to parse annotation insertion:\n" + withAnnotations, e);
     }
+
     AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();
     originalAst.accept(visitor, modifiedAst);
     if (!visitor.getAnnotationsMatch()) {

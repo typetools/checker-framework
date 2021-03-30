@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class AnnotationFileStore {
   /**
-   * Mapping from fully qualified class names to the paths to annotation files that contain that
+   * Mapping from a fully qualified class name to the paths to annotation files that contain that
    * type.
    */
   private Map<String, List<String>> annotationFiles;
@@ -29,7 +29,7 @@ public class AnnotationFileStore {
   }
 
   /**
-   * If {@code location} is a file, stores it in this as an annotations file. If {@code location} is
+   * If {@code location} is a file, stores it in this as an annotation file. If {@code location} is
    * a directory, stores all annotation files contained in it.
    *
    * @param location an annotation file or a directory containing annotation files
@@ -47,10 +47,7 @@ public class AnnotationFileStore {
       try {
         CompilationUnit root = StaticJavaParser.parse(location);
         for (TypeDeclaration<?> type : root.getTypes()) {
-          String name = type.getNameAsString();
-          if (root.getPackageDeclaration().isPresent()) {
-            name = root.getPackageDeclaration().get().getNameAsString() + "." + name;
-          }
+          String name = JavaParserUtils.getFullyQualifiedName(type, root);
 
           if (!annotationFiles.containsKey(name)) {
             annotationFiles.put(name, new ArrayList<>());

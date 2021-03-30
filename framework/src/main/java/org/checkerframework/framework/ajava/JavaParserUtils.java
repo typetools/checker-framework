@@ -57,12 +57,13 @@ public class JavaParserUtils {
    */
   public static String getFullyQualifiedName(
       TypeDeclaration<?> type, CompilationUnit compilationUnit) {
-    String name = type.getNameAsString();
     if (compilationUnit.getPackageDeclaration().isPresent()) {
-      name = compilationUnit.getPackageDeclaration().get().getNameAsString() + "." + name;
+      return compilationUnit.getPackageDeclaration().get().getNameAsString()
+          + "."
+          + type.getNameAsString();
+    } else {
+      return type.getNameAsString();
     }
-
-    return name;
   }
 
   /**
