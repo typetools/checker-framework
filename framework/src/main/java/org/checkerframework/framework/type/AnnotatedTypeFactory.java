@@ -202,7 +202,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** The FieldInvariant.field argument/element. */
   private final ExecutableElement fieldInvariantFieldElement;
   /** The FieldInvariant.qualifier argument/element. */
-  @SuppressWarnings("UnusedVariable") // TEMPORARY
   private final ExecutableElement fieldInvariantQualifierElement;
   /** The HasQualifierParameter.value field/element. */
   private final ExecutableElement hasQualifierParameterValueElement;
