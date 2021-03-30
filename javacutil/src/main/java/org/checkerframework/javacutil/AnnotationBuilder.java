@@ -275,8 +275,8 @@ public class AnnotationBuilder {
    * in {@code ignorableElements}.
    *
    * @param other the annotation that holds the values to be copied; need not be an annotation of
-   *     the same type of the one being build
-   * @param ignorableElements the name of the elements of {@code other} that can be safely dropped
+   *     the same type of the one being built
+   * @param ignorableElements the names of elements of {@code other} that can be safely dropped
    */
   public void copyElementValuesFromAnnotation(AnnotationMirror other, String... ignorableElements) {
     List<String> ignorableElementsList = Arrays.asList(ignorableElements);
