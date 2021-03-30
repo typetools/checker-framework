@@ -51,7 +51,7 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
 
-/** This program inserts annotations from an ajava file into a Java file. */
+/** This program inserts annotations from an ajava file into a Java file. See {@link #main}. */
 public class InsertAjavaAnnotations {
   /** Element utilities. */
   private Elements elements;
@@ -195,8 +195,9 @@ public class InsertAjavaAnnotations {
       if (!(src instanceof NodeWithAnnotations<?>)) {
         return;
       }
-
       NodeWithAnnotations<?> srcWithAnnos = (NodeWithAnnotations<?>) src;
+
+      // If `src` is a declaration, its annotations are declaration annotations.
       if (src instanceof MethodDeclaration) {
         addAnnotationOnOwnLine(dest.getBegin().get(), srcWithAnnos.getAnnotations());
         return;
@@ -205,15 +206,15 @@ public class InsertAjavaAnnotations {
         return;
       }
 
+      // `src`'s annotations are type annotations.
       Position position;
       if (dest instanceof ClassOrInterfaceType) {
-        // In a multi-part name like my.package.MyClass, annotations go directly in front of
+        // In a multi-part name like my.package.MyClass, type annotations go directly in front of
         // MyClass instead of the full name.
         position = ((ClassOrInterfaceType) dest).getName().getBegin().get();
       } else {
         position = dest.getBegin().get();
       }
-
       addAnnotations(position, srcWithAnnos.getAnnotations(), 0, false);
     }
 
@@ -247,21 +248,25 @@ public class InsertAjavaAnnotations {
       // Gather annotations used in the ajava file.
       allAnnotations = getImportedAnnotations(src);
 
-      // Move any annotations that appear in the declaration position but belong only in the
-      // type position.
+      // Move any annotations that JavaParser puts in the declaration position but belong only in
+      // the type position.
       src.accept(new TypeAnnotationMover(allAnnotations, elements), null);
 
       // Transfer import statements from the ajava file to the Java file.
-      Set<String> existingImports = new HashSet<>();
-      for (ImportDeclaration importDecl : dest.getImports()) {
-        existingImports.add(printer.print(importDecl));
-      }
 
-      List<String> newImports = new ArrayList<>();
-      for (ImportDeclaration importDecl : src.getImports()) {
-        String importString = printer.print(importDecl);
-        if (!existingImports.contains(importString)) {
-          newImports.add(importString);
+      List<String> newImports;
+      { // set `newImports`
+        Set<String> existingImports = new HashSet<>();
+        for (ImportDeclaration importDecl : dest.getImports()) {
+          existingImports.add(printer.print(importDecl));
+        }
+
+        newImports = new ArrayList<>();
+        for (ImportDeclaration importDecl : src.getImports()) {
+          String importString = printer.print(importDecl);
+          if (!existingImports.contains(importString)) {
+            newImports.add(importString);
+          }
         }
       }
 
@@ -329,12 +334,12 @@ public class InsertAjavaAnnotations {
           return;
         }
 
-        String whitespaceCopy = line.substring(0, position.column - 1);
+        String leadingWhitespace = line.substring(0, insertionColumn);
         int filePosition = getFilePosition(position);
         insertions.add(
             new Insertion(
                 filePosition,
-                insertionContent.toString() + System.lineSeparator() + whitespaceCopy,
+                insertionContent.toString() + System.lineSeparator() + leadingWhitespace,
                 true));
       } else {
         addAnnotations(position, annotations, 0, false);
@@ -360,6 +365,7 @@ public class InsertAjavaAnnotations {
         insertionContent.append(" ");
       }
 
+      // Can't test `annotations.isEmpty()` earlier because `annotations` has type `Iterable`.
       if (insertionContent.length() == 0) {
         return;
       }
@@ -373,8 +379,8 @@ public class InsertAjavaAnnotations {
     }
 
     /**
-     * Converts a Position (which contains a line and column) to an absolute offset from the start
-     * of the file
+     * Converts a Position (which contains a line and column) to an offset from the start of the
+     * file, in characters.
      *
      * @param position a Position
      * @return the total offset of the position from the start of the file
@@ -439,36 +445,37 @@ public class InsertAjavaAnnotations {
   }
 
   /**
-   * Inserts all annotations from the ajava file read from the stream {@code annotationFile} into a
-   * Java file with contents {@code fileContents} and returns the resulting file contents.
+   * Inserts all annotations from the ajava file read from {@code annotationFile} into a Java file
+   * with contents {@code javaFileContents} and returns the resulting file contents.
    *
-   * @param annotationFile input stream for an ajava file for {@code fileContents}
-   * @param fileContents contents of a Java file to insert annotations into
-   * @return a modified {@code fileContents} with annotations from {@code annotationFile} inserted
+   * @param annotationFile input stream for an ajava file for {@code javaFileContents}
+   * @param javaFileContents contents of a Java file to insert annotations into
+   * @return a modified {@code javaFileContents} with annotations from {@code annotationFile}
+   *     inserted
    */
-  public String insertAnnotations(InputStream annotationFile, String fileContents) {
+  public String insertAnnotations(InputStream annotationFile, String javaFileContents) {
     CompilationUnit annotationCu = StaticJavaParser.parse(annotationFile);
-    CompilationUnit fileCu = StaticJavaParser.parse(fileContents);
-    BuildInsertionsVisitor insertionVisitor = new BuildInsertionsVisitor(fileContents);
-    annotationCu.accept(insertionVisitor, fileCu);
+    CompilationUnit javaCu = StaticJavaParser.parse(javaFileContents);
+    BuildInsertionsVisitor insertionVisitor = new BuildInsertionsVisitor(javaFileContents);
+    annotationCu.accept(insertionVisitor, javaCu);
     List<Insertion> insertions = insertionVisitor.insertions;
     insertions.sort(InsertAjavaAnnotations::compareInsertions);
-    StringBuilder result = new StringBuilder(fileContents);
+
+    StringBuilder result = new StringBuilder(javaFileContents);
     for (Insertion insertion : insertions) {
       result.insert(insertion.position, insertion.contents);
     }
-
     return result.toString();
   }
 
   /**
    * Compares two insertions in the reverse order of where their content should appear in the file.
-   * Making an insertion changes the offset values of all content after the insertion, so making the
-   * insertions in reverse order of appearance removes the need to recalculate the positions of
+   * Making an insertion changes the offset values of all content after the insertion, so performing
+   * the insertions in reverse order of appearance removes the need to recalculate the positions of
    * other insertions.
    *
    * <p>The order in which insertions should appear is determined first by their absolute position
-   * in the file, and second by whether they have their own line. In a method like,
+   * in the file, and second by whether they have their own line. In a method like
    * {@code @Pure @Tainting String myMethod()} both annotations should be inserted at the same
    * location (right before "String"), but {@code @Pure} should always come first because it belongs
    * on its own line.
@@ -508,7 +515,7 @@ public class InsertAjavaAnnotations {
       Files.write(path, result.getBytes());
     } catch (IOException e) {
       System.err.println(
-          "Failed to insertion annotations from file "
+          "Failed to insert annotations from file "
               + annotationFilePath
               + " into file "
               + javaFilePath);
@@ -519,8 +526,7 @@ public class InsertAjavaAnnotations {
   /**
    * Inserts annotations from ajava files into Java files in place.
    *
-   * <p>The first argument is a file or directory containing ajava files. It may be a single ajava
-   * file or a directory containing ajava files.
+   * <p>The first argument is an ajava file or a directory containing ajava files.
    *
    * <p>The second argument is a Java file or a directory containing Java files to insert
    * annotations into. The files must use the same line separator as the host system.

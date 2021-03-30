@@ -188,9 +188,10 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     }
 
     if (!hasTypeUse) {
-      throw new BugInCF(
-          "Annotation %s cannot be used on declaration with type %s",
-          annotationDeclaration.getQualifiedName(), declarationType);
+      throw new Error(
+          String.format(
+              "Annotation %s cannot be used on declaration with type %s",
+              annotationDeclaration.getQualifiedName(), declarationType));
     }
     return false;
   }
