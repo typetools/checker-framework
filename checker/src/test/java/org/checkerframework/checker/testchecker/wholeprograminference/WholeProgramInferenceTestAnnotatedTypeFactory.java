@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.DefaultType;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.ImplicitAnno;
@@ -30,6 +31,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * AnnotatedTypeFactory to test whole-program inference using .jaif files.
@@ -44,6 +46,13 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
       new AnnotationBuilder(processingEnv, WholeProgramInferenceBottom.class).build();
   private final AnnotationMirror IMPLICIT_ANNO =
       new AnnotationBuilder(processingEnv, ImplicitAnno.class).build();
+
+  /** The SiblingWithFields.value field/element. */
+  private final ExecutableElement siblingWithFieldsValueElement =
+      TreeUtils.getMethod(SiblingWithFields.class, "value", 0, processingEnv);
+  /** The SiblingWithFields.value2 field/element. */
+  private final ExecutableElement siblingWithFieldsValue2Element =
+      TreeUtils.getMethod(SiblingWithFields.class, "value2", 0, processingEnv);
 
   public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
@@ -161,10 +170,10 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
       if (subKind == SIBLING_WITH_FIELDS_KIND && superKind == SIBLING_WITH_FIELDS_KIND) {
         List<String> subVal1 =
             AnnotationUtils.getElementValueArray(
-                subAnno, siblingWithFieldsValueElement, String.class, emptyStringList);
+                subAnno, siblingWithFieldsValueElement, String.class, Collections.emptyList());
         List<String> supVal1 =
             AnnotationUtils.getElementValueArray(
-                superAnno, siblingWithFieldsValueElement, String.class, emptyStringList);
+                superAnno, siblingWithFieldsValueElement, String.class, Collections.emptyList());
         String subVal2 =
             AnnotationUtils.getElementValue(
                 subAnno, siblingWithFieldsValue2Element, String.class, "");
