@@ -117,6 +117,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
    *
    * @param node1 first node in pair
    * @param node2 second node in pair
+   * @param <T> the Node type of {@code node1} and {@code node2}
    */
   public abstract <T extends Node> void defaultAction(T node1, T node2);
 
