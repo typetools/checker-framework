@@ -9,6 +9,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.testchecker.flowexpression.qual.FEBottom;
 import org.checkerframework.framework.testchecker.flowexpression.qual.FETop;
+import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -17,6 +18,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private AnnotationMirror TOP, BOTTOM;
+
+  /** The FlowExp.value field/element. */
+  ExecutableElement flowExpValueElement =
+      TreeUtils.getMethod(FlowExp.class, "value", 0, processingEnv);
 
   public FlowExpressionAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
@@ -55,9 +60,9 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         AnnotationMirror superAnno,
         QualifierKind superKind) {
       List<String> subtypeExpressions =
-          AnnotationUtils.getElementValueArray(subAnno, "value", String.class, false);
+          AnnotationUtils.getElementValueArray(subAnno, flowExpValueElement, String.class);
       List<String> supertypeExpressions =
-          AnnotationUtils.getElementValueArray(superAnno, "value", String.class, false);
+          AnnotationUtils.getElementValueArray(superAnno, flowExpValueElement, String.class);
       return subtypeExpressions.containsAll(supertypeExpressions)
           && supertypeExpressions.containsAll(subtypeExpressions);
     }
@@ -75,9 +80,9 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         return a1;
       }
       List<String> a1Expressions =
-          AnnotationUtils.getElementValueArray(a1, "value", String.class, false);
+          AnnotationUtils.getElementValueArray(a1, flowExpValueElement, String.class);
       List<String> a2Expressions =
-          AnnotationUtils.getElementValueArray(a2, "value", String.class, false);
+          AnnotationUtils.getElementValueArray(a2, flowExpValueElement, String.class);
       if (a1Expressions.containsAll(a2Expressions) && a2Expressions.containsAll(a1Expressions)) {
         return a1;
       }
@@ -97,9 +102,9 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         return a1;
       }
       List<String> a1Expressions =
-          AnnotationUtils.getElementValueArray(a1, "value", String.class, false);
+          AnnotationUtils.getElementValueArray(a1, flowExpValueElement, String.class);
       List<String> a2Expressions =
-          AnnotationUtils.getElementValueArray(a2, "value", String.class, false);
+          AnnotationUtils.getElementValueArray(a2, flowExpValueElement, String.class);
       if (a1Expressions.containsAll(a2Expressions) && a2Expressions.containsAll(a1Expressions)) {
         return a1;
       }

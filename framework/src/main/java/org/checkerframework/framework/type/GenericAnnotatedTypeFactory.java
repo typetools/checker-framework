@@ -2667,6 +2667,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public List<String> getContractExpressions(
       Contract.Kind kind, AnnotationMirror contractAnnotation) {
+    // First, handle framework annotations.
     if (contractAnnotation instanceof RequiresQualifier) {
       return AnnotationUtils.getElementValueArray(
           contractAnnotation, requiresQualifierExpressionElement, String.class);
@@ -2676,7 +2677,9 @@ public abstract class GenericAnnotatedTypeFactory<
     } else if (contractAnnotation instanceof EnsuresQualifierIf) {
       return AnnotationUtils.getElementValueArray(
           contractAnnotation, ensuresQualifierIfExpressionElement, String.class);
-    } else if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
+    }
+    // `contractAnnotation` is defined in a checker.
+    if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
       return AnnotationUtils.getElementValueArray(
           contractAnnotation, "expression", String.class, true);
     } else {

@@ -407,6 +407,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         Range subRange = atypeFactory.getRange(subAnno);
         return superRange.contains(subRange);
       } else {
+        // The annotations are one of: ArrayLen, BoolVal, DoubleVal, EnumVal, StringVal.
         List<Object> superValues =
             AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, true);
         List<Object> subValues =
