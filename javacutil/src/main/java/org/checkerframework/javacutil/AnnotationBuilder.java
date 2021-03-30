@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -281,11 +279,11 @@ public class AnnotationBuilder {
    * @param ignorableElements the name of the elements of {@code other} that can be safely dropped
    */
   public void copyElementValuesFromAnnotation(AnnotationMirror other, String... ignorableElements) {
+    List<String> ignorableElementsList = Arrays.asList(ignorableElements);
     for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
         other.getElementValues().entrySet()) {
-      Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
       Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-      if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
+      if (ignorableElementsList.contains(eltNameToCopy.toString())) {
         continue;
       }
       elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
