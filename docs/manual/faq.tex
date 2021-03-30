@@ -1593,11 +1593,12 @@ To improve performance:
   Framework uses more memory than \<javac> does, and Java's default heap
   limit is so small that the Checker Framework might spend most of its time
   in garbage collection.  (If this is the case, the Checker Framework will
-  issue a warning ``Memory constraints are impeding performance; please
-  increase max heap size''.)  For example, you might pass an argument like
+  issue a warning ``Garbage collection consumed over 25\% of CPU diring the
+  past minute.")  For example, you might pass an argument like
   \<-Xmx3g>, or set an environment variable like \<export
   \_JAVA\_OPTIONS=-Xmx3g>, to permit the Checker Framework to use up to 3GB
-  of memory.
+  of memory.  If you use Java 8, consider upgrading to Java 11, which has
+  better memory management.
 \item
   Set your build system to perform \emph{incremental compilation}.  When
   compiling just a few source files (the size of a typical edit or commit),

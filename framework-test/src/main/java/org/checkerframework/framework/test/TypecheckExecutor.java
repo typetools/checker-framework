@@ -38,7 +38,7 @@ public class TypecheckExecutor {
               Runtime.getRuntime().freeMemory());
       System.out.println(message);
       System.err.println(message);
-      throw new BugInCF(message, e);
+      throw new Error(message, e);
     }
   }
 
