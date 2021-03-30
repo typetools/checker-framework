@@ -202,7 +202,11 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
       }
     }
 
-    return !hasTypeUse;
+    assert hasTypeUse
+        : String.format(
+            "Annotation %s cannot be used on declaration with type %s",
+            annotationDeclaration.getQualifiedName(), declarationType);
+    return false;
   }
 
   /**
