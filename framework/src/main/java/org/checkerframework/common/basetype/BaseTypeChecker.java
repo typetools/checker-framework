@@ -199,7 +199,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
     return new LinkedHashSet<>();
   }
 
-  /** Returns whether or not reflection should be resolved. */
+  /**
+   * Returns whether or not reflection should be resolved.
+   *
+   * @return true if reflection should be resolved
+   */
   public boolean shouldResolveReflection() {
     // Because this method is indirectly called by getSubcheckers and this.getOptions or
     // this.hasOption also call getSubcheckers, super.getOptions is called here.
