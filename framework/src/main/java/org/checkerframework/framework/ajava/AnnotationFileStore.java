@@ -18,8 +18,8 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class AnnotationFileStore {
   /**
-   * Mapping from fully qualified class names to the collection os paths to annotation files that
-   * contain that type.
+   * Mapping from fully qualified class names to the paths to annotation files that contain that
+   * type.
    */
   private Map<String, List<String>> annotationFiles;
 
@@ -29,8 +29,8 @@ public class AnnotationFileStore {
   }
 
   /**
-   * If {@code location} is a file, stores it as an annotations file, and if {@code location} is a
-   * directory, stores all annotations files contained in it recursively.
+   * If {@code location} is a file, stores it in this as an annotations file. If {@code location} is
+   * a directory, stores all annotation files contained in it.
    *
    * @param location an annotation file or a directory containing annotation files
    */

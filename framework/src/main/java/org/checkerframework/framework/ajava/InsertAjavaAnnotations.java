@@ -46,22 +46,23 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
 
 /** Inserts annotations from an ajava file into a Java file. */
 public class InsertAjavaAnnotations {
-  /** Utility class for working with Elements. */
+  /** Element utilities. */
   private Elements elements;
 
   /**
    * Gets an instance of {@code Elements} from the current Java compiler.
    *
-   * @return an instance of {@code Elements}
+   * @return Element utilities
    */
   private static Elements createElements() {
-    JavaCompiler compiler = javax.tools.ToolProvider.getSystemJavaCompiler();
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
       System.err.println("Could not get compiler instance");
       System.exit(1);
@@ -94,7 +95,7 @@ public class InsertAjavaAnnotations {
 
   /** Represents some text to be inserted at a file and its location. */
   private static class Insertion {
-    /** Offset of the insertion in characters. */
+    /** Offset of the insertion in the file, measured in characters from the beginning. */
     public int position;
     /** The contents of the insertion. */
     public String contents;
@@ -143,7 +144,7 @@ public class InsertAjavaAnnotations {
      * There are two entries for each annotation: the annotation's simple name and its
      * fully-qualified name.
      *
-     * <p>The map is populated from import statements and also by when parsing a file that uses the
+     * <p>The map is populated from import statements and also when parsing a file that uses the
      * fully qualified name of an annotation it doesn't import.
      */
     private Map<String, TypeElement> allAnnotations;
@@ -264,25 +265,27 @@ public class InsertAjavaAnnotations {
 
       if (!newImports.isEmpty()) {
         int position;
-        int lineBreaks;
+        int lineBreaksBeforeFirstImport;
         if (!dest.getImports().isEmpty()) {
           Position lastImportPosition =
               dest.getImports().get(dest.getImports().size() - 1).getEnd().get();
-          position = getAbsolutePosition(lastImportPosition) + 1;
-          lineBreaks = 1;
+          position = getFilePosition(lastImportPosition) + 1;
+          lineBreaksBeforeFirstImport = 1;
         } else if (dest.getPackageDeclaration().isPresent()) {
           Position packagePosition = dest.getPackageDeclaration().get().getEnd().get();
-          position = getAbsolutePosition(packagePosition) + 1;
-          lineBreaks = 2;
+          position = getFilePosition(packagePosition) + 1;
+          lineBreaksBeforeFirstImport = 2;
         } else {
           position = 0;
-          lineBreaks = 0;
+          lineBreaksBeforeFirstImport = 0;
         }
 
-        String insertionContent = String.join("", newImports);
-        for (int i = 0; i < lineBreaks; i++) {
-          insertionContent = System.lineSeparator() + insertionContent;
+        String insertionContent = "";
+        // In Java 11, use String::repeat.
+        for (int i = 0; i < lineBreaksBeforeFirstImport; i++) {
+          insertionContent += System.lineSeparator();
         }
+        insertionContent += String.join("", newImports);
 
         insertions.add(new Insertion(position, insertionContent));
       }
@@ -297,7 +300,8 @@ public class InsertAjavaAnnotations {
 
     /**
      * Creates an insertion for a collection of annotations. The annotations will appear on their
-     * own line unless any non-whitespace characters precede the insertion position on its own line.
+     * own line (unless any non-whitespace characters precede the insertion position on its own
+     * line).
      *
      * @param position the position of the insertion
      * @param annotations List of annotations to insert
@@ -324,10 +328,10 @@ public class InsertAjavaAnnotations {
         }
 
         String whitespaceCopy = line.substring(0, position.column - 1);
-        int absolutePosition = getAbsolutePosition(position);
+        int filePosition = getFilePosition(position);
         insertions.add(
             new Insertion(
-                absolutePosition,
+                filePosition,
                 insertionContent.toString() + System.lineSeparator() + whitespaceCopy,
                 true));
       } else {
@@ -362,9 +366,8 @@ public class InsertAjavaAnnotations {
         insertionContent.insert(0, " ");
       }
 
-      int absolutePosition = getAbsolutePosition(position);
-      absolutePosition += offset;
-      insertions.add(new Insertion(absolutePosition, insertionContent.toString()));
+      int filePosition = getFilePosition(position) + offset;
+      insertions.add(new Insertion(filePosition, insertionContent.toString()));
     }
 
     /**
@@ -374,7 +377,7 @@ public class InsertAjavaAnnotations {
      * @param position a Position
      * @return the total offset of the position from the start of the file
      */
-    private int getAbsolutePosition(Position position) {
+    private int getFilePosition(Position position) {
       return cumulativeLineSizes.get(position.line - 1) + (position.column - 1);
     }
   }
@@ -389,11 +392,11 @@ public class InsertAjavaAnnotations {
    *     fully-qualified name, with the same value.
    */
   private Map<String, TypeElement> getImportedAnnotations(CompilationUnit cu) {
-    Map<String, TypeElement> result = new HashMap<>();
     if (cu.getImports() == null) {
-      return result;
+      return Collections.emptyMap();
     }
 
+    Map<String, TypeElement> result = new HashMap<>();
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
         @SuppressWarnings("signature" // https://tinyurl.com/cfissue/3094:
@@ -435,7 +438,7 @@ public class InsertAjavaAnnotations {
 
   /**
    * Inserts all annotations from the ajava file read from the stream {@code annotationFile} into a
-   * Java file with contents {@code fileContents} and returns the result.
+   * Java file with contents {@code fileContents} and returns the resulting file contents.
    *
    * @param annotationFile input stream for an ajava file for {@code fileContents}
    * @param fileContents contents of a Java file to insert annotations into
@@ -487,10 +490,10 @@ public class InsertAjavaAnnotations {
   }
 
   /**
-   * Inserts all annotations from the ajava file at {@code annotationFilePath} to {@code
+   * Inserts all annotations from the ajava file at {@code annotationFilePath} into {@code
    * javaFilePath}.
    *
-   * @param annotationFilePath path to an ajava file for {@code javaFilePath}
+   * @param annotationFilePath path to an ajava file
    * @param javaFilePath path to a Java file to insert annotation into
    */
   public void insertAnnotations(String annotationFilePath, String javaFilePath) {
@@ -505,7 +508,7 @@ public class InsertAjavaAnnotations {
       System.err.println(
           "Failed to insertion annotations from file "
               + annotationFilePath
-              + " to file "
+              + " into file "
               + javaFilePath);
       System.exit(1);
     }
@@ -523,13 +526,13 @@ public class InsertAjavaAnnotations {
    * <p>For each file in the second argument, checks if an ajava file from the first argument
    * matches it. For each such file, inserts all its annotations into the Java file.
    *
-   * @param args command line arguments, the first element should be a path to ajava files and the
+   * @param args command line arguments: the first element should be a path to ajava files and the
    *     second should be the directory containing Java files to insert into
    */
   public static void main(String[] args) {
     if (args.length != 2) {
       System.out.println(
-          "Usage: java InsertAjavaAnnotations <ajava-directory> <java-file-directory");
+          "Usage: java InsertAjavaAnnotations <ajava-file-or-directory> <java-file-or-directory");
       System.exit(1);
     }
 
