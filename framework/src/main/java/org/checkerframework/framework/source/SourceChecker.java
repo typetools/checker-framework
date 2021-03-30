@@ -936,7 +936,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
     if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage() > .25) {
       messager.printMessage(
-          Kind.WARNING, "Garbage collection consumed over 25% of CPU diring the past minute.");
+          Kind.WARNING, "Garbage collection consumed over 25% of CPU during the past minute.");
       messager.printMessage(
           Kind.WARNING,
           String.format(
