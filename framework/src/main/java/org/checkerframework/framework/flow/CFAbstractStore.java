@@ -259,6 +259,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     }
                 } else {
                     localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+                    thisValue = null;
                     fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
                 }
             } else {
