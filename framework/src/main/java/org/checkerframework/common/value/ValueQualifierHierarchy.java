@@ -410,10 +410,10 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         // The annotations are one of: ArrayLen, BoolVal, DoubleVal, EnumVal, StringVal.
         @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> superValues =
-            AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, true);
+            AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, false);
         @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> subValues =
-            AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
+            AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, false);
         return superValues.containsAll(subValues);
       }
     }
