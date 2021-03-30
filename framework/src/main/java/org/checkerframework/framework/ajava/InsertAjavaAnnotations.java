@@ -531,8 +531,8 @@ public class InsertAjavaAnnotations {
    * <p>The second argument is a Java file or a directory containing Java files to insert
    * annotations into. The files must use the same line separator as the host system.
    *
-   * <p>For each file in the second argument, checks if an ajava file from the first argument
-   * matches it. For each such file, inserts all its annotations into the Java file.
+   * <p>For each Java file, checks if any ajava files from the first argument match it. For each
+   * such ajava file, inserts all its annotations into the Java file.
    *
    * @param args command line arguments: the first element should be a path to ajava files and the
    *     second should be the directory containing Java files to insert into
@@ -549,7 +549,8 @@ public class InsertAjavaAnnotations {
     AnnotationFileStore annotationFiles = new AnnotationFileStore();
     annotationFiles.addFileOrDirectory(new File(ajavaDir));
     InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
-    FileVisitor<Path> visitor =
+    // For each Java file, this visitor inserts annotations into it.
+    FileVisitor<Path> insertionVisitor =
         new SimpleFileVisitor<Path>() {
           @Override
           public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
@@ -580,10 +581,11 @@ public class InsertAjavaAnnotations {
         };
 
     try {
-      Files.walkFileTree(Paths.get(javaSourceDir), visitor);
+      Files.walkFileTree(Paths.get(javaSourceDir), insertionVisitor);
     } catch (IOException e) {
       System.out.println("Error while adding annotations to: " + javaSourceDir);
       e.printStackTrace();
+      System.exit(1);
     }
   }
 }
