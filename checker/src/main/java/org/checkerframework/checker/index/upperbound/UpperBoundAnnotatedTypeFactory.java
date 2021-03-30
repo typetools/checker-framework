@@ -126,8 +126,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   public final ExecutableElement ltLengthOfOffsetElement =
       TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
 
-  private final List<String> emptyStringList = Collections.emptyList();
-
   /** Predicates about what method an invocation is calling. */
   private final IndexMethodIdentifier imf;
 
@@ -273,7 +271,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             AnnotationUtils.getElementValueArray(anm, ltLengthOfValueElement, String.class);
         List<String> offsets =
             AnnotationUtils.getElementValueArray(
-                anm, ltLengthOfOffsetElement, String.class, emptyStringList);
+                anm, ltLengthOfOffsetElement, String.class, Collections.emptyList());
         if (sequences != null
             && offsets != null
             && sequences.size() != offsets.size()

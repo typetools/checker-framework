@@ -62,6 +62,7 @@ public class KeyForAnnotatedTypeFactory
   protected final ExecutableElement keyForValueElement =
       TreeUtils.getMethod(KeyFor.class, "value", 0, processingEnv);
 
+  /** Moves annotations from one side of a pseudo-assignment to the other. */
   private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
   /** Create a new KeyForAnnotatedTypeFactory. */
