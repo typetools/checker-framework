@@ -17,12 +17,30 @@ import org.plumelib.util.StringsPlume;
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
 
+  /** Creates a new TypecheckExecutor. */
   public TypecheckExecutor() {}
 
-  /** Runs a typechecking test using the given configuration and returns the test result. */
+  /**
+   * Runs a typechecking test using the given configuration and returns the test result.
+   *
+   * @param configuration the test configuration
+   * @return the test result
+   */
   public TypecheckResult runTest(TestConfiguration configuration) {
-    CompilationResult result = compile(configuration);
-    return interpretResults(configuration, result);
+    try {
+      CompilationResult result = compile(configuration);
+      return interpretResults(configuration, result);
+    } catch (OutOfMemoryError e) {
+      String message =
+          String.format(
+              "Max memory = %d, total memory = %d, free memory = %d.",
+              Runtime.getRuntime().maxMemory(),
+              Runtime.getRuntime().totalMemory(),
+              Runtime.getRuntime().freeMemory());
+      System.out.println(message);
+      System.err.println(message);
+      throw new Error(message, e);
+    }
   }
 
   /**

@@ -14,3 +14,5 @@ includeBuild ('../annotation-tools/annotation-file-utilities') {
         }
     }
 }
+
+org.gradle.jvmargs=-Xmx2g
