@@ -51,10 +51,19 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
 
-/** Inserts annotations from an ajava file into a Java file. */
+/** This program inserts annotations from an ajava file into a Java file. */
 public class InsertAjavaAnnotations {
   /** Element utilities. */
   private Elements elements;
+
+  /**
+   * Constructs an {@code InsertAjavaAnnotations} using the given {@code Elements} instance.
+   *
+   * @param elements an instance of {@code Elements}
+   */
+  public InsertAjavaAnnotations(Elements elements) {
+    this.elements = elements;
+  }
 
   /**
    * Gets an instance of {@code Elements} from the current Java compiler.
@@ -72,6 +81,7 @@ public class InsertAjavaAnnotations {
     JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
     if (fileManager == null) {
       System.err.println("Could not get file manager");
+      System.exit(1);
     }
 
     CompilationTask cTask =
@@ -79,18 +89,10 @@ public class InsertAjavaAnnotations {
             null, fileManager, diagnostics, Collections.emptyList(), null, Collections.emptyList());
     if (!(cTask instanceof JavacTask)) {
       System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
+      System.exit(1);
     }
 
     return ((JavacTask) cTask).getElements();
-  }
-
-  /**
-   * Constructs an {@code InsertAjavaAnnotations} using the given {@code Elements} instance.
-   *
-   * @param elements an instance of {@code Elements}
-   */
-  public InsertAjavaAnnotations(Elements elements) {
-    this.elements = elements;
   }
 
   /** Represents some text to be inserted at a file and its location. */
@@ -99,7 +101,7 @@ public class InsertAjavaAnnotations {
     public int position;
     /** The contents of the insertion. */
     public String contents;
-    /** Whether the insertion represents an object on its own line. */
+    /** Whether the insertion should be on its own separate line. */
     public boolean ownLine;
 
     /**
@@ -117,7 +119,7 @@ public class InsertAjavaAnnotations {
      *
      * @param position offset of the insertion in the file
      * @param contents contents of the insertion
-     * @param ownLine true if this insertion represents an object on its own line (doesn't affect
+     * @param ownLine true if this insertion should appear on its own separate line (doesn't affect
      *     the contents of the insertion)
      */
     public Insertion(int position, String contents, boolean ownLine) {
@@ -163,8 +165,8 @@ public class InsertAjavaAnnotations {
 
     /**
      * Constructs a {@code BuildInsertionsVisitor} where {@code destFileContents} is the String
-     * representation of the AST to insertion annotations to. When visiting a node pair, the second
-     * node must always be from an AST generated from this String.
+     * representation of the AST to insertion annotations into. When visiting a node pair, the
+     * second node must always be from an AST generated from this String.
      *
      * @param destFileContents the String the second vistide AST was parsed from
      */

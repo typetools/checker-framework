@@ -40,14 +40,11 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   private Elements elements;
 
   /**
-   * Constructs a {@code TypeAnnotationMover}. The {@code allAnnotations} parameter should contain
-   * all the annotations imported by the file to be visited. There should be two entries for each
-   * annotation: the annotation's simple name and its fully-qualified name both mapped to its
-   * TypeElement. When examining an annotation in the file, looks up the name in {@code
-   * allAnnotations} to find the TypeElement for the annotation.
+   * Constructs a {@code TypeAnnotationMover}.
    *
-   * @param allAnnotations mapping from annotation name to TypeElement for the annotations imported
-   *     by the file
+   * @param allAnnotations the annotations imported by the file, as a mapping from annotation name
+   *     to TypeElement. There should be two entries for each annotation: the annotation's simple
+   *     name and its fully-qualified name both mapped to its TypeElement.
    * @param elements Element utilities
    */
   public TypeAnnotationMover(Map<String, TypeElement> allAnnotations, Elements elements) {
@@ -101,7 +98,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * possibly be declaration annotations for that type of declaration.
    *
    * @param node JavaParser node for declaration
-   * @param declarationType the type of declaration {@code node} represents
+   * @param declarationType the type of declaration {@code node} represents; always FIELD or METHOD
    * @return a list of annotations in declaration position that should be on the declaration's type
    */
   private List<AnnotationExpr> getAnnotationsToMove(
@@ -142,9 +139,8 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
   /**
    * Returns if {@code annotation} could be a declaration annotation for {@code declarationType}.
-   * This would be the case if the annotation isn't recognized at all, or if it was recognized and
-   * either has {@code declarationType} as one of its targets or has no {@code @Target}
-   * meta-annotation.
+   * This would be the case if the annotation isn't recognized at all, or if it has no
+   * {@code @Target} meta-annotation, or if it has {@code declarationType} as one of its targets.
    *
    * @param annotation a JavaParser annotation expression
    * @param declarationType the declaration type to check if {@code annotation} might be a
@@ -164,9 +160,8 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
   /**
    * Returns whether the annotation represented by {@code annotationDeclaration} might be a
-   * declaration annotation for {@code declarationType}. This holds if {@code declarationType} is a
-   * target of the annotation, or if {@code ElementType.TYPE_USE} is not a target of the annotation,
-   * or if the TypeElement has no {@code @Target} meta-annotation.
+   * declaration annotation for {@code declarationType}. This holds if the TypeElement has no
+   * {@code @Target} meta-annotation, or if {@code declarationType} is a target of the annotation.
    *
    * @param annotationDeclaration declaration for an annotation
    * @param declarationType the declaration type to check if the annotation might be a declaration
@@ -183,19 +178,20 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
 
     boolean hasTypeUse = false;
     for (ElementType elementType : target.value()) {
-      if (elementType == ElementType.TYPE_USE) {
-        hasTypeUse = true;
-      }
-
       if (elementType == declarationType) {
         return true;
       }
+
+      if (elementType == ElementType.TYPE_USE) {
+        hasTypeUse = true;
+      }
     }
 
-    assert hasTypeUse
-        : String.format(
-            "Annotation %s cannot be used on declaration with type %s",
-            annotationDeclaration.getQualifiedName(), declarationType);
+    if (!hasTypeUse) {
+      throw new BugInCF(
+          "Annotation %s cannot be used on declaration with type %s",
+          annotationDeclaration.getQualifiedName(), declarationType);
+    }
     return false;
   }
 
