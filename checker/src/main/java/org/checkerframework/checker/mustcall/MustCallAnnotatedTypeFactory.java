@@ -1,7 +1,5 @@
 package org.checkerframework.checker.mustcall;
 
-import static javax.lang.model.element.ElementKind.PARAMETER;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -334,7 +332,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromTree(node);
-      if (elt.getKind() == PARAMETER
+      if (elt.getKind() == ElementKind.PARAMETER
           && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
               || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
