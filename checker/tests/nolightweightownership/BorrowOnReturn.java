@@ -3,8 +3,7 @@
 import org.checkerframework.checker.mustcall.qual.*;
 
 class BorrowOnReturn {
-  @MustCall("a")
-  class Foo {
+  @MustCall("a") class Foo {
     void a() {}
   }
 
@@ -43,8 +42,7 @@ class BorrowOnReturn {
     return f;
   }
 
-  @MustCall("a")
-  Object getNotOwningFooRight2() {
+  @MustCall("a") Object getNotOwningFooRight2() {
     return new Foo();
   }
 }

@@ -23,8 +23,7 @@ class LogTheSocket {
 
   @NotOwning ServerSocket s;
 
-  @MustCall("")
-  Object s2;
+  @MustCall("") Object s2;
 
   void testAssign(@Owning ServerSocket s1) {
     s = s1;

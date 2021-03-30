@@ -18,32 +18,22 @@ public class Subtype0 {
       @Owning Subtype3 s3,
       @Owning Subtype4 s4) {
     // :: error: assignment.type.incompatible
-    @MustCall({})
-    Object obj1 = s0;
-    @MustCall({"a"})
-    Object obj2 = s0;
+    @MustCall({}) Object obj1 = s0;
+    @MustCall({"a"}) Object obj2 = s0;
 
     // :: error: assignment.type.incompatible
-    @MustCall({})
-    Object obj3 = s1;
-    @MustCall({"a"})
-    Object obj4 = s1;
+    @MustCall({}) Object obj3 = s1;
+    @MustCall({"a"}) Object obj4 = s1;
 
     // :: error: assignment.type.incompatible
-    @MustCall({})
-    Object obj5 = s2;
-    @MustCall({"a"})
-    Object obj6 = s2;
+    @MustCall({}) Object obj5 = s2;
+    @MustCall({"a"}) Object obj6 = s2;
 
-    @MustCall({})
-    Object obj7 = s3;
-    @MustCall({"a"})
-    Object obj8 = s3;
+    @MustCall({}) Object obj7 = s3;
+    @MustCall({"a"}) Object obj8 = s3;
 
-    @MustCall({})
-    Object obj9 = s4;
-    @MustCall({"a"})
-    Object obj10 = s4;
+    @MustCall({}) Object obj9 = s4;
+    @MustCall({"a"}) Object obj10 = s4;
   }
 
   @MustCall({})
@@ -54,8 +44,7 @@ public class Subtype0 {
   // :: error: super.invocation.invalid
   public class Subtype4 extends Subtype0 {}
 
-  @MustCall({"a"})
-  public class Subtype5 extends Subtype0 {}
+  @MustCall({"a"}) public class Subtype5 extends Subtype0 {}
 
   @InheritableMustCall({"a"})
   public class Subtype6 extends Subtype0 {}
