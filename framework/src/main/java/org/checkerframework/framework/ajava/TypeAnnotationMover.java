@@ -72,7 +72,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
       return;
     }
 
-    removeAnnotations(node, annosToMove);
+    node.getAnnotations().removeAll(annosToMove);
     annosToMove.forEach(anno -> type.asClassOrInterfaceType().addAnnotation(anno));
   }
 
@@ -92,7 +92,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
       return;
     }
 
-    removeAnnotations(node, annosToMove);
+    node.getAnnotations().removeAll(annosToMove);
     annosToMove.forEach(anno -> type.asClassOrInterfaceType().addAnnotation(anno));
   }
 
@@ -114,16 +114,6 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
     }
 
     return annosToMove;
-  }
-
-  /**
-   * Removes all annotations from {@code node} that appear in {@code annosToRemove}
-   *
-   * @param node a node with annotations
-   * @param annosToRemove list of annotations to remove
-   */
-  private void removeAnnotations(NodeWithAnnotations<?> node, List<AnnotationExpr> annosToRemove) {
-    node.getAnnotations().removeAll(annosToRemove);
   }
 
   /**
