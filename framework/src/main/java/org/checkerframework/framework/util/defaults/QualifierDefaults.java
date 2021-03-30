@@ -17,6 +17,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -81,6 +82,8 @@ public class QualifierDefaults {
   /** Element utilities to use. */
   private final Elements elements;
 
+  /** The value() element/field of a @DefaultQualifier annotation. */
+  protected final ExecutableElement defaultQualifierValueElement;
   /** The locations() element/field of a @DefaultQualifier annotation. */
   protected final ExecutableElement defaultQualifierLocationsElement;
 
@@ -175,12 +178,11 @@ public class QualifierDefaults {
     this.useConservativeDefaultsBytecode =
         atypeFactory.getChecker().useConservativeDefault("bytecode");
     this.useConservativeDefaultsSource = atypeFactory.getChecker().useConservativeDefault("source");
+    ProcessingEnvironment processingEnv = atypeFactory.getProcessingEnv();
+    this.defaultQualifierValueElement =
+        TreeUtils.getMethod(DefaultQualifier.class, "value", 0, processingEnv);
     this.defaultQualifierLocationsElement =
-        TreeUtils.getMethod(
-            "org.checkerframework.framework.qual.DefaultQualifier",
-            "locations",
-            0,
-            atypeFactory.getProcessingEnv());
+        TreeUtils.getMethod(DefaultQualifier.class, "locations", 0, processingEnv);
   }
 
   @Override
@@ -534,7 +536,7 @@ public class QualifierDefaults {
    */
   private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
     @SuppressWarnings("unchecked")
-    Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
+    Name cls = AnnotationUtils.getElementValueClassName(dq, defaultQualifierValueElement);
     AnnotationMirror anno = AnnotationBuilder.fromName(elements, cls);
 
     if (anno == null) {
