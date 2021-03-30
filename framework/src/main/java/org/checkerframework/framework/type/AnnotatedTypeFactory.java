@@ -2525,7 +2525,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   // This method extracts the ugly hacky parts.
-  // This method should be rewritten and in particular diamonds should be implemented cleanly.
+  // This method should be rewritten and in particular diamonds should be
+  // implemented cleanly.
   // See Issue 289.
   private void fromNewClassContextHelper(AnnotatedDeclaredType type, AnnotatedTypeMirror ctxtype) {
     switch (ctxtype.getKind()) {

@@ -13,10 +13,11 @@ import org.checkerframework.dataflow.expression.JavaExpression;
  */
 public interface Store<S extends Store<S>> {
 
-  // We maintain a then store and an else store before each basic block.  When they are identical
-  // (by reference equality), they can be treated as a regular unconditional store.
-  // Once we have some information for both the then and else store, we create a TransferInput for
-  // the block and allow it to be analyzed.
+  // We maintain a then store and an else store before each basic block.
+  // When they are identical (by reference equality), they can be treated
+  // as a regular unconditional store.
+  // Once we have some information for both the then and else store, we
+  // create a TransferInput for the block and allow it to be analyzed.
   public static enum Kind {
     THEN,
     ELSE,

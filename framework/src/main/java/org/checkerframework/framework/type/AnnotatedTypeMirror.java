@@ -1535,9 +1535,10 @@ public abstract class AnnotatedTypeMirror {
     // @NonNull Y" should not be converted into "X extends @NonNull Y super @Nullable bottomtype"
     // but be converted into "X extends @NonNull Y super @NonNull bottomtype".
     //
-    // In addition, ensure consistency of annotations on type variables and the upper bound. Assume
-    // class C<X extends @Nullable Object>.  The type of "@Nullable X" has to be "@Nullable X
-    // extends @Nullable Object", because otherwise the annotations are inconsistent.
+    // In addition, ensure consistency of annotations on type variables
+    // and the upper bound. Assume class C<X extends @Nullable Object>.
+    // The type of "@Nullable X" has to be "@Nullable X extends @Nullable Object",
+    // because otherwise the annotations are inconsistent.
     private void fixupBoundAnnotations() {
       if (!this.getAnnotationsField().isEmpty()) {
         Set<AnnotationMirror> newAnnos = this.getAnnotationsField();

@@ -106,8 +106,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
   public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also be
-    // aliased in the constructor of ValueAnnotatedTypeFactory to the appropriate @IntRangeFrom*
+    // Any annotations that are aliased to @NonNegative, @Positive,
+    // or @GTENegativeOne must also be aliased in the constructor of
+    // ValueAnnotatedTypeFactory to the appropriate @IntRangeFrom*
     // annotation.
     addAliasedTypeAnnotation(IndexFor.class, NN);
     addAliasedTypeAnnotation(IndexOrLow.class, GTEN1);
