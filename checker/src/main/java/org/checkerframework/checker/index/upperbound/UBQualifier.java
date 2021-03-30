@@ -70,7 +70,7 @@ public abstract class UBQualifier {
     } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
       return parseLTEqLengthOf(am, offset, ubChecker);
     } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
-      return parseLTOMLengthOf(am, offset);
+      return parseLTOMLengthOf(am, offset, ubChecker);
     } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
       // TODO:  Ignores offset.  Should we check that offset is not set?
       return PolyQualifier.POLY;
@@ -178,10 +178,13 @@ public abstract class UBQualifier {
    *
    * @param am a @LTOMLengthOf annotation
    * @param extraOffset offset to add to each element of offsets; may be null
+   * @param ubChecker used for obtaining fields from {@code am}
    * @return a UBQualifier created from the @LTOMLengthOf annotation
    */
-  private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
-    List<String> sequences = AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+  private static UBQualifier parseLTOMLengthOf(
+      AnnotationMirror am, String extraOffset, UpperBoundChecker ubChecker) {
+    List<String> sequences =
+        AnnotationUtils.getElementValueArray(am, ubChecker.ltOMLengthOfValueElement, String.class);
     List<String> offset = Collections.nCopies(sequences.size(), "1");
     return createUBQualifier(sequences, offset, extraOffset);
   }

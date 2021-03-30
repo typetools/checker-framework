@@ -160,11 +160,17 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         QualifierKind superKind) {
       if (subKind == SIBLING_WITH_FIELDS_KIND && superKind == SIBLING_WITH_FIELDS_KIND) {
         List<String> subVal1 =
-            AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                subAnno, siblingWithFieldsValueElement, String.class, emptyStringList);
         List<String> supVal1 =
-            AnnotationUtils.getElementValueArray(superAnno, "value", String.class, true);
-        String subVal2 = AnnotationUtils.getElementValue(subAnno, "value2", String.class, true);
-        String supVal2 = AnnotationUtils.getElementValue(superAnno, "value2", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                superAnno, siblingWithFieldsValueElement, String.class, emptyStringList);
+        String subVal2 =
+            AnnotationUtils.getElementValue(
+                subAnno, siblingWithFieldsValue2Element, String.class, "");
+        String supVal2 =
+            AnnotationUtils.getElementValue(
+                superAnno, siblingWithFieldsValue2Element, String.class, "");
         return subVal1.equals(supVal1) && subVal2.equals(supVal2);
       }
       throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);

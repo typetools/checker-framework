@@ -119,6 +119,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The SameLen.value element/field. */
   public final ExecutableElement sameLenValueElement =
       TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
+  /** The LTLengthOf.value element/field. */
+  public final ExecutableElement ltLengthOfValueElement =
+      TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
+  /** The LTLengthOf.offset element/field. */
+  public final ExecutableElement ltLengthOfOffsetElement =
+      TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
+
+  private final List<String> emptyStringList = Collections.emptyList();
 
   /** Predicates about what method an invocation is calling. */
   private final IndexMethodIdentifier imf;
@@ -262,9 +270,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
       if (anm != null) {
         List<String> sequences =
-            AnnotationUtils.getElementValueArray(anm, "value", String.class, false);
+            AnnotationUtils.getElementValueArray(anm, ltLengthOfValueElement, String.class);
         List<String> offsets =
-            AnnotationUtils.getElementValueArray(anm, "offset", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                anm, ltLengthOfOffsetElement, String.class, emptyStringList);
         if (sequences != null
             && offsets != null
             && sequences.size() != offsets.size()
