@@ -1,5 +1,10 @@
 package sideeffectsonly;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.testchecker.sideeffectsonly.qual.SideEffectsOnlyToyBottom;
+
 public class SideEffectsOnlyField {
     Object a;
     Object b;
@@ -12,20 +17,15 @@ public class SideEffectsOnlyField {
         method2(arg.b);
     }
 
-    @org.checkerframework.framework.qual.EnsuresQualifier(
+    @EnsuresQualifier(
             expression = {"#1.a", "#1.b"},
-            qualifier =
-                    org.checkerframework.framework.testchecker.sideeffectsonly.qual
-                            .SideEffectsOnlyToyBottom.class)
+            qualifier = SideEffectsOnlyToyBottom.class)
     // :: error: contracts.postcondition.not.satisfied
     static void method(SideEffectsOnlyField x) {}
 
-    @org.checkerframework.dataflow.qual.SideEffectsOnly("#1.a")
+    @SideEffectsOnly("#1.a")
     static void method3(SideEffectsOnlyField z) {}
 
-    @org.checkerframework.dataflow.qual.SideEffectFree
-    static void method2(
-            @org.checkerframework.framework.testchecker.sideeffectsonly.qual
-                            .SideEffectsOnlyToyBottom
-                    Object x) {}
+    @SideEffectFree
+    static void method2(@SideEffectsOnlyToyBottom Object x) {}
 }
