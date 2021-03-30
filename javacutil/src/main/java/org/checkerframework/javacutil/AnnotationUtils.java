@@ -806,7 +806,10 @@ public class AnnotationUtils {
    * @param useDefaults whether to apply default values to the element
    * @return the value of the element with the given name; it is a new list, so it is safe for
    *     clients to side-effect
+   * @deprecated use {@code #getElementValueArray(AnnotationMirror, ExecutableElement, Class)} or
+   *     {@code #getElementValueArray(AnnotationMirror, ExecutableElement, Class, Object)}
    */
+  @Deprecated // for use only by the framework
   public static <T> List<T> getElementValueArray(
       AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
     @SuppressWarnings("unchecked")

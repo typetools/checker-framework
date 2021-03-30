@@ -1179,7 +1179,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
     List<String> expressions =
-        AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
+        AnnotationUtils.getElementValueArray(
+            gbAnno, atypeFactory.guardedByValueElement, String.class, Collections.emptyList());
 
     if (expressions.isEmpty()) {
       return Collections.emptyList();

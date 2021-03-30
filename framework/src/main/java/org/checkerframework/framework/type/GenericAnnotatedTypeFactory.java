@@ -2679,11 +2679,10 @@ public abstract class GenericAnnotatedTypeFactory<
           contractAnnotation, ensuresQualifierIfExpressionElement, String.class);
     }
     // `contractAnnotation` is defined in a checker.
-    if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
-      return AnnotationUtils.getElementValueArray(
-          contractAnnotation, "expression", String.class, true);
-    } else {
-      return AnnotationUtils.getElementValueArray(contractAnnotation, "value", String.class, true);
-    }
+    String elementName = kind == Contract.Kind.CONDITIONALPOSTCONDITION ? "expression" : "value";
+    @SuppressWarnings("deprecation") // concrete annotation class is not known
+    List<String> result =
+        AnnotationUtils.getElementValueArray(contractAnnotation, elementName, String.class, true);
+    return result;
   }
 }

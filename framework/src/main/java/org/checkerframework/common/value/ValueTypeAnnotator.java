@@ -152,6 +152,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
       // In here the annotation is @*Val where (*) is not Int, String but other types
       // (Bool, Double, or Enum).
       // Therefore we extract its values in a generic way to check its size.
+      @SuppressWarnings("deprecation") // concrete annotation class is not known
       List<Object> values =
           AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
       if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {

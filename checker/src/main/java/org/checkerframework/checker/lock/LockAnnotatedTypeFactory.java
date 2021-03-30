@@ -64,6 +64,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -708,8 +709,9 @@ public class LockAnnotatedTypeFactory
     }
 
     // The version of javax.annotation.concurrent.GuardedBy included with the Checker Framework
-    // declares the type of value as an array of Strings, whereas the one included with FindBugs
-    // declares it as a String. So, the code below figures out which type should be used.
+    // declares the type of value as an array of Strings, whereas the one defined in JCIP and
+    // included with FindBugs declares it as a String. So, the code below figures out which type
+    // should be used.
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = anno.getElementValues();
     Object value = null;
     for (ExecutableElement elem : valmap.keySet()) {
@@ -720,7 +722,9 @@ public class LockAnnotatedTypeFactory
     }
     List<String> lockExpressions;
     if (value instanceof List) {
-      lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+      @SuppressWarnings("unchecked")
+      List<AnnotationValue> la = (List<AnnotationValue>) value;
+      lockExpressions = CollectionsPlume.mapList((AnnotationValue a) -> (String) a.getValue(), la);
     } else if (value instanceof String) {
       lockExpressions = Collections.singletonList((String) value);
     } else {

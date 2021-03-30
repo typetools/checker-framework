@@ -408,8 +408,10 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         return superRange.contains(subRange);
       } else {
         // The annotations are one of: ArrayLen, BoolVal, DoubleVal, EnumVal, StringVal.
+        @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> superValues =
             AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, true);
+        @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> subValues =
             AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
         return superValues.containsAll(subValues);

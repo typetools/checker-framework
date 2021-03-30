@@ -98,6 +98,10 @@ import org.plumelib.util.CollectionsPlume;
  * rather than every time the expression string is parsed. (The expression string is parsed multiple
  * times because annotated types are created multiple times.)
  */
+@SuppressWarnings(
+    "deprecation" // TEMPORARY, until https://github.com/typetools/checker-framework/pull/4470 is
+// merged
+)
 public class DependentTypesHelper {
 
   /** AnnotatedTypeFactory */
