@@ -19,10 +19,10 @@ trim_trailing_whitespace = false
 # Doc: https://youtrack.jetbrains.com/issue/IDEA-170643#focus=streamItem-27-3708697.0-0
 # $ means "static"
 ij_java_imports_layout = $*,|,*
-indent_size = 4
-tab_width = 4
+indent_size = 2
+tab_width = 2
 max_line_length = 100
-ij_continuation_indent_size = 8
+ij_continuation_indent_size = 4
 ij_any_spaces_around_additive_operators = true
 ij_any_spaces_around_assignment_operators = true
 ij_any_spaces_around_bitwise_operators = true
