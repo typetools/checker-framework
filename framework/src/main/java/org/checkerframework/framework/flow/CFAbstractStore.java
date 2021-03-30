@@ -184,20 +184,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return PurityUtils.isSideEffectFree(atypeFactory, method);
     }
 
-    /**
-     * Returns true if the method has the declaration annotation {@code @SideEffectsOnly}.
-     *
-     * @param atypeFactory the type factory used to retrieve annotations
-     * @param method a method
-     * @return true if the method is annotated with {@code @SideEffectsOnly}
-     */
-    protected boolean isSideEffectsOnly(
-            AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-        AnnotationMirror sefOnlyAnnotation =
-                atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
-        return sefOnlyAnnotation != null;
-    }
-
     /* --------------------------------------------------------- */
     /* Handling of fields */
     /* --------------------------------------------------------- */
@@ -222,20 +208,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
      */
     public void updateForMethodCall(
-            MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
-        ExecutableElement method = n.getTarget().getMethod();
+            MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+        ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
         // List of expressions that this method side-effects (specified as arguments/elements of
         // @SideEffectsOnly). If the list is empty, then there is no @SideEffectsOnly annotation.
         List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
-        if (isSideEffectsOnly(atypeFactory, method)) {
+        AnnotationMirror sefOnlyAnnotation =
+                atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+        if (sefOnlyAnnotation != null) {
             SourceChecker checker = analysis.checker;
             JavaExpressionParseUtil.JavaExpressionContext methodUseContext =
                     JavaExpressionParseUtil.JavaExpressionContext.buildContextForMethodUse(
-                            n, checker);
+                            methodInvocationNode, checker);
 
-            AnnotationMirror sefOnlyAnnotation =
-                    atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
             List<String> sideEffectsOnlyExpressionStrings =
                     AnnotationUtils.getElementValueArray(
                             sefOnlyAnnotation, "value", String.class, true);
@@ -333,7 +319,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // store information about method call if possible
-        JavaExpression methodCall = JavaExpression.fromNode(n);
+        JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
         replaceValue(methodCall, val);
     }
 
