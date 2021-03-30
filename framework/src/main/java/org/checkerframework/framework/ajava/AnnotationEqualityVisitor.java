@@ -58,11 +58,16 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
   }
 
   @Override
-  public void defaultAction(Node node1, Node node2) {
+  public <T extends Node> void defaultAction(T node1, T node2) {
     if (!(node1 instanceof NodeWithAnnotations<?>) || !(node2 instanceof NodeWithAnnotations<?>)) {
       return;
     }
 
+    // Comparing annotations, with "equals" considers comments in the AST attached to the
+    // annotations. These should be ignored because two valid ASTs for the same file may differ in
+    // where comments appear, or whether they appear at all. So, to check if two nodes have the same
+    // annotations we create copies with all comments removed and compare their lists of annotations
+    // directly.
     Node node1Copy = node1.clone();
     Node node2Copy = node2.clone();
     for (Comment comment : node1Copy.getAllContainedComments()) {

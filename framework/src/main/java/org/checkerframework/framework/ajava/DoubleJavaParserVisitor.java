@@ -102,16 +102,14 @@ import java.util.List;
 /**
  * A visitor that visits two JavaParser ASTs simultaneously that almost match. When calling a visit
  * method, the secondary argument must be another JavaParser {@code Node} that represents an AST
- * identical to the first argument except for the following exceptions:
- *
- * <ol>
- *   <li>The annotations may differ
- *   <li>They may differ in whether a method has an explicit receiver
- * </ol>
+ * identical to the first argument except for the exceptions allowed between an ajava file and its
+ * corresponding Java file, see the linked section of the manual.
  *
  * <p>To use this class, extend it and override {@link #defaultAction(Node, Node)}. This method will
  * be called on every pair of nodes in the two ASTs. This class does not visit annotations, since
  * those may differ between the two ASTs.
+ *
+ * @checker_framework.manual #ajava-contents ways in which the two visited ASTs may differ
  */
 public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   /**
@@ -120,7 +118,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
    * @param node1 first node in pair
    * @param node2 second node in pair
    */
-  public abstract void defaultAction(Node node1, Node node2);
+  public abstract <T extends Node> void defaultAction(T node1, T node2);
 
   /**
    * Given two lists with the same size where corresponding elements represent nodes with
@@ -281,7 +279,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   public void visit(final CompilationUnit node1, final Node other) {
     CompilationUnit node2 = (CompilationUnit) other;
     defaultAction(node1, node2);
-    visitLists(node1.getImports(), node2.getImports());
     node1.getModule().ifPresent(l -> l.accept(this, node2.getModule().get()));
     node1
         .getPackageDeclaration()
@@ -693,7 +690,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     TypeParameter node2 = (TypeParameter) other;
     defaultAction(node1, node2);
     node1.getName().accept(this, node2.getName());
-    visitLists(node1.getTypeBound(), node2.getTypeBound());
+    // Since ajava files and its corresponding Java file may differ in whether they contain a type
+    // bound, only visit type bounds if they're present in both nodes.
+    if (node1.getTypeBound().isEmpty() == node2.getTypeBound().isEmpty()) {
+      visitLists(node1.getTypeBound(), node2.getTypeBound());
+    }
   }
 
   @Override

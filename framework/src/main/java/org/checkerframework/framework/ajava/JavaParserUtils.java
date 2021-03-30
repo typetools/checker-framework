@@ -48,6 +48,24 @@ public class JavaParserUtils {
   }
 
   /**
+   * Returns the fully qualified name of a type appearing in a given compilation unit.
+   *
+   * @param type a type declaration
+   * @param compilationUnit the compilation unit containing {@code type}
+   * @return the fully qualified name of {@code type} if {@code compilationUnit} contains a package
+   *     declaration, or just the name of {@code type} otherwise
+   */
+  public static String getFullyQualifiedName(
+      TypeDeclaration<?> type, CompilationUnit compilationUnit) {
+    String name = type.getNameAsString();
+    if (compilationUnit.getPackageDeclaration().isPresent()) {
+      name = compilationUnit.getPackageDeclaration().get().getNameAsString() + "." + name;
+    }
+
+    return name;
+  }
+
+  /**
    * Side-effects {@code node} by removing all annotations from anywhere inside its subtree.
    *
    * @param node a JavaParser Node

@@ -171,6 +171,11 @@ public class InsertAjavaAnnotations {
       allAnnotations = null;
       insertions = new ArrayList<>();
       printer = new PrettyPrinter();
+      // TODO: Make this line separator agnostic, which would require keeping track of the position
+      // of the start of each line. Existing methods that convert files or Strings to lines don't
+      // keep track which line separator that was used at which line, such as Files.readAllLines,
+      // Files.lines, or Scanner.nextLine, so this would likely require an ad hoc line splitting
+      // method.
       String[] lines = destFileContents.split(System.lineSeparator());
       this.lines = Arrays.asList(lines);
       cumulativeLineSizes = new ArrayList<>();
@@ -458,15 +463,10 @@ public class InsertAjavaAnnotations {
    * other insertions.
    *
    * <p>The order in which insertions should appear is determined first by their absolute position
-   * in the file, and second by whether they have their own line. In a method like, ```
-   *
-   * <pre>{@code
-   * @Pure
-   * @Tainting String myMethod();
-   * }</pre>
-   *
-   * ``` both annotations should be inserted at the same location (right before "String"), but
-   * {@code @Pure} should always come first because it belongs on its own line.
+   * in the file, and second by whether they have their own line. In a method like,
+   * {@code @Pure @Tainting String myMethod()} both annotations should be inserted at the same
+   * location (right before "String"), but {@code @Pure} should always come first because it belongs
+   * on its own line.
    *
    * @param insertion1 the first insertion
    * @param insertion2 the second insertion
@@ -518,7 +518,7 @@ public class InsertAjavaAnnotations {
    * file or a directory containing ajava files.
    *
    * <p>The second argument is a Java file or a directory containing Java files to insert
-   * annotations into.
+   * annotations into. The files must use the same line separator as the host system.
    *
    * <p>For each file in the second argument, checks if an ajava file from the first argument
    * matches it. For each such file, inserts all its annotations into the Java file.
@@ -533,8 +533,10 @@ public class InsertAjavaAnnotations {
       System.exit(1);
     }
 
+    String ajavaDir = args[0];
+    String javaSourceDir = args[1];
     AnnotationFileStore annotationFiles = new AnnotationFileStore();
-    annotationFiles.addFileOrDirectory(new File(args[0]));
+    annotationFiles.addFileOrDirectory(new File(ajavaDir));
     InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
     FileVisitor<Path> visitor =
         new SimpleFileVisitor<Path>() {
@@ -554,11 +556,7 @@ public class InsertAjavaAnnotations {
 
             Set<String> annotationFilesForRoot = new LinkedHashSet<>();
             for (TypeDeclaration<?> type : root.getTypes()) {
-              String name = type.getNameAsString();
-              if (root.getPackageDeclaration().isPresent()) {
-                name = root.getPackageDeclaration().get().getNameAsString() + "." + name;
-              }
-
+              String name = JavaParserUtils.getFullyQualifiedName(type, root);
               annotationFilesForRoot.addAll(annotationFiles.getAnnotationFileForType(name));
             }
 
@@ -571,9 +569,9 @@ public class InsertAjavaAnnotations {
         };
 
     try {
-      Files.walkFileTree(Paths.get(args[1]), visitor);
+      Files.walkFileTree(Paths.get(javaSourceDir), visitor);
     } catch (IOException e) {
-      System.out.println("Error while adding annotations to: " + args[1]);
+      System.out.println("Error while adding annotations to: " + javaSourceDir);
       e.printStackTrace();
     }
   }

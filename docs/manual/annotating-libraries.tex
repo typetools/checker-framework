@@ -911,9 +911,10 @@ named
 \subsubsectionAndLabel{Contents of an ajava file}{ajava-contents}
 
 The
-ajava file must contain the same source code as the sourec file with the following exceptions:
+ajava file must contain the same source code as the source file with the following exceptions:
 \begin{itemize}
   \item The two may differ in annotations.
+  \item The two may have different import statements
   \item The ajava file may have explicit receivers where the source file
     doesn't. If a source file has a method declaration \code{void
       myMethod()}, the ajava file might contain \code{void myMethod(MyClass
