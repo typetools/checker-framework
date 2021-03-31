@@ -385,9 +385,14 @@ import org.plumelib.util.UtilPlume;
   // Parse all JDK files at startup rather than as needed.
   "parseAllJdk",
 
+  // Run checks that test ajava files.
+  //
   // Whenever processing a source file, parse it with JavaParser and check that the AST can be
   // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
-  "checkJavaParserVisitor",
+  //
+  // Also checks that annotations can be inserted. For each Java file, clears all annotations and
+  // reinserts them, then checks if the original and modified ASTs are equivalent.
+  "ajavaChecks",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
