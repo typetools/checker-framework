@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -217,6 +218,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
   protected final ExecutableElement targetValueElement;
+  /** The {@code when} element/field of the @Unused annotation. */
+  protected final ExecutableElement unusedWhenElement;
 
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
@@ -243,7 +246,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
     this.vectorType =
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
-    targetValueElement = TreeUtils.getMethod("java.lang.annotation.Target", "value", 0, env);
+    targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
+    unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
   }
 
   /**
@@ -4295,7 +4299,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    String when = AnnotationUtils.getElementValueClassName(unused, "when", false).toString();
+    String when = AnnotationUtils.getElementValueClassName(unused, unusedWhenElement).toString();
 
     // TODO: Don't just look at the receiver type, but at the declaration annotations on the
     // receiver.  (That will enable handling type annotations that are not part of the type

@@ -202,6 +202,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
       case ValueAnnotatedTypeFactory.INTVAL_NAME:
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+        @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> values =
             AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
 

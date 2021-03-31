@@ -44,10 +44,14 @@ public final class SubtypingChecker extends BaseTypeChecker {
       SourceVisitor<?, ?> visitor, SortedSet<String> superSupportedTypeQualifiers) {
     TreeSet<String> result = new TreeSet<>(superSupportedTypeQualifiers);
 
-    Set<Class<? extends Annotation>> annos =
-        ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
-    for (Class<? extends Annotation> anno : annos) {
-      result.add(anno.getSimpleName().toLowerCase());
+    // visitor can be null if there was an error when calling the visitor class's constructor --
+    // that is, when there is a bug in a checker implementation.
+    if (visitor != null) {
+      Set<Class<? extends Annotation>> annos =
+          ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
+      for (Class<? extends Annotation> anno : annos) {
+        result.add(anno.getSimpleName().toLowerCase());
+      }
     }
 
     return result;
