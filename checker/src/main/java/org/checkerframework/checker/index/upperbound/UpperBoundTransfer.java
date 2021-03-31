@@ -5,8 +5,11 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.Subsequence;
@@ -24,6 +27,7 @@ import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
@@ -32,6 +36,7 @@ import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -102,6 +107,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
+  /** The java.lang.String type. */
+  TypeMirror stringTypeMirror;
+
   /** The type factory associated with this transfer function. */
   private UpperBoundAnnotatedTypeFactory atypeFactory;
 
@@ -113,6 +121,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public UpperBoundTransfer(CFAnalysis analysis) {
     super(analysis);
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+
+    stringTypeMirror = atypeFactory.getElementUtils().getTypeElement("java.lang.String").asType();
   }
 
   /**
@@ -822,5 +832,97 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     Node switchNode = assign.getExpression();
     refineSubtrahendWithOffset(switchNode, caseNode, false, in, result.getThenStore());
     return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitIntegerLiteral(
+      IntegerLiteralNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitIntegerLiteral(n, in);
+
+    // This could be extended to all integers if desired, but literals probably gives most of the
+    // needed benefit.
+
+    CFValue resultValue = result.getResultValue();
+    CFStore store = result.getRegularStore();
+
+    System.out.printf(
+        "resultValue=%s, resultValue.getAnnotations()=%s%n",
+        resultValue, resultValue.getAnnotations());
+
+    List<JavaExpression> ltloSequences = ltloSequences(n, store);
+    System.out.printf("ltloSequences=%s%n", ltloSequences);
+
+    // I think I want to GLB the existing value with a new @LTLengthOf annotation.  But, there is no
+    // GLB routine.  There is mostSpecific.  Should that really be GLB?
+
+    // The annotations might be:
+    //  * if the result is already bottom, leave it as bottom
+    //  * otherwise,
+
+    // Eventually, set the TransferResult's value, or else side-effect its annotations.
+
+    return result;
+  }
+
+  /**
+   * Sets the integer's upper bound type in the given store.
+   *
+   * @param n an integer literal node
+   * @param store a store
+   */
+  void setIntUbType(IntegerLiteralNode n, CFStore store) {
+    // TODO
+    // if (...) {
+    //      store.insertValue(rightJe, glbAnno);
+    // }
+
+  }
+
+  /**
+   * Returns all the sequences such that the given integer literal is less than their length.
+   *
+   * @param n an integer literal
+   * @param store the store
+   * @return all the sequences such that the given integer literal is less than their length.
+   */
+  List<JavaExpression> ltloSequences(IntegerLiteralNode n, CFStore store) {
+    int intVal = n.getValue();
+    // The literal is less than the length of all these sequences.
+    List<JavaExpression> result = new ArrayList<>();
+    for (Map.Entry<FieldAccess, CFValue> entry : store.getFieldValues().entrySet()) {
+      FieldAccess fa = entry.getKey();
+      if (isLtLengthOf(intVal, fa, /*TODO*/ null)) {
+        result.add(fa);
+      }
+    }
+    for (Map.Entry<LocalVariable, CFValue> entry : store.getLocalVariableValues().entrySet()) {
+      LocalVariable lv = entry.getKey();
+      if (isLtLengthOf(intVal, lv, /*TODO*/ null)) {
+        result.add(lv);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if the integer is @LTLengthOf the Java expression.
+   *
+   * @param i an integer
+   * @param je a Java expression; this method does nothing unless it is a string or an array
+   * @param
+   * @param cfv the abstract value associated with {@code je}
+   * @return true if the integer is @LTLengthOf the Java expression
+   */
+  boolean isLtLengthOf(int i, JavaExpression je, CFValue cfv) {
+    TypeMirror type = je.getType();
+    if (type.getKind() == TypeKind.ARRAY) {
+      // TODO
+      return true;
+    } else if (atypeFactory.types.isSameType(type, stringTypeMirror)) {
+      // TODO
+      return true;
+    } else {
+      return false;
+    }
   }
 }

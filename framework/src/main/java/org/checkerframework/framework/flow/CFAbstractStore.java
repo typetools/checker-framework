@@ -63,8 +63,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** The analysis class this store belongs to. */
   protected final CFAbstractAnalysis<V, S, ?> analysis;
 
-  /** Information collected about local variables (including method arguments). */
+  /** Information collected about local variables (including method parameters). */
   protected final Map<LocalVariable, V> localVariableValues;
+
+  /**
+   * Returns information about local variables. Clients should not side-effect the returned value,
+   * which is aliased to internal state.
+   *
+   * @return information about local variables
+   */
+  public Map<LocalVariable, V> getLocalVariableValues() {
+    return localVariableValues;
+  }
 
   /** Information collected about the current object. */
   protected V thisValue;
@@ -82,7 +92,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return fieldValues;
   }
 
-  /** Information collected about arrays, using the internal representation {@link ArrayAccess}. */
+  /**
+   * Information collected about array elements, using the internal representation {@link
+   * ArrayAccess}.
+   */
   protected Map<ArrayAccess, V> arrayValues;
 
   /**
