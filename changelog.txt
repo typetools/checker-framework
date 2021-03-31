@@ -53,8 +53,8 @@ Method renamings:
     * `standardizeReturnType` => `atReturnType`
     * `standardizeVariable` => `atVariableDeclaration`
 
-Deprecated methods:
- * `AnnotationUtils.areSameByClass`: use `AnnotationUtils.areSameByName`
+Deprecated methods in `AnnotationUtils`:
+ * `areSameByClass`: use `areSameByName`
 
 Removed deprecated `PluginUtil` class.
 
