@@ -1,6 +1,5 @@
 package org.checkerframework.checker.mustcall;
 
-import java.util.Properties;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
@@ -34,5 +33,4 @@ public class MustCallChecker extends BaseTypeChecker {
 
   /** disables @MustCallAlias support */
   public static final String NO_RESOURCE_ALIASES = "noResourceAliases";
-
 }
