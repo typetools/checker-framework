@@ -17,6 +17,13 @@ import org.checkerframework.javacutil.TreeUtils;
  * Construction Checker's -AcheckMustCall algorithm.
  */
 public class MustCallTypeValidator extends BaseTypeValidator {
+  /**
+   * Create a MustCallTypeValidator by calling the super constructor.
+   *
+   * @param checker the checker
+   * @param visitor the visitor
+   * @param atypeFactory the type factory
+   */
   public MustCallTypeValidator(
       BaseTypeChecker checker, BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
     super(checker, visitor, atypeFactory);

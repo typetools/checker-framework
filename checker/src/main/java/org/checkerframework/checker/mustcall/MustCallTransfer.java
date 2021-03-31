@@ -223,6 +223,7 @@ public class MustCallTransfer extends CFTransfer {
    * @param createsObligation a create obligation annotation
    * @param n the method invocation of a reset method
    * @param atypeFactory the type factory
+   * @param currentPath the current path
    * @return the java expression representing the target, or null if the target is unparseable
    */
   private static @Nullable JavaExpression getCreatesObligationExpressionsImpl(
@@ -257,10 +258,16 @@ public class MustCallTransfer extends CFTransfer {
     return targetExpr;
   }
 
-  /*
-   * Helper function to standardize and viewpoint adapt a String given a path and a context.
-   * Wraps JavaExpressionParseUtil#parse. If a parse exception is encountered, this returns
-   * its argument.
+  /**
+   * Helper function to standardize and viewpoint adapt a String within the context of a method
+   * invocation. Wraps JavaExpressionParseUtil#parse. If a parse exception is encountered, this
+   * returns its argument.
+   *
+   * @param s the string to standardize viewpoint adapt
+   * @param miNode the method invocation node in whose context s should be standardized and
+   *     viewpoint adapted
+   * @param checker the checker
+   * @return a standardized and viewpoint adapted view of s, or s if s could not be parsed
    */
   public static String standardizeAndViewpointAdapt(
       String s, MethodInvocationNode miNode, BaseTypeChecker checker) {
@@ -283,6 +290,14 @@ public class MustCallTransfer extends CFTransfer {
     return handleStringConcatenation(super.visitStringConcatenateAssignment(n, in));
   }
 
+  /**
+   * Create a new result for a string concatenation that forces their type to always be bottom.
+   * Without this logic, implicit string conversions can cause string-typed expressions to take on
+   * types from non-string arguments to a concatenation, which is undesirable.
+   *
+   * @param result the current transfer result
+   * @return the modified result
+   */
   private TransferResult<CFValue, CFStore> handleStringConcatenation(
       TransferResult<CFValue, CFStore> result) {
     TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
@@ -312,6 +327,13 @@ public class MustCallTransfer extends CFTransfer {
     }
   }
 
+  /**
+   * Either returns the temporary variable associated with node, or creates one if one does not
+   * exist. node must be an expression, not a statement.
+   *
+   * @param node a node
+   * @return a temporary variable node representing node that can be placed into a store
+   */
   private @Nullable LocalVariableNode getOrCreateTempVar(Node node) {
     LocalVariableNode localVariableNode = atypeFactory.tempVars.get(node.getTree());
     if (localVariableNode == null) {
@@ -326,10 +348,17 @@ public class MustCallTransfer extends CFTransfer {
     return localVariableNode;
   }
 
-  protected @Nullable VariableTree createTemporaryVar(Node method) {
-    ExpressionTree tree = (ExpressionTree) method.getTree();
+  /**
+   * Creates a variable declaration for the given expression node, if possible.
+   *
+   * @param node an expression node
+   * @return a variable tree for the node, or null if an appropriate containing element cannot be
+   *     located
+   */
+  protected @Nullable VariableTree createTemporaryVar(Node node) {
+    ExpressionTree tree = (ExpressionTree) node.getTree();
     TypeMirror treeType = TreeUtils.typeOf(tree);
-    Element enclosingElement = null;
+    Element enclosingElement;
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
       enclosingElement = TreeUtils.elementFromTree(tree).getEnclosingElement();
@@ -350,8 +379,16 @@ public class MustCallTransfer extends CFTransfer {
     return tmpVarTree;
   }
 
+  /** A unique identifier counter for node names. */
   protected long uid = 0;
 
+  /**
+   * Creates a unique name using the given prefix. Can be used up to Long.MAX_VALUE times for each
+   * prefix.
+   *
+   * @param prefix the prefix for the name
+   * @return a unique name that starts with the prefix
+   */
   protected String uniqueName(String prefix) {
     return prefix + "-" + uid++;
   }
