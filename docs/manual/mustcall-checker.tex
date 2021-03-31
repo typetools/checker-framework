@@ -24,7 +24,7 @@ The MustCall Checker supports these qualifiers and declaration annotations:
   indicates that the qualifier's arguments are the methods that the annotated type
   should call. The type \<@MustCall(\{"a"\}) Object obj> means
   that before \<obj> is deallocated, \<obj.a()> should be called.
-  The default type qualifier in unannotated code is this type with an empty argument.
+  The default type qualifier for an unannotated type is \<@MustCall(\{\})>.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallUnknown}]
   is used internally by the type system but should never be written by a
