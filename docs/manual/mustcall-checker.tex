@@ -5,14 +5,14 @@ The MustCall Checker tracks the methods that an object should call before it is 
 and produces a conservative overapproximation of the set of methods that might
 actually need to be called on an object.
 It is intended to be run as a subchecker of another checker: on its own, it does not
-actually enforce any rules other than subtyping.
+enforce any rules other than subtyping.
 
 For example, an object whose type is \<java.io.OutputStream> might
 have an obligation to call the \<close()> method, to release an underlying file resource. Or,
 such an \<OutputStream> might not have such an obligation, if the underlying resource is, for
 example, a byte array. Either of these obligations can be represented by the static type
-\<@MustCall(\{"close"\}) OutputStream>, which can be read as "an OutputStream that might need
-to call close before it is deallocated".
+\<@MustCall(\{"close"\}) OutputStream>, which can be read as ``an OutputStream that might need
+to call close before it is deallocated''.
 
 \sectionAndLabel{MustCall annotations}{must-call-annotations}
 
@@ -46,18 +46,18 @@ The MustCall Checker supports these qualifiers and declaration annotations:
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{CreatesObligation}{String value}]
   is a declaration annotation that can be written on a method or constructor. It takes a single Java expression as an
-  argument, referred to as its "target". Intuitively, this annotation means that the annotated method
-  "resets" the must-call obligations of its target to the least upper bound of their current value and the default
+  argument, referred to as its ``target''. Intuitively, this annotation means that the annotated method
+  ``resets'' the must-call obligations of its target to the least upper bound of their current value and the default
   must-call obligations for its declared type. This annotation is repeatable, if the copies have different targets.
 
 \item[\refqualclass{checker/mustcall/qual}{Owning}]
   is a declaration annotation that can be written on a method parameter, method return type, or
-  field declaration. It indicates that the annotated element is the "owning" pointer to any resource,
+  field declaration. It indicates that the annotated element is the ``owning'' pointer to any resource,
   and the MustCall Checker may never forget information about its obligations.
 
 \item[\refqualclass{checker/mustcall/qual}{NotOwning}]
   is a declaration annotation that can be written on a method parameter, method return type, or
-  field declaration. It indicates that the annotated element is NOT the "owning" pointer to any resource,
+  field declaration. It indicates that the annotated element is \emph{not} the ``owning'' pointer to any resource,
   and the MustCall Checker may forget information about its obligations temporarily.
 
 \end{description}
@@ -74,7 +74,7 @@ never be written by a programmer.}
 
 Note that \<@MustCall(\{"a", "b"\}) Object> represents more possible values than
 \<@MustCall(\{"a"\}) Object> does, because \<@MustCall(\{"a"\}) Object> can only
-contain an object that needs to call \<a> or one that needs to call nothing - an
+contain an object that needs to call \<a> or one that needs to call nothing --- an
 object that needs to call \<b> (or both \<a> and \<b>) is not permitted.
 \<@MustCall(\{"a", "b"\}) Object> represents all objects that need to
 call \<a>, \<b>, both, or neither; it cannot not represent an object that needs
