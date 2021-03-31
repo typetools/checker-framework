@@ -26,6 +26,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -217,7 +218,8 @@ public class StubGenerator {
     if (!typeElement.getInterfaces().isEmpty()) {
       final boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
       out.print(isInterface ? " extends " : " implements ");
-      List<String> ls = SystemUtil.mapList(StubGenerator::formatType, typeElement.getInterfaces());
+      List<String> ls =
+          CollectionsPlume.mapList(StubGenerator::formatType, typeElement.getInterfaces());
       out.print(formatList(ls));
     }
 
@@ -358,7 +360,8 @@ public class StubGenerator {
 
     if (!method.getThrownTypes().isEmpty()) {
       out.print(" throws ");
-      List<String> ltt = SystemUtil.mapList(StubGenerator::formatType, method.getThrownTypes());
+      List<String> ltt =
+          CollectionsPlume.mapList(StubGenerator::formatType, method.getThrownTypes());
       out.print(formatList(ltt));
     }
     out.println(';');

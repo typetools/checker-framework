@@ -7,7 +7,7 @@ plugins {
     id "de.undercouch.download" version "4.1.1"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "2.0.0"
+    id "net.ltgt.errorprone" version "2.0.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
@@ -115,7 +115,7 @@ allprojects {
         // There's a bug in IntelliJ that adds the processor path to the classpath when building
         // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
         // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
-        // from the processor path as a work around for this problem.
+        // processor path as a work around for this problem.
         annotationProcessor.exclude group:'org.checkerframework', module:'javacutil'
         annotationProcessor.exclude group:'org.checkerframework', module:'dataflow'
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
@@ -252,8 +252,6 @@ allprojects {
                         '-Xep:AnnotateFormatMethod:OFF',
                         // Warns for every use of "@checker_framework.manual"
                         '-Xep:InvalidBlockTag:OFF',
-                        // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
-                        '-Xep:InlineFormatString:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -341,6 +339,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
                 '-AwarnUnneededSuppressions',
         ]
         options.compilerArgs += args
+        options.forkOptions.jvmArgs += ["-Xmx2g"]
 
         if (isJava8) {
             options.compilerArgs += [

@@ -11,7 +11,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 /** The qualifier hierarchy for the Value type system. */
 final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
@@ -233,29 +233,31 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         case ValueAnnotatedTypeFactory.INTVAL_NAME:
           List<Long> longs1 = atypeFactory.getIntValues(a1);
           List<Long> longs2 = atypeFactory.getIntValues(a2);
-          return atypeFactory.createIntValAnnotation(SystemUtil.concatenate(longs1, longs2));
+          return atypeFactory.createIntValAnnotation(CollectionsPlume.concatenate(longs1, longs2));
         case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
           List<Integer> arrayLens1 = atypeFactory.getArrayLength(a1);
           List<Integer> arrayLens2 = atypeFactory.getArrayLength(a2);
           return atypeFactory.createArrayLenAnnotation(
-              SystemUtil.concatenate(arrayLens1, arrayLens2));
+              CollectionsPlume.concatenate(arrayLens1, arrayLens2));
         case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
           List<String> strings1 = atypeFactory.getStringValues(a1);
           List<String> strings2 = atypeFactory.getStringValues(a2);
-          return atypeFactory.createStringAnnotation(SystemUtil.concatenate(strings1, strings2));
+          return atypeFactory.createStringAnnotation(
+              CollectionsPlume.concatenate(strings1, strings2));
         case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
           List<Boolean> bools1 = atypeFactory.getBooleanValues(a1);
           List<Boolean> bools2 = atypeFactory.getBooleanValues(a2);
-          return atypeFactory.createBooleanAnnotation(SystemUtil.concatenate(bools1, bools2));
+          return atypeFactory.createBooleanAnnotation(CollectionsPlume.concatenate(bools1, bools2));
         case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
           List<Double> doubles1 = atypeFactory.getDoubleValues(a1);
           List<Double> doubles2 = atypeFactory.getDoubleValues(a2);
-          return atypeFactory.createDoubleAnnotation(SystemUtil.concatenate(doubles1, doubles2));
+          return atypeFactory.createDoubleAnnotation(
+              CollectionsPlume.concatenate(doubles1, doubles2));
         case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
           List<@Regex String> regexes1 = atypeFactory.getMatchesRegexValues(a1);
           List<@Regex String> regexes2 = atypeFactory.getMatchesRegexValues(a2);
           return atypeFactory.createMatchesRegexAnnotation(
-              SystemUtil.concatenate(regexes1, regexes2));
+              CollectionsPlume.concatenate(regexes1, regexes2));
         default:
           throw new BugInCF("default case: %s %s %s%n", qual1, a1, a2);
       }
@@ -406,9 +408,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         return superRange.contains(subRange);
       } else {
         List<Object> superValues =
-            AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, true);
+            AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, false);
         List<Object> subValues =
-            AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
+            AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, false);
         return superValues.containsAll(subValues);
       }
     }

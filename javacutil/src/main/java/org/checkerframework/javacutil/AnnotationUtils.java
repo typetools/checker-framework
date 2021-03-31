@@ -45,6 +45,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
+import org.plumelib.util.CollectionsPlume;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -894,7 +895,7 @@ public class AnnotationUtils {
       AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
     List<Type.ClassType> la =
         getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-    return SystemUtil.<Type.ClassType, @CanonicalName Name>mapList(
+    return CollectionsPlume.<Type.ClassType, @CanonicalName Name>mapList(
         (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
   }
 

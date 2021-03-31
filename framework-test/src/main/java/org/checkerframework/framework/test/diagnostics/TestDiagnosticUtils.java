@@ -13,7 +13,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
@@ -308,7 +308,7 @@ public class TestDiagnosticUtils {
       String restOfLine = trimmedLine.substring(5); // drop the "// ::"
       String[] diagnosticStrs = restOfLine.split("::");
       List<TestDiagnostic> diagnostics =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (String diagnostic) -> fromJavaFileComment(filename, errorLine, diagnostic),
               diagnosticStrs);
       return new TestDiagnosticLine(
@@ -384,7 +384,7 @@ public class TestDiagnosticUtils {
    * @return a list of the diagnastics as they would appear in a source file
    */
   public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-    return SystemUtil.mapList(TestDiagnostic::toString, diagnostics);
+    return CollectionsPlume.mapList(TestDiagnostic::toString, diagnostics);
   }
 
   public static void removeDiagnosticsOfKind(

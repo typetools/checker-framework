@@ -32,7 +32,6 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -69,9 +68,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -143,7 +143,7 @@ public class JavaExpressionParseUtil {
       throws JavaExpressionParseException {
 
     String expressionWithParameterNames =
-        SystemUtil.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
+        StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
       expr = StaticJavaParser.parseExpression(expressionWithParameterNames);
@@ -682,7 +682,7 @@ public class JavaExpressionParseUtil {
 
       // parse argument list
       List<JavaExpression> arguments =
-          SystemUtil.mapList(argument -> argument.accept(this, null), expr.getArguments());
+          CollectionsPlume.mapList(argument -> argument.accept(this, null), expr.getArguments());
 
       ExecutableElement methodElement;
       try {
@@ -753,7 +753,7 @@ public class JavaExpressionParseUtil {
         Resolver resolver)
         throws JavaExpressionParseException {
 
-      List<TypeMirror> argumentTypes = SystemUtil.mapList(JavaExpression::getType, arguments);
+      List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
 
       if (receiverType.getKind() == TypeKind.ARRAY) {
         ExecutableElement element =
@@ -839,7 +839,7 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
       List<JavaExpression> dimensions =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (ArrayCreationLevel dimension) ->
                   dimension.getDimension().isPresent()
                       ? dimension.getDimension().get().accept(this, aVoid)
@@ -849,7 +849,7 @@ public class JavaExpressionParseUtil {
       List<JavaExpression> initializers;
       if (expr.getInitializer().isPresent()) {
         initializers =
-            SystemUtil.mapList(
+            CollectionsPlume.mapList(
                 (Expression initializer) -> initializer.accept(this, null),
                 expr.getInitializer().get().getValues());
       } else {
@@ -1037,25 +1037,6 @@ public class JavaExpressionParseUtil {
       }
       return null;
     }
-  }
-
-  /**
-   * Returns a list of 1-based indices of all formal parameters that occur in {@code s}. Each formal
-   * parameter occurs in s as a string like "#1" or "#4". This routine does not do proper parsing;
-   * for instance, if "#2" appears within a string in s, then 2 is in the result list. The result
-   * may contain duplicates.
-   *
-   * @param s a Java expression
-   * @return a list of 1-based indices of all formal parameters that occur in {@code s}
-   */
-  public static List<Integer> parameterIndices(String s) {
-    List<Integer> result = new ArrayList<>();
-    Matcher matcher = UNANCHORED_PARAMETER_PATTERN.matcher(s);
-    while (matcher.find()) {
-      int idx = Integer.parseInt(matcher.group(1));
-      result.add(idx);
-    }
-    return result;
   }
 
   /**
