@@ -25,6 +25,8 @@ if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --e
   echo "Don't use static import or wildcard import"
   exit 1
 fi
+make -C checker/bin
+make -C checker/bin-devel
 
 ## HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon

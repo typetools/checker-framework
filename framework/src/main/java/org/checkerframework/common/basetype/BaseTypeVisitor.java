@@ -1,6 +1,9 @@
 package org.checkerframework.common.basetype;
 
+import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.printer.PrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -44,8 +47,10 @@ import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,7 +94,9 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
+import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
+import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
 import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -211,6 +218,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
   protected final ExecutableElement targetValueElement;
+  /** The {@code when} element/field of the @Unused annotation. */
+  protected final ExecutableElement unusedWhenElement;
 
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
@@ -237,7 +246,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
     this.vectorType =
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
-    targetValueElement = TreeUtils.getMethod("java.lang.annotation.Target", "value", 0, env);
+    targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
+    unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
   }
 
   /**
@@ -302,6 +312,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     atypeFactory.setRoot(root);
     super.setRoot(root);
     testJointJavacJavaParserVisitor();
+    testAnnotationInsertion();
   }
 
   @Override
@@ -314,7 +325,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Test {@link org.checkerframework.framework.ajava.JointJavacJavaParserVisitor} if the checker
-   * has the "checkJavaParserVisitor" option.
+   * has the "ajavaChecks" option.
    *
    * <p>Parse the current source file with JavaParser and check that the AST can be matched with the
    * Tree prodoced by javac. Crash if not.
@@ -322,31 +333,106 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test if even the option is provided.
    */
   protected void testJointJavacJavaParserVisitor() {
-    if (checker.hasOption("checkJavaParserVisitor") && root != null) {
-      Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
-      try {
-        java.io.InputStream reader = root.getSourceFile().openInputStream();
-        com.github.javaparser.ast.CompilationUnit javaParserRoot = StaticJavaParser.parse(reader);
-        reader.close();
-        JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
-        new JointVisitorWithDefaultAction() {
-          @Override
-          public void defaultAction(Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
-            treePairs.put(javacTree, javaParserNode);
-          }
-        }.visitCompilationUnit(root, javaParserRoot);
-        ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
-        expectedTreesVisitor.visitCompilationUnit(root, null);
-        for (Tree expected : expectedTreesVisitor.getTrees()) {
-          if (!treePairs.containsKey(expected)) {
-            throw new BugInCF(
-                "Javac tree not matched to JavaParser node: %s, in file: %s",
-                expected, root.getSourceFile().getName());
-          }
+    if (root == null || !checker.hasOption("ajavaChecks")) {
+      return;
+    }
+
+    Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
+    try {
+      java.io.InputStream reader = root.getSourceFile().openInputStream();
+      com.github.javaparser.ast.CompilationUnit javaParserRoot = StaticJavaParser.parse(reader);
+      reader.close();
+      JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
+      new JointVisitorWithDefaultAction() {
+        @Override
+        public void defaultAction(Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
+          treePairs.put(javacTree, javaParserNode);
         }
-      } catch (IOException e) {
-        throw new BugInCF("Error reading Java source file", e);
+      }.visitCompilationUnit(root, javaParserRoot);
+      ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
+      expectedTreesVisitor.visitCompilationUnit(root, null);
+      for (Tree expected : expectedTreesVisitor.getTrees()) {
+        if (!treePairs.containsKey(expected)) {
+          throw new BugInCF(
+              "Javac tree not matched to JavaParser node: %s, in file: %s",
+              expected, root.getSourceFile().getName());
+        }
       }
+    } catch (IOException e) {
+      throw new BugInCF("Error reading Java source file", e);
+    }
+  }
+
+  /**
+   * Tests {@link org.checkerframework.framework.ajava.InsertAjavaAnnotations} if the checker has
+   * the "ajavaChecks" option.
+   *
+   * <ol>
+   *   <li>Parses the current file with JavaParser.
+   *   <li>Removes all annotations.
+   *   <li>Reinserts the annotations.
+   *   <li>Throws an exception if the ASTs are not the same.
+   * </ol>
+   *
+   * <p>Subclasses may override this method to disable the test even if the option is provided.
+   */
+  protected void testAnnotationInsertion() {
+    if (root == null || !checker.hasOption("ajavaChecks")) {
+      return;
+    }
+
+    CompilationUnit originalAst;
+    try (InputStream originalInputStream = root.getSourceFile().openInputStream()) {
+      originalAst = StaticJavaParser.parse(originalInputStream);
+    } catch (IOException e) {
+      throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
+    }
+
+    CompilationUnit astWithoutAnnotations = originalAst.clone();
+    JavaParserUtils.clearAnnotations(astWithoutAnnotations);
+    String withoutAnnotations = new PrettyPrinter().print(astWithoutAnnotations);
+
+    String withAnnotations;
+    try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
+      // This check only runs on files from the Checker Framework test suite, which should all use
+      // UNIX line separators. Using System.lineSeparator instead of "\n" could cause the test to
+      // fail on Mac or Windows.
+      withAnnotations =
+          new InsertAjavaAnnotations(elements)
+              .insertAnnotations(annotationInputStream, withoutAnnotations, "\n");
+    } catch (IOException e) {
+      throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
+    }
+
+    CompilationUnit modifiedAst = null;
+    try {
+      modifiedAst = StaticJavaParser.parse(withAnnotations);
+    } catch (ParseProblemException e) {
+      throw new BugInCF("Failed to parse annotation insertion:\n" + withAnnotations, e);
+    }
+
+    AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();
+    originalAst.accept(visitor, modifiedAst);
+    if (!visitor.getAnnotationsMatch()) {
+      throw new BugInCF(
+          "Reinserting annotations produced different AST.\n"
+              + "Original node: "
+              + visitor.getMismatchedNode1()
+              + "\n"
+              + "Node with annotations re-inserted: "
+              + visitor.getMismatchedNode2()
+              + "\n"
+              + "Original annotations: "
+              + visitor.getMismatchedNode1().getAnnotations()
+              + "\n"
+              + "Re-inserted annotations: "
+              + visitor.getMismatchedNode2().getAnnotations()
+              + "\n"
+              + "Original AST:\n"
+              + originalAst
+              + "\n"
+              + "Ast with annotations re-inserted: "
+              + modifiedAst);
     }
   }
 
@@ -4223,7 +4309,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    String when = AnnotationUtils.getElementValueClassName(unused, "when", false).toString();
+    String when = AnnotationUtils.getElementValueClassName(unused, unusedWhenElement).toString();
 
     // TODO: Don't just look at the receiver type, but at the declaration annotations on the
     // receiver.  (That will enable handling type annotations that are not part of the type

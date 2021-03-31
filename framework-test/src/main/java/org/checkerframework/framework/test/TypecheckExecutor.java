@@ -17,6 +17,7 @@ import org.plumelib.util.StringsPlume;
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
 
+  /** Creates a new TypecheckExecutor. */
   public TypecheckExecutor() {}
 
   /**

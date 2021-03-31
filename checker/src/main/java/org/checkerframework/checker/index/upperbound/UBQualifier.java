@@ -13,10 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
-import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
-import org.checkerframework.checker.index.qual.UpperBoundBottom;
-import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
@@ -59,19 +56,26 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotationMirror am, String offset, UpperBoundChecker ubChecker) {
-    if (AnnotationUtils.areSameByClass(am, UpperBoundUnknown.class)) {
+    if (AnnotationUtils.areSameByName(
+        am, "org.checkerframework.checker.index.qual.UpperBoundUnknown")) {
       return UpperBoundUnknownQualifier.UNKNOWN;
-    } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
+    } else if (AnnotationUtils.areSameByName(
+        am, "org.checkerframework.checker.index.qual.UpperBoundBottom")) {
       return UpperBoundBottomQualifier.BOTTOM;
-    } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
+    } else if (AnnotationUtils.areSameByName(
+        am, "org.checkerframework.checker.index.qual.LTLengthOf")) {
       return parseLTLengthOf(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
+    } else if (AnnotationUtils.areSameByName(
+        am, "org.checkerframework.checker.index.qual.SubstringIndexFor")) {
       return parseSubstringIndexFor(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
+    } else if (AnnotationUtils.areSameByName(
+        am, "org.checkerframework.checker.index.qual.LTEqLengthOf")) {
       return parseLTEqLengthOf(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
-      return parseLTOMLengthOf(am, offset);
-    } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
+    } else if (AnnotationUtils.areSameByName(
+        am, "org.checkerframework.checker.index.qual.LTOMLengthOf")) {
+      return parseLTOMLengthOf(am, offset, ubChecker);
+    } else if (AnnotationUtils.areSameByName(
+        am, "org.checkerframework.checker.index.qual.PolyUpperBound")) {
       // TODO:  Ignores offset.  Should we check that offset is not set?
       return PolyQualifier.POLY;
     }
@@ -178,10 +182,13 @@ public abstract class UBQualifier {
    *
    * @param am a @LTOMLengthOf annotation
    * @param extraOffset offset to add to each element of offsets; may be null
+   * @param ubChecker used for obtaining fields from {@code am}
    * @return a UBQualifier created from the @LTOMLengthOf annotation
    */
-  private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
-    List<String> sequences = AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+  private static UBQualifier parseLTOMLengthOf(
+      AnnotationMirror am, String extraOffset, UpperBoundChecker ubChecker) {
+    List<String> sequences =
+        AnnotationUtils.getElementValueArray(am, ubChecker.ltOMLengthOfValueElement, String.class);
     List<String> offset = Collections.nCopies(sequences.size(), "1");
     return createUBQualifier(sequences, offset, extraOffset);
   }
