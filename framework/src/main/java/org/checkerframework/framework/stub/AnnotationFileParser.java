@@ -323,7 +323,7 @@ public class AnnotationFileParser {
    * @param packageElement a package
    * @return a map from annotation name to TypeElement
    */
-  private Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
+  public static Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
     return createNameToAnnotationMap(ElementFilter.typesIn(packageElement.getEnclosedElements()));
   }
 
@@ -334,7 +334,7 @@ public class AnnotationFileParser {
    * @param typeElement a type
    * @return a map from annotation name to TypeElement
    */
-  private Map<String, TypeElement> annosInType(TypeElement typeElement) {
+  public static Map<String, TypeElement> annosInType(TypeElement typeElement) {
     return createNameToAnnotationMap(ElementFilter.typesIn(typeElement.getEnclosedElements()));
   }
 
@@ -344,7 +344,7 @@ public class AnnotationFileParser {
    * @param typeElements the elements whose annotations to retrieve
    * @return a map from annotation names (both fully-qualified and simple names) to TypeElement
    */
-  private Map<String, TypeElement> createNameToAnnotationMap(List<TypeElement> typeElements) {
+  public static Map<String, TypeElement> createNameToAnnotationMap(List<TypeElement> typeElements) {
     Map<String, TypeElement> result = new HashMap<>();
     for (TypeElement typeElm : typeElements) {
       if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
@@ -2578,7 +2578,7 @@ public class AnnotationFileParser {
    * @param key a key
    * @param value the value to associate with the key, if the key isn't already in the map
    */
-  private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
+  public static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
     if (key == null) {
       throw new BugInCF("AnnotationFileParser: key is null for value " + value);
     }
@@ -2637,7 +2637,7 @@ public class AnnotationFileParser {
    * @param <K> the key type for the maps
    * @param <V> the value type for the maps
    */
-  private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
+  public static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
     for (Map.Entry<K, V> e2 : m2.entrySet()) {
       putIfAbsent(m, e2.getKey(), e2.getValue());
     }
