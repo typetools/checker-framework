@@ -15,6 +15,9 @@ The MustCall Checker over-approximates the methods that an object must call
 before it is de-allocated. This component checker is intended to be used
 as a subchecker by a resource leak checker, which is coming soon!
 
+The `value` element/argument to `@EnumVal` is now required.  Previously it
+defaulted to an empty array.
+
 **Implementation details:**
 
 A precondition or normal postcondition annotation's `value` element must have
