@@ -2646,7 +2646,10 @@ public abstract class GenericAnnotatedTypeFactory<
             contractAnnotation, ensuresQualifierIfResultElement, /*default is irrelevant*/ false);
       } else {
         // It's a checker-specific annotation such as @EnsuresMinLenIf
-        return AnnotationUtils.getElementValue(contractAnnotation, "result", Boolean.class, false);
+        @SuppressWarnings("deprecation") // concrete annotation class is not known
+        Boolean result =
+            AnnotationUtils.getElementValue(contractAnnotation, "result", Boolean.class, false);
+        return result;
       }
     } else {
       return null;

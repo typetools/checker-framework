@@ -661,7 +661,10 @@ public class AnnotationUtils {
    * @param <T> the class of the type
    * @param useDefaults whether to apply default values to the element
    * @return the value of the element with the given name
+   * @deprecated use {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
+   *     #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}
    */
+  @Deprecated // for use by the framework only
   public static <T> T getElementValue(
       AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
