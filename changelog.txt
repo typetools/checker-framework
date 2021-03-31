@@ -34,8 +34,6 @@ Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
 class, the method `compare` was renamed `defaultAction`. The method `combineRs`
 was replaced by `reduce`.
 
-Removed deprecated `PluginUtil` class.
-
 Removed methods:
  * `AnnotationUtils.getElementValueArrayOrSingleton`
  * `DependentTypesHelper.standardizeNewClassTree`: use `atExpression` instead
@@ -54,6 +52,11 @@ Method renamings:
     * `standardizeFieldAccess` => `atFieldAccess`
     * `standardizeReturnType` => `atReturnType`
     * `standardizeVariable` => `atVariableDeclaration`
+
+Deprecated methods in `AnnotationUtils`:
+ * `areSameByClass`: use `areSameByName`
+
+Removed deprecated `PluginUtil` class.
 
 **Closed issues:**
 

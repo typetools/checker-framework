@@ -37,12 +37,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
+  devscripts \
   dia \
   hevea \
   imagemagick \
   latexmk \
   librsvg2-bin \
   rsync \
+  shellcheck \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
