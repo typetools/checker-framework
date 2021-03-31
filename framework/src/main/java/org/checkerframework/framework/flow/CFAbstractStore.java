@@ -1,11 +1,6 @@
 package org.checkerframework.framework.flow;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -191,8 +186,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *   <li>If the method is side-effect-free (as indicated by {@link
    *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
    *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
-   *   <li>If the method side-effects at most a limited set of expressions (specified by
-   *       {@code @SideEffectsOnly}), then information about those expressions is removed.
    *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
    *       if the method {@code n} cannot modify {@code a.f} (e.g., if {@code a} is a local variable
    *       or {@code this}, and {@code f} is final).
@@ -300,15 +293,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         fieldValues = newFieldValues;
       }
-      // store information about method call if possible
-      JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
-      replaceValue(methodCall, val);
-    }
-    // update array values
-    arrayValues.clear();
 
-    // update method values
-    methodValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+      // update array values
+      arrayValues.clear();
+
+      // update method values
+      methodValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+    }
+
+    // store information about method call if possible
+    JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
+    replaceValue(methodCall, val);
   }
 
   /**
