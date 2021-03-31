@@ -53,8 +53,19 @@ Method renamings:
     * `standardizeReturnType` => `atReturnType`
     * `standardizeVariable` => `atVariableDeclaration`
 
+Deprecated some overloads in `AnnotationUtils` that take a `CharSequence`
+(use an overload that takes an `ExecutablElement`):
+ * `getElementValueArray`
+ * `getElementValueClassName`
+ * `getElementValueClassNames`
+ * `getElementValueEnumArray`
+ * `getElementValueEnum`
+ * `getElementValue`
+ * `getElementValuesWithDefaults`
+
 Deprecated methods in `AnnotationUtils`:
  * `areSameByClass`: use `areSameByName`
+ * `getElementValuesWithDefaults`: use a `getElementValue*` method
 
 Removed deprecated `PluginUtil` class.
 
