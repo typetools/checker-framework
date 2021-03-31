@@ -8,6 +8,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -81,9 +82,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // If offsets are provided, there must be the same number of them as there are
         // arrays.
         List<String> sequences =
-            AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+            AnnotationUtils.getElementValueArray(
+                anno, atypeFactory.ltLengthOfValueElement, String.class);
         List<String> offsets =
-            AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                anno, atypeFactory.ltLengthOfOffsetElement, String.class, Collections.emptyList());
         if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
           checker.reportError(
               node, "different.length.sequences.offsets", sequences.size(), offsets.size());

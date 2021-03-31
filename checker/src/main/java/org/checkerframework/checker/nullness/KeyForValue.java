@@ -47,13 +47,15 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       Set<AnnotationMirror> annotations,
       TypeMirror underlyingType) {
     super(analysis, annotations, underlyingType);
-    AnnotationMirror keyfor =
-        analysis.getTypeFactory().getAnnotationByClass(annotations, KeyFor.class);
+    KeyForAnnotatedTypeFactory atypeFactory =
+        (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
+    AnnotationMirror keyfor = atypeFactory.getAnnotationByClass(annotations, KeyFor.class);
     if (keyfor != null
         && (underlyingType.getKind() == TypeKind.TYPEVAR
             || underlyingType.getKind() == TypeKind.WILDCARD)) {
       List<String> list =
-          AnnotationUtils.getElementValueArray(keyfor, "value", String.class, false);
+          AnnotationUtils.getElementValueArray(
+              keyfor, atypeFactory.keyForValueElement, String.class);
       keyForMaps = new LinkedHashSet<>(list.size());
       keyForMaps.addAll(list);
     } else {
