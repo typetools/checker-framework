@@ -5,15 +5,14 @@ Version 3.12.0, April 1, 2021
 New FAQ item "How should I annotate code that uses generics?" gives
 examples of annotations on type variables, together with their meaning.
 
+The MustCall Checker over-approximates the methods that an object must call
+before it is de-allocated.
+
 `-Ainfer=ajava` uses ajava files (rather than jaif files or stub files)
 internally during whole-program inference.
 
 The Optional Checker supports a new annotation `@OptionalBottom` that
 stands for (only) the `null` value.
-
-The MustCall Checker over-approximates the methods that an object must call
-before it is de-allocated. This component checker is intended to be used
-as a subchecker by a resource leak checker, which is coming soon!
 
 The `value` element/argument to `@EnumVal` is now required.  Previously it
 defaulted to an empty array.
