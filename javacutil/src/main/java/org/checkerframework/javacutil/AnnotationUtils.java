@@ -630,7 +630,9 @@ public class AnnotationUtils {
    * @param anno the annotation to examine
    * @param elementName the name of the element
    * @return whether the element exists in anno
+   * @deprecated use a method that takes an {@link ExecutableElement}
    */
+  @Deprecated // 2021-03-30
   public static boolean hasElementValue(AnnotationMirror anno, CharSequence elementName) {
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = anno.getElementValues();
     for (ExecutableElement elem : valmap.keySet()) {
