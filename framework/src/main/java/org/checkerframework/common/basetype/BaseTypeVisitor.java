@@ -508,55 +508,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    checkForPolymorphicQualifiers(classTree);
-
     checkExtendsImplements(classTree);
 
     checkQualifierParameter(classTree);
 
     super.visitClass(classTree, null);
-  }
-
-  /**
-   * A TreeScanner that issues an "invalid.polymorphic.qualifier" error for each {@link
-   * AnnotationTree}s that is a polymorphic qualifier. The second parameter is added to the error
-   * message and should explain the location.
-   */
-  private final TreeScanner<Void, String> polyTreeScanner =
-      new TreeScanner<Void, String>() {
-        @Override
-        public Void visitAnnotation(AnnotationTree annoTree, String location) {
-          QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-          AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(annoTree);
-          if (atypeFactory.isSupportedQualifier(anno)
-              && qualifierHierarchy.isPolymorphicQualifier(anno)) {
-            checker.reportError(annoTree, "invalid.polymorphic.qualifier", anno, location);
-          }
-          return super.visitAnnotation(annoTree, location);
-        }
-      };
-
-  /**
-   * Issues an "invalid.polymorphic.qualifier" error for all polymorphic annotations written on the
-   * class declaration.
-   *
-   * @param classTree the class to check
-   */
-  protected void checkForPolymorphicQualifiers(ClassTree classTree) {
-    if (TypesUtils.isAnonymous(TreeUtils.typeOf(classTree))) {
-      // Anonymous class can have polymorphic annotations, so don't check them.
-      return;
-    }
-    classTree.getModifiers().accept(polyTreeScanner, "in a class declaration");
-    if (classTree.getExtendsClause() != null) {
-      classTree.getExtendsClause().accept(polyTreeScanner, "in a class declaration");
-    }
-    for (Tree tree : classTree.getImplementsClause()) {
-      tree.accept(polyTreeScanner, "in a class declaration");
-    }
-    for (Tree tree : classTree.getTypeParameters()) {
-      tree.accept(polyTreeScanner, "in a class declaration");
-    }
   }
 
   /**
