@@ -11,6 +11,9 @@ internally during whole-program inference.
 The Optional Checker supports a new annotation `@OptionalBottom` that
 stands for (only) the `null` value.
 
+The `value` element/argument to `@EnumVal` is now required.  Previously it
+defaulted to an empty array.
+
 **Implementation details:**
 
 A precondition or normal postcondition annotation's `value` element must have
@@ -31,8 +34,6 @@ Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
 class, the method `compare` was renamed `defaultAction`. The method `combineRs`
 was replaced by `reduce`.
 
-Removed deprecated `PluginUtil` class.
-
 Removed methods:
  * `AnnotationUtils.getElementValueArrayOrSingleton`
  * `DependentTypesHelper.standardizeNewClassTree`: use `atExpression` instead
@@ -51,6 +52,11 @@ Method renamings:
     * `standardizeFieldAccess` => `atFieldAccess`
     * `standardizeReturnType` => `atReturnType`
     * `standardizeVariable` => `atVariableDeclaration`
+
+Deprecated methods in `AnnotationUtils`:
+ * `areSameByClass`: use `areSameByName`
+
+Removed deprecated `PluginUtil` class.
 
 **Closed issues:**
 
