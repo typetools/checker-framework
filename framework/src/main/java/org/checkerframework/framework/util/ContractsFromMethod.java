@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.Contract.Kind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A utility class to retrieve pre- and postconditions from a method.
@@ -38,6 +39,9 @@ import org.checkerframework.javacutil.Pair;
 // more helpful error message.
 public class ContractsFromMethod {
 
+  /** The QualifierArgument.value field/element. */
+  ExecutableElement qualifierArgumentValueElement;
+
   /** The factory that this ContractsFromMethod is associated with. */
   protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
@@ -48,6 +52,8 @@ public class ContractsFromMethod {
    */
   public ContractsFromMethod(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
     this.factory = factory;
+    qualifierArgumentValueElement =
+        TreeUtils.getMethod(QualifierArgument.class, "value", 0, factory.getProcessingEnv());
   }
 
   /**
@@ -290,7 +296,8 @@ public class ContractsFromMethod {
       if (argumentAnnotation != null) {
         String sourceName = meth.getSimpleName().toString();
         String targetName =
-            AnnotationUtils.getElementValue(argumentAnnotation, "value", String.class, false);
+            AnnotationUtils.getElementValue(
+                argumentAnnotation, qualifierArgumentValueElement, String.class);
         if (targetName == null || targetName.isEmpty()) {
           targetName = sourceName;
         }
