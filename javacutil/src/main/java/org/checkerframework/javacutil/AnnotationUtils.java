@@ -161,7 +161,9 @@ public class AnnotationUtils {
    * @param am the AnnotationMirror whose class to compare
    * @param annoClass the class to compare
    * @return true if annoclass is the class of am
+   * @deprecated use {@code AnnotatedTypeFactory#areSameByClass} or {@link #areSameByName}
    */
+  @Deprecated // for use only by the framework
   public static boolean areSameByClass(AnnotationMirror am, Class<? extends Annotation> annoClass) {
     String canonicalName = annoClass.getCanonicalName();
     assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
