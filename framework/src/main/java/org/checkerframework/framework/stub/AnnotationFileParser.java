@@ -610,10 +610,6 @@ public class AnnotationFileParser {
       stubDebug(String.format("parsing stub file %s", filename));
     }
     ParserConfiguration configuration = new ParserConfiguration();
-    configuration.setAttributeComments(false);
-    configuration.setStoreTokens(false);
-    configuration.setLexicalPreservationEnabled(false);
-    configuration.setDetectOriginalLineSeparator(false);
     stubUnit = new JavaParser(configuration).parseStubUnit(inputStream).getResult().get();
 
     // getAllAnnotations() also modifies importedConstants and importedTypes. This should
