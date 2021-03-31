@@ -11,26 +11,26 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 @SuppressWarnings("serial")
 public class TypeSystemError extends RuntimeException {
 
-    /**
-     * Constructs a new TypeSystemError with the specified detail message.
-     *
-     * @param message the detail message
-     */
-    public TypeSystemError(String message) {
-        super(message);
-        if (message == null) {
-            throw new Error("Must have a detail message.");
-        }
+  /**
+   * Constructs a new TypeSystemError with the specified detail message.
+   *
+   * @param message the detail message
+   */
+  public TypeSystemError(String message) {
+    super(message);
+    if (message == null) {
+      throw new Error("Must have a detail message.");
     }
+  }
 
-    /**
-     * Constructs a new TypeSystemError with a detail message composed from the given arguments.
-     *
-     * @param fmt the format string
-     * @param args the arguments for the format string
-     */
-    @FormatMethod
-    public TypeSystemError(String fmt, @Nullable Object... args) {
-        this(String.format(fmt, args));
-    }
+  /**
+   * Constructs a new TypeSystemError with a detail message composed from the given arguments.
+   *
+   * @param fmt the format string
+   * @param args the arguments for the format string
+   */
+  @FormatMethod
+  public TypeSystemError(String fmt, @Nullable Object... args) {
+    this(String.format(fmt, args));
+  }
 }

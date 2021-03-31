@@ -7,16 +7,16 @@ import org.checkerframework.framework.qual.Unused;
 // Nullness Checker. See nullness/UnusedNullness.java instead.
 public class UnusedTypes {
 
-    @SubtypeOf({})
-    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public @interface Prototype {}
+  @SubtypeOf({})
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public @interface Prototype {}
 
-    @Unused(when = Prototype.class)
-    public Object ppt;
+  @Unused(when = Prototype.class)
+  public Object ppt;
 
-    protected @Prototype UnusedTypes() {
-        // It should be legal to initialize an unused field to null in the
-        // constructor.
-        this.ppt = null;
-    }
+  protected @Prototype UnusedTypes() {
+    // It should be legal to initialize an unused field to null in the
+    // constructor.
+    this.ppt = null;
+  }
 }

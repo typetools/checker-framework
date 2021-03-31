@@ -22,95 +22,95 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  */
 public abstract class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R, P> {
 
-    /** The default value to return as a default action. */
-    protected final R DEFAULT_VALUE;
+  /** The default value to return as a default action. */
+  protected final R DEFAULT_VALUE;
 
-    /**
-     * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with default value being {@code
-     * null}.
-     */
-    protected SimpleAnnotatedTypeVisitor() {
-        this(null);
-    }
+  /**
+   * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with default value being {@code
+   * null}.
+   */
+  protected SimpleAnnotatedTypeVisitor() {
+    this(null);
+  }
 
-    /**
-     * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with the default value being the
-     * passed defaultValue.
-     *
-     * @param defaultValue the default value this class should return
-     */
-    protected SimpleAnnotatedTypeVisitor(R defaultValue) {
-        this.DEFAULT_VALUE = defaultValue;
-    }
+  /**
+   * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with the default value being the
+   * passed defaultValue.
+   *
+   * @param defaultValue the default value this class should return
+   */
+  protected SimpleAnnotatedTypeVisitor(R defaultValue) {
+    this.DEFAULT_VALUE = defaultValue;
+  }
 
-    /**
-     * Performs the default action for visiting trees, if subclasses do not override the visitFOO
-     * node.
-     *
-     * <p>This implementation merely returns the default value (as specified by the protected field
-     * {@code DEFAULT_VALUE}).
-     */
-    protected R defaultAction(AnnotatedTypeMirror type, P p) {
-        return DEFAULT_VALUE;
-    }
+  /**
+   * Performs the default action for visiting trees, if subclasses do not override the visitFOO
+   * node.
+   *
+   * <p>This implementation merely returns the default value (as specified by the protected field
+   * {@code DEFAULT_VALUE}).
+   */
+  protected R defaultAction(AnnotatedTypeMirror type, P p) {
+    return DEFAULT_VALUE;
+  }
 
-    @Override
-    public R visit(AnnotatedTypeMirror type) {
-        return visit(type, null);
-    }
+  @Override
+  public R visit(AnnotatedTypeMirror type) {
+    return visit(type, null);
+  }
 
-    @Override
-    public R visit(AnnotatedTypeMirror type, P p) {
-        return (type == null) ? null : type.accept(this, p);
-    }
+  @Override
+  public R visit(AnnotatedTypeMirror type, P p) {
+    return (type == null) ? null : type.accept(this, p);
+  }
 
-    @Override
-    public R visitDeclared(AnnotatedDeclaredType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitDeclared(AnnotatedDeclaredType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitIntersection(AnnotatedIntersectionType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitIntersection(AnnotatedIntersectionType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitUnion(AnnotatedUnionType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitUnion(AnnotatedUnionType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitArray(AnnotatedArrayType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitArray(AnnotatedArrayType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitExecutable(AnnotatedExecutableType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitExecutable(AnnotatedExecutableType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitTypeVariable(AnnotatedTypeVariable type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitTypeVariable(AnnotatedTypeVariable type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitWildcard(AnnotatedWildcardType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitWildcard(AnnotatedWildcardType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitPrimitive(AnnotatedPrimitiveType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitPrimitive(AnnotatedPrimitiveType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitNull(AnnotatedNullType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitNull(AnnotatedNullType type, P p) {
+    return defaultAction(type, p);
+  }
 
-    @Override
-    public R visitNoType(AnnotatedNoType type, P p) {
-        return defaultAction(type, p);
-    }
+  @Override
+  public R visitNoType(AnnotatedNoType type, P p) {
+    return defaultAction(type, p);
+  }
 }

@@ -7,18 +7,18 @@ import org.checkerframework.common.value.qual.MinLen;
 @SuppressWarnings("lowerbound")
 public class RefineLTE2 {
 
-    protected int @MinLen(1) [] values;
+  protected int @MinLen(1) [] values;
 
-    @LTEqLengthOf("values") int num_values;
+  @LTEqLengthOf("values") int num_values;
 
-    public void add(int elt) {
-        if (num_values == values.length) {
-            values = null;
-            // :: error: (unary.increment.type.incompatible)
-            num_values++;
-            return;
-        }
-        values[num_values] = elt;
-        num_values++;
+  public void add(int elt) {
+    if (num_values == values.length) {
+      values = null;
+      // :: error: (unary.increment.type.incompatible)
+      num_values++;
+      return;
     }
+    values[num_values] = elt;
+    num_values++;
+  }
 }

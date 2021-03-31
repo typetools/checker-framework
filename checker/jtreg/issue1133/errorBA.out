@@ -1,4 +1,4 @@
-ClassB.java:3:17: compiler.err.cant.resolve.location: kindname.class, Nullable, , , (compiler.misc.location: kindname.class, ClassB, null)
+ClassB.java:3:13: compiler.err.cant.resolve.location: kindname.class, Nullable, , , (compiler.misc.location: kindname.class, ClassB, null)
 ClassB.java:1:8: compiler.err.proc.messager: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
 ClassA.java:1:8: compiler.err.proc.messager: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac
 3 errors

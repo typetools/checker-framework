@@ -135,7 +135,7 @@ package android.os;
 
 class Bundle {
     @Unique Bundle();
-    void putAll(@NonLeaked Bundle this, Bundle arg0)  ;
+    void putAll(@NonLeaked Bundle this, Bundle arg0);
     void putBoolean(@NonLeaked Bundle this, String arg0, boolean arg1);
     void putByte(@NonLeaked Bundle this, String arg0, byte arg1);
     void putChar(@NonLeaked Bundle this, String arg0, char arg1);

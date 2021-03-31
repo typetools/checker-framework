@@ -8,19 +8,19 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class ValueNonNullStringsConcatenationTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public ValueNonNullStringsConcatenationTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.common.value.ValueChecker.class,
-                "value-non-null-strings-concatenation",
-                "-Anomsgtext",
-                "-A" + ValueChecker.REPORT_EVAL_WARNS,
-                "-A" + ValueChecker.NON_NULL_STRINGS_CONCATENATION);
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public ValueNonNullStringsConcatenationTest(List<File> testFiles) {
+    super(
+        testFiles,
+        org.checkerframework.common.value.ValueChecker.class,
+        "value-non-null-strings-concatenation",
+        "-Anomsgtext",
+        "-A" + ValueChecker.REPORT_EVAL_WARNS,
+        "-A" + ValueChecker.NON_NULL_STRINGS_CONCATENATION);
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"all-systems", "value-non-null-strings-concatenation"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"all-systems", "value-non-null-strings-concatenation"};
+  }
 }

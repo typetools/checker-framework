@@ -19,6 +19,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({UnknownVal.class})
 public @interface IntVal {
-    /** The values that the expression might evaluate to. */
-    long[] value();
+  /** The values that the expression might evaluate to. */
+  long[] value();
 }

@@ -9,21 +9,21 @@ class Map1308<K, V> {}
 
 @SuppressWarnings("all") // check for crashes
 public class Issue1308 {
-    void bar(Stream<Number> stream) {
-        new Inner(stream.collect(transform(data -> convert(data), Function.identity())));
-    }
+  void bar(Stream<Number> stream) {
+    new Inner(stream.collect(transform(data -> convert(data), Function.identity())));
+  }
 
-    String convert(Number entry) {
-        return "";
-    }
+  String convert(Number entry) {
+    return "";
+  }
 
-    class Inner {
-        Inner(Map1308<String, Number> data) {}
-    }
+  class Inner {
+    Inner(Map1308<String, Number> data) {}
+  }
 
-    static <T, K, V> Collector<T, ?, Map1308<K, V>> transform(
-            Function<? super T, ? extends K> keyFunction,
-            Function<? super T, ? extends V> valueFunction) {
-        return null;
-    }
+  static <T, K, V> Collector<T, ?, Map1308<K, V>> transform(
+      Function<? super T, ? extends K> keyFunction,
+      Function<? super T, ? extends V> valueFunction) {
+    return null;
+  }
 }

@@ -4,5 +4,5 @@
 import java.util.function.IntSupplier;
 
 interface Issue704 {
-    IntSupplier zero = () -> 0;
+  IntSupplier zero = () -> 0;
 }

@@ -36,42 +36,42 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @InheritedAnnotation
 @Repeatable(EnsuresKeyFor.List.class)
 public @interface EnsuresKeyFor {
-    /**
-     * Java expressions that are keys in the given maps on successful method termination.
-     *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    String[] value();
+  /**
+   * Java expressions that are keys in the given maps on successful method termination.
+   *
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] value();
 
-    /**
-     * Returns Java expressions whose values are maps, each of which contains each expression value
-     * as a key (after successful method termination).
-     *
-     * @return Java expressions whose values are maps, each of which contains each expression value
-     *     as a key (after successful method termination)
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    @JavaExpression
-    @QualifierArgument("value")
-    String[] map();
+  /**
+   * Returns Java expressions whose values are maps, each of which contains each expression value as
+   * a key (after successful method termination).
+   *
+   * @return Java expressions whose values are maps, each of which contains each expression value as
+   *     a key (after successful method termination)
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  @JavaExpression
+  @QualifierArgument("value")
+  String[] map();
 
+  /**
+   * A wrapper annotation that makes the {@link EnsuresKeyFor} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link EnsuresKeyFor} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @PostconditionAnnotation(qualifier = KeyFor.class)
+  @InheritedAnnotation
+  @interface List {
     /**
-     * A wrapper annotation that makes the {@link EnsuresKeyFor} annotation repeatable.
+     * Returns the repeatable annotations.
      *
-     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-     * writes more than one {@link EnsuresKeyFor} annotation at the same location.
+     * @return the repeatable annotations
      */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-    @PostconditionAnnotation(qualifier = KeyFor.class)
-    @InheritedAnnotation
-    @interface List {
-        /**
-         * Returns the repeatable annotations.
-         *
-         * @return the repeatable annotations
-         */
-        EnsuresKeyFor[] value();
-    }
+    EnsuresKeyFor[] value();
+  }
 }

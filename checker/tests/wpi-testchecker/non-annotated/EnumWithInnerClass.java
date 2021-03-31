@@ -6,18 +6,18 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 
 enum EnumWithInnerClass {
-    CONSTANT;
+  CONSTANT;
 
-    private static class MyInnerClass {
-        int getSibling1() {
-            return (@Sibling1 int) 0;
-        }
-
-        void requireSibling1(@Sibling1 int x) {}
-
-        void test() {
-            // :: warning: argument.type.incompatible
-            requireSibling1(getSibling1());
-        }
+  private static class MyInnerClass {
+    int getSibling1() {
+      return (@Sibling1 int) 0;
     }
+
+    void requireSibling1(@Sibling1 int x) {}
+
+    void test() {
+      // :: warning: argument.type.incompatible
+      requireSibling1(getSibling1());
+    }
+  }
 }

@@ -4,9 +4,9 @@
 
 public class StaticInit {
 
-    static String a;
+  static String a;
 
-    static {
-        a.toString();
-    }
+  static {
+    a.toString();
+  }
 }

@@ -7,17 +7,17 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class AliasingTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public AliasingTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.common.aliasing.AliasingChecker.class,
-                "aliasing",
-                "-Anomsgtext");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public AliasingTest(List<File> testFiles) {
+    super(
+        testFiles,
+        org.checkerframework.common.aliasing.AliasingChecker.class,
+        "aliasing",
+        "-Anomsgtext");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"aliasing", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"aliasing", "all-systems"};
+  }
 }

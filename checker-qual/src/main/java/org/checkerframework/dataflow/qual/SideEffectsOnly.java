@@ -18,13 +18,13 @@ import org.checkerframework.framework.qual.JavaExpression;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface SideEffectsOnly {
-    /**
-     * An upper bound on the expressions that this method side effects.
-     *
-     * @return Java expression(s) that represent an upper bound of expressions side-effected by this
-     *     method
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-     */
-    @JavaExpression
-    public String[] value();
+  /**
+   * An upper bound on the expressions that this method side effects.
+   *
+   * @return Java expression(s) that represent an upper bound of expressions side-effected by this
+   *     method
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  @JavaExpression
+  public String[] value();
 }

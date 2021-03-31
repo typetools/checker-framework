@@ -25,9 +25,9 @@ import org.checkerframework.framework.qual.StubFiles;
 @SupportedOptions({"quals", "qualDirs"})
 public class FenumChecker extends BaseTypeChecker {
 
-    @Override
-    public SortedSet<String> getSuppressWarningsPrefixes() {
-        return SubtypingChecker.getSuppressWarningsPrefixes(
-                this.visitor, super.getSuppressWarningsPrefixes());
-    }
+  @Override
+  public SortedSet<String> getSuppressWarningsPrefixes() {
+    return SubtypingChecker.getSuppressWarningsPrefixes(
+        this.visitor, super.getSuppressWarningsPrefixes());
+  }
 }

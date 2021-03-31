@@ -14,96 +14,95 @@ import java.util.List;
 
 public class Driver {
 
-    private static final PrintStream out = System.out;
+  private static final PrintStream out = System.out;
 
-    public static void main(String[] args) throws Exception {
-        if (args.length == 0 || args.length > 1) {
-            throw new IllegalArgumentException("Usage: java Driver <test-name>");
-        }
-        String name = args[0];
-        Class<?> clazz = Class.forName(name);
-        new Driver().runDriver(clazz.newInstance());
+  public static void main(String[] args) throws Exception {
+    if (args.length == 0 || args.length > 1) {
+      throw new IllegalArgumentException("Usage: java Driver <test-name>");
+    }
+    String name = args[0];
+    Class<?> clazz = Class.forName(name);
+    new Driver().runDriver(clazz.newInstance());
+  }
+
+  protected void runDriver(Object object) throws Exception {
+    int passed = 0, failed = 0;
+    Class<?> clazz = object.getClass();
+    out.println("Tests for " + clazz.getName());
+
+    // Find methods
+    for (Method method : clazz.getMethods()) {
+      List<String> expected = expectedOf(method);
+      if (expected == null) {
+        continue;
+      }
+      if (method.getReturnType() != String.class) {
+        throw new IllegalArgumentException("Test method needs to return a string: " + method);
+      }
+      String testClass = PersistUtil.testClassOf(method);
+
+      try {
+        String compact = (String) method.invoke(object);
+        String fullFile = PersistUtil.wrap(compact);
+        ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
+        List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
+        ReferenceInfoUtil.compare(expected, actual, cf);
+        out.println("PASSED:  " + method.getName());
+        ++passed;
+      } catch (Throwable e) {
+        out.println("FAILED:  " + method.getName());
+        out.println("    " + e);
+        ++failed;
+      }
     }
 
-    protected void runDriver(Object object) throws Exception {
-        int passed = 0, failed = 0;
-        Class<?> clazz = object.getClass();
-        out.println("Tests for " + clazz.getName());
+    out.println();
+    int total = passed + failed;
+    out.println(total + " total tests: " + passed + " PASSED, " + failed + " FAILED");
 
-        // Find methods
-        for (Method method : clazz.getMethods()) {
-            List<String> expected = expectedOf(method);
-            if (expected == null) {
-                continue;
-            }
-            if (method.getReturnType() != String.class) {
-                throw new IllegalArgumentException(
-                        "Test method needs to return a string: " + method);
-            }
-            String testClass = PersistUtil.testClassOf(method);
+    out.flush();
 
-            try {
-                String compact = (String) method.invoke(object);
-                String fullFile = PersistUtil.wrap(compact);
-                ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
-                List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
-                ReferenceInfoUtil.compare(expected, actual, cf);
-                out.println("PASSED:  " + method.getName());
-                ++passed;
-            } catch (Throwable e) {
-                out.println("FAILED:  " + method.getName());
-                out.println("    " + e);
-                ++failed;
-            }
-        }
+    if (failed != 0) {
+      throw new RuntimeException(failed + " tests failed");
+    }
+  }
 
-        out.println();
-        int total = passed + failed;
-        out.println(total + " total tests: " + passed + " PASSED, " + failed + " FAILED");
+  private List<String> expectedOf(Method m) {
+    ADescription ta = m.getAnnotation(ADescription.class);
+    ADescriptions tas = m.getAnnotation(ADescriptions.class);
 
-        out.flush();
-
-        if (failed != 0) {
-            throw new RuntimeException(failed + " tests failed");
-        }
+    if (ta == null && tas == null) {
+      return null;
     }
 
-    private List<String> expectedOf(Method m) {
-        ADescription ta = m.getAnnotation(ADescription.class);
-        ADescriptions tas = m.getAnnotation(ADescriptions.class);
+    List<String> result = new ArrayList<>();
 
-        if (ta == null && tas == null) {
-            return null;
-        }
-
-        List<String> result = new ArrayList<>();
-
-        if (ta != null) {
-            result.add(expectedOf(ta));
-        }
-
-        if (tas != null) {
-            for (ADescription a : tas.value()) {
-                result.add(expectedOf(a));
-            }
-        }
-
-        return result;
+    if (ta != null) {
+      result.add(expectedOf(ta));
     }
 
-    private String expectedOf(ADescription d) {
-        return d.annotation();
+    if (tas != null) {
+      for (ADescription a : tas.value()) {
+        result.add(expectedOf(a));
+      }
     }
+
+    return result;
+  }
+
+  private String expectedOf(ADescription d) {
+    return d.annotation();
+  }
 }
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @interface ADescription {
-    String annotation();
+  String annotation();
 }
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @interface ADescriptions {
-    ADescription[] value() default {};
+  ADescription[] value() default {};
 }

@@ -3,7 +3,7 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class NonNegArrayLength {
 
-    public static void NonNegArrayLength(int @MinLen(4) [] arr) {
-        @Positive int i = arr.length - 2;
-    }
+  public static void NonNegArrayLength(int @MinLen(4) [] arr) {
+    @Positive int i = arr.length - 2;
+  }
 }

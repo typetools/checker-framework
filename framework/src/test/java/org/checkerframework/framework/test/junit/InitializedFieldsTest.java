@@ -8,17 +8,17 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class InitializedFieldsTest extends CheckerFrameworkPerDirectoryTest {
 
-    /**
-     * Create a InitializedFieldsTest.
-     *
-     * @param testFiles the files containing test code, which will be type-checked
-     */
-    public InitializedFieldsTest(List<File> testFiles) {
-        super(testFiles, InitializedFieldsChecker.class, "initialized-fields", "-Anomsgtext");
-    }
+  /**
+   * Create a InitializedFieldsTest.
+   *
+   * @param testFiles the files containing test code, which will be type-checked
+   */
+  public InitializedFieldsTest(List<File> testFiles) {
+    super(testFiles, InitializedFieldsChecker.class, "initialized-fields", "-Anomsgtext");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"initialized-fields", "all-systems"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"initialized-fields", "all-systems"};
+  }
 }

@@ -23,20 +23,20 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @PostconditionAnnotation(qualifier = CalledMethods.class)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface EnsuresCalledMethods {
-    /**
-     * The Java expressions to which the qualifier applies.
-     *
-     * @return the Java expressions to which the qualifier applies
-     * @see org.checkerframework.framework.qual.EnsuresQualifier
-     */
-    // Postconditions must use "value" as the name (conditional postconditions use "expression").
-    String[] value();
+  /**
+   * The Java expressions to which the qualifier applies.
+   *
+   * @return the Java expressions to which the qualifier applies
+   * @see org.checkerframework.framework.qual.EnsuresQualifier
+   */
+  // Postconditions must use "value" as the name (conditional postconditions use "expression").
+  String[] value();
 
-    /**
-     * The methods guaranteed to be invoked on the expressions.
-     *
-     * @return the methods guaranteed to be invoked on the expressions
-     */
-    @QualifierArgument("value")
-    String[] methods();
+  /**
+   * The methods guaranteed to be invoked on the expressions.
+   *
+   * @return the methods guaranteed to be invoked on the expressions
+   */
+  @QualifierArgument("value")
+  String[] methods();
 }

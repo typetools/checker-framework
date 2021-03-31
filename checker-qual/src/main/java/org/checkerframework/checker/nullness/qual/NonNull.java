@@ -42,15 +42,15 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 @DefaultQualifierInHierarchy
 @DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
 @UpperBoundFor(
-        typeKinds = {
-            TypeKind.PACKAGE,
-            TypeKind.INT,
-            TypeKind.BOOLEAN,
-            TypeKind.CHAR,
-            TypeKind.DOUBLE,
-            TypeKind.FLOAT,
-            TypeKind.LONG,
-            TypeKind.SHORT,
-            TypeKind.BYTE
-        })
+    typeKinds = {
+      TypeKind.PACKAGE,
+      TypeKind.INT,
+      TypeKind.BOOLEAN,
+      TypeKind.CHAR,
+      TypeKind.DOUBLE,
+      TypeKind.FLOAT,
+      TypeKind.LONG,
+      TypeKind.SHORT,
+      TypeKind.BYTE
+    })
 public @interface NonNull {}

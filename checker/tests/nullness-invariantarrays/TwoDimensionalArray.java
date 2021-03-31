@@ -3,11 +3,11 @@
 
 public class TwoDimensionalArray {
 
-    public static void main(String[] args) {
-        assert any_null(new Object[][] {null}) == true;
-    }
+  public static void main(String[] args) {
+    assert any_null(new Object[][] {null}) == true;
+  }
 
-    public static boolean any_null(Object[] a) {
-        return true;
-    }
+  public static boolean any_null(Object[] a) {
+    return true;
+  }
 }

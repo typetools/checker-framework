@@ -7,7 +7,7 @@ plugins {
     id "de.undercouch.download" version "4.1.1"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "2.0.0"
+    id "net.ltgt.errorprone" version "2.0.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
@@ -115,7 +115,7 @@ allprojects {
         // There's a bug in IntelliJ that adds the processor path to the classpath when building
         // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
         // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
-        // from the processor path as a work around for this problem.
+        // processor path as a work around for this problem.
         annotationProcessor.exclude group:'org.checkerframework', module:'javacutil'
         annotationProcessor.exclude group:'org.checkerframework', module:'dataflow'
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
@@ -252,8 +252,6 @@ allprojects {
                         '-Xep:AnnotateFormatMethod:OFF',
                         // Warns for every use of "@checker_framework.manual"
                         '-Xep:InvalidBlockTag:OFF',
-                        // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
-                        '-Xep:InlineFormatString:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -271,7 +269,8 @@ task cloneAndBuildDependencies(type: Exec, group: 'Build') {
     description 'Clones (or updates) and builds all dependencies'
     executable 'checker/bin-devel/build.sh'
 }
-task maybeCloneAndBuildDependencies(type: Exec) {
+
+task maybeCloneAndBuildDependencies() {
     // No group so it does not show up in the output of `gradlew tasks`
     description 'Clones (or updates) and builds all dependencies if they are not present.'
     onlyIf {
@@ -279,7 +278,28 @@ task maybeCloneAndBuildDependencies(type: Exec) {
         // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
         // the repository does not exist when building checker.jar.
     }
-    executable 'checker/bin-devel/build.sh'
+
+    doFirst {
+        if (file(stubparser).exists()) {
+            exec {
+                workingDir stubparser
+                executable 'git'
+                args = ['pull', '-q']
+                ignoreExitValue = true
+            }
+            exec {
+                workingDir stubparser
+                executable "${stubparser}/.travis-build-without-test.sh"
+            }
+        } else {
+            executable 'checker/bin-devel/build.sh'
+        }
+    }
+    doLast {
+        if (!file(stubparserJar).exists()) {
+            throw new RuntimeException("Can't find stubparser jar: " + stubparserJar)
+        }
+    }
 }
 
 task version(group: 'Documentation') {
@@ -319,6 +339,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
                 '-AwarnUnneededSuppressions',
         ]
         options.compilerArgs += args
+        options.forkOptions.jvmArgs += ["-Xmx2g"]
 
         if (isJava8) {
             options.compilerArgs += [
@@ -632,7 +653,6 @@ subprojects {
 
         doFirst {
             args += "${formatScriptsHome}/check-google-java-format.py"
-            args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
         ignoreExitValue = true
@@ -650,7 +670,6 @@ subprojects {
         executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
-            args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
     }

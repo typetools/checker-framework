@@ -13,9 +13,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #signature-checker Signature Checker
  */
 @SubtypeOf({
-    DotSeparatedIdentifiers.class,
-    BinaryNameWithoutPackage.class,
-    IdentifierOrPrimitiveType.class
+  DotSeparatedIdentifiers.class,
+  BinaryNameWithoutPackage.class,
+  IdentifierOrPrimitiveType.class
 })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -56,6 +56,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.ANNOTATION_TYPE})
 public @interface PreconditionAnnotation {
-    /** The qualifier that must be established as a precondition. */
-    Class<? extends Annotation> qualifier();
+  /** The qualifier that must be established as a precondition. */
+  Class<? extends Annotation> qualifier();
 }

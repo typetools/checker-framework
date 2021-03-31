@@ -3,9 +3,9 @@
 
 abstract class TypeVarTaintCheck {
 
-    void test() {
-        wrap(new Object());
-    }
+  void test() {
+    wrap(new Object());
+  }
 
-    abstract <T, U extends T> void wrap(U u);
+  abstract <T, U extends T> void wrap(U u);
 }

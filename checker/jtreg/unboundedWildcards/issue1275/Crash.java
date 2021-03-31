@@ -7,8 +7,8 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Crash.java
  */
 public class Crash {
-    void crash(Sub o) {
-        Sub.SubInner<?> x = o.a().b().b();
-        o.a().b().b().c();
-    }
+  void crash(Sub o) {
+    Sub.SubInner<?> x = o.a().b().b();
+    o.a().b().b().c();
+  }
 }

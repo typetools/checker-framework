@@ -8,18 +8,18 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class AggregateTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public AggregateTest(List<File> testFiles) {
-        super(
-                testFiles,
-                AggregateOfCompoundChecker.class,
-                "aggregate",
-                "-Anomsgtext",
-                "-AresolveReflection");
-    }
+  /** @param testFiles the files containing test code, which will be type-checked */
+  public AggregateTest(List<File> testFiles) {
+    super(
+        testFiles,
+        AggregateOfCompoundChecker.class,
+        "aggregate",
+        "-Anomsgtext",
+        "-AresolveReflection");
+  }
 
-    @Parameters
-    public static String[] getTestDirs() {
-        return new String[] {"aggregate"};
-    }
+  @Parameters
+  public static String[] getTestDirs() {
+    return new String[] {"aggregate"};
+  }
 }
