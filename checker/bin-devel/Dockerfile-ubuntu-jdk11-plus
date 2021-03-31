@@ -43,6 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   latexmk \
   librsvg2-bin \
   rsync \
+  shellcheck \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
