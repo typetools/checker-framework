@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Position;
 import com.github.javaparser.Problem;
@@ -610,7 +611,12 @@ public class AnnotationFileParser {
       stubDebug(String.format("parsing stub file %s", filename));
     }
     ParserConfiguration configuration = new ParserConfiguration();
-    stubUnit = new JavaParser(configuration).parseStubUnit(inputStream).getResult().get();
+    ParseResult<StubUnit> parseResult = new JavaParser(configuration).parseStubUnit(inputStream);
+    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
+      stubUnit = parseResult.getResult().get();
+    } else {
+      throw new ParseProblemException(parseResult.getProblems());
+    }
 
     // getAllAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
