@@ -49,7 +49,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -117,10 +116,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /** The type factory associated with this transfer function. */
   private UpperBoundAnnotatedTypeFactory atypeFactory;
 
-  // TODO: Is this needed?
-  // /** The lower bound type factory associated with this transfer function. */
-  // private LowerBoundAnnotatedTypeFactory lbAtypeFactory;
-
   /** The value type factory associated with this transfer function. */
   private ValueAnnotatedTypeFactory valueAtypeFactory;
 
@@ -132,7 +127,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public UpperBoundTransfer(CFAnalysis analysis) {
     super(analysis);
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
-    // lbAtypeFactory = atypeFactory.getLowerBoundAnnotatedTypeFactory();
     valueAtypeFactory = atypeFactory.getValueAnnotatedTypeFactory();
 
     stringTypeMirror = atypeFactory.getElementUtils().getTypeElement("java.lang.String").asType();
@@ -844,26 +838,21 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     return result;
   }
 
+  // This logic could be extended to all integers if desired, but handling literals probably gives
+  // most of the needed benefit.
   @Override
   public TransferResult<CFValue, CFStore> visitIntegerLiteral(
       IntegerLiteralNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitIntegerLiteral(n, in);
 
-    // This could be extended to all integers if desired, but handling literals probably gives most
-    // of the needed benefit.
-
     CFStore store = result.getRegularStore();
-    List<JavaExpression> ltloSequences = ltloSequences(n, store);
-
-    if (ltloSequences.isEmpty()) {
+    JavaExpression[] ltloSequences = ltloSequences(n, store);
+    if (ltloSequences == null) {
       return result;
     }
 
-    // This ought to GLB, but there is no GLB routine, so replace instead.
-    AnnotationMirror ltloAnnotation =
-        atypeFactory.createLTLengthOfAnnotation(
-            CollectionsPlume.mapList(JavaExpression::toString, ltloSequences)
-                .toArray(new String[0]));
+    AnnotationMirror ltloAnnotation = atypeFactory.createLTLengthOfAnnotation(ltloSequences);
+    // Replace rather than GLB because (1) there is no GLB routine and (2) the current value is top.
     CFValue newResultValue =
         analysis.createSingleAnnotationValue(
             ltloAnnotation, result.getResultValue().getUnderlyingType());
@@ -875,11 +864,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    *
    * @param n an integer literal
    * @param store the store
-   * @return all the sequences such that the given integer literal is less than their length.
+   * @return all the sequences such that the given integer literal is less than their length, or
+   *     null if none
    */
-  List<JavaExpression> ltloSequences(IntegerLiteralNode n, CFStore store) {
+  JavaExpression @Nullable @MinLen(1) [] ltloSequences(IntegerLiteralNode n, CFStore store) {
     Tree literalTree = n.getTree();
     int intVal = n.getValue();
+
     // The literal is less than the length of all these sequences.
     List<JavaExpression> result = new ArrayList<>();
     for (Map.Entry<FieldAccess, CFValue> entry : store.getFieldValues().entrySet()) {
@@ -894,7 +885,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         result.add(lv);
       }
     }
-    return result;
+
+    if (result.isEmpty()) {
+      return null;
+    } else {
+      return result.toArray(new String[result.size()]);
+    }
   }
 
   /**
@@ -902,8 +898,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    *
    * @param literalTree an integer literal
    * @param i the int value of the literal tree
-   * @param je a Java expression that might be a sequence; this method does nothing unless it is a
-   *     string or an array
+   * @param je a Java expression that might be a sequence; this method returns false if if it is not
+   *     an array or a string
    * @return true if the integer is @LTLengthOf the Java expression
    */
   private boolean isLtLengthOf(Tree literalTree, int i, JavaExpression je) {
