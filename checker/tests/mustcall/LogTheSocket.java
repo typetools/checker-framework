@@ -57,7 +57,7 @@ class LogTheSocket {
 
   // This is (mostly) copied from ACSocketTest; under a previous implementation of the
   // ownership-transfer scheme,
-  // it caused false positive warnings from the MustCall checker.
+  // it caused false positive warnings from the Must Call checker.
   SocketChannel createSock() throws IOException {
     SocketChannel sock;
     sock = SocketChannel.open();

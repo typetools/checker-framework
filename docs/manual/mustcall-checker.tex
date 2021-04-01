@@ -1,29 +1,29 @@
 \htmlhr
 \chapterAndLabel{Must Call Checker}{mustcall-checker}
 
-The MustCall Checker tracks the methods that an object should call before it is deallocated
-and produces a conservative overapproximation of the set of methods that might
-actually need to be called on an object.
+The Must Call Checker conservatively over-approximates
+the set of methods that an object should call before it is de-allocated.
 It is intended to be run as a subchecker of another checker: on its own, it does not
 enforce any rules other than subtyping.
 
 For example, an object whose type is \<java.io.OutputStream> might
 have an obligation to call the \<close()> method, to release an underlying file resource. Or,
 such an \<OutputStream> might not have such an obligation, if the underlying resource is
-a byte array. Either of these obligations can be represented by the static type
-\<@MustCall(\{"close"\}) OutputStream>, which can be read as ``an OutputStream that might need
-to call close before it is deallocated''.
+a byte array. The Must Call Checker therefore over-approximates the methods that such an
+\<OutputStream> should call by producing the set containing \<close()>.
 
-\sectionAndLabel{MustCall annotations}{must-call-annotations}
+\sectionAndLabel{Must Call annotations}{must-call-annotations}
 
-The MustCall Checker supports these qualifiers and declaration annotations:
+The Must Call Checker supports these type qualifiers, whose subtyping relationships
+are shown in Figure~\ref{fig-must-call-hierarchy}:
 
 \begin{description}
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}]
-  indicates that the qualifier's arguments are the methods that the annotated type
-  should call. The type \<@MustCall(\{"a"\}) Object obj> means
-  that before \<obj> is deallocated, \<obj.a()> should be called.
+  indicates that the qualifier's arguments are a superset of the methods that the annotated program element
+  must call before it is de-allocated.
+  The type \<@MustCall(\{"close"\}) OutputStream>, for example, can be read as ``an OutputStream that might need
+  to call close before it is de-allocated.''
   The default type qualifier for an unannotated type is \<@MustCall(\{\})>.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallUnknown}]
@@ -38,11 +38,19 @@ The MustCall Checker supports these qualifiers and declaration annotations:
   to write the \<@MustCall> annotation on every subclass.
 
 \item[\refqualclass{checker/mustcall/qual}{PolyMustCall}]
-  is the polymorphic annotation for the MustCall type system.
+  is the polymorphic annotation for the Must Call type system.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
   is a special polymorphic annotation that indicates a resource-aliasing relationship between
-  the annotated elements. Internally, the MustCall Checker treats it identically to \<@PolyMustCall>.
+  the annotated elements. Internally, the Must Call Checker treats it identically to \<@PolyMustCall>.
+
+%% TODO: after the Must Call Consistency checker is merged, add an example of how to use @MustCallAlias
+
+\end{description}
+
+The Must Call Checker also supports these declaration annotations:
+
+\begin{description}
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{CreatesObligation}{String value}]
   is a declaration annotation that can be written on a method or constructor. It takes a single Java expression as an
@@ -50,23 +58,29 @@ The MustCall Checker supports these qualifiers and declaration annotations:
   ``resets'' the must-call obligations of its target to the least upper bound of their current value and the default
   must-call obligations for its declared type. This annotation is repeatable, if the copies have different targets.
 
+%% TODO: after the Must Call Consistency checker is merged, add an example of how to use @CreatesObligation
+
 \item[\refqualclass{checker/mustcall/qual}{Owning}]
   is a declaration annotation that can be written on a method parameter, method return type, or
-  field declaration. It indicates that the annotated element is the ``owning'' pointer to any resource,
-  and the MustCall Checker may never forget information about its obligations.
+  field declaration. It indicates that the annotated element is the ``owning'' pointer to any resource.
+  See Section~\ref{must-call-ownership-annos} for more details on ownership.
 
 \item[\refqualclass{checker/mustcall/qual}{NotOwning}]
   is a declaration annotation that can be written on a method parameter, method return type, or
   field declaration. It indicates that the annotated element is \emph{not} the ``owning'' pointer to any resource,
-  and the MustCall Checker may forget information about its obligations temporarily.
+  regardless of its type in the Must Call Checker's hierarchy.
+  See Section~\ref{must-call-ownership-annos} for more details on ownership.
+
+%% TODO: after the Must Call Consistency checker is merged, add an examples of how to use @Owning and @NotOwning
 
 \end{description}
 
-A subset of the infinite lattice of the type hierarchy is shown in Figure~\ref{fig-must-call-hierarchy}.
-
 \begin{figure}
 \includeimage{mustcall}{5cm}
-\caption{The subtyping relationship of (some of) the MustCall Checker's qualifiers.
+\caption{Subtyping relationships between examples of type qualifiers from the Must Call Checker's type
+hierarchy, for an object with only two methods (\<a> and \<b>).
+The lattice for a given type contains one \<@MustCall> annotation for each element of the powerset
+of methods that can be called on that type.
 Qualifiers in gray are used internally by the type system but should
 never be written by a programmer.}
 \label{fig-must-call-hierarchy}
@@ -82,7 +96,7 @@ to call some other method.
 
 The default type in unannotated code is \<@MustCall(\{\})>.
 A completely unannotated program will always type-check without warnings.
-For the MustCall Checker to be useful, the programmer should supply at least one non-empty
+For the Must Call Checker to be useful, the programmer should supply at least one non-empty
 \<@MustCall> annotation, either in source code or in a stub file.
 
 Note that it is always safe to write \<@Owning> and \<@NotOwning> annotations anywhere in your
@@ -101,7 +115,34 @@ type has that \<@MustCall> annotation by default. For example, given the followi
 \end{Verbatim}
 any use of \<Socket> defaults to \<@MustCall(\{"close"\}) Socket>.
 
-\sectionAndLabel{Implementation details and caveats}{must-call-impl}
+\sectionAndLabel{Lightweight ownership annotations}{must-call-ownership-annos}
+
+%% TODO: this explanation feels...lacking to me. It doesn't make that much sense IMO
+%% without explaining the must-call consistency checker's usage of Owning/NotOwning.
+
+In many programs, aliasing creates two or more program elements that represent the same
+underlying object on which some methods might need to be called (i.e. whose type has a non-empty
+\<@MustCall> qualifier). For example, an \<OutputStream> might be stored in both
+a local variable and a field. Typically, the Must Call Checker will over-approximate both
+the local variable and the field (and any other pointers to the object) as \<@MustCall(\{"close"\})>:
+that is, because all \<OutputStream> objects might need to be closed, each pointer to an
+\<OutputStream> might need to be closed, too. In practice, however, some of these pointers can be
+ignored: they are \emph{non-owning}. In the example of an \<OutputStream> that is stored in both
+a local variable and a field, for instance, it may be the case that the field is non-owning (such
+as a cache) and the local is owning; or, it might be the case that the field is owning (an open connection,
+for example, that will be closed later), and the local is non-owning.
+
+The Must Call Checker supplies two annotations to support this concept: \<@Owning> and \<@NotOwning>.
+The Must Call Checker's support for these annotations is limited: method parameters annotated as
+\<@NotOwning> are treated as bottom (i.e. \<@MustCall(\{\})>) within the method bodies in which they
+appear. A client analysis of the Must Call Checker can use these annotations as a guide for which
+pointer to a given object is intended by the programmer as the pointer through which the must-call obligations
+of the object are satisfied, but these annotations are only hints.
+
+This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
+Call Checker.
+
+\sectionAndLabel{Strings cannot have must-call obligations}{must-call-impl}
 
 This type system should not be used to track a must-call obligation for a \<String>, because it treats all
 String concatenations as having the type \<@MustCall(\{\})>.
@@ -125,7 +166,8 @@ all \<Socket> objects are \<@MustCall(\{"close"\})>. Without special-casing stri
 
 The defaulting rules for \<@MustCall> sometimes produce unexpected errors in code
 that uses type parameters with implicit upper bounds (i.e. without an \<extends> clause).
-The errors can be fixed by adding an explicit bound. For example, consider the following
+The errors can be fixed by adding an explicit bound, as described in Section~\ref{upper-bound-for-use}.
+For example, consider the following
 example of a class with a type parameter and a field of an interface type that uses that
 type parameter (from \href{https://github.com/plume-lib/plume-util}{plume-lib/plume-util}):
 \begin{Verbatim}

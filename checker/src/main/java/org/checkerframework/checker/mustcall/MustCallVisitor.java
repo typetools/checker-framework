@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The visitor for the MustCall checker. This visitor is similar to BaseTypeVisitor, but overrides
+ * The visitor for the Must Call checker. This visitor is similar to BaseTypeVisitor, but overrides
  * methods that don't work well with the MustCall type hierarchy because it doesn't use the top type
  * as the default type.
  */
@@ -171,7 +171,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * defined in bytecode. See https://github.com/typetools/checker-framework/issues/3178 for an
    * explanation of why this is necessary to avoid false positives.
    *
-   * <p>Skipping this check in the MustCall checker is sound, because the MustCall checker is not
+   * <p>Skipping this check in the Must Call checker is sound, because the Must Call checker is not
    * concerned with annotation arguments (which must be literals, and therefore won't have (or be
    * able to fulfill) must-call obligations).
    */

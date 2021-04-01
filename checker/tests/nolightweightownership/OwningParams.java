@@ -1,5 +1,6 @@
-// Tests that parameters (including receiver parameters) marked as @Owning are still checked.
-// Modified for -AnoLightweightOwnership to do the opposite lol
+// This tests normally tests that parameters (including receiver parameters) marked as @Owning are
+// still checked.
+// This version is modified for -AnoLightweightOwnership to expect the opposite behavior.
 
 import org.checkerframework.checker.mustcall.qual.*;
 
