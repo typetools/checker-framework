@@ -266,8 +266,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AClass clazz = (AClass) elem;
     AMethod method;
 
-    // Some of the methods in the generated parser use null to represent
-    // an empty list.
+    // Some of the methods in the generated parser use null to represent an empty list.
     if (params != null) {
       for (Parameter param : params) {
         Type ptype = param.getType();

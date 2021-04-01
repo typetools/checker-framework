@@ -128,8 +128,7 @@ public class AnnotationClassLoader {
             ? checkerPackage.getName() + DOT + QUAL_PACKAGE
             : QUAL_PACKAGE;
 
-    // the package name with dots replaced by slashes will be used to scan
-    // file directories
+    // the package name with dots replaced by slashes will be used to scan file directories
     packageNameWithSlashes = packageName.replace(DOT, SLASH);
 
     // Each component of the fully qualified package name will be used later to recursively descend
@@ -328,8 +327,7 @@ public class AnnotationClassLoader {
       return false;
     }
 
-    // if it isn't empty, dequeue one segment of the fully qualified package
-    // name
+    // if it isn't empty, dequeue one segment of the fully qualified package name
     String currentPackageDirName = pkgNames.next();
 
     // scan current directory to see if there's a sub-directory that has a
@@ -498,8 +496,7 @@ public class AnnotationClassLoader {
       try {
         connection = (JarURLConnection) resourceURL.openConnection();
 
-        // disable caching / connection sharing of the low level URLConnection to the Jar
-        // file
+        // disable caching / connection sharing of the low level URLConnection to the Jar file
         connection.setDefaultUseCaches(false);
         connection.setUseCaches(false);
 
@@ -573,8 +570,7 @@ public class AnnotationClassLoader {
   private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
     Set<@BinaryName String> annos = new LinkedHashSet<>();
 
-    // get an enumeration iterator for all the content entries in the jar
-    // file
+    // get an enumeration iterator for all the content entries in the jar file
     Enumeration<JarEntry> jarEntries = jar.entries();
 
     // enumerate through the entries

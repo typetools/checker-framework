@@ -312,8 +312,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   @Override
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
-    // Newly created objects are guarded by nothing, so allow @GuardBy({}) on constructor
-    // results.
+    // Newly created objects are guarded by nothing, so allow @GuardBy({}) on constructor results.
     AnnotationMirror anno =
         constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
     if (!AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBY)) {
@@ -415,8 +414,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   public Void visitMemberSelect(MemberSelectTree tree, Void p) {
     if (TreeUtils.isFieldAccess(tree)) {
       AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
-      // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
-      // it.
+      // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid it.
       if (atmOfReceiver.getKind() != TypeKind.VOID) {
         AnnotationMirror gb =
             atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
@@ -563,14 +561,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     if (methodElement != null) {
-      // Handle releasing of explicit locks. Verify that the lock expression is effectively
-      // final.
+      // Handle releasing of explicit locks. Verify that the lock expression is effectively final.
       ExpressionTree receiverTree = TreeUtils.getReceiverTree(node);
 
       ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(methodElement, receiverTree);
 
-      // Handle acquiring of explicit locks. Verify that the lock expression is effectively
-      // final.
+      // Handle acquiring of explicit locks. Verify that the lock expression is effectively final.
 
       // If the method causes expression "this" or "#1" to be locked, verify that those expressions
       // are effectively final.  TODO: generalize to any expression. This is currently designed only

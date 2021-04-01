@@ -533,8 +533,7 @@ public class JavaExpressionParseUtil {
      * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
      */
     protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
-      // Is identifier an inner class of enclosingType or of any enclosing class of
-      // enclosingType?
+      // Is identifier an inner class of enclosingType or of any enclosing class of enclosingType?
       TypeMirror searchType = enclosingType;
       while (searchType.getKind() == TypeKind.DECLARED) {
         DeclaredType searchDeclaredType = (DeclaredType) searchType;

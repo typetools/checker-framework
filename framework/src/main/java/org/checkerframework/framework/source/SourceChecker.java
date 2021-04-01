@@ -246,8 +246,7 @@ import org.plumelib.util.UtilPlume;
   // from the same package are present (useful if a package spans more than one jar).
   // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFoundIgnoresClasses
   "stubWarnIfNotFoundIgnoresClasses",
-  // Whether to print warnings about stub files that overwrite annotations
-  // from bytecode.
+  // Whether to print warnings about stub files that overwrite annotations from bytecode.
   "stubWarnIfOverwritesBytecode",
   // Whether to print warnings about stub files that are redundant with the annotations from
   // bytecode.

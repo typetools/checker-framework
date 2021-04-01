@@ -989,8 +989,7 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (returnType != null) {
-        // If a return type exists, then the declaration must be a method, not a
-        // constructor.
+        // If a return type exists, then the declaration must be a method, not a constructor.
         WholeProgramInferenceJavaParserStorage.transferAnnotations(
             returnType, declaration.asMethodDeclaration().getType());
       }

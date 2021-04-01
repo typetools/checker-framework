@@ -322,8 +322,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return null;
     }
 
-    // May be zero for a "diamond" (inferred type args in constructor
-    // invocation).
+    // May be zero for a "diamond" (inferred type args in constructor invocation).
     int numTypeArgs = typeArgTree.getTypeArguments().size();
     if (numTypeArgs != 0) {
       // TODO: this should be an equality, but in
@@ -458,8 +457,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @param tree the type's tree
    */
   protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
-    // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s%n",
-    // type, tree);
+    // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s%n", type, tree);
 
     if (TreeUtils.isDiamondTree(tree)) {
       return null;

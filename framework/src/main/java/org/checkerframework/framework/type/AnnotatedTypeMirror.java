@@ -1149,8 +1149,8 @@ public abstract class AnnotatedTypeMirror {
           && ((ExecutableType) underlyingType).getReturnType() != null) { // lazy init
         TypeMirror aret = ((ExecutableType) underlyingType).getReturnType();
         if (aret.getKind() == TypeKind.ERROR) {
-          // Maybe the input is uncompilable, or maybe the type is not completed yet (see
-          // Issue #244).
+          // Maybe the input is uncompilable, or maybe the type is not completed yet (see Issue
+          // #244).
           throw new ErrorTypeKindException(
               "Problem with return type of %s.%s: %s [%s %s]",
               element, element.getEnclosingElement(), aret, aret.getKind(), aret.getClass());

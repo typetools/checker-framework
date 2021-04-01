@@ -616,8 +616,8 @@ public class Range {
     // Special cases that involve overflow.
     // The only overflow in integer division is Long.MIN_VALUE / -1 == Long.MIN_VALUE.
     if (from == Long.MIN_VALUE && right.contains(-1)) {
-      // The values in the right range are all negative because right does not contain 0 but
-      // does contain 1.
+      // The values in the right range are all negative because right does not contain 0 but does
+      // contain 1.
       if (from != to) {
         // Special case 1:
         // This range contains Long.MIN_VALUE and Long.MIN_VALUE + 1, which makes the
@@ -792,8 +792,7 @@ public class Range {
         return create(bigFrom, bigTo);
       }
     } else {
-      // In other cases, we give up on the calculation and return EVERYTHING (rare in
-      // practice).
+      // In other cases, we give up on the calculation and return EVERYTHING (rare in practice).
       return EVERYTHING;
     }
   }
@@ -894,8 +893,7 @@ public class Range {
       } else {
         // Sign bit of mask is 1.
         if (variable.from >= 0) {
-          // Case 2.1: Similar to case 1.1 except that the sign bit of the mask can be
-          // ignored.
+          // Case 2.1: Similar to case 1.1 except that the sign bit of the mask can be ignored.
           return create(0, Math.min(noSignBit(mask), variable.to));
         } else if (variable.to < 0) {
           // Case 2.2: The sign bit of the elements in the result range must be 1.  Therefore the

@@ -289,9 +289,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       final DeclaredType callerReceiverType = this.visitorState.getClassType().getUnderlyingType();
       assert callerReceiverType != null;
       final TypeElement callerReceiverElt = (TypeElement) callerReceiverType.asElement();
-      // Note: All these checks should be fast in the common case, but happen for every method
-      // call inside the anonymous class. Consider a cache here if profiling surfaces this as
-      // taking too long.
+      // Note: All these checks should be fast in the common case, but happen for every method call
+      // inside the anonymous class. Consider a cache here if profiling surfaces this as taking too
+      // long.
       if (TypesUtils.isAnonymous(callerReceiverType)
           // Skip if already inferred @UI
           && !effStack.peek().isUI()

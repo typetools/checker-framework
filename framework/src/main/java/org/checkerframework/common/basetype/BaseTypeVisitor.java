@@ -2214,8 +2214,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     final TypeKind castTypeKind = castType.getKind();
     if (castTypeKind == TypeKind.DECLARED) {
-      // Don't issue an error if the annotations are equivalent to the qualifier upper bound
-      // of the type.
+      // Don't issue an error if the annotations are equivalent to the qualifier upper bound of the
+      // type.
       AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
       Set<AnnotationMirror> bounds =
           atypeFactory.getTypeDeclarationBounds(castDeclared.getUnderlyingType());
@@ -2258,15 +2258,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         int exprSize = ((AnnotatedDeclaredType) newExprType).getTypeArguments().size();
 
         if (castSize != exprSize) {
-          // Always warn if the cast and expression contain a different number of
-          // type arguments, e.g. to catch a cast from "Object" to "List<@NonNull
-          // Object>".
+          // Always warn if the cast and expression contain a different number of type arguments,
+          // e.g. to catch a cast from "Object" to "List<@NonNull Object>".
           // TODO: the same number of arguments actually doesn't guarantee anything.
           return false;
         }
       } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
-        // If both the cast type and the casted expression are type variables, then check
-        // the bounds.
+        // If both the cast type and the casted expression are type variables, then check the
+        // bounds.
         Set<AnnotationMirror> lowerBoundAnnotationsCast =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, castType);
         Set<AnnotationMirror> lowerBoundAnnotationsExpr =
@@ -3248,8 +3247,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // TODO: for expanded varargs parameters, maybe adjust the name
             paramNames.get(Math.min(i, maxParamNamesIndex)),
             executableName);
-        // Also descend into the argument within the correct assignment
-        // context.
+        // Also descend into the argument within the correct assignment context.
         scan(passedArgs.get(i), null);
       }
     } finally {
@@ -3412,8 +3410,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Pair<AnnotatedTypeMirror, AnnotatedExecutableType> result =
         atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
-    // The type to which the member reference is assigned -- also known as the target type of
-    // the reference.
+    // The type to which the member reference is assigned -- also known as the target type of the
+    // reference.
     AnnotatedTypeMirror functionalInterface = result.first;
     // The type of the single method that is declared by the functional interface.
     AnnotatedExecutableType functionType = result.second;
@@ -3501,8 +3499,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     AnnotatedTypeMirror functionTypeReturnType = functionType.getReturnType();
     if (functionTypeReturnType.getKind() == TypeKind.VOID) {
-      // If the functional interface return type is void, the overriding return
-      // type doesn't matter.
+      // If the functional interface return type is void, the overriding return type doesn't matter.
       functionTypeReturnType = invocationReturnType;
     }
 
