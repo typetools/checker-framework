@@ -250,6 +250,11 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // Skip this check.
   }
 
+  @Override
+  protected void checkForPolymorphicQualifiers(ClassTree classTree) {
+    // Polymorphic qualifiers are legal on classes, so skip this check.
+  }
+
   // Check that the invoked effect is <= permitted effect (effStack.peek())
   @Override
   public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
