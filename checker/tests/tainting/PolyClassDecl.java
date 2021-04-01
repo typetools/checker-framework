@@ -20,4 +20,9 @@ public class PolyClassDecl {
   void method() {
     ArrayList<@PolyTainted String> s = new ArrayList<@PolyTainted String>() {};
   }
+
+  // :: error: (invalid.polymorphic.qualifier)
+  <@PolyTainted T> T identity(T arg) {
+    return arg;
+  }
 }
