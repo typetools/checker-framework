@@ -55,6 +55,7 @@ done
 # Add the following option for verbose output:
 #     "-DCheckerDevelMain.verbose=TRUE" \
 
+# shellcheck disable=SC2086
 eval "java" \
      "-ea " \
      "-DCheckerDevelMain.cp=${buildDirs} " \

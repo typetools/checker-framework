@@ -271,10 +271,10 @@ public abstract class JavaExpression {
         // We right this wrong here.
         result = new ThisReference(fan.getReceiver().getType());
       } else if (fan.getFieldName().equals("class")) {
-        // "className.class" is considered a field access. This makes sense,
-        // since .class is similar to a field access which is the equivalent
-        // of a call to getClass(). However for the purposes of dataflow
-        // analysis, and value stores, this is the equivalent of a ClassNameNode.
+        // "className.class" is considered a field access. This makes sense, since .class is similar
+        // to a field access which is the equivalent of a call to getClass(). However for the
+        // purposes of dataflow analysis, and value stores, this is the equivalent of a
+        // ClassNameNode.
         result = new ClassName(fan.getReceiver().getType());
       } else {
         result = fromNodeFieldAccess(fan);

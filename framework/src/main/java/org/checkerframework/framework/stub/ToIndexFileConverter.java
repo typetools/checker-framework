@@ -2,7 +2,6 @@ package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
@@ -54,6 +53,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
@@ -180,7 +180,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
-      iu = StaticJavaParser.parseStubUnit(in);
+      iu = JavaParserUtil.parseStubUnit(in);
     } catch (ParseProblemException e) {
       iu = null;
       throw new BugInCF(
@@ -266,8 +266,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AClass clazz = (AClass) elem;
     AMethod method;
 
-    // Some of the methods in the generated parser use null to represent
-    // an empty list.
+    // Some of the methods in the generated parser use null to represent an empty list.
     if (params != null) {
       for (Parameter param : params) {
         Type ptype = param.getType();

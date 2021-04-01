@@ -1407,8 +1407,7 @@ public final class TreeUtils {
       case RIGHT_SHIFT_ASSIGNMENT:
       case UNSIGNED_RIGHT_SHIFT:
       case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-        // Strictly speaking,  these operators do unary promotion on each argument
-        // separately.
+        // Strictly speaking, these operators do unary promotion on each argument separately.
         return true;
 
       case MULTIPLY:

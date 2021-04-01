@@ -185,8 +185,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
   private void lubTypeArgument(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotatedTypeMirror lub) {
     // In lub(), asSuper is called on type1 and type2, but asSuper does not recur into type
-    // arguments, so call asSuper on the type arguments so that they have the same underlying
-    // type.
+    // arguments, so call asSuper on the type arguments so that they have the same underlying type.
     final AnnotatedTypeMirror type1AsLub = AnnotatedTypes.asSuper(atypeFactory, type1, lub);
     final AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
 

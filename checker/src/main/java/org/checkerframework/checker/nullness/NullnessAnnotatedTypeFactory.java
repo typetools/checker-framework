@@ -480,9 +480,8 @@ public class NullnessAnnotatedTypeFactory
       assert elt != null;
 
       if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
-        // TODO: It's surprising that we have to do this in
-        // both visitVariable and visitIdentifier. This should
-        // already be handled by applying the defaults anyway.
+        // TODO: It's surprising that we have to do this in both visitVariable and
+        // visitIdentifier. This should already be handled by applying the defaults anyway.
         // case 9. exception parameter
         type.replaceAnnotation(NONNULL);
       }
@@ -766,8 +765,7 @@ public class NullnessAnnotatedTypeFactory
   public List<AnnotationMirror> getPreconditionAnnotation(
       VariableElement elt, AnnotatedTypeMirror fieldType) {
     AnnotatedTypeMirror declaredType = fromElement(elt);
-    // TODO: This does not handle the possibility that the user set a different default
-    // annotation.
+    // TODO: This does not handle the possibility that the user set a different default annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
         || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
@@ -800,8 +798,7 @@ public class NullnessAnnotatedTypeFactory
   public List<AnnotationMirror> getPostconditionAnnotation(
       VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
     AnnotatedTypeMirror declaredType = fromElement(elt);
-    // TODO: This does not handle the possibility that the user set a different default
-    // annotation.
+    // TODO: This does not handle the possibility that the user set a different default annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
         || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
@@ -809,8 +806,7 @@ public class NullnessAnnotatedTypeFactory
     }
     if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
         && preconds.contains(requiresNonNullAnno(elt))) {
-      // The postcondition is implied by the precondition and the field being
-      // @MonotonicNonNull.
+      // The postcondition is implied by the precondition and the field being @MonotonicNonNull.
       return Collections.emptyList();
     }
     if (AnnotationUtils.containsSameByName(

@@ -208,8 +208,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       // outer type.
       return f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(node)), node);
     } else {
-      // node must be a field access, so get the type of the expression, and then call
-      // asMemberOf.
+      // node must be a field access, so get the type of the expression, and then call asMemberOf.
       AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
       t = f.applyCaptureConversion(t);
       return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
@@ -244,8 +243,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeMirror visitNewArray(NewArrayTree node, AnnotatedTypeFactory f) {
 
-    // Don't use fromTypeTree here, because node.getType() is not an
-    // array type!
+    // Don't use fromTypeTree here, because node.getType() is not an array type!
     AnnotatedArrayType result = (AnnotatedArrayType) f.type(node);
 
     if (node.getType() == null) { // e.g., byte[] b = {(byte)1, (byte)2};

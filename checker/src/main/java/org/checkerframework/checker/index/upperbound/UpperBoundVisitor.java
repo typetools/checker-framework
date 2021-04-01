@@ -79,8 +79,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     if (atypeFactory.areSameByClass(anno, LTLengthOf.class)) {
       List<? extends ExpressionTree> args = node.getArguments();
       if (args.size() == 2) {
-        // If offsets are provided, there must be the same number of them as there are
-        // arrays.
+        // If offsets are provided, there must be the same number of them as there are arrays.
         List<String> sequences =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.ltLengthOfValueElement, String.class);
@@ -404,9 +403,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     // Take advantage of information available on a HasSubsequence(a, from, to) annotation
     // on the lhs qualifier (varLtlQual):
-    // this allows us to show that iff varLtlQual includes LTL(b),
-    // b has HSS, and expQual includes LTL(a, -from), then the LTL(b) can be removed from
-    // varLtlQual.
+    // this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual includes
+    // LTL(a, -from), then the LTL(b) can be removed from varLtlQual.
 
     UBQualifier newLHS = processSubsequenceForLHS(varLtlQual, expQual);
     if (newLHS.isUnknown()) {
