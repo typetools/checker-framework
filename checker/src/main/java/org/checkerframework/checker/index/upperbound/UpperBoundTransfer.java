@@ -20,6 +20,7 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -47,6 +48,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -115,6 +117,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /** The type factory associated with this transfer function. */
   private UpperBoundAnnotatedTypeFactory atypeFactory;
 
+  // TODO: Is this needed?
+  // /** The lower bound type factory associated with this transfer function. */
+  // private LowerBoundAnnotatedTypeFactory lbAtypeFactory;
+
+  /** The value type factory associated with this transfer function. */
+  private ValueAnnotatedTypeFactory valueAtypeFactory;
+
   /**
    * Creates a new UpperBoundTransfer.
    *
@@ -123,6 +132,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public UpperBoundTransfer(CFAnalysis analysis) {
     super(analysis);
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+    // lbAtypeFactory = atypeFactory.getLowerBoundAnnotatedTypeFactory();
+    valueAtypeFactory = atypeFactory.getValueAnnotatedTypeFactory();
 
     stringTypeMirror = atypeFactory.getElementUtils().getTypeElement("java.lang.String").asType();
   }
@@ -838,18 +849,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       IntegerLiteralNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitIntegerLiteral(n, in);
 
-    // This could be extended to all integers if desired, but literals probably gives most of the
-    // needed benefit.
+    // This could be extended to all integers if desired, but handling literals probably gives most
+    // of the needed benefit.
 
-    CFValue resultValue = result.getResultValue();
     CFStore store = result.getRegularStore();
-
-    System.out.printf(
-        "resultValue=%s, resultValue.getAnnotations()=%s%n",
-        resultValue, resultValue.getAnnotations());
-
     List<JavaExpression> ltloSequences = ltloSequences(n, store);
-    System.out.printf("ltloSequences=%s%n", ltloSequences);
 
     if (ltloSequences.isEmpty()) {
       return result;
@@ -863,21 +867,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     CFValue newResultValue =
         analysis.createSingleAnnotationValue(
             ltloAnnotation, result.getResultValue().getUnderlyingType());
-    return new RegularTransferResult<>(newResultValue, result.getRegularStore());
-  }
-
-  /**
-   * Sets the integer's upper bound type in the given store.
-   *
-   * @param n an integer literal node
-   * @param store a store
-   */
-  void setIntUbType(IntegerLiteralNode n, CFStore store) {
-    // TODO
-    // if (...) {
-    //      store.insertValue(rightJe, glbAnno);
-    // }
-
+    return new RegularTransferResult<>(newResultValue, store);
   }
 
   /**
@@ -888,18 +878,19 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * @return all the sequences such that the given integer literal is less than their length.
    */
   List<JavaExpression> ltloSequences(IntegerLiteralNode n, CFStore store) {
+    Tree literalTree = n.getTree();
     int intVal = n.getValue();
     // The literal is less than the length of all these sequences.
     List<JavaExpression> result = new ArrayList<>();
     for (Map.Entry<FieldAccess, CFValue> entry : store.getFieldValues().entrySet()) {
       FieldAccess fa = entry.getKey();
-      if (isLtLengthOf(intVal, fa, /*TODO*/ null)) {
+      if (isLtLengthOf(literalTree, intVal, fa)) {
         result.add(fa);
       }
     }
     for (Map.Entry<LocalVariable, CFValue> entry : store.getLocalVariableValues().entrySet()) {
       LocalVariable lv = entry.getKey();
-      if (isLtLengthOf(intVal, lv, /*TODO*/ null)) {
+      if (isLtLengthOf(literalTree, intVal, lv)) {
         result.add(lv);
       }
     }
@@ -909,22 +900,26 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /**
    * Returns true if the integer is @LTLengthOf the Java expression.
    *
-   * @param i an integer
-   * @param je a Java expression; this method does nothing unless it is a string or an array
-   * @param
-   * @param cfv the abstract value associated with {@code je}
+   * @param literalTree an integer literal
+   * @param i the int value of the literal tree
+   * @param je a Java expression that might be a sequence; this method does nothing unless it is a
+   *     string or an array
    * @return true if the integer is @LTLengthOf the Java expression
    */
-  boolean isLtLengthOf(int i, JavaExpression je, CFValue cfv) {
+  private boolean isLtLengthOf(Tree literalTree, int i, JavaExpression je) {
     TypeMirror type = je.getType();
-    if (type.getKind() == TypeKind.ARRAY) {
-      // TODO
-      return true;
-    } else if (atypeFactory.types.isSameType(type, stringTypeMirror)) {
-      // TODO
-      return true;
-    } else {
+    if (!(type.getKind() == TypeKind.ARRAY
+        || atypeFactory.types.isSameType(type, stringTypeMirror))) {
       return false;
     }
+
+    // Set<AnnotationMirror> flowAnnos =
+    Set<AnnotationMirror> atfAnnos =
+        valueAtypeFactory.getAnnotationsFromJavaExpression(je, literalTree);
+    if (atfAnnos == null) {
+      throw new BugInCF("No MinLen anno: isLtLengthOf(%s, %s, %s, %s)", literalTree, i, je);
+    }
+    int minLen = valueAtypeFactory.getMinLenValue(atfAnnos);
+    return i < minLen;
   }
 }
