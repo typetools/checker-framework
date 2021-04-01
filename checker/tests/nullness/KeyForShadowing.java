@@ -12,18 +12,15 @@ public class KeyForShadowing {
     String k = "key";
     m0.put(k, 1); // k is @KeyFor("m0") after this line
 
-    // We expect an error for the next one since we are not
-    // respecting the method contract. It expects the
-    // key to be for the second parameter, not the first.
+    // We expect an error for the next one since we are not respecting the method contract. It
+    // expects the key to be for the second parameter, not the first.
 
     // :: error: (argument.type.incompatible)
     getMap3(m0, m1, k).toString();
 
-    // We expect an error for the next one since although
-    // we are respecting the method contract, since the
-    // key is for the first parameter, the Nullness Checker
-    // is misinterpreting "m1" to be the local m1 to this
-    // method, and not the first parameter to the method.
+    // We expect an error for the next one since although we are respecting the method contract,
+    // since the key is for the first parameter, the Nullness Checker is misinterpreting "m1" to be
+    // the local m1 to this method, and not the first parameter to the method.
 
     // :: error: (argument.type.incompatible)
     getMap2(m0, m1, k).toString();

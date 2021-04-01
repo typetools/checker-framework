@@ -49,10 +49,9 @@ class Proxy {
     return response != null;
   }
 
-  // Returns non-null if the response has been received, null otherwise;
-  // but an @AssertNonNullIfNonNull annotation would states the converse,
-  // that if the result is non-null then the response hs been received.
-  // See rpcResponseReceived.
+  // Returns non-null if the response has been received, null otherwise; but an
+  // @AssertNonNullIfNonNull annotation would states the converse, that if the result is non-null
+  // then the response hs been received.  See rpcResponseReceived.
   @Pure
   @Nullable Object rpcResponse() {
     return response;

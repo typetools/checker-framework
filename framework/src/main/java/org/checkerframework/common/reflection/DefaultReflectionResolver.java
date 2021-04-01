@@ -157,10 +157,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 factory);
       }
 
-      // Glb parameter types.  All formal parameter types get
-      // combined together because Method#invoke takes as argument an
-      // array of parameter types, so there is no way to distinguish
-      // the types of different formal parameters.
+      // Glb parameter types.  All formal parameter types get combined together because
+      // Method#invoke takes as argument an array of parameter types, so there is no way to
+      // distinguish the types of different formal parameters.
       for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
         paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
       }

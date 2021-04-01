@@ -135,9 +135,8 @@ import org.plumelib.util.UtilPlume;
   /// More sound (strict checking): enable errors that are disabled by default
   ///
 
-  // The next ones *increase* rather than *decrease* soundness.
-  // They will eventually be replaced by their complements
-  // (except -AconcurrentSemantics) and moved into the above section.
+  // The next ones *increase* rather than *decrease* soundness.  They will eventually be replaced by
+  // their complements (except -AconcurrentSemantics) and moved into the above section.
 
   // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
   // @Pure methods is temporarily disabled unless -AcheckPurityAnnotations is
@@ -243,9 +242,8 @@ import org.plumelib.util.UtilPlume;
   // that were not found on the class path
   // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
   "stubWarnIfNotFound",
-  // Whether to ignore missing classes even when warnIfNotFound is set to true and
-  // other classes from the same package are present (useful if a package spans more than one
-  // jar).
+  // Whether to ignore missing classes even when warnIfNotFound is set to true and other classes
+  // from the same package are present (useful if a package spans more than one jar).
   // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFoundIgnoresClasses
   "stubWarnIfNotFoundIgnoresClasses",
   // Whether to print warnings about stub files that overwrite annotations
@@ -280,7 +278,7 @@ import org.plumelib.util.UtilPlume;
   // Whether to print [] around a set of type parameters in order to clearly see where they end
   // e.g.  <E extends F, F extends Object>
   // without this option the E is printed: E extends F extends Object
-  // with this option:                    E [ extends F [ extends Object super Void ] super Void ]
+  // with this option:                     E [ extends F [ extends Object super Void ] super Void ]
   // when multiple type variables are used this becomes useful very quickly
   "printVerboseGenerics",
 
@@ -344,9 +342,8 @@ import org.plumelib.util.UtilPlume;
   // Mechanism to visualize the control flow graph (CFG).
   // The argument is a sequence of values or key-value pairs.
   // The first argument has to be the fully-qualified name of the
-  // org.checkerframework.dataflow.cfg.CFGVisualizer implementation
-  // that should be used. The remaining values or key-value pairs are
-  // passed to CFGVisualizer.init.
+  // org.checkerframework.dataflow.cfg.CFGVisualizer implementation that should be used. The
+  // remaining values or key-value pairs are passed to CFGVisualizer.init.
   // For example:
   //    -Acfgviz=MyViz,a,b=c,d
   // instantiates class MyViz and calls CFGVisualizer.init
@@ -396,9 +393,8 @@ import org.plumelib.util.UtilPlume;
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
-  // TODO A checker should export itself through a separate interface,
-  // and maybe have an interface for all the methods for which it's safe
-  // to override.
+  // TODO A checker should export itself through a separate interface, and maybe have an interface
+  // for all the methods for which it's safe to override.
 
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
@@ -972,10 +968,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (visitor == null) {
-      // typeProcessingStart invokes initChecker, which should
-      // have set the visitor. If the field is still null, an
-      // exception occurred during initialization, which was already
-      // logged there. Don't also cause a NPE here.
+      // typeProcessingStart invokes initChecker, which should have set the visitor. If the field is
+      // still null, an exception occurred during initialization, which was already logged
+      // there. Don't also cause a NPE here.
       return;
     }
     if (p.getCompilationUnit() != currentRoot) {
@@ -1299,9 +1294,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // (1) error key
     sj.add(defaultFormat);
 
-    // (2) number of additional tokens, and those tokens; this
-    // depends on the error message, and an example is the found
-    // and expected types
+    // (2) number of additional tokens, and those tokens; this depends on the error message, and an
+    // example is the found and expected types
     if (args != null) {
       sj.add(Integer.toString(args.length));
       for (Object arg : args) {
@@ -1793,9 +1787,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public Set<String> getSupportedOptions() {
     Set<String> options = new HashSet<>();
 
-    // Support all options provided with the standard
-    // {@link javax.annotation.processing.SupportedOptions}
-    // annotation.
+    // Support all options provided with the standard {@link
+    // javax.annotation.processing.SupportedOptions} annotation.
     options.addAll(super.getSupportedOptions());
 
     // For the Checker Framework annotation
@@ -2062,9 +2055,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
 
       if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-        // Return false immediately. Do NOT check for AnnotatedFor in
-        // the enclosing elements, because they may not have an
-        // @AnnotatedFor.
+        // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+        // because they may not have an @AnnotatedFor.
         return false;
       }
     }
@@ -2078,9 +2070,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
 
       if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-        // Return false immediately. Do NOT check for AnnotatedFor in
-        // the enclosing elements, because they may not have an
-        // @AnnotatedFor.
+        // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+        // because they may not have an @AnnotatedFor.
         return false;
       }
     }

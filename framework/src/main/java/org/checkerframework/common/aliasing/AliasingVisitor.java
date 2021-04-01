@@ -79,11 +79,10 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
           checker.reportError(node, "unique.leaked");
         }
       } else {
-        // TODO: Currently the type of "this" doesn't always return
-        // the type of the constructor result, therefore we need
-        // this "else" block. Once constructors are implemented
-        // correctly we could remove that code below, since the type
-        // of "this" in a @Unique constructor will be @Unique.
+        // TODO: Currently the type of "this" doesn't always return the type of the constructor
+        // result, therefore we need this "else" block. Once constructors are implemented correctly
+        // we could remove that code below, since the type of "this" in a @Unique constructor will
+        // be @Unique.
         Tree parent = getCurrentPath().getParentPath().getLeaf();
         boolean parentIsStatement = parent.getKind() == Kind.EXPRESSION_STATEMENT;
         ExecutableElement methodElement = TreeUtils.elementFromUse(node);
@@ -140,16 +139,13 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
   }
 
-  // TODO: Merge that code in
-  // commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree
-  // valueExp, String errorKey, boolean isLocalVariableAssignement), because
-  // the method below isn't called for pseudo-assignments, but the mentioned
-  // one is. The issue of copy-pasting the code from this method to the other
-  // one is that a declaration such as: List<@Unique Object> will raise a
-  // unique.leaked warning, as there is a pseudo-assignment from @Unique to a
-  // @MaybeAliased object, if the @Unique annotation is not in the stubfile.
-  // TODO: Change the documentation in BaseTypeVisitor to point out that
-  // this isn't called for pseudo-assignments.
+  // TODO: Merge that code in commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree
+  // valueExp, String errorKey, boolean isLocalVariableAssignement), because the method below isn't
+  // called for pseudo-assignments, but the mentioned one is. The issue of copy-pasting the code
+  // from this method to the other one is that a declaration such as: List<@Unique Object> will
+  // raise a unique.leaked warning, as there is a pseudo-assignment from @Unique to a @MaybeAliased
+  // object, if the @Unique annotation is not in the stubfile.  TODO: Change the documentation in
+  // BaseTypeVisitor to point out that this isn't called for pseudo-assignments.
   @Override
   protected void commonAssignmentCheck(
       Tree varTree,
@@ -158,9 +154,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
       Object... extraArgs) {
     super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
     if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
-      // If an assignment occurs inside a constructor with
-      // result type @Unique, it will invalidate the @Unique property
-      // by using the "this" reference.
+      // If an assignment occurs inside a constructor with result type @Unique, it will invalidate
+      // the @Unique property by using the "this" reference.
       checker.reportError(valueExp, "unique.leaked");
     } else if (canBeLeaked(valueExp)) {
       checker.reportError(valueExp, "unique.leaked");

@@ -28,9 +28,9 @@ public class AssignmentDuringInitialization {
   }
 
   public void goodBehavior() {
-    // this isn't a constructor or initializer
-    // the receiver of this method should already be initialized
-    // and therefore f1 and f2 should already be initialized
+    // This isn't a constructor or initializer.
+    // The receiver of this method should already be initialized
+    // and therefore f1 and f2 should already be initialized.
     f5 = f6;
     f6 = f5;
     f6.toString(); // No exception here
