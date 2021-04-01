@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+/** A replacement for StaticJavaParser that does not leak memory. */
 public class JavaParserUtil {
 
   /**
