@@ -4663,7 +4663,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
   /** Matches a string whose only parens are at the beginning and end of the string. */
-  Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+  private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
 
   /**
    * Given an expression, split it into a subexpression and a constant offset. For example:
