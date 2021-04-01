@@ -78,9 +78,9 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
         }
       }
 
-      // If return type is annotated with @This, add @This annotation
-      // to the receiver type.  We cannot yet default all receivers to be
-      // @This due to https://github.com/typetools/checker-framework/issues/2931
+      // If return type is annotated with @This, add @This annotation to the receiver type.  We
+      // cannot yet default all receivers to be @This due to
+      // https://github.com/typetools/checker-framework/issues/2931
       AnnotationMirror retAnnotation = returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
       if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
         AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();

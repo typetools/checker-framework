@@ -159,8 +159,7 @@ public class TypeAnnotationUtils {
       Object v2 = ((Attribute.Constant) a2).getValue();
       return v1.equals(v2);
     } else if (a1 instanceof Attribute.Compound && a2 instanceof Attribute.Compound) {
-      // The annotation value is another annotation.  `a1` and `a2` implement
-      // AnnotationMirror.
+      // The annotation value is another annotation.  `a1` and `a2` implement AnnotationMirror.
       DeclaredType t1 = ((Attribute.Compound) a1).getAnnotationType();
       DeclaredType t2 = ((Attribute.Compound) a2).getAnnotationType();
       if (!types.isSameType(t1, t2)) {

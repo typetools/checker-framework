@@ -3,8 +3,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-// Re-enable when @AssertNonNullIfNonNull checking is enhanced
-// @skip-test
+// @skip-test Re-enable when @AssertNonNullIfNonNull checking is enhanced
 
 public class AssertNonNullIfNonNullTest {
 

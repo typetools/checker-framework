@@ -454,9 +454,8 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   private void clearSharedCFG(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
     if (factory.shouldClearSubcheckerSharedCFGs) {
-      // This is the first subchecker running in a group that share CFGs, so
-      // it must clear its ultimate parent's shared CFG before adding a new
-      // shared CFG.
+      // This is the first subchecker running in a group that share CFGs, so it must clear its
+      // ultimate parent's shared CFG before adding a new shared CFG.
       factory.shouldClearSubcheckerSharedCFGs = false;
       if (factory.subcheckerSharedCFG != null) {
         factory.subcheckerSharedCFG.clear();
@@ -641,8 +640,7 @@ public abstract class GenericAnnotatedTypeFactory<
       checkerClass = checkerClass.getSuperclass();
     }
 
-    // If a transfer function couldn't be loaded reflectively, return the
-    // default.
+    // If a transfer function couldn't be loaded reflectively, return the default.
     @SuppressWarnings("unchecked")
     TransferFunction ret =
         (TransferFunction)
@@ -742,13 +740,11 @@ public abstract class GenericAnnotatedTypeFactory<
       return "1 qualifier examined: " + stq.iterator().next().getCanonicalName();
     }
 
-    // Create a list of the supported qualifiers and sort the list
-    // alphabetically
+    // Create a list of the supported qualifiers and sort the list alphabetically
     List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>(stq);
     sortedSupportedQuals.sort(Comparator.comparing(Class::getCanonicalName));
 
-    // display the number of qualifiers as well as the names of each
-    // qualifier.
+    // display the number of qualifiers as well as the names of each qualifier.
     StringJoiner sj =
         new StringJoiner(", ", sortedSupportedQuals.size() + " qualifiers examined: ", "");
     for (Class<? extends Annotation> qual : sortedSupportedQuals) {
@@ -2151,8 +2147,7 @@ public abstract class GenericAnnotatedTypeFactory<
       @Nullable Element element, AnnotatedTypeMirror type) {
     if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
       if (type.getKind() == TypeKind.DECLARED) {
-        // If this is a type for a local variable, don't apply the default to the primary
-        // location.
+        // If this is a type for a local variable, don't apply the default to the primary location.
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
         if (declaredType.getEnclosingType() != null) {
           defaultQualifierForUseTypeAnnotator.visit(declaredType.getEnclosingType());

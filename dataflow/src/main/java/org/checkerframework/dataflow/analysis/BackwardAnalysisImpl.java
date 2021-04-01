@@ -320,8 +320,7 @@ public class BackwardAnalysisImpl<
         case REGULAR_BLOCK:
           {
             RegularBlock rBlock = (RegularBlock) block;
-            // Apply transfer function to contents until we found the node we are
-            // looking for.
+            // Apply transfer function to contents until we found the node we are looking for.
             TransferInput<V, S> store = blockTransferInput;
             List<Node> nodeList = rBlock.getNodes();
             ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
@@ -355,8 +354,7 @@ public class BackwardAnalysisImpl<
               return blockTransferInput.getRegularStore();
             }
             setCurrentNode(node);
-            // Copy the store to avoid changing other blocks' transfer inputs in {@link
-            // #inputs}
+            // Copy the store to avoid changing other blocks' transfer inputs in {@link #inputs}
             TransferResult<V, S> transferResult =
                 callTransferFunction(node, blockTransferInput.copy());
             // Merge transfer result with the exception store of this exceptional block

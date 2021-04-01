@@ -488,8 +488,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
     if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
       // Nondeterministic expressions may not be stored.
-      // (They are likely to be quickly evicted, as soon as a side-effecting method is
-      // called.)
+      // (They are likely to be quickly evicted, as soon as a side-effecting method is called.)
       return false;
     }
     return true;
@@ -1062,9 +1061,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     S newStore = analysis.createEmptyStore(sequentialSemantics);
 
     for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      // local variables that are only part of one store, but not the
-      // other are discarded, as one of store implicitly contains 'top'
-      // for that variable.
+      // local variables that are only part of one store, but not the other are discarded, as one of
+      // store implicitly contains 'top' for that variable.
       LocalVariable localVar = e.getKey();
       V thisVal = localVariableValues.get(localVar);
       if (thisVal != null) {
@@ -1088,9 +1086,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-      // information about fields that are only part of one store, but not
-      // the other are discarded, as one store implicitly contains 'top'
-      // for that field.
+      // information about fields that are only part of one store, but not the other are discarded,
+      // as one store implicitly contains 'top' for that field.
       FieldAccess el = e.getKey();
       V thisVal = fieldValues.get(el);
       if (thisVal != null) {
@@ -1102,9 +1099,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
     for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
-      // information about arrays that are only part of one store, but not
-      // the other are discarded, as one store implicitly contains 'top'
-      // for that array access.
+      // information about arrays that are only part of one store, but not the other are discarded,
+      // as one store implicitly contains 'top' for that array access.
       ArrayAccess el = e.getKey();
       V thisVal = arrayValues.get(el);
       if (thisVal != null) {
@@ -1116,9 +1112,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
     for (Map.Entry<MethodCall, V> e : other.methodValues.entrySet()) {
-      // information about methods that are only part of one store, but
-      // not the other are discarded, as one store implicitly contains
-      // 'top' for that field.
+      // information about methods that are only part of one store, but not the other are discarded,
+      // as one store implicitly contains 'top' for that field.
       MethodCall el = e.getKey();
       V thisVal = methodValues.get(el);
       if (thisVal != null) {

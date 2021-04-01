@@ -433,8 +433,7 @@ public class AnnotationUtils {
     } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
       return compareAnnotationMirrors((AnnotationMirror) val1, (AnnotationMirror) val2);
     } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
-      // This case occurs because of the recursive call when comparing arrays of
-      // annotation values.
+      // This case occurs because of the recursive call when comparing arrays of annotation values.
       return compareAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
     }
 
@@ -575,8 +574,7 @@ public class AnnotationUtils {
       case TYPE_USE:
         return EnumSet.noneOf(ElementKind.class);
       default:
-        // TODO: Use MODULE enum constants directly instead of looking them up by name.
-        // (Java 11)
+        // TODO: Use MODULE enum constants directly instead of looking them up by name.  (Java 11)
         if (elementType.name().equals("MODULE")) {
           return EnumSet.of(ElementKind.valueOf("MODULE"));
         }

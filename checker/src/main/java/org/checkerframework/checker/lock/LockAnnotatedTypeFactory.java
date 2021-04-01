@@ -180,8 +180,7 @@ public class LockAnnotatedTypeFactory
 
       @Override
       protected boolean shouldPassThroughExpression(String expression) {
-        // There is no expression to use to replace <self> here, so just pass the
-        // expression along.
+        // There is no expression to use to replace <self> here, so just pass the expression along.
         return super.shouldPassThroughExpression(expression)
             || LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches();
       }
@@ -192,8 +191,8 @@ public class LockAnnotatedTypeFactory
           return javaExpr;
         }
 
-        // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL
-        // error string.
+        // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL error
+        // string.
         return createError(javaExpr.toString(), NOT_EFFECTIVELY_FINAL);
       }
     };
@@ -235,8 +234,8 @@ public class LockAnnotatedTypeFactory
       return PurityUtils.isDeterministic(this, methodCall.getElement())
           && isExpressionEffectivelyFinal(methodCall.getReceiver());
     } else if (expr instanceof ThisReference || expr instanceof ClassName) {
-      // this is always final. "ClassName" is actually a class literal (String.class), it's
-      // final too.
+      // this is always final. "ClassName" is actually a class literal (String.class), it's final
+      // too.
       return true;
     } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions
       return false;

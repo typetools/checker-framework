@@ -1,9 +1,6 @@
 package org.checkerframework.framework.stub;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.ParseResult;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Position;
 import com.github.javaparser.Problem;
 import com.github.javaparser.ast.AccessSpecifier;
@@ -215,8 +212,7 @@ public class AnnotationFileParser {
   @Nullable List<AnnotationExpr> packageAnnos;
 
   // The following variables are stored in the AnnotationFileParser because otherwise they would
-  // need to be
-  // passed through everywhere, which would be verbose.
+  // need to be passed through everywhere, which would be verbose.
 
   /**
    * The name of the type that is currently being parsed. After processing a package declaration but
@@ -610,13 +606,7 @@ public class AnnotationFileParser {
     if (debugAnnotationFileParser) {
       stubDebug(String.format("parsing stub file %s", filename));
     }
-    ParserConfiguration configuration = new ParserConfiguration();
-    ParseResult<StubUnit> parseResult = new JavaParser(configuration).parseStubUnit(inputStream);
-    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
-      stubUnit = parseResult.getResult().get();
-    } else {
-      throw new ParseProblemException(parseResult.getProblems());
-    }
+    stubUnit = JavaParserUtils.parseStubUnit(inputStream);
 
     // getAllAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
@@ -1367,8 +1357,7 @@ public class AnnotationFileParser {
     }
     recordDeclAnnotationFromAnnotationFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
-    // AnnotationFileParser parses all annotations in type annotation position as type
-    // annotations
+    // AnnotationFileParser parses all annotations in type annotation position as type annotations
     recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), decl);
     AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
@@ -2162,8 +2151,7 @@ public class AnnotationFileParser {
     TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
     if (annoTypeElt == null) {
       // If the annotation was not imported, then #getAllAnnotations did not add it to the
-      // allAnnotations field. This code adds the annotation when it is encountered
-      // (i.e. here).
+      // allAnnotations field. This code adds the annotation when it is encountered (i.e. here).
       // Note that this does not call AnnotationFileParser#getTypeElement to avoid a spurious
       // diagnostic if the annotation is actually unknown.
       annoTypeElt = elements.getTypeElement(annoNameFq);

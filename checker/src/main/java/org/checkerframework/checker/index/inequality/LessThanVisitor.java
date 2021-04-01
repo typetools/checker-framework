@@ -71,8 +71,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
       Object... extraArgs) {
     // If value is less than all expressions in the annotation in varType,
     // using the Value Checker, then skip the common assignment check.
-    // Also skip the check if the only expression is "a + 1" and the valueTree
-    // is "a".
+    // Also skip the check if the only expression is "a + 1" and the valueTree is "a".
     List<String> expressions =
         getTypeFactory()
             .getLessThanExpressions(

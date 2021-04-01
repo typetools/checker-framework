@@ -104,9 +104,8 @@ public class ConstraintMapBuilder {
             }
           }
 
-          // If we have a case where Ti = @NonNull Tj we know that for the @Initialization
-          // hierarchy Ti = TJ and we know that for the @Nullable hierarchy Ti = @NonNull
-          // <some other type>.
+          // If we have a case where Ti = @NonNull Tj we know that for the @Initialization hierarchy
+          // Ti = TJ and we know that for the @Nullable hierarchy Ti = @NonNull <some other type>.
           // This step saves @NonNull annotation.
           // This case also covers the case where i = j.
           if (!tAnnos.isEmpty()) {

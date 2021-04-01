@@ -1,6 +1,5 @@
-// This code is illegal (javac issues an error), but nonetheless the
-// org.checkerframework.checker shouldn't crash.  (Maybe they shouldn't run at all if javac
-// issues any errors?)
+// This code is illegal (javac issues an error), but nonetheless the org.checkerframework.checker
+// shouldn't crash.  (Maybe they shouldn't run at all if javac issues any errors?)
 // @skip-test
 
 import java.util.HashMap;
