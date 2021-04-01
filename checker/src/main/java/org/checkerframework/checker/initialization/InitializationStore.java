@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
@@ -225,7 +224,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         viz.visualizeStoreKeyVal(
             "initialized fields", ToStringComparator.sorted(initializedFields));
     List<VariableElement> invariantVars =
-        invariantFields.keySet().stream().map(FieldAccess::getField).collect(Collectors.toList());
+        CollectionsPlume.mapList(FieldAccess::getField, invariantFields.keySet());
     String invariantVisualize =
         viz.visualizeStoreKeyVal("invariant fields", ToStringComparator.sorted(invariantVars));
 

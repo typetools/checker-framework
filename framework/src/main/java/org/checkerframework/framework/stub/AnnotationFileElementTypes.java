@@ -682,7 +682,8 @@ public class AnnotationFileElementTypes {
     JarURLConnection connection = getJarURLConnectionToJdk();
 
     try (JarFile jarFile = connection.getJarFile()) {
-      for (JarEntry jarEntry : jarFile.stream().collect(Collectors.toList())) {
+      for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
+        JarEntry jarEntry = e.nextElement();
         // filter out directories and non-class files
         if (!jarEntry.isDirectory()
             && jarEntry.getName().endsWith(".java")
