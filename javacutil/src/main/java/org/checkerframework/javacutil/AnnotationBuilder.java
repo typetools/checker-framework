@@ -524,9 +524,8 @@ public class AnnotationBuilder {
     return this;
   }
 
-  // Keep this version synchronized with the Enum<?>[] version above.
-  // Which one is more useful/general? Unifying adds overhead of creating
-  // another array.
+  // Keep this version synchronized with the Enum<?>[] version above.  Which one is more
+  // useful/general? Unifying adds overhead of creating another array.
   public AnnotationBuilder setValue(CharSequence elementName, VariableElement[] values) {
     assertNotBuilt();
     ExecutableElement var = findElement(elementName);
@@ -635,8 +634,7 @@ public class AnnotationBuilder {
       isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
     }
     if (!isSubtype) {
-      // Annotations in stub files sometimes are the same type, but Types#isSubtype fails
-      // anyways.
+      // Annotations in stub files sometimes are the same type, but Types#isSubtype fails anyways.
       isSubtype = found.toString().equals(expected.toString());
     }
 

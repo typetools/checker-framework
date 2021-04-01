@@ -102,8 +102,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
       // subchecker A would complain about a lint option for subchecker B.
       checker.setSupportedLintOptions(this.getSupportedLintOptions());
 
-      // initChecker validates the passed options, so call it after setting supported options
-      // and lints.
+      // initChecker validates the passed options, so call it after setting supported options and
+      // lints.
       checker.initChecker();
     }
 

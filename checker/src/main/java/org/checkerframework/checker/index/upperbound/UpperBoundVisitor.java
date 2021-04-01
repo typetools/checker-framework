@@ -79,8 +79,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     if (atypeFactory.areSameByClass(anno, LTLengthOf.class)) {
       List<? extends ExpressionTree> args = node.getArguments();
       if (args.size() == 2) {
-        // If offsets are provided, there must be the same number of them as there are
-        // arrays.
+        // If offsets are provided, there must be the same number of them as there are arrays.
         List<String> sequences =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.ltLengthOfValueElement, String.class);

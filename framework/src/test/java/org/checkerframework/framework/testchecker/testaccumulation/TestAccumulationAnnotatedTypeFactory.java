@@ -56,14 +56,11 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
       // CalledMethods requires special treatment of the return values of methods that return
       // their receiver: the default return type must include the method being invoked.
       //
-      // The basic accumulation analysis cannot handle this case - it can use the RR checker
-      // to transfer an annotation from the receiver to the return type, but because
-      // accumulation
-      // (has to) happen in dataflow, the correct annotation may not yet be available. The
-      // basic
-      // accumulation analysis therefore only supports "pass-through" returns receiver
-      // methods;
-      // it does not support automatically accumulating at the same time.
+      // The basic accumulation analysis cannot handle this case - it can use the RR checker to
+      // transfer an annotation from the receiver to the return type, but because accumulation (has
+      // to) happen in dataflow, the correct annotation may not yet be available. The basic
+      // accumulation analysis therefore only supports "pass-through" returns receiver methods; it
+      // does not support automatically accumulating at the same time.
       if (returnsThis(tree)) {
         String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
         AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);

@@ -46,8 +46,7 @@ class TryStack {
    * given type is thrown.
    */
   public Set<Label> possibleLabels(TypeMirror thrown) {
-    // Work up from the innermost frame until the exception is known to
-    // be caught.
+    // Work up from the innermost frame until the exception is known to be caught.
     Set<Label> labels = new MostlySingleton<>();
     for (TryFrame frame : frames) {
       if (frame.possibleLabels(thrown, labels)) {

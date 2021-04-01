@@ -150,8 +150,7 @@ public class InitializationTransfer<
     assert result instanceof RegularTransferResult;
     JavaExpression expr = JavaExpression.fromNode(n.getTarget());
 
-    // If this is an assignment to a field of 'this', then mark the field as
-    // initialized.
+    // If this is an assignment to a field of 'this', then mark the field as initialized.
     if (!expr.containsUnknown()) {
       if (expr instanceof FieldAccess) {
         FieldAccess fa = (FieldAccess) expr;

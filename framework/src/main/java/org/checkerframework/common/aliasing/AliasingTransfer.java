@@ -161,8 +161,7 @@ public class AliasingTransfer extends CFTransfer {
         store.clearValue(JavaExpression.fromNode(receiver));
       }
     }
-    // If parent is a statement, processPostconditions will handle the
-    // pseudo-assignments.
+    // If parent is a statement, processPostconditions will handle the pseudo-assignments.
     return super.visitMethodInvocation(n, in);
   }
 }

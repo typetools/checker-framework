@@ -379,8 +379,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       if (parentPath != null && parentPath.getParentPath() != null) {
         Tree parent = parentPath.getParentPath().getLeaf();
         if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
-          // Allow new MyInternType().intern(), where "intern" is any method marked
-          // @InternMethod.
+          // Allow new MyInternType().intern(), where "intern" is any method marked @InternMethod.
           ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
           if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
             return true;

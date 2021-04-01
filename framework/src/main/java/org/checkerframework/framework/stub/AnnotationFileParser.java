@@ -1358,8 +1358,7 @@ public class AnnotationFileParser {
     }
     recordDeclAnnotationFromAnnotationFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
-    // AnnotationFileParser parses all annotations in type annotation position as type
-    // annotations
+    // AnnotationFileParser parses all annotations in type annotation position as type annotations
     recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), decl);
     AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 

@@ -365,8 +365,8 @@ public abstract class CFAbstractTransfer<
         // Try to find an enclosing initializer block.
         // Would love to know if there was a better way.
         // Find any enclosing element of the lambda (using trees).
-        // Then go up the elements to find an initializer element (which can't be found with
-        // the tree).
+        // Then go up the elements to find an initializer element (which can't be found with the
+        // tree).
         TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
         Element anEnclosingElement = null;
         while (loopTree.getLeaf() != enclosingTree) {
@@ -933,8 +933,7 @@ public abstract class CFAbstractTransfer<
     Node lhs = n.getLeftOperand();
     Node rhs = n.getRightOperand();
 
-    // update the results store if the assignment target is something we can
-    // process
+    // update the results store if the assignment target is something we can process
     S info = result.getRegularStore();
     // ResultValue is the type of LHS + RHS
     V resultValue = result.getResultValue();

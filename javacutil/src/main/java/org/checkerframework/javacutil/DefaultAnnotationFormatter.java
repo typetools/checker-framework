@@ -123,8 +123,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     return nonDefaults;
   }
 
-  // A helper method to print AnnotationValues (annotation arguments), without showing full
-  // package names.
+  // A helper method to print AnnotationValues (annotation arguments), without showing full package
+  // names.
   @SuppressWarnings("unchecked")
   protected void formatAnnotationMirrorArg(AnnotationValue av, StringBuilder sb) {
     Object val = av.getValue();

@@ -81,8 +81,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
         final AnnotatedDeclaredType variableType = (AnnotatedDeclaredType) type;
         final AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
 
-        // Propagate just for declared (class) types, not for array types, boxed primitives,
-        // etc.
+        // Propagate just for declared (class) types, not for array types, boxed primitives, etc.
         if (variableType.getKind() == TypeKind.DECLARED) {
           keyForPropagator.propagate(
               (AnnotatedDeclaredType) initializerType,

@@ -462,8 +462,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (bestres != null) {
         type.replaceAnnotation(bestres);
       } else {
-        // If none of the units relations classes could resolve the units, then apply
-        // default rules
+        // If none of the units relations classes could resolve the units, then apply default rules
 
         switch (kind) {
           case MINUS:

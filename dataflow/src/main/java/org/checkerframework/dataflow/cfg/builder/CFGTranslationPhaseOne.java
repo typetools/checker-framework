@@ -3593,8 +3593,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     scan(tree.getStatement(), p);
 
     if (isCondConstTrue) {
-      // The condition has the constant value true, so we can directly jump back to the
-      // loop entry.
+      // The condition has the constant value true, so we can directly jump back to the loop entry.
       extendWithExtendedNode(new UnconditionalJump(loopEntry));
     } else {
       // Otherwise, jump back to evaluate the condition.

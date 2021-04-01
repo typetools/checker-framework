@@ -22,8 +22,7 @@ public class ValueUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest
 
   @Parameters
   public static String[] getTestDirs() {
-    // The defaults for unchecked code should be the same as checked code, so use the same
-    // tests.
+    // The defaults for unchecked code should be the same as checked code, so use the same tests.
     return new String[] {"value", "all-systems"};
   }
 }

@@ -324,8 +324,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
     DeclaredType declaredType = (DeclaredType) type;
     TypeElement typeElement = (TypeElement) declaredType.asElement();
-    // This list of classes that AutoValue considers "optional" comes from AutoValue's source
-    // code.
+    // This list of classes that AutoValue considers "optional" comes from AutoValue's source code.
     String[] optionalClassNames =
         new String[] {
           "com.google.common.base.Optional",
@@ -373,8 +372,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
               .getReturnType()
               .getUnderlyingType();
     }
-    // either the return type should be the builder itself, or it should be a Guava immutable
-    // type
+    // either the return type should be the builder itself, or it should be a Guava immutable type
     return BuilderFrameworkSupportUtils.isGuavaImmutableType(retType)
         || builderElement.equals(TypesUtils.getTypeElement(retType));
   }
