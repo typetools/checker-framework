@@ -20,8 +20,10 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueCheckerUtils;
+import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -846,7 +848,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     TransferResult<CFValue, CFStore> result = super.visitIntegerLiteral(n, in);
 
     CFStore store = result.getRegularStore();
-    JavaExpression[] ltloSequences = ltloSequences(n, store);
+    String[] ltloSequences = ltloSequences(n, store);
     if (ltloSequences == null) {
       return result;
     }
@@ -867,22 +869,22 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * @return all the sequences such that the given integer literal is less than their length, or
    *     null if none
    */
-  JavaExpression @Nullable @MinLen(1) [] ltloSequences(IntegerLiteralNode n, CFStore store) {
+  String @Nullable @MinLen(1) [] ltloSequences(IntegerLiteralNode n, CFStore store) {
     Tree literalTree = n.getTree();
     int intVal = n.getValue();
 
     // The literal is less than the length of all these sequences.
-    List<JavaExpression> result = new ArrayList<>();
+    List<String> result = new ArrayList<>();
     for (Map.Entry<FieldAccess, CFValue> entry : store.getFieldValues().entrySet()) {
       FieldAccess fa = entry.getKey();
       if (isLtLengthOf(literalTree, intVal, fa)) {
-        result.add(fa);
+        result.add(fa.toString());
       }
     }
     for (Map.Entry<LocalVariable, CFValue> entry : store.getLocalVariableValues().entrySet()) {
       LocalVariable lv = entry.getKey();
       if (isLtLengthOf(literalTree, intVal, lv)) {
-        result.add(lv);
+        result.add(lv.toString());
       }
     }
 
