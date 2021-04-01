@@ -4662,6 +4662,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Matches subtraction of a constant. */
   static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
+  /** Matches a string whose only parens are at the beginning and end of the string. */
+  Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+
   /**
    * Given an expression, split it into a subexpression and a constant offset. For example:
    *
@@ -4687,10 +4690,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     String offset = "0";
 
     // Is this normalization necessary?
-    // Remove surrrounding whitespace.
+    // Remove surrounding whitespace.
     expr = expr.trim();
     // Remove surrounding parentheses.
-    if (expr.matches("^\\([^()]\\)")) {
+    if (surroundingParensPattern.matcher(expr).matches()) {
       expr = expr.substring(1, expr.length() - 2).trim();
     }
 
