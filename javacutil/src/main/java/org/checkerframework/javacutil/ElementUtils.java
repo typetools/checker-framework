@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -38,6 +40,7 @@ import javax.tools.JavaFileObject.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
@@ -860,7 +863,8 @@ public class ElementUtils {
   public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return Collections.mapList(t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
+    return CollectionsPlume.<Type, TypeElement>mapList(
+        t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
   }
 
   /**

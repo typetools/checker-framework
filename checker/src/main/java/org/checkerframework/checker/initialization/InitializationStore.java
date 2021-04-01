@@ -20,6 +20,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ToStringComparator;
 
 /**
