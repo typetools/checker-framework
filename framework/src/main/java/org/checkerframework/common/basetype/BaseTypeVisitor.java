@@ -522,7 +522,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * A TreeScanner that issues an "invalid.polymorphic.qualifier" error for each {@link
-   * AnnotationTree}s that is a polymorphic qualifier. The second parameter is added to the error
+   * AnnotationTree} that is a polymorphic qualifier. The second parameter is added to the error
    * message and should explain the location.
    */
   private final TreeScanner<Void, String> polyTreeScanner =
