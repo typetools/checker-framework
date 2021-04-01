@@ -115,10 +115,11 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 != null;
         // TODO: How much validation do I need here?  Do I need to check that the overridden
         // receiver was really @PolyUI and the method is really an @PolyUIEffect?  I don't think so
-        // - we know it's a polymorphic parent type, so all receivers would be @PolyUI.  Java would
-        // already reject before running type annotation processors if the Java types were wrong.
-        // The *only* extra leeway we want to permit is overriding @PolyUI receiver to @AlwaysSafe.
-        // But with generics, the tentative check below is inadequate.
+        // - we know it's a polymorphic parent type, so all receivers would be @PolyUI.
+        // Java would already reject before running type annotation processors if the Java
+        // types were wrong.
+        // The *only* extra leeway we want to permit is overriding @PolyUI receiver to
+        // @AlwaysSafe.  But with generics, the tentative check below is inadequate.
         boolean safeReceiverOverride =
             overrider.getReceiverType().getAnnotation(AlwaysSafe.class) != null;
         if (safeParent && polyParentDecl && safeReceiverOverride) {
