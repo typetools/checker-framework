@@ -105,8 +105,8 @@ public class KeyForPropagator {
     } // else
 
     // this can happen for two reasons:
-    // 1) the subclass introduced NEW type arguments when the superclass had none
-    // 2) the supertype was RAW.
+    //  1) the subclass introduced NEW type arguments when the superclass had none
+    //  2) the supertype was RAW.
     // In either case, there is no reason to propagate
     if (supertype.getTypeArguments().isEmpty()) {
       return;

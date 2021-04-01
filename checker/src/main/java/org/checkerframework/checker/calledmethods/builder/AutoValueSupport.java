@@ -246,10 +246,9 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
       }
     }
 
-    // Could not find a corresponding setter.  This is likely because an AutoValue Extension is
-    // in use.  See https://github.com/kelloggm/object-construction-checker/issues/110 .
-    // For now we return null, but once that bug is fixed, this should be changed to an
-    // assertion failure.
+    // Could not find a corresponding setter.  This is likely because an AutoValue Extension is in
+    // use.  See https://github.com/kelloggm/object-construction-checker/issues/110 .  For now we
+    // return null, but once that bug is fixed, this should be changed to an assertion failure.
     return null;
   }
 
@@ -277,8 +276,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
    */
   private boolean isAutoValueRequiredProperty(Element member, Set<String> avBuilderSetterNames) {
     String name = member.getSimpleName().toString();
-    // Ignore java.lang.Object overrides, constructors, and toBuilder methods in AutoValue
-    // classes.
+    // Ignore java.lang.Object overrides, constructors, and toBuilder methods in AutoValue classes.
     // Strictly speaking, this code should check return types, etc. to handle strange
     // overloads and other corner cases. They seem unlikely enough that we are skipping for now.
     if (ArraysPlume.indexOf(

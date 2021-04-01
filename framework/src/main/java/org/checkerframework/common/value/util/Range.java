@@ -713,8 +713,7 @@ public class Range {
           range = create(0, 0);
         } else { // (to > Long.MIN_VALUE)
           // When this range contains Long.MIN_VALUE, which would have a remainder of 0 if
-          // divided by Long.MIN_VALUE, the result range is {0} unioned with [from + 1,
-          // to]
+          // divided by Long.MIN_VALUE, the result range is {0} unioned with [from + 1, to].
           range = create(from + 1, to).union(create(0, 0));
         }
       } else { // (from > Long.MIN_VALUE)
@@ -888,9 +887,8 @@ public class Range {
           // (of the highest place values) set to 1.
           return create(0, Math.min(mask, noSignBit(variable.to)));
         } else {
-          // Case 1.3:  Since this range contains -1, the upper bound of this range after
-          // ignoring the sign bit is Long.MAX_VALUE and thus doesn't contribute to
-          // further refinement.
+          // Case 1.3:  Since this range contains -1, the upper bound of this range after ignoring
+          // the sign bit is Long.MAX_VALUE and thus doesn't contribute to further refinement.
           return create(0, mask);
         }
       } else {
@@ -900,12 +898,11 @@ public class Range {
           // ignored.
           return create(0, Math.min(noSignBit(mask), variable.to));
         } else if (variable.to < 0) {
-          // Case 2.2: The sign bit of the elements in the result range must be 1.
-          // Therefore the lower bound of the result range is Long.MIN_VALUE (when all
-          // 1-bits are mismatched between the mask and the element in this range). The
-          // result range is also upper-bounded by this mask itself and the upper bound of
-          // this range.  (Because more set bits means a larger number -- still negative,
-          // but closer to 0.)
+          // Case 2.2: The sign bit of the elements in the result range must be 1.  Therefore the
+          // lower bound of the result range is Long.MIN_VALUE (when all 1-bits are mismatched
+          // between the mask and the element in this range). The result range is also upper-bounded
+          // by this mask itself and the upper bound of this range.  (Because more set bits means a
+          // larger number -- still negative, but closer to 0.)
           return create(Long.MIN_VALUE, Math.min(mask, variable.to));
         } else {
           // Case 2.3: Similar to case 2.2 except that the elements in this range could

@@ -505,9 +505,9 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     // If all fields are initialized-only, and they are all initialized,
     // then:
-    // - if the class is final, this is @Initialized
-    // - otherwise, this is @UnderInitialization(CurrentClass) as
-    // there might still be subclasses that need initialization.
+    //  - if the class is final, this is @Initialized
+    //  - otherwise, this is @UnderInitialization(CurrentClass) as
+    //    there might still be subclasses that need initialization.
     if (areAllFieldsInitializedOnly(enclosingClass)) {
       Store store = getStoreBefore(tree);
       if (store != null
@@ -721,14 +721,12 @@ public abstract class InitializationAnnotatedTypeFactory<
         // anything can be assigned to this field.
         type.replaceAnnotation(UNKNOWN_INITIALIZATION);
       } else if (computingAnnotatedTypeMirrorOfLHS) {
-        // The receiver is not initialized for this frame, but the type of a lhs is being
-        // computed.
+        // The receiver is not initialized for this frame, but the type of a lhs is being computed.
         // Change the type of the field to @UnknownInitialization so that
         // anything can be assigned to this field.
         type.replaceAnnotation(UNKNOWN_INITIALIZATION);
       } else {
-        // The receiver is not initialized for this frame and the type being computed is not
-        // a LHS.
+        // The receiver is not initialized for this frame and the type being computed is not a LHS.
         // Replace all annotations with the top annotation for that hierarchy.
         type.clearAnnotations();
         type.addAnnotations(qualHierarchy.getTopAnnotations());

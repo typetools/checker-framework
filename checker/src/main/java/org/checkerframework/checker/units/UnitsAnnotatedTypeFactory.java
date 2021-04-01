@@ -103,9 +103,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     this.postInit();
   }
 
-  // In Units Checker, we always want to print out the Invisible Qualifiers
-  // (UnknownUnits), and to format the print out of qualifiers by removing
-  // Prefix.one
+  // In Units Checker, we always want to print out the Invisible Qualifiers (UnknownUnits), and to
+  // format the print out of qualifiers by removing Prefix.one
   @Override
   protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
     return new UnitsAnnotatedTypeFormatter(checker);
@@ -145,9 +144,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(
                 processingEnv, baseUnitAnnoClass, prefix);
 
-        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the
-        // supported type qualifiers list currently this breaks for externally loaded
-        // annotations if the order was an alias before a base annotation.
+        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the supported
+        // type qualifiers list currently this breaks for externally loaded annotations if the order
+        // was an alias before a base annotation.
         // assert isSupportedQualifier(result);
 
         built = true;

@@ -213,8 +213,7 @@ public class AnnotationFileParser {
   @Nullable List<AnnotationExpr> packageAnnos;
 
   // The following variables are stored in the AnnotationFileParser because otherwise they would
-  // need to be
-  // passed through everywhere, which would be verbose.
+  // need to be passed through everywhere, which would be verbose.
 
   /**
    * The name of the type that is currently being parsed. After processing a package declaration but
@@ -2154,8 +2153,7 @@ public class AnnotationFileParser {
     TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
     if (annoTypeElt == null) {
       // If the annotation was not imported, then #getAllAnnotations did not add it to the
-      // allAnnotations field. This code adds the annotation when it is encountered
-      // (i.e. here).
+      // allAnnotations field. This code adds the annotation when it is encountered (i.e. here).
       // Note that this does not call AnnotationFileParser#getTypeElement to avoid a spurious
       // diagnostic if the annotation is actually unknown.
       annoTypeElt = elements.getTypeElement(annoNameFq);

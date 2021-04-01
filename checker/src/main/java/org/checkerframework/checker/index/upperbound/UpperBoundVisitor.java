@@ -404,9 +404,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     // Take advantage of information available on a HasSubsequence(a, from, to) annotation
     // on the lhs qualifier (varLtlQual):
-    // this allows us to show that iff varLtlQual includes LTL(b),
-    // b has HSS, and expQual includes LTL(a, -from), then the LTL(b) can be removed from
-    // varLtlQual.
+    // this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual includes
+    // LTL(a, -from), then the LTL(b) can be removed from varLtlQual.
 
     UBQualifier newLHS = processSubsequenceForLHS(varLtlQual, expQual);
     if (newLHS.isUnknown()) {

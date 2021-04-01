@@ -22,10 +22,9 @@ public class FlowBreak {
         break;
       }
       // We can only come here from the then-branch, the else-branch is dead.
-      // Therefore, we only take the annotations at the end of
-      // the then-branch and ignore the results of the else-branch.
-      // Therefore, o is @SwingHorizontalOrientation and the
-      // following is valid:
+      // Therefore, we only take the annotations at the end of the then-branch and ignore the
+      // results of the else-branch.
+      // Therefore, o is @SwingHorizontalOrientation and the following is valid:
       @SwingHorizontalOrientation Object pla = o;
     }
     // Here we have to merge three paths:
