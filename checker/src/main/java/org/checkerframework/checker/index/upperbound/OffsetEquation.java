@@ -363,7 +363,7 @@ public class OffsetEquation {
   }
 
   /** A regular expression that matches an integer literal. */
-  private Pattern intPattern = Pattern.compile("[-+]?[0-9]+");
+  private static Pattern intPattern = Pattern.compile("[-+]?[0-9]+");
 
   /**
    * Returns true if the given string is an integer literal
