@@ -21,6 +21,7 @@ import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.value.ValueCheckerUtils;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -46,6 +47,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -849,16 +851,19 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     List<JavaExpression> ltloSequences = ltloSequences(n, store);
     System.out.printf("ltloSequences=%s%n", ltloSequences);
 
-    // I think I want to GLB the existing value with a new @LTLengthOf annotation.  But, there is no
-    // GLB routine.  There is mostSpecific.  Should that really be GLB?
+    if (ltloSequences.isEmpty()) {
+      return result;
+    }
 
-    // The annotations might be:
-    //  * if the result is already bottom, leave it as bottom
-    //  * otherwise,
-
-    // Eventually, set the TransferResult's value, or else side-effect its annotations.
-
-    return result;
+    // This ought to GLB, but there is no GLB routine, so replace instead.
+    AnnotationMirror ltloAnnotation =
+        atypeFactory.createLTLengthOfAnnotation(
+            CollectionsPlume.mapList(JavaExpression::toString, ltloSequences)
+                .toArray(new String[0]));
+    CFValue newResultValue =
+        analysis.createSingleAnnotationValue(
+            ltloAnnotation, result.getResultValue().getUnderlyingType());
+    return new RegularTransferResult<>(newResultValue, result.getRegularStore());
   }
 
   /**
