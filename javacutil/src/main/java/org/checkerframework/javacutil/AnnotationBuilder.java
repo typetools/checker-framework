@@ -524,8 +524,9 @@ public class AnnotationBuilder {
     return this;
   }
 
-  // Keep this version synchronized with the Enum<?>[] version above.  Which one is more
-  // useful/general? Unifying adds overhead of creating another array.
+  // Keep this version synchronized with the Enum<?>[] version above.
+  // Which one is more useful/general? Unifying adds overhead of creating
+  // another array.
   public AnnotationBuilder setValue(CharSequence elementName, VariableElement[] values) {
     assertNotBuilt();
     ExecutableElement var = findElement(elementName);

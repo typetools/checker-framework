@@ -102,8 +102,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The canonical @{@link PolyLowerBound} annotation. */
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyLowerBound.class);
 
+  /** Predicates about method calls. */
   private final IndexMethodIdentifier imf;
 
+  /**
+   * Create a new LowerBoundAnnotatedTypeFactory.
+   *
+   * @param checker the type-checker
+   */
   public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also be
