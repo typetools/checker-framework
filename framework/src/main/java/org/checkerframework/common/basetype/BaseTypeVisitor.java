@@ -1,7 +1,6 @@
 package org.checkerframework.common.basetype;
 
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.printer.PrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -131,6 +130,7 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -338,10 +338,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
-    try {
-      java.io.InputStream reader = root.getSourceFile().openInputStream();
-      com.github.javaparser.ast.CompilationUnit javaParserRoot = StaticJavaParser.parse(reader);
-      reader.close();
+    try (InputStream reader = root.getSourceFile().openInputStream()) {
+      CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader);
       JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
       new JointVisitorWithDefaultAction() {
         @Override
@@ -383,7 +381,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit originalAst;
     try (InputStream originalInputStream = root.getSourceFile().openInputStream()) {
-      originalAst = StaticJavaParser.parse(originalInputStream);
+      originalAst = JavaParserUtil.parseCompilationUnit(originalInputStream);
     } catch (IOException e) {
       throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
     }
@@ -406,7 +404,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit modifiedAst = null;
     try {
-      modifiedAst = StaticJavaParser.parse(withAnnotations);
+      modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations);
     } catch (ParseProblemException e) {
       throw new BugInCF("Failed to parse annotation insertion:\n" + withAnnotations, e);
     }
