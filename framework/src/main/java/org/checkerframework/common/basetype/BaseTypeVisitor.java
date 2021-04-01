@@ -564,6 +564,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Issues an "invalid.polymorphic.qualifier" error for all polymorphic annotations written on the
+   * type parameters declaration.
+   *
+   * @param typeParameterTrees the type parameters to check
+   */
+  protected void checkForPolymorphicQualifiers(
+      List<? extends TypeParameterTree> typeParameterTrees) {
+    for (Tree tree : typeParameterTrees) {
+      tree.accept(polyTreeScanner, "in a type parameter");
+    }
+  }
+
+  /**
    * Issues an error if {@code classTree} has polymorphic fields but is not annotated with
    * {@code @HasQualifierParameter}. Always issue a warning if the type of a static field is
    * annotated with a polymorphic qualifier.
@@ -921,6 +934,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
         }
       }
+
+      checkForPolymorphicQualifiers(node.getTypeParameters());
 
       return super.visitMethod(node, p);
     } finally {
