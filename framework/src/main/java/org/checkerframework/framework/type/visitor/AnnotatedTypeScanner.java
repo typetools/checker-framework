@@ -258,8 +258,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
 
   @Override
   public R visitDeclared(AnnotatedDeclaredType type, P p) {
-    // Only declared types with type arguments might be recursive,
-    // so only store those.
+    // Only declared types with type arguments might be recursive, so only store those.
     boolean shouldStoreType = !type.getTypeArguments().isEmpty();
     if (shouldStoreType && visitedNodes.containsKey(type)) {
       return visitedNodes.get(type);

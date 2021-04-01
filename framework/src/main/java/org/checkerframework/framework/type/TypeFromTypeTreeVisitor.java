@@ -336,9 +336,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeMirror visitIntersectionType(
       IntersectionTypeTree node, AnnotatedTypeFactory f) {
-    // This method is only called for IntersectionTypes in casts.  There is no
-    // IntersectionTypeTree for a type variable bound that is an intersection.  See
-    // #visitTypeParameter.
+    // This method is only called for IntersectionTypes in casts.  There is no IntersectionTypeTree
+    // for a type variable bound that is an intersection.  See #visitTypeParameter.
     AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(node);
     List<AnnotatedTypeMirror> bounds =
         CollectionsPlume.mapList((Tree boundTree) -> visit(boundTree, f), node.getBounds());

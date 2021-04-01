@@ -198,8 +198,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         }
 
       } else {
-        // if F has the form G<..., Yk-1, U, Yk+1, ...>, where U is a type expression that
-        // involves Tj
+        // if F has the form G<..., Yk-1, U, Yk+1, ...>, where U is a type expression that involves
+        // Tj
         addEqualityConstraint(subTypeArg, superTypeArg, constraints);
       }
     }

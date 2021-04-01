@@ -86,9 +86,8 @@ public class SameLenTransfer extends CFTransfer {
         Node lengthNodeReceiver = getLengthReceiver(lengthNode);
 
         if (lengthNodeReceiver != null) {
-          // "new T[a.length]" or "new T[s.length()]" is the right hand side of the
-          // assignment.  lengthNode is known to be "lengthNodeReceiver.length" or
-          // "lengthNodeReceiver.length()"
+          // "new T[a.length]" or "new T[s.length()]" is the right hand side of the assignment.
+          // lengthNode is known to be "lengthNodeReceiver.length" or "lengthNodeReceiver.length()"
 
           // targetRec is the receiver for the left hand side of the assignment.
           JavaExpression targetRec = JavaExpression.fromNode(node.getTarget());
@@ -272,9 +271,8 @@ public class SameLenTransfer extends CFTransfer {
 
     for (int index = 0; index < numParams; index++) {
 
-      // if the parameter has a samelen annotation, then look
-      // for other parameters in that annotation and propagate
-      // default the other annotation so that it is symmetric
+      // If the parameter has a samelen annotation, then look for other parameters in that
+      // annotation and propagate default the other annotation so that it is symmetric.
       AnnotatedTypeMirror atm = params.get(index);
       AnnotationMirror sameLenAnno = atm.getAnnotation(SameLen.class);
       if (sameLenAnno == null) {

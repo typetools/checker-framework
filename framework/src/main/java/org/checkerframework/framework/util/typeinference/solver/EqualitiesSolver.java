@@ -384,8 +384,7 @@ public class EqualitiesSolver {
     inferred = findEqualTarget(equalities, tops);
 
     if (inferred == null && equalities.types.size() == 1) {
-      // Still could not find an inferred type in all hierarchies, so just use what type is
-      // known.
+      // Still could not find an inferred type in all hierarchies, so just use what type is known.
       AnnotatedTypeMirror type = equalities.types.keySet().iterator().next();
       inferred = new InferredType(type);
     }

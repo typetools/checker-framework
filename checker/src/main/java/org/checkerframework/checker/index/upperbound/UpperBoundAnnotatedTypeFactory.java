@@ -119,6 +119,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The SameLen.value element/field. */
   public final ExecutableElement sameLenValueElement =
       TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
+  /** The LTLengthOf.value element/field. */
+  public final ExecutableElement ltLengthOfValueElement =
+      TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
+  /** The LTLengthOf.offset element/field. */
+  public final ExecutableElement ltLengthOfOffsetElement =
+      TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
 
   /** Predicates about what method an invocation is calling. */
   private final IndexMethodIdentifier imf;
@@ -257,14 +263,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
     @Override
     protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-      // If there is an LTLengthOf annotation whose argument lengths don't match, replace it
-      // with bottom.
+      // If there is an LTLengthOf annotation whose argument lengths don't match, replace it with
+      // bottom.
       AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
       if (anm != null) {
         List<String> sequences =
-            AnnotationUtils.getElementValueArray(anm, "value", String.class, false);
+            AnnotationUtils.getElementValueArray(anm, ltLengthOfValueElement, String.class);
         List<String> offsets =
-            AnnotationUtils.getElementValueArray(anm, "offset", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                anm, ltLengthOfOffsetElement, String.class, Collections.emptyList());
         if (sequences != null
             && offsets != null
             && sequences.size() != offsets.size()
@@ -559,9 +566,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       if (lowerBoundATF.isNonNegative(left)) {
         AnnotationMirror annotation = getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
-        // For non-negative numbers, right shift is equivalent to division by a power of two
+        // For non-negative numbers, right shift is equivalent to division by a power of two.
         // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
-        // differences
+        // differences.
         Long shiftAmount = ValueCheckerUtils.getExactValue(right, getValueAnnotatedTypeFactory());
         if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
           int divisor = 1 << shiftAmount;
@@ -737,8 +744,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         }
 
         if (imf.isRandomNextDouble(mitree, processingEnv)) {
-          // Okay, so this is Random.nextDouble() * array.length, which must be
-          // NonNegative
+          // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
           type.addAnnotation(createLTLengthOfAnnotation(seqTree.toString()));
           return true;
         }

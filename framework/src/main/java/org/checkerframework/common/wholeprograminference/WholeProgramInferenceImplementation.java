@@ -79,15 +79,13 @@ import org.checkerframework.javacutil.TreeUtils;
  * @param <T> the type used by the storage to store annotations. See {@link
  *     WholeProgramInferenceStorage}
  */
-//  TODO: We could add an option to update the type of explicitly annotated
-//  elements, but this currently is not recommended since the
-//  insert-annotations-to-source tool, which adds annotations from .jaif files
-//  into source code, adds annotations on top of existing
-//  annotations. See https://github.com/typetools/annotation-tools/issues/105 .
-//  TODO: Ensure that annotations are inserted deterministically into
-//  files. This is important for debugging and comparison; otherwise running
-//  the whole-program inference on the same set of files can yield different
-//  results (order of annotations).
+// TODO: We could add an option to update the type of explicitly annotated elements, but this
+// currently is not recommended since the insert-annotations-to-source tool, which adds annotations
+// from .jaif files into source code, adds annotations on top of existing annotations. See
+// https://github.com/typetools/annotation-tools/issues/105 .
+// TODO: Ensure that annotations are inserted deterministically into files. This is important for
+// debugging and comparison; otherwise running the whole-program inference on the same set of files
+// can yield different results (order of annotations).
 public class WholeProgramInferenceImplementation<T> implements WholeProgramInference {
 
   /** The type factory associated with this. */
@@ -372,12 +370,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @return true if an assignment to the given field should be ignored by WPI
    */
   protected boolean ignoreFieldInWPI(Element element, String fieldName) {
-    // Do not attempt to infer types for fields that do not have valid
-    // names. For example, compiler-generated temporary variables will
-    // have invalid names. Recording facts about fields with
-    // invalid names causes jaif-based WPI to crash when reading the .jaif
-    // file, and stub-based WPI to generate unparsable stub files.
-    // See https://github.com/typetools/checker-framework/issues/3442
+    // Do not attempt to infer types for fields that do not have valid names. For example,
+    // compiler-generated temporary variables will have invalid names. Recording facts about fields
+    // with invalid names causes jaif-based WPI to crash when reading the .jaif file, and stub-based
+    // WPI to generate unparsable stub files.  See
+    // https://github.com/typetools/checker-framework/issues/3442
     if (!SourceVersion.isIdentifier(fieldName)) {
       return true;
     }
@@ -587,9 +584,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       case WILDCARD:
         break;
         // throw new BugInCF("This can't happen");
-        // TODO: this comment is wrong:  This case does get entered.
-        // Because inferring type arguments is not supported, wildcards won't be
-        // encountered.
+        // TODO: This comment is wrong: the wildcard case does get entered.
+        // Because inferring type arguments is not supported, wildcards won't be encountered.
         // updateATMWithLUB(
         //         atf,
         //         ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
@@ -605,10 +601,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             ((AnnotatedArrayType) ajavaATM).getComponentType());
         break;
         // case DECLARED:
-        // Inferring annotations on type arguments is not supported, so no need to recur on
-        // generic types. If this was ever implemented, this method would need a
-        // VisitHistory object to prevent infinite recursion on types such as T extends
-        // List<T>.
+        // Inferring annotations on type arguments is not supported, so no need to recur on generic
+        // types. If this was ever implemented, this method would need a VisitHistory object to
+        // prevent infinite recursion on types such as T extends List<T>.
       default:
         // ATM only has primary annotations
         break;

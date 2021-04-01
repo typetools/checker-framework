@@ -796,8 +796,7 @@ public class CheckerMain {
       ZipEntry entry;
       while ((entry = checkerJarIs.getNextEntry()) != null) {
         final String name = entry.getName();
-        // Checkers ending in "Subchecker" are not included in this list used by
-        // CheckerMain.
+        // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
         if ((name.startsWith(CHECKER_BASE_DIR_NAME) || name.startsWith(COMMON_BASE_DIR_NAME))
             && name.endsWith("Checker.class")) {
           // Forward slash is used instead of File.separator because checker.jar uses / as

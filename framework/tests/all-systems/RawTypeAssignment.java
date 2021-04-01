@@ -5,8 +5,7 @@ class Component {}
 
 class Components extends ArrayList {}
 
-// If we include a type parameter in the superclass, then there
-// is no error below.
+// If we include a type parameter in the superclass, then there is no error below.
 // class Components extends ArrayList<Component> {}
 
 public class RawTypeAssignment {

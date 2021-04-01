@@ -635,8 +635,7 @@ public class AnnotationBuilder {
       isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
     }
     if (!isSubtype) {
-      // Annotations in stub files sometimes are the same type, but Types#isSubtype fails
-      // anyways.
+      // Annotations in stub files sometimes are the same type, but Types#isSubtype fails anyways.
       isSubtype = found.toString().equals(expected.toString());
     }
 
