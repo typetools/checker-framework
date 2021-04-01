@@ -238,6 +238,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             V newOtherVal = null;
             for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
               AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+              @SuppressWarnings("deprecation") // permitted for use in the framework
               Name annotation =
                   AnnotationUtils.getElementValueClassName(monotonicAnnotation, "value", false);
               AnnotationMirror target =
@@ -602,6 +603,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
               fieldAcc.getField(), MonotonicQualifier.class);
       for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
         AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+        @SuppressWarnings("deprecation") // permitted for use in the framework
         Name annotation =
             AnnotationUtils.getElementValueClassName(monotonicAnnotation, "value", false);
         AnnotationMirror target =

@@ -385,9 +385,14 @@ import org.plumelib.util.UtilPlume;
   // Parse all JDK files at startup rather than as needed.
   "parseAllJdk",
 
+  // Run checks that test ajava files.
+  //
   // Whenever processing a source file, parse it with JavaParser and check that the AST can be
   // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
-  "checkJavaParserVisitor",
+  //
+  // Also checks that annotations can be inserted. For each Java file, clears all annotations and
+  // reinserts them, then checks if the original and modified ASTs are equivalent.
+  "ajavaChecks",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
@@ -934,12 +939,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager.printMessage(Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
       return;
     }
-    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
+    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage() > .25) {
+      messager.printMessage(
+          Kind.WARNING, "Garbage collection consumed over 25% of CPU during the past minute.");
       messager.printMessage(
           Kind.WARNING,
           String.format(
-              "Memory constraints are impeding performance; please increase max heap size"
-                  + " (max memory = %d, total memory = %d, free memory = %d)",
+              "Perhaps increase max heap size"
+                  + " (max memory = %d, total memory = %d, free memory = %d).",
               Runtime.getRuntime().maxMemory(),
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));

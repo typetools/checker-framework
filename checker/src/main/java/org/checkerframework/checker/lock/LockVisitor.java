@@ -60,10 +60,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual
@@ -587,7 +587,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       if (ensuresLockHeldAnno != null) {
         expressions.addAll(
             AnnotationUtils.getElementValueArray(
-                ensuresLockHeldAnno, "value", String.class, false));
+                ensuresLockHeldAnno, atypeFactory.ensuresLockHeldValueElement, String.class));
       }
 
       AnnotationMirror ensuresLockHeldIfAnno =
@@ -596,7 +596,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       if (ensuresLockHeldIfAnno != null) {
         expressions.addAll(
             AnnotationUtils.getElementValueArray(
-                ensuresLockHeldIfAnno, "expression", String.class, false));
+                ensuresLockHeldIfAnno,
+                atypeFactory.ensuresLockHeldIfExpressionElement,
+                String.class));
       }
 
       for (String expr : expressions) {
@@ -1177,7 +1179,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
     List<String> expressions =
-        AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
+        AnnotationUtils.getElementValueArray(
+            gbAnno, atypeFactory.guardedByValueElement, String.class, Collections.emptyList());
 
     if (expressions.isEmpty()) {
       return Collections.emptyList();
@@ -1197,7 +1200,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       self = new Unknown(tree);
     }
 
-    return SystemUtil.mapList(
+    return CollectionsPlume.mapList(
         expression -> parseExpressionString(expression, currentPath, self), expressions);
   }
 

@@ -44,10 +44,10 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 // The Lock Checker also supports "<self>" as a JavaExpression, but that is implemented in the Lock
 // Checker.
@@ -316,9 +316,9 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof ArrayCreationNode) {
       ArrayCreationNode an = (ArrayCreationNode) receiverNode;
       List<@Nullable JavaExpression> dimensions =
-          SystemUtil.mapList(JavaExpression::fromNode, an.getDimensions());
+          CollectionsPlume.mapList(JavaExpression::fromNode, an.getDimensions());
       List<JavaExpression> initializers =
-          SystemUtil.mapList(JavaExpression::fromNode, an.getInitializers());
+          CollectionsPlume.mapList(JavaExpression::fromNode, an.getInitializers());
       result = new ArrayCreation(an.getType(), dimensions, initializers);
     } else if (receiverNode instanceof MethodInvocationNode) {
       MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
@@ -331,7 +331,7 @@ public abstract class JavaExpression {
 
       // Note that the method might be nondeterministic.
       List<JavaExpression> parameters =
-          SystemUtil.mapList(JavaExpression::fromNode, mn.getArguments());
+          CollectionsPlume.mapList(JavaExpression::fromNode, mn.getArguments());
       JavaExpression methodReceiver;
       if (ElementUtils.isStatic(invokedMethod)) {
         methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
@@ -409,7 +409,7 @@ public abstract class JavaExpression {
 
         // Note that the method might be nondeterministic.
         List<JavaExpression> parameters =
-            SystemUtil.mapList(JavaExpression::fromTree, mn.getArguments());
+            CollectionsPlume.mapList(JavaExpression::fromTree, mn.getArguments());
         JavaExpression methodReceiver;
         if (ElementUtils.isStatic(invokedMethod)) {
           methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
@@ -568,7 +568,7 @@ public abstract class JavaExpression {
    * @return list of parameters as {@link LocalVariable}s
    */
   public static List<JavaExpression> getParametersAsLocalVariables(ExecutableElement methodEle) {
-    return SystemUtil.mapList(LocalVariable::new, methodEle.getParameters());
+    return CollectionsPlume.mapList(LocalVariable::new, methodEle.getParameters());
   }
 
   /**
@@ -682,7 +682,7 @@ public abstract class JavaExpression {
    */
   public final JavaExpression atMethodBody(MethodTree methodTree) {
     List<JavaExpression> parametersJe =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (VariableTree param) -> new LocalVariable(TreeUtils.elementFromDeclaration(param)),
             methodTree.getParameters());
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
@@ -711,7 +711,7 @@ public abstract class JavaExpression {
   public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
     JavaExpression receiverJe = JavaExpression.fromNode(invocationNode.getTarget().getReceiver());
     List<JavaExpression> argumentsJe =
-        SystemUtil.mapList(JavaExpression::fromNode, invocationNode.getArguments());
+        CollectionsPlume.mapList(JavaExpression::fromNode, invocationNode.getArguments());
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
   }
 
@@ -756,7 +756,7 @@ public abstract class JavaExpression {
       return result;
     }
 
-    return SystemUtil.mapList(JavaExpression::fromTree, argTrees);
+    return CollectionsPlume.mapList(JavaExpression::fromTree, argTrees);
   }
 
   /**

@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.Contract.Kind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A utility class to retrieve pre- and postconditions from a method.
@@ -38,6 +39,9 @@ import org.checkerframework.javacutil.Pair;
 // more helpful error message.
 public class ContractsFromMethod {
 
+  /** The QualifierArgument.value field/element. */
+  ExecutableElement qualifierArgumentValueElement;
+
   /** The factory that this ContractsFromMethod is associated with. */
   protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
@@ -48,6 +52,8 @@ public class ContractsFromMethod {
    */
   public ContractsFromMethod(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
     this.factory = factory;
+    qualifierArgumentValueElement =
+        TreeUtils.getMethod(QualifierArgument.class, "value", 0, factory.getProcessingEnv());
   }
 
   /**
@@ -232,7 +238,7 @@ public class ContractsFromMethod {
    *
    * @param contractAnno a contract annotation, such as {@code @RequiresQualifier}, which has a
    *     {@code qualifier} element/field
-   * @param argumentAnno annotation containing the argument values, or {@code null}
+   * @param argumentAnno annotation containing the element {@code values}, or {@code null}
    * @param argumentRenaming renaming of argument names, which maps from names in {@code
    *     argumentAnno} to names used in the returned annotation, or {@code null}
    * @return a qualifier whose type is that of {@code contract.qualifier}, or an alias for it, or
@@ -243,6 +249,7 @@ public class ContractsFromMethod {
       AnnotationMirror argumentAnno,
       Map<String, String> argumentRenaming) {
 
+    @SuppressWarnings("deprecation") // permitted for use in the framework
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
 
     AnnotationMirror anno;
@@ -289,7 +296,8 @@ public class ContractsFromMethod {
       if (argumentAnnotation != null) {
         String sourceName = meth.getSimpleName().toString();
         String targetName =
-            AnnotationUtils.getElementValue(argumentAnnotation, "value", String.class, false);
+            AnnotationUtils.getElementValue(
+                argumentAnnotation, qualifierArgumentValueElement, String.class);
         if (targetName == null || targetName.isEmpty()) {
           targetName = sourceName;
         }

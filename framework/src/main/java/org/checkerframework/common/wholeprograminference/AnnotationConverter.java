@@ -16,9 +16,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.CollectionsPlume;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.field.AnnotationFieldType;
@@ -67,7 +67,7 @@ public class AnnotationConverter {
         // Convert each AnnotationValue to its respective Java type.
         @SuppressWarnings("unchecked")
         List<AnnotationValue> valueList = (List<AnnotationValue>) value;
-        value = SystemUtil.mapList(AnnotationValue::getValue, valueList);
+        value = CollectionsPlume.mapList(AnnotationValue::getValue, valueList);
       } else if (value instanceof TypeMirror) {
         try {
           value = Class.forName(TypesUtils.binaryName((TypeMirror) value));

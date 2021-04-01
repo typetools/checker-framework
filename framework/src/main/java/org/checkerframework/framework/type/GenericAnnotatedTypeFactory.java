@@ -112,13 +112,13 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -602,7 +602,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // If an analysis couldn't be loaded reflectively, return the default.
     List<Pair<VariableElement, CFValue>> tmp =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (Pair<VariableElement, Value> fieldVal) ->
                 Pair.of(fieldVal.first, (CFValue) fieldVal.second),
             fieldValues);
@@ -2138,7 +2138,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Adds default qualifiers bases on the underlying type of {@code type} to {@code type}. If {@code
+   * Adds default qualifiers based on the underlying type of {@code type} to {@code type}. If {@code
    * element} is a local variable, then the defaults are not added.
    *
    * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link
@@ -2646,7 +2646,10 @@ public abstract class GenericAnnotatedTypeFactory<
             contractAnnotation, ensuresQualifierIfResultElement, /*default is irrelevant*/ false);
       } else {
         // It's a checker-specific annotation such as @EnsuresMinLenIf
-        return AnnotationUtils.getElementValue(contractAnnotation, "result", Boolean.class, false);
+        @SuppressWarnings("deprecation") // concrete annotation class is not known
+        Boolean result =
+            AnnotationUtils.getElementValue(contractAnnotation, "result", Boolean.class, false);
+        return result;
       }
     } else {
       return null;
@@ -2667,6 +2670,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public List<String> getContractExpressions(
       Contract.Kind kind, AnnotationMirror contractAnnotation) {
+    // First, handle framework annotations.
     if (contractAnnotation instanceof RequiresQualifier) {
       return AnnotationUtils.getElementValueArray(
           contractAnnotation, requiresQualifierExpressionElement, String.class);
@@ -2676,11 +2680,12 @@ public abstract class GenericAnnotatedTypeFactory<
     } else if (contractAnnotation instanceof EnsuresQualifierIf) {
       return AnnotationUtils.getElementValueArray(
           contractAnnotation, ensuresQualifierIfExpressionElement, String.class);
-    } else if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
-      return AnnotationUtils.getElementValueArray(
-          contractAnnotation, "expression", String.class, true);
-    } else {
-      return AnnotationUtils.getElementValueArray(contractAnnotation, "value", String.class, true);
     }
+    // `contractAnnotation` is defined in a checker.
+    String elementName = kind == Contract.Kind.CONDITIONALPOSTCONDITION ? "expression" : "value";
+    @SuppressWarnings("deprecation") // concrete annotation class is not known
+    List<String> result =
+        AnnotationUtils.getElementValueArray(contractAnnotation, elementName, String.class, true);
+    return result;
   }
 }

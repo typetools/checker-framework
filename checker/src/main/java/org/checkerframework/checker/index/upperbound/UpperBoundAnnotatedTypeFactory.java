@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.upperbound;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -119,6 +120,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The SameLen.value element/field. */
   public final ExecutableElement sameLenValueElement =
       TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
+  /** The LTLengthOf.value element/field. */
+  public final ExecutableElement ltLengthOfValueElement =
+      TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
+  /** The LTLengthOf.offset element/field. */
+  public final ExecutableElement ltLengthOfOffsetElement =
+      TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
 
   /** Predicates about what method an invocation is calling. */
   private final IndexMethodIdentifier imf;
@@ -262,9 +269,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
       if (anm != null) {
         List<String> sequences =
-            AnnotationUtils.getElementValueArray(anm, "value", String.class, false);
+            AnnotationUtils.getElementValueArray(anm, ltLengthOfValueElement, String.class);
         List<String> offsets =
-            AnnotationUtils.getElementValueArray(anm, "offset", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                anm, ltLengthOfOffsetElement, String.class, Collections.emptyList());
         if (sequences != null
             && offsets != null
             && sequences.size() != offsets.size()
@@ -454,6 +462,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
       }
       return super.visitMethodInvocation(tree, type);
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree node, AnnotatedTypeMirror type) {
+      // A negative literal is not too large for any array.
+      switch (node.getKind()) {
+        case INT_LITERAL:
+          if (((Integer) node.getValue()).intValue() < 0) {
+            type.addAnnotation(BOTTOM);
+          }
+          break;
+        case LONG_LITERAL:
+          if (((Long) node.getValue()).longValue() < 0) {
+            type.addAnnotation(BOTTOM);
+          }
+          break;
+        default:
+          break;
+      }
+      return super.visitLiteral(node, type);
     }
 
     /* Handles case 3. */
