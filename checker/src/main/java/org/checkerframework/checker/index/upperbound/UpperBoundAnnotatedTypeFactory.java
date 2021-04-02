@@ -464,6 +464,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       return super.visitMethodInvocation(tree, type);
     }
 
+    // TODO: Changes should be made here.
     @Override
     public Void visitLiteral(LiteralTree node, AnnotatedTypeMirror type) {
       // A negative literal is not too large for any array.
