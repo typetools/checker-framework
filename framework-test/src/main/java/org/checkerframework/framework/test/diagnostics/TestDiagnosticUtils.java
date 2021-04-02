@@ -199,7 +199,8 @@ public class TestDiagnosticUtils {
   }
 
   /**
-   * Given a javax diagnostic, return a pair of (trimmed, fileame), where
+   * Given a javax diagnostic, return a pair of (trimmed, fileame), where "trimmed" is the first
+   * line of the message, without the leading filename.
    *
    * @param original a javax diagnostic
    * @param noMsgText whether to do work; if false, this returns a pair of (argument, "").
@@ -236,7 +237,6 @@ public class TestDiagnosticUtils {
   private static boolean retainAllLines(String message) {
     // Retain all if it is a thrown exception "unexpected Throwable" or it is a Checker Framework
     // Error (contains "Compilation unit") or is OutOfMemoryError.
-
     return message.contains("unexpected Throwable")
         || message.contains("Compilation unit")
         || message.contains("OutOfMemoryError");
