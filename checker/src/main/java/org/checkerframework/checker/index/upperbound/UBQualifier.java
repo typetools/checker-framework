@@ -281,6 +281,15 @@ public abstract class UBQualifier {
     return false;
   }
 
+  /**
+   * Returns true if this UBQualifier represents a literal integer.
+   *
+   * @return true if this UBQualifier represents a literal integer
+   */
+  public boolean isLiteral() {
+    return false;
+  }
+
   public boolean isUnknown() {
     return false;
   }
@@ -391,6 +400,28 @@ public abstract class UBQualifier {
         result.put(sequenceName, equations);
       }
       return result;
+    }
+
+    /**
+     * Returns true if the given integer literal is a subtype of this. The literal is a subtype of
+     * this if, for every offset expression, {@code literal + offset <= -1}.
+     *
+     * @param i an integer
+     * @return true if the given integer literal is a subtype of this
+     */
+    /*package-protected*/ boolean literalIsSubtype(int i) {
+      for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+        for (OffsetEquation equation : entry.getValue()) {
+          if (!equation.isInt()) {
+            return false;
+          }
+          int offset = equation.getInt();
+          if (i + offset > -1) {
+            return false;
+          }
+        }
+      }
+      return true;
     }
 
     /**
@@ -1241,6 +1272,56 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
       }
       return new LessThanLengthOf(newMap);
+    }
+  }
+
+  /** Represents an integer value that is known at compile time. */
+  private static class UpperBoundLiteral extends UBQualifier {
+
+    /** The integer value. */
+    int value;
+
+    @Override
+    public boolean isLiteral() {
+      return true;
+    }
+
+    @Override
+    public boolean isSubtype(UBQualifier superType) {
+      if (superType.isUnknown()) {
+        return true;
+      } else if (superType.isBottom()) {
+        return false;
+      } else if (superType.isLiteral()) {
+        int otherValue = ((UpperBoundLiteral) superType).value;
+        return value == otherValue;
+      }
+
+      LessThanLengthOf superTypeLTL = (LessThanLengthOf) superType;
+      return superTypeLTL.literalIsSubtype(value);
+    }
+
+    @Override
+    public UBQualifier lub(UBQualifier other) {
+      if (isSubtype(other)) {
+        return other;
+      } else {
+        return UpperBoundUnknownQualifier.UNKNOWN;
+      }
+    }
+
+    @Override
+    public UBQualifier glb(UBQualifier other) {
+      if (isSubtype(other)) {
+        return this;
+      } else {
+        return UpperBoundBottomQualifier.BOTTOM;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Literal(" + value + ")";
     }
   }
 
