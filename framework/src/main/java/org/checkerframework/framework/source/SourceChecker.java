@@ -2497,13 +2497,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
           String.format(
-              "The JVM ran out of memory.  Run with a larger max heap size"
-                  + " (max memory = %d, total memory = %d, free memory = %d).",
+              "OutOfMemoryError (max memory = %d, total memory = %d, free memory = %d)",
               Runtime.getRuntime().maxMemory(),
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
     } else {
-
       msg.add(ce.getMessage());
       boolean noPrintErrorStack =
           (processingEnv != null

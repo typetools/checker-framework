@@ -239,7 +239,7 @@ public class TestDiagnosticUtils {
 
     return message.contains("unexpected Throwable")
         || message.contains("Compilation unit")
-        || message.contains("The JVM ran out of memory.");
+        || message.contains("OutOfMemoryError");
   }
 
   /**
