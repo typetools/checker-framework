@@ -1276,6 +1276,7 @@ public abstract class UBQualifier {
   }
 
   /** Represents an integer value that is known at compile time. */
+  @SuppressWarnings("UnusedNestedClass") // TEMPORARY
   private static class UpperBoundLiteral extends UBQualifier {
 
     /** The integer value. */
