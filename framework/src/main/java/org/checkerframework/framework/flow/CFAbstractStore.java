@@ -1,6 +1,11 @@
 package org.checkerframework.framework.flow;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
