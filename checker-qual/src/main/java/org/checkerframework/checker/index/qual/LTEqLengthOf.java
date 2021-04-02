@@ -16,6 +16,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * both {@code a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have
  * different lengths.
  *
+ * <p>{@code @LTEqLengthOf({"a"})} = {@code @LTLengthOf(value={"a"}, offset=-1)}, and<br>
+ * {@code @LTEqLengthOf(value={"a"}, offset=x)} = {@code @LTLengthOf(value={"a"}, offset=x-1)} for
+ * any x.
+ *
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
