@@ -30,7 +30,6 @@ public class UBLiteralFlow {
       String s, @GTENegativeOne int lineStart) {
     int result;
     if (lineStart >= s.length()) {
-      // :: error: (return.type.incompatible)
       result = -1;
     } else {
       result = lineStart;
@@ -125,6 +124,7 @@ public class UBLiteralFlow {
    */
   private static @LTLengthOf(value = "#1", offset = "1") int lineStartIndex3(String s, int start) {
     if (s.length() == 0) {
+      // :: error: (return.type.incompatible)
       return -1;
     }
     if (start == 0) {

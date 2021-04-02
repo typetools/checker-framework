@@ -1280,7 +1280,7 @@ public abstract class UBQualifier {
   }
 
   /** Represents an integer value that is known at compile time. */
-  private static class UpperBoundLiteral extends UBQualifier {
+  public static class UpperBoundLiteral extends UBQualifier {
 
     /**
      * Creates a new UpperBoundLiteral.
@@ -1293,6 +1293,15 @@ public abstract class UBQualifier {
 
     /** The integer value. */
     int value;
+
+    /**
+     * Returns the integer value.
+     *
+     * @return the integer value
+     */
+    int getValue() {
+      return value;
+    }
 
     @Override
     public boolean isLiteral() {
