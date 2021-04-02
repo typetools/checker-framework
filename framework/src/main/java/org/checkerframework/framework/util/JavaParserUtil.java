@@ -12,6 +12,7 @@ import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.io.File;
@@ -113,6 +114,27 @@ public class JavaParserUtil {
   public static StubUnit parseStubUnit(InputStream inputStream) {
     JavaParser javaParser = new JavaParser(new ParserConfiguration());
     ParseResult<StubUnit> parseResult = javaParser.parseStubUnit(inputStream);
+    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
+      return parseResult.getResult().get();
+    } else {
+      throw new ParseProblemException(parseResult.getProblems());
+    }
+  }
+
+  /**
+   * Parses the {@code expression} and returns an {@code Expression} that represents it.
+   *
+   * <p>This is like {@code StaticJavaParser.parseExpression}, but it does not lead to memory leaks
+   * because it creates a new instance of JavaParser each time it is invoked. Re-using {@code
+   * StaticJavaParser} causes memory problems because it retains too much memory.
+   *
+   * @param expression the expression string
+   * @return the parsed expression
+   * @throws ParseProblemException if the expression has parser errors
+   */
+  public static Expression parseExpression(String expression) {
+    JavaParser javaParser = new JavaParser(new ParserConfiguration());
+    ParseResult<Expression> parseResult = javaParser.parseExpression(expression);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
       return parseResult.getResult().get();
     } else {
