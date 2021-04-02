@@ -1410,7 +1410,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns the minimum length of an array.
    *
-   * @params annotations the annotations on the array expression
+   * @param annotations the annotations on the array expression
    * @return the minimum length of an array
    */
   public int getMinLenValue(Set<AnnotationMirror> annotations) {
