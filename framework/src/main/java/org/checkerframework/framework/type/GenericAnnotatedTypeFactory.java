@@ -947,10 +947,13 @@ public abstract class GenericAnnotatedTypeFactory<
     // Look in the store
     if (CFAbstractStore.canInsertJavaExpression(expr)) {
       Store store = getStoreBefore(tree);
-      Value value = store.getValue(expr);
-      if (value != null) {
-        // Is it possible that this lacks some annotations that appear in the type factory?
-        return value.getAnnotations();
+      // `store` can be null if the tree is in a field initializer.
+      if (store != null) {
+        Value value = store.getValue(expr);
+        if (value != null) {
+          // Is it possible that this lacks some annotations that appear in the type factory?
+          return value.getAnnotations();
+        }
       }
     }
 
