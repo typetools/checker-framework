@@ -288,10 +288,20 @@ public abstract class UBQualifier {
     return false;
   }
 
+  /**
+   * Returns true if this UBQualifier is the top type.
+   *
+   * @return true if this UBQualifier is the top type
+   */
   public boolean isUnknown() {
     return false;
   }
 
+  /**
+   * Returns true if this UBQualifier is the bottom type.
+   *
+   * @return true if this UBQualifier is the bottom type
+   */
   public boolean isBottom() {
     return false;
   }
@@ -1347,9 +1357,12 @@ public abstract class UBQualifier {
     }
   }
 
+  /** The top type qualifier. */
   public static class UpperBoundUnknownQualifier extends UBQualifier {
+    /** The canonical representative. */
     static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
+    /** This class is a singleton. */
     private UpperBoundUnknownQualifier() {}
 
     @Override
