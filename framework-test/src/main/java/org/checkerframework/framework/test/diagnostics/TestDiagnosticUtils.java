@@ -204,9 +204,7 @@ public class TestDiagnosticUtils {
     String trimmed = original;
     String filename = "";
     if (noMsgText) {
-      // Only keep the first line of the error or warning, unless it is a thrown exception
-      // "unexpected Throwable" or it is a Checker Error (contains "Compilation unit").
-      if (!trimmed.contains("unexpected Throwable") && !trimmed.contains("Compilation unit")) {
+      if (!retainAllLines(trimmed)) {
         if (trimmed.contains(System.lineSeparator())) {
           trimmed = trimmed.substring(0, trimmed.indexOf(System.lineSeparator()));
         }
@@ -220,6 +218,22 @@ public class TestDiagnosticUtils {
     }
 
     return Pair.of(trimmed, filename);
+  }
+
+  /**
+   * Returns true if all lines of the message should be shown, false if only the first line should
+   * be shown.
+   *
+   * @param message a diagnostic message
+   * @return true if all lines of the message should be shown
+   */
+  private static boolean retainAllLines(String message) {
+    // Retain all if it is a thrown exception "unexpected Throwable" or it is a Checker Framework
+    // Error (contains "Compilation unit") or is OutOfMemoryError.
+
+    return message.contains("unexpected Throwable")
+        || message.contains("Compilation unit")
+        || message.contains("The JVM ran out of memory.");
   }
 
   /**
