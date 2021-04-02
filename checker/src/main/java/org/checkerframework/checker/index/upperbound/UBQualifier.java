@@ -56,7 +56,7 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotationMirror am, String offset, UpperBoundChecker ubChecker) {
-    switch (annotationName(am)) {
+    switch (AnnotationUtils.annotationName(am)) {
       case "org.checkerframework.checker.index.qual.UpperBoundUnknown":
         return UpperBoundUnknownQualifier.UNKNOWN;
       case "org.checkerframework.checker.index.qual.UpperBoundBottom":
