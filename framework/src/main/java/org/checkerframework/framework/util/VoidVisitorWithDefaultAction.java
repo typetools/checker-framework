@@ -1,4 +1,4 @@
-package org.checkerframework.framework.ajava;
+package org.checkerframework.framework.util;
 
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.CompilationUnit;

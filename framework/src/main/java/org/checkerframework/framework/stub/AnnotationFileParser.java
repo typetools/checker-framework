@@ -87,7 +87,6 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
-import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -538,7 +537,7 @@ public class AnnotationFileParser {
         new AnnotationFileParser(filename, atypeFactory, processingEnv, false, false);
     try {
       afp.parseStubUnit(inputStream);
-      JavaParserUtils.concatenateAddedStringLiterals(afp.stubUnit);
+      JavaParserUtil.concatenateAddedStringLiterals(afp.stubUnit);
       afp.setRoot(root);
       afp.process(ajavaAnnos);
     } catch (ParseProblemException e) {
