@@ -43,7 +43,9 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
+import org.checkerframework.checker.index.qual.UpperBoundNegativeOne;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
+import org.checkerframework.checker.index.qual.UpperBoundZero;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
@@ -111,6 +113,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The @{@link UpperBoundBottom} annotation. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
+  /** The @{@link UpperBoundZero} annotation. */
+  public final AnnotationMirror ZERO = AnnotationBuilder.fromClass(elements, UpperBoundZero.class);
+  /** The @{@link UpperBoundNegativeOne} annotation. */
+  public final AnnotationMirror NEGATIVEONE =
+      AnnotationBuilder.fromClass(elements, UpperBoundNegativeOne.class);
   /** The @{@link PolyUpperBound} annotation. */
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
@@ -470,13 +477,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       // A negative literal is not too large for any array.
       switch (node.getKind()) {
         case INT_LITERAL:
-          if (((Integer) node.getValue()).intValue() < 0) {
-            type.addAnnotation(BOTTOM);
+          int intValue = ((Integer) node.getValue()).intValue();
+          if (intValue == 0) {
+            type.addAnnotation(ZERO);
+          } else if (intValue == -1) {
+            type.addAnnotation(NEGATIVEONE);
           }
           break;
         case LONG_LITERAL:
-          if (((Long) node.getValue()).longValue() < 0) {
-            type.addAnnotation(BOTTOM);
+          long longValue = ((Long) node.getValue()).longValue();
+          if (longValue == 0) {
+            type.addAnnotation(ZERO);
+          } else if (longValue == -1) {
+            type.addAnnotation(NEGATIVEONE);
           }
           break;
         default:

@@ -740,6 +740,8 @@ public abstract class UBQualifier {
         return true;
       } else if (superType.isBottom()) {
         return false;
+      } else if (superType.isLiteral()) {
+        return false;
       }
 
       LessThanLengthOf superTypeLTL = (LessThanLengthOf) superType;
@@ -802,6 +804,8 @@ public abstract class UBQualifier {
         return other;
       } else if (other.isBottom()) {
         return this;
+      } else if (other.isLiteral()) {
+        return other.lub(this);
       }
       LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
@@ -917,6 +921,8 @@ public abstract class UBQualifier {
         return this;
       } else if (other.isBottom()) {
         return other;
+      } else if (other.isLiteral()) {
+        return other.glb(this);
       }
       LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
