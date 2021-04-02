@@ -49,7 +49,6 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
-import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -354,7 +353,7 @@ public class WholeProgramInferenceJavaParserStorage
     } catch (FileNotFoundException e) {
       throw new BugInCF("Failed to read Java file " + path, e);
     }
-    JavaParserUtils.concatenateAddedStringLiterals(root);
+    JavaParserUtil.concatenateAddedStringLiterals(root);
     CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
     sourceToAnnos.put(path, sourceAnnos);
   }
@@ -669,7 +668,7 @@ public class WholeProgramInferenceJavaParserStorage
      * unit to their corresponding JavaParser locations.
      */
     public void transferAnnotations() {
-      JavaParserUtils.clearAnnotations(compilationUnit);
+      JavaParserUtil.clearAnnotations(compilationUnit);
       for (ClassOrInterfaceAnnos typeAnnos : types) {
         typeAnnos.transferAnnotations();
       }
@@ -682,7 +681,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return the type declaration named {@code name} in the wrapped compilation unit
      */
     public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
-      return JavaParserUtils.getTypeDeclarationByName(compilationUnit, name);
+      return JavaParserUtil.getTypeDeclarationByName(compilationUnit, name);
     }
   }
 

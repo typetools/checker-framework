@@ -576,7 +576,7 @@ public class InsertAjavaAnnotations {
 
             Set<String> annotationFilesForRoot = new LinkedHashSet<>();
             for (TypeDeclaration<?> type : root.getTypes()) {
-              String name = JavaParserUtils.getFullyQualifiedName(type, root);
+              String name = JavaParserUtil.getFullyQualifiedName(type, root);
               annotationFilesForRoot.addAll(annotationFiles.getAnnotationFileForType(name));
             }
 

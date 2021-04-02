@@ -285,6 +285,10 @@ or \code{@LTOMLengthOf("arr")}.
   \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
   (``\<LTEq>'' stands for ``Less Than or Equal to''.)
 
+  \<@LTEqLengthOf(\{"a"\})> = \<@LTLengthOf(value=\{"a"\}, offset=-1)>, and \\
+  \<@LTEqLengthOf(value=\{"a"\}, offset=x)> = \<@LTLengthOf(value=\{"a"\},
+  offset=x-1)> for any x.
+
 \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
   indicates qualifier polymorphism.
   For a description of qualifier polymorphism, see
@@ -310,6 +314,10 @@ or \code{@LTOMLengthOf("arr")}.
   \code{@LTOMLengthOf("a")} and \code{@LTOMLengthOf("b")}.
   (``\<LTOM>'' stands for ``Less Than One Minus'', because another way of
   saying ``at least 2 less than \<a.length>'' is ``less than \<a.length-1>''.)
+
+  \<@LTOMLengthOf(\{"a"\})> = \<@LTLengthOf(value=\{"a"\}, offset=1)>, and \\
+  \<@LTOMLengthOf(value=\{"a"\}, offset=x)> = \<@LTLengthOf(value=\{"a"\},
+  offset=x+1)> for any x.
 
 \item[\refqualclass{checker/index/qual}{UpperBoundUnknown}]
   There is no information about the upper bound on the value of an expression with this type.
