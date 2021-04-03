@@ -273,7 +273,7 @@
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 
-        <copy todir="${dest.dir}" file="${checker}/../docs/changelog.md" />
+        <copy todir="${dest.dir}" file="${checker}/../docs/CHANGELOG.md" />
 
         <copy todir="${dest.dir}/api" flatten="false">
             <fileset dir="${checker}/../docs/api">

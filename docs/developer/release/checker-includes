@@ -3,7 +3,7 @@ LICENSE.txt
 checker/bin/**
 checker/dist/**
 checker/resources/**
-docs/changelog.md
+docs/CHANGELOG.md
 docs/manual/manual.html
 docs/manual/manual.pdf
 docs/manual/*.svg
