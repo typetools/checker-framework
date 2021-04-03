@@ -517,7 +517,7 @@ def main(argv):
             + "* For the release title, enter: Checker Framework "
             + new_cf_version
             + "\n"
-            + "* For the description, insert the latest Checker Framework changelog entry (available at https://checkerframework.org/changelog.txt). Please include the first line with the release version and date.\n"
+            + "* For the description, insert the latest Checker Framework changelog entry (available at https://checkerframework.org/changelog.md). Please include the first line with the release version and date.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." Click on "selecting them" and upload checker-framework-'
             + new_cf_version
             + ".zip from your machine.\n"
