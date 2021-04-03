@@ -389,14 +389,14 @@ MultiGraphQualifierHierarchy for instructions on how to use the new classes and
 methods.
 
 Renamed methods:
-  NumberUtils.isFloatingPoint => TypesUtils.isFloatingPoint
-  NumberUtils.isIntegral => TypesUtils.isIntegralPrimitiveOrBoxed
-  NumberUtils.isPrimitiveFloatingPoint => TypeKindUtils.isFloatingPoint
-  NumberUtils.isPrimitiveIntegral => TypeKindUtils.isIntegral
-  NumberUtils.unboxPrimitive => TypeKindUtils.primitiveOrBoxedToTypeKind
-  TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
-  TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
-  TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
+ * NumberUtils.isFloatingPoint => TypesUtils.isFloatingPoint
+ * NumberUtils.isIntegral => TypesUtils.isIntegralPrimitiveOrBoxed
+ * NumberUtils.isPrimitiveFloatingPoint => TypeKindUtils.isFloatingPoint
+ * NumberUtils.isPrimitiveIntegral => TypeKindUtils.isIntegral
+ * NumberUtils.unboxPrimitive => TypeKindUtils.primitiveOrBoxedToTypeKind
+ * TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
+ * TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
+ * TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
 
 The CFStore copy constructor now takes only one argument.
 
@@ -441,10 +441,9 @@ All CFGVisualizeLauncher command-line arguments now start with `--` instead of `
 commonAssignmentCheck() now takes an additional argument.  Type system
 authors must update their overriding implementations.
 
-Renamed GenericAnnotatedTypeFactory#addAnnotationsFromDefaultQualifierForUse to
-#addAnnotationsFromDefaultForType and
-BaseTypeValidator#shouldCheckTopLevelDeclaredType to
-#shouldCheckTopLevelDeclaredOrPrimitiveType
+Renamed methods:
+ * GenericAnnotatedTypeFactory#addAnnotationsFromDefaultQualifierForUse => #addAnnotationsFromDefaultForType and
+ * BaseTypeValidator#shouldCheckTopLevelDeclaredType => #shouldCheckTopLevelDeclaredOrPrimitiveType
 
 Removed org.checkerframework.framework.test.FrameworkPer(Directory/File)Test classes.
 Use CheckerFrameworkPer(Directory/File)Test instead.
@@ -473,13 +472,13 @@ Renamed command-line arguments:
 
 The Signature Checker no longer considers Java keywords to be identifiers.
 Renamed Signature Checker annotations:
-  @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
-  @FieldDescriptorForPrimitiveOrArrayInUnnamedPackage => @FieldDescriptorWithoutPackage
-  @IdentifierOrArray => @ArrayWithoutPackage
+ * @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
+ * @FieldDescriptorForPrimitiveOrArrayInUnnamedPackage => @FieldDescriptorWithoutPackage
+ * @IdentifierOrArray => @ArrayWithoutPackage
 Added new Signature Checker annotations:
-  @BinaryNameOrPrimitiveType
-  @DotSeparatedIdentifiersOrPrimitiveType
-  #IdentifierOrPrimitiveType
+ * @BinaryNameOrPrimitiveType
+ * @DotSeparatedIdentifiersOrPrimitiveType
+ * @IdentifierOrPrimitiveType
 
 The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
