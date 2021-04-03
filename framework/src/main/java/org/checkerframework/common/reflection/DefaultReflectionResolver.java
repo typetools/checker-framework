@@ -125,8 +125,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     Set<? extends AnnotationMirror> receiverGlb = null;
     Set<? extends AnnotationMirror> paramsGlb = null;
 
-    // Iterate over all possible methods: lub return types, and glb receiver
-    // and parameter types
+    // Iterate over all possible methods: lub return types, and glb receiver and parameter types
     for (MethodInvocationTree resolvedTree : possibleMethods) {
       debugReflection("Resolved method invocation: " + resolvedTree);
       if (!checkMethodArguments(resolvedTree)) {
@@ -145,8 +144,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // argument to invoke(Object, Object[]))
       // Check for static methods whose receiver is null
       if (resolvedResult.executableType.getReceiverType() == null) {
-        // If the method is static the first argument to Method.invoke isn't used,
-        // so assume top.
+        // If the method is static the first argument to Method.invoke isn't used, so assume top.
         receiverGlb =
             glb(receiverGlb, factory.getQualifierHierarchy().getTopAnnotations(), factory);
       } else {
@@ -157,10 +155,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 factory);
       }
 
-      // Glb parameter types.  All formal parameter types get
-      // combined together because Method#invoke takes as argument an
-      // array of parameter types, so there is no way to distinguish
-      // the types of different formal parameters.
+      // Glb parameter types.  All formal parameter types get combined together because
+      // Method#invoke takes as argument an array of parameter types, so there is no way to
+      // distinguish the types of different formal parameters.
       for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
         paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
       }
@@ -272,8 +269,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     Set<? extends AnnotationMirror> returnLub = null;
     Set<? extends AnnotationMirror> paramsGlb = null;
 
-    // Iterate over all possible constructors: lub return types and glb
-    // parameter types
+    // Iterate over all possible constructors: lub return types and glb parameter types
     for (JCNewClass resolvedTree : possibleConstructors) {
       debugReflection("Resolved constructor invocation: " + resolvedTree);
       if (!checkNewClassArguments(resolvedTree)) {
@@ -365,8 +361,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       String methodName = listMethodNames.get(i);
       int paramLength = listParamLengths.get(i);
 
-      // Get receiver, which is always the first argument of the invoke
-      // method
+      // Get receiver, which is always the first argument of the invoke method
       JCExpression receiver = methodInvocation.args.head;
       // The remaining list contains the arguments
       com.sun.tools.javac.util.List<JCExpression> args = methodInvocation.args.tail;

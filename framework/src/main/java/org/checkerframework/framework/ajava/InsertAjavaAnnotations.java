@@ -1,7 +1,6 @@
 package org.checkerframework.framework.ajava;
 
 import com.github.javaparser.Position;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -50,6 +49,7 @@ import javax.tools.ToolProvider;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.plumelib.util.FilesPlume;
 
 /** This program inserts annotations from an ajava file into a Java file. See {@link #main}. */
@@ -460,8 +460,8 @@ public class InsertAjavaAnnotations {
    */
   public String insertAnnotations(
       InputStream annotationFile, String javaFileContents, String lineSeparator) {
-    CompilationUnit annotationCu = StaticJavaParser.parse(annotationFile);
-    CompilationUnit javaCu = StaticJavaParser.parse(javaFileContents);
+    CompilationUnit annotationCu = JavaParserUtil.parseCompilationUnit(annotationFile);
+    CompilationUnit javaCu = JavaParserUtil.parseCompilationUnit(javaFileContents);
     BuildInsertionsVisitor insertionVisitor =
         new BuildInsertionsVisitor(javaFileContents, lineSeparator);
     annotationCu.accept(insertionVisitor, javaCu);
@@ -568,7 +568,7 @@ public class InsertAjavaAnnotations {
 
             CompilationUnit root = null;
             try {
-              root = StaticJavaParser.parse(path);
+              root = JavaParserUtil.parseCompilationUnit(path.toFile());
             } catch (IOException e) {
               System.err.println("Failed to read file: " + path);
               System.exit(1);
@@ -576,7 +576,7 @@ public class InsertAjavaAnnotations {
 
             Set<String> annotationFilesForRoot = new LinkedHashSet<>();
             for (TypeDeclaration<?> type : root.getTypes()) {
-              String name = JavaParserUtils.getFullyQualifiedName(type, root);
+              String name = JavaParserUtil.getFullyQualifiedName(type, root);
               annotationFilesForRoot.addAll(annotationFiles.getAnnotationFileForType(name));
             }
 

@@ -2,14 +2,10 @@ package org.checkerframework.framework.type;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -109,12 +105,9 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
    * @return a mutable list containing the {@code values} element; may be the empty list
    */
   private List<String> valuesStringList(AnnotationMirror anno) {
-    Map<? extends ExecutableElement, ? extends AnnotationValue> valMap = anno.getElementValues();
-    if (valMap.isEmpty()) {
-      return Collections.emptyList();
-    } else {
-      return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
-    }
+    @SuppressWarnings("deprecation") // concrete annotation class is not known
+    List<String> result = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+    return result;
   }
 
   /**

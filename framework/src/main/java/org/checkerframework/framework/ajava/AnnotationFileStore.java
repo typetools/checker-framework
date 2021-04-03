@@ -1,6 +1,5 @@
 package org.checkerframework.framework.ajava;
 
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import java.io.File;
@@ -10,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -45,9 +45,9 @@ public class AnnotationFileStore {
 
     if (location.isFile() && location.getName().endsWith(".ajava")) {
       try {
-        CompilationUnit root = StaticJavaParser.parse(location);
+        CompilationUnit root = JavaParserUtil.parseCompilationUnit(location);
         for (TypeDeclaration<?> type : root.getTypes()) {
-          String name = JavaParserUtils.getFullyQualifiedName(type, root);
+          String name = JavaParserUtil.getFullyQualifiedName(type, root);
 
           if (!annotationFiles.containsKey(name)) {
             annotationFiles.put(name, new ArrayList<>());

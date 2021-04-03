@@ -81,8 +81,7 @@ public class RemoveAnnotationsForInference {
     try {
       ClassPath cp = ClassPath.from(RemoveAnnotationsForInference.class.getClassLoader());
       for (ClassPath.ClassInfo ci : cp.getTopLevelClasses()) {
-        // There is no way to determine whether `ci` represents an annotation, without
-        // loading it.
+        // There is no way to determine whether `ci` represents an annotation, without loading it.
         // I could filter using a heuristic: only include classes in a package named "qual".
         simpleToFullyQualified.put(ci.getSimpleName(), ci.getName());
       }

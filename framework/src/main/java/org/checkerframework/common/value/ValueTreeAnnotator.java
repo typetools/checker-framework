@@ -172,8 +172,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       return;
     }
 
-    // A list of arrayLens.  arrayLenOfDimensions.get(i) is the array lengths for the ith
-    // dimension.
+    // A list of arrayLens.  arrayLenOfDimensions.get(i) is the array lengths for the ith dimension.
     List<RangeOrListOfValues> arrayLenOfDimensions = new ArrayList<>();
     for (ExpressionTree init : initializers) {
       AnnotatedTypeMirror componentType = atypeFactory.getAnnotatedType(init);

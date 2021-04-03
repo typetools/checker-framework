@@ -8,6 +8,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -78,12 +79,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     if (atypeFactory.areSameByClass(anno, LTLengthOf.class)) {
       List<? extends ExpressionTree> args = node.getArguments();
       if (args.size() == 2) {
-        // If offsets are provided, there must be the same number of them as there are
-        // arrays.
+        // If offsets are provided, there must be the same number of them as there are arrays.
         List<String> sequences =
-            AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+            AnnotationUtils.getElementValueArray(
+                anno, atypeFactory.ltLengthOfValueElement, String.class);
         List<String> offsets =
-            AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                anno, atypeFactory.ltLengthOfOffsetElement, String.class, Collections.emptyList());
         if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
           checker.reportError(
               node, "different.length.sequences.offsets", sequences.size(), offsets.size());
@@ -401,9 +403,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     // Take advantage of information available on a HasSubsequence(a, from, to) annotation
     // on the lhs qualifier (varLtlQual):
-    // this allows us to show that iff varLtlQual includes LTL(b),
-    // b has HSS, and expQual includes LTL(a, -from), then the LTL(b) can be removed from
-    // varLtlQual.
+    // this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual includes
+    // LTL(a, -from), then the LTL(b) can be removed from varLtlQual.
 
     UBQualifier newLHS = processSubsequenceForLHS(varLtlQual, expQual);
     if (newLHS.isUnknown()) {

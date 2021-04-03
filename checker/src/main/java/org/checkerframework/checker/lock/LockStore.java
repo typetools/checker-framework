@@ -188,11 +188,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     // Lockannotatedtypefactory, but it affects only one of the two type hierarchies, so it
     // cannot use that logic.
     if (!isSideEffectFree(atypeFactory, method)) {
-      // After the call to super.updateForMethodCall, only final fields are left in
-      // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
-      // hierarchy, even a final field might be locked or unlocked by a side-effecting
-      // method.  So, final fields must be set to @LockPossiblyHeld, but the annotation in
-      // the GuardedBy hierarchy should not be changed.
+      // After the call to super.updateForMethodCall, only final fields are left in fieldValues (if
+      // the method called is side-effecting). For the LockPossiblyHeld hierarchy, even a final
+      // field might be locked or unlocked by a side-effecting method.  So, final fields must be set
+      // to @LockPossiblyHeld, but the annotation in the GuardedBy hierarchy should not be changed.
       for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
         CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));
         if (newValue != null) {

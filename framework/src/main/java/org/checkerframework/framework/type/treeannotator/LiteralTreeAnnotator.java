@@ -80,8 +80,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     // Get type qualifiers from the checker.
     Set<Class<? extends Annotation>> quals = atypeFactory.getSupportedTypeQualifiers();
 
-    // For each qualifier, read the @QualifierForLiterals annotation and put its contents into
-    // maps.
+    // For each qualifier, read the @QualifierForLiterals annotation and put its contents into maps.
     for (Class<? extends Annotation> qual : quals) {
       QualifierForLiterals forLiterals = qual.getAnnotation(QualifierForLiterals.class);
       if (forLiterals == null) {
@@ -197,10 +196,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     }
 
     // If this tree's kind is in treeKinds, annotate the type.
-    // If this tree's class or any of its interfaces are in treeClasses,
-    // annotate the type, and if it was an interface add a mapping for it to
-    // treeClasses.
 
+    // If this tree's class or any of its interfaces are in treeClasses, annotate the type, and
+    // if it was an interface add a mapping for it to treeClasses.
     if (treeKinds.containsKey(tree.getKind())) {
       Set<AnnotationMirror> fnd = treeKinds.get(tree.getKind());
       type.addMissingAnnotations(fnd);
