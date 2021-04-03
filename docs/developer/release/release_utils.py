@@ -10,7 +10,6 @@ Created by Jonathan Burke 11/21/2012
 Copyright (c) 2012 University of Washington
 """
 
-import sys
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -19,7 +18,7 @@ import subprocess
 import os
 import os.path
 import shutil
-from release_vars import *
+from release_vars import execute
 
 # =========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module
