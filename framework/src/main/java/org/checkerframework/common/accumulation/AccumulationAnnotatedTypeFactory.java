@@ -474,9 +474,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (isPolymorphicQualifier(superAnno)) {
           return true;
         } else {
-          // Use this slightly more expensive conversion here because
-          // this is a rare code path and it's simpler to read than
-          // checking for both predicate and non-predicate forms of top.
+          // Use this slightly more expensive conversion here because this is a rare code path and
+          // it's simpler to read than checking for both predicate and non-predicate forms of top.
           return "".equals(convertToPredicate(superAnno));
         }
       } else if (isPolymorphicQualifier(superAnno)) {

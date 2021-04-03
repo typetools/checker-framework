@@ -45,8 +45,7 @@ public abstract class BlockImpl implements Block {
 
   @Override
   public Set<Block> getPredecessors() {
-    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration
-    // order.
+    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration order.
     return new LinkedHashSet<>(predecessors);
   }
 

@@ -186,9 +186,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     switch (AnnotationUtils.annotationName(anno)) {
       case ValueAnnotatedTypeFactory.INTRANGE_NAME:
         // If there are 2 arguments, issue an error if from.greater.than.to.
-        // If there are fewer than 2 arguments, we needn't worry about this problem because
-        // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
-        // accordingly.
+        // If there are fewer than 2 arguments, we needn't worry about this problem because the
+        // other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
         if (args.size() == 2) {
           long from = getTypeFactory().getIntRangeFromValue(anno);
           long to = getTypeFactory().getIntRangeToValue(anno);
@@ -203,6 +202,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
       case ValueAnnotatedTypeFactory.INTVAL_NAME:
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+        @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> values =
             AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
 

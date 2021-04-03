@@ -42,7 +42,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.18.0.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -100,7 +100,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.11.1-SNAPSHOT'
+    version '3.12.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -642,7 +642,7 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.5.1'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.6.0'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {

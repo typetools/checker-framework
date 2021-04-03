@@ -1,3 +1,7 @@
+Version 3.12.1, May 3, 2021
+
+---------------------------------------------------------------------------
+
 Version 3.12.0, April 1, 2021
 
 **User-visible changes:**
@@ -34,8 +38,6 @@ Renamed `AnnotatedTypeComparer` to `DoubleAnnotatedTypeScanner`. In the new
 class, the method `compare` was renamed `defaultAction`. The method `combineRs`
 was replaced by `reduce`.
 
-Removed deprecated `PluginUtil` class.
-
 Removed methods:
  * `AnnotationUtils.getElementValueArrayOrSingleton`
  * `DependentTypesHelper.standardizeNewClassTree`: use `atExpression` instead
@@ -55,7 +57,26 @@ Method renamings:
     * `standardizeReturnType` => `atReturnType`
     * `standardizeVariable` => `atVariableDeclaration`
 
+Deprecated some overloads in `AnnotationUtils` that take a `CharSequence`
+(use an overload that takes an `ExecutablElement`):
+ * `getElementValueArray`
+ * `getElementValueClassName`
+ * `getElementValueClassNames`
+ * `getElementValueEnumArray`
+ * `getElementValueEnum`
+ * `getElementValue`
+ * `getElementValuesWithDefaults`
+
+Deprecated methods in `AnnotationUtils`:
+ * `areSameByClass`: use `areSameByName`
+ * `getElementValuesWithDefaults`: use a `getElementValue*` method
+
+Removed deprecated `PluginUtil` class.
+
 **Closed issues:**
+#1376, #3740, #3970, #4041, #4254, #4346, #4355, #4358, #4372, #4381, #4384,
+#4417, #4449, #4452, #4480.
+
 
 ---------------------------------------------------------------------------
 

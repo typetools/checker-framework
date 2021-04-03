@@ -49,9 +49,8 @@ public class RegexTransfer extends CFTransfer {
             analysis.getTypeFactory().getProcessingEnv());
   }
 
-  // TODO: These are special cases for isRegex(String, int) and asRegex(String, int).
-  // They should be replaced by adding an @EnsuresQualifierIf annotation that supports
-  // specifying attributes.
+  // TODO: These are special cases for isRegex(String, int) and asRegex(String, int).  They should
+  // be replaced by adding an @EnsuresQualifierIf annotation that supports specifying attributes.
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {

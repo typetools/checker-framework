@@ -1360,8 +1360,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
   public Void visitWildcard(WildcardTree javacTree, Node javaParserNode) {
     WildcardType node = castNode(WildcardType.class, javaParserNode, javacTree);
     processWildcard(javacTree, node);
-    // In javac, whether the bound is an extends or super clause depends on the kind of the
-    // tree.
+    // In javac, whether the bound is an extends or super clause depends on the kind of the tree.
     assert (javacTree.getKind() == Kind.EXTENDS_WILDCARD) == node.getExtendedType().isPresent();
     assert (javacTree.getKind() == Kind.SUPER_WILDCARD) == node.getSuperType().isPresent();
     switch (javacTree.getKind()) {

@@ -22,6 +22,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.lock.qual.EnsuresLockHeld;
+import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
@@ -62,6 +64,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -102,10 +105,18 @@ public class LockAnnotatedTypeFactory
   protected final AnnotationMirror GUARDSATISFIED =
       AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
+  /** The value() element/field of a @GuardedBy annotation. */
+  protected final ExecutableElement guardedByValueElement =
+      TreeUtils.getMethod(GuardedBy.class, "value", 0, processingEnv);
   /** The value() element/field of a @GuardSatisfied annotation. */
   protected final ExecutableElement guardSatisfiedValueElement =
-      TreeUtils.getMethod(
-          "org.checkerframework.checker.lock.qual.GuardSatisfied", "value", 0, processingEnv);
+      TreeUtils.getMethod(GuardSatisfied.class, "value", 0, processingEnv);
+  /** The EnsuresLockHeld.value element/field. */
+  protected final ExecutableElement ensuresLockHeldValueElement =
+      TreeUtils.getMethod(EnsuresLockHeld.class, "value", 0, processingEnv);
+  /** The EnsuresLockHeldIf.expression element/field. */
+  protected final ExecutableElement ensuresLockHeldIfExpressionElement =
+      TreeUtils.getMethod(EnsuresLockHeldIf.class, "expression", 0, processingEnv);
 
   /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
   protected final Class<? extends Annotation> jcipGuardedBy;
@@ -169,8 +180,7 @@ public class LockAnnotatedTypeFactory
 
       @Override
       protected boolean shouldPassThroughExpression(String expression) {
-        // There is no expression to use to replace <self> here, so just pass the
-        // expression along.
+        // There is no expression to use to replace <self> here, so just pass the expression along.
         return super.shouldPassThroughExpression(expression)
             || LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches();
       }
@@ -181,8 +191,8 @@ public class LockAnnotatedTypeFactory
           return javaExpr;
         }
 
-        // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL
-        // error string.
+        // If the expression isn't effectively final, then return the NOT_EFFECTIVELY_FINAL error
+        // string.
         return createError(javaExpr.toString(), NOT_EFFECTIVELY_FINAL);
       }
     };
@@ -224,8 +234,8 @@ public class LockAnnotatedTypeFactory
       return PurityUtils.isDeterministic(this, methodCall.getElement())
           && isExpressionEffectivelyFinal(methodCall.getReceiver());
     } else if (expr instanceof ThisReference || expr instanceof ClassName) {
-      // this is always final. "ClassName" is actually a class literal (String.class), it's
-      // final too.
+      // this is always final. "ClassName" is actually a class literal (String.class), it's final
+      // too.
       return true;
     } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions
       return false;
@@ -295,9 +305,11 @@ public class LockAnnotatedTypeFactory
         QualifierKind superKind) {
       if (subKind == GUARDEDBY_KIND && superKind == GUARDEDBY_KIND) {
         List<String> subLocks =
-            AnnotationUtils.getElementValueArray(superAnno, "value", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                superAnno, guardedByValueElement, String.class, Collections.emptyList());
         List<String> superLocks =
-            AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+            AnnotationUtils.getElementValueArray(
+                subAnno, guardedByValueElement, String.class, Collections.emptyList());
         return subLocks.containsAll(superLocks) && superLocks.containsAll(subLocks);
       } else if (subKind == GUARDSATISFIED_KIND && superKind == GUARDSATISFIED_KIND) {
         return AnnotationUtils.areSame(superAnno, subAnno);
@@ -313,8 +325,12 @@ public class LockAnnotatedTypeFactory
         QualifierKind qualifierKind2,
         QualifierKind lubKind) {
       if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
-        List<String> locks1 = AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-        List<String> locks2 = AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+        List<String> locks1 =
+            AnnotationUtils.getElementValueArray(
+                a1, guardedByValueElement, String.class, Collections.emptyList());
+        List<String> locks2 =
+            AnnotationUtils.getElementValueArray(
+                a2, guardedByValueElement, String.class, Collections.emptyList());
         if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
           return a1;
         } else {
@@ -342,8 +358,12 @@ public class LockAnnotatedTypeFactory
         QualifierKind qualifierKind2,
         QualifierKind glbKind) {
       if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
-        List<String> locks1 = AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-        List<String> locks2 = AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+        List<String> locks1 =
+            AnnotationUtils.getElementValueArray(
+                a1, guardedByValueElement, String.class, Collections.emptyList());
+        List<String> locks2 =
+            AnnotationUtils.getElementValueArray(
+                a2, guardedByValueElement, String.class, Collections.emptyList());
         if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
           return a1;
         } else {
@@ -688,8 +708,9 @@ public class LockAnnotatedTypeFactory
     }
 
     // The version of javax.annotation.concurrent.GuardedBy included with the Checker Framework
-    // declares the type of value as an array of Strings where as the one included with FindBugs
-    // declares it as a String. So, the code below figures out which type should be used.
+    // declares the type of value as an array of Strings, whereas the one defined in JCIP and
+    // included with FindBugs declares it as a String. So, the code below figures out which type
+    // should be used.
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = anno.getElementValues();
     Object value = null;
     for (ExecutableElement elem : valmap.keySet()) {
@@ -700,7 +721,9 @@ public class LockAnnotatedTypeFactory
     }
     List<String> lockExpressions;
     if (value instanceof List) {
-      lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+      @SuppressWarnings("unchecked")
+      List<AnnotationValue> la = (List<AnnotationValue>) value;
+      lockExpressions = CollectionsPlume.mapList((AnnotationValue a) -> (String) a.getValue(), la);
     } else if (value instanceof String) {
       lockExpressions = Collections.singletonList((String) value);
     } else {

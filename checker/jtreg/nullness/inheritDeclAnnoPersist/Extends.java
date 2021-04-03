@@ -22,8 +22,7 @@ public class Extends {
   }
 
   // Issue 342
-  // We do not want that behavior with related annotations. @Pure should
-  // override @SideEffectFree.
+  // We do not want that behavior with related annotations. @Pure should override @SideEffectFree.
   @ADescriptions({
     @ADescription(annotation = "org/checkerframework/dataflow/qual/Pure"),
     @ADescription(annotation = "org/checkerframework/dataflow/qual/SideEffectFree")

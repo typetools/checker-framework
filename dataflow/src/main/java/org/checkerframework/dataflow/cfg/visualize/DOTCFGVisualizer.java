@@ -123,8 +123,7 @@ public class DOTCFGVisualizer<
           // The footer of the conditional block.
           sbDotNodes.append("\"];");
         } else {
-          // The footer of the block which has no content and is not a special or
-          // conditional block.
+          // The footer of the block which has no content and is not a special or conditional block.
           sbDotNodes.append("?? empty ??\"];");
         }
       } else {

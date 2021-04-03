@@ -1,7 +1,6 @@
 public class PrintArray {
-  // the I18n checker correctly issues an error and Nullness org.checkerframework.checker
-  // correctly issue a warning below, but we would like to keep this
-  // test in all-systems.
+  // the I18n checker correctly issues an error and Nullness org.checkerframework.checker correctly
+  // issue a warning below, but we would like to keep this test in all-systems.
   @SuppressWarnings({"i18n", "nullness:nulltest.redundant"})
   public static final void print(java.io.PrintStream ps, Object[][] a) {
     if (a == null) {

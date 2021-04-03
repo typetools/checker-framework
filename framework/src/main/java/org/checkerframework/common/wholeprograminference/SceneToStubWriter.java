@@ -336,8 +336,7 @@ public final class SceneToStubWriter {
           basetypeToPrint.substring("<anonymous ".length(), basetypeToPrint.length() - 1);
     }
 
-    // fields don't need their generic types, and sometimes they are wrong. Just don't print
-    // them.
+    // fields don't need their generic types, and sometimes they are wrong. Just don't print them.
     while (basetypeToPrint.contains("<")) {
       basetypeToPrint =
           basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'))
