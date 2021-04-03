@@ -43,9 +43,8 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
-import org.checkerframework.checker.index.qual.UpperBoundNegativeOne;
+import org.checkerframework.checker.index.qual.UpperBoundLiteral;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
-import org.checkerframework.checker.index.qual.UpperBoundZero;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
@@ -53,7 +52,7 @@ import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.substringindex.SubstringIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.substringindex.SubstringIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
-import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundLiteral;
+import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundLiteralQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -114,13 +113,23 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The @{@link UpperBoundBottom} annotation. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
-  /** The @{@link UpperBoundZero} annotation. */
-  public final AnnotationMirror ZERO = AnnotationBuilder.fromClass(elements, UpperBoundZero.class);
-  /** The @{@link UpperBoundNegativeOne} annotation. */
-  public final AnnotationMirror NEGATIVEONE =
-      AnnotationBuilder.fromClass(elements, UpperBoundNegativeOne.class);
   /** The @{@link PolyUpperBound} annotation. */
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
+  /** The @{@link UpperBoundLiteral}(-1) annotation. */
+  public final AnnotationMirror NEGATIVEONE =
+      new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
+          .setValue("value", -1)
+          .build();
+  /** The @{@link UpperBoundLiteral}(0) annotation. */
+  public final AnnotationMirror ZERO =
+      new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
+          .setValue("value", 0)
+          .build();
+  /** The @{@link UpperBoundLiteral}(1) annotation. */
+  public final AnnotationMirror ONE =
+      new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
+          .setValue("value", 1)
+          .build();
 
   /** The NegativeIndexFor.value element/field. */
   public final ExecutableElement negativeIndexForValueElement =
@@ -169,8 +178,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             LTEqLengthOf.class,
             LTLengthOf.class,
             LTOMLengthOf.class,
-            UpperBoundZero.class,
-            UpperBoundNegativeOne.class,
+            UpperBoundLiteral.class,
             UpperBoundBottom.class,
             PolyUpperBound.class));
   }
@@ -476,26 +484,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
     @Override
     public Void visitLiteral(LiteralTree node, AnnotatedTypeMirror type) {
-      // A negative literal is not too large for any array.
-      switch (node.getKind()) {
-        case INT_LITERAL:
-          int intValue = ((Integer) node.getValue()).intValue();
-          if (intValue == 0) {
-            type.addAnnotation(ZERO);
-          } else if (intValue == -1) {
-            type.addAnnotation(NEGATIVEONE);
-          }
-          break;
-        case LONG_LITERAL:
-          long longValue = ((Long) node.getValue()).longValue();
-          if (longValue == 0) {
-            type.addAnnotation(ZERO);
-          } else if (longValue == -1) {
-            type.addAnnotation(NEGATIVEONE);
-          }
-          break;
-        default:
-          break;
+      // Could also handle long literals, but array indexes are always ints.
+      if (node.getKind() == Tree.Kind.INT_LITERAL) {
+        type.addAnnotation(createLiteral(((Integer) node.getValue()).intValue()));
       }
       return super.visitLiteral(node, type);
     }
@@ -801,6 +792,27 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     }
   }
 
+  /**
+   * Creates a @{@link UpperBoundLiteral} annotation.
+   *
+   * @param i the integer
+   * @return a @{@link UpperBoundLiteral} annotation
+   */
+  public AnnotationMirror createLiteral(int i) {
+    switch (i) {
+      case -1:
+        return NEGATIVEONE;
+      case 0:
+        return ZERO;
+      case 1:
+        return ONE;
+      default:
+        return new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
+            .setValue("value", i)
+            .build();
+    }
+  }
+
   public AnnotationMirror convertUBQualifierToAnnotation(UBQualifier qualifier) {
     if (qualifier.isUnknown()) {
       return UNKNOWN;
@@ -809,15 +821,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     } else if (qualifier.isPoly()) {
       return POLY;
     } else if (qualifier.isLiteral()) {
-      int intValue = ((UpperBoundLiteral) qualifier).getValue();
-      switch (intValue) {
-        case 0:
-          return ZERO;
-        case -1:
-          return NEGATIVEONE;
-        default:
-          return UNKNOWN;
-      }
+      return createLiteral(((UpperBoundLiteralQualifier) qualifier).getValue());
     }
 
     LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;

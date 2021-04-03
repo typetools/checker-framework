@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The value 0. Programmers should rarely write this type.
+ * A literal value. Programmers should rarely write this type.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
@@ -19,4 +19,12 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @SubtypeOf(LTEqLengthOf.class)
-public @interface UpperBoundZero {}
+public @interface UpperBoundLiteral {
+
+  /**
+   * Returns the value of the literal.
+   *
+   * @return the value of the literal
+   */
+  int value();
+}

@@ -61,10 +61,10 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
       case "org.checkerframework.checker.index.qual.UpperBoundBottom":
         return UpperBoundBottomQualifier.BOTTOM;
-      case "org.checkerframework.checker.index.qual.UpperBoundZero":
-        return new UpperBoundLiteral(0);
-      case "org.checkerframework.checker.index.qual.UpperBoundNegativeOne":
-        return new UpperBoundLiteral(-1);
+      case "org.checkerframework.checker.index.qual.UpperBoundLiteral":
+        int intValue =
+            AnnotationUtils.getElementValueInt(am, ubChecker.upperBoundLiteralValueElement);
+        return UpperBoundLiteralQualifier.create(intValue);
       case "org.checkerframework.checker.index.qual.LTLengthOf":
         return parseLTLengthOf(am, offset, ubChecker);
       case "org.checkerframework.checker.index.qual.SubstringIndexFor":
@@ -1290,15 +1290,41 @@ public abstract class UBQualifier {
   }
 
   /** Represents an integer value that is known at compile time. */
-  public static class UpperBoundLiteral extends UBQualifier {
+  public static class UpperBoundLiteralQualifier extends UBQualifier {
+
+    /** Represents the value -1. */
+    public static UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
+    /** Represents the value 0. */
+    public static UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
+    /** Represents the value 1. */
+    public static UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
 
     /**
-     * Creates a new UpperBoundLiteral.
+     * Creates a new UpperBoundLiteralQualifier, without using cached values.
      *
      * @param value the integer value
      */
-    public UpperBoundLiteral(int value) {
+    private UpperBoundLiteralQualifier(int value) {
       this.value = value;
+    }
+
+    /**
+     * Creates an UpperBoundLiteralQualifier.
+     *
+     * @param value the integer value
+     * @return an UpperBoundLiteralQualifier
+     */
+    public static UpperBoundLiteralQualifier create(int value) {
+      switch (value) {
+        case -1:
+          return NEGATIVEONE;
+        case 0:
+          return ZERO;
+        case 1:
+          return ONE;
+        default:
+          return new UpperBoundLiteralQualifier(value);
+      }
     }
 
     /** The integer value. */
@@ -1325,7 +1351,7 @@ public abstract class UBQualifier {
       } else if (superType.isBottom()) {
         return false;
       } else if (superType.isLiteral()) {
-        int otherValue = ((UpperBoundLiteral) superType).value;
+        int otherValue = ((UpperBoundLiteralQualifier) superType).value;
         return value == otherValue;
       }
 
