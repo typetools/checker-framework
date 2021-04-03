@@ -107,9 +107,7 @@ CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, "docs/developer/rele
 # If a new Gradle wrapper was recently installed, the first ./gradlew command may output:
 #   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
 # This first call might output Gradle diagnostics, such as "downloading".
-execute(
-    "./gradlew version -q", True, True, TMP_DIR + "/checker-framework"
-)
+execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
 CF_VERSION = (
     execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
     .strip()

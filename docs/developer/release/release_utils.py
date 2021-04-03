@@ -404,49 +404,6 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
     return commit
 
 
-def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, outfile):
-    """Retrieves the changes under the given directory/path for the project
-    at the given repository path since the given old version. The changes are
-    saved to the given output file.
-    Uses the given array of tag prefix strings if provided. For example, given
-    an array of tag prefixes [\"checker-framework-\", \"checkers-\"] and old
-    version of the project \"2.0.0\", the tags named \"checker-framework-2.0.0\"
-    and \"checkers-2.0.0\" are sought, and changes made since the located tag
-    was pushed are retrieved."""
-    old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
-    cmd = "git diff -w %s.. %s" % (old_tag, dir_path)
-    execute_write_to_file(cmd, outfile, working_dir=repository)
-
-
-def propose_documentation_change_review(
-    dir_title, old_version, repository_path, tag_prefixes, dir_path, diff_output_file
-):
-    """Asks the user if they would like to review the documentation changes for
-    the project at the given repository path that have been pushed since the
-    given old version of that project. Also takes as parameters: the title of
-    the project to display to the user when asking whether to proceed, the tag
-    prefixes for the project (see the docstring for get_tag_line for a
-    description of tag prefixes), the path to the manual/documentation for the
-    project, and the file to output the documentation changes to."""
-    if prompt_yes_no("Review %s?" % dir_title, True):
-        write_diff_to_file(
-            old_version, repository_path, tag_prefixes, dir_path, diff_output_file
-        )
-        # A side effect here is that the user will see updated version numbers in this diff that won't
-        # be reflected in their local repository.  I think that is OK.  The version numbers will be updated
-        # when the actual release is made anyway.
-        # Alternatively the process could be modified such that the version number updates are not made
-        # before the user sees the diff. However that would mean the user never gets a chance to review
-        # those updates.
-        print(
-            "Please review "
-            + dir_title
-            + " and make any edits you deem necessary in your local clone of the repository."
-        )
-        print("Diff file: " + diff_output_file)
-        prompt_to_continue()
-
-
 # =========================================================================================
 # File Utils
 
@@ -497,25 +454,6 @@ def set_umask():
     os.umask(os.umask(0) & 0b001111)
 
 
-def find_first_instance(regex, infile):
-    """Find the first line in the given file that matches the given regular
-    expression and return the string concatenation of the result strings
-    corresponding to the matching groups."""
-    with open(infile, "r") as f:
-        pattern = re.compile(regex)
-        for line in f:
-            m = pattern.match(line)
-            if m is not None:
-                if pattern.groups > 0:
-                    res = ""
-                    for g in m.groups():
-                        res = res + g
-                    return res
-                else:
-                    return m.group(0)
-    return None
-
-
 def delete(file_to_delete):
     "Delete the specified file."
     os.remove(file_to_delete)
@@ -538,31 +476,6 @@ def delete_path_if_exists(path):
     directories under it."""
     if os.path.exists(path):
         delete_path(path)
-
-
-def prompt_to_delete(path):
-    """Ask the user if the specified file/directory should be deleted, and if
-    they answer yes, delete it."""
-    if os.path.exists(path):
-        result = prompt_w_default(
-            "Delete the following file/directory:\n %s [Yes|No]" % path,
-            "yes",
-            "^(Yes|yes|No|no)$",
-        )
-        if result == "Yes" or result == "yes":
-            delete_path(path)
-
-
-# def force_symlink(target_of_link, path_to_symlink):
-#     """Forces the creation of a symlink to the given path at the given target
-#     location. That is, if a file or symlink exists at the target location, it
-#     is deleted and the symlink is then created."""
-#     try:
-#         os.symlink(target_of_link, path_to_symlink)
-#     except OSError, e:
-#         if e.errno == errno.EEXIST:
-#             os.remove(path_to_symlink)
-#             os.symlink(target_of_link, path_to_symlink)
 
 
 def are_in_file(file_path, strs_to_find):
@@ -609,72 +522,6 @@ def create_empty_file(file_path):
     "Creates an empty file with the given filename."
     dest_file = open(file_path, "wb")
     dest_file.close()
-
-
-# =========================================================================================
-# Maven Utils
-
-
-def mvn_deploy(binary, pom, url):
-    command = """
-    mvn deploy:deploy-file
-        -Dfile=%s
-        -DpomFile=%s
-        -DgeneratePom=false
-        -Durl=%s
-        """ % (
-        binary,
-        pom,
-        url,
-    )
-    return execute(command)
-
-
-def mvn_install(pluginDir):
-    pom = pluginDirToPom(pluginDir)
-    execute("mvn -f %s clean package" % pom)
-    execute("mvn -f %s install" % pom)
-
-
-def pluginDirToPom(pluginDir):
-    return os.path.join(pluginDir, "pom.xml")
-
-
-# classifier is None, "sources", or "javadoc"
-def mvn_sign_and_deploy(
-    url, repo_id, pom_file, file_property, classifier, pgp_user, pgp_passphrase
-):
-    cmd = (
-        "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s"
-        % (url, repo_id, pom_file, file_property)
-    )
-    if classifier is not None:
-        cmd += " -Dclassifier=" + classifier
-
-    cmd += " -Dgpg.keyname=%s '-Dgpg.passphrase=%s'" % (pgp_user, pgp_passphrase)
-
-    execute(cmd)
-
-
-def mvn_sign_and_deploy_all(
-    url,
-    repo_id,
-    pom_file,
-    artifact_jar,
-    source_jar,
-    javadoc_jar,
-    pgp_user,
-    pgp_passphrase,
-):
-    mvn_sign_and_deploy(
-        url, repo_id, pom_file, artifact_jar, None, pgp_user, pgp_passphrase
-    )
-    mvn_sign_and_deploy(
-        url, repo_id, pom_file, source_jar, "sources", pgp_user, pgp_passphrase
-    )
-    mvn_sign_and_deploy(
-        url, repo_id, pom_file, javadoc_jar, "javadoc", pgp_user, pgp_passphrase
-    )
 
 
 # =========================================================================================
