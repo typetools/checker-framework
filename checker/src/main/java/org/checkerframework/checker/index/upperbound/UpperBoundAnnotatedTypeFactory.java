@@ -813,6 +813,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     }
   }
 
+  /**
+   * Convert the internal representation to an annotation.
+   *
+   * @param qualifier a UBQualifier
+   * @returns an annotation corresponding to the given qualifier
+   */
   public AnnotationMirror convertUBQualifierToAnnotation(UBQualifier qualifier) {
     if (qualifier.isUnknown()) {
       return UNKNOWN;
