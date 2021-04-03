@@ -2,7 +2,7 @@ package org.checkerframework.common.basetype;
 
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -387,7 +387,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit astWithoutAnnotations = originalAst.clone();
     JavaParserUtil.clearAnnotations(astWithoutAnnotations);
-    String withoutAnnotations = new PrettyPrinter().print(astWithoutAnnotations);
+    String withoutAnnotations = new DefaultPrettyPrinter().print(astWithoutAnnotations);
 
     String withAnnotations;
     try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
