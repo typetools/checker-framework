@@ -154,7 +154,7 @@ function configure_and_exec_dljc {
   fi
 
   # This command also includes "clean"; I'm not sure why it is necessary.
-  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} $* -- ${BUILD_CMD}"
+  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${*@Q} -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
@@ -175,6 +175,7 @@ function configure_and_exec_dljc {
 
   # use simpler syntax because this line was crashing mysteriously in CI, to get better debugging output
   # shellcheck disable=SC2129
+  echo "WORKING DIR: $(pwd)" >> "$dljc_stdout"
   echo "JAVA_HOME: ${JAVA_HOME}" >> "$dljc_stdout"
   echo "PATH: ${PATH}" >> "$dljc_stdout"
   echo "DLJC_CMD: ${DLJC_CMD}" >> "$dljc_stdout"

@@ -52,6 +52,10 @@ import org.plumelib.util.CollectionsPlume;
  *   <li>within the scope of @IgnoreInWholeProgramInference or an annotation meta-annotated with
  *       that, such as @Option
  * </ul>
+ *
+ * Note that if {@code -Alint:cast} (or {@code -Alint:all} which implies it) is passed to javac,
+ * your project may fail to build afterward because javac may issue "warning: [cast] redundant cast
+ * to ...". In this case, pass {@code -Alint:-cast} to javac.
  */
 public class RemoveAnnotationsForInference {
 
