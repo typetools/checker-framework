@@ -2503,7 +2503,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
     } else {
-
       msg.add(ce.getMessage());
       boolean noPrintErrorStack =
           (processingEnv != null
