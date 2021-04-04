@@ -63,7 +63,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** The analysis class this store belongs to. */
   protected final CFAbstractAnalysis<V, S, ?> analysis;
 
-  /** Information collected about local variables (including method arguments). */
+  /** Information collected about local variables (including method parameters). */
   protected final Map<LocalVariable, V> localVariableValues;
 
   /** Information collected about the current object. */
