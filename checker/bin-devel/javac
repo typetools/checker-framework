@@ -34,7 +34,7 @@ buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
-# Unset IFS and use newline as arg separator to preserve spaces in args
+# Unset IFS and use newline as arg separator to preserve spaces in args.
 # shellcheck disable=SC2034
 DUALCASE=1  # for MKS: make case statement case-sensitive (6709498)
 saveIFS="$IFS"
