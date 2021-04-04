@@ -154,7 +154,7 @@ function configure_and_exec_dljc {
   fi
 
   # This command also includes "clean"; I'm not sure why it is necessary.
-  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} $* -- ${BUILD_CMD}"
+  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${*@Q} -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
