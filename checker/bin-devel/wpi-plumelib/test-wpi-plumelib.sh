@@ -66,6 +66,7 @@ test_wpi_plume_lib() {
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     ACTUAL_FILE="$TESTDIR/$project/dljc-out/typecheck.out"
+    touch "${ACTUAL_FILE}"
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
     if ! cmp --quiet expected.txt actual.txt ; then
