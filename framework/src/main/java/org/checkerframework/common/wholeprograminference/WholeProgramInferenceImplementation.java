@@ -1,8 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -14,18 +12,19 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -184,30 +183,21 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @return true if the given call is a recursive call
    */
   private boolean isRecursiveCall(MethodInvocationNode methodInvNode) {
-    // TODO: This tests only the name.  It should also ensure that the call isn't to an overload or
-    // a completely unrelated method of the same name.
-
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(methodInvNode.getTreePath());
     if (enclosingMethod == null) {
       return false;
     }
-
-    Tree invoked = methodInvNode.getTree().getMethodSelect();
-    Name invokedMethodName;
-    switch (invoked.getKind()) {
-      case IDENTIFIER:
-        invokedMethodName = ((IdentifierTree) invoked).getName();
-        break;
-      case MEMBER_SELECT:
-        invokedMethodName = ((MemberSelectTree) invoked).getIdentifier();
-        break;
-      default:
-        throw new BugInCF(
-            "What invoked method? [%s] %s",
-            invoked.getKind(), TreeUtils.toStringTruncated(invoked, 65));
+    ExecutableElement methodInvocEle = TreeUtils.elementFromUse(methodInvNode.getTree());
+    ExecutableElement methodDeclEle = TreeUtils.elementFromDeclaration(enclosingMethod);
+    if (!methodDeclEle.equals(methodInvocEle)) {
+      return false;
     }
 
-    return enclosingMethod.getName().contentEquals(invokedMethodName);
+    if (ElementUtils.isStatic(methodDeclEle)) {
+      return methodInvNode.getTarget().getReceiver() instanceof ClassNameNode;
+    } else {
+      return methodInvNode.getTarget().getMethod() instanceof ThisNode;
+    }
   }
 
   /**
