@@ -50,8 +50,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * {@link WholeProgramInferenceStorage} to store annotations and to create output files.
  *
  * <p>This class does not perform inference for an element if the element has explicit annotations.
- * That is, calling an update* method on an explicitly annotated field, method return, or method
- * parameter has no effect.
+ * That is, calling an {@code update*} method on an explicitly annotated field, method return, or
+ * method parameter has no effect.
  *
  * <p>In addition, whole program inference ignores inferred types in a few scenarios. When
  * discovering a use, WPI ignores an inferred type if:
@@ -501,8 +501,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param defLoc the location where the annotation will be added
    * @param rhsATM the RHS of the annotated type on the source code
    * @param lhsATM the LHS of the annotated type on the source code
-   * @param file path to the annotation file containing the executable; used for marking the scene
-   *     as modified (needing to be written to disk)
+   * @param file the annotation file containing the executable; used for marking the scene as
+   *     modified (needing to be written to disk)
    */
   protected void updateAnnotationSet(
       T annotationsToUpdate,
@@ -529,8 +529,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param defLoc the location where the annotation will be added
    * @param rhsATM the RHS of the annotated type on the source code
    * @param lhsATM the LHS of the annotated type on the source code
-   * @param file path to the annotation file containing the executable; used for marking the scene
-   *     as modified (needing to be written to disk)
+   * @param file annotation file containing the executable; used for marking the scene as modified
+   *     (needing to be written to disk)
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
    */
