@@ -47,7 +47,7 @@ The MustCall Checker supports these qualifiers and declaration annotations:
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{CreatesObligation}{String value}]
   is a declaration annotation that can be written on a method or constructor. It takes a single Java expression as an
-  argument, referred to as its ``target''. Intuitively, this annotation means that the annotated method
+  argument, referred to as its ``target''. The annotated method
   ``resets'' the must-call obligations of its target to the least upper bound of their current value and the default
   must-call obligations for its declared type. This annotation is repeatable, if the copies have different targets.
 
@@ -73,10 +73,11 @@ never be written by a programmer.}
 \label{fig-must-call-hierarchy}
 \end{figure}
 
-Note that \<@MustCall(\{"a", "b"\}) Object> represents more possible values than
-\<@MustCall(\{"a"\}) Object> does, because \<@MustCall(\{"a"\}) Object> can only
+\<@MustCall(\{"a"\}) Object> can only
 contain an object that needs to call \<a> or one that needs to call nothing --- an
 object that needs to call \<b> (or both \<a> and \<b>) is not permitted.
+Any expression of type \<@MustCall(\{\}) Object> also has type
+\<@MustCall(\{"a"\}) Object>.
 \<@MustCall(\{"a", "b"\}) Object> represents all objects that need to
 call \<a>, \<b>, both, or neither; it cannot not represent an object that needs
 to call some other method.
@@ -86,8 +87,11 @@ A completely unannotated program will always type-check without warnings.
 For the MustCall Checker to be useful, the programmer should supply at least one non-empty
 \<@MustCall> annotation, either in source code or in a stub file.
 
-Note that it is always safe to write \<@Owning> and \<@NotOwning> annotations anywhere in your
-code (they are only hints to the checker), though doing so may reduce precision.
+Note that it is always safe to write \<@Owning> and \<@NotOwning>
+annotations anywhere in your code (they are only hints to the checker),
+though writing annotations that differ from the program's design may lead
+the Must Call checker to issue false positive warnings.
+
 
 \sectionAndLabel{Example use}{must-call-example}
 
