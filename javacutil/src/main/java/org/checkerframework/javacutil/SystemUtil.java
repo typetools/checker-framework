@@ -164,6 +164,7 @@ public class SystemUtil {
    * <p>For very short lists, this is likely more efficient than creating a set and converting back
    * to a list.
    *
+   * @param <T> the type of the list elements
    * @param list1 a list
    * @param list2 a list
    * @return a list that contains all the distinct elements of the two lists
@@ -181,6 +182,7 @@ public class SystemUtil {
    * <p>For very short lists, this is likely more efficient than creating a set and converting back
    * to a list.
    *
+   * @param <T> the type of the list elements
    * @param dest a list to add to
    * @param source a list of elements to add
    */
@@ -199,6 +201,7 @@ public class SystemUtil {
    * <p>For very short lists, this is likely more efficient than creating a set and converting back
    * to a list.
    *
+   * @param <T> the type of the list elements
    * @param list1 a list
    * @param list2 a list
    * @return a list that contains all the elements of {@code list1} that are not in {@code list2}
