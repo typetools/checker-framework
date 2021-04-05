@@ -236,8 +236,14 @@ qualifiers:
     Checker.  On the left is a type system for lower bounds.  On the right
     is a type system for upper bounds.  Qualifiers written in gray should
     never be written in source code; they are used internally by the type
-    system. \<"myArray"> in the Upper Bound qualifiers is an example of
-    an array's name.}
+    system.
+    \\
+    In the Upper Bound type system, subtyping rules depend on both the
+    array name (\<"myArray">, in the figure) and on the offset (which is 0,
+    the default, in the figure).  Another qualifier is
+    \refqualclass{checker/index/qual}{UpperBoundLiteral}, whose subtyping
+    relationships depend on its argument and on offsets for other qualifiers.
+ }
   \label{fig-index-int-types}
 \end{figure}
 
@@ -289,11 +295,6 @@ or \code{@LTOMLengthOf("arr")}.
   \<@LTEqLengthOf(value=\{"a"\}, offset=x)> = \<@LTLengthOf(value=\{"a"\},
   offset=x-1)> for any x.
 
-\item[\refqualclass{checker/index/qual}{PolyUpperBound}]
-  indicates qualifier polymorphism.
-  For a description of qualifier polymorphism, see
-  Section~\ref{method-qualifier-polymorphism}.
-
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
   has value at least 2 less than the length of each sequence listed in \<names>.
@@ -318,6 +319,17 @@ or \code{@LTOMLengthOf("arr")}.
   \<@LTOMLengthOf(\{"a"\})> = \<@LTLengthOf(value=\{"a"\}, offset=1)>, and \\
   \<@LTOMLengthOf(value=\{"a"\}, offset=x)> = \<@LTLengthOf(value=\{"a"\},
   offset=x+1)> for any x.
+
+\item[\refqualclass{checker/index/qual}{UpperBoundLiteral}]
+  repesents a constant value, typically a literal written in source code.
+  Its subtyping relationship is:
+  \<@UpperBoundLiteral(lit)> <: \<LTLengthOf(value="myArray", offset=off)>
+  if \<lit>+\<offset> $\le$ -1.
+
+\item[\refqualclass{checker/index/qual}{PolyUpperBound}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
 
 \item[\refqualclass{checker/index/qual}{UpperBoundUnknown}]
   There is no information about the upper bound on the value of an expression with this type.
