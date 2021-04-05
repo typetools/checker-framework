@@ -180,8 +180,7 @@ public class AnnotationFileUtil {
    * @return a pair of the type name and the field name
    */
   @SuppressWarnings("signature") // string parsing
-  /*package-scope*/ static Pair<@FullyQualifiedName String, String> partitionQualifiedName(
-      String imported) {
+  public static Pair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
     @FullyQualifiedName String typeName = imported.substring(0, imported.lastIndexOf("."));
     String name = imported.substring(imported.lastIndexOf(".") + 1);
     Pair<String, String> typeParts = Pair.of(typeName, name);

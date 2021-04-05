@@ -33,10 +33,10 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * An annotated type factory for an accumulation checker.
@@ -198,7 +198,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
    */
   public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
-    builder.setValue("value", SystemUtil.removeDuplicates(values));
+    builder.setValue("value", CollectionsPlume.withoutDuplicates(values));
     return builder.build();
   }
 
@@ -412,7 +412,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
       if (a2Val.containsAll(a1Val)) {
         return a2;
       }
-      a1Val.addAll(a2Val);
+      a1Val.addAll(a2Val); // union
       return createAccumulatorAnnotation(a1Val);
     }
 
@@ -457,7 +457,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
       if (a2Val.containsAll(a1Val)) {
         return a1;
       }
-      a1Val.retainAll(a2Val);
+      a1Val.retainAll(a2Val); // intersection
       return createAccumulatorAnnotation(a1Val);
     }
 
@@ -474,9 +474,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (isPolymorphicQualifier(superAnno)) {
           return true;
         } else {
-          // Use this slightly more expensive conversion here because
-          // this is a rare code path and it's simpler to read than
-          // checking for both predicate and non-predicate forms of top.
+          // Use this slightly more expensive conversion here because this is a rare code path and
+          // it's simpler to read than checking for both predicate and non-predicate forms of top.
           return "".equals(convertToPredicate(superAnno));
         }
       } else if (isPolymorphicQualifier(superAnno)) {

@@ -1,6 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
@@ -16,8 +15,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.printer.PrettyPrinter;
-import com.github.javaparser.printer.PrettyPrinterConfiguration;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -51,13 +49,13 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
-import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -351,11 +349,11 @@ public class WholeProgramInferenceJavaParserStorage
 
     CompilationUnit root;
     try {
-      root = StaticJavaParser.parse(new File(path));
+      root = JavaParserUtil.parseCompilationUnit(new File(path));
     } catch (FileNotFoundException e) {
       throw new BugInCF("Failed to read Java file " + path, e);
     }
-    JavaParserUtils.concatenateAddedStringLiterals(root);
+    JavaParserUtil.concatenateAddedStringLiterals(root);
     CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
     sourceToAnnos.put(path, sourceAnnos);
   }
@@ -571,14 +569,13 @@ public class WholeProgramInferenceJavaParserStorage
       try {
         FileWriter writer = new FileWriter(outputPath);
 
-        // JavaParser can output using lexical preserving printing, which writes the file
-        // such that its formatting is close to the original source file it was parsed from
-        // as possible. Currently, this feature is very buggy and crashes when adding
-        // annotations in certain locations. This implementation could be used instead if
-        // it's fixed in JavaParser.
+        // JavaParser can output using lexical preserving printing, which writes the file such that
+        // its formatting is close to the original source file it was parsed from as
+        // possible. Currently, this feature is very buggy and crashes when adding annotations in
+        // certain locations. This implementation could be used instead if it's fixed in JavaParser.
         // LexicalPreservingPrinter.print(root.declaration, writer);
 
-        PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
+        DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         writer.write(prettyPrinter.print(root.compilationUnit));
         writer.close();
       } catch (IOException e) {
@@ -671,7 +668,7 @@ public class WholeProgramInferenceJavaParserStorage
      * unit to their corresponding JavaParser locations.
      */
     public void transferAnnotations() {
-      JavaParserUtils.clearAnnotations(compilationUnit);
+      JavaParserUtil.clearAnnotations(compilationUnit);
       for (ClassOrInterfaceAnnos typeAnnos : types) {
         typeAnnos.transferAnnotations();
       }
@@ -684,7 +681,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return the type declaration named {@code name} in the wrapped compilation unit
      */
     public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
-      return JavaParserUtils.getTypeDeclarationByName(compilationUnit, name);
+      return JavaParserUtil.getTypeDeclarationByName(compilationUnit, name);
     }
   }
 
@@ -990,8 +987,7 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (returnType != null) {
-        // If a return type exists, then the declaration must be a method, not a
-        // constructor.
+        // If a return type exists, then the declaration must be a method, not a constructor.
         WholeProgramInferenceJavaParserStorage.transferAnnotations(
             returnType, declaration.asMethodDeclaration().getType());
       }

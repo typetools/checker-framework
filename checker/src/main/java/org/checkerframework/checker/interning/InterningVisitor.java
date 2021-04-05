@@ -153,8 +153,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // in order to assume this).
 
     // Now suppose the user passes -AcheckClass=A on the command-line.
-    // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for
-    // I.
+    // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for I.
     // But the interning check must be performed, given the argument above.  Therefore if
     // shouldCheckExpression returns true for either the LHS or the RHS, this method proceeds
     // with the interning check.
@@ -380,8 +379,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       if (parentPath != null && parentPath.getParentPath() != null) {
         Tree parent = parentPath.getParentPath().getLeaf();
         if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
-          // Allow new MyInternType().intern(), where "intern" is any method marked
-          // @InternMethod.
+          // Allow new MyInternType().intern(), where "intern" is any method marked @InternMethod.
           ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
           if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
             return true;
@@ -681,8 +679,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             if (tree.getKind() == Tree.Kind.CONDITIONAL_OR) {
               if (sameTree(leftTree, node)) {
                 // left is "a==b"
-                // check right, which should be a.equals(b) or b.equals(a) or
-                // similar
+                // check right, which should be a.equals(b) or b.equals(a) or similar
                 return visit(rightTree, p);
               } else {
                 return false;

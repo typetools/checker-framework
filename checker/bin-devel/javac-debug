@@ -10,7 +10,7 @@
 #  ./gradlew compileJava
 # to debug changes rather than creating .jar files with "./gradlew assemble".
 
-# When editing, keep this file in sync with ./javac .
+# When editing, keep this file in sync with ./javac and ../bin/javac .
 
 mydir="$(dirname "$0")"
 case $(uname -s) in
@@ -29,11 +29,11 @@ stubparserDir="${cfDir}"/../stubparser
 classes="build/classes/java/main"
 resources="build/resources/main"
 
-buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar:$( (cd "${cfDir}" && ./gradlew -q :checker:printPlumeUtilJarPath) )
+buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${cfDir}"/checker-qual/"${classes}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar:$( (cd "${cfDir}" && ./gradlew -q :checker:printPlumeUtilJarPath) )
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
-# Unset IFS and use newline as arg separator to preserve spaces in args
+# Unset IFS and use newline as arg separator to preserve spaces in args.
 # shellcheck disable=SC2034
 DUALCASE=1  # for MKS: make case statement case-sensitive (6709498)
 saveIFS="$IFS"
@@ -42,7 +42,12 @@ nl='
 for i in "$@" ; do
    IFS=
    # shellcheck disable=SC2027
-   args=$args$nl"'"$i"'"
+   case $i in
+     "-Xmn"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     "-Xms"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     "-Xmx"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     *)       args=$args$nl"'"$i"'" ;;
+   esac
    IFS="$saveIFS"
 done
 
@@ -54,7 +59,9 @@ done
 # Add the following option for verbose output:
 #     "-DCheckerDevelMain.verbose=TRUE" \
 
+# shellcheck disable=SC2086
 eval "java" \
+     ${jvmargs} \
      "-ea " \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
@@ -63,4 +70,4 @@ eval "java" \
      "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \
-     "${args}"
+     ${args}

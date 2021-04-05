@@ -3,8 +3,7 @@ import java.util.Date;
 
 public class Syntax {
 
-  // Test 2.1.1: Missing '}' at end of message format (Unmatched braces in the
-  // pattern)
+  // Test 2.1.1: Missing '}' at end of message format (Unmatched braces in the pattern)
   public static void unmatchedBraces() {
     // :: error: (i18nformat.string.invalid)
     MessageFormat.format("{0, number", new Date(12));

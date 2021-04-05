@@ -4,7 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -37,6 +36,7 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The type factory for the Less Than Checker. */
@@ -126,10 +126,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
       List<String> a1List = getLessThanExpressions(a1);
       List<String> a2List = getLessThanExpressions(a2);
-      List<String> lub = new ArrayList<>(a1List);
-      lub.retainAll(a2List);
-
-      return createLessThanQualifier(lub);
+      a1List.retainAll(a2List); // intersection
+      return createLessThanQualifier(a1List);
     }
 
     @Override
@@ -142,10 +140,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
       List<String> a1List = getLessThanExpressions(a1);
       List<String> a2List = getLessThanExpressions(a2);
-      List<String> glb = new ArrayList<>(a1List);
-      glb.addAll(a2List);
-
-      return createLessThanQualifier(glb);
+      SystemUtil.addWithoutDuplicates(a1List, a2List); // union
+      return createLessThanQualifier(a1List);
     }
   }
 
@@ -343,9 +339,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    * @return the list of expressions in the annotation
    */
   public List<String> getLessThanExpressions(AnnotationMirror annotation) {
-    if (AnnotationUtils.areSameByClass(annotation, LessThanBottom.class)) {
+    if (AnnotationUtils.areSameByName(
+        annotation, "org.checkerframework.checker.index.qual.LessThanBottom")) {
       return null;
-    } else if (AnnotationUtils.areSameByClass(annotation, LessThanUnknown.class)) {
+    } else if (AnnotationUtils.areSameByName(
+        annotation, "org.checkerframework.checker.index.qual.LessThanUnknown")) {
       return Collections.emptyList();
     } else {
       // The annotation is @LessThan.

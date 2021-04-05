@@ -66,9 +66,9 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
@@ -174,9 +174,8 @@ public class ValueTransfer extends CFTransfer {
       // characters always have length 1
       return Collections.singletonList(1);
     } else if (isIntRange(subNode, p)) {
-      // Try to get a list of lengths from a range of integer values converted to string
-      // @IntVal is not checked for, because if it is present, we would already have the
-      // actual string values
+      // Try to get a list of lengths from a range of integer values converted to string @IntVal is
+      // not checked for, because if it is present, we would already have the actual string values
       Range lengthRange = getIntRangeStringLengthRange(subNode, p);
       return ValueCheckerUtils.getValuesFromRange(lengthRange, Integer.class);
     } else if (subNodeTypeKind == TypeKind.BYTE) {
@@ -235,7 +234,7 @@ public class ValueTransfer extends CFTransfer {
     if (values == null) {
       return null;
     }
-    List<String> stringValues = SystemUtil.mapList(Object::toString, values);
+    List<String> stringValues = CollectionsPlume.mapList(Object::toString, values);
     // Empty list means bottom value
     return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
   }
@@ -665,22 +664,22 @@ public class ValueTransfer extends CFTransfer {
       // Both operands have known string values, compute set of results
       if (!nonNullStringConcat) {
         if (isNullable(leftOperand)) {
-          leftValues = SystemUtil.append(leftValues, "null");
+          leftValues = CollectionsPlume.append(leftValues, "null");
         }
         if (isNullable(rightOperand)) {
-          rightValues = SystemUtil.append(rightValues, "null");
+          rightValues = CollectionsPlume.append(rightValues, "null");
         }
       } else {
         if (leftOperand instanceof StringConversionNode) {
           if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
               == TypeKind.NULL) {
-            leftValues = SystemUtil.append(leftValues, "null");
+            leftValues = CollectionsPlume.append(leftValues, "null");
           }
         }
         if (rightOperand instanceof StringConversionNode) {
           if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
               == TypeKind.NULL) {
-            rightValues = SystemUtil.append(rightValues, "null");
+            rightValues = CollectionsPlume.append(rightValues, "null");
           }
         }
       }
@@ -1181,11 +1180,10 @@ public class ValueTransfer extends CFTransfer {
         || atypeFactory.isIntRange(rightAnno)
         || isIntegralUnknownVal(rightNode, rightAnno)
         || isIntegralUnknownVal(leftNode, leftAnno)) {
-      // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
-      // thus refine it if possible.  Also, if either is an @IntVal, then it will be
-      // converted to a range.  This is less precise in some cases, but avoids the
-      // complexity of comparing a list of values to a range. (This could be implemented in
-      // the future.)
+      // If either is @UnknownVal, then refineIntRanges will treat it as the max range and thus
+      // refine it if possible.  Also, if either is an @IntVal, then it will be converted to a
+      // range.  This is less precise in some cases, but avoids the complexity of comparing a list
+      // of values to a range. (This could be implemented in the future.)
       return refineIntRanges(leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
     }
 
@@ -1369,8 +1367,7 @@ public class ValueTransfer extends CFTransfer {
           (currentValueFromStore == null
               ? atypeFactory.UNKNOWNVAL
               : getValueAnnotation(currentValueFromStore));
-      // Combine the new annotations based on the results of the comparison with the existing
-      // type.
+      // Combine the new annotations based on the results of the comparison with the existing type.
       AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
       store.insertValue(je, newAnno);
 
@@ -1550,7 +1547,7 @@ public class ValueTransfer extends CFTransfer {
     List<Boolean> resultValues = new ArrayList<>(2);
     switch (op) {
       case NOT:
-        return SystemUtil.mapList((Boolean left) -> !left, lefts);
+        return CollectionsPlume.mapList((Boolean left) -> !left, lefts);
       case OR:
         for (Boolean left : lefts) {
           for (Boolean right : rights) {

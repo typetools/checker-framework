@@ -326,9 +326,8 @@ public abstract class AbstractAnalysis<
       Node node, TransferInput<V, S> transferInput) {
     assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
     if (node.isLValue()) {
-      // TODO: should the default behavior return a regular transfer result, a conditional
-      //  transfer result (depending on store.containsTwoStores()), or is the following
-      //  correct?
+      // TODO: should the default behavior return a regular transfer result, a conditional transfer
+      //  result (depending on store.containsTwoStores()), or is the following correct?
       return new RegularTransferResult<>(null, transferInput.getRegularStore());
     }
     transferInput.node = node;

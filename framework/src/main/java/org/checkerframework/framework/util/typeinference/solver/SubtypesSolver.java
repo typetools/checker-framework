@@ -107,8 +107,7 @@ public class SubtypesSolver {
 
       } else {
 
-        // GLB all of the types than combine this with the GLB of primary annotation
-        // constraints
+        // GLB all of the types than combine this with the GLB of primary annotation constraints
         final AnnotatedTypeMirror glbType = GlbUtil.glbAll(subtypes.types, typeFactory);
         if (glbType != null) {
           if (!primaries.isEmpty()) {

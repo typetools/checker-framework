@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util;
 
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
@@ -32,7 +31,6 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -69,9 +67,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -143,10 +142,10 @@ public class JavaExpressionParseUtil {
       throws JavaExpressionParseException {
 
     String expressionWithParameterNames =
-        SystemUtil.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
+        StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
-      expr = StaticJavaParser.parseExpression(expressionWithParameterNames);
+      expr = JavaParserUtil.parseExpression(expressionWithParameterNames);
     } catch (ParseProblemException e) {
       String extra = ".";
       if (!e.getProblems().isEmpty()) {
@@ -533,8 +532,7 @@ public class JavaExpressionParseUtil {
      * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
      */
     protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
-      // Is identifier an inner class of enclosingType or of any enclosing class of
-      // enclosingType?
+      // Is identifier an inner class of enclosingType or of any enclosing class of enclosingType?
       TypeMirror searchType = enclosingType;
       while (searchType.getKind() == TypeKind.DECLARED) {
         DeclaredType searchDeclaredType = (DeclaredType) searchType;
@@ -682,7 +680,7 @@ public class JavaExpressionParseUtil {
 
       // parse argument list
       List<JavaExpression> arguments =
-          SystemUtil.mapList(argument -> argument.accept(this, null), expr.getArguments());
+          CollectionsPlume.mapList(argument -> argument.accept(this, null), expr.getArguments());
 
       ExecutableElement methodElement;
       try {
@@ -753,7 +751,7 @@ public class JavaExpressionParseUtil {
         Resolver resolver)
         throws JavaExpressionParseException {
 
-      List<TypeMirror> argumentTypes = SystemUtil.mapList(JavaExpression::getType, arguments);
+      List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
 
       if (receiverType.getKind() == TypeKind.ARRAY) {
         ExecutableElement element =
@@ -839,7 +837,7 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
       List<JavaExpression> dimensions =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (ArrayCreationLevel dimension) ->
                   dimension.getDimension().isPresent()
                       ? dimension.getDimension().get().accept(this, aVoid)
@@ -849,7 +847,7 @@ public class JavaExpressionParseUtil {
       List<JavaExpression> initializers;
       if (expr.getInitializer().isPresent()) {
         initializers =
-            SystemUtil.mapList(
+            CollectionsPlume.mapList(
                 (Expression initializer) -> initializer.accept(this, null),
                 expr.getInitializer().get().getValues());
       } else {
@@ -1003,7 +1001,7 @@ public class JavaExpressionParseUtil {
     private @Nullable TypeMirror convertTypeToTypeMirror(Type type) {
       if (type.isClassOrInterfaceType()) {
         try {
-          return StaticJavaParser.parseExpression(type.asString()).accept(this, null).getType();
+          return JavaParserUtil.parseExpression(type.asString()).accept(this, null).getType();
         } catch (ParseProblemException e) {
           return null;
         }
@@ -1037,25 +1035,6 @@ public class JavaExpressionParseUtil {
       }
       return null;
     }
-  }
-
-  /**
-   * Returns a list of 1-based indices of all formal parameters that occur in {@code s}. Each formal
-   * parameter occurs in s as a string like "#1" or "#4". This routine does not do proper parsing;
-   * for instance, if "#2" appears within a string in s, then 2 is in the result list. The result
-   * may contain duplicates.
-   *
-   * @param s a Java expression
-   * @return a list of 1-based indices of all formal parameters that occur in {@code s}
-   */
-  public static List<Integer> parameterIndices(String s) {
-    List<Integer> result = new ArrayList<>();
-    Matcher matcher = UNANCHORED_PARAMETER_PATTERN.matcher(s);
-    while (matcher.find()) {
-      int idx = Integer.parseInt(matcher.group(1));
-      result.add(idx);
-    }
-    return result;
   }
 
   /**

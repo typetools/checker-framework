@@ -1,7 +1,6 @@
-// Checks that annotations from the Value Checker (which
-// is a subchecker of the WPI test checker) are actually
-// present in the generated files, even when there is also
-// an annotation from the main checker.
+// Checks that annotations from the Value Checker (which is a subchecker of the WPI test checker)
+// are actually present in the generated files, even when there is also an annotation from the main
+// checker.
 
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 import org.checkerframework.common.value.qual.IntVal;

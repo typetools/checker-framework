@@ -73,9 +73,16 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, UnitsBottom.class);
 
-  /** the UnitsMultiple.prefix argument/element. */
+  /** The UnitsMultiple.prefix argument/element. */
   private final ExecutableElement unitsMultiplePrefixElement =
       TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
+  /** The UnitsMultiple.quantity argument/element. */
+  private final ExecutableElement unitsMultipleQuantityElement =
+      TreeUtils.getMethod(UnitsMultiple.class, "quantity", 0, processingEnv);
+  /** The UnitsRelations.value argument/element. */
+  private final ExecutableElement unitsRelationsValueElement =
+      TreeUtils.getMethod(
+          org.checkerframework.checker.units.qual.UnitsRelations.class, "value", 0, processingEnv);
 
   /**
    * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
@@ -96,9 +103,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     this.postInit();
   }
 
-  // In Units Checker, we always want to print out the Invisible Qualifiers
-  // (UnknownUnits), and to format the print out of qualifiers by removing
-  // Prefix.one
+  // In Units Checker, we always want to print out the Invisible Qualifiers (UnknownUnits), and to
+  // format the print out of qualifiers by removing Prefix.one
   @Override
   protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
     return new UnitsAnnotatedTypeFormatter(checker);
@@ -126,7 +132,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (isUnitsMultiple(metaAnno)) {
         // retrieve the Class of the base unit annotation
         Name baseUnitAnnoClass =
-            AnnotationUtils.getElementValueClassName(metaAnno, "quantity", false);
+            AnnotationUtils.getElementValueClassName(metaAnno, unitsMultipleQuantityElement);
 
         // retrieve the SI Prefix of the aliased annotation
         Prefix prefix =
@@ -138,9 +144,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(
                 processingEnv, baseUnitAnnoClass, prefix);
 
-        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the
-        // supported type qualifiers list currently this breaks for externally loaded
-        // annotations if the order was an alias before a base annotation.
+        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the supported
+        // type qualifiers list currently this breaks for externally loaded annotations if the order
+        // was an alias before a base annotation.
         // assert isSupportedQualifier(result);
 
         built = true;
@@ -313,7 +319,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // TODO: does every alias have to have Prefix?
         // Retrieve the base unit annotation.
         Name baseUnitAnnoClass =
-            AnnotationUtils.getElementValueClassName(metaAnno, "quantity", false);
+            AnnotationUtils.getElementValueClassName(metaAnno, unitsMultipleQuantityElement);
         return baseUnitAnnoClass;
       }
     }
@@ -342,7 +348,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
       if (areSameByClass(ama, unitsRelationsAnnoClass)) {
         String theclassname =
-            AnnotationUtils.getElementValueClassName(ama, "value", false).toString();
+            AnnotationUtils.getElementValueClassName(ama, unitsRelationsValueElement).toString();
         if (!Signatures.isClassGetName(theclassname)) {
           throw new UserError(
               "Malformed class name \"%s\" should be in ClassGetName format in annotation %s",
@@ -456,8 +462,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (bestres != null) {
         type.replaceAnnotation(bestres);
       } else {
-        // If none of the units relations classes could resolve the units, then apply
-        // default rules
+        // If none of the units relations classes could resolve the units, then apply default rules
 
         switch (kind) {
           case MINUS:

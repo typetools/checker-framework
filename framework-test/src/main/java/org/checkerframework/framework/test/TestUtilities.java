@@ -30,7 +30,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
+import org.plumelib.util.SystemPlume;
 
 /** Utilities for testing. */
 public class TestUtilities {
@@ -138,7 +140,7 @@ public class TestUtilities {
    * @return the file names, each with {@code parent} prepended
    */
   public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
-    return SystemUtil.mapList(
+    return CollectionsPlume.mapList(
         (String fileName) -> new Object[] {new File(parent, fileName)}, fileNames);
   }
 
@@ -417,11 +419,8 @@ public class TestUtilities {
   }
 
   /**
-   * TODO: REDO COMMENT Compares the result of the compiler against an array of Strings.
-   *
-   * <p>In a checker, a more specific error message is subsumed by a general one. For example,
-   * "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the test
-   * framework, which must use the exact error message key.
+   * If the given TypecheckResult has unexpected or missing diagnostics, fail the running JUnit
+   * test.
    *
    * @param testResult the result of type-checking
    */
@@ -487,6 +486,6 @@ public class TestUtilities {
    * @return the value of system property "emit.test.debug"
    */
   public static boolean getShouldEmitDebugInfo() {
-    return SystemUtil.getBooleanSystemProperty("emit.test.debug");
+    return SystemPlume.getBooleanSystemProperty("emit.test.debug");
   }
 }

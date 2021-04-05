@@ -79,8 +79,7 @@ public class InitializationVisitor<
   @Override
   public void setRoot(CompilationUnitTree root) {
     // Clean up the cache of initialized fields once per compilation unit.
-    // Alternatively, but harder to determine, this could be done once per
-    // top-level class.
+    // Alternatively, but harder to determine, this could be done once per top-level class.
     initializedFields.clear();
     super.setRoot(root);
   }
@@ -88,8 +87,7 @@ public class InitializationVisitor<
   @Override
   protected void checkConstructorInvocation(
       AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
-    // receiver annotations for constructors are forbidden, therefore no
-    // check is necessary
+    // Receiver annotations for constructors are forbidden, therefore no check is necessary.
     // TODO: nested constructors can have receivers!
   }
 
@@ -113,8 +111,7 @@ public class InitializationVisitor<
       Object... extraArgs) {
     // field write of the form x.f = y
     if (TreeUtils.isFieldAccess(varTree)) {
-      // cast is safe: a field access can only be an IdentifierTree or
-      // MemberSelectTree
+      // cast is safe: a field access can only be an IdentifierTree or MemberSelectTree
       ExpressionTree lhs = (ExpressionTree) varTree;
       ExpressionTree y = valueExp;
       Element el = TreeUtils.elementFromUse(lhs);
@@ -326,8 +323,7 @@ public class InitializationVisitor<
         }
       }
 
-      // Check that all fields have been initialized at the end of the
-      // constructor.
+      // Check that all fields have been initialized at the end of the constructor.
       boolean isStatic = false;
       Store store = atypeFactory.getRegularExitStore(node);
       List<? extends AnnotationMirror> receiverAnnotations = getAllReceiverAnnotations(node);
@@ -340,9 +336,8 @@ public class InitializationVisitor<
   private List<? extends AnnotationMirror> getAllReceiverAnnotations(MethodTree node) {
     // TODO: get access to a Types instance and use it to get receiver type
     // Or, extend ExecutableElement with such a method.
-    // Note that we cannot use the receiver type from AnnotatedExecutableType, because that
-    // would only have the nullness annotations; here we want to see all annotations on the
-    // receiver.
+    // Note that we cannot use the receiver type from AnnotatedExecutableType, because that would
+    // only have the nullness annotations; here we want to see all annotations on the receiver.
     List<? extends AnnotationMirror> rcvannos = null;
     if (TreeUtils.isConstructor(node)) {
       com.sun.tools.javac.code.Symbol meth =
@@ -377,8 +372,7 @@ public class InitializationVisitor<
       boolean staticFields,
       Store store,
       List<? extends AnnotationMirror> receiverAnnotations) {
-    // If the store is null, then the constructor cannot terminate
-    // successfully
+    // If the store is null, then the constructor cannot terminate successfully
     if (store == null) {
       return;
     }

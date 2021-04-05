@@ -118,7 +118,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
@@ -126,6 +125,8 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.ATypeElement;
 
@@ -201,14 +202,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** The FieldInvariant.field argument/element. */
   private final ExecutableElement fieldInvariantFieldElement;
   /** The FieldInvariant.qualifier argument/element. */
-  @SuppressWarnings("UnusedVariable") // TEMPORARY
   private final ExecutableElement fieldInvariantQualifierElement;
+  /** The HasQualifierParameter.value field/element. */
+  private final ExecutableElement hasQualifierParameterValueElement;
   /** The MethodVal.className argument/element. */
   public final ExecutableElement methodValClassNameElement;
   /** The MethodVal.methodName argument/element. */
   public final ExecutableElement methodValMethodNameElement;
   /** The MethodVal.params argument/element. */
   public final ExecutableElement methodValParamsElement;
+  /** The NoQualifierParameter.value field/element. */
+  private final ExecutableElement noQualifierParameterValueElement;
   /** The RequiresQualifier.expression field/element. */
   final ExecutableElement requiresQualifierExpressionElement;
   /** The RequiresQualifier.List.value field/element. */
@@ -587,10 +591,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TreeUtils.getMethod(FieldInvariant.class, "field", 0, processingEnv);
     fieldInvariantQualifierElement =
         TreeUtils.getMethod(FieldInvariant.class, "qualifier", 0, processingEnv);
+    hasQualifierParameterValueElement =
+        TreeUtils.getMethod(HasQualifierParameter.class, "value", 0, processingEnv);
     methodValClassNameElement = TreeUtils.getMethod(MethodVal.class, "className", 0, processingEnv);
     methodValMethodNameElement =
         TreeUtils.getMethod(MethodVal.class, "methodName", 0, processingEnv);
     methodValParamsElement = TreeUtils.getMethod(MethodVal.class, "params", 0, processingEnv);
+    noQualifierParameterValueElement =
+        TreeUtils.getMethod(NoQualifierParameter.class, "value", 0, processingEnv);
     requiresQualifierExpressionElement =
         TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
     requiresQualifierListValueElement =
@@ -635,7 +643,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             "The @Target meta-annotation on type qualifier "
                 + annotationClass.toString()
                 + " must not contain "
-                + SystemUtil.conjunction("or", badTargetValues)
+                + StringsPlume.conjunction("or", badTargetValues)
                 + ".";
         throw new TypeSystemError(msg);
       }
@@ -801,11 +809,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     if (root != null && checker.hasOption("ajava")) {
       // Search for an ajava file with annotations for the current source file and the current
-      // checker. It will be in a directory specified by the "ajava" option in a
-      // subdirectory corresponding to this file's package. For example, a file in package
-      // a.b would be in a subdirectory a/b. The filename is
-      // ClassName-checker.qualified.name.ajava. If such a file exists, read its detailed
-      // annotation data, including annotations on private elements.
+      // checker. It will be in a directory specified by the "ajava" option in a subdirectory
+      // corresponding to this file's package. For example, a file in package a.b would be in a
+      // subdirectory a/b. The filename is ClassName-checker.qualified.name.ajava. If such a file
+      // exists, read its detailed annotation data, including annotations on private elements.
 
       String packagePrefix =
           root.getPackageName() != null
@@ -1240,11 +1247,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypesIntoElements.store(processingEnv, this, tree);
     DeclarationsIntoElements.store(processingEnv, this, tree);
     if (wholeProgramInference != null) {
-      // Write out the results of whole-program inference, just once for each class.
-      // As soon as any class is finished processing, all modified scenes are written to
-      // files, in case this was the last class to be processed.  Post-processing of
-      // subsequent classes might result in re-writing some of the scenes if new information
-      // has been written to them.
+      // Write out the results of whole-program inference, just once for each class.  As soon as any
+      // class is finished processing, all modified scenes are written to files, in case this was
+      // the last class to be processed.  Post-processing of subsequent classes might result in
+      // re-writing some of the scenes if new information has been written to them.
       wholeProgramInference.writeResultsToFile(wpiOutputFormat, this.checker);
     }
   }
@@ -1332,11 +1338,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     AnnotatedTypeMirror type;
 
-    // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
-    // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
-    // Also, since annotations computed by the AnnotatedTypeFactory are stored in the element,
-    // the annotations have to be retrieved from the tree so that only explicit annotations are
-    // returned.
+    // Because of a bug in Java 8, annotations on type parameters are not stored in elements, so get
+    // explicit annotations from the tree. (This bug has been fixed in Java 9.)  Also, since
+    // annotations computed by the AnnotatedTypeFactory are stored in the element, the annotations
+    // have to be retrieved from the tree so that only explicit annotations are returned.
     Tree decl = declarationFromElement(elt);
 
     if (decl == null) {
@@ -1485,8 +1490,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (annotatedTypeCombiner == null) {
       annotatedTypeCombiner = new AnnotatedTypeCombiner(qualHierarchy);
     }
-    // Must merge (rather than only take the annotation file type if it is a subtype)
-    // to support WPI.
+    // Must merge (rather than only take the annotation file type if it is a subtype) to support
+    // WPI.
     annotatedTypeCombiner.visit(typeFromFile, type);
     return type;
   }
@@ -1685,7 +1690,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * #getFieldInvariantDeclarationAnnotations()} to return their field invariants.
    *
    * @param element class for which to get invariants
-   * @return fields invariants for {@code element}
+   * @return field invariants for {@code element}
    */
   public FieldInvariants getFieldInvariants(TypeElement element) {
     if (element == null) {
@@ -1699,13 +1704,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotationUtils.getElementValueArray(
             fieldInvarAnno, fieldInvariantFieldElement, String.class);
     List<@CanonicalName Name> classes =
-        AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", false);
+        AnnotationUtils.getElementValueClassNames(fieldInvarAnno, fieldInvariantQualifierElement);
     List<AnnotationMirror> qualifiers =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (Name name) ->
-                // Calling AnnotationBuilder.fromName (which ignores
-                // elements/fields) is acceptable because @FieldInvariant does not
-                // handle classes with elements/fields.
+                // Calling AnnotationBuilder.fromName (which ignores elements/fields) is acceptable
+                // because @FieldInvariant does not handle classes with elements/fields.
                 AnnotationBuilder.fromName(elements, name),
             classes);
     if (qualifiers.size() == 1) {
@@ -2054,9 +2058,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     Element element = TreeUtils.elementFromUse(expression);
     if (element != null && ElementUtils.hasReceiver(element)) {
-      // The tree references an element that has a receiver, but the tree does not have an
-      // explicit receiver. So, the tree must have an implicit receiver of "this" or
-      // "Outer.this".
+      // The tree references an element that has a receiver, but the tree does not have an explicit
+      // receiver. So, the tree must have an implicit receiver of "this" or "Outer.this".
       return getImplicitReceiverType(expression);
     } else {
       return null;
@@ -2135,8 +2138,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedExecutableType method = result.executableType;
     if (method.getReturnType().getKind() == TypeKind.WILDCARD
         && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()) {
-      // Get the correct Java type from the tree and use it as the upper bound of the
-      // wildcard.
+      // Get the correct Java type from the tree and use it as the upper bound of the wildcard.
       TypeMirror tm = TreeUtils.typeOf(tree);
       AnnotatedTypeMirror t = toAnnotatedType(tm, false);
 
@@ -2275,11 +2277,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     final AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
     final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
 
-    // Usually, the only locations that will add annotations to the return type are getClass in
-    // stub files defaults and propagation tree annotator.  Since getClass is final they cannot
-    // come from source code.  Also, since the newBound is an erased type we have no type
-    // arguments.  So, we just copy the annotations from the bound of the declared type to the
-    // new bound.
+    // Usually, the only locations that will add annotations to the return type are getClass in stub
+    // files defaults and propagation tree annotator.  Since getClass is final they cannot come from
+    // source code.  Also, since the newBound is an erased type we have no type arguments.  So, we
+    // just copy the annotations from the bound of the declared type to the new bound.
     final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
     Set<AnnotationMirror> newAnnos = AnnotationUtils.createAnnotationSet();
     Set<AnnotationMirror> typeBoundAnnos = getTypeDeclarationBounds(newBound.getUnderlyingType());
@@ -2419,7 +2420,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       typeargs = Collections.emptyList();
     } else {
       typeargs =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (AnnotatedTypeVariable tv) -> typeVarMapping.get(tv.getUnderlyingType()),
               con.getTypeVariables());
       con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);
@@ -2569,8 +2570,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       case ARRAY:
         // This new class is in the initializer of an array.
-        // The array being created can't have a generic component type,
-        // so nothing to be done.
+        // The array being created can't have a generic component type, so nothing to be done.
         break;
       case TYPEVAR:
         // TODO: this should NOT be necessary.
@@ -3302,8 +3302,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     // TODO: handle type parameter declarations?
     Tree fromElt;
-    // Prevent calling declarationFor on elements we know we don't have
-    // the tree for.
+    // Prevent calling declarationFor on elements we know we don't have the tree for.
 
     switch (elt.getKind()) {
       case CLASS:
@@ -3376,8 +3375,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (found && enclosingMethod != null) {
           AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
           res = method.getReceiverType();
-          // TODO: three tests fail if one adds the following, which would make
-          // sense, or not?
+          // TODO: three tests fail if one adds the following, which would make sense, or not?
           // visitorState.setMethodReceiver(res);
         } else {
           // We are within an anonymous class or field initializer
@@ -3471,8 +3469,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // climb the current path till we see that
-    // Works when getPath called on the enclosing method, enclosing
-    // class
+    // Works when getPath called on the enclosing method, enclosing class.
     TreePath current = currentPath;
     while (current != null) {
       treePathCache.addPath(current.getLeaf(), current);
@@ -3900,6 +3897,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // This candidate has the right kind of meta-annotation.
           // It might be a real contract, or a list of contracts.
           if (isListForRepeatedAnnotation(candidate)) {
+            @SuppressWarnings("deprecation") // concrete annotation class is not known
             List<AnnotationMirror> wrappedCandidates =
                 AnnotationUtils.getElementValueArray(
                     candidate, "value", AnnotationMirror.class, false);
@@ -4028,7 +4026,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public boolean hasExplicitQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
     return AnnotationUtils.containsSame(
-        getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class), top);
+        getSupportedAnnotationsInElementAnnotation(
+            element, HasQualifierParameter.class, hasQualifierParameterValueElement),
+        top);
   }
 
   /**
@@ -4042,7 +4042,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public boolean hasExplicitNoQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
     return AnnotationUtils.containsSame(
-        getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class), top);
+        getSupportedAnnotationsInElementAnnotation(
+            element, NoQualifierParameter.class, noQualifierParameterValueElement),
+        top);
   }
 
   /**
@@ -4089,21 +4091,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
-    found.addAll(getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class));
+    found.addAll(
+        getSupportedAnnotationsInElementAnnotation(
+            element, HasQualifierParameter.class, hasQualifierParameterValueElement));
     Set<AnnotationMirror> hasQualifierParameterTops = AnnotationUtils.createAnnotationSet();
     PackageElement packageElement = ElementUtils.enclosingPackage(element);
 
     // Traverse all packages containing this element.
     while (packageElement != null) {
       Set<AnnotationMirror> packageDefaultTops =
-          getSupportedAnnotationsInElementAnnotation(packageElement, HasQualifierParameter.class);
+          getSupportedAnnotationsInElementAnnotation(
+              packageElement, HasQualifierParameter.class, hasQualifierParameterValueElement);
       hasQualifierParameterTops.addAll(packageDefaultTops);
 
       packageElement = ElementUtils.parentPackage(packageElement, elements);
     }
 
     Set<AnnotationMirror> noQualifierParamClasses =
-        getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class);
+        getSupportedAnnotationsInElementAnnotation(
+            element, NoQualifierParameter.class, noQualifierParameterValueElement);
     for (AnnotationMirror anno : hasQualifierParameterTops) {
       if (!AnnotationUtils.containsSame(noQualifierParamClasses, anno)) {
         found.add(anno);
@@ -4119,13 +4125,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param element the Element to check
    * @param annoClass the class for an annotation that's written on elements, whose value element is
-   *     a list of annotation classes
+   *     a list of annotation classes. It is always HasQualifierParameter or NoQualifierParameter
+   * @param valueElement the {@code value} field/element of an annotation with class {@code
+   *     annoClass}
    * @return the set of supported annotations with classes listed in the value element of an
    *     annotation with class {@code annoClass} on the {@code element}. Returns an empty set if
    *     {@code annoClass} is not written on {@code element} or {@code element} is null.
    */
   private Set<AnnotationMirror> getSupportedAnnotationsInElementAnnotation(
-      @Nullable Element element, Class<? extends Annotation> annoClass) {
+      @Nullable Element element,
+      Class<? extends Annotation> annoClass,
+      ExecutableElement valueElement) {
     if (element == null) {
       return Collections.emptySet();
     }
@@ -4137,7 +4147,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
     List<@CanonicalName Name> qualClasses =
-        AnnotationUtils.getElementValueClassNames(annotation, "value", true);
+        AnnotationUtils.getElementValueClassNames(annotation, valueElement);
     for (Name qual : qualClasses) {
       AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);
       if (isSupportedQualifier(annotationMirror)) {
@@ -4578,8 +4588,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
 
         if (wildcardType.isUninferredTypeArgument()) {
-          // Keep the uninferred type so that it is ignored by later subtyping and
-          // containment checks.
+          // Keep the uninferred type so that it is ignored by later subtyping and containment
+          // checks.
           newTypeArguments.set(i, wildcardType);
         } else if (isExtendsWildcard(wildcardType)) {
           TypeMirror correctArgType;
@@ -4617,9 +4627,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     functionalType.setTypeArguments(newTypeArguments);
 
-    // When the groundTargetJavaType is different from the underlying type of functionalType,
-    // only the main annotations are copied.  Add default annotations in places without
-    // annotations.
+    // When the groundTargetJavaType is different from the underlying type of functionalType, only
+    // the main annotations are copied.  Add default annotations in places without annotations.
     addDefaultAnnotations(functionalType);
   }
 
@@ -4653,6 +4662,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Matches subtraction of a constant. */
   static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
+  /** Matches a string whose only parens are at the beginning and end of the string. */
+  private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+
   /**
    * Given an expression, split it into a subexpression and a constant offset. For example:
    *
@@ -4678,10 +4690,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     String offset = "0";
 
     // Is this normalization necessary?
-    // Remove surrrounding whitespace.
+    // Remove surrounding whitespace.
     expr = expr.trim();
     // Remove surrounding parentheses.
-    if (expr.matches("^\\([^()]\\)")) {
+    if (surroundingParensPattern.matcher(expr).matches()) {
       expr = expr.substring(1, expr.length() - 2).trim();
     }
 
