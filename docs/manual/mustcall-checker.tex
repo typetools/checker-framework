@@ -41,39 +41,6 @@ are shown in Figure~\ref{fig-must-call-hierarchy}:
   is the polymorphic annotation for the Must Call type system
   (Section~\ref{method-qualifier-polymorphism}).
 
-\item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
-  is a special polymorphic annotation that indicates a resource-aliasing relationship between
-  the annotated elements. Internally, the Must Call Checker treats it identically to \<@PolyMustCall>.
-
-%% TODO: after the Must Call Consistency checker is merged, add an example of how to use @MustCallAlias
-
-\end{description}
-
-The Must Call Checker also supports these declaration annotations:
-
-\begin{description}
-
-\item[\refqualclasswithparams{checker/mustcall/qual}{CreatesObligation}{String value}]
-  is a declaration annotation that can be written on a method or constructor. It takes a single Java expression as an
-  argument, referred to as its ``target''. The annotated method
-  ``resets'' the must-call obligations of its target to the least upper bound of their current value and the default
-  must-call obligations for its declared type. This annotation is repeatable, if the copies have different targets.
-
-%% TODO: after the Must Call Consistency checker is merged, add an example of how to use @CreatesObligation
-
-\item[\refqualclass{checker/mustcall/qual}{Owning}]
-  is a declaration annotation that can be written on a method parameter, method return type, or
-  field declaration. It indicates that the annotated element is the ``owning'' pointer to any resource.
-  See Section~\ref{must-call-ownership-annos} for more details on ownership.
-
-\item[\refqualclass{checker/mustcall/qual}{NotOwning}]
-  is a declaration annotation that can be written on a method parameter, method return type, or
-  field declaration. It indicates that the annotated element is \emph{not} the ``owning'' pointer to any resource,
-  regardless of its type in the Must Call Checker's hierarchy.
-  See Section~\ref{must-call-ownership-annos} for more details on ownership.
-
-%% TODO: after the Must Call Consistency checker is merged, add an examples of how to use @Owning and @NotOwning
-
 \end{description}
 
 \begin{figure}
@@ -101,12 +68,6 @@ A completely unannotated program will always type-check without warnings.
 For the Must Call Checker to be useful, the programmer should supply at least one non-empty
 \<@MustCall> annotation, either in source code or in a stub file.
 
-Note that it is always safe to write \<@Owning> and \<@NotOwning>
-annotations anywhere in your code (they are only hints to the checker),
-though writing annotations that differ from the program's design may lead
-the Must Call checker to issue false positive warnings.
-
-
 \sectionAndLabel{Example use}{must-call-example}
 
 If a user annotates a class declaration with a \<@MustCall(...)> annotation, any use of the class's
@@ -120,32 +81,36 @@ type has that \<@MustCall> annotation by default. For example, given the followi
 \end{Verbatim}
 any use of \<Socket> defaults to \<@MustCall(\{"close"\}) Socket>.
 
-\sectionAndLabel{Lightweight ownership annotations}{must-call-ownership-annos}
+%% \sectionAndLabel{Lightweight ownership annotations}{must-call-ownership-annos}
 
 %% TODO: this explanation feels...lacking to me. It doesn't make that much sense IMO
 %% without explaining the must-call consistency checker's usage of Owning/NotOwning.
+%% It's therefore been commented out here. Some version of this needs to appear, either
+%% here or in the documentation of the consistency checker, when that is merged. For now,
+%% this manual page doesn't list @Owning or @NotOwning at all, because they can't be explained
+%% without context - so we've decided to treat them as if they don't exist, for now.
 
-In many programs, aliasing creates two or more program elements that represent the same
-underlying object on which some methods might need to be called (i.e. whose type has a non-empty
-\<@MustCall> qualifier). For example, an \<OutputStream> might be stored in both
-a local variable and a field. Typically, the Must Call Checker will over-approximate both
-the local variable and the field (and any other pointers to the object) as \<@MustCall(\{"close"\})>:
-that is, because all \<OutputStream> objects might need to be closed, each pointer to an
-\<OutputStream> might need to be closed, too. In practice, however, some of these pointers can be
-ignored: they are \emph{non-owning}. In the example of an \<OutputStream> that is stored in both
-a local variable and a field, for instance, it may be the case that the field is non-owning (such
-as a cache) and the local is owning; or, it might be the case that the field is owning (an open connection,
-for example, that will be closed later), and the local is non-owning.
+%% In many programs, aliasing creates two or more program elements that represent the same
+%% underlying object on which some methods might need to be called (i.e. whose type has a non-empty
+%% \<@MustCall> qualifier). For example, an \<OutputStream> might be stored in both
+%% a local variable and a field. Typically, the Must Call Checker will over-approximate both
+%% the local variable and the field (and any other pointers to the object) as \<@MustCall(\{"close"\})>:
+%% that is, because all \<OutputStream> objects might need to be closed, each pointer to an
+%% \<OutputStream> might need to be closed, too. In practice, however, some of these pointers can be
+%% ignored: they are \emph{non-owning}. In the example of an \<OutputStream> that is stored in both
+%% a local variable and a field, for instance, it may be the case that the field is non-owning (such
+%% as a cache) and the local is owning; or, it might be the case that the field is owning (an open connection,
+%% for example, that will be closed later), and the local is non-owning.
 
-The Must Call Checker supplies two annotations to support this concept: \<@Owning> and \<@NotOwning>.
-The Must Call Checker's support for these annotations is limited: method parameters annotated as
-\<@NotOwning> are treated as bottom (i.e. \<@MustCall(\{\})>) within the method bodies in which they
-appear. A client analysis of the Must Call Checker can use these annotations as a guide for which
-pointer to a given object is intended by the programmer as the pointer through which the must-call obligations
-of the object are satisfied, but these annotations are only hints.
+%% The Must Call Checker supplies two annotations to support this concept: \<@Owning> and \<@NotOwning>.
+%% The Must Call Checker's support for these annotations is limited: method parameters annotated as
+%% \<@NotOwning> are treated as bottom (i.e. \<@MustCall(\{\})>) within the method bodies in which they
+%% appear. A client analysis of the Must Call Checker can use these annotations as a guide for which
+%% pointer to a given object is intended by the programmer as the pointer through which the must-call obligations
+%% of the object are satisfied, but these annotations are only hints.
 
-This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
-Call Checker.
+%% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
+%% Call Checker.
 
 \sectionAndLabel{Strings cannot have must-call obligations}{must-call-impl}
 
