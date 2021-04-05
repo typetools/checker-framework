@@ -186,6 +186,10 @@ public class SystemUtil {
    * @param dest a list to add to
    * @param source a list of elements to add
    */
+  @SuppressWarnings(
+      "nullness:argument.type.incompatible" // true positive:  `dest` might be incompatible with
+  // null and `source` might contain null.
+  )
   public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {
     for (T elt : source) {
       if (!dest.contains(elt)) {
