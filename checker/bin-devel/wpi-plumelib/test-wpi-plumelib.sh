@@ -70,6 +70,7 @@ test_wpi_plume_lib() {
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     ACTUAL_FILE="$TESTDIR/$project/dljc-out/typecheck.out"
+    touch "${ACTUAL_FILE}"
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
     if ! cmp --quiet expected.txt actual.txt ; then
@@ -91,5 +92,6 @@ test_wpi_plume_lib bibtex-clean      "formatter,index,interning,lock,nullness,re
 test_wpi_plume_lib html-pretty-print "formatter,index,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib icalavailable     "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
 test_wpi_plume_lib lookup            "formatter,index,interning,lock,nullness,regex,signature"
+test_wpi_plume_lib options           "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
 
 echo "exiting test-wpi-plumelib.sh"

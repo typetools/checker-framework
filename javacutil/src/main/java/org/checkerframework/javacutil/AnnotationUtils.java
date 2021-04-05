@@ -995,6 +995,22 @@ public class AnnotationUtils {
    *
    * @param anno the annotation whose element to access
    * @param element the element to access
+   * @return the value of the element with the given name
+   */
+  public static int getElementValueInt(AnnotationMirror anno, ExecutableElement element) {
+    AnnotationValue av = anno.getElementValues().get(element);
+    if (av == null) {
+      throw new BugInCF("getElementValueInt(%s, %s, ...)", anno, element);
+    } else {
+      return (int) av.getValue();
+    }
+  }
+
+  /**
+   * Get the given integer element of the annotation {@code anno}.
+   *
+   * @param anno the annotation whose element to access
+   * @param element the element to access
    * @param defaultValue the value to return if the element is not present
    * @return the value of the element with the given name
    */
