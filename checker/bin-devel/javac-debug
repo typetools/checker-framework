@@ -42,7 +42,12 @@ nl='
 for i in "$@" ; do
    IFS=
    # shellcheck disable=SC2027
-   args=$args$nl"'"$i"'"
+   case $i in
+     "-Xmn"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     "-Xms"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     "-Xmx"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     *)       args=$args$nl"'"$i"'" ;;
+   esac
    IFS="$saveIFS"
 done
 
@@ -56,6 +61,7 @@ done
 
 # shellcheck disable=SC2086
 eval "java" \
+     ${jvmargs} \
      "-ea " \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
