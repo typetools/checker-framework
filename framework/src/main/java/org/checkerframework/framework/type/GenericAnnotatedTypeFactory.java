@@ -897,6 +897,7 @@ public abstract class GenericAnnotatedTypeFactory<
     JavaExpression expressionObj = parseJavaExpressionString(expression, path);
     return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
   }
+
   /**
    * Returns the primary annotation on an expression.
    *
