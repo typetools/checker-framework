@@ -1,5 +1,6 @@
 package org.checkerframework.checker.calledmethods;
 
+import javax.lang.model.element.Name;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -27,11 +28,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
     Node receiver = node.getTarget().getReceiver();
     if (receiver != null) {
-      String methodName = node.getTarget().getMethod().getSimpleName().toString();
-      methodName =
+      Name methodName = node.getTarget().getMethod().getSimpleName();
+      String methodNameString =
           ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
               .adjustMethodNameUsingValueChecker(methodName, node.getTree());
-      accumulate(receiver, result, methodName);
+      accumulate(receiver, result, methodNameString);
     }
     return result;
   }
