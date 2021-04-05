@@ -27,7 +27,8 @@ if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --e
 fi
 make -C checker/bin
 make -C checker/bin-devel
-make -C docs/developer/release
+# Temporarily commented out
+# make -C docs/developer/release
 
 ## HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
