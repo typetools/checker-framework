@@ -4,7 +4,7 @@ import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * This copy of the MustCall Checker is identical, except that it does not load the stub files at
+ * This copy of the Must Call Checker is identical, except that it does not load the stub files at
  * initialization that treat unconnected sockets as @MustCall({}). See
  * SocketAccumulationFrames.astub.
  *

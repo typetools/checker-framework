@@ -1,4 +1,4 @@
-// tests that the MustCall checker respects the Owning and NotOwning annotations on return values.
+// tests that the Must Call checker respects the Owning and NotOwning annotations on return values.
 
 import org.checkerframework.checker.mustcall.qual.*;
 

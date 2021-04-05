@@ -19,6 +19,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.mustcall.qual.CreatesObligation;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -82,6 +83,14 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The InheritableMustCall.value field/element. */
   final ExecutableElement inheritableMustCallValueElement =
       TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
+
+  /** The CreatesObligation.List.value field/element. */
+  final ExecutableElement createsObligationListValueElement =
+      TreeUtils.getMethod(CreatesObligation.List.class, "value", 0, processingEnv);
+
+  /** The CreatesObligation.value field/element. */
+  final ExecutableElement createsObligationValueElement =
+      TreeUtils.getMethod(CreatesObligation.class, "value", 0, processingEnv);
 
   /**
    * Default constructor matching super. Should be called automatically.
@@ -171,7 +180,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // shortcut for easy paths
     if (anno == null || AnnotationUtils.areSame(anno, BOTTOM)) {
       return BOTTOM;
-    } else if (!AnnotationUtils.areSameByClass(anno, MustCall.class)) {
+    } else if (!AnnotationUtils.areSameByName(
+        anno, "org.checkerframework.checker.mustcall.qual.MustCall")) {
       return anno;
     }
     List<String> values =
