@@ -198,13 +198,19 @@ public class TestDiagnosticUtils {
     return new TestDiagnostic(filename, lineNo, kind, message, isFixable, noParentheses);
   }
 
+  /**
+   * Given a javax diagnostic, return a pair of (trimmed, fileame), where "trimmed" is the first
+   * line of the message, without the leading filename.
+   *
+   * @param original a javax diagnostic
+   * @param noMsgText whether to do work; if false, this returns a pair of (argument, "").
+   * @return the diagnostic, split into message and filename
+   */
   public static Pair<String, String> formatJavaxToolString(String original, boolean noMsgText) {
     String trimmed = original;
     String filename = "";
     if (noMsgText) {
-      // Only keep the first line of the error or warning, unless it is a thrown exception
-      // "unexpected Throwable" or it is a Checker Error (contains "Compilation unit").
-      if (!trimmed.contains("unexpected Throwable") && !trimmed.contains("Compilation unit")) {
+      if (!retainAllLines(trimmed)) {
         if (trimmed.contains(System.lineSeparator())) {
           trimmed = trimmed.substring(0, trimmed.indexOf(System.lineSeparator()));
         }
@@ -219,6 +225,21 @@ public class TestDiagnosticUtils {
     }
 
     return Pair.of(trimmed, filename);
+  }
+
+  /**
+   * Returns true if all lines of the message should be shown, false if only the first line should
+   * be shown.
+   *
+   * @param message a diagnostic message
+   * @return true if all lines of the message should be shown
+   */
+  private static boolean retainAllLines(String message) {
+    // Retain all if it is a thrown exception "unexpected Throwable" or it is a Checker Framework
+    // Error (contains "Compilation unit") or is OutOfMemoryError.
+    return message.contains("unexpected Throwable")
+        || message.contains("Compilation unit")
+        || message.contains("OutOfMemoryError");
   }
 
   /**
