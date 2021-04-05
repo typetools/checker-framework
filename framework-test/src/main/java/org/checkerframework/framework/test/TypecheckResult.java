@@ -106,11 +106,11 @@ public class TypecheckResult {
 
     if (!unexpectedDiagnostics.isEmpty()) {
       int numUnexpected = unexpectedDiagnostics.size();
-      summaryBuilder.add(
-          StringsPlume.nplural(numUnexpected, "unexpected diagnostic")
-              + " "
-              + (numUnexpected == 1 ? "was" : "were")
-              + " found:");
+      if (numUnexpected == 1) {
+        summaryBuilder.add("1 unexpected diagnostic was found");
+      } else {
+        summaryBuilder.add(numUnexpected + " unexpected diagnostics were found");
+      }
 
       for (TestDiagnostic unexpected : unexpectedDiagnostics) {
         summaryBuilder.add(unexpected.toString());
