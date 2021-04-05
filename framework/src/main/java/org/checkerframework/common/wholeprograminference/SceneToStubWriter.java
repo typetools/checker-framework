@@ -138,9 +138,14 @@ public final class SceneToStubWriter {
       return "@" + simpleAnnoName;
     }
     StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
-    for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-      AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-      sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+    if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
+      AnnotationFieldType aft = a.def().fieldTypes.get("value");
+      sj.add(aft.format(a.fieldValues.get("value")));
+    } else {
+      for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
+        AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
+        sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+      }
     }
     return sj.toString();
   }
