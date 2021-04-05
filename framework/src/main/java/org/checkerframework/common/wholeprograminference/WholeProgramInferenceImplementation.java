@@ -17,14 +17,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -189,15 +187,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
     ExecutableElement methodInvocEle = TreeUtils.elementFromUse(methodInvNode.getTree());
     ExecutableElement methodDeclEle = TreeUtils.elementFromDeclaration(enclosingMethod);
-    if (!methodDeclEle.equals(methodInvocEle)) {
-      return false;
-    }
-
-    if (ElementUtils.isStatic(methodDeclEle)) {
-      return methodInvNode.getTarget().getReceiver() instanceof ClassNameNode;
-    } else {
-      return methodInvNode.getTarget().getMethod() instanceof ThisNode;
-    }
+    return methodDeclEle.equals(methodInvocEle);
   }
 
   /**
