@@ -3,6 +3,8 @@ Version 3.12.1 (May 3, 2021)
 
 Forthcoming.
 
+The Must Call Checker over-approximates the methods that an object must call
+before it is de-allocated.
 
 Version 3.12.0 (April 1, 2021)
 ------------------------------
@@ -11,9 +13,6 @@ Version 3.12.0 (April 1, 2021)
 
 New FAQ item "How should I annotate code that uses generics?" gives
 examples of annotations on type variables, together with their meaning.
-
-The Must Call Checker over-approximates the methods that an object must call
-before it is de-allocated.
 
 `-Ainfer=ajava` uses ajava files (rather than jaif files or stub files)
 internally during whole-program inference.
