@@ -112,7 +112,13 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the source code has parser errors
    */
   public static StubUnit parseStubUnit(InputStream inputStream) {
-    JavaParser javaParser = new JavaParser(new ParserConfiguration());
+    ParserConfiguration configuration = new ParserConfiguration();
+    // Store the tokens so that errors have line and column numbers.
+    // configuration.setStoreTokens(false);
+    configuration.setLexicalPreservationEnabled(false);
+    configuration.setAttributeComments(false);
+    configuration.setDetectOriginalLineSeparator(false);
+    JavaParser javaParser = new JavaParser(configuration);
     ParseResult<StubUnit> parseResult = javaParser.parseStubUnit(inputStream);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
       return parseResult.getResult().get();
