@@ -42,7 +42,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.18.0.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -378,21 +378,21 @@ List<String> getJavaFilesToFormat(projectName) {
         if (!details.path.contains("nullness-javac-errors")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
-                && details.name.endsWith('java')) {
+                && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
     // Collect all java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
     // Collect all java files in jtregJdk11 directory
     fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }

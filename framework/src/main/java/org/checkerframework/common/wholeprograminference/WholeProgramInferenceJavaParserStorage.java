@@ -15,8 +15,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.printer.PrettyPrinter;
-import com.github.javaparser.printer.PrettyPrinterConfiguration;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -576,7 +575,7 @@ public class WholeProgramInferenceJavaParserStorage
         // certain locations. This implementation could be used instead if it's fixed in JavaParser.
         // LexicalPreservingPrinter.print(root.declaration, writer);
 
-        PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
+        DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         writer.write(prettyPrinter.print(root.compilationUnit));
         writer.close();
       } catch (IOException e) {
