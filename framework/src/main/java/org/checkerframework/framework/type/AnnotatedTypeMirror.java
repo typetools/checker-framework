@@ -138,8 +138,7 @@ public abstract class AnnotatedTypeMirror {
   /** The annotations on this type. */
   // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
   // the class name of Annotation instead.
-  // Caution: Assumes that a type can have at most one AnnotationMirror for
-  // any Annotation type.
+  // Caution: Assumes that a type can have at most one AnnotationMirror for any Annotation type.
   protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
   /** The explicitly written annotations on this type. */
@@ -1150,8 +1149,8 @@ public abstract class AnnotatedTypeMirror {
           && ((ExecutableType) underlyingType).getReturnType() != null) { // lazy init
         TypeMirror aret = ((ExecutableType) underlyingType).getReturnType();
         if (aret.getKind() == TypeKind.ERROR) {
-          // Maybe the input is uncompilable, or maybe the type is not completed yet (see
-          // Issue #244).
+          // Maybe the input is uncompilable, or maybe the type is not completed yet (see Issue
+          // #244).
           throw new ErrorTypeKindException(
               "Problem with return type of %s.%s: %s [%s %s]",
               element, element.getEnclosingElement(), aret, aret.getKind(), aret.getClass());
@@ -1527,17 +1526,14 @@ public abstract class AnnotatedTypeMirror {
       return lowerBound;
     }
 
-    // If the lower bound was not present in underlyingType, then its
-    // annotation was defaulted from the AnnotatedTypeFactory.  If the
-    // lower bound annotation is a supertype of the upper bound
-    // annotation, then the type is ill-formed.  In that case, change
-    // the defaulted lower bound to be consistent with the
-    // explicitly-written upper bound.
+    // If the lower bound was not present in underlyingType, then its annotation was defaulted from
+    // the AnnotatedTypeFactory.  If the lower bound annotation is a supertype of the upper bound
+    // annotation, then the type is ill-formed.  In that case, change the defaulted lower bound to
+    // be consistent with the explicitly-written upper bound.
     //
-    // As a concrete example, if the default annotation is @Nullable,
-    // then the type "X extends @NonNull Y" should not be converted
-    // into "X extends @NonNull Y super @Nullable bottomtype" but be
-    // converted into "X extends @NonNull Y super @NonNull bottomtype".
+    // As a concrete example, if the default annotation is @Nullable, then the type "X extends
+    // @NonNull Y" should not be converted into "X extends @NonNull Y super @Nullable bottomtype"
+    // but be converted into "X extends @NonNull Y super @NonNull bottomtype".
     //
     // In addition, ensure consistency of annotations on type variables
     // and the upper bound. Assume class C<X extends @Nullable Object>.
@@ -1553,10 +1549,9 @@ public abstract class AnnotatedTypeMirror {
         // Note:
         // if the lower bound is a type variable
         // then when we place annotations on the primary annotation
-        //   this will actually cause the type variable to be exact and
-        //   propagate the primary annotation to the type variable because
-        //   primary annotations overwrite the upper and lower bounds of type variables
-        //   when getUpperBound/getLowerBound is called
+        //   this will actually cause the type variable to be exact and propagate the primary
+        //   annotation to the type variable because primary annotations overwrite the upper and
+        //   lower bounds of type variables when getUpperBound/getLowerBound is called
         if (lowerBound != null) {
           lowerBound.replaceAnnotations(newAnnos);
         }

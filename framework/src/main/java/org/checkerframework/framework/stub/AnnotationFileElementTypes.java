@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -307,8 +308,7 @@ public class AnnotationFileElementTypes {
               currentChecker = currentChecker.getParentChecker();
             }
           }
-          // If there exists one parent checker that can find this file, don't
-          // report an warning.
+          // If there exists one parent checker that can find this file, don't report a warning.
           if (!findByParentCheckers) {
             File parentPath = new File(path).getParentFile();
             String parentPathDescription =
@@ -683,7 +683,8 @@ public class AnnotationFileElementTypes {
     JarURLConnection connection = getJarURLConnectionToJdk();
 
     try (JarFile jarFile = connection.getJarFile()) {
-      for (JarEntry jarEntry : jarFile.stream().collect(Collectors.toList())) {
+      for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
+        JarEntry jarEntry = e.nextElement();
         // filter out directories and non-class files
         if (!jarEntry.isDirectory()
             && jarEntry.getName().endsWith(".java")

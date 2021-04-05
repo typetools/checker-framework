@@ -765,6 +765,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
+      Collections.sort(values);
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
       builder.setValue("value", values);
       return builder.build();
@@ -917,9 +918,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
-      List<Double> doubleValues =
-          CollectionsPlume.mapList((Double value) -> (double) value, values);
-      return createDoubleValAnnotation(doubleValues);
+      return createDoubleValAnnotation(values);
     }
   }
 

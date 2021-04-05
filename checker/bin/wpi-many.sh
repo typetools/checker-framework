@@ -271,7 +271,7 @@ if [ -z "${results_available}" ]; then
   echo "End of log files."
 else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
+    listpath=$(mktemp "/tmp/cloc-file-list-$(date +%Y%m%d%H%M%S)-XXX.txt")
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
     # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java".

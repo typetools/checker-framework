@@ -405,16 +405,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   public AnnotatedTypeMirror visitIntersection_Declared(
       AnnotatedIntersectionType type, AnnotatedDeclaredType superType, Void p) {
     for (AnnotatedTypeMirror bound : type.getBounds()) {
-      // Find the directSuperType that is a subtype of superType,
-      // then recur on that type so that type arguments in superType
-      // are annotated correctly
+      // Find the directSuperType that is a subtype of superType, then recur on that type so that
+      // type arguments in superType are annotated correctly.
       if (bound.getKind() == TypeKind.DECLARED
           && isErasedJavaSubtype((AnnotatedDeclaredType) bound, superType)) {
         AnnotatedTypeMirror asSuper = visit(bound, superType, p);
 
-        // The directSuperType might have a primary annotation that is a supertype of
-        // primary annotation on type. Copy the primary annotation, because it is more
-        // precise.
+        // The directSuperType might have a primary annotation that is a supertype of primary
+        // annotation on type. Copy the primary annotation, because it is more precise.
         return copyPrimaryAnnos(type, asSuper);
       }
     }
@@ -455,9 +453,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       if (TypesUtils.isBoxedPrimitive(bound.getUnderlyingType())) {
         AnnotatedTypeMirror asSuper = visit(bound, superType, p);
 
-        // The directSuperType might have a primary annotation that is a supertype of
-        // primary annotation on type. Copy the primary annotation, because it is more
-        // precise.
+        // The directSuperType might have a primary annotation that is a supertype of primary
+        // annotation on type. Copy the primary annotation, because it is more precise.
         return copyPrimaryAnnos(type, asSuper);
       }
     }
@@ -613,8 +610,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   public AnnotatedTypeMirror visitTypevar_Typevar(
       AnnotatedTypeVariable type, AnnotatedTypeVariable superType, Void p) {
     // Clear the superType annotations and copy over the primary annotations before computing
-    // bounds, so that the superType annotations don't override the type annotations on the
-    // bounds.
+    // bounds, so that the superType annotations don't override the type annotations on the bounds.
     superType.clearAnnotations();
     copyPrimaryAnnos(type, superType);
 

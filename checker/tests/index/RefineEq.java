@@ -28,7 +28,6 @@ public class RefineEq {
     if (test == b) {
       @LTEqLengthOf("arr") int c = b;
 
-      // :: error: (assignment.type.incompatible)
       @LTLengthOf("arr") int g = b;
     } else {
       // :: error: (assignment.type.incompatible)

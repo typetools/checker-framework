@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.Subsequence;
@@ -18,12 +20,14 @@ import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.value.ValueCheckerUtils;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
@@ -105,6 +109,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /** The type factory associated with this transfer function. */
   private UpperBoundAnnotatedTypeFactory atypeFactory;
 
+  /** The int TypeMirror. */
+  TypeMirror intTM;
+
   /**
    * Creates a new UpperBoundTransfer.
    *
@@ -113,6 +120,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public UpperBoundTransfer(CFAnalysis analysis) {
     super(analysis);
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+    intTM = atypeFactory.types.getPrimitiveType(TypeKind.INT);
   }
 
   /**
@@ -263,7 +271,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     UBQualifier operandQual = getUBQualifier(operand, in);
     UBQualifier newQual = operandQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
 
-    /** If the node is NN, add an LTEL to the qual. If POS, add an LTL. */
+    // If the node is NonNegative, add an LTEL to the qual. If Positive, add an LTL.
     if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
       newQual = newQual.glb(typeOfAddition.plusOffset(1));
     } else if (atypeFactory.hasLowerBoundTypeByClass(other, NonNegative.class)) {
@@ -511,9 +519,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     UBQualifier glb = t.glb(s);
     if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
-      // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and
-      // expression j is less than or equal to the length of f1, then the type of i + j is
-      // @LTLengthOf("f2").
+      // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and expression
+      // j is less than or equal to the length of f1, then the type of i + j is @LTLengthOf("f2").
       UBQualifier r = removeSequenceLengths((LessThanLengthOf) left, (LessThanLengthOf) right);
       glb = glb.glb(r);
       UBQualifier l = removeSequenceLengths((LessThanLengthOf) right, (LessThanLengthOf) left);
@@ -596,13 +603,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
           try {
             je = UpperBoundVisitor.parseJavaExpressionString(b, atypeFactory, currentPath);
           } catch (NullPointerException npe) {
-            // I have no idea why this seems to happen only on a few JDK classes.
-            // It appears to only happen during the preprocessing step - the NPE
-            // is thrown while trying to find the enclosing class of a class tree,
-            // which is null. I can't find a reproducible
-            // test case that's smaller than the size of DualPivotQuicksort.
-            // Since this refinement is optional, but useful elsewhere, catching this
-            // NPE here and returning is always safe.
+            // I have no idea why this seems to happen only on a few JDK classes.  It appears to
+            // only happen during the preprocessing step - the NPE is thrown while trying to find
+            // the enclosing class of a class tree, which is null. I can't find a reproducible test
+            // case that's smaller than the size of DualPivotQuicksort.  Since this refinement is
+            // optional, but useful elsewhere, catching this NPE here and returning is always safe.
             return createTransferResult(n, in, leftWithOffset);
           }
 
@@ -781,8 +786,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     UBQualifier qualifier = getUBQualifier(hierarchy, value);
     if (qualifier.isUnknown()) {
       // The qualifier from the store or analysis might be UNKNOWN if there was some error.
-      //  For example,
-      // @LTLength("a") int i = 4;  // error
+      // For example,
+      //   @LTLength("a") int i = 4;  // error
       // The type of i in the store is @UpperBoundUnknown, but the type of i as computed by
       // the type factory is @LTLength("a"), so use that type.
       CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
@@ -815,12 +820,33 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       CaseNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
     // Refines subtrahend in the switch expression
-    // TODO: this cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
-    // transfer input
+    // TODO: This cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
+    // transfer input.
     Node caseNode = n.getCaseOperand();
     AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
     Node switchNode = assign.getExpression();
     refineSubtrahendWithOffset(switchNode, caseNode, false, in, result.getThenStore());
     return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitIntegerLiteral(
+      IntegerLiteralNode n, TransferInput<CFValue, CFStore> pi) {
+    TransferResult<CFValue, CFStore> result = super.visitIntegerLiteral(n, pi);
+
+    int intValue = n.getValue();
+    AnnotationMirror newAnno;
+    switch (intValue) {
+      case 0:
+        newAnno = atypeFactory.ZERO;
+        break;
+      case -1:
+        newAnno = atypeFactory.NEGATIVEONE;
+        break;
+      default:
+        return result;
+    }
+    CFValue c = new CFValue(analysis, Collections.singleton(newAnno), intTM);
+    return new RegularTransferResult<>(c, result.getRegularStore());
   }
 }

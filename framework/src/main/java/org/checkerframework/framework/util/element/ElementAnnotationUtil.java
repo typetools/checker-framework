@@ -392,10 +392,9 @@ public class ElementAnnotationUtil {
       boolean isComponentTypeOfArray)
       throws UnexpectedAnnotationLocationException {
     if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {
-      // An annotation with an empty type path on a declared type applies to the outermost
-      // enclosing type. This logic is handled together with non-empty type paths in
-      // getLocationTypeADT. For other kinds of types, no work is required for an empty
-      // type path.
+      // An annotation with an empty type path on a declared type applies to the outermost enclosing
+      // type. This logic is handled together with non-empty type paths in getLocationTypeADT. For
+      // other kinds of types, no work is required for an empty type path.
       return type;
     }
     switch (type.getKind()) {

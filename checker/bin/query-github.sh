@@ -37,15 +37,15 @@ mkdir -p "/tmp/$USER"
 
 ## for storing the results before sorting and uniqing them
 rm -f "/tmp/$USER/github-query-results-*.txt"
-tempfile=$(mktemp "/tmp/$USER/github-query-results-XXX.txt")
+tempfile=$(mktemp "/tmp/$USER/github-query-results-$(date +%Y%m%d%H%M%S)-XXX.txt")
 #trap "rm -f ${tempfile}" 0 2 3 15
 
 rm -f "/tmp/$USER/github-hash-results-*.txt"
-hashfile=$(mktemp "/tmp/$USER/github-hash-results-XXX.txt")
+hashfile=$(mktemp "/tmp/$USER/github-hash-results-$(date +%Y%m%d%H%M%S)-XXX.txt")
 #trap "rm -f ${hashfile}" 0 2 3 15
 
 rm -rf "/tmp/$USER/curl-output-*.txt"
-curl_output_file=$(mktemp "/tmp/$USER/curl-output-XXX.txt")
+curl_output_file=$(mktemp "/tmp/$USER/curl-output-$(date +%Y%m%d%H%M%S)-XXX.txt")
 
 # find the repos
 for i in $(seq "${page_count}"); do

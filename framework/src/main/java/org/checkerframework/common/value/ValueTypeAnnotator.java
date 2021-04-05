@@ -99,24 +99,21 @@ class ValueTypeAnnotator extends TypeAnnotator {
       long to = typeFactory.getToValueFromIntRange(atm);
 
       if (from > to) {
-        // from > to either indicates a user error when writing an
-        // annotation or an error in the checker's implementation -
-        // from should always be <= to. ValueVisitor#validateType will
+        // `from > to` either indicates a user error when writing an annotation or an error in the
+        // checker's implementation. `-from` should always be <= to. ValueVisitor#validateType will
         // issue an error.
         atm.replaceAnnotation(typeFactory.BOTTOMVAL);
       } else {
-        // Always do a replacement of the annotation here so that
-        // the defaults calculated above are correctly added to the
-        // annotation (assuming the annotation is well-formed).
+        // Always do a replacement of the annotation here so that the defaults calculated above are
+        // correctly added to the annotation (assuming the annotation is well-formed).
         atm.replaceAnnotation(typeFactory.createIntRangeAnnotation(from, to));
       }
     } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
       int from = typeFactory.getArrayLenRangeFromValue(anno);
       int to = typeFactory.getArrayLenRangeToValue(anno);
       if (from > to) {
-        // from > to either indicates a user error when writing an
-        // annotation or an error in the checker's implementation -
-        // from should always be <= to. ValueVisitor#validateType will
+        // `from > to` either indicates a user error when writing an annotation or an error in the
+        // checker's implementation `-from` should always be <= to. ValueVisitor#validateType will
         // issue an error.
         atm.replaceAnnotation(typeFactory.BOTTOMVAL);
       } else if (from < 0) {
@@ -150,8 +147,9 @@ class ValueTypeAnnotator extends TypeAnnotator {
       }
     } else {
       // In here the annotation is @*Val where (*) is not Int, String but other types
-      // (Double, etc).
+      // (Bool, Double, or Enum).
       // Therefore we extract its values in a generic way to check its size.
+      @SuppressWarnings("deprecation") // concrete annotation class is not known
       List<Object> values =
           AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
       if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {

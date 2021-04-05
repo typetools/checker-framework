@@ -138,12 +138,10 @@ public class AnnotationStatistics extends SourceChecker {
         Name annoName = ((JCAnnotation) tree).annotationType.type.tsym.getQualifiedName();
         incrementCount(annoName);
 
-        // An annotation is a body annotation if, while ascending the
-        // AST from the annotation to the root, we find a block
-        // immediately enclosed by a method.
+        // An annotation is a body annotation if, while ascending the AST from the annotation to the
+        // root, we find a block immediately enclosed by a method.
         //
-        // If an annotation is not a body annotation, it's a signature
-        // (declaration) annotation.
+        // If an annotation is not a body annotation, it's a signature (declaration) annotation.
 
         boolean isBodyAnnotation = false;
         TreePath path = getCurrentPath();
@@ -181,9 +179,8 @@ public class AnnotationStatistics extends SourceChecker {
     @Override
     public Void visitClass(ClassTree tree, Void p) {
       if (shouldSkipDefs(tree)) {
-        // Not "return super.visitClass(classTree, p);" because that would
-        // recursively call visitors on subtrees; we want to skip the
-        // class entirely.
+        // Not "return super.visitClass(classTree, p);" because that would recursively call visitors
+        // on subtrees; we want to skip the class entirely.
         return null;
       }
       if (locations) {

@@ -26,7 +26,7 @@ CHECKERFRAMEWORK="$(cd "$(dirname "$0")"/../../.. && pwd)"
 
 # Do not use a subdirectory of $CHECKERFRAMEWORK because if a project has no
 # `settings.gradle` file, Gradle will find one in $CHECKERFRAMEWORK.
-TESTDIR=$(mktemp -d "${TMPDIR:-/tmp}"/wpi-plumelib-tests-"$(date +%Y%m%d%H%M%S)"-XXXX)
+TESTDIR=$(mktemp -d "${TMPDIR:-/tmp}"/wpi-plumelib-tests-"$(date +%Y%m%d%H%M%S)"-XXX)
 
 # Takes two arguments, an input file (produced by compilation) and an output file.
 # Copies the input to the output, removing parts that might differ from run to run.
@@ -62,10 +62,15 @@ test_wpi_plume_lib() {
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
     java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
+    # The project may not build after running RemoveAnnotationsForInference, because some casts
+    # may become redundant and javac -Xlint:all yields "warning: [cast] redundant cast to ...".
+    "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace "-Alint:all" "-Alint:all,-cast" build.gradle
+
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     ACTUAL_FILE="$TESTDIR/$project/dljc-out/typecheck.out"
+    touch "${ACTUAL_FILE}"
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
     if ! cmp --quiet expected.txt actual.txt ; then
@@ -87,5 +92,6 @@ test_wpi_plume_lib bibtex-clean      "formatter,index,interning,lock,nullness,re
 test_wpi_plume_lib html-pretty-print "formatter,index,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib icalavailable     "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
 test_wpi_plume_lib lookup            "formatter,index,interning,lock,nullness,regex,signature"
+test_wpi_plume_lib options           "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
 
 echo "exiting test-wpi-plumelib.sh"

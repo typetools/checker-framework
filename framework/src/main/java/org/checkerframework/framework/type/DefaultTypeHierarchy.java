@@ -105,8 +105,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   // The chosen solution is to only check one hierarchy at a time.  One trade-off to this approach
   // is that we have to re-traverse the types for each hierarchy being checked.
   //
-  // The field currentTop identifies the hierarchy for which the types are currently being
-  // checked.
+  // The field currentTop identifies the hierarchy for which the types are currently being checked.
   // Final note: all annotation comparisons are done via isPrimarySubtype, isBottom, and
   // isAnnoSubtype in order to ensure that we first get the annotations in the hierarchy of
   // currentTop before passing annotations to qualifierHierarchy.
@@ -920,9 +919,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   // ------------------------------------------------------------------------
-  // These "visit" methods are utility methods that aren't part of the visit
-  // interface but that handle cases that more than one visit method shares
-  // in common
+  // These "visit" methods are utility methods that aren't part of the visit interface
+  // but that handle cases that more than one visit method shares in common.
 
   /**
    * An intersection is a supertype if all of its bounds are a supertype of subtype.
