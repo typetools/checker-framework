@@ -11,7 +11,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.CollectionsPlume;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** The qualifier hierarchy for the Value type system. */
 final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
@@ -231,33 +231,29 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           Range range2 = atypeFactory.getRange(a2);
           return atypeFactory.createArrayLenRangeAnnotation(range1.union(range2));
         case ValueAnnotatedTypeFactory.INTVAL_NAME:
-          List<Long> longs1 = atypeFactory.getIntValues(a1);
-          List<Long> longs2 = atypeFactory.getIntValues(a2);
-          return atypeFactory.createIntValAnnotation(CollectionsPlume.concatenate(longs1, longs2));
+          List<Long> longs = atypeFactory.getIntValues(a1);
+          SystemUtil.addWithoutDuplicates(longs, atypeFactory.getIntValues(a2));
+          return atypeFactory.createIntValAnnotation(longs);
         case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-          List<Integer> arrayLens1 = atypeFactory.getArrayLength(a1);
-          List<Integer> arrayLens2 = atypeFactory.getArrayLength(a2);
-          return atypeFactory.createArrayLenAnnotation(
-              CollectionsPlume.concatenate(arrayLens1, arrayLens2));
+          List<Integer> arrayLens = atypeFactory.getArrayLength(a1);
+          SystemUtil.addWithoutDuplicates(arrayLens, atypeFactory.getArrayLength(a2));
+          return atypeFactory.createArrayLenAnnotation(arrayLens);
         case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-          List<String> strings1 = atypeFactory.getStringValues(a1);
-          List<String> strings2 = atypeFactory.getStringValues(a2);
-          return atypeFactory.createStringAnnotation(
-              CollectionsPlume.concatenate(strings1, strings2));
+          List<String> strings = atypeFactory.getStringValues(a1);
+          SystemUtil.addWithoutDuplicates(strings, atypeFactory.getStringValues(a2));
+          return atypeFactory.createStringAnnotation(strings);
         case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
-          List<Boolean> bools1 = atypeFactory.getBooleanValues(a1);
-          List<Boolean> bools2 = atypeFactory.getBooleanValues(a2);
-          return atypeFactory.createBooleanAnnotation(CollectionsPlume.concatenate(bools1, bools2));
+          List<Boolean> bools = atypeFactory.getBooleanValues(a1);
+          SystemUtil.addWithoutDuplicates(bools, atypeFactory.getBooleanValues(a2));
+          return atypeFactory.createBooleanAnnotation(bools);
         case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-          List<Double> doubles1 = atypeFactory.getDoubleValues(a1);
-          List<Double> doubles2 = atypeFactory.getDoubleValues(a2);
-          return atypeFactory.createDoubleAnnotation(
-              CollectionsPlume.concatenate(doubles1, doubles2));
+          List<Double> doubles = atypeFactory.getDoubleValues(a1);
+          SystemUtil.addWithoutDuplicates(doubles, atypeFactory.getDoubleValues(a2));
+          return atypeFactory.createDoubleAnnotation(doubles);
         case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-          List<@Regex String> regexes1 = atypeFactory.getMatchesRegexValues(a1);
-          List<@Regex String> regexes2 = atypeFactory.getMatchesRegexValues(a2);
-          return atypeFactory.createMatchesRegexAnnotation(
-              CollectionsPlume.concatenate(regexes1, regexes2));
+          List<@Regex String> regexes = atypeFactory.getMatchesRegexValues(a1);
+          SystemUtil.addWithoutDuplicates(regexes, atypeFactory.getMatchesRegexValues(a2));
+          return atypeFactory.createMatchesRegexAnnotation(regexes);
         default:
           throw new BugInCF("default case: %s %s %s%n", qual1, a1, a2);
       }
