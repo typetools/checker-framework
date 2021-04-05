@@ -208,8 +208,11 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     // Set intersection for invariantFields.
     for (Map.Entry<FieldAccess, V> e : invariantFields.entrySet()) {
-      if (other.invariantFields.containsKey(e.getKey())) {
-        result.invariantFields.put(e.getKey(), e.getValue());
+      FieldAccess key = e.getKey();
+      if (other.invariantFields.containsKey(key)) {
+        // TODO: Is the value other.invariantFields.get(key) the same as e.getValue()?  Should the
+        // two values be lubbed?
+        result.invariantFields.put(key, e.getValue());
       }
     }
     // Add invariant annotation.
