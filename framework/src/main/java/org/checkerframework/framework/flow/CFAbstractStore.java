@@ -327,7 +327,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the greatest lower
-   * bound of the new and old value is inserted into the store .
+   * bound of the new and old value is inserted into the store.
    *
    * <p>Note that this happens per hierarchy, and if the store already contains information about a
    * hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
