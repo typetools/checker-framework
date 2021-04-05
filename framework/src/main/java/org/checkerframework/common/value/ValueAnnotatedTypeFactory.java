@@ -1408,6 +1408,27 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
+   * Returns the minimum length of an array.
+   *
+   * @param annotations the annotations on the array expression
+   * @return the minimum length of an array
+   */
+  public int getMinLenValue(Set<AnnotationMirror> annotations) {
+    int result = 0;
+    for (AnnotationMirror annotation : annotations) {
+      Integer minLen = getSpecifiedMinLenValue(annotation);
+      if (minLen != null) {
+        result = Integer.min(result, minLen);
+      }
+    }
+    if (result < 0) {
+      return 0;
+    } else {
+      return result;
+    }
+  }
+
+  /**
    * Returns the smallest possible value that an integral annotation might take on. The passed
    * {@code AnnotatedTypeMirror} should contain either an {@code @IntRange} annotation or an
    * {@code @IntVal} annotation. Returns null if it does not.
