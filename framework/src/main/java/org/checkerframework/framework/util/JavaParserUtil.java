@@ -133,7 +133,12 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the expression has parser errors
    */
   public static Expression parseExpression(String expression) {
-    JavaParser javaParser = new JavaParser(new ParserConfiguration());
+    ParserConfiguration configuration = new ParserConfiguration();
+    configuration.setStoreTokens(false);
+    configuration.setLexicalPreservationEnabled(false);
+    configuration.setAttributeComments(false);
+    configuration.setDetectOriginalLineSeparator(false);
+    JavaParser javaParser = new JavaParser(configuration);
     ParseResult<Expression> parseResult = javaParser.parseExpression(expression);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
       return parseResult.getResult().get();
