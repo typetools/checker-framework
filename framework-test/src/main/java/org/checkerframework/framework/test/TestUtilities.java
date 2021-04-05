@@ -419,11 +419,8 @@ public class TestUtilities {
   }
 
   /**
-   * TODO: REDO COMMENT Compares the result of the compiler against an array of Strings.
-   *
-   * <p>In a checker, a more specific error message is subsumed by a general one. For example,
-   * "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the test
-   * framework, which must use the exact error message key.
+   * If the given TypecheckResult has unexpected or missing diagnostics, fail the running JUnit
+   * test.
    *
    * @param testResult the result of type-checking
    */
