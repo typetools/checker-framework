@@ -470,9 +470,70 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       if (canBeMissingAnnotations(result)) {
         // don't add an annotation
       } else {
-        AnnotationMirror aUB = aAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-        AnnotationMirror bUB = bAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
+        AnnotationMirror aUB = aAtv.getEffectiveAnnotationInHierarchy(top);
+        AnnotationMirror bUB = bAtv.getEffectiveAnnotationInHierarchy(top);
         lubSet.add(computeUpperBound(aUB, bUB));
+      }
+    }
+
+    @Override
+    protected void visitAnnotationExistInOneSet(
+        AnnotationMirror anno, AnnotatedTypeVariable typeVar, AnnotationMirror top) {
+      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+      if (canBeMissingAnnotations(result)) {
+        // anno is the primary annotation on the use of a type variable. typeVar is a use of the
+        // same type variable that does not have a primary annotation. The lub of the two type
+        // variables is computed as follows. If anno is a subtype (or equal) to the annotation on
+        // the lower bound of typeVar, then typeVar is the lub, so no annotation is added to lubset.
+        // If anno is a supertype of the annotation on the lower bound of typeVar, then is typeVar
+        // with a primary annotation of lub(anno, upperBound), where upper bound is the annotation
+        // on the upper bound of typeVar.
+        Set<AnnotationMirror> lBSet =
+            AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
+        AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
+        if (!hierarchy.isSubtype(anno, lowerBound)) {
+          lubSet.add(computeUpperBound(anno, typeVar.getEffectiveAnnotationInHierarchy(top)));
+        }
+      } else {
+        lubSet.add(computeUpperBound(anno, typeVar.getEffectiveAnnotationInHierarchy(top)));
+      }
+    }
+  }
+
+  class GlbVisitor extends AnnotationSetAndTypeMirrorVisitor {
+    Set<AnnotationMirror> lubSet;
+
+    public GlbVisitor(
+        TypeMirror result,
+        TypeMirror aTypeMirror,
+        TypeMirror bTypeMirror,
+        Set<AnnotationMirror> aSet,
+        Set<AnnotationMirror> bSet,
+        Set<AnnotationMirror> lubSet) {
+      super(result, aTypeMirror, bTypeMirror, aSet, bSet);
+      this.lubSet = lubSet;
+    }
+
+    private AnnotationMirror glb(AnnotationMirror a, AnnotationMirror b) {
+      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+      return hierarchy.greatestLowerBound(a, b);
+    }
+
+    @Override
+    protected void visitAnnotationExistInBothSets(
+        AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
+      lubSet.add(glb(a, b));
+    }
+
+    @Override
+    protected void visitNeitherAnnotationExistsInBothSets(
+        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
+      if (canBeMissingAnnotations(result)) {
+        // don't add an annotation
+      } else {
+        AnnotationMirror aUB = aAtv.getEffectiveAnnotationInHierarchy(top);
+        AnnotationMirror bUB = bAtv.getEffectiveAnnotationInHierarchy(top);
+        lubSet.add(glb(aUB, bUB));
       }
     }
 
@@ -481,15 +542,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirror anno, AnnotatedTypeVariable atv, AnnotationMirror top) {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       AnnotationMirror upperBound = atv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-      if (!canBeMissingAnnotations(result)) {
-        lubSet.add(computeUpperBound(anno, upperBound));
-      } else {
+      if (canBeMissingAnnotations(result)) {
         Set<AnnotationMirror> lBSet =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, atv);
         AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
         if (!hierarchy.isSubtype(anno, lowerBound)) {
-          lubSet.add(computeUpperBound(anno, upperBound));
+          lubSet.add(glb(anno, upperBound));
         }
+      } else {
+        lubSet.add(glb(anno, upperBound));
       }
     }
   }
