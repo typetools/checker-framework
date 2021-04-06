@@ -141,7 +141,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   @Override
   public void updateFromMethodInvocation(
       MethodInvocationNode methodInvNode,
-      Tree receiverTree,
       ExecutableElement methodElt,
       CFAbstractStore<?, ?> store) {
     // Don't infer types for code that isn't presented as source.
