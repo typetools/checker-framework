@@ -908,7 +908,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public AnnotationMirror getAnnotationFromJavaExpression(
       JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
-    return getAnnotation(getAnnotationsFromJavaExpression(expr, tree), clazz);
+    return getAnnotationByClass(getAnnotationsFromJavaExpression(expr, tree), clazz);
   }
 
   /**
