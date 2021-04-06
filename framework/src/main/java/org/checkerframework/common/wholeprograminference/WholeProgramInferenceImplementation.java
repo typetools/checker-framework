@@ -202,20 +202,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     String file = storage.getFileForElement(methodElt);
 
     for (int i = 0; i < arguments.size(); i++) {
+      VariableElement ve = methodElt.getParameters().get(i);
+      AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
+
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
+      AnnotatedTypeMirror argATM;
       if (argTree == null) {
         // TODO: Handle variable-length list as parameter.
         // An ArrayCreationNode with a null tree is created when the
         // parameter is a variable-length list. We are ignoring it for now.
         // See Issue 682: https://github.com/typetools/checker-framework/issues/682
-        continue;
+        argATM = paramATM;
+      } else {
+        argATM = atypeFactory.getAnnotatedType(argTree);
       }
-
-      VariableElement ve = methodElt.getParameters().get(i);
-      AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
-      AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
+
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
