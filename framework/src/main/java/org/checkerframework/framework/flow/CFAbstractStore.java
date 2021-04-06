@@ -82,7 +82,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return fieldValues;
   }
 
-  /** Information collected about arrays, using the internal representation {@link ArrayAccess}. */
+  /**
+   * Information collected about array elements, using the internal representation {@link
+   * ArrayAccess}.
+   */
   protected Map<ArrayAccess, V> arrayValues;
 
   /**
