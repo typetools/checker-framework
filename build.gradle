@@ -898,8 +898,7 @@ subprojects {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                 }
-                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
             }
 
             if (project.name.is('dataflow')) {
