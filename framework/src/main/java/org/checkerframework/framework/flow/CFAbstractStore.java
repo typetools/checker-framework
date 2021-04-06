@@ -44,6 +44,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
@@ -76,6 +77,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
+
+  /** The SideEffectsOnly.value argument/element. */
+  public ExecutableElement sideEffectsOnlyValueElement;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
@@ -130,6 +134,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     arrayValues = new HashMap<>();
     classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
+    sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
   }
 
   /** Copy constructor. */
@@ -142,6 +148,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     arrayValues = new HashMap<>(other.arrayValues);
     classValues = new HashMap<>(other.classValues);
     sequentialSemantics = other.sequentialSemantics;
+    sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
   }
 
   /**
@@ -213,7 +220,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       SourceChecker checker = analysis.checker;
 
       List<String> sideEffectsOnlyExpressionStrings =
-          AnnotationUtils.getElementValueArray(sefOnlyAnnotation, "value", String.class, true);
+          AnnotationUtils.getElementValueArray(
+              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
 
       for (String st : sideEffectsOnlyExpressionStrings) {
         try {
