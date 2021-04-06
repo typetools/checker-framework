@@ -112,6 +112,9 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the source code has parser errors
    */
   public static StubUnit parseStubUnit(InputStream inputStream) {
+    // The ParserConfiguration accumulates data each time parse is called, so create a new one each
+    // time.  There's no method to set the ParserConfiguration used by a JavaParser, so a JavaParser
+    // has to be created each time.
     ParserConfiguration configuration = new ParserConfiguration();
     // Store the tokens so that errors have line and column numbers.
     // configuration.setStoreTokens(false);
@@ -139,6 +142,9 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the expression has parser errors
    */
   public static Expression parseExpression(String expression) {
+    // The ParserConfiguration accumulates data each time parse is called, so create a new one each
+    // time.  There's no method to set the ParserConfiguration used by a JavaParser, so a JavaParser
+    // has to be created each time.
     ParserConfiguration configuration = new ParserConfiguration();
     configuration.setStoreTokens(false);
     configuration.setLexicalPreservationEnabled(false);
