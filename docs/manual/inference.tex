@@ -438,6 +438,11 @@ non-null arguments, but your program contains an error and one of the calls
 to \<m3> passes \<null> as the argument.  Then the tool will infer that
 \<m3>'s parameter has \<@Nullable> type.
 
+If you run whole-program inference on a library that contains mutually
+recursive routines, and there are no non-recursive calls to the routines,
+then whole-program inference may run a long time and eventually produce
+incorrect results.  In this case, write type annotations on the formal
+parameters of one of the routines.
 
 Whole-program inference is a ``forward analysis''.
 % This might change in the future.

@@ -1981,7 +1981,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the innermost enclosing method or class tree of {@code tree}, or {@code null} if {@code
    *     tree} is inside an annotation
    */
-  protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
+  public @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
     TreePath path = getPath(tree);
     Tree enclosing = TreePathUtil.enclosingOfKind(path, classMethodAnnotationKinds);
     if (enclosing != null) {

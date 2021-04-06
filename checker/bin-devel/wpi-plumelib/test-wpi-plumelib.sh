@@ -26,7 +26,7 @@ CHECKERFRAMEWORK="$(cd "$(dirname "$0")"/../../.. && pwd)"
 
 # Do not use a subdirectory of $CHECKERFRAMEWORK because if a project has no
 # `settings.gradle` file, Gradle will find one in $CHECKERFRAMEWORK.
-TESTDIR=$(mktemp -d "${TMPDIR:-/tmp}"/wpi-plumelib-tests-"$(date +%Y%m%d%H%M%S)"-XXX)
+TESTDIR=$(mktemp -d "${TMPDIR:-/tmp}"/wpi-plumelib-tests-"$(date +%Y%m%d-%H%M%S)"-XXX)
 
 # Takes two arguments, an input file (produced by compilation) and an output file.
 # Copies the input to the output, removing parts that might differ from run to run.
