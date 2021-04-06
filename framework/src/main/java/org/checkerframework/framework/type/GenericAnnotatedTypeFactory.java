@@ -908,32 +908,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public AnnotationMirror getAnnotationFromJavaExpression(
       JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
-
-    // Look in the store
-    if (CFAbstractStore.canInsertJavaExpression(expr)) {
-      Store store = getStoreBefore(tree);
-      Value value = store.getValue(expr);
-      if (value != null) {
-        // Is it possible that this lacks some annotations that appear in the type factory?
-        return getAnnotationByClass(value.getAnnotations(), clazz);
-      }
-    }
-
-    // Look in the type factory, if not found in the store.
-    if (expr instanceof LocalVariable) {
-      Element ele = ((LocalVariable) expr).getElement();
-      // Because of
-      // https://github.com/eisop/checker-framework/issues/14
-      // and the workaround in
-      // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
-      // The annotationMirror may not contain all explicitly written annotations.
-      return getAnnotatedType(ele).getAnnotation(clazz);
-    } else if (expr instanceof FieldAccess) {
-      Element ele = ((FieldAccess) expr).getField();
-      return getAnnotatedType(ele).getAnnotation(clazz);
-    } else {
-      return null;
-    }
+    return getAnnotation(getAnnotationsFromJavaExpression(expr, tree), clazz);
   }
 
   /**
