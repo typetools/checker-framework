@@ -344,7 +344,7 @@ public class DependentTypesHelper {
    * @param atm the method return type; is side-effected by this method
    * @param methodDeclTree a method declaration
    */
-  public void atReturnType(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
+  public void atMethodBody(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
     if (!hasDependentType(atm)) {
       return;
     }

@@ -1,7 +1,8 @@
-Version 3.12.1 (May 3, 2021)
+Version 3.13.0 (May 3, 2021)
 ----------------------------
 
-Forthcoming.
+Method renamings:
+ * `DependentTypesHelper.atReturnType` => `atMethodBody`
 
 
 Version 3.12.0 (April 1, 2021)
