@@ -32,7 +32,6 @@ public class RefineNeq {
     } else {
       @LTEqLengthOf("arr") int c = b;
 
-      // :: error: (assignment.type.incompatible)
       @LTLengthOf("arr") int g = b;
     }
     // :: error: (assignment.type.incompatible)

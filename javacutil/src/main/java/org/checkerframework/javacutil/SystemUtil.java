@@ -158,6 +158,65 @@ public class SystemUtil {
   ///
 
   /**
+   * Returns a list that contains all the distinct elements of the two lists: that is, the union of
+   * the two arguments.
+   *
+   * <p>For very short lists, this is likely more efficient than creating a set and converting back
+   * to a list.
+   *
+   * @param <T> the type of the list elements
+   * @param list1 a list
+   * @param list2 a list
+   * @return a list that contains all the distinct elements of the two lists
+   */
+  public static <T> List<T> union(List<T> list1, List<T> list2) {
+    List<T> result = new ArrayList<>(list1.size() + list2.size());
+    addWithoutDuplicates(result, list1);
+    addWithoutDuplicates(result, list2);
+    return result;
+  }
+
+  /**
+   * Adds, to dest, all the elements of source that are not already in dest.
+   *
+   * <p>For very short lists, this is likely more efficient than creating a set and converting back
+   * to a list.
+   *
+   * @param <T> the type of the list elements
+   * @param dest a list to add to
+   * @param source a list of elements to add
+   */
+  @SuppressWarnings(
+      "nullness:argument.type.incompatible" // true positive:  `dest` might be incompatible with
+  // null and `source` might contain null.
+  )
+  public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {
+    for (T elt : source) {
+      if (!dest.contains(elt)) {
+        dest.add(elt);
+      }
+    }
+  }
+
+  /**
+   * Returns a list that contains all the elements that are in both lists: that is, the set
+   * difference of the two arguments.
+   *
+   * <p>For very short lists, this is likely more efficient than creating a set and converting back
+   * to a list.
+   *
+   * @param <T> the type of the list elements
+   * @param list1 a list
+   * @param list2 a list
+   * @return a list that contains all the elements of {@code list1} that are not in {@code list2}
+   */
+  public static <T> List<T> intersection(List<? extends T> list1, List<? extends T> list2) {
+    List<T> result = new ArrayList<>(list1);
+    result.retainAll(list2);
+    return result;
+  }
+
+  /**
    * Concatenates two arrays. Can be invoked varargs-style.
    *
    * @param <T> the type of the array elements
