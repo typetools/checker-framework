@@ -438,6 +438,11 @@ non-null arguments, but your program contains an error and one of the calls
 to \<m3> passes \<null> as the argument.  Then the tool will infer that
 \<m3>'s parameter has \<@Nullable> type.
 
+If you run whole-program inference on a library that contains mutually
+recursive routines, and there are no non-recursive calls to the routines,
+then whole-program inference may run a long time and eventually produce
+incorrect results.  In this case, write type annotations on the formal
+parameters of one of the routines.
 
 Whole-program inference is a ``forward analysis''.
 % This might change in the future.
@@ -478,7 +483,7 @@ Annotate the field to be ignored with
 \refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
 
 Whole-program inference, for a type-checker other than the Nullness Checker,
-ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
+ignores assignments and pseudo-assignments where the right-hand-side is the \<null> literal.
 
 
 \subsectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}

@@ -42,6 +42,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -50,8 +51,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * {@link WholeProgramInferenceStorage} to store annotations and to create output files.
  *
  * <p>This class does not perform inference for an element if the element has explicit annotations.
- * That is, calling an update* method on an explicitly annotated field, method return, or method
- * parameter has no effect.
+ * That is, calling an {@code update*} method on an explicitly annotated field, method return, or
+ * method parameter has no effect.
  *
  * <p>In addition, whole program inference ignores inferred types in a few scenarios. When
  * discovering a use, WPI ignores an inferred type if:
@@ -152,9 +153,41 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    // Don't infer formal parameter types from recursive calls.
+    //
+    // When performing WPI on a library, if there are no external calls (only recursive calls), then
+    // each iteration of WPI would make the formal parameter types more restrictive, leading to an
+    // infinite (or very long) loop.
+    //
+    // Consider
+    //   void myMethod(int x) { ... myMethod(x-1) ... }`
+    // On one iteration, if x has type IntRange(to=100), the recursive call's argument has type
+    // IntRange(to=99).  If that is the only call to `MyMethod`, then the formal parameter type
+    // would be updated.  On the next iteration it would be refined again to @IntRange(to=98), and
+    // so forth.  A recursive call should never restrict a formal parameter type.
+    if (isRecursiveCall(methodInvNode)) {
+      return;
+    }
+
     List<Node> arguments = methodInvNode.getArguments();
     updateInferredExecutableParameterTypes(methodElt, arguments);
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
+  }
+
+  /**
+   * Returns true if the given call is a recursive call.
+   *
+   * @param methodInvNode a method invocation
+   * @return true if the given call is a recursive call
+   */
+  private boolean isRecursiveCall(MethodInvocationNode methodInvNode) {
+    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(methodInvNode.getTreePath());
+    if (enclosingMethod == null) {
+      return false;
+    }
+    ExecutableElement methodInvocEle = TreeUtils.elementFromUse(methodInvNode.getTree());
+    ExecutableElement methodDeclEle = TreeUtils.elementFromDeclaration(enclosingMethod);
+    return methodDeclEle.equals(methodInvocEle);
   }
 
   /**
@@ -501,8 +534,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param defLoc the location where the annotation will be added
    * @param rhsATM the RHS of the annotated type on the source code
    * @param lhsATM the LHS of the annotated type on the source code
-   * @param file path to the annotation file containing the executable; used for marking the scene
-   *     as modified (needing to be written to disk)
+   * @param file the annotation file containing the executable; used for marking the scene as
+   *     modified (needing to be written to disk)
    */
   protected void updateAnnotationSet(
       T annotationsToUpdate,
@@ -529,8 +562,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param defLoc the location where the annotation will be added
    * @param rhsATM the RHS of the annotated type on the source code
    * @param lhsATM the LHS of the annotated type on the source code
-   * @param file path to the annotation file containing the executable; used for marking the scene
-   *     as modified (needing to be written to disk)
+   * @param file annotation file containing the executable; used for marking the scene as modified
+   *     (needing to be written to disk)
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
    */

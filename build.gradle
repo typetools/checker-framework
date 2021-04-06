@@ -746,7 +746,7 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        // These pass and are run by nonJunitTests.
+        // These pass and are run by typecheckTests.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
@@ -759,7 +759,8 @@ subprojects {
             'org.checkerframework.framework.util.PurityChecker')
         createCheckTypeTask(project.name, 'Signature',
             'org.checkerframework.checker.signature.SignatureChecker')
-        // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
+        // These pass on some subprojects, which the `typecheck` task runs.
+        // TODO: Incrementally add @AnnotatedFor on more classes.
         createCheckTypeTask(project.name, 'Nullness',
             'org.checkerframework.checker.nullness.NullnessChecker',
             ['-AskipUses=com.sun.*'])
@@ -885,7 +886,7 @@ subprojects {
 
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
-            description 'Run all Checker Framework tests except for the Junit tests.'
+            description 'Run all Checker Framework tests except for the Junit tests and inference tests.'
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('jtregTests')
             }
@@ -907,6 +908,14 @@ subprojects {
             }
         }
 
+        // Create an inferenceTests task per project
+        tasks.create(name: 'inferenceTests', group: 'Verification') {
+            description 'Run inference tests.'
+            if (project.name.is('checker')) {
+                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+            }
+        }
+
         // Create a typecheck task per project (dogfooding the Checker Framework on itself).
         // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
         // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
@@ -921,11 +930,11 @@ subprojects {
         }
 
         // Create an allTests task per project.
-        // allTests = test + nonJunitTests + typecheck
+        // allTests = test + nonJunitTests + inferenceTests + typecheck
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
-            dependsOn('nonJunitTests', 'test', 'typecheck')
+            dependsOn('test', 'nonJunitTests', 'inferenceTests', 'typecheck')
         }
 
         task javadocPrivate(dependsOn: javadoc) {

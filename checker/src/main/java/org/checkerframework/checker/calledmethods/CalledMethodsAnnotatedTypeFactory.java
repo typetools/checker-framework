@@ -9,6 +9,7 @@ import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -52,7 +53,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
-   * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
+   * #adjustMethodNameUsingValueChecker(Name, MethodInvocationTree)}.
    */
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
@@ -151,19 +152,21 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition. Otherwise,
    *     return the first argument.
    */
+  // This cannot return a Name because filterTreeToMethodName cannot.
   public String adjustMethodNameUsingValueChecker(
-      final String methodName, final MethodInvocationTree tree) {
+      final Name methodName, final MethodInvocationTree tree) {
     if (!useValueChecker) {
-      return methodName;
+      return methodName.toString();
     }
 
     ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
-    if (!"com.amazonaws.services.ec2.model.DescribeImagesRequest"
-        .equals(ElementUtils.enclosingTypeElement(invokedMethod).getQualifiedName().toString())) {
-      return methodName;
+    if (!ElementUtils.enclosingTypeElement(invokedMethod)
+        .getQualifiedName()
+        .contentEquals("com.amazonaws.services.ec2.model.DescribeImagesRequest")) {
+      return methodName.toString();
     }
 
-    if ("withFilters".equals(methodName) || "setFilters".equals(methodName)) {
+    if (methodName.contentEquals("withFilters") || methodName.contentEquals("setFilters")) {
       ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
       for (Tree filterTree : tree.getArguments()) {
         if (TreeUtils.isMethodInvocation(
@@ -177,7 +180,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         }
       }
     }
-    return methodName;
+    return methodName.toString();
   }
 
   /**
@@ -200,13 +203,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param valueATF the type factory from the Value Checker
    * @return the adjusted method name, or null if the method name should not be adjusted
    */
+  // This cannot return a Name because filterKindToMethodName cannot.
   private @Nullable String filterTreeToMethodName(
       Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
     while (filterTree != null && filterTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
 
       MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
-      if ("withName".equals(filterMethodName)
+      if (filterMethodName.contentEquals("withName")
           && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
         Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
         String withNameArg = ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
@@ -270,11 +274,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
       // Accumulate a method call, by adding the method being invoked to the return type.
       if (returnsThis(tree)) {
-        String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
-        methodName = adjustMethodNameUsingValueChecker(methodName, tree);
+        Name methodName = TreeUtils.getMethodName(tree.getMethodSelect());
+        String methodNameString = adjustMethodNameUsingValueChecker(methodName, tree);
         AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);
         AnnotationMirror newAnno =
-            qualHierarchy.greatestLowerBound(oldAnno, createAccumulatorAnnotation(methodName));
+            qualHierarchy.greatestLowerBound(
+                oldAnno, createAccumulatorAnnotation(methodNameString));
         type.replaceAnnotation(newAnno);
       }
 

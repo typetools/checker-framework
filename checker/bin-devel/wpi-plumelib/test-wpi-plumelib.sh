@@ -26,7 +26,7 @@ CHECKERFRAMEWORK="$(cd "$(dirname "$0")"/../../.. && pwd)"
 
 # Do not use a subdirectory of $CHECKERFRAMEWORK because if a project has no
 # `settings.gradle` file, Gradle will find one in $CHECKERFRAMEWORK.
-TESTDIR=$(mktemp -d "${TMPDIR:-/tmp}"/wpi-plumelib-tests-"$(date +%Y%m%d%H%M%S)"-XXX)
+TESTDIR=$(mktemp -d "${TMPDIR:-/tmp}"/wpi-plumelib-tests-"$(date +%Y%m%d-%H%M%S)"-XXX)
 
 # Takes two arguments, an input file (produced by compilation) and an output file.
 # Copies the input to the output, removing parts that might differ from run to run.
@@ -64,7 +64,7 @@ test_wpi_plume_lib() {
     java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
     # The project may not build after running RemoveAnnotationsForInference, because some casts
     # may become redundant and javac -Xlint:all yields "warning: [cast] redundant cast to ...".
-    "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace "-Alint:all" "-Alint:all,-cast" build.gradle
+    "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
 
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
 
