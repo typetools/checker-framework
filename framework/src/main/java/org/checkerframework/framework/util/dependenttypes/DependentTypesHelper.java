@@ -268,7 +268,8 @@ public class DependentTypesHelper {
    * Viewpoint-adapts a method or constructor invocation.
    *
    * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
-   * type annotations. This method viewpoint-adapts the dependent type annotations.
+   * type annotations. (For example, type variables have been substituted and polymorphic qualifiers
+   * have been resolved.) This method viewpoint-adapts the dependent type annotations.
    *
    * @param methodType type of the method or constructor invocation; is side-effected by this method
    * @param tree invocation of the method or constructor
