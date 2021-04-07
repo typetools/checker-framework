@@ -42,6 +42,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -140,7 +141,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   @Override
   public void updateFromMethodInvocation(
       MethodInvocationNode methodInvNode,
-      Tree receiverTree,
       ExecutableElement methodElt,
       CFAbstractStore<?, ?> store) {
     // Don't infer types for code that isn't presented as source.
@@ -152,9 +152,41 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    // Don't infer formal parameter types from recursive calls.
+    //
+    // When performing WPI on a library, if there are no external calls (only recursive calls), then
+    // each iteration of WPI would make the formal parameter types more restrictive, leading to an
+    // infinite (or very long) loop.
+    //
+    // Consider
+    //   void myMethod(int x) { ... myMethod(x-1) ... }`
+    // On one iteration, if x has type IntRange(to=100), the recursive call's argument has type
+    // IntRange(to=99).  If that is the only call to `MyMethod`, then the formal parameter type
+    // would be updated.  On the next iteration it would be refined again to @IntRange(to=98), and
+    // so forth.  A recursive call should never restrict a formal parameter type.
+    if (isRecursiveCall(methodInvNode)) {
+      return;
+    }
+
     List<Node> arguments = methodInvNode.getArguments();
     updateInferredExecutableParameterTypes(methodElt, arguments);
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
+  }
+
+  /**
+   * Returns true if the given call is a recursive call.
+   *
+   * @param methodInvNode a method invocation
+   * @return true if the given call is a recursive call
+   */
+  private boolean isRecursiveCall(MethodInvocationNode methodInvNode) {
+    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(methodInvNode.getTreePath());
+    if (enclosingMethod == null) {
+      return false;
+    }
+    ExecutableElement methodInvocEle = TreeUtils.elementFromUse(methodInvNode.getTree());
+    ExecutableElement methodDeclEle = TreeUtils.elementFromDeclaration(enclosingMethod);
+    return methodDeclEle.equals(methodInvocEle);
   }
 
   /**
