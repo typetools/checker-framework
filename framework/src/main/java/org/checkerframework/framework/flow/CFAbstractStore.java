@@ -206,6 +206,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * </ol>
    *
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
+   *
+   * @param methodInvocationNode method whose information is being updated
+   * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param val abstract value of the method call
    */
   public void updateForMethodCall(
       MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
