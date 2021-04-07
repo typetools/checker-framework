@@ -176,8 +176,8 @@ error: [type.argument.type.incompatible] incompatible type argument for type par
 The important mismatch here is that \<Partitioner> has explicit bounds, but \<MultiRandSelector>
 does not. You could eliminate this false positive by either:
 \begin{itemize}
-\item adding an explicit bound to \<MultiRandSelector>: i.e. changing its declaration to \<class MultiRandSelector<T extends Object>>, or
-\item removing the explicit bound from \<Partition>: i.e. changing its declaration to \<interface Partition<ELEMENT, CLASS>>.
+\item adding an explicit bound to \<MultiRandSelector>, changing its declaration to \<class MultiRandSelector<T extends Object>>, or
+\item removing the explicit bound from \<Partition>, changing its declaration to \<interface Partition<ELEMENT, CLASS>>.
 \end{itemize}
 
 These two changes are semantically equivalent.  In this case, we preferred
