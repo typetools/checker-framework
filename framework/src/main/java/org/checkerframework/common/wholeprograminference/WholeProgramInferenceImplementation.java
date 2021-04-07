@@ -204,19 +204,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     for (int i = 0; i < arguments.size(); i++) {
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
-      if (argTree == null) {
-        String msg =
-            String.format(
-                "updateInferredExecutableParameterTypes(%s, %s)%n  i=%d, arg=%s [%s], argTree=null",
-                methodElt, arguments, i, arg, arg.getClass());
-        System.out.println(msg);
-        throw new BugInCF(msg);
-        // TODO: Handle variable-length list as parameter.
-        // An ArrayCreationNode with a null tree is created when the
-        // parameter is a variable-length list. We are ignoring it for now.
-        // See Issue 682: https://github.com/typetools/checker-framework/issues/682
-        // continue;
-      }
 
       VariableElement ve = methodElt.getParameters().get(i);
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
