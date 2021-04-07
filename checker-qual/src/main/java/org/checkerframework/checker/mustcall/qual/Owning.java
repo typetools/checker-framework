@@ -7,7 +7,9 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation indicating ownership should be transferred to the parameter or field, for the purposes
- * of MustCall checking.
+ * of Must Call checking.
+ *
+ * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})

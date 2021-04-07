@@ -32,6 +32,8 @@ import java.lang.annotation.Target;
  * method M, then all return sites in M must be calls to other methods with equivalent
  * {@code @MustCallAlias} annotations, or calls to constructors that satisfy the rules described in
  * the preceding paragraph and are also annotated as {@code @MustCallAlias}.
+ *
+ * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

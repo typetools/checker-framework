@@ -21,6 +21,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * <p>In practice, this means that value of a type that is annotated with {@code @MustCall({"m1",
  * "m2"})} may be obligated to call "m1" and/or "m2" before it is deallocated. Such a value is
  * guaranteed not to be obligated to call any other methods.
+ *
+ * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

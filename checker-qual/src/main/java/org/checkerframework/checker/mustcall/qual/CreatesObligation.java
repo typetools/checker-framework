@@ -26,6 +26,8 @@ import org.checkerframework.framework.qual.JavaExpression;
  *
  * <p>This annotation is repeatable: a programmer may write more than one {@code CreatesObligation}
  * annotation on a single method. If so, the annotations should have different targets.
+ *
+ * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Target({ElementType.METHOD})
 @InheritedAnnotation
@@ -47,6 +49,8 @@ public @interface CreatesObligation {
    *
    * <p>Programmers generally do not need to write this. It is created by Java when a programmer
    * writes more than one {@link CreatesObligation} annotation at the same location.
+   *
+   * @checker_framework.manual #must-call-checker Must Call Checker
    */
   @Documented
   @Retention(RetentionPolicy.RUNTIME)

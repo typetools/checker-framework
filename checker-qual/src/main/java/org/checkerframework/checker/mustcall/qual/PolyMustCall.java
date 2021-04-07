@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
- * The polymorphic qualifier for the MustCall type system.
+ * The polymorphic qualifier for the Must Call type system.
  *
- * @checker_framework.manual #must-call-checker Optional Checker
+ * @checker_framework.manual #must-call-checker Must Call Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
