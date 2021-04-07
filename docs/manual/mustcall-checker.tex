@@ -138,12 +138,15 @@ does lead to imprecision since the string does not need to be closed.
 
 \sectionAndLabel{Type parameters with implicit vs explicit bounds sometimes cause (fixable) false positives}{must-call-type-params}
 
-The defaulting rules for \<@MustCall> sometimes produce unexpected errors in code
-that uses type parameters with implicit upper bounds (i.e., without an \<extends> clause).
-The errors can be fixed by adding an explicit bound, as described in Section~\ref{upper-bound-for-use}.
-For example, consider the following
-example of a class with a type parameter and a field of an interface type that uses that
-type parameter (from \href{https://github.com/plume-lib/plume-util}{plume-lib/plume-util}):
+The defaulting rules for \<@MustCall> sometimes produce unexpected checker
+warnings in code that uses type parameters with implicit upper bounds
+(i.e., without an \<extends> clause).  You can prevent the checker from
+issuing the warning by adding an explicit bound, as described in
+Section~\ref{upper-bound-for-use}.  For example, consider the following
+example (from
+\href{https://github.com/plume-lib/plume-util}{plume-lib/plume-util}) of a
+class with a type parameter and a field of an interface type that uses that
+type parameter:
 \begin{Verbatim}
     class MultiRandSelector<T> {
         private Partition<T, T> eq;
@@ -152,21 +155,23 @@ type parameter (from \href{https://github.com/plume-lib/plume-util}{plume-lib/pl
     interface Partition<ELEMENT extends @Nullable Object, CLASS extends @Nullable Object> {}
 \end{Verbatim}
 
-Running the Must Call Checker on this code produces two unexpected errors, at each use
+Running the Must Call Checker on this code produces two errors, at each use
 of \<T> in \<MultiRandSelector>:
 
+\begin{smaller}
 \begin{Verbatim}
-must-call-checker/tests/mustcall/PlumeUtilRequiredAnnotations.java:19: error: [type.argument.type.incompatible] incompatible type argument for type parameter ELEMENT of Partitioner.
+error: [type.argument.type.incompatible] incompatible type argument for type parameter ELEMENT of Partitioner.
         private Partitioner<T, T> eq;
                             ^
   found   : T extends @MustCallUnknown Object
   required: @MustCall Object
-must-call-checker/tests/mustcall/PlumeUtilRequiredAnnotations.java:19: error: [type.argument.type.incompatible] incompatible type argument for type parameter CLASS of Partitioner.
+error: [type.argument.type.incompatible] incompatible type argument for type parameter CLASS of Partitioner.
         private Partitioner<T, T> eq;
                                ^
   found   : T extends @MustCallUnknown Object
   required: @MustCall Object
 \end{Verbatim}
+\end{smaller}
 
 The important mismatch here is that \<Partitioner> has explicit bounds, but \<MultiRandSelector>
 does not. You could eliminate this false positive by either:
@@ -175,6 +180,6 @@ does not. You could eliminate this false positive by either:
 \item removing the explicit bound from \<Partition>: i.e. changing its declaration to \<interface Partition<ELEMENT, CLASS>>.
 \end{itemize}
 
-These two changes are semantically equivalent, but you might prefer one over the other (in this case, for example,
-we preferred the former, since changing to the latter would remove the explicit \<@Nullable> annotations on
-\<ELEMENT> and \<CLASS>).
+These two changes are semantically equivalent.  In this case, we preferred
+the former, since the latter would remove the explicit \<@Nullable>
+annotations on \<ELEMENT> and \<CLASS>).
