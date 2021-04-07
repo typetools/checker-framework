@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script test-cftests-all.sh = tests-cftests-junit.sh + tests-cftests-nonjunit.sh .
+# This script test-cftests-all.sh = tests-cftests-junit.sh + tests-cftests-nonjunit.sh + tests-cftests-inference.sh .
 
 set -e
 set -o verbose

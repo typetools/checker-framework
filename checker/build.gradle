@@ -629,7 +629,7 @@ task wholeProgramInferenceNullnessJaifTests(dependsOn: 'shadowJar', group: 'Veri
 
 
 // Empty task that just runs both the jaif and stub WPI tests.
-// It is run as part of the nonJunitTests task.
+// It is run as part of the inferenceTests task.
 task wholeProgramInferenceTests(group: 'Verification') {
     description "Run tests for all whole program inference modes."
     dependsOn('wholeProgramInferenceTestCheckerJaifTests')
@@ -638,7 +638,7 @@ task wholeProgramInferenceTests(group: 'Verification') {
     dependsOn('wholeProgramInferenceNullnessJaifTests')
 }
 
-// This is run as part of the nonJunitTests task.
+// This is run as part of the inferenceTests task.
 task wpiManyTests(group: "Verification") {
     description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
     dependsOn(copyJarsToDist)
@@ -696,7 +696,7 @@ task wpiManyTests(group: "Verification") {
     }
 }
 
-// This is run as part of the nonJunitTests task.
+// This is run as part of the inferenceTests task.
 task wpiPlumeLibTests(group: "Verification") {
     description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
     dependsOn(copyJarsToDist)
