@@ -22,24 +22,24 @@ are shown in Figure~\ref{fig-must-call-hierarchy}:
 \item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}]
   indicates that the qualifier's arguments are a superset of the methods that the annotated program element
   must call before it is de-allocated.
-  The type \<@MustCall(\{"close"\}) OutputStream>, for example, can be read as ``an OutputStream that might need
-  to call close before it is de-allocated.''
+  The type \<@MustCall(\{"close"\}) OutputStream> represents an \<OutputStream> that might need
+  to call \<close()> before it is de-allocated.
   The default type qualifier for an unannotated type is \<@MustCall(\{\})>.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallUnknown}]
-  is used internally by the type system but should never be written by a
-  programmer.  It theoretically represents a value with an unknowable or infinite set
-  of must-call methods.
+  represents a value with an unknowable or infinite set of must-call methods.
+  It is used internally by the type system but should never be written by a
+  programmer.
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
-  is an alias of \<@MustCall> that can only be written on a class declaration. It adds an \<@MustCall>
-  annotation with the same arguments to
-  the class declaration on which it is written, and also to all subclasses, freeing the user of the need
-  to write the \<@MustCall> annotation on every subclass.
+  is an alias of \<@MustCall> that can only be written on a class declaration.
+  It applies both to the class declaration on which it is written and also to all subclasses.
+  This freeing the user of the need to write the \<@MustCall> annotation on every subclass.
 
 \item[\refqualclass{checker/mustcall/qual}{PolyMustCall}]
-  is the polymorphic annotation for the Must Call type system
-  (Section~\ref{method-qualifier-polymorphism}).
+  is the polymorphic annotation for the Must Call type system.
+  For a description of polymorphic qualifiers, see
+  Section~\ref{method-qualifier-polymorphism}.
 
 \end{description}
 
@@ -68,10 +68,13 @@ A completely unannotated program will always type-check without warnings.
 For the Must Call Checker to be useful, the programmer should supply at least one non-empty
 \<@MustCall> annotation, either in source code or in a stub file.
 
-\sectionAndLabel{Example use}{must-call-example}
+\sectionAndLabel{Writing \<@MustCall> on a class}{must-call-on-class}
 
-If a user annotates a class declaration with a \<@MustCall(...)> annotation, any use of the class's
-type has that \<@MustCall> annotation by default. For example, given the following class annotation:
+As explained in Section~\ref{upper-bound-for-use}, if a user writes a type
+annotation on a class declaration, any use of the class's type has that
+annotation annotation by default.
+
+For example, given the following class annotation:
 \begin{Verbatim}
     package java.net;
 
@@ -112,30 +115,31 @@ any use of \<Socket> defaults to \<@MustCall(\{"close"\}) Socket>.
 %% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
 %% Call Checker.
 
+
 \sectionAndLabel{Strings cannot have must-call obligations}{must-call-impl}
 
 This type system should not be used to track a must-call obligation for a \<String>, because it treats all
-String concatenations as having the type \<@MustCall(\{\})>.
-Normally it is the case that a newly-constructed String (whether created via new String or a string literal
-or concatenation) has no must-call obligation, just like any other object whose type declaration isn't annotated with a
-non-empty \<@MustCall> type. \<java.lang.String> is an exception: even if the declaration of \<java.lang.String> were
-annotated with a non-empty \<@MustCall> annotation, the result of a string concatenation would still be \<@MustCall(\{\})>.
+String concatenations as having the type \<@MustCall(\{\})>.  (It does so
+even if you change the annotated JDK or a stub file to add a
+\<@MustCall(...)>\@ annotation to the declaration of \<String>.)
 
-This special-casing is to avoid cases where
-an object with a must-call obligation is implicitly converted to a \<String>, creating a must-call obligation
-that could never be fulfilled (this is not unsound, but it does reduce precision). For example, suppose that
-all \<Socket> objects are \<@MustCall(\{"close"\})>. Without special-casing string concatenations, the type of
-\<str> in the following code would be \<@MustCall(\{"close"\})>, even though \<str>'s dynamic type is \<String>, not
-\<Socket>:
+This special-casing is because an object is sometimes implicitly converted
+to a \<String>, which inherits the object's annotations.
+Consider the following example:
 \begin{Verbatim}
-    Socket sock = ...;
-    String str = "this is the result of my socket's toString() function, which is invoked implicitly: " + sock;
+    @MustCall("close") Socket sock = ...;
+    String str = "here is sock.toString(): " + sock;
 \end{Verbatim}
+\noindent
+Without special-casing string concatenations, the type of
+\<str> would be \<@MustCall(\{"close"\})>.  This is not unsound, but it
+does lead to imprecision since the string does not need to be closed.
+
 
 \sectionAndLabel{Type parameters with implicit vs explicit bounds sometimes cause (fixable) false positives}{must-call-type-params}
 
 The defaulting rules for \<@MustCall> sometimes produce unexpected errors in code
-that uses type parameters with implicit upper bounds (i.e. without an \<extends> clause).
+that uses type parameters with implicit upper bounds (i.e., without an \<extends> clause).
 The errors can be fixed by adding an explicit bound, as described in Section~\ref{upper-bound-for-use}.
 For example, consider the following
 example of a class with a type parameter and a field of an interface type that uses that
