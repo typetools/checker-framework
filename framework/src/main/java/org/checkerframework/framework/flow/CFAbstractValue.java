@@ -254,8 +254,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     Set<AnnotationMirror> mostSpecific =
         ms.combineSets(
             this.getUnderlyingType(),
-            other.getUnderlyingType(),
             this.getAnnotations(),
+            other.getUnderlyingType(),
             other.getAnnotations(),
             canBeMissingAnnotations(mostSpecifTypeMirror));
     if (ms.error) {
@@ -419,8 +419,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     Set<AnnotationMirror> lub =
         valueLub.combineSets(
             this.getUnderlyingType(),
-            other.getUnderlyingType(),
             this.getAnnotations(),
+            other.getUnderlyingType(),
             other.getAnnotations(),
             canBeMissingAnnotations(lubTypeMirror));
     return analysis.createAbstractValue(lub, lubTypeMirror);
@@ -531,8 +531,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     Set<AnnotationMirror> glb =
         valueGlb.combineSets(
             this.getUnderlyingType(),
-            other.getUnderlyingType(),
             this.getAnnotations(),
+            other.getUnderlyingType(),
             other.getAnnotations(),
             canBeMissingAnnotations(glbTypeMirror));
     return analysis.createAbstractValue(glb, glbTypeMirror);
@@ -620,18 +620,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /**
      * Combines the two sets.
      *
-     * @param aTypeMirror
-     * @param bTypeMirror
-     * @param aSet
-     * @param bSet
+     * @param aTypeMirror the type mirror associated with {@code aSet}
+     * @param aSet a set of annotation mirrors
+     * @param bTypeMirror the type mirror associated with {@code bSet}
+     * @param bSet a set of annotation mirrors
      * @param canCombinedSetBeMissingAnnos whether or not the combined set can be missing
      *     annotations
      * @return the combined sets
      */
     protected Set<AnnotationMirror> combineSets(
         TypeMirror aTypeMirror,
-        TypeMirror bTypeMirror,
         Set<AnnotationMirror> aSet,
+        TypeMirror bTypeMirror,
         Set<AnnotationMirror> bSet,
         boolean canCombinedSetBeMissingAnnos) {
 
@@ -715,7 +715,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * variable, then the {@link AnnotatedTypeVariable} for its declaration is returned. Otherwise,
    * {@code null} is returned.
    *
-   * @param typeMirror
+   * @param typeMirror a type mirror
    * @return the AnnotatedTypeVariable associated with the given TypeMirror or null
    */
   private @Nullable AnnotatedTypeVariable getEffectTypeVar(@Nullable TypeMirror typeMirror) {
