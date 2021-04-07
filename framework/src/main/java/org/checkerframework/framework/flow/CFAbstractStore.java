@@ -476,13 +476,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return true;
   }
 
+  /**
+   * A functional interface that merges two values.
+   *
+   * @param <V> the type of the values
+   */
+  @FunctionalInterface
   interface MergeValues<V> {
+
+    /**
+     * A function that merges two values.
+     *
+     * @param old the previous value
+     * @param newValue the new value
+     * @return the merged value
+     */
     V apply(V old, V newValue);
   }
 
-  private static <V extends CFAbstractValue<V>> V mostSpecificNoBackUp(V old, V newValue) {
-    return newValue.mostSpecific(old, null);
-  }
   /**
    * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
    * #insertValuePermitNondeterministic}.
@@ -503,11 +514,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected void insertValue(
       JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
     computeNewValueAndInsert(
-        expr, value, CFAbstractStore::mostSpecificNoBackUp, permitNondeterministic);
+        expr, value, (old, newValue) -> newValue.mostSpecific(old, null), permitNondeterministic);
   }
 
+  /**
+   * Inserts the result of applying {@code merger} to {@code value} and the previous value for
+   * {@code expr}.
+   *
+   * @param expr the JavaExpression
+   * @param value the value of the JavaExpression
+   * @param merger the function used to merge {@code value} and the previous value of {@code expr}
+   * @param permitNondeterministic if false, does nothing if {@code expr} is nondeterministic; if
+   *     true, permits nondeterministic expressions to be placed in the store
+   */
   protected void computeNewValueAndInsert(
-      JavaExpression expr, @Nullable V value, MergeValues<V> b, boolean permitNondeterministic) {
+      JavaExpression expr,
+      @Nullable V value,
+      MergeValues<V> merger,
+      boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
       return;
     }
@@ -515,7 +539,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       V oldValue = localVariableValues.get(localVar);
-      V newValue = b.apply(oldValue, value);
+      V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
@@ -526,7 +550,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
       if (sequentialSemantics || isMonotonic || fieldAcc.isUnassignableByOtherCode()) {
         V oldValue = fieldValues.get(fieldAcc);
-        V newValue = b.apply(oldValue, value);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           fieldValues.put(fieldAcc, newValue);
         }
@@ -536,7 +560,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
         V oldValue = methodValues.get(method);
-        V newValue = b.apply(oldValue, value);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           methodValues.put(method, newValue);
         }
@@ -545,7 +569,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       ArrayAccess arrayAccess = (ArrayAccess) expr;
       if (sequentialSemantics) {
         V oldValue = arrayValues.get(arrayAccess);
-        V newValue = b.apply(oldValue, value);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           arrayValues.put(arrayAccess, newValue);
         }
@@ -554,7 +578,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       ThisReference thisRef = (ThisReference) expr;
       if (sequentialSemantics || thisRef.isUnassignableByOtherCode()) {
         V oldValue = thisValue;
-        V newValue = b.apply(oldValue, value);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           thisValue = newValue;
         }
@@ -563,7 +587,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       ClassName className = (ClassName) expr;
       if (sequentialSemantics || className.isUnassignableByOtherCode()) {
         V oldValue = classValues.get(className);
-        V newValue = b.apply(oldValue, value);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           classValues.put(className, newValue);
         }
