@@ -338,11 +338,11 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Viewpoint-adapts the Java expressions in annotations written on the return type of the method
-   * declaration to the body of the method. This means the parameter syntax, e.g. "#2", is converted
-   * to the names of the parameter.
+   * Viewpoint-adapts the Java expressions in annotations written on the signature of the method
+   * declaration (for example, a return type) to the body of the method. This means the parameter
+   * syntax, e.g. "#2", is converted to the names of the parameter.
    *
-   * @param atm the method return type; is side-effected by this method
+   * @param atm a type at the method signature; is side-effected by this method
    * @param methodDeclTree a method declaration
    */
   public void atMethodBody(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
