@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation is an alias for {@link MustCall} that applies to the type on which it is written
- * and all of its subtypes. It is useful to avoid the need to annotate each subtype with an {@link
- * MustCall} annotation. This annotation may only be written on a class declaration.
+ * and all of its subtypes. It prevents the need to annotate each subtype with an {@link MustCall}
+ * annotation. This annotation may only be written on a class declaration.
  *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */

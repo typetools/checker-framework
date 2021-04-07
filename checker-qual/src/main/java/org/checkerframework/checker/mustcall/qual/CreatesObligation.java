@@ -11,21 +11,18 @@ import org.checkerframework.framework.qual.JavaExpression;
 
 /**
  * Indicates that the method resets the must-call obligation on the target (the value argument) to
- * its declaration when it is invoked. Calling a method with this annotation also clears the
- * called-methods store for the target (in the Object Construction Checker).
+ * its declaration. This effectively undoes flow-sensitive type refinement.
  *
  * <p>It is an error to call a method annotated by this annotation if the target object is declared
- * as having a non-empty CalledMethods type (i.e. its type is not top in the CM hierarchy).
+ * as having a non-empty CalledMethods type (i.e. its type is not top in the CalledMethods
+ * hierarchy).
  *
  * <p>It is an error to fail to write this annotation on any method that (re-)assigns a non-final,
- * owning field with a must-call obligation. It is an error if the target of that annotation is not
- * exactly the value "this".
+ * owning field whose declared type has a must-call obligation. It is an error if the target of that
+ * annotation is not the string "this".
  *
- * <p>This annotation is trusted, not checked (though it can only add obligations, so the analysis
- * remains conservative).
- *
- * <p>This annotation is repeatable: a programmer may write more than one {@code CreatesObligation}
- * annotation on a single method. If so, the annotations should have different targets.
+ * <p>This annotation is trusted, not checked. (Because this annotation can only add obligations,
+ * the analysis remains sound.)
  *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */
