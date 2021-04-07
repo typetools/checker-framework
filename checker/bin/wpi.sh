@@ -168,7 +168,7 @@ function configure_and_exec_dljc {
   eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1
 
   mkdir -p "${DIR}/dljc-out/"
-  dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout-$(date +%Y%m%d%H%M%S)-XXX")
+  dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout-$(date +%Y%m%d-%H%M%S)-XXX")
 
   PATH_BACKUP="${PATH}"
   export PATH="${JAVA_HOME}/bin:${PATH}"

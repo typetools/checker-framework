@@ -82,7 +82,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return fieldValues;
   }
 
-  /** Information collected about arrays, using the internal representation {@link ArrayAccess}. */
+  /**
+   * Information collected about array elements, using the internal representation {@link
+   * ArrayAccess}.
+   */
   protected Map<ArrayAccess, V> arrayValues;
 
   /**
@@ -327,10 +330,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the greatest lower
-   * bound of the new and old value is inserted into the store unless it's bottom. Some checkers do
-   * not override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror, AnnotationMirror)}
-   * and the default implementation will return the bottom qualifier incorrectly. So this method
-   * conservatively does not insert the glb if it is bottom.
+   * bound of the new and old value is inserted into the store.
    *
    * <p>Note that this happens per hierarchy, and if the store already contains information about a
    * hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
@@ -399,9 +399,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(newAnno, oldAnno);
-    if (AnnotationUtils.areSame(qualifierHierarchy.getBottomAnnotation(top), glb)) {
-      glb = newAnno;
-    }
 
     insertValue(
         expr, analysis.createSingleAnnotationValue(glb, expr.getType()), permitNondeterministic);

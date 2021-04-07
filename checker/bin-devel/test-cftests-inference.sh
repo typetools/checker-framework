@@ -13,7 +13,4 @@ source "$SCRIPTDIR"/build.sh
 
 
 
-./gradlew nonJunitTests --console=plain --warning-mode=all --no-daemon
-# Moved example-tests out of all tests because it fails in
-# the release script because the newest maven artifacts are not published yet.
-./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
+./gradlew inferenceTests --console=plain --warning-mode=all --no-daemon
