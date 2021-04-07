@@ -297,7 +297,7 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /**
-   * Create a new result for a string concatenation that forces their type to always be bottom.
+   * Create a new result for a string concatenation that forces its type to always be bottom.
    * Without this logic, implicit string conversions can cause string-typed expressions to take on
    * types from non-string arguments to a concatenation, which is undesirable.
    *
@@ -335,10 +335,10 @@ public class MustCallTransfer extends CFTransfer {
 
   /**
    * Either returns the temporary variable associated with node, or creates one if one does not
-   * exist. node must be an expression, not a statement.
+   * exist.
    *
-   * @param node a node
-   * @return a temporary variable node representing node that can be placed into a store
+   * @param node a node, which must be an expression (not a statement)
+   * @return a temporary variable node representing {@code node} that can be placed into a store
    */
   private @Nullable LocalVariableNode getOrCreateTempVar(Node node) {
     LocalVariableNode localVariableNode = atypeFactory.tempVars.get(node.getTree());

@@ -164,9 +164,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Creates a new MustCall annotation that is identical to the input, but does not have "close".
-   * Returns the same annotation mirror if the input annotation didn't have "close" as one of its
-   * element.
+   * Creates a new {@literal @}MustCall annotation that is identical to the input, but does not have
+   * "close". Returns the same annotation mirror if the input annotation didn't have "close" as one
+   * of its element.
    *
    * <p>The argument is permitted to be null. If it is null, then bottom is returned.
    *
