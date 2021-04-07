@@ -93,6 +93,7 @@ test_wpi_plume_lib html-pretty-print "formatter,index,interning,lock,nullness,re
 test_wpi_plume_lib icalavailable     "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
 test_wpi_plume_lib lookup            "formatter,index,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib multi-version-control "index,lock,nullness,regex,initializedfields"
-test_wpi_plume_lib options           "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
+## Commented out temporarily
+# test_wpi_plume_lib options           "formatter,index,interning,lock,nullness,regex,signature,initializedfields"
 
 echo "exiting test-wpi-plumelib.sh"
