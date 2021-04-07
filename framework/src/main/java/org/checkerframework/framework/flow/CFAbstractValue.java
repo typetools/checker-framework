@@ -399,6 +399,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * </ul>
    *
    * @param previous must be the previous value
+   * @return an upper bound of two values that is wider than the least upper bound of the two values
    */
   public V widenUpperBound(@Nullable V previous) {
     return upperBound(previous, true);
@@ -515,6 +516,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * </ul>
    *
    * @param other another value
+   * @return the greatest lower bound of two values
    */
   public V greatestLowerBound(@Nullable V other) {
     if (other == null) {
@@ -681,6 +683,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param top the top annotation in the hierarchy
+     * @param canCombinedSetBeMissingAnnos whether or not
      * @return the result of combining the two type variables, which may be null
      */
     protected abstract @Nullable AnnotationMirror combineNoAnnotations(
