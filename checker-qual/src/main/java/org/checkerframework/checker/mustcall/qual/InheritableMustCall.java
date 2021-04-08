@@ -18,9 +18,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface InheritableMustCall {
   /**
-   * Methods that must be called, on any expression whose type is annotated.
+   * Methods that might need to be called, on any expression whose type is annotated.
    *
-   * @return methods that must be called
+   * @return methods that might need to be called
    */
   public String[] value() default {};
 }

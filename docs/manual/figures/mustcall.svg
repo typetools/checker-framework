@@ -25,16 +25,16 @@
     <path d="m604.17 233.4" fill="none" stroke="#000" stroke-width="1.4111px"/>
     <g transform="translate(28.636 234.26)">
         <rect x="185.22px" y="31.009px" width="249.1px" height="43.36px" fill="none" stroke="#000" stroke-width="1.0249"/>
-        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="310" y="58" font-size="21.167px">@MustCall("a")</tspan></text>
+        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="310" y="58" font-size="21.167px">@MustCall("foo")</tspan></text>
     </g>
     <g transform="translate(245.56 234.26)">
         <rect x="257.39" y="31.009" width="246.7px" height="43.36" fill="none" stroke="#000" stroke-width="1.0249"/>
-        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="380" y="58" font-size="21.167px">@MustCall("b")</tspan></text>
+        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="380" y="58" font-size="21.167px">@MustCall("bar")</tspan></text>
     </g>
     <path d="m501.1 181.86" fill="none" stroke="#000" stroke-width="1.4111px"/>
     <g transform="translate(143.34 150.35)">
         <rect x="176.38px" y="31.124px" width="339.33px" height="43.13px" fill="none" stroke="#000" stroke-width="1.2545"/>
-        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="348.12827" y="55.567112" font-size="21.167px">@MustCall({"a", "b"})</tspan></text>
+        <text x="348.12827" y="55.567112" fill="#000000" font-family="'courier new'" font-size="21.167px" text-anchor="middle"><tspan x="348.12827" y="58" font-size="21.167px">@MustCall({"foo", "bar"})</tspan></text>
     </g>
     <g transform="matrix(.57938 .81506 -.81506 .57938 345.91 -247.02)">
         <line x1="460.5" x2="460.5" y1="200" y2="173.74" fill="none" stroke="#000" stroke-width="2"/>

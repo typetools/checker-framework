@@ -12,12 +12,20 @@ import java.lang.annotation.Target;
  * other on the method return type. Fulfilling the must-call obligation of one is equivalent to
  * fulfilling the must-call obligation of the other.
  *
- * <p>This annotation is useful for wrapper objects. For example, consider a Socket that must be
- * closed before it is de-allocated (i.e. its must-call type is {@code @MustCall("close")}). Calling
- * the {@code getOutputStream} on the Socket creates a new {@code OutputStream} object that wraps
- * the Socket. Calling its {@code close()} method will close the underlying socket, but the Socket
- * may also be closed directly. Calling close on either object is permitted -- thus,
- * {@code @MustCallAlias}.
+ * <p>This annotation is useful for wrapper objects. For example, consider the declaration of {@code
+ * java.net.Socket#getOutputStream}:
+ *
+ * <pre>
+ * @MustCall("close")
+ * class Socket {
+ *   @MustCallAlias OutputStream getOutputStream(@MustCallAlias Socket this) { ... }
+ * }
+ * </pre>
+ *
+ * When a client calls {@code getOutputStream} on the Socket creates a new {@code OutputStream}
+ * object that wraps the Socket. Calling its {@code close()} method will close the underlying
+ * socket, but the Socket may also be closed directly. Calling close on either object is permitted
+ * -- thus, both the receiver and return type above are annotated as {@code @MustCallAlias}.
  *
  * <h3>Verifying {@code @MustCallAlias} annotations</h3>
  *
@@ -28,14 +36,18 @@ import java.lang.annotation.Target;
  * <ul>
  *   <li>The constructor must always write p into exactly one field {@code f} of the new object.
  *   <li>Field {@code f} must be annotated {@code @}{@link Owning} (which necessitates that a
- *       must-call method of C resolves's {@code f}'s must-call obligations).
+ *       must-call method of the object being constructed resolves's {@code f}'s must-call
+ *       obligations).
  * </ul>
  *
  * For a method:
  *
  * <ul>
- *   <li>All return sites must be calls to other methods with equivalent {@code @MustCallAlias}
- *       annotations, or calls to constructors that have a {@code @MustCallAlias} annotation.
+ *   <li>All return sites must be calls to other methods or constructors with {@code @MustCallAlias}
+ *       return types, and this method's {@code @MustCallAlias} parameter must be passed in the
+ *       {@code MustCallAlias} position to that method or constructor (i.e., the calls must pass
+ *       {@code @MustCallAlias} parameter through a chain of {@code @MustCallAlias}-annotated
+ *       parameters and returns).
  * </ul>
  *
  * @checker_framework.manual #must-call-checker Must Call Checker
