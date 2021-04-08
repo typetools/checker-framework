@@ -2,7 +2,7 @@
  * @test
  * @summary Test case for issue #1438: https://github.com/typetools/checker-framework/issues/1438
  *
- * @compile/fail/timeout=60 -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue1438.java
+ * @compile/fail/timeout=90 -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue1438.java
  */
 
 import java.util.HashMap;
