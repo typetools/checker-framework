@@ -216,7 +216,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
     // List of expressions that this method side-effects (specified as arguments/elements of
-    // @SideEffectsOnly). If the list is empty, then there is no @SideEffectsOnly annotation.
+    // @SideEffectsOnly). If the list is empty, then either there is no @SideEffectsOnly annotation
+    // or the @SideEffectsOnly is written without any annotation argument.
     List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
     AnnotationMirror sefOnlyAnnotation =
         atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
