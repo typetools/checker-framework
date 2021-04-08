@@ -6,10 +6,10 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=NonN.astub Wildcards.java  -AstubWarnIfNotFound -Werror
  */
 
-class Wildcards {
-    NonN<?> f = new NonN<Object>();
+public class Wildcards {
+  NonN<?> f = new NonN<Object>();
 
-    class LocalNonN<T extends Object> {}
+  class LocalNonN<T extends Object> {}
 
-    LocalNonN<?> g = new LocalNonN<Object>();
+  LocalNonN<?> g = new LocalNonN<Object>();
 }

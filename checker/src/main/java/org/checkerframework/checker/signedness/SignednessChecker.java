@@ -11,14 +11,25 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
-@RelevantJavaTypes({Number.class, Character.class})
+@RelevantJavaTypes({
+  Byte.class,
+  Short.class,
+  Integer.class,
+  Long.class,
+  Character.class,
+  byte.class,
+  short.class,
+  int.class,
+  long.class,
+  char.class
+})
 public class SignednessChecker extends BaseTypeChecker {
 
-    @Override
-    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-                super.getImmediateSubcheckerClasses();
-        checkers.add(ValueChecker.class);
-        return checkers;
-    }
+  @Override
+  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
+        super.getImmediateSubcheckerClasses();
+    checkers.add(ValueChecker.class);
+    return checkers;
+  }
 }

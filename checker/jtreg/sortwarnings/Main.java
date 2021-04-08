@@ -10,4 +10,4 @@
  * @compile/fail/ref=OrderOfCheckers.out -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker OrderOfCheckers.java -AshowSuppressWarningsStrings
  */
 
-class Main {}
+public class Main {}

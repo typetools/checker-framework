@@ -1,21 +1,21 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 class SomeClass<@Nullable T> {
-    T get() {
-        throw new RuntimeException();
-    }
+  T get() {
+    throw new RuntimeException();
+  }
 }
 
-class AnnotatedTypeParams {
+public class AnnotatedTypeParams2 {
 
-    void testPositive() {
-        SomeClass<@Nullable String> l = new SomeClass<>();
-        // :: error: (dereference.of.nullable)
-        l.get().toString();
-    }
+  void testPositive() {
+    SomeClass<@Nullable String> l = new SomeClass<>();
+    // :: error: (dereference.of.nullable)
+    l.get().toString();
+  }
 
-    void testInvalidParam() {
-        // :: error: (type.argument.type.incompatible)
-        SomeClass<@NonNull String> l;
-    }
+  void testInvalidParam() {
+    // :: error: (type.argument.type.incompatible)
+    SomeClass<@NonNull String> l;
+  }
 }

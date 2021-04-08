@@ -1,7 +1,7 @@
 package org.checkerframework.framework.util.defaults;
 
 import java.util.TreeSet;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An ordered set of Defaults (see {@link org.checkerframework.framework.util.defaults.Default}).
@@ -10,15 +10,15 @@ import org.plumelib.util.UtilPlume;
 @SuppressWarnings("serial")
 class DefaultSet extends TreeSet<Default> {
 
-    /** Creates a DefaultSet. */
-    public DefaultSet() {
-        super(Default::compareTo);
-    }
+  /** Creates a DefaultSet. */
+  public DefaultSet() {
+    super(Default::compareTo);
+  }
 
-    @Override
-    public String toString() {
-        return "DefaultSet( " + UtilPlume.join(", ", this) + " )";
-    }
+  @Override
+  public String toString() {
+    return "DefaultSet( " + StringsPlume.join(", ", this) + " )";
+  }
 
-    public static final DefaultSet EMPTY = new DefaultSet();
+  public static final DefaultSet EMPTY = new DefaultSet();
 }

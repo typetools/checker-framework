@@ -1,5 +1,5 @@
-class Return {
-    int[] test() {
-        return null;
-    }
+public class Return {
+  int[] test() {
+    return null;
+  }
 }

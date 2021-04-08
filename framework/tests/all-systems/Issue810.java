@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-class Issue810 {
-    Map<String, String> m = new HashMap<>();
-    Set<String> n = m.keySet();
+public class Issue810 {
+  Map<String, String> m = new HashMap<>();
+  Set<String> n = m.keySet();
 }

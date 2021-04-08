@@ -3,17 +3,17 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class DefaultsNullness {
 
-    // local variable defaults
-    void test(@UnknownInitialization DefaultsNullness para, @Initialized DefaultsNullness comm) {
-        // @Nullable @UnknownInitialization by default
-        String s = "abc";
+  // local variable defaults
+  void test(@UnknownInitialization DefaultsNullness para, @Initialized DefaultsNullness comm) {
+    // @Nullable @UnknownInitialization by default
+    String s = "abc";
 
-        s = null;
+    s = null;
 
-        DefaultsNullness d;
-        d = null; // null okay (default == @Nullable)
+    DefaultsNullness d;
+    d = null; // null okay (default == @Nullable)
 
-        d = comm; // committed okay (default == @Initialized)
-        d.hashCode();
-    }
+    d = comm; // initialized okay (default == @Initialized)
+    d.hashCode();
+  }
 }

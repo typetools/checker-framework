@@ -2,15 +2,15 @@
 // https://github.com/typetools/checker-framework/issues/1749
 abstract class Issue1749 {
 
-    public interface A {}
+  public interface A {}
 
-    interface B extends A {}
+  interface B extends A {}
 
-    public class I<X> {}
+  public class I<X> {}
 
-    abstract <Y> I<Y> f(Class<? super Y> x);
+  abstract <Y> I<Y> f(Class<? super Y> x);
 
-    void f() {
-        I<B> x = f(A.class);
-    }
+  void f() {
+    I<B> x = f(A.class);
+  }
 }

@@ -1,7 +1,7 @@
 // Test case for Issue 681:
 // https://github.com/typetools/checker-framework/issues/681
 
-import h1h2checker.quals.H1S2;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
 
 // TODO: Issue is fixed, but test needs to be re-written in
 // a way that actually checks the behavior.
@@ -37,15 +37,15 @@ import h1h2checker.quals.H1S2;
  * 2: #11(): FIELD
  * </pre>
  */
-class Issue681 {
-    class Inner {
-        @H1S2 Inner explicitH1S2;
-        Issue681.@H1S2 Inner explicitNestedH1S2;
-        @H1S2 Issue681.Inner explicitOneOuterH1S2;
-        Inner addH1S2;
+public class Issue681 {
+  class Inner {
+    @H1S2 Inner explicitH1S2;
+    Issue681.@H1S2 Inner explicitNestedH1S2;
+    @H1S2 Issue681.Inner explicitOneOuterH1S2;
+    Inner addH1S2;
 
-        @H1S2 Inner method(@H1S2 Inner paramExplicit, Inner nonAnno) {
-            return paramExplicit;
-        }
+    @H1S2 Inner method(@H1S2 Inner paramExplicit, Inner nonAnno) {
+      return paramExplicit;
     }
+  }
 }

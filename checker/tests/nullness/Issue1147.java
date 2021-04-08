@@ -2,16 +2,16 @@
 
 import java.util.StringJoiner;
 
-class Issue1147 {
+public class Issue1147 {
 
-    public static void main(String[] args) {
+  public static void main(String[] args) {
 
-        StringJoiner sj = new StringJoiner(",");
+    StringJoiner sj = new StringJoiner(",");
 
-        sj.add("a");
+    sj.add("a");
 
-        sj.add(null);
+    sj.add(null);
 
-        System.out.println(sj);
-    }
+    System.out.println(sj);
+  }
 }

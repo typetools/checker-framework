@@ -1,2 +1,2 @@
-DefaultConstructor.java:9:8: compiler.err.proc.messager: [initialization.fields.uninitialized] the constructor does not initialize fields: nullObject
+DefaultConstructor.java:10:10: compiler.err.proc.messager: [initialization.field.uninitialized] the default constructor does not initialize field nullObject
 1 error

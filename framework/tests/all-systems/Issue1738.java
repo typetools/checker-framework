@@ -4,30 +4,30 @@
 import java.util.Iterator;
 
 @SuppressWarnings("all") // Only check for crashes
-class Issue1738 {
-    static class TwoParamIterator<T, R> implements Iterator<T> {
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public T next() {
-            return null;
-        }
+public class Issue1738 {
+  static class TwoParamIterator<T, R> implements Iterator<T> {
+    @Override
+    public boolean hasNext() {
+      return false;
     }
 
-    static class TwoParamCollection<T, R> implements Iterable<T> {
-        @Override
-        public TwoParamIterator<T, R> iterator() {
-            return new TwoParamIterator<T, R>();
-        }
+    @Override
+    public T next() {
+      return null;
     }
+  }
 
-    static void test() {
-        TwoParamCollection<String, String> c = new TwoParamCollection<>();
-        for (String s : c) {
-            s.hashCode();
-        }
+  static class TwoParamCollection<T, R> implements Iterable<T> {
+    @Override
+    public TwoParamIterator<T, R> iterator() {
+      return new TwoParamIterator<T, R>();
     }
+  }
+
+  static void test() {
+    TwoParamCollection<String, String> c = new TwoParamCollection<>();
+    for (String s : c) {
+      s.hashCode();
+    }
+  }
 }

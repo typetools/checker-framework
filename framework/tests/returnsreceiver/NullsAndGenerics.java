@@ -2,33 +2,33 @@ import java.util.Map;
 
 public class NullsAndGenerics<E> {
 
-    private boolean enableProtoAnnotations;
+  private boolean enableProtoAnnotations;
 
-    @SuppressWarnings("unchecked")
-    private <T, O extends Message, E extends ProtoElement> T getProtoExtension(
-            E element, GeneratedExtension<O, T> extension) {
-        // Use this method as the chokepoint for all field annotations processing, so we can
-        // toggle on/off annotations processing in one place.
-        if (!enableProtoAnnotations) {
-            return null;
-        }
-        return (T) element.getOptionFields().get(extension.getDescriptor());
+  @SuppressWarnings("unchecked")
+  private <T, O extends Message, E extends ProtoElement> T getProtoExtension(
+      E element, GeneratedExtension<O, T> extension) {
+    // Use this method as the chokepoint for all field annotations processing, so we can
+    // toggle on/off annotations processing in one place.
+    if (!enableProtoAnnotations) {
+      return null;
     }
+    return (T) element.getOptionFields().get(extension.getDescriptor());
+  }
 
-    // stubs of relevant classes
-    private class Message {}
+  // stubs of relevant classes
+  private class Message {}
 
-    private class ProtoElement {
-        public Map<FieldDescriptor, Object> getOptionFields() {
-            return null;
-        }
+  private class ProtoElement {
+    public Map<FieldDescriptor, Object> getOptionFields() {
+      return null;
     }
+  }
 
-    private class FieldDescriptor {}
+  private class FieldDescriptor {}
 
-    private class GeneratedExtension<O, T> {
-        public FieldDescriptor getDescriptor() {
-            return null;
-        }
+  private class GeneratedExtension<O, T> {
+    public FieldDescriptor getDescriptor() {
+      return null;
     }
+  }
 }

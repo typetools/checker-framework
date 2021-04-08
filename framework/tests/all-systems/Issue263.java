@@ -3,29 +3,29 @@
 
 abstract class Outer<T> {
 
-    public class Inner {
-        private T t;
+  public class Inner {
+    private T t;
 
-        public Inner(T t) {
-            this.t = t;
-        }
-
-        T get() {
-            return t;
-        }
+    public Inner(T t) {
+      this.t = t;
     }
 
-    public abstract Inner getInner();
+    T get() {
+      return t;
+    }
+  }
+
+  public abstract Inner getInner();
 }
 
-class Harness {
-    public Harness(Outer<String> outer) {
-        this.outer = outer;
-    }
+public class Issue263 {
+  public Issue263(Outer<String> outer) {
+    this.outer = outer;
+  }
 
-    Outer<String> outer;
+  Outer<String> outer;
 
-    public void context() {
-        String s = outer.getInner().get();
-    }
+  public void context() {
+    String s = outer.getInner().get();
+  }
 }

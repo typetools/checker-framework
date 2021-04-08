@@ -5,13 +5,13 @@
 // framework/tests/all-systems
 // checker/tests/nullness
 
-class Issue2048 {
-    interface Foo {}
+public class Issue2048 {
+  interface Foo {}
 
-    interface Fooer<R extends Foo> {}
+  interface Fooer<R extends Foo> {}
 
-    class Use<T> {
-        @SuppressWarnings("all") // Check for crashes.
-        void foo(Fooer<? extends T> fooer) {}
-    }
+  class Use<T> {
+    @SuppressWarnings("all") // Check for crashes.
+    void foo(Fooer<? extends T> fooer) {}
+  }
 }

@@ -7,23 +7,23 @@ import java.util.List;
 // see below for the code that uses Guava.
 @SuppressWarnings("nullness")
 class Ordering312<T> {
-    public static <C extends Comparable> Ordering312<C> natural() {
-        return null;
-    }
+  public static <C extends Comparable> Ordering312<C> natural() {
+    return null;
+  }
 
-    public <S extends T> Ordering312<S> reverse() {
-        return null;
-    }
+  public <S extends T> Ordering312<S> reverse() {
+    return null;
+  }
 
-    public <E extends T> List<E> sortedCopy(Iterable<E> elements) {
-        return null;
-    }
+  public <E extends T> List<E> sortedCopy(Iterable<E> elements) {
+    return null;
+  }
 }
 
-class Issue312 {
-    void test(List<String> list) {
-        Ordering312.natural().reverse().sortedCopy(list);
-    }
+public class Issue312 {
+  void test(List<String> list) {
+    Ordering312.natural().reverse().sortedCopy(list);
+  }
 }
 
 /* Original test using Guava:
@@ -32,7 +32,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering312;
 import java.util.List;
 
-class Issue312 {
+public class Issue312 {
     void test() {
         List<String> list = Lists.newArrayList();
         Ordering.natural().reverse().sortedCopy(list);

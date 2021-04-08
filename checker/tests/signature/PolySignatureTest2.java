@@ -7,12 +7,12 @@ import org.checkerframework.checker.signature.qual.*;
 
 public class PolySignatureTest2 {
 
-    @DotSeparatedIdentifiers Name m1(TypeElement e) {
-        return e.getQualifiedName();
-    }
+  @CanonicalNameOrEmpty Name m1(TypeElement e) {
+    return e.getQualifiedName();
+  }
 
-    @DotSeparatedIdentifiers String m2(@DotSeparatedIdentifiers Name n) {
-        // :: error: (return.type.incompatible)
-        return n.toString();
-    }
+  @DotSeparatedIdentifiers String m2(@DotSeparatedIdentifiers Name n) {
+    // :: error: (return.type.incompatible)
+    return n.toString();
+  }
 }

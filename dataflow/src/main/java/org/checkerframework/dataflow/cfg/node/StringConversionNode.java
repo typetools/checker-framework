@@ -21,54 +21,54 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class StringConversionNode extends Node {
 
-    protected final Tree tree;
-    protected final Node operand;
+  protected final Tree tree;
+  protected final Node operand;
 
-    // TODO: The type of a string conversion should be a final
-    // TypeMirror representing java.lang.String. Currently we require
-    // the caller to pass in a TypeMirror instead of creating one
-    // through the javax.lang.model.type.Types interface.
-    public StringConversionNode(Tree tree, Node operand, TypeMirror type) {
-        super(type);
-        this.tree = tree;
-        this.operand = operand;
-    }
+  // TODO: The type of a string conversion should be a final
+  // TypeMirror representing java.lang.String. Currently we require
+  // the caller to pass in a TypeMirror instead of creating one
+  // through the javax.lang.model.type.Types interface.
+  public StringConversionNode(Tree tree, Node operand, TypeMirror type) {
+    super(type);
+    this.tree = tree;
+    this.operand = operand;
+  }
 
-    public Node getOperand() {
-        return operand;
-    }
+  public Node getOperand() {
+    return operand;
+  }
 
-    @Override
-    public Tree getTree() {
-        return tree;
-    }
+  @Override
+  public Tree getTree() {
+    return tree;
+  }
 
-    @Override
-    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitStringConversion(this, p);
-    }
+  @Override
+  public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+    return visitor.visitStringConversion(this, p);
+  }
 
-    @Override
-    public String toString() {
-        return "StringConversion(" + getOperand() + ")";
-    }
+  @Override
+  public String toString() {
+    return "StringConversion(" + getOperand() + ")";
+  }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof StringConversionNode)) {
-            return false;
-        }
-        StringConversionNode other = (StringConversionNode) obj;
-        return getOperand().equals(other.getOperand());
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof StringConversionNode)) {
+      return false;
     }
+    StringConversionNode other = (StringConversionNode) obj;
+    return getOperand().equals(other.getOperand());
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(StringConversionNode.class, getOperand());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(StringConversionNode.class, getOperand());
+  }
 
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(getOperand());
-    }
+  @Override
+  public Collection<Node> getOperands() {
+    return Collections.singletonList(getOperand());
+  }
 }

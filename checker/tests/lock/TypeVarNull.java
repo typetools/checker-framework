@@ -1,3 +1,3 @@
-class TypeVarNull<T> {
-    T t = null;
+public class TypeVarNull<T> {
+  T t = null;
 }

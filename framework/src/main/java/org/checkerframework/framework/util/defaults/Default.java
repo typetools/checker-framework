@@ -14,45 +14,45 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * <p>It also has a handy toString method that is useful for debugging.
  */
 public class Default implements Comparable<Default> {
-    // please remember to add any fields to the hashcode calculation
-    public final AnnotationMirror anno;
-    public final TypeUseLocation location;
+  // please remember to add any fields to the hashcode calculation
+  public final AnnotationMirror anno;
+  public final TypeUseLocation location;
 
-    public Default(final AnnotationMirror anno, final TypeUseLocation location) {
-        this.anno = anno;
-        this.location = location;
+  public Default(final AnnotationMirror anno, final TypeUseLocation location) {
+    this.anno = anno;
+    this.location = location;
+  }
+
+  @Override
+  public int compareTo(Default other) {
+    int locationOrder = location.compareTo(other.location);
+    if (locationOrder == 0) {
+      return AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
+    } else {
+      return locationOrder;
+    }
+  }
+
+  @Override
+  public boolean equals(@Nullable Object thatObj) {
+    if (thatObj == this) {
+      return true;
     }
 
-    @Override
-    public int compareTo(Default other) {
-        int locationOrder = location.compareTo(other.location);
-        if (locationOrder == 0) {
-            return AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
-        } else {
-            return locationOrder;
-        }
+    if (thatObj == null || thatObj.getClass() != Default.class) {
+      return false;
     }
 
-    @Override
-    public boolean equals(@Nullable Object thatObj) {
-        if (thatObj == this) {
-            return true;
-        }
+    return compareTo((Default) thatObj) == 0;
+  }
 
-        if (thatObj == null || thatObj.getClass() != Default.class) {
-            return false;
-        }
+  @Override
+  public int hashCode() {
+    return Objects.hash(anno, location);
+  }
 
-        return compareTo((Default) thatObj) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(anno, location);
-    }
-
-    @Override
-    public String toString() {
-        return "( " + location.name() + " => " + anno + " )";
-    }
+  @Override
+  public String toString() {
+    return "( " + location.name() + " => " + anno + " )";
+  }
 }

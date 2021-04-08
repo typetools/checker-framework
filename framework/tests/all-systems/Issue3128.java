@@ -1,12 +1,12 @@
 // Test case for Issue 3128:
 // https://github.com/typetools/checker-framework/issues/3128
 
-class Issue3128 {
-    class One<S> {}
+public class Issue3128 {
+  class One<S> {}
 
-    class Two<U extends Number, V extends One<U>> {}
+  class Two<U extends Number, V extends One<U>> {}
 
-    One<Two<?, ?>> foo() {
-        return new One<>();
-    }
+  One<Two<?, ?>> foo() {
+    return new One<>();
+  }
 }

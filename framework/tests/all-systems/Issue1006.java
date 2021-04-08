@@ -7,14 +7,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("all") // Ignore type-checking errors.
-class Issue1006 {
-    void foo(Stream<String> m, Map<String, Integer> im) {
-        Map<String, Integer> l = m.collect(Collectors.toMap(Function.identity(), im::get));
-    }
+public class Issue1006 {
+  void foo(Stream<String> m, Map<String, Integer> im) {
+    Map<String, Integer> l = m.collect(Collectors.toMap(Function.identity(), im::get));
+  }
 
-    // alternative version with same crash
-    Map<String, Long> bar(String src) {
-        return Stream.of(src)
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-    }
+  // alternative version with same crash
+  Map<String, Long> bar(String src) {
+    return Stream.of(src)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+  }
 }

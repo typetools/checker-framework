@@ -156,6 +156,14 @@
       <rect x="755" y="380" width="220" height="40" />
       <text x="865" y="404.10753822px">@StringVal({"a","aa","b"})</text>
     </g>
+    <g id="matches-regex-a-star">
+      <rect x="650" y="320" width="170" height="40" />
+      <text x="740" y="344.10753822px">@MatchesRegex("a*")</text>
+    </g>
+    <g id="matches-regex-a-star-b-star">
+      <rect x="630" y="240" width="230" height="40" />
+      <text x="745" y="264.10753822px">@MatchesRegex({"a*", "b*"})</text>
+    </g>
 
     <g id="arraylen-1">
       <rect x="1040" y="380" width="130" height="40" />
@@ -178,6 +186,9 @@
     <polyline points="1075,420 1015,450" />
     <polyline points="955,490 895,520" />
     <polyline points="775,490 835,520" />
+    <polyline points="720,360 720,450" />
+    <polyline points="720,280 720,320" />
+    <polyline points="820,280 870,380" />
 
   </g>
 </svg>

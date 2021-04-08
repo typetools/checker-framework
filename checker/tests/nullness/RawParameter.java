@@ -3,11 +3,11 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RawParameter<T> {
-    private @Nullable T payload;
+  private @Nullable T payload;
 
-    // Using a parameterized type here avoids the exception
-    @SuppressWarnings("unchecked")
-    public void clearPayload(RawParameter node) {
-        node.payload = null;
-    }
+  // Using a parameterized type here avoids the exception
+  @SuppressWarnings("unchecked")
+  public void clearPayload(RawParameter node) {
+    node.payload = null;
+  }
 }

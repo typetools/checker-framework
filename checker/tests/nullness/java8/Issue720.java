@@ -3,10 +3,10 @@
 
 import java.util.function.IntConsumer;
 
-class Issue720 {
-    static IntConsumer consumer = Issue720::method;
+public class Issue720 {
+  static IntConsumer consumer = Issue720::method;
 
-    static int method(int x) {
-        return x;
-    }
+  static int method(int x) {
+    return x;
+  }
 }

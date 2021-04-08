@@ -117,8 +117,9 @@ These qualifiers are part of the Interning type system:
   It is used internally by the type system and is not written by programmers.
 
 \item[\refqualclass{checker/interning/qual}{PolyInterned}]
-  indicates qualifier polymorphism (see
-  Section~\ref{method-qualifier-polymorphism}).
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
 
 \end{description}
 
@@ -373,8 +374,9 @@ For a complete description of all checks performed by
   \refclass{checker/interning}{InterningVisitor}.
 
 \label{checking-class}
-You can also restrict which types the checker should examine and type-check,
-using the \code{-Acheckclass} option.  For example, to find only the
+To restrict which types the checker should type-check, pass a canonical
+name (fully-qualified name) using the \code{-Acheckclass} option.
+For example, to find only the
 interning errors related to uses of \code{String}, you can pass
 \code{-Acheckclass=java.lang.String}.  The Interning Checker always checks all
 subclasses and superclasses of the given class.

@@ -14,14 +14,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.6.1<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.12.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
@@ -63,59 +63,6 @@
           </executions>
       </plugin>
       <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version>
-          <configuration>
-              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-              <!-- If using JDK 8, add source and target. -->
-              <source>1.8</source>
-              <target>1.8</target>
-              <!-- If using JDK 11, remove source and target and uncomment "release" below. -->
-              <!-- <release>11</release> -->
-              <showWarnings>true</showWarnings>
-              <verbose>true</verbose>
-              <annotationProcessorPaths>
-                <path>
-                  <groupId>org.checkerframework</groupId>
-                  <artifactId>checker</artifactId>
-                  <version>${checkerFrameworkVersion}</version>
-                </path>
-                <!--
-                  When using the Subtyping Checker, any custom type qualifiers must be in a
-                  separate pre-compiled module; see
-                  https://checkerframework.org/manual/#subtyping-compiling .
-                  Once <annotationProcessorPaths> is defined, it is the only source for
-                  classpath lookup; see
-                  https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths .
-                -->
-                <!-- <path> -->
-                <!--   <groupId>your.qual.group</groupId> -->
-                <!--   <artifactId>your-qual-artifact</artifactId> -->
-                <!--   <version>your-qual-artifact-version</version> -->
-                <!-- </path> -->
-              </annotationProcessorPaths>
-              <annotationProcessors>
-                  <!-- Add all the checkers you want to enable here -->
-                  <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
-              </annotationProcessors>
-              <compilerArgs>
-                  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
-                  <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
-                  <!-- -Awarns treats Checker Framework errors as warnings -->
-                  <!-- <arg>-Awarns</arg> -->
-                  <!--
-                    For the Subtyping Checker, annotations defined in module 'your-qual-artifact':
-                    <arg>-Aquals=myPackage.qual.MyFenum,myPackage.qual.MyCustomType</arg>
-                  -->
-                  <arg>-Alint</arg>
-                <!-- If using JDK 11 remove the two arguments above and uncomment the one below. -->
-                <!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
-                <!-- -Awarns turns type-checking errors into warnings. -->
-                <!-- <arg>-Awarns</arg> -->
-              </compilerArgs>
-          </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.2</version>
@@ -123,26 +70,127 @@
     </plugins>
   </build>
 
-    <reporting>
-        <excludeDefaults>true</excludeDefaults>
+  <profiles>
+    <profile>
+      <id>checkerframework</id>
+      <activation>
+        <jdk>[1.8,13)</jdk>
+      </activation>
+      <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.3</version>
-                <configuration>
-                    <findbugsXmlOutput>true</findbugsXmlOutput>
-                    <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-                    <includeTests>true</includeTests>
-                    <xmlOutput>true</xmlOutput>
-                </configuration>
-            </plugin>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
+              <compilerArguments>
+                <Xmaxerrs>10000</Xmaxerrs>
+                <Xmaxwarns>10000</Xmaxwarns>
+              </compilerArguments>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>org.checkerframework</groupId>
+                  <artifactId>checker</artifactId>
+                  <version>3.7.0</version>
+                </path>
+              </annotationProcessorPaths>
+              <annotationProcessors>
+                <!-- Add all the checkers you want to enable here -->
+                <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
+              </annotationProcessors>
+              <compilerArgs>
+                <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
+              </compilerArgs>
+            </configuration>
+          </plugin>
         </plugins>
-    </reporting>
+      </build>
+      <dependencies>
+        <dependency>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker</artifactId>
+          <version>${checkerFrameworkVersion}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>checkerframework-jdk8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+      <properties>
+        <javac.version>9+181-r4173-1</javac.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>javac</artifactId>
+          <version>9+181-r4173-1</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
+              <source>1.8</source>
+              <target>1.8</target>
+              <compilerArgs combine.children="append">
+                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>checkerframework-jdk11</id>
+      <activation>
+        <jdk>11</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <fork>true</fork>
+              <release>11</release>
+              <compilerArgs combine.children="append">
+                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <reporting>
+    <excludeDefaults>true</excludeDefaults>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>2.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>3.0.3</version>
+        <configuration>
+          <findbugsXmlOutput>true</findbugsXmlOutput>
+          <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+          <includeTests>true</includeTests>
+          <xmlOutput>true</xmlOutput>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
 
 </project>

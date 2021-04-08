@@ -71,6 +71,7 @@ fully-qualified type name?
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
 \\ \ref{faq-implicit-bounds}: Why are explicit and implicit bounds defaulted differently?
+\\ \ref{faq-writing-generics}: How should I annotate code that uses generics?
 \\ \ref{faq-runtime-retention}: Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?
 
 \faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
@@ -84,10 +85,10 @@ fully-qualified type name?
 \\ \ref{faq-classfile-annotations}: Why do \<.class> files contain more annotations than the source code?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
 \\ \ref{faq-cf-is-slow}: The Checker Framework runs too slowly
-
+\\ \ref{faq-version-number}: What does the Checker Framework version number mean?
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
-\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs or Error Prone)?
+\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs, SpotBugs, or Error Prone)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
 \\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
@@ -210,7 +211,7 @@ Java type-checker would reject.  Here are a few examples.
 \item[Less code clutter]
   The programmer does not have to convert primitive types to wrappers,
   which would make the code both uglier and slower.  Thanks to defaults and
-  type inference (Section~\ref{defaults}),
+  type refinement (Section~\ref{defaults}),
   you may be able to write and think in terms of the
   original Java type, rather than having to explicitly write one of the
   subtypes in all locations.
@@ -377,20 +378,16 @@ and less ambiguous.
 \subsectionAndLabel{Will using the Checker Framework slow down my program?  Will it slow down the compiler?}{faq-slowdown}
 
 Using the Checker Framework has no impact on the execution of your program:
-the compiler emits the identical bytecodes as the Java 8
+the compiler emits the identical bytecodes as the javac
 compiler and so there is no run-time effect.  Because there is no run-time
 representation of type qualifiers, there is no way to use reflection to
 query the qualifier on a given object, though you can use reflection to
 examine a class/method/field declaration.
 
-Using the Checker Framework does increase compilation time.  In theory it
-should only add a few percent overhead, but our current implementation
-can double the compilation time --- or more, if you run many pluggable
-type-checkers at once.  This is especially true if you run pluggable
-type-checking on every file (as we recommend) instead of just on the ones
-that have recently changed.
-Nonetheless, compilation with pluggable type-checking still feels like
-compilation, and you can do it as part of your normal development process.
+Using the Checker Framework does increase compilation time.
+It can increase the compilation time by 2--10 times --- or more, if you run
+many pluggable type-checkers at once.  For workarounds, see
+Section~\ref{faq-cf-is-slow}.
 
 
 \subsectionAndLabel{How do I shorten the command line when invoking a checker?}{faq-shorten-command-line}
@@ -398,8 +395,10 @@ compilation, and you can do it as part of your normal development process.
 \begin{sloppypar}
 The compile options to javac can be long to type; for example,
 \code{javac -processor org.checkerframework.checker.nullness.NullnessChecker ...}.
-See Section~\ref{checker-auto-discovery} for a way to avoid the need for
-the \code{-processor} command-line option.
+You can use shorthand for built-in checkers, such as \code{javac -processor
+  nullness ...} (see Section~\ref{shorthand-for-checkers}), or you can use
+auto-discovery te eliminate the need for the \code{-processor} command-line
+option (see Section~\ref{checker-auto-discovery}).
 \end{sloppypar}
 
 
@@ -667,7 +666,7 @@ welcome it as a contribution to the Checker Framework.
 Some checkers have library methods that you can explicitly insert in your
 source code.
 Examples include the Nullness Checker's
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method (see
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} method (see
 Section~\ref{suppressing-warnings-with-assertions}) and the Regex Checker's
 \<RegexUtil> class (see Section~\ref{regexutil-methods}).
 But, it would be better to have more general support that does not require
@@ -1329,6 +1328,71 @@ Here are some style guidelines:
 \end{itemize}
 
 
+\subsectionAndLabel{How should I annotate code that uses generics?}{faq-writing-generics}
+
+Suppose unannotated code contains a type parameter \code{<T>}.  How should
+you annotate that?
+
+This is really a question about Java's generic types, so if you understand
+Java generics, this question is moot.  However, Java generics can be hard
+to understand, so here is a brief explanation of some concrete annotations,
+using nullness annotations for concreteness.
+
+\begin{description}
+\item[\code{<T>}]
+  Any type argument may be supplied for \code{T}.
+
+  It is equivalent to \code{<T extends @Nullable Object>}, because
+  \code{@Nullable Object} is the top type in the type hierarchy.
+
+\item[\code{<T extends @Nullable Object>}]
+  Any type argument may be supplied for \code{T}.
+
+  It is equivalent to \code{<T>}, as noted above.
+
+\item[\code{<T extends Object>}]
+  \code{T} can be instantiated by any type whose qualifier is \code{@NonNull}.
+
+  The default annotation is \code{@NonNull}, and annotation defaults apply
+  to type uses such as \code{Object} but not to type variables such as
+  \code{T}.  Therefore, \code{<T extends Object>} is equivalent to
+  \code{<T extends @NonNull Object>}.  It permits any type argument that is
+  a subtype of \code{@NonNull Object}, which is any type argument whose
+  qualifier is \code{@NonNull} since \code{@NonNull} is the bottom type
+  qualifier in the type qualifier hierarchy.
+
+\item[\code{<T extends @NonNull Object>}]
+  \code{T} can be instantiated by any type whose qualifier is \code{@NonNull}.
+
+  It is equivalent to \code{<T extends Object>}, as noted above.
+
+\item[\code{<@Nullable T>}]
+  \code{T} can be instantiated by any type whose qualifier is \code{@Nullable}.
+
+  The annotation \code{@Nullable} before \code{T} applies to \code{T}'s
+  implicit lower bound.  There is no explicit upper bound (that is, no
+  \code{extends}), so the upper bound is the top type, \code{@Nullable
+    Object}, just as for \code{<T>}, which was discussed above.  Therefore,
+  \code{<@Nullable T>} is the same as \code{<T super @Nullable void extends
+    @Nullable Object>}, except that the latter is not legal Java.
+
+\item[\code{<T super @Nullable String>}]
+  \code{T} can be instantiated by any supertype of \code{@Nullable String},
+  which is any supertype of \code{String} (\code{Object},
+  \code{Serializable}, \code{CharSequence}, etc.) so long as its type
+  qualifier is \code{@Nullable}.
+
+\item[\code{<T super @NonNull String>}]
+  \code{T} can be instantiated by any supertype of \code{@NonNull String}.
+  Since \<@NonNull> is the bottom type qualifier, the instantiating type
+  can have any type qualifier.
+
+\end{description}
+
+For more details about how the Checker Framework supports generics and
+polymorphism, see \chapterpageref{polymorphism}
+
+
 \subsectionAndLabel{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?}{faq-runtime-retention}
 
 Annotations such as \refqualclass{checker/nullness/qual}{NonNull} are
@@ -1518,35 +1582,105 @@ type-and-effect system that is distributed with the Checker Framework.
 
 \subsectionAndLabel{The Checker Framework runs too slowly}{faq-cf-is-slow}
 
-Using a pluggable type-checker increases compile times by a factor of 2-5.
+Using a pluggable type-checker increases compile times by a factor of 2--10.
 Slow compilation speed is probably the worst thing about the Checker
 Framework.
 
-If the Checker Framework is too slow for you to run on every compilation,
+To improve performance:
+\begin{itemize}
+\item
+  Ensure that the Checker Framework has enough memory.  The Checker
+  Framework uses more memory than \<javac> does, and Java's default heap
+  limit is so small that the Checker Framework might spend most of its time
+  in garbage collection.  (If this is the case, the Checker Framework will
+  issue a warning ``Garbage collection consumed over 25\% of CPU during the
+  past minute.")  For example, you might pass an argument like
+  \<-Xmx3g>, or set an environment variable like \<export
+  \_JAVA\_OPTIONS=-Xmx3g>, to permit the Checker Framework to use up to 3GB
+  of memory.  If you use Java 8, consider upgrading to Java 11, which has
+  better memory management.
+\item
+  Set your build system to perform \emph{incremental compilation}.  When
+  compiling just a few source files (the size of a typical edit or commit),
+  you won't notice the slowdown even if the Checker Framework is very slow.
+  If you compile all files in a large project, you will definitely notice a
+  slowdown.  You should structure your build system to make compiling all
+  files rare, by declaring dependencies and using caching.
+  (Note: Maven lacks dependency-driven build and caching.  If your project
+  uses Maven, consider switching to a more capable build system such as Gradle.)
+  % (Note that some build systems have a bug, in that they unnecessarily always
+  % re-run compilation that uses annotation processors.)
+\end{itemize}
+
+If the Checker Framework is still too slow for you to run on every compilation,
 you can run it periodically, such as in a Git commit hook or in continuous
 integration.
 
 The Checker Framework team does not currently have the resources to fix
 performance problems, but we welcome community contributions.
 
-Here are some reasons that the Checker Framework is so slow.
+Here are some reasons that the Checker Framework is slow.
 \begin{itemize}
 \item
   It has to do all the same work as the compiler does, such as resolving
-  overloading/overriding/generics and type-checking.  It does so for
-  richer, user-defined type systems whereas \<javac> hard-codes one type
-  system.
+  overloading and overriding, inferring generics, and type-checking.
 \item
-  Its implementation has some inefficiencies.  For example, when running a
-  compound or aggregate checker, it makes multiple passes over the program
+  Its analysis is general; it interprets user-defined type systems whereas
+  \<javac> hard-codes one type system and integrates it with other processing.
+\item
+  Its analysis are much richer.  \<javac> can take certain shortcuts that
+  are not correct for all possible type systems.
+\item
+  It builds a control flow graph and performs a fixpoint analysis on it,
+  which \<javac> does not do.
+\item
+  It manipulates multiple representations of data, including \<javac>'s
+  internal representation, source code, control flow graph, and its own
+  internal representation.  These transformations and lookups take time.
+\item
+  It switches between dataflow analysis and type analysis, and this
+  sometimes causes it to redo work.
+\item
+  When running a compound or aggregate checker, it computes the control
+  flow graph multiple times, and it makes multiple passes over the program
   rather than just one.
 \end{itemize}
+
+
+\subsectionAndLabel{What does the Checker Framework version number mean?}{faq-version-number}
+
+As explained in Section~\ref{version-number}, a change in the middle number
+of the Checker Framework version string indicates a possible
+incompatibility.
+
+Another policy is "semantic versioning" as defined at
+\url{https://semver.org/}.  It is also a fine version number policy, with
+its own advantages and disadvantages.  It is a proposal, not a standard nor
+an official definition.  Some projects follow it, and many projects do not
+follow it; even those that follow it often do so loosely.  It does not
+define key terms, such as "backwards compatible bug fixes".  It includes an
+escape hatch, ``Semantic Versioning is all about conveying meaning by how
+the version number changes.''
+
+% The API also includes the Annotation File Utilities.
+If the Checker Framework strictly used semver.org's difinition, every
+release would be a new major version, and the current version string would
+be
+% 70 releases as of the beginning of 2021.
+around version 100.0.0.
+Always incrementing the major version number would not convey meaning to
+its users --- for example, it would not indicate major new functionality or
+important behavior differences.
+
+% The Checker Framework has over 10,000 methods in its API, xand most users
+% depend on its external behavior which is also complex.  The Checker
+% Framework is released frequently.
 
 
 \sectionAndLabel{Relationship to other tools}{faq-other-tools-section}
 
 
-\subsectionAndLabel{Why not just use a bug detector (like FindBugs or Error Prone)?}{faq-type-checking-vs-bug-detectors}
+\subsectionAndLabel{Why not just use a bug detector (like FindBugs, SpotBugs, or Error Prone)?}{faq-type-checking-vs-bug-detectors}
 
 A pluggable type-checker
 is a verification tool that prevents or detects all errors of a given
@@ -1557,8 +1691,11 @@ Section~\ref{checker-guarantees}).
 An alternate approach is to use a bug detector such as
 \href{https://errorprone.info/}{Error Prone},
 \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
-\href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
-\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005}, or the
+\href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001},
+\href{https://github.com/spotbugs/spotbugs}{SpotBugs},
+or
+\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005},
+or the
 tools built into Eclipse (see Section~\ref{faq-eclipse}) and IntelliJ\@.
 
 A pluggable type-checker or verifier
@@ -1802,4 +1939,4 @@ third-party tools.  The Checker Framework is one such tool.
 %%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 %%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
 %%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
-% LocalWords:  checkers'' covariance'' contravariance''
+% LocalWords:  checkers'' covariance'' contravariance'' Xmx3g lookups

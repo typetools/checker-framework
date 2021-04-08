@@ -6,10 +6,10 @@ import org.checkerframework.framework.qual.*;
 
 @DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.FIELD)
 @DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.PARAMETER)
-class Issue1307 {
-    Object nullableField = null;
+public class Issue1307 {
+  Object nullableField = null;
 
-    void perl(Integer a) {
-        a = null;
-    }
+  void perl(Integer a) {
+    a = null;
+  }
 }

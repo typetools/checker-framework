@@ -1,4 +1,4 @@
-class DA {
-    @Decl(flag = true)
-    void foo() {}
+public class DA {
+  @Decl(flag = true)
+  void foo() {}
 }

@@ -3,12 +3,12 @@
 
 import org.checkerframework.dataflow.qual.*;
 
-class SuperClass {
-    static int count = 0;
+public class SuperClass {
+  static int count = 0;
 
-    public SuperClass() {
-        count++;
-    }
+  public SuperClass() {
+    count++;
+  }
 }
 
 // The error message is very confusing:
@@ -16,11 +16,10 @@ class SuperClass {
 // side-effect-free method
 //     public EmptyConstructor() {}
 //                               ^
-// because there's no obvious call.  The message key should be changed to
-// one whose message is "call to non-side-effect-free superclass
-// constructor not allowed in side-effect-free constructor"
+// because there's no obvious call.  The message key should be changed to one whose message is "call
+// to non-side-effect-free superclass constructor not allowed in side-effect-free constructor"
 
 public class EmptyConstructor extends SuperClass {
-    @SideEffectFree
-    public EmptyConstructor() {}
+  @SideEffectFree
+  public EmptyConstructor() {}
 }

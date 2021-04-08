@@ -5,4 +5,4 @@
  * @compile -XDrawDiagnostics -Xlint:unchecked ../checker/NotInPackageChecker.java ../checker/qual/NotInPackageTop.java
  * @compile -XDrawDiagnostics -Xlint:unchecked -processor NotInPackageChecker Test.java -proc:only
  */
-class Test {}
+public class Test {}

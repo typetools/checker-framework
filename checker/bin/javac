@@ -5,24 +5,37 @@
 # to org.checkerframework.framework.util.CheckerMain
 #
 
-mydir="`dirname $0`"
-case `uname -s` in
+# When editing, keep this file in sync with ../bin-devel/javac and../bin-devel/javac-debug .
+
+mydir="$(dirname "$0")"
+case $(uname -s) in
     CYGWIN*)
-      mydir=`cygpath -m $mydir`
+      mydir=$(cygpath -m "$mydir")
       ;;
 esac
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
-# Unset IFS and use newline as arg separator to preserve spaces in args
+# Unset IFS and use newline as arg separator to preserve spaces in args.
+# shellcheck disable=SC2034
 DUALCASE=1  # for MKS: make case statement case-sensitive (6709498)
 saveIFS="$IFS"
 nl='
 '
 for i in "$@" ; do
    IFS=
-   args=$args$nl"'"$i"'"
+   # shellcheck disable=SC2027
+   case $i in
+     "-Xmn"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     "-Xms"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     "-Xmx"*) jvmargs=$jvmargs$nl"'"$i"'" ;;
+     *)       args=$args$nl"'"$i"'" ;;
+   esac
    IFS="$saveIFS"
 done
 
-eval "java" "-jar" "${mydir}"/../dist/checker.jar ${args}
+# shellcheck disable=SC2086
+eval "java" \
+     ${jvmargs} \
+     "-jar" "${mydir}"/../dist/checker.jar \
+     ${args}

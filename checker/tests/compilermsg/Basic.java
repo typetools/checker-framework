@@ -1,10 +1,10 @@
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
-class Basic {
+public class Basic {
 
-    void required(@CompilerMessageKey String in) {}
+  void required(@CompilerMessageKey String in) {}
 
-    void test() {
-        required("test.property");
-    }
+  void test() {
+    required("test.property");
+  }
 }

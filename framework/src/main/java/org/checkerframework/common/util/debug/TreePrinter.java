@@ -23,8 +23,6 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
  *
  * <p>java org.checkerframework.common.util.debug.TreePrinter *.java
  *
- * <p>TODO: is there an environment variable for the bootclasspath?
- *
  * <p>The visitor simply uses the javac Pretty visitor to output a nicely formatted version of the
  * AST.
  *
@@ -40,25 +38,25 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class TreePrinter extends AbstractTypeProcessor {
-    @Override
-    public void typeProcess(TypeElement element, TreePath tree) {
-        final StringWriter out = new StringWriter();
-        final Pretty pretty = new Pretty(out, true);
+  @Override
+  public void typeProcess(TypeElement element, TreePath tree) {
+    final StringWriter out = new StringWriter();
+    final Pretty pretty = new Pretty(out, true);
 
-        try {
-            pretty.printUnit((JCCompilationUnit) tree.getCompilationUnit(), null);
-        } catch (IOException e) {
-            throw new Error(e);
-        }
-        System.out.println(out.toString());
+    try {
+      pretty.printUnit((JCCompilationUnit) tree.getCompilationUnit(), null);
+    } catch (IOException e) {
+      throw new Error(e);
     }
+    System.out.println(out.toString());
+  }
 
-    public static void main(String[] args) throws Exception {
-        String[] newArgs = new String[args.length + 3];
-        newArgs[0] = "-processor";
-        newArgs[1] = "org.checkerframework.common.util.debug.TreePrinter";
-        newArgs[2] = "-proc:only";
-        System.arraycopy(args, 0, newArgs, 3, args.length);
-        com.sun.tools.javac.Main.compile(newArgs);
-    }
+  public static void main(String[] args) throws Exception {
+    String[] newArgs = new String[args.length + 3];
+    newArgs[0] = "-processor";
+    newArgs[1] = "org.checkerframework.common.util.debug.TreePrinter";
+    newArgs[2] = "-proc:only";
+    System.arraycopy(args, 0, newArgs, 3, args.length);
+    com.sun.tools.javac.Main.compile(newArgs);
+  }
 }

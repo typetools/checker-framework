@@ -3,6 +3,6 @@
 
 import java.util.concurrent.Callable;
 
-class Issue2082 {
-    Callable foo = () -> 0;
+public class Issue2082 {
+  Callable foo = () -> 0;
 }

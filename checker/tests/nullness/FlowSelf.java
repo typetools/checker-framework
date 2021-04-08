@@ -1,15 +1,15 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class FlowSelf {
+public class FlowSelf {
 
-    void test(@Nullable String s) {
+  void test(@Nullable String s) {
 
-        if (s == null) {
-            return;
-        }
-        // :: warning: (known.nonnull)
-        assert s != null;
-
-        s = s.substring(1);
+    if (s == null) {
+      return;
     }
+    // :: warning: (nulltest.redundant)
+    assert s != null;
+
+    s = s.substring(1);
+  }
 }

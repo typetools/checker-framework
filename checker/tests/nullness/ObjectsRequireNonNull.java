@@ -4,13 +4,13 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class ObjectsRequireNonNull {
-    void foo(@Nullable Object nble, @NonNull Object nn) {
-        // :: error: (argument.type.incompatible)
-        Objects.requireNonNull(null);
-        // :: error: (argument.type.incompatible)
-        Objects.requireNonNull(nble);
-        Objects.requireNonNull("hello");
-        Objects.requireNonNull(nn);
-    }
+public class ObjectsRequireNonNull {
+  void foo(@Nullable Object nble, @NonNull Object nn) {
+    // :: error: (argument.type.incompatible)
+    Objects.requireNonNull(null);
+    // :: error: (argument.type.incompatible)
+    Objects.requireNonNull(nble);
+    Objects.requireNonNull("hello");
+    Objects.requireNonNull(nn);
+  }
 }

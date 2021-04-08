@@ -69,6 +69,13 @@ These are the qualifiers in the signedness type system:
     write \refqualclass{checker/signedness/qual}{Signed} or
     \refqualclass{checker/signedness/qual}{Unsigned} instead.
 
+\item[\refqualclass{checker/signedness/qual}{SignedPositiveFromUnsigned}]
+    indicates that a value is in the positive signed range, as with
+    \refqualclass{checker/signedness/qual}{SignedPositive}.  Furthermore,
+    the value was derived from values that can be interpreted as
+    \refqualclass{checker/signedness/qual}{Unsigned}.  Programmers should
+    rarely write this annotation.
+
 \item[\refqualclass{checker/signedness/qual}{SignednessGlb}]
     indicates that a value may be interpreted as unsigned or signed.  It
     covers the same cases as
@@ -216,6 +223,17 @@ Signedness Checker permits both \verb|((myInt >> 8) & 0xFF)| and
 \verb|((myInt >>> 8) & 0xFF)|, regardless of the qualifier on the type of
 \<myInt>.
 
+Likewise, right shift by 8 then cast to byte evaluates to the
+same value whether the argument is interpreted as signed or unsigned, so
+the Signedness Checker permits both \verb|(byte) (myInt >> 8)| and
+\verb|(byte) (myInt >>> 8)|, regardless of the type of \<myInt>.
+
+%% TODO: This is not yet implemented.  Should it be?
+% These masked/casted shift expressions have type
+% \refqualclass{checker/signedness/qual}{SignednessGlb}.  They are bit
+% patterns that can be interpreted as either signed or unsigned values.
+
+
 % There are two distinct reasons to use \verb|>>>|, the unsigned right shift operator:
 % \begin{itemize}
 % \item
@@ -233,20 +251,22 @@ Signedness Checker permits both \verb|((myInt >> 8) & 0xFF)| and
 
 \sectionAndLabel{Utility routines for manipulating unsigned values}{signedness-utilities}
 
-Class \refclass{checker/signedness}{SignednessUtil} provides static
+Class \refclass{checker/signedness/util}{SignednessUtil} provides static
 utility methods for working with unsigned values.  They are
 properly annotated with \refqualclass{checker/signedness/qual}{Unsigned}
 where appropriate, so using them may reduce the number of annotations that
 you need to write.
+To use the \refclass{checker/signedness/util}{SignednessUtil} class, the
+\<checker-util.jar> file must be on the classpath at run time.
 
-Class \refclass{checker/signedness}{SignednessUtilExtra} contains more utility
+Class \refclass{checker/signedness/util}{SignednessUtilExtra} contains more utility
 methods that reference packages not included in Android.  This class is not
-included in \code{checker-qual.jar}, so you may want to copy the methods to your code.
+included in \code{checker-util.jar}, so you may want to copy the methods to your code.
 
 
 \sectionAndLabel{Local type refinement}{signedness-refinement}
 
-Local type refinment/inference (Section~\ref{type-refinement}) may be
+Local type refinement/inference (Section~\ref{type-refinement}) may be
 surprising for the Signedness type system.  Ordinarily, an expression with
 unsigned type may not participate in a division, as shown in
 Sections~\ref{signedness-checker-prohibited-operations}
@@ -270,3 +290,46 @@ an \<@Unsigned> variable.
         int x = u1 / u2; // OK; computation over constants, interpreted as signed; result is signed
     }
 \end{Verbatim}
+
+
+\sectionAndLabel{Other signedness annotations}{signedness-other-annotations}
+
+The Checker Framework's signedness annotations are similar to annotations used
+elsewhere.
+
+If your code is already annotated with a different
+annotation, the Checker Framework can type-check your code.
+It treats annotations from other tools
+as if you had written the corresponding annotation from the
+Signedness Checker, as described in Figure~\ref{fig-signedness-refactoring}.
+% If the other annotation is a declaration annotation, it may be moved; see
+% Section~\ref{declaration-annotations-moved}.
+
+
+% These lists should be kept in sync with SignednessAnnotatedTypeFactory.java .
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~jdk.jfr.Unsigned~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.signedness.qual.Unsigned~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other signedness annotations
+  and the Checker Framework's annotations.}
+\label{fig-signedness-refactoring}
+\end{figure}
+
+% LocalWords:  Signedness signedness IntRange bitwise SignedPositive myInt
+% LocalWords:  SignedPositiveFromUnsigned SignednessGlb PolySigned qual
+% LocalWords:  UnknownSignedness SignednessBottom upcasting comparators
+% LocalWords:  SignednessUtil SignednessUtilExtra

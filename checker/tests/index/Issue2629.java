@@ -3,8 +3,8 @@
 
 import org.checkerframework.checker.index.qual.LessThan;
 
-class Issue2629 {
-    @LessThan("#1 + 1") int test(int a) {
-        return a;
-    }
+public class Issue2629 {
+  @LessThan("#1 + 1") int test(int a) {
+    return a;
+  }
 }

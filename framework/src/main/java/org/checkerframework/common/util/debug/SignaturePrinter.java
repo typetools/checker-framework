@@ -70,282 +70,285 @@ import org.plumelib.reflection.Signatures;
 @SupportedOptions("checker")
 public class SignaturePrinter extends AbstractTypeProcessor {
 
-    private SourceChecker checker;
+  private SourceChecker checker;
 
-    ///////// Initialization /////////////
+  ///////// Initialization /////////////
+  /**
+   * Initialization.
+   *
+   * @param env the ProcessingEnvironment
+   * @param checkerName the name of the checker
+   */
+  private void init(ProcessingEnvironment env, @Nullable @BinaryName String checkerName) {
+    if (checkerName != null) {
+      try {
+        Class<?> checkerClass = Class.forName(checkerName);
+        Constructor<?> cons = checkerClass.getConstructor();
+        checker = (SourceChecker) cons.newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      checker =
+          new SourceChecker() {
+
+            @Override
+            protected SourceVisitor<?, ?> createSourceVisitor() {
+              return null;
+            }
+
+            @Override
+            public AnnotationProvider getAnnotationProvider() {
+              throw new UnsupportedOperationException(
+                  "getAnnotationProvider is not implemented for this class.");
+            }
+          };
+    }
+    checker.init(env);
+  }
+
+  @Override
+  public void typeProcessingStart() {
+    super.typeProcessingStart();
+    String checkerName = processingEnv.getOptions().get("checker");
+    if (!Signatures.isBinaryName(checkerName)) {
+      throw new UserError("Malformed checker name \"%s\"", checkerName);
+    }
+    init(processingEnv, checkerName);
+  }
+
+  @Override
+  public void typeProcess(TypeElement element, TreePath p) {
+    // TODO: fix this mess
+    // checker.currentPath = p;
+    // CompilationUnitTree root = p != null ? p.getCompilationUnit() : null;
+    // ElementPrinter printer = new ElementPrinter(checker.createTypeFactory(), System.out);
+    // printer.visit(element);
+  }
+
+  ////////// Printer //////////
+  static class ElementPrinter extends AbstractElementVisitor7<Void, Void> {
+    private static final String INDENTION = "    ";
+
+    private final PrintStream out;
+    private String indent = "";
+    private final AnnotatedTypeFactory factory;
+
+    public ElementPrinter(AnnotatedTypeFactory factory, PrintStream out) {
+      this.factory = factory;
+      this.out = out;
+    }
+
+    public void printTypeParams(List<? extends AnnotatedTypeVariable> params) {
+      if (params.isEmpty()) {
+        return;
+      }
+
+      out.print("<");
+      boolean isntFirst = false;
+      for (AnnotatedTypeMirror param : params) {
+        if (isntFirst) {
+          out.print(", ");
+        }
+        isntFirst = true;
+        out.print(param);
+      }
+      out.print("> ");
+    }
+
+    public void printParameters(AnnotatedExecutableType type) {
+      ExecutableElement elem = type.getElement();
+
+      out.print("(");
+      for (int i = 0; i < type.getParameterTypes().size(); ++i) {
+        if (i != 0) {
+          out.print(", ");
+        }
+        printVariable(type.getParameterTypes().get(i), elem.getParameters().get(i).getSimpleName());
+      }
+      out.print(")");
+    }
+
+    public void printThrows(AnnotatedExecutableType type) {
+      if (type.getThrownTypes().isEmpty()) {
+        return;
+      }
+
+      out.print(" throws ");
+
+      boolean isntFirst = false;
+      for (AnnotatedTypeMirror thrown : type.getThrownTypes()) {
+        if (isntFirst) {
+          out.print(", ");
+        }
+        isntFirst = true;
+        out.print(thrown);
+      }
+    }
+
+    public void printVariable(AnnotatedTypeMirror type, Name name, boolean isVarArg) {
+      out.print(type);
+      if (isVarArg) {
+        out.println("...");
+      }
+      out.print(' ');
+      out.print(name);
+    }
+
+    public void printVariable(AnnotatedTypeMirror type, Name name) {
+      printVariable(type, name, false);
+    }
+
+    public void printType(AnnotatedTypeMirror type) {
+      out.print(type);
+      out.print(' ');
+    }
+
+    public void printName(CharSequence name) {
+      out.print(name);
+    }
+
+    @Override
+    public Void visitExecutable(ExecutableElement e, Void p) {
+      out.print(indent);
+
+      AnnotatedExecutableType type = factory.getAnnotatedType(e);
+      printTypeParams(type.getTypeVariables());
+      if (e.getKind() != ElementKind.CONSTRUCTOR) {
+        printType(type.getReturnType());
+      }
+      printName(e.getSimpleName());
+      printParameters(type);
+      printThrows(type);
+      out.println(';');
+
+      return null;
+    }
+
+    @Override
+    public Void visitPackage(PackageElement e, Void p) {
+      throw new IllegalArgumentException("Cannot process packages");
+    }
+
+    private String typeIdentifier(TypeElement e) {
+      switch (e.getKind()) {
+        case INTERFACE:
+          return "interface";
+        case CLASS:
+          return "class";
+        case ANNOTATION_TYPE:
+          return "@interface";
+        case ENUM:
+          return "enum";
+        default:
+          throw new IllegalArgumentException("Not a type element: " + e.getKind());
+      }
+    }
+
+    @Override
+    public Void visitType(TypeElement e, Void p) {
+      String prevIndent = indent;
+
+      out.print(indent);
+      out.print(typeIdentifier(e));
+      out.print(' ');
+      out.print(e.getSimpleName());
+      out.print(' ');
+      AnnotatedDeclaredType dt = factory.getAnnotatedType(e);
+      printSupers(dt);
+      out.println("{");
+
+      indent += INDENTION;
+
+      for (Element enclosed : e.getEnclosedElements()) {
+        this.visit(enclosed);
+      }
+
+      indent = prevIndent;
+      out.print(indent);
+      out.println("}");
+
+      return null;
+    }
+
     /**
-     * Initialization.
+     * Print the supertypes.
      *
-     * @param env the ProcessingEnvironment
-     * @param checkerName the name of the checker
+     * @param dt the type whos supertypes to print
      */
-    private void init(ProcessingEnvironment env, @Nullable @BinaryName String checkerName) {
-        if (checkerName != null) {
-            try {
-                Class<?> checkerClass = Class.forName(checkerName);
-                Constructor<?> cons = checkerClass.getConstructor();
-                checker = (SourceChecker) cons.newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            checker =
-                    new SourceChecker() {
+    private void printSupers(AnnotatedDeclaredType dt) {
+      if (dt.directSupertypes().isEmpty()) {
+        return;
+      }
 
-                        @Override
-                        protected SourceVisitor<?, ?> createSourceVisitor() {
-                            return null;
-                        }
+      out.print("extends ");
 
-                        @Override
-                        public AnnotationProvider getAnnotationProvider() {
-                            throw new UnsupportedOperationException(
-                                    "getAnnotationProvider is not implemented for this class.");
-                        }
-                    };
+      boolean isntFirst = false;
+      for (AnnotatedDeclaredType st : dt.directSupertypes()) {
+        if (isntFirst) {
+          out.print(", ");
         }
-        checker.init(env);
+        isntFirst = true;
+        out.print(st);
+      }
+      out.print(' ');
     }
 
     @Override
-    public void typeProcessingStart() {
-        super.typeProcessingStart();
-        String checkerName = processingEnv.getOptions().get("checker");
-        if (!Signatures.isBinaryName(checkerName)) {
-            throw new UserError("Malformed checker name \"%s\"", checkerName);
-        }
-        init(processingEnv, checkerName);
+    public Void visitTypeParameter(TypeParameterElement e, Void p) {
+      throw new IllegalStateException("Shouldn't visit any type parameters");
     }
 
     @Override
-    public void typeProcess(TypeElement element, TreePath p) {
-        // TODO: fix this mess
-        // checker.currentPath = p;
-        // CompilationUnitTree root = p != null ? p.getCompilationUnit() : null;
-        // ElementPrinter printer = new ElementPrinter(checker.createTypeFactory(), System.out);
-        // printer.visit(element);
+    public Void visitVariable(VariableElement e, Void p) {
+      if (!e.getKind().isField()) {
+        throw new IllegalStateException("can only process fields, received " + e.getKind());
+      }
+
+      out.print(indent);
+      AnnotatedTypeMirror type = factory.getAnnotatedType(e);
+      this.printVariable(type, e.getSimpleName());
+      out.println(';');
+
+      return null;
+    }
+  }
+
+  public static void printUsage() {
+    System.out.println("   Usage: java SignaturePrinter [-Achecker=<checkerName>] classname");
+  }
+
+  private static final String CHECKER_ARG = "-Achecker=";
+
+  public static void main(String[] args) {
+    if (!(args.length == 1 && !args[0].startsWith(CHECKER_ARG))
+        && !(args.length == 2 && args[0].startsWith(CHECKER_ARG))) {
+      printUsage();
+      return;
     }
 
-    ////////// Printer //////////
-    static class ElementPrinter extends AbstractElementVisitor7<Void, Void> {
-        private static final String INDENTION = "    ";
-
-        private final PrintStream out;
-        private String indent = "";
-        private final AnnotatedTypeFactory factory;
-
-        public ElementPrinter(AnnotatedTypeFactory factory, PrintStream out) {
-            this.factory = factory;
-            this.out = out;
-        }
-
-        public void printTypeParams(List<? extends AnnotatedTypeVariable> params) {
-            if (params.isEmpty()) {
-                return;
-            }
-
-            out.print("<");
-            boolean isntFirst = false;
-            for (AnnotatedTypeMirror param : params) {
-                if (isntFirst) {
-                    out.print(", ");
-                }
-                isntFirst = true;
-                out.print(param);
-            }
-            out.print("> ");
-        }
-
-        public void printParameters(AnnotatedExecutableType type) {
-            ExecutableElement elem = type.getElement();
-
-            out.print("(");
-            for (int i = 0; i < type.getParameterTypes().size(); ++i) {
-                if (i != 0) {
-                    out.print(", ");
-                }
-                printVariable(
-                        type.getParameterTypes().get(i),
-                        elem.getParameters().get(i).getSimpleName());
-            }
-            out.print(")");
-        }
-
-        public void printThrows(AnnotatedExecutableType type) {
-            if (type.getThrownTypes().isEmpty()) {
-                return;
-            }
-
-            out.print(" throws ");
-
-            boolean isntFirst = false;
-            for (AnnotatedTypeMirror thrown : type.getThrownTypes()) {
-                if (isntFirst) {
-                    out.print(", ");
-                }
-                isntFirst = true;
-                out.print(thrown);
-            }
-        }
-
-        public void printVariable(AnnotatedTypeMirror type, Name name, boolean isVarArg) {
-            out.print(type);
-            if (isVarArg) {
-                out.println("...");
-            }
-            out.print(' ');
-            out.print(name);
-        }
-
-        public void printVariable(AnnotatedTypeMirror type, Name name) {
-            printVariable(type, name, false);
-        }
-
-        public void printType(AnnotatedTypeMirror type) {
-            out.print(type);
-            out.print(' ');
-        }
-
-        public void printName(CharSequence name) {
-            out.print(name);
-        }
-
-        @Override
-        public Void visitExecutable(ExecutableElement e, Void p) {
-            out.print(indent);
-
-            AnnotatedExecutableType type = factory.getAnnotatedType(e);
-            printTypeParams(type.getTypeVariables());
-            if (e.getKind() != ElementKind.CONSTRUCTOR) {
-                printType(type.getReturnType());
-            }
-            printName(e.getSimpleName());
-            printParameters(type);
-            printThrows(type);
-            out.println(';');
-
-            return null;
-        }
-
-        @Override
-        public Void visitPackage(PackageElement e, Void p) {
-            throw new IllegalArgumentException("Cannot process packages");
-        }
-
-        private String typeIdentifier(TypeElement e) {
-            switch (e.getKind()) {
-                case INTERFACE:
-                    return "interface";
-                case CLASS:
-                    return "class";
-                case ANNOTATION_TYPE:
-                    return "@interface";
-                case ENUM:
-                    return "enum";
-                default:
-                    throw new IllegalArgumentException("Not a type element: " + e.getKind());
-            }
-        }
-
-        @Override
-        public Void visitType(TypeElement e, Void p) {
-            String prevIndent = indent;
-
-            out.print(indent);
-            out.print(typeIdentifier(e));
-            out.print(' ');
-            out.print(e.getSimpleName());
-            out.print(' ');
-            AnnotatedDeclaredType dt = factory.getAnnotatedType(e);
-            printSupers(dt);
-            out.println("{");
-
-            indent += INDENTION;
-
-            for (Element enclosed : e.getEnclosedElements()) {
-                this.visit(enclosed);
-            }
-
-            indent = prevIndent;
-            out.print(indent);
-            out.println("}");
-
-            return null;
-        }
-
-        private void printSupers(AnnotatedDeclaredType dt) {
-            if (dt.directSuperTypes().isEmpty()) {
-                return;
-            }
-
-            out.print("extends ");
-
-            boolean isntFirst = false;
-            for (AnnotatedDeclaredType st : dt.directSuperTypes()) {
-                if (isntFirst) {
-                    out.print(", ");
-                }
-                isntFirst = true;
-                out.print(st);
-            }
-            out.print(' ');
-        }
-
-        @Override
-        public Void visitTypeParameter(TypeParameterElement e, Void p) {
-            throw new IllegalStateException("Shouldn't visit any type parameters");
-        }
-
-        @Override
-        public Void visitVariable(VariableElement e, Void p) {
-            if (!e.getKind().isField()) {
-                throw new IllegalStateException("can only process fields, received " + e.getKind());
-            }
-
-            out.print(indent);
-            AnnotatedTypeMirror type = factory.getAnnotatedType(e);
-            this.printVariable(type, e.getSimpleName());
-            out.println(';');
-
-            return null;
-        }
+    // process arguments
+    String checkerName = null;
+    if (args[0].startsWith(CHECKER_ARG)) {
+      checkerName = args[0].substring(CHECKER_ARG.length());
+      if (!Signatures.isBinaryName(checkerName)) {
+        throw new UserError("Bad checker name \"%s\"", checkerName);
+      }
     }
 
-    public static void printUsage() {
-        System.out.println("   Usage: java SignaturePrinter [-Achecker=<checkerName>] classname");
+    // Setup compiler environment
+    Context context = new Context();
+    JavacProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
+    SignaturePrinter printer = new SignaturePrinter();
+    printer.init(env, checkerName);
+
+    String className = args[args.length - 1];
+    TypeElement elem = env.getElementUtils().getTypeElement(className);
+    if (elem == null) {
+      System.err.println("Couldn't find class: " + className);
+      return;
     }
 
-    private static final String CHECKER_ARG = "-Achecker=";
-
-    public static void main(String[] args) {
-        if (!(args.length == 1 && !args[0].startsWith(CHECKER_ARG))
-                && !(args.length == 2 && args[0].startsWith(CHECKER_ARG))) {
-            printUsage();
-            return;
-        }
-
-        // process arguments
-        String checkerName = null;
-        if (args[0].startsWith(CHECKER_ARG)) {
-            checkerName = args[0].substring(CHECKER_ARG.length());
-            if (!Signatures.isBinaryName(checkerName)) {
-                throw new UserError("Bad checker name \"%s\"", checkerName);
-            }
-        }
-
-        // Setup compiler environment
-        Context context = new Context();
-        JavacProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
-        SignaturePrinter printer = new SignaturePrinter();
-        printer.init(env, checkerName);
-
-        String className = args[args.length - 1];
-        TypeElement elem = env.getElementUtils().getTypeElement(className);
-        if (elem == null) {
-            System.err.println("Couldn't find class: " + className);
-            return;
-        }
-
-        printer.typeProcess(elem, null);
-    }
+    printer.typeProcess(elem, null);
+  }
 }

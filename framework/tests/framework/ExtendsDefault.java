@@ -1,24 +1,24 @@
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
-class ExtendsDefault {
+public class ExtendsDefault {
 
-    @DefaultQualifier(
-            value = Odd.class,
-            locations = {TypeUseLocation.UPPER_BOUND})
-    class MyOddDefault<T> {}
+  @DefaultQualifier(
+      value = Odd.class,
+      locations = {TypeUseLocation.UPPER_BOUND})
+  class MyOddDefault<T> {}
 
-    class MyNonOddDefault<T> {}
+  class MyNonOddDefault<T> {}
 
-    void testNonOdd() {
-        // :: error: (type.argument.type.incompatible)
-        MyOddDefault<String> s1;
-        MyNonOddDefault<String> s2;
-    }
+  void testNonOdd() {
+    // :: error: (type.argument.type.incompatible)
+    MyOddDefault<String> s1;
+    MyNonOddDefault<String> s2;
+  }
 
-    void testOdd() {
-        MyOddDefault<@Odd String> s1;
-        MyNonOddDefault<@Odd String> s2;
-    }
+  void testOdd() {
+    MyOddDefault<@Odd String> s1;
+    MyNonOddDefault<@Odd String> s2;
+  }
 }

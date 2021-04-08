@@ -7,4 +7,4 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.regex.RegexChecker mypackage/UseMyClass.java
  */
 
-class Main {}
+public class Main {}

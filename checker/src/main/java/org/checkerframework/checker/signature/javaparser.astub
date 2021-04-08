@@ -3,5 +3,22 @@ import org.checkerframework.checker.signature.qual.*;
 package com.github.javaparser.ast;
 
 class PackageDeclaration {
-  @DotSeparatedIdentifiers String getNameAsString();
+  @DotSeparatedIdentifiers Name getName();
+}
+
+package com.github.javaparser.ast;
+
+class ImportDeclaration {
+  @DotSeparatedIdentifiers Name getName();
+}
+
+// Class is documented as "A node with a (qualified) name."
+interface NodeWithName {
+  @FullyQualifiedName Name getName();
+}
+
+package com.github.javaparser.ast.expr;
+
+class AnnotationExpr {
+  @FullyQualifiedName Name getName();
 }

@@ -1,58 +1,59 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {
 
-    /** A unique ID for this block. */
-    protected final long id = BlockImpl.uniqueID();
+  /** The type of this basic block. */
+  protected final BlockType type;
 
-    /** The last ID that has already been used. */
-    protected static long lastId = 0;
+  /** The set of predecessors. */
+  protected final Set<BlockImpl> predecessors;
 
-    /** The type of this basic block. */
-    protected final BlockType type;
+  /** The unique ID for the next-created object. */
+  static final AtomicLong nextUid = new AtomicLong(0);
+  /** The unique ID of this object. */
+  final long uid = nextUid.getAndIncrement();
+  /**
+   * Returns the unique ID of this object.
+   *
+   * @return the unique ID of this object
+   */
+  @Override
+  public long getUid(@UnknownInitialization BlockImpl this) {
+    return uid;
+  }
 
-    /** The set of predecessors. */
-    protected final Set<BlockImpl> predecessors;
+  /**
+   * Create a new BlockImpl.
+   *
+   * @param type the type of this basic block
+   */
+  protected BlockImpl(BlockType type) {
+    this.type = type;
+    this.predecessors = new LinkedHashSet<>();
+  }
 
-    /**
-     * Returns a fresh identifier.
-     *
-     * @return a fresh identifier
-     */
-    private static long uniqueID() {
-        return lastId++;
-    }
+  @Override
+  public BlockType getType() {
+    return type;
+  }
 
-    protected BlockImpl(BlockType type) {
-        this.type = type;
-        this.predecessors = new HashSet<>();
-    }
+  @Override
+  public Set<Block> getPredecessors() {
+    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration order.
+    return new LinkedHashSet<>(predecessors);
+  }
 
-    @Override
-    public long getId() {
-        return id;
-    }
+  public void addPredecessor(BlockImpl pred) {
+    predecessors.add(pred);
+  }
 
-    @Override
-    public BlockType getType() {
-        return type;
-    }
-
-    @Override
-    public Set<Block> getPredecessors() {
-        return Collections.unmodifiableSet(predecessors);
-    }
-
-    public void addPredecessor(BlockImpl pred) {
-        predecessors.add(pred);
-    }
-
-    public void removePredecessor(BlockImpl pred) {
-        predecessors.remove(pred);
-    }
+  public void removePredecessor(BlockImpl pred) {
+    predecessors.remove(pred);
+  }
 }

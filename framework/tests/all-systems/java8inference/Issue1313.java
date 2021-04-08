@@ -7,11 +7,11 @@ import java.util.stream.Stream;
 interface MyList1313<E> extends Iterable<E> {}
 
 @SuppressWarnings({"all", "type.inference.not.same"}) // check for crashes
-class Issue1313 {
-    Stream<?> s;
-    Iterable<?> i = s.collect(toMyList1313());
+public class Issue1313 {
+  Stream<?> s;
+  Iterable<?> i = s.collect(toMyList1313());
 
-    <F> Collector<F, ?, MyList1313<F>> toMyList1313() {
-        return null;
-    }
+  <F> Collector<F, ?, MyList1313<F>> toMyList1313() {
+    return null;
+  }
 }

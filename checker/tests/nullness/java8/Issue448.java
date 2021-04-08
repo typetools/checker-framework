@@ -4,9 +4,9 @@
 import java.util.Arrays;
 
 enum Issue448 {
-    ONE;
+  ONE;
 
-    void method() {
-        Arrays.stream(values()).filter(key -> true);
-    }
+  void method() {
+    Arrays.stream(values()).filter(key -> true);
+  }
 }
