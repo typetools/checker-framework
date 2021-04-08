@@ -206,12 +206,7 @@ public class TypeArgumentMapper {
       final Map<TypeParameterElement, Set<TypeParameterElement>> setMap,
       final TypeParameterElement element,
       final TypeParameterElement typeParam) {
-    Set<TypeParameterElement> set = setMap.get(element);
-    if (set == null) {
-      set = new HashSet<>();
-      setMap.put(element, set);
-    }
-
+    Set<TypeParameterElement> set = setMap.computeIfAbsent(element, unused -> new HashSet<>());
     set.add(typeParam);
   }
 

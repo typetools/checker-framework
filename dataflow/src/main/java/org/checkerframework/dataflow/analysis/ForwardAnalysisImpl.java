@@ -238,11 +238,7 @@ public class ForwardAnalysisImpl<
     // Prepare cache
     IdentityHashMap<Node, TransferResult<V, S>> cache;
     if (analysisCaches != null) {
-      cache = analysisCaches.get(blockTransferInput);
-      if (cache == null) {
-        cache = new IdentityHashMap<>();
-        analysisCaches.put(blockTransferInput, cache);
-      }
+      cache = analysisCaches.computeIfAbsent(blockTransferInput, unused -> new IdentityHashMap<>());
     } else {
       cache = null;
     }
@@ -442,10 +438,7 @@ public class ForwardAnalysisImpl<
     S elseStore = getStoreBefore(b, Store.Kind.ELSE);
     boolean shouldWiden = false;
     if (blockCount != null) {
-      Integer count = blockCount.get(b);
-      if (count == null) {
-        count = 0;
-      }
+      Integer count = blockCount.getOrDefault(b, 0);
       shouldWiden = count >= maxCountBeforeWidening;
       if (shouldWiden) {
         blockCount.put(b, 0);

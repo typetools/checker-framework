@@ -185,11 +185,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
       final AnnotatedTypeMirror type,
       final TypeCompound anno,
       final Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnos) {
-    List<TypeCompound> annoList = typeToAnnos.get(type);
-    if (annoList == null) {
-      annoList = new ArrayList<>();
-      typeToAnnos.put(type, annoList);
-    }
+    List<TypeCompound> annoList = typeToAnnos.computeIfAbsent(type, unused -> new ArrayList<>());
     annoList.add(anno);
   }
 

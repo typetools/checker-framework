@@ -1623,11 +1623,8 @@ public class AnnotationFileParser {
           // Didn't find the element and it isn't a fake override.  Issue a warning.
           findElement(typeElt, method, /*noWarn=*/ false);
         } else {
-          List<BodyDeclaration<?>> l = fakeOverrideDecls.get(overriddenMethod);
-          if (l == null) {
-            l = new ArrayList<>();
-            fakeOverrideDecls.put(overriddenMethod, l);
-          }
+          List<BodyDeclaration<?>> l =
+              fakeOverrideDecls.computeIfAbsent(overriddenMethod, unused -> new ArrayList<>());
           l.add(member);
         }
       }
@@ -1815,11 +1812,8 @@ public class AnnotationFileParser {
     NodeList<AnnotationExpr> annotations = decl.getAnnotations();
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
-    List<Pair<TypeMirror, AnnotatedTypeMirror>> l = annotationFileAnnos.fakeOverrides.get(element);
-    if (l == null) {
-      l = new ArrayList<>();
-      annotationFileAnnos.fakeOverrides.put(element, l);
-    }
+    List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
+        annotationFileAnnos.fakeOverrides.computeIfAbsent(element, unused -> new ArrayList<>());
     l.add(Pair.of(fakeLocation.asType(), methodType));
   }
 
