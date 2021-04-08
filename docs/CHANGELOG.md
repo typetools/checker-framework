@@ -1,7 +1,8 @@
-Version 3.12.1 (May 3, 2021)
+Version 3.13.0 (May 3, 2021)
 ----------------------------
 
-Forthcoming.
+Method renamings:
+ * `DependentTypesHelper.atReturnType` => `atMethodBody`
 
 The Must Call Checker over-approximates the methods that an object must call
 before it is de-allocated.
