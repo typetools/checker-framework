@@ -188,9 +188,11 @@ public class ElementUtils {
     // TODO: verify and see whether the change is worth it.
     String fqnstart = elem.getQualifiedName().toString();
     String fqn = fqnstart;
-    if (fqn != null && !fqn.isEmpty() && fqn.contains(".")) {
-      fqn = fqn.substring(0, fqn.lastIndexOf('.'));
-      return e.getPackageElement(fqn);
+    if (fqn != null && !fqn.isEmpty()) {
+      int dotPos = fqn.lastIndexOf('.');
+      if (dotPos != -1) {
+        return e.getPackageElement(fqn.substring(0, dotPos));
+      }
     }
     return null;
   }
