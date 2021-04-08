@@ -111,6 +111,9 @@ allprojects {
 
         // Holds the combined classpath of all subprojects including the subprojects themselves.
         allProjects
+
+        // Exclude checker-qual dependency added by ErrorProne to avoid a circular dependency.
+        annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
     configurations {
