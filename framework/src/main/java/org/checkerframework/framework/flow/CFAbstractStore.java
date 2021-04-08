@@ -490,9 +490,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * A function that merges two values.
      *
-     * @param old the previous value
-     * @param newValue the new value
-     * @return the merged value
+     * @param old the previously stored value
+     * @param newValue the newly computed value
+     * @return the merge of the given two values
      */
     V apply(V old, V newValue);
   }
