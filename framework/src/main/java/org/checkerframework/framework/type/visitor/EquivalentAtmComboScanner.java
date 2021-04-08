@@ -224,6 +224,13 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
       return recordFor1.get(type2);
     }
 
+    /**
+     * Add a new pair to the history.
+     *
+     * @param type1 the first type
+     * @param type2 the second type
+     * @param ret the result
+     */
     public void add(
         final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, final RETURN_TYPE ret) {
       IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 =
