@@ -432,7 +432,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * of annotations. The computation accounts for sets that are missing annotations in hierarchies.
    */
   protected class ValueLub extends AnnotationSetCombiner {
-    boolean widen;
+
+    /**
+     * If true, this class computes an upper bound; if false, this class computes the least upper
+     * bound.
+     */
+    private final boolean widen;
 
     /**
      * Creates a {@link ValueLub}.
