@@ -86,7 +86,6 @@ SANITY_DIR = TMP_DIR + "/sanity"
 RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR + "/release-build-completed"
 
 # Every time a release is built the changes/tags are pushed here
-# When a release is deployed all INTERM repos get pushed to LIVE_REPOS
 INTERM_REPO_ROOT = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
@@ -104,13 +103,11 @@ STUBPARSER_REPO = "https://github.com/typetools/stubparser"
 BUILD_DIR = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, "checker-framework")
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, "docs/developer/release")
-CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
 # If a new Gradle wrapper was recently installed, the first ./gradlew command may output:
 #   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
-CF_VERSION_WARMUP = execute(
-    "./gradlew version -q", True, True, TMP_DIR + "/checker-framework"
-)
+# This first call might output Gradle diagnostics, such as "downloading".
+execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
 CF_VERSION = (
     execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
     .strip()
@@ -127,7 +124,6 @@ STUBPARSER = os.path.join(BUILD_DIR, "stubparser")
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
 INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)
-LIVE_REPOS = (LIVE_CHECKER_REPO, LIVE_ANNO_REPO)
 
 INTERM_TO_BUILD_REPOS = (
     (INTERM_CHECKER_REPO, CHECKER_FRAMEWORK),

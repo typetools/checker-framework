@@ -765,6 +765,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
+      Collections.sort(values);
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
       builder.setValue("value", values);
       return builder.build();
@@ -917,9 +918,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
-      List<Double> doubleValues =
-          CollectionsPlume.mapList((Double value) -> (double) value, values);
-      return createDoubleValAnnotation(doubleValues);
+      return createDoubleValAnnotation(values);
     }
   }
 
@@ -1404,6 +1403,27 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return 0;
     } else {
       return minLen;
+    }
+  }
+
+  /**
+   * Returns the minimum length of an array.
+   *
+   * @param annotations the annotations on the array expression
+   * @return the minimum length of an array
+   */
+  public int getMinLenValue(Set<AnnotationMirror> annotations) {
+    int result = 0;
+    for (AnnotationMirror annotation : annotations) {
+      Integer minLen = getSpecifiedMinLenValue(annotation);
+      if (minLen != null) {
+        result = Integer.min(result, minLen);
+      }
+    }
+    if (result < 0) {
+      return 0;
+    } else {
+      return result;
     }
   }
 

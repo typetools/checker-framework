@@ -1978,7 +1978,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the innermost enclosing method or class tree of {@code tree}, or {@code null} if {@code
    *     tree} is inside an annotation
    */
-  protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
+  public @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
     TreePath path = getPath(tree);
     Tree enclosing = TreePathUtil.enclosingOfKind(path, classMethodAnnotationKinds);
     if (enclosing != null) {
@@ -4872,6 +4872,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Matches subtraction of a constant. */
   static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
+  /** Matches a string whose only parens are at the beginning and end of the string. */
+  private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+
   /**
    * Given an expression, split it into a subexpression and a constant offset. For example:
    *
@@ -4897,10 +4900,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     String offset = "0";
 
     // Is this normalization necessary?
-    // Remove surrrounding whitespace.
+    // Remove surrounding whitespace.
     expr = expr.trim();
     // Remove surrounding parentheses.
-    if (expr.matches("^\\([^()]\\)")) {
+    if (surroundingParensPattern.matcher(expr).matches()) {
       expr = expr.substring(1, expr.length() - 2).trim();
     }
 

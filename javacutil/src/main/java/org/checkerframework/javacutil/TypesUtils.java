@@ -41,7 +41,10 @@ import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsPlume;
 
-/** A utility class that helps with {@link TypeMirror}s. */
+/**
+ * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
+ * methods that {@link Types} does not.
+ */
 public final class TypesUtils {
 
   /** Class cannot be instantiated. */

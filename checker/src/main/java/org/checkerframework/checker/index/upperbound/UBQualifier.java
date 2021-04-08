@@ -56,31 +56,29 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotationMirror am, String offset, UpperBoundChecker ubChecker) {
-    if (AnnotationUtils.areSameByName(
-        am, "org.checkerframework.checker.index.qual.UpperBoundUnknown")) {
-      return UpperBoundUnknownQualifier.UNKNOWN;
-    } else if (AnnotationUtils.areSameByName(
-        am, "org.checkerframework.checker.index.qual.UpperBoundBottom")) {
-      return UpperBoundBottomQualifier.BOTTOM;
-    } else if (AnnotationUtils.areSameByName(
-        am, "org.checkerframework.checker.index.qual.LTLengthOf")) {
-      return parseLTLengthOf(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByName(
-        am, "org.checkerframework.checker.index.qual.SubstringIndexFor")) {
-      return parseSubstringIndexFor(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByName(
-        am, "org.checkerframework.checker.index.qual.LTEqLengthOf")) {
-      return parseLTEqLengthOf(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByName(
-        am, "org.checkerframework.checker.index.qual.LTOMLengthOf")) {
-      return parseLTOMLengthOf(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByName(
-        am, "org.checkerframework.checker.index.qual.PolyUpperBound")) {
-      // TODO:  Ignores offset.  Should we check that offset is not set?
-      return PolyQualifier.POLY;
+    switch (AnnotationUtils.annotationName(am)) {
+      case "org.checkerframework.checker.index.qual.UpperBoundUnknown":
+        return UpperBoundUnknownQualifier.UNKNOWN;
+      case "org.checkerframework.checker.index.qual.UpperBoundBottom":
+        return UpperBoundBottomQualifier.BOTTOM;
+      case "org.checkerframework.checker.index.qual.UpperBoundLiteral":
+        int intValue =
+            AnnotationUtils.getElementValueInt(am, ubChecker.upperBoundLiteralValueElement);
+        return UpperBoundLiteralQualifier.create(intValue);
+      case "org.checkerframework.checker.index.qual.LTLengthOf":
+        return parseLTLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.SubstringIndexFor":
+        return parseSubstringIndexFor(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTEqLengthOf":
+        return parseLTEqLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTOMLengthOf":
+        return parseLTOMLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.PolyUpperBound":
+        // TODO:  Ignores offset.  Should we check that offset is not set?
+        return PolyQualifier.POLY;
+      default:
+        throw new BugInCF("createUBQualifier(%s, %s, ...)", am, offset);
     }
-    assert false;
-    return UpperBoundUnknownQualifier.UNKNOWN;
   }
 
   /** A cache for the {@link #nCopiesEmptyStringCache} method. */
@@ -281,10 +279,29 @@ public abstract class UBQualifier {
     return false;
   }
 
+  /**
+   * Returns true if this UBQualifier represents a literal integer.
+   *
+   * @return true if this UBQualifier represents a literal integer
+   */
+  public boolean isLiteral() {
+    return false;
+  }
+
+  /**
+   * Returns true if this UBQualifier is the top type.
+   *
+   * @return true if this UBQualifier is the top type
+   */
   public boolean isUnknown() {
     return false;
   }
 
+  /**
+   * Returns true if this UBQualifier is the bottom type.
+   *
+   * @return true if this UBQualifier is the bottom type
+   */
   public boolean isBottom() {
     return false;
   }
@@ -391,6 +408,28 @@ public abstract class UBQualifier {
         result.put(sequenceName, equations);
       }
       return result;
+    }
+
+    /**
+     * Returns true if the given integer literal is a subtype of this. The literal is a subtype of
+     * this if, for every offset expression, {@code literal + offset <= -1}.
+     *
+     * @param i an integer
+     * @return true if the given integer literal is a subtype of this
+     */
+    /*package-protected*/ boolean literalIsSubtype(int i) {
+      for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+        for (OffsetEquation equation : entry.getValue()) {
+          if (!equation.isInt()) {
+            return false;
+          }
+          int offset = equation.getInt();
+          if (i + offset > -1) {
+            return false;
+          }
+        }
+      }
+      return true;
     }
 
     /**
@@ -709,6 +748,8 @@ public abstract class UBQualifier {
         return true;
       } else if (superType.isBottom()) {
         return false;
+      } else if (superType.isLiteral()) {
+        return false;
       }
 
       LessThanLengthOf superTypeLTL = (LessThanLengthOf) superType;
@@ -771,6 +812,8 @@ public abstract class UBQualifier {
         return other;
       } else if (other.isBottom()) {
         return this;
+      } else if (other.isLiteral()) {
+        return other.lub(this);
       }
       LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
@@ -886,6 +929,8 @@ public abstract class UBQualifier {
         return this;
       } else if (other.isBottom()) {
         return other;
+      } else if (other.isLiteral()) {
+        return other.glb(this);
       }
       LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
@@ -1244,9 +1289,106 @@ public abstract class UBQualifier {
     }
   }
 
+  /** Represents an integer value that is known at compile time. */
+  public static class UpperBoundLiteralQualifier extends UBQualifier {
+
+    /** Represents the value -1. */
+    public static UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
+    /** Represents the value 0. */
+    public static UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
+    /** Represents the value 1. */
+    public static UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
+
+    /**
+     * Creates a new UpperBoundLiteralQualifier, without using cached values.
+     *
+     * @param value the integer value
+     */
+    private UpperBoundLiteralQualifier(int value) {
+      this.value = value;
+    }
+
+    /**
+     * Creates an UpperBoundLiteralQualifier.
+     *
+     * @param value the integer value
+     * @return an UpperBoundLiteralQualifier
+     */
+    public static UpperBoundLiteralQualifier create(int value) {
+      switch (value) {
+        case -1:
+          return NEGATIVEONE;
+        case 0:
+          return ZERO;
+        case 1:
+          return ONE;
+        default:
+          return new UpperBoundLiteralQualifier(value);
+      }
+    }
+
+    /** The integer value. */
+    int value;
+
+    /**
+     * Returns the integer value.
+     *
+     * @return the integer value
+     */
+    int getValue() {
+      return value;
+    }
+
+    @Override
+    public boolean isLiteral() {
+      return true;
+    }
+
+    @Override
+    public boolean isSubtype(UBQualifier superType) {
+      if (superType.isUnknown()) {
+        return true;
+      } else if (superType.isBottom()) {
+        return false;
+      } else if (superType.isLiteral()) {
+        int otherValue = ((UpperBoundLiteralQualifier) superType).value;
+        return value == otherValue;
+      }
+
+      LessThanLengthOf superTypeLTL = (LessThanLengthOf) superType;
+      return superTypeLTL.literalIsSubtype(value);
+    }
+
+    @Override
+    public UBQualifier lub(UBQualifier other) {
+      if (isSubtype(other)) {
+        return other;
+      } else {
+        return UpperBoundUnknownQualifier.UNKNOWN;
+      }
+    }
+
+    @Override
+    public UBQualifier glb(UBQualifier other) {
+      if (isSubtype(other)) {
+        return this;
+      } else {
+        return UpperBoundBottomQualifier.BOTTOM;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Literal(" + value + ")";
+    }
+  }
+
+  /** The top type qualifier. */
   public static class UpperBoundUnknownQualifier extends UBQualifier {
+    /** The canonical representative. */
     static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
+    /** This class is a singleton. */
     private UpperBoundUnknownQualifier() {}
 
     @Override
