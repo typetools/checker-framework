@@ -2120,10 +2120,12 @@ A chapter in the Checker Framework manual should generally have the
 following sections:
 
 \begin{description}
+
 \item[Chapter: Belly Rub Checker]
   The text before the first section in the chapter should state the
   guarantee that the checker provides and why it is important.  It should
   give an overview of the concepts.  It should state how to run the checker.
+
 \item[Section: Belly Rub annotations]
   This section includes descriptions of the annotations with links to the
   Javadoc.  Separate type annotations from declaration annotations, and put
@@ -2139,12 +2141,24 @@ following sections:
   The Javadoc for the annotations deserves the same care as the manual
   chapter.  Each annotation's Javadoc comment should use the
   \<@checker\_framework.manual> Javadoc taglet to refer to the chapter that
-  describes the checker; see \refclass{javacutil/dist}{ManualTaglet}.
+  describes the checker, and the polymorphic qualifier's Javadoc should
+  also refer to the \<qualifier-polymorphism> section.  For example, in
+  \<PolyPresent.java>:
+
+  \begin{Verbatim}
+ * @checker_framework.manual #optional-checker Optional Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
+  \end{Verbatim}
+
+  \noindent
+  For more details, see \refclass{javacutil/dist}{ManualTaglet}.
+
 \item[Section: What the Belly Rub Checker checks]
   This section gives more details about when an error is issued, with examples.
   This section may be omitted if the checker does not contain special
   type-checking rules --- that is, if the checker only enforces the usual
   Java subtyping rules.
+
 \item[Section: Examples]
   Code examples.
 \end{description}
