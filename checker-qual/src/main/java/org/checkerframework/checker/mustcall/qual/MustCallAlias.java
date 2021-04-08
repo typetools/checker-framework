@@ -16,9 +16,9 @@ import java.lang.annotation.Target;
  * java.net.Socket#getOutputStream}:
  *
  * <pre>
- * @MustCall("close")
+ * &#64;MustCall("close")
  * class Socket {
- *   @MustCallAlias OutputStream getOutputStream(@MustCallAlias Socket this) { ... }
+ *   &#64;MustCallAlias OutputStream getOutputStream(&#64;MustCallAlias Socket this) { ... }
  * }
  * </pre>
  *

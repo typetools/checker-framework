@@ -23,8 +23,6 @@ are shown in Figure~\ref{fig-must-call-hierarchy}:
 \item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}]
   indicates that the qualifier's arguments are a superset of the methods that the annotated program element
   must call before it is de-allocated.
-  The type \<@MustCall(\{"close"\}) OutputStream> represents an \<OutputStream> that might need
-  to call \<close()> before it is de-allocated.
   The default type qualifier for an unannotated type is \<@MustCall(\{\})>.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallUnknown}]

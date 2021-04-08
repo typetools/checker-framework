@@ -28,16 +28,16 @@ import org.checkerframework.framework.qual.JavaExpression;
  * annotation to indicate that the {@code reset()} method re-assigns the {@code socket} field:
  *
  * <pre>
- * @MustCall("stop")
+ * &#64;MustCall("stop")
  * class SocketContainer {
  *     private @Owning @MustCall("close") Socket socket = ...;
  *
- *     @EnsuresCalledMethods(value="this.socket", methods="close")
+ *     &#64;EnsuresCalledMethods(value="this.socket", methods="close")
  *     public void stop() throws IOException {
  *       socket.close();
  *     }
  *
- *    @CreatesObligation("this")
+ *    &#64;CreatesObligation("this")
  *    public void reset() {
  *      if (socket.isClosed()) {
  *        socket = new Socket(...);
