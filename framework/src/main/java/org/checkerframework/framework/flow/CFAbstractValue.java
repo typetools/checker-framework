@@ -611,10 +611,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * <p>Subclasses must define how to combine sets by implementing the following methods:
    *
    * <ol>
-   *   <li>{@link #combineTwoAnnotations(AnnotationMirror, AnnotationMirror, AnnotationMirror)}
-   *   <li>{@link #combineOneAnnotation(AnnotationMirror, AnnotatedTypeVariable, AnnotationMirror,
+   *   <li>{@code #combineTwoAnnotations(AnnotationMirror, AnnotationMirror, AnnotationMirror)}
+   *   <li>{@code #combineOneAnnotation(AnnotationMirror, AnnotatedTypeVariable, AnnotationMirror,
    *       boolean)}
-   *   <li>{@link #combineNoAnnotations(AnnotatedTypeVariable, AnnotatedTypeVariable,
+   *   <li>{@code #combineNoAnnotations(AnnotatedTypeVariable, AnnotatedTypeVariable,
    *       AnnotationMirror, boolean)}
    * </ol>
    *
