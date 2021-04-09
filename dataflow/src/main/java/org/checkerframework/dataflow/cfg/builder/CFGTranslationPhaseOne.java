@@ -2709,6 +2709,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           if (ElementUtils.isTypeDeclaration(element)) {
             node = new ClassNameNode(tree);
             break;
+          } else if (ElementUtils.isBindingVariable(element)) {
+            // Note: BINDING_VARIABLE should be added as a direct case above when instanceof pattern
+            // matching and Java15 are supported.
+            node = new LocalVariableNode(tree);
+            break;
           }
           throw new BugInCF("bad element kind " + element.getKind());
       }

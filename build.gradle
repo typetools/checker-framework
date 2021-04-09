@@ -112,12 +112,7 @@ allprojects {
         // Holds the combined classpath of all subprojects including the subprojects themselves.
         allProjects
 
-        // There's a bug in IntelliJ that adds the processor path to the classpath when building
-        // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
-        // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
-        // processor path as a work around for this problem.
-        annotationProcessor.exclude group:'org.checkerframework', module:'javacutil'
-        annotationProcessor.exclude group:'org.checkerframework', module:'dataflow'
+        // Exclude checker-qual dependency added by ErrorProne to avoid a circular dependency.
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 

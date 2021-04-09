@@ -781,6 +781,19 @@ public class ElementUtils {
   }
 
   /**
+   * Return true if the element is a binding variable.
+   *
+   * <p>Note: This is to conditionally support Java 15 instanceof pattern matching. When available,
+   * this should use {@code ElementKind.BINDING_VARIABLE} directly.
+   *
+   * @param element the element to test
+   * @return true if the element is a binding variable
+   */
+  public static boolean isBindingVariable(Element element) {
+    return "BINDING_VARIABLE".equals(element.getKind().name());
+  }
+
+  /**
    * Check that a method Element matches a signature.
    *
    * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is only
