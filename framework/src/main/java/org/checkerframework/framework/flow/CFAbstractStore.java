@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -480,24 +481,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * A functional interface that merges two values.
-   *
-   * @param <V> the type of the values
-   */
-  @FunctionalInterface
-  interface MergeValues<V> {
-
-    /**
-     * A function that merges two values.
-     *
-     * @param old the previously stored value
-     * @param newValue the newly computed value
-     * @return the merge of the given two values
-     */
-    V apply(V old, V newValue);
-  }
-
-  /**
    * Helper method for {@link #insertValue(JavaExpression, CFAbstractValue)} and {@link
    * #insertValuePermitNondeterministic}.
    *
@@ -533,7 +516,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected void computeNewValueAndInsert(
       JavaExpression expr,
       @Nullable V value,
-      MergeValues<V> merger,
+      BinaryOperator<V> merger,
       boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
       return;
