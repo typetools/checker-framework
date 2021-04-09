@@ -25,12 +25,12 @@ import org.checkerframework.framework.source.SupportedOptions;
 })
 public class MustCallChecker extends BaseTypeChecker {
 
-  /** disables @CreatesObligation support */
+  /** Disables @CreatesObligation support. */
   public static final String NO_ACCUMULATION_FRAMES = "noAccumulationFrames";
 
-  /** disables @Owning/@NotOwning support */
+  /** Disables @Owning/@NotOwning support. */
   public static final String NO_LIGHTWEIGHT_OWNERSHIP = "noLightweightOwnership";
 
-  /** disables @MustCallAlias support */
+  /** Disables @MustCallAlias support. */
   public static final String NO_RESOURCE_ALIASES = "noResourceAliases";
 }

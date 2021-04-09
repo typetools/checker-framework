@@ -22,14 +22,12 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * When a client calls {@code getOutputStream} on the Socket creates a new {@code OutputStream}
- * object that wraps the Socket. Calling its {@code close()} method will close the underlying
- * socket, but the Socket may also be closed directly. Calling close on either object is permitted
- * -- thus, both the receiver and return type above are annotated as {@code @MustCallAlias}.
+ * Calling {@code close()} on the returned {@code OutputStream} will close the underlying socket,
+ * but the Socket may also be closed directly, which has the same effect.
  *
  * <h3>Verifying {@code @MustCallAlias} annotations</h3>
  *
- * Suppose that {@code @MustCallAlias} is written on the type of parameter {@code p}.
+ * Suppose that {@code @MustCallAlias} is written on the type of formal parameter {@code p}.
  *
  * <p>For a constructor:
  *

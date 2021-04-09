@@ -166,14 +166,13 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   /**
    * Does not issue any warnings.
    *
+   * <p>This implementation prevents recursing into annotation arguments. Annotation arguments are
+   * literals, which don't have must-call obligations.
+   *
    * <p>Annotation arguments are treated as return locations for the purposes of defaulting, rather
    * than parameter locations. This causes them to default incorrectly when the annotation is
    * defined in bytecode. See https://github.com/typetools/checker-framework/issues/3178 for an
    * explanation of why this is necessary to avoid false positives.
-   *
-   * <p>Skipping this check in the Must Call checker is sound, because the Must Call checker is not
-   * concerned with annotation arguments (which must be literals, and therefore won't have (or be
-   * able to fulfill) must-call obligations).
    */
   @Override
   public Void visitAnnotation(AnnotationTree node, Void p) {
@@ -182,13 +181,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   @Override
   protected TypeValidator createTypeValidator() {
+    // The MustCallTypeValidator's only function is to allow @MustCallAlias in places it otherwise
+    // wouldn't be permitted, because the OCC can prove their safety later. When @MustCallAlias is
+    // disabled, there's no reason to use it.
     if (checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
       return super.createTypeValidator();
     } else {
-      // This validator's only function is to allow @MustCallAlias in
-      // places it otherwise wouldn't be permitted, because the OCC can
-      // prove their safety later. When @MustCallAlias
-      // is disabled, there's no reason to use it.
       return new MustCallTypeValidator(checker, this, atypeFactory);
     }
   }

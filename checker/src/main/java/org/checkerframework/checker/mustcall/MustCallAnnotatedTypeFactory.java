@@ -53,13 +53,13 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** The top annotation. */
+  /** The {@code @}{@link MustCallUnknown} annotation. */
   public final AnnotationMirror TOP;
 
-  /** The bottom annotation, which is the default in unannotated code. */
+  /** The {@code @}{@link MustCall}{@code ()} annotation. It is the default in unannotated code. */
   public final AnnotationMirror BOTTOM;
 
-  /** The polymorphic qualifier */
+  /** The {@code @}{@link PolyMustCall} annoattion. */
   final AnnotationMirror POLY;
 
   /**
@@ -93,7 +93,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod(CreatesObligation.class, "value", 0, processingEnv);
 
   /**
-   * Default constructor matching super. Should be called automatically.
+   * Creates a MustCallAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
    */
@@ -104,7 +104,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     POLY = AnnotationBuilder.fromClass(elements, PolyMustCall.class);
     addAliasedTypeAnnotation(InheritableMustCall.class, MustCall.class, true);
     if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
-      // in NO_RESOURCE_ALIASES mode, all MCA annotations are simply ignored
+      // In NO_RESOURCE_ALIASES mode, all @MustCallAlias annotations are ignored.
       addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
     this.postInit();
@@ -123,10 +123,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    // Because MustCallAlias is in the qual directory, the qualifiers have to be explicitly named
-    // or
-    // MustCallAlias will be reflectively loaded - making it unavailable as an alias for
-    // @PolyMustCall.
+    // Explicitly name the qualifiers, in order to exclude @MustCallAlias.
     return new LinkedHashSet<>(
         Arrays.asList(MustCall.class, MustCallUnknown.class, PolyMustCall.class));
   }
@@ -139,9 +136,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
     super.addComputedTypeAnnotations(tree, type, iUseFlow);
-    // All primitives are @MustCall({}). This code is needed to avoid primitive conversions, taking
-    // on the MustCall type of an object. For example, without this in this code b's type would be
-    // @MustCall("a"), which is nonsensical:
+    // All primitives and boxed primitives are @MustCall({}). This code is needed to avoid primitive
+    // conversions, taking on the MustCall type of an object. For example, without this in this code
+    // b's type would be @MustCall("a"), which is nonsensical:
     //
     // @MustCall("a") Object obj; boolean b = obj == null;
     if (TypesUtils.isPrimitiveOrBoxed(type.getUnderlyingType())) {
@@ -164,18 +161,17 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Creates a new {@literal @}MustCall annotation that is identical to the input, but does not have
-   * "close". Returns the same annotation mirror if the input annotation didn't have "close" as one
-   * of its element.
+   * Returns a {@literal @}MustCall annotation that is like the input, but it does not have "close".
+   * Returns the argument annotation mirror (not a new one) if the argument doesn't have "close" as
+   * one of its elements.
    *
-   * <p>The argument is permitted to be null. If it is null, then bottom is returned.
-   *
-   * <p>Package private to permit usage from the visitor in the common assignment check.
+   * <p>If the argument is null, returns bottom.
    *
    * @param anno a MustCall annotation
    * @return a MustCall annotation that does not have "close" as one of its values, but is otherwise
    *     identical to anno
    */
+  // Package private to permit usage from the visitor in the common assignment check.
   /* package-private */ AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
     // shortcut for easy paths
     if (anno == null || AnnotationUtils.areSame(anno, BOTTOM)) {
@@ -215,7 +211,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     } else {
       throw new BugInCF("unexpected type of method tree: " + tree.getKind());
     }
-    changeNonOwningParametersTypes(declaration, type);
+    changeNonOwningParameterTypesToTop(declaration, type);
     super.methodFromUsePreSubstitution(tree, type);
   }
 
@@ -223,7 +219,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected void constructorFromUsePreSubstitution(
       NewClassTree tree, AnnotatedExecutableType type) {
     ExecutableElement declaration = TreeUtils.elementFromUse(tree);
-    changeNonOwningParametersTypes(declaration, type);
+    changeNonOwningParameterTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type);
   }
 
@@ -234,7 +230,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param declaration a method or constructor declaration
    * @param type the method or constructor's type
    */
-  private void changeNonOwningParametersTypes(
+  private void changeNonOwningParameterTypesToTop(
       ExecutableElement declaration, AnnotatedExecutableType type) {
     for (int i = 0; i < type.getParameterTypes().size(); i++) {
       Element paramDecl = declaration.getParameters().get(i);

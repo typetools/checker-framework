@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation indicating that ownership should be transferred to the parameter or field, for the
- * purposes of Must Call checking.
+ * Annotation indicating that ownership should be transferred to the parameter, field, or return
+ * type (when written on a method), for the purposes of Must Call checking.
  *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */

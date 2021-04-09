@@ -45,14 +45,14 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class MustCallTransfer extends CFTransfer {
 
-  /** TreeBuilder for building new AST nodes */
+  /** TreeBuilder for building new AST nodes. */
   private final TreeBuilder treeBuilder;
 
-  /** The type factory */
+  /** The type factory. */
   private MustCallAnnotatedTypeFactory atypeFactory;
 
   /**
-   * Create a MustCallTransfer
+   * Create a MustCallTransfer.
    *
    * @param analysis the analysis
    */
@@ -93,8 +93,8 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /**
-   * Takes the LUB of the current value in the store for expr, if it exists, and defaultType.
-   * Inserts the result into the store as the new value for expr.
+   * Computes the LUB of the current value in the store for expr, if it exists, and defaultType.
+   * Inserts that LUB into the store as the new value for expr.
    *
    * @param store a CFStore
    * @param expr an expression that might be in the store
@@ -158,7 +158,7 @@ public class MustCallTransfer extends CFTransfer {
    * @param n a method invocation
    * @param atypeFactory the type factory to report errors and parse the expression string
    * @return a list of JavaExpressions representing the targets, if the method is a
-   *     CreatesObligation method and the targets are parseable; the empty set otherwise.
+   *     CreatesObligation method and the targets are parseable; the empty set otherwise
    */
   public static Set<JavaExpression> getCreatesObligationExpressions(
       MethodInvocationNode n, MustCallAnnotatedTypeFactory atypeFactory) {
@@ -208,7 +208,7 @@ public class MustCallTransfer extends CFTransfer {
       }
       return results;
     }
-    // Handle a single create obligation annotation.
+    // Handle a single @CreatesObligation annotation.
     if (currentPath == null) {
       currentPath = atypeFactory.getPath(n.getTree());
     }
@@ -233,24 +233,22 @@ public class MustCallTransfer extends CFTransfer {
       MustCallAnnotatedTypeFactory atypeFactory,
       TreePath currentPath) {
     // TODO: apparently the default value ("this") here needs to be supplied, for performance
-    // reasons. Is there a way to change this so
-    // that if the default value of the annotation element changes, this defaulting will change,
-    // too?
+    // reasons. Is there a way to change this so that if the default value of the annotation element
+    // changes, this defaulting will change, too?
     String targetStrWithoutAdaptation =
         AnnotationUtils.getElementValue(
             createsObligation, atypeFactory.createsObligationValueElement, String.class, "this");
-    // Note that it *is* necessary to parse this string twice - the first time to standardize
+    // Note that it *is* necessary to parse this string twice -- the first time to standardize
     // and viewpoint adapt it via the utility method called on the next line, and the second
     // time (in the try block below) to actually get the relevant expression.
     String targetStr =
         MustCallTransfer.standardizeAndViewpointAdapt(
             targetStrWithoutAdaptation, n, atypeFactory.getChecker());
     // TODO: find a way to also check if the target is a known tempvar, and if so return that. That
-    // should
-    // improve the quality of the error messages we give, e.g. in tests/socket/BindChannel.java.
-    JavaExpression targetExpr;
+    // should improve the quality of the error messages we give, e.g. in
+    // tests/socket/BindChannel.java.
     try {
-      targetExpr = atypeFactory.parseJavaExpressionString(targetStr, currentPath);
+      return atypeFactory.parseJavaExpressionString(targetStr, currentPath);
     } catch (JavaExpressionParseException e) {
       atypeFactory
           .getChecker()
@@ -261,7 +259,6 @@ public class MustCallTransfer extends CFTransfer {
               targetStr);
       return null;
     }
-    return targetExpr;
   }
 
   /**
@@ -313,7 +310,7 @@ public class MustCallTransfer extends CFTransfer {
 
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to
-   * give t the same type as node
+   * give t the same type as node.
    *
    * @param node the node to be assigned to a temporal variable
    * @param result the transfer result containing the store to be modified
