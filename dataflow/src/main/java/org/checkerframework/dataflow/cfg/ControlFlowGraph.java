@@ -196,8 +196,7 @@ public class ControlFlowGraph implements UniqueId {
       }
 
       for (Block b : cur.getSuccessors()) {
-        if (!visited.contains(b)) {
-          visited.add(b);
+        if (visited.add(b)) {
           worklist.add(b);
         }
       }
