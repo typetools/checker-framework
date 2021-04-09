@@ -13,7 +13,8 @@ public class ThisReference extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    return obj instanceof ThisReference;
+    return obj instanceof ThisReference
+        && type.toString().equals(((ThisReference) obj).type.toString());
   }
 
   @Override
@@ -48,7 +49,8 @@ public class ThisReference extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    return je instanceof ThisReference;
+    return je instanceof ThisReference
+        && type.toString().equals(((ThisReference) je).type.toString());
   }
 
   @Override
