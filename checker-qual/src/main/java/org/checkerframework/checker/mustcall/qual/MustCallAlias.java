@@ -33,9 +33,7 @@ import java.lang.annotation.Target;
  *
  * <ul>
  *   <li>The constructor must always write p into exactly one field {@code f} of the new object.
- *   <li>Field {@code f} must be annotated {@code @}{@link Owning} (which necessitates that a
- *       must-call method of the object being constructed resolves's {@code f}'s must-call
- *       obligations).
+ *   <li>Field {@code f} must be annotated {@code @}{@link Owning}.
  * </ul>
  *
  * For a method:
