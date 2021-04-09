@@ -13,7 +13,8 @@ public class SideEffectsOnlyTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         org.checkerframework.framework.testchecker.sideeffectsonly.SideEffectsOnlyToyChecker.class,
         "sideeffectsonly",
-        "-Anomsgtext");
+        "-Anomsgtext",
+        "-AcheckSideEffectsOnlyAnnotation");
   }
 
   @Parameters

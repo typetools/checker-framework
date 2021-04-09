@@ -77,6 +77,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import main.java.org.checkerframework.dataflow.util.SideEffectsOnlyAnnoChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -872,6 +873,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkPurity(node);
+      checkSideEffectsOnly(node);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(node);
@@ -1005,6 +1007,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
     }
+  }
+
+  protected void checkSideEffectsOnly(MethodTree node) {
+    if (!checker.hasOption("checkSideEffectsOnlyAnnotation")) {
+      return;
+    }
+
+    TreePath body = atypeFactory.getPath(node.getBody());
+    if (body == null) {
+      return;
+    } else {
+      SideEffectsOnlyAnnoChecker.checkSideEffectsOnly(body, atypeFactory);
+    }
+    //    if (!r.isPure(kinds)) {
+    //      reportPurityErrors(r, node, kinds);
+    //    }
   }
 
   /**
