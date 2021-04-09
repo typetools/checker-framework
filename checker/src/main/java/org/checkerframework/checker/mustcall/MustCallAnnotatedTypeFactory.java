@@ -115,9 +115,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     super.setRoot(root);
     elementsIssuedInconsistentMustCallSubtypeErrors.clear();
     // TODO: this should probably be guarded by isSafeToClearSharedCFG from
-    // GenericAnnotatedTypeFactory,
-    // but this works here because we know the MCC is always the first subchecker that's sharing
-    // tempvars.
+    // GenericAnnotatedTypeFactory, but this works here because we know the MCC is always the first
+    // subchecker that's sharing tempvars.
     tempVars.clear();
   }
 

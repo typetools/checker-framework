@@ -21,7 +21,7 @@ are shown in Figure~\ref{fig-must-call-hierarchy}:
 \begin{description}
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}]
-  indicates that the qualifier's arguments are a superset of the methods that the annotated program element
+  gives a superset of the methods that the annotated program element
   must call before it is de-allocated.
   The default type qualifier for an unannotated type is \<@MustCall(\{\})>.
 
@@ -33,7 +33,7 @@ are shown in Figure~\ref{fig-must-call-hierarchy}:
 \item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
   is an alias of \<@MustCall> that can only be written on a class declaration.
   It applies both to the class declaration on which it is written and also to all subclasses.
-  This freeing the user of the need to write the \<@MustCall> annotation on every subclass.
+  This frees the user of the need to write the \<@MustCall> annotation on every subclass.
 
 \item[\refqualclass{checker/mustcall/qual}{PolyMustCall}]
   is the polymorphic annotation for the Must Call type system.
@@ -70,7 +70,7 @@ For the Must Call Checker to be useful, the programmer should supply at least on
 
 As explained in Section~\ref{upper-bound-for-use}, if a user writes a type
 annotation on a class declaration, any use of the class's type has that
-annotation annotation by default.
+annotation by default.
 
 For example, given the following class annotation:
 \begin{Verbatim}
