@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Issue1438 {
+  // Do not initialize these variables.  The Nullness Checker is supposed to issue an error about
+  // inunitialized fields.
   static Integer v0;
   static Integer v1;
   static Integer v2;
