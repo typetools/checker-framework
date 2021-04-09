@@ -83,7 +83,8 @@ that either in the context (change the declaration of \<myStrings>) or in a
 \<new> construct (change the expression to \<new @Regex String[] >\verb|{"hello"}|).
 
 
-\sectionAndLabel{Upper bound of qualifiers on uses of a given type}{upper-bound-for-use}
+\sectionAndLabel{Upper bound of qualifiers on uses of a given type (annotations on a class declaration)}{upper-bound-for-use}
+
 The examples in this section use the type qualifier hierarchy \code{@A :> @B :> @C}.
 
 A qualifier on a use of a certain type must be a subtype or equal to the upper bound for that type.
@@ -144,13 +145,14 @@ and the client code
   String key = ...;
   Optional value = m.get(key);
   if (value != null) {
-  ...;
+    ...
   }
 \end{Verbatim}
 
 The type of \<m.get(key)> is \<@Nullable Optional>, which is an illegal type.
 However, this is a very common paradigm.  Programmers should not need to rewrite the code to test
 \<m.containsKey(key)> nor suppress a warning in this safe code.
+
 
 \sectionAndLabel{The effective qualifier on a type (defaults and inference)}{effective-qualifier}
 

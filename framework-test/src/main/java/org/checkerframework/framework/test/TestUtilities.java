@@ -245,13 +245,15 @@ public class TestUtilities {
       // and should be printed in full.
       if (!result.contains("unexpected Throwable")) {
         String firstLine;
-        if (result.contains(System.lineSeparator())) {
-          firstLine = result.substring(0, result.indexOf(System.lineSeparator()));
+        int lineSepPos = result.indexOf(System.lineSeparator());
+        if (lineSepPos != -1) {
+          firstLine = result.substring(0, lineSepPos);
         } else {
           firstLine = result;
         }
-        if (firstLine.contains(".java:")) {
-          firstLine = firstLine.substring(firstLine.indexOf(".java:") + 5).trim();
+        int javaPos = firstLine.indexOf(".java:");
+        if (javaPos != -1) {
+          firstLine = firstLine.substring(javaPos + 5).trim();
         }
         result = firstLine;
       }
