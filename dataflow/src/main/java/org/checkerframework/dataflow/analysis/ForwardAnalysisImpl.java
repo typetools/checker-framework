@@ -238,7 +238,7 @@ public class ForwardAnalysisImpl<
     // Prepare cache
     IdentityHashMap<Node, TransferResult<V, S>> cache;
     if (analysisCaches != null) {
-      cache = analysisCaches.computeIfAbsent(blockTransferInput, unused -> new IdentityHashMap<>());
+      cache = analysisCaches.computeIfAbsent(blockTransferInput, __ -> new IdentityHashMap<>());
     } else {
       cache = null;
     }

@@ -1624,7 +1624,7 @@ public class AnnotationFileParser {
           findElement(typeElt, method, /*noWarn=*/ false);
         } else {
           List<BodyDeclaration<?>> l =
-              fakeOverrideDecls.computeIfAbsent(overriddenMethod, unused -> new ArrayList<>());
+              fakeOverrideDecls.computeIfAbsent(overriddenMethod, __ -> new ArrayList<>());
           l.add(member);
         }
       }
@@ -1813,7 +1813,7 @@ public class AnnotationFileParser {
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
     List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
-        annotationFileAnnos.fakeOverrides.computeIfAbsent(element, unused -> new ArrayList<>());
+        annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>());
     l.add(Pair.of(fakeLocation.asType(), methodType));
   }
 

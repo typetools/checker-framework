@@ -62,8 +62,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
    * @param cause the exception type that leads to the given block
    */
   public void addExceptionalSuccessor(BlockImpl b, TypeMirror cause) {
-    Set<Block> blocks =
-        exceptionalSuccessors.computeIfAbsent(cause, unused -> new LinkedHashSet<>());
+    Set<Block> blocks = exceptionalSuccessors.computeIfAbsent(cause, __ -> new LinkedHashSet<>());
     blocks.add(b);
     b.addPredecessor(this);
   }

@@ -66,7 +66,7 @@ public class ConstraintMap {
       final TypeVariable target, final TypeVariable equivalent, AnnotationMirrorSet hierarchies) {
     final Equalities equalities = targetToRecords.get(target).equalities;
     final AnnotationMirrorSet equivalentTops =
-        equalities.targets.computeIfAbsent(equivalent, unused -> new AnnotationMirrorSet());
+        equalities.targets.computeIfAbsent(equivalent, __ -> new AnnotationMirrorSet());
     equivalentTops.addAll(hierarchies);
   }
 
@@ -97,7 +97,7 @@ public class ConstraintMap {
       final TypeVariable target, final TypeVariable subtype, AnnotationMirrorSet hierarchies) {
     final Supertypes supertypes = targetToRecords.get(target).supertypes;
     final AnnotationMirrorSet supertypeTops =
-        supertypes.targets.computeIfAbsent(subtype, unused -> new AnnotationMirrorSet());
+        supertypes.targets.computeIfAbsent(subtype, __ -> new AnnotationMirrorSet());
     supertypeTops.addAll(hierarchies);
   }
 
@@ -113,7 +113,7 @@ public class ConstraintMap {
       AnnotationMirrorSet hierarchies) {
     final Supertypes supertypes = targetToRecords.get(target).supertypes;
     final AnnotationMirrorSet supertypeTops =
-        supertypes.types.computeIfAbsent(subtype, unused -> new AnnotationMirrorSet());
+        supertypes.types.computeIfAbsent(subtype, __ -> new AnnotationMirrorSet());
     supertypeTops.addAll(hierarchies);
   }
 
@@ -129,7 +129,7 @@ public class ConstraintMap {
     for (final AnnotationMirror anno : annos) {
       final AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
       AnnotationMirrorSet entries =
-          supertypes.primaries.computeIfAbsent(top, unused -> new AnnotationMirrorSet());
+          supertypes.primaries.computeIfAbsent(top, __ -> new AnnotationMirrorSet());
       entries.add(anno);
     }
   }
@@ -144,7 +144,7 @@ public class ConstraintMap {
       final TypeVariable target, final TypeVariable supertype, AnnotationMirrorSet hierarchies) {
     final Subtypes subtypes = targetToRecords.get(target).subtypes;
     final AnnotationMirrorSet subtypesTops =
-        subtypes.targets.computeIfAbsent(supertype, unused -> new AnnotationMirrorSet());
+        subtypes.targets.computeIfAbsent(supertype, __ -> new AnnotationMirrorSet());
     subtypesTops.addAll(hierarchies);
   }
 
@@ -160,7 +160,7 @@ public class ConstraintMap {
       AnnotationMirrorSet hierarchies) {
     final Subtypes subtypes = targetToRecords.get(target).subtypes;
     final AnnotationMirrorSet subtypesTops =
-        subtypes.types.computeIfAbsent(supertype, unused -> new AnnotationMirrorSet());
+        subtypes.types.computeIfAbsent(supertype, __ -> new AnnotationMirrorSet());
     subtypesTops.addAll(hierarchies);
   }
 
@@ -176,7 +176,7 @@ public class ConstraintMap {
     for (final AnnotationMirror anno : annos) {
       final AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
       AnnotationMirrorSet entries =
-          subtypes.primaries.computeIfAbsent(top, unused -> new AnnotationMirrorSet());
+          subtypes.primaries.computeIfAbsent(top, __ -> new AnnotationMirrorSet());
       entries.add(anno);
     }
   }
@@ -190,7 +190,7 @@ public class ConstraintMap {
       TypeVariable target, AnnotatedTypeMirror type, AnnotationMirrorSet hierarchies) {
     final Equalities equalities = targetToRecords.get(target).equalities;
     final AnnotationMirrorSet equalityTops =
-        equalities.types.computeIfAbsent(type, unused -> new AnnotationMirrorSet());
+        equalities.types.computeIfAbsent(type, __ -> new AnnotationMirrorSet());
     equalityTops.addAll(hierarchies);
   }
 }

@@ -456,7 +456,7 @@ public abstract class UBQualifier {
         for (int i = 0; i < sequences.size(); i++) {
           String sequence = sequences.get(i);
           String offset = offsets.get(i);
-          Set<OffsetEquation> set = map.computeIfAbsent(sequence, unused -> new HashSet<>());
+          Set<OffsetEquation> set = map.computeIfAbsent(sequence, __ -> new HashSet<>());
           OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
           if (eq.hasError()) {
             return null;
