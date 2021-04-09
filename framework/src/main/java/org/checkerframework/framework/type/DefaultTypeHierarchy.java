@@ -418,15 +418,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (BoundType.isBoundType(inside)) {
       BoundType insideBoundType = new BoundType(inside);
       if (!insideBoundType.hasExplicitLowerBound && !outside.hasExplicitLowerBound) {
-        // Both inside and outside have a lower bound of null type, but the annotations on
-        // the bounds may differ.  If canBeCovariant is true, ignore the difference.
-        // Otherwise, check that the annotations on the lower bound of
-        // outside are subtypes of the annotations on the lower bound of inside.
-        // Then recur on the upper bound of inside.
+        // Both inside and outside have a lower bound of null type, but the annotations on the
+        // bounds may differ.  If canBeCovariant is true, ignore the difference. Otherwise, check
+        // that the annotations on the lower bound of outside are subtypes of the annotations on the
+        // lower bound of inside. Then recur on the upper bound of inside.
         return (canBeCovariant || isSubtype(outside.lower, insideBoundType.lower))
             && isContainedByBoundType(insideBoundType.upper, outside, canBeCovariant);
       } else {
-        // One of the two have an explicit super bound, so check the upper bounds
+        // One of the two have an explicit super bound, so check the upper bounds.
         // Recur on the lower inside bound. If canBeCovariant, don't check the lower
         // bound.
         return isSubtype(insideBoundType.upper, outside.upper)
