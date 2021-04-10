@@ -18,8 +18,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
-import com.sun.source.tree.VariableTree;
 import org.checkerframework.checker.mustcall.qual.CreatesObligation;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -53,7 +51,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * The annotated type factory for the must call checker. Primarily responsible for the subtyping
  * rules between @MustCall annotations.
  */
-public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
+    implements CreatesObligationElementSupplier {
 
   /** The {@code @}{@link MustCallUnknown} annotation. */
   public final AnnotationMirror TOP;
@@ -87,11 +86,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
 
   /** The CreatesObligation.List.value field/element. */
-  final ExecutableElement createsObligationListValueElement =
+  private final ExecutableElement createsObligationListValueElement =
       TreeUtils.getMethod(CreatesObligation.List.class, "value", 0, processingEnv);
 
   /** The CreatesObligation.value field/element. */
-  final ExecutableElement createsObligationValueElement =
+  private final ExecutableElement createsObligationValueElement =
       TreeUtils.getMethod(CreatesObligation.class, "value", 0, processingEnv);
 
   /**
@@ -133,7 +132,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(super.createTreeAnnotator(), new MustCallTreeAnnotator(this));
   }
-
 
   @Override
   protected TypeAnnotator createTypeAnnotator() {
@@ -205,7 +203,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Changes the type of each parameter not annotated as @Owning to top. Also replaces the component
    * type of the varargs array, if applicable.
    *
-   * Note that this method is not responsible for handling receivers, which can never be owning.
+   * <p>Note that this method is not responsible for handling receivers, which can never be owning.
    *
    * @param declaration a method or constructor declaration
    * @param type the method or constructor's type
@@ -222,10 +220,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         if (declaration.isVarArgs() && i == type.getParameterTypes().size() - 1) {
           // also modify the component type of a varargs array
-            AnnotatedTypeMirror varargsType = ((AnnotatedArrayType) paramType).getComponentType();
-            if (!varargsType.hasAnnotation(POLY)) {
-              varargsType.replaceAnnotation(TOP);
-            }
+          AnnotatedTypeMirror varargsType = ((AnnotatedArrayType) paramType).getComponentType();
+          if (!varargsType.hasAnnotation(POLY)) {
+            varargsType.replaceAnnotation(TOP);
+          }
         }
       }
     }
@@ -286,11 +284,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Fetches the store from the results of dataflow for block. If useBlock is true,
-   * then the store after block is returned; if useBlock is false, the store before succ
-   * is returned.
+   * Fetches the store from the results of dataflow for block. If useBlock is true, then the store
+   * after block is returned; if useBlock is false, the store before succ is returned.
    *
-   * @param useBlock whether to use the store after the block itself or the store before its successor, succ
+   * @param useBlock whether to use the store after the block itself or the store before its
+   *     successor, succ
    * @param block a block
    * @param succ block's successor
    * @return the appropriate CFStore, populated with MustCall annotations, from the results of
@@ -298,6 +296,26 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   public CFStore getStoreForBlock(boolean useBlock, Block block, Block succ) {
     return useBlock ? flowResult.getStoreAfter(block) : flowResult.getStoreBefore(succ);
+  }
+
+  /**
+   * Get the element for a single CreatesObligation annotation.
+   *
+   * @return the element
+   */
+  @Override
+  public ExecutableElement getCreatesObligationValueElement() {
+    return createsObligationValueElement;
+  }
+
+  /**
+   * Get the element for a list CreatesObligation annotation.
+   *
+   * @return the element
+   */
+  @Override
+  public ExecutableElement getCreatesObligationListValueElement() {
+    return createsObligationListValueElement;
   }
 
   /**

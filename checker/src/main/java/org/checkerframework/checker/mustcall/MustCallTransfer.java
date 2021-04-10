@@ -15,22 +15,20 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesObligation;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -40,8 +38,10 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
 /**
- * Transfer function for the must-call type system. Handles defaulting for string concatenations and
- * some logic for creating temporary variables for expressions.
+ * Transfer function for the must-call type system. Its primary purposes are (1) to create temporary
+ * variables for expressions (which allow those expressions to have refined information in the
+ * store, which the consistency checker can use), and (2) to reset refined information when a method
+ * annotated with @CreatesObligation is called.
  */
 public class MustCallTransfer extends CFTransfer {
 
@@ -70,7 +70,8 @@ public class MustCallTransfer extends CFTransfer {
 
     updateStoreWithTempVar(result, n);
     if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_ACCUMULATION_FRAMES)) {
-      Set<JavaExpression> targetExprs = getCreatesObligationExpressions(n, atypeFactory);
+      Set<JavaExpression> targetExprs =
+          getCreatesObligationExpressions(n, atypeFactory, atypeFactory);
       for (JavaExpression targetExpr : targetExprs) {
         AnnotationMirror defaultType =
             atypeFactory
@@ -157,155 +158,107 @@ public class MustCallTransfer extends CFTransfer {
    *
    * @param n a method invocation
    * @param atypeFactory the type factory to report errors and parse the expression string
-   * @return a list of JavaExpressions representing the targets, if the method is a
-   *     CreatesObligation method and the targets are parseable; the empty set otherwise
-   */
-  public static Set<JavaExpression> getCreatesObligationExpressions(
-      MethodInvocationNode n, MustCallAnnotatedTypeFactory atypeFactory) {
-    return getCreatesObligationExpressions(n, atypeFactory, null);
-  }
-
-  /**
-   * If the given method invocation node is a CreatesObligation method, then gets the
-   * JavaExpressions corresponding to the targets. If any expression is unparseable, this method
-   * uses the type factory's error reporting inferface to throw an error and returns the empty set.
-   * Also return the empty set if the given method is not a CreatesObligation method.
-   *
-   * @param n a method invocation
-   * @param atypeFactory the type factory to report errors and parse the expression string
-   * @param currentPath the path to n, if it is already available, to avoid potentially-expensive
-   *     recomputation. If null, the path will be computed.
+   *     recomputation.
+   * @param supplier a type factory that can supply the executable elements for CreatesObligation
+   *     and CreatesObligation.List's value elements. Usually, you should just pass atypeFactory
+   *     again. The arguments are different so that the given type factory's adherence to both
+   *     protocols are checked by the type system.
    * @return a list of JavaExpressions representing the targets, if the method is a
    *     CreatesObligation method and the targets are parseable; the empty set otherwise.
    */
   public static Set<JavaExpression> getCreatesObligationExpressions(
       MethodInvocationNode n,
-      MustCallAnnotatedTypeFactory atypeFactory,
-      @Nullable TreePath currentPath) {
-    AnnotationMirror createsObligation =
-        atypeFactory.getDeclAnnotation(n.getTarget().getMethod(), CreatesObligation.class);
-    if (createsObligation == null) {
-      AnnotationMirror createsObligationList =
-          atypeFactory.getDeclAnnotation(n.getTarget().getMethod(), CreatesObligation.List.class);
-      if (createsObligationList == null) {
-        return Collections.emptySet();
-      }
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
+      CreatesObligationElementSupplier supplier) {
+    AnnotationMirror createsObligationList =
+        atypeFactory.getDeclAnnotation(n.getTarget().getMethod(), CreatesObligation.List.class);
+    if (createsObligationList != null) {
       // Handle a set of create obligation annotations.
       List<AnnotationMirror> createsObligations =
           AnnotationUtils.getElementValueArray(
               createsObligationList,
-              atypeFactory.createsObligationListValueElement,
+              supplier.getCreatesObligationListValueElement(),
               AnnotationMirror.class);
       Set<JavaExpression> results = new HashSet<>();
-      if (currentPath == null) {
-        currentPath = atypeFactory.getPath(n.getTree());
-      }
       for (AnnotationMirror co : createsObligations) {
-        JavaExpression expr = getCreatesObligationExpressionsImpl(co, n, atypeFactory, currentPath);
+        JavaExpression expr = getCreatesObligationExpression(co, n, atypeFactory, supplier);
         if (expr != null) {
           results.add(expr);
         }
       }
       return results;
     }
-    // Handle a single @CreatesObligation annotation.
-    if (currentPath == null) {
-      currentPath = atypeFactory.getPath(n.getTree());
+    AnnotationMirror createsObligation =
+        atypeFactory.getDeclAnnotation(n.getTarget().getMethod(), CreatesObligation.class);
+    if (createsObligation == null) {
+      return Collections.emptySet();
     }
     JavaExpression expr =
-        getCreatesObligationExpressionsImpl(createsObligation, n, atypeFactory, currentPath);
+        getCreatesObligationExpression(createsObligation, n, atypeFactory, supplier);
     return expr != null ? Collections.singleton(expr) : Collections.emptySet();
   }
 
   /**
-   * Implementation of parsing a single CreatesObligation annotation. See {@link
-   * #getCreatesObligationExpressions(MethodInvocationNode, MustCallAnnotatedTypeFactory)}.
+   * Parses a single CreatesObligation annotation. See {@link
+   * #getCreatesObligationExpressions(MethodInvocationNode, GenericAnnotatedTypeFactory,
+   * CreatesObligationElementSupplier)}, which should always be used instead by clients.
    *
    * @param createsObligation a create obligation annotation
    * @param n the method invocation of a reset method
-   * @param atypeFactory the type factory
-   * @param currentPath the current path
+   * @param atypeFactory the type factory.
+   * @param supplier a type factory that can supply the executable elements for CreatesObligation
+   *     and CreatesObligation.List's value elements. Usually, you should just pass atypeFactory
+   *     again. The arguments are different so that the given type factory's adherence to both
+   *     protocols are checked by the type system.
    * @return the java expression representing the target, or null if the target is unparseable
    */
-  private static @Nullable JavaExpression getCreatesObligationExpressionsImpl(
+  private static @Nullable JavaExpression getCreatesObligationExpression(
       AnnotationMirror createsObligation,
       MethodInvocationNode n,
-      MustCallAnnotatedTypeFactory atypeFactory,
-      TreePath currentPath) {
-    // TODO: apparently the default value ("this") here needs to be supplied, for performance
-    // reasons. Is there a way to change this so that if the default value of the annotation element
-    // changes, this defaulting will change, too?
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
+      CreatesObligationElementSupplier supplier) {
+    // Unfortunately, there is no way to avoid passing "this" here. The default must be hard-coded
+    // into the client, such as here. That is the price for the efficiency of not having to query
+    // the annotation definition (such queries are expensive).
     String targetStrWithoutAdaptation =
         AnnotationUtils.getElementValue(
-            createsObligation, atypeFactory.createsObligationValueElement, String.class, "this");
-    // Note that it *is* necessary to parse this string twice -- the first time to standardize
-    // and viewpoint adapt it via the utility method called on the next line, and the second
-    // time (in the try block below) to actually get the relevant expression.
-    String targetStr =
-        MustCallTransfer.standardizeAndViewpointAdapt(
-            targetStrWithoutAdaptation, n, atypeFactory.getChecker());
+            createsObligation, supplier.getCreatesObligationValueElement(), String.class, "this");
     // TODO: find a way to also check if the target is a known tempvar, and if so return that. That
-    // should improve the quality of the error messages we give, e.g. in
-    // tests/socket/BindChannel.java.
+    // should improve the quality of the error messages we give.
+    JavaExpression targetExpr;
     try {
-      return atypeFactory.parseJavaExpressionString(targetStr, currentPath);
+      targetExpr =
+          StringToJavaExpression.atMethodInvocation(
+              targetStrWithoutAdaptation, n, atypeFactory.getChecker());
+      if (targetExpr instanceof Unknown) {
+        issueUnparseableError(n, atypeFactory, targetStrWithoutAdaptation);
+        return null;
+      }
     } catch (JavaExpressionParseException e) {
-      atypeFactory
-          .getChecker()
-          .reportError(
-              n.getTree(),
-              "mustcall.not.parseable",
-              n.getTarget().getMethod().getSimpleName(),
-              targetStr);
+      issueUnparseableError(n, atypeFactory, targetStrWithoutAdaptation);
       return null;
     }
+    return targetExpr;
   }
 
   /**
-   * Helper function to standardize and viewpoint adapt a String within the context of a method
-   * invocation. Wraps JavaExpressionParseUtil#parse. If a parse exception is encountered, this
-   * returns its argument.
+   * Issues a mustcall.not.parseable error.
    *
-   * @param s the string to standardize viewpoint adapt
-   * @param miNode the method invocation node in whose context s should be standardized and
-   *     viewpoint adapted
-   * @param checker the checker
-   * @return a standardized and viewpoint adapted view of s, or s if s could not be parsed
+   * @param n the node
+   * @param atypeFactory the type factory to use to issue the error
+   * @param targetStrWithoutAdaptation the unparseable string
    */
-  public static String standardizeAndViewpointAdapt(
-      String s, MethodInvocationNode miNode, BaseTypeChecker checker) {
-    try {
-      return StringToJavaExpression.atMethodInvocation(s, miNode, checker).toString();
-    } catch (JavaExpressionParseException e) {
-      return s;
-    }
-  }
-
-  @Override
-  public TransferResult<CFValue, CFStore> visitStringConcatenate(
-      StringConcatenateNode n, TransferInput<CFValue, CFStore> input) {
-    return handleStringConcatenation(super.visitStringConcatenate(n, input));
-  }
-
-  @Override
-  public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(
-      StringConcatenateAssignmentNode n, TransferInput<CFValue, CFStore> in) {
-    return handleStringConcatenation(super.visitStringConcatenateAssignment(n, in));
-  }
-
-  /**
-   * Create a new result for a string concatenation that forces its type to always be bottom.
-   * Without this logic, implicit string conversions can cause string-typed expressions to take on
-   * types from non-string arguments to a concatenation, which is undesirable.
-   *
-   * @param result the current transfer result
-   * @return the modified result
-   */
-  private TransferResult<CFValue, CFStore> handleStringConcatenation(
-      TransferResult<CFValue, CFStore> result) {
-    TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
-    CFValue newValue = analysis.createSingleAnnotationValue(atypeFactory.BOTTOM, underlyingType);
-    return new RegularTransferResult<>(newValue, result.getRegularStore());
+  private static void issueUnparseableError(
+      MethodInvocationNode n,
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
+      String targetStrWithoutAdaptation) {
+    atypeFactory
+        .getChecker()
+        .reportError(
+            n.getTree(),
+            "mustcall.not.parseable",
+            n.getTarget().getMethod().getSimpleName(),
+            targetStrWithoutAdaptation);
   }
 
   /**
@@ -386,8 +339,8 @@ public class MustCallTransfer extends CFTransfer {
   protected long uid = 0;
 
   /**
-   * Creates a unique name using the given prefix. Can be used up to Long.MAX_VALUE times for each
-   * prefix.
+   * Creates a unique, abitrary string that can be used as a name for a temporary variable, using
+   * the given prefix. Can be used up to Long.MAX_VALUE times.
    *
    * @param prefix the prefix for the name
    * @return a unique name that starts with the prefix
