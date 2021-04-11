@@ -1,6 +1,9 @@
 Version 3.13.0 (May 3, 2021)
 ----------------------------
 
+Removed StubGenerator section from the manual, because changes in JDK 11 have
+broken the StubGenerator program.
+
 Method renamings:
  * `DependentTypesHelper.atReturnType` => `atMethodBody`
 

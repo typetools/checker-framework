@@ -684,55 +684,56 @@ find project-stubs/ -name "*.java" -type f | xargs cat > project.astub
 % That file will contain many non-unique import statements, but that shouldn't be harmful.
 
 
-\subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
-
-If you do not have access to the library source code, then you can create a
-stub file from the class file (Section~\ref{stub-creating}),
-and then annotate it.  The rest of this section describes this approach.
-
-
-\begin{enumerate}
-
-\item
-  Create a stub file by running the stub class generator.  (\<checker.jar> must be on your classpath.)
-
-\begin{Verbatim}
-  cd nullness-stub
-  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-    org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
-\end{Verbatim}
-
-  Supply it with the fully-qualified name of the class for which you wish to
-  generate a stub class.  The stub class generator prints the
-  stub class to standard out, so you may wish to redirect its output to a
-  file.
-
-\item
-  Add import statements for the annotations.  So you would need to
-add the following import statement at the beginning of the file:
-
-\begin{Verbatim}
-  import org.checkerframework.checker.interning.qual.*;
-\end{Verbatim}
-
-\noindent
-The stub file parser silently ignores any annotations that it cannot
-resolve to a type, so don't forget the import statement.
-Use the \<-AstubWarnIfNotFound> command-line option to see warnings
-if an entry could not be found.
-
-\item
-  Add annotations to the stub class.  For example, you might annotate
-  the \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method as follows:
-
-\begin{Verbatim}
-  @Interned String intern();
-\end{Verbatim}
-
-  You may also remove irrelevant parts of the stub file; see
-  Section~\ref{stub-format}.
-
-\end{enumerate}
+%% Changes in JDK 11 have broken StubGenerator.
+% \subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
+%
+% If you do not have access to the library source code, then you can create a
+% stub file from the class file (Section~\ref{stub-creating}),
+% and then annotate it.  The rest of this section describes this approach.
+%
+%
+% \begin{enumerate}
+%
+% \item
+%   Create a stub file by running the stub class generator.  (\<checker.jar> must be on your classpath.)
+%
+% \begin{Verbatim}
+%   cd nullness-stub
+%   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+%     org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+% \end{Verbatim}
+%
+%   Supply it with the fully-qualified name of the class for which you wish to
+%   generate a stub class.  The stub class generator prints the
+%   stub class to standard out, so you may wish to redirect its output to a
+%   file.
+%
+% \item
+%   Add import statements for the annotations.  So you would need to
+% add the following import statement at the beginning of the file:
+%
+% \begin{Verbatim}
+%   import org.checkerframework.checker.interning.qual.*;
+% \end{Verbatim}
+%
+% \noindent
+% The stub file parser silently ignores any annotations that it cannot
+% resolve to a type, so don't forget the import statement.
+% Use the \<-AstubWarnIfNotFound> command-line option to see warnings
+% if an entry could not be found.
+%
+% \item
+%   Add annotations to the stub class.  For example, you might annotate
+%   the \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method as follows:
+%
+% \begin{Verbatim}
+%   @Interned String intern();
+% \end{Verbatim}
+%
+%   You may also remove irrelevant parts of the stub file; see
+%   Section~\ref{stub-format}.
+%
+% \end{enumerate}
 
 
 \subsectionAndLabel{Distributing stub files}{stub-distributing}
