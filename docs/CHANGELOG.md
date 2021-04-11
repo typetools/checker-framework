@@ -1,11 +1,17 @@
 Version 3.13.0 (May 3, 2021)
 ----------------------------
 
+**User-visible changes:**
+
+The Checker Framework no longer crashes on code that contains binding variables
+(introduced in Java 14 for `instanceof` pattern matching), and such variables
+are reflected in the control flow graph (CFG).  However, note that the Checker
+Framework only has full support for Java 8 and Java 11.
+
+**Implementation details:**
+
 Method renamings:
  * `DependentTypesHelper.atReturnType` => `atMethodBody`
-
-`CFGTranslationPhaseOne#visitIdentifier` can handle `ElementKind.BINDING_VARIABLE`
-introduced in Java 14 for `instanceof` pattern matching.
 
 **Closed issues:**
 #4410
