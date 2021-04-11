@@ -8,8 +8,10 @@ enforce any rules other than subtyping.
 
 For example, consider an object whose type is \<java.io.OutputStream>.
 This \<OutputStream> might have an obligation to call the \<close()> method, to release an
-underlying file resource. Or, the \<OutputStream> might not have such an obligation, if the
-underlying resource is a byte array. The Must Call Checker over-approximates the methods that this
+underlying file resource. The type of this \<OutputStream> is \<@MustCall(\{"close"\})>.
+ Or, the \<OutputStream> might not have such an obligation, if the
+underlying resource is a byte array. The type of this \<OutputStream> is \<@MustCall(\{\})>.
+The Must Call Checker over-approximates the methods that an arbitrary
 \<OutputStream> should call by assigning it the type \<@MustCall(\{"close"\}) OutputStream>, which can be read
 as "an OutputStream that might need to call close() (but no other methods) before it is de-allocated".
 

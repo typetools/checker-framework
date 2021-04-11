@@ -13,11 +13,12 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.basetype.TypeValidator;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -57,31 +58,34 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   @Override
+  public boolean isValidUse(
+      AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
+    // MustCallAlias annotations are always permitted on type uses, because these will be validated
+    // by the
+    // Object Construction Checker's -AcheckMustCall algorithm.
+    if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
+      useType.removeAnnotationByClass(MustCallAlias.class);
+    }
+    return super.isValidUse(declarationType, useType, tree);
+  }
+
+  @Override
   protected boolean skipReceiverSubtypeCheck(
       MethodInvocationTree node,
       AnnotatedTypeMirror methodDefinitionReceiver,
       AnnotatedTypeMirror methodCallReceiver) {
-    // TODO: Check explicit receiver parameters annotated with @Owning. ExecutableElement
-    //       doesn't have any way to get an element associated with the receiver, so I can't
-    //       figure out a way to get a declaration annotation for the receiver. It might not
-    //       be possible? The below is the closest that I got, but the receiver doesn't show up
-    //       in the list of the parameters, even when it's explicit. Is this a bug in javac?
-    //
-    //    ExecutableElement elt = TreeUtils.elementFromUse(node);
-    //    System.out.println(elt);
-    //    List<? extends VariableElement> params = elt.getParameters();
-    //    if (!params.isEmpty()) {
-    //      VariableElement first = params.get(0);
-    //      if (first.getSimpleName().contentEquals("this")) {
-    //        return atypeFactory.getDeclAnnotation(first, Owning.class) == null;
-    //      }
-    //    }
+    // Receivers cannot have must-call obligations - it doesn't make sense. If
+    // the receiver of a method were to have a non-empty must-call obligation,
+    // then actually the method **IS** a must-call method! So skipping this check is
+    // always sound.
     return true;
   }
 
   /**
-   * Mark (using the extraArgs) any assigments where the LHS is a resource variable, so that close
-   * doesn't need to be considered.
+   * Mark (using the extraArgs parameter) any assignments where the LHS is a resource variable, so
+   * that close doesn't need to be considered. See {@link
+   * #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String, Object...)} for
+   * the code that uses and removes the marks.
    */
   @Override
   protected void commonAssignmentCheck(
@@ -90,7 +94,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     if (TreeUtils.elementFromTree(varTree).getKind() == ElementKind.RESOURCE_VARIABLE) {
-      // Use the extraArgs array to signal to later stages of the CAC that this is in a
+      // Use the extraArgs array to signal to later stages of the common assignment check that this
+      // is in a
       // resource variable context.
       Object[] newExtraArgs = Arrays.copyOf(extraArgs, extraArgs.length + 1);
       newExtraArgs[newExtraArgs.length - 1] = ElementKind.RESOURCE_VARIABLE;
@@ -101,8 +106,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * If the LHS has been marked as a resource variable, then the standard CAC is skipped and a check
-   * that does not include "close" is substituted.
+   * If the LHS has been marked as a resource variable, then the standard common assignment check is
+   * skipped and a check that does not include "close" is substituted. Resource variables are marked
+   * by {@link #commonAssignmentCheck(Tree, ExpressionTree, String, Object...)} using the extraArgs
+   * parameter.
    */
   @Override
   protected void commonAssignmentCheck(
@@ -111,13 +118,17 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    if (Arrays.asList(extraArgs).contains(ElementKind.RESOURCE_VARIABLE)) {
+    if (extraArgs.length >= 1 && extraArgs[extraArgs.length - 1] == ElementKind.RESOURCE_VARIABLE) {
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
       AnnotationMirror valAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
       if (atypeFactory
           .getQualifierHierarchy()
           .isSubtype(atypeFactory.withoutClose(valAnno), atypeFactory.withoutClose(varAnno))) {
         return;
+      } else {
+        // Remove the resource variable entry, since otherwise the rest of the framework could
+        // interpret it as a format string (which is how extraArgs is usually used).
+        extraArgs = Arrays.copyOf(extraArgs, extraArgs.length - 1);
       }
     }
     super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
@@ -177,17 +188,5 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   @Override
   public Void visitAnnotation(AnnotationTree node, Void p) {
     return null;
-  }
-
-  @Override
-  protected TypeValidator createTypeValidator() {
-    // The MustCallTypeValidator's only function is to allow @MustCallAlias in places it otherwise
-    // wouldn't be permitted, because the OCC can prove their safety later. When @MustCallAlias is
-    // disabled, there's no reason to use it.
-    if (checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
-      return super.createTypeValidator();
-    } else {
-      return new MustCallTypeValidator(checker, this, atypeFactory);
-    }
   }
 }

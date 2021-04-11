@@ -18,7 +18,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.mustcall.qual.CreatesObligation;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -40,18 +39,20 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSubsetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The annotated type factory for the must call checker. Primarily responsible for the subtyping
  * rules between @MustCall annotations.
  */
-public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
+    implements CreatesObligationElementSupplier {
 
   /** The {@code @}{@link MustCallUnknown} annotation. */
   public final AnnotationMirror TOP;
@@ -85,11 +86,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
 
   /** The CreatesObligation.List.value field/element. */
-  final ExecutableElement createsObligationListValueElement =
+  private final ExecutableElement createsObligationListValueElement =
       TreeUtils.getMethod(CreatesObligation.List.class, "value", 0, processingEnv);
 
   /** The CreatesObligation.value field/element. */
-  final ExecutableElement createsObligationValueElement =
+  private final ExecutableElement createsObligationValueElement =
       TreeUtils.getMethod(CreatesObligation.class, "value", 0, processingEnv);
 
   /**
@@ -133,30 +134,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-    super.addComputedTypeAnnotations(tree, type, iUseFlow);
-    // All primitives and boxed primitives are @MustCall({}). This code is needed to avoid primitive
-    // conversions, taking on the MustCall type of an object. For example, without this in this code
-    // b's type would be @MustCall("a"), which is nonsensical:
-    //
-    // @MustCall("a") Object obj; boolean b = obj == null;
-    if (TypesUtils.isPrimitiveOrBoxed(type.getUnderlyingType())) {
-      type.replaceAnnotation(BOTTOM);
-    }
-    if (isDeclaredInTryWithResources(TreeUtils.elementFromTree(tree))) {
-      type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
-    }
-  }
-
-  @Override
-  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-    super.addComputedTypeAnnotations(elt, type);
-    if (TypesUtils.isPrimitiveOrBoxed(type.getUnderlyingType())) {
-      type.replaceAnnotation(BOTTOM);
-    }
-    if (isDeclaredInTryWithResources(elt)) {
-      type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
-    }
+  protected TypeAnnotator createTypeAnnotator() {
+    return new ListTypeAnnotator(super.createTypeAnnotator(), new MustCallTypeAnnotator(this));
   }
 
   /**
@@ -188,14 +167,12 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns true iff the given element represents a variable that was declared in a
-   * try-with-resources statement.
+   * Returns true iff the given element is a resource variable.
    *
    * @param elt an element; may be null, in which case this method always returns false
-   * @return true iff the given element represents a variable that was declared in a
-   *     try-with-resources statement
+   * @return true iff the given element represents a resource variable
    */
-  private boolean isDeclaredInTryWithResources(@Nullable Element elt) {
+  private boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
@@ -226,6 +203,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Changes the type of each parameter not annotated as @Owning to top. Also replaces the component
    * type of the varargs array, if applicable.
    *
+   * <p>Note that this method is not responsible for handling receivers, which can never be owning.
+   *
    * @param declaration a method or constructor declaration
    * @param type the method or constructor's type
    */
@@ -240,12 +219,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           paramType.replaceAnnotation(TOP);
         }
         if (declaration.isVarArgs() && i == type.getParameterTypes().size() - 1) {
-          // also modify the last component type of a varargs array
-          if (paramType.getKind() == TypeKind.ARRAY) {
-            AnnotatedTypeMirror varargsType = ((AnnotatedArrayType) paramType).getComponentType();
-            if (!varargsType.hasAnnotation(POLY)) {
-              varargsType.replaceAnnotation(TOP);
-            }
+          // also modify the component type of a varargs array
+          AnnotatedTypeMirror varargsType = ((AnnotatedArrayType) paramType).getComponentType();
+          if (!varargsType.hasAnnotation(POLY)) {
+            varargsType.replaceAnnotation(TOP);
           }
         }
       }
@@ -307,17 +284,38 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Fetches the store from the results of dataflow, for either block (if noSuccInfo is true) or
-   * succ (if noSuccInfo is false).
+   * Fetches the store from the results of dataflow for block. If useBlock is true, then the store
+   * after block is returned; if useBlock is false, the store before succ is returned.
    *
-   * @param noSuccInfo whether to use the store for the block itself or its successor, succ
+   * @param useBlock whether to use the store after the block itself or the store before its
+   *     successor, succ
    * @param block a block
    * @param succ block's successor
    * @return the appropriate CFStore, populated with MustCall annotations, from the results of
    *     running dataflow
    */
-  public CFStore getStoreForBlock(boolean noSuccInfo, Block block, Block succ) {
-    return noSuccInfo ? flowResult.getStoreAfter(block) : flowResult.getStoreBefore(succ);
+  public CFStore getStoreForBlock(boolean useBlock, Block block, Block succ) {
+    return useBlock ? flowResult.getStoreAfter(block) : flowResult.getStoreBefore(succ);
+  }
+
+  /**
+   * Get the element for a single CreatesObligation annotation.
+   *
+   * @return the element
+   */
+  @Override
+  public ExecutableElement getCreatesObligationValueElement() {
+    return createsObligationValueElement;
+  }
+
+  /**
+   * Get the element for a list CreatesObligation annotation.
+   *
+   * @return the element
+   */
+  @Override
+  public ExecutableElement getCreatesObligationListValueElement() {
+    return createsObligationListValueElement;
   }
 
   /**
@@ -345,6 +343,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
               || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
+      }
+      if (isResourceVariable(TreeUtils.elementFromTree(node))) {
+        type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
       return super.visitIdentifier(node, type);
     }
