@@ -358,10 +358,10 @@ public class AnnotationUtils {
 
     for (ExecutableElement meth : sortedElements) {
       AnnotationValue aval1 = vals1.get(meth);
-      AnnotationValue aval2 = vals2.get(meth);
       if (aval1 == null) {
         aval1 = meth.getDefaultValue();
       }
+      AnnotationValue aval2 = vals2.get(meth);
       if (aval2 == null) {
         aval2 = meth.getDefaultValue();
       }
