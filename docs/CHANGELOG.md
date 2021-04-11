@@ -1,14 +1,21 @@
 Version 3.13.0 (May 3, 2021)
 ----------------------------
 
-Removed StubGenerator section from the manual, because changes in JDK 11 have
-broken the StubGenerator program.
+**User-visible changes:**
+
+The Checker Framework no longer crashes on code that contains binding
+variables (introduced in Java 14 for `instanceof` pattern matching), and
+such variables are reflected in the control flow graph (CFG).  Thanks to
+Chris Day for this change.  However, note that the Checker Framework only
+has full support for Java 8 and Java 11.
+
+Removed the StubGenerator section from the manual, because changes in JDK 11
+have broken the StubGenerator program.
+
+**Implementation details:**
 
 Method renamings:
  * `DependentTypesHelper.atReturnType` => `atMethodBody`
-
-`CFGTranslationPhaseOne#visitIdentifier` can handle `ElementKind.BINDING_VARIABLE`
-introduced in Java 14 for `instanceof` pattern matching.
 
 **Closed issues:**
 #4410
