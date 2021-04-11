@@ -6,10 +6,11 @@ Version 3.13.0 (May 3, 2021)
 The Must Call Checker over-approximates the methods that an object must call
 before it is de-allocated.
 
-The Checker Framework no longer crashes on code that contains binding variables
-(introduced in Java 14 for `instanceof` pattern matching), and such variables
-are reflected in the control flow graph (CFG).  However, note that the Checker
-Framework only has full support for Java 8 and Java 11.
+The Checker Framework no longer crashes on code that contains binding
+variables (introduced in Java 14 for `instanceof` pattern matching), and
+such variables are reflected in the control flow graph (CFG).  Thanks to
+Chris Day for this change.  However, note that the Checker Framework only
+has full support for Java 8 and Java 11.
 
 **Implementation details:**
 
