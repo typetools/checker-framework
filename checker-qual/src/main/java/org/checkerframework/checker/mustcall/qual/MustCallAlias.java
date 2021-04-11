@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 
 /**
  * This polymorphic annotation represents an either-or must-call obligation. This annotation should
- * always be used in pairs: one on a method receiver parameter or constructor parameter, and the
- * other on the method return type. Fulfilling the must-call obligation of one is equivalent to
- * fulfilling the must-call obligation of the other.
+ * always be used in pairs. On a method, it is written on some formal parameter type and on the
+ * method return type. On a constructor, it is written on some formal paramter type and on the
+ * result type. Fulfilling the must-call obligation of one is equivalent to fulfilling the must-call
+ * obligation of the other.
  *
  * <p>This annotation is useful for wrapper objects. For example, consider the declaration of {@code
  * java.net.Socket#getOutputStream}:
