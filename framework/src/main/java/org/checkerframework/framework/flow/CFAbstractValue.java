@@ -11,6 +11,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -248,17 +249,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       mostSpecifTypeMirror = this.getUnderlyingType();
     }
 
-    Set<AnnotationMirror> mostSpecific = AnnotationUtils.createAnnotationSet();
     MostSpecificVisitor ms =
-        new MostSpecificVisitor(
-            mostSpecifTypeMirror,
+        new MostSpecificVisitor(this.getUnderlyingType(), other.getUnderlyingType(), backup);
+    Set<AnnotationMirror> mostSpecific =
+        ms.combineSets(
             this.getUnderlyingType(),
-            other.getUnderlyingType(),
             this.getAnnotations(),
+            other.getUnderlyingType(),
             other.getAnnotations(),
-            backup,
-            mostSpecific);
-    ms.visit();
+            canBeMissingAnnotations(mostSpecifTypeMirror));
     if (ms.error) {
       return backup;
     }
@@ -266,15 +265,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /** Computes the most specific annotations. */
-  private class MostSpecificVisitor extends AnnotationSetAndTypeMirrorVisitor {
+  private class MostSpecificVisitor extends AnnotationSetCombiner {
     /** If set to true, then this visitor was unable to find a most specific annotation. */
     boolean error = false;
 
     /** Set of annotations to use if a most specific value cannot be found. */
     final Set<AnnotationMirror> backupSet;
-
-    /** Set of most specific annotations. Annotations are added by the visitor. */
-    final Set<AnnotationMirror> mostSpecific;
 
     /** TypeMirror for the "a" value. */
     final TypeMirror aTypeMirror;
@@ -285,26 +281,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /**
      * Create a {@link MostSpecificVisitor}.
      *
-     * @param result the most specific type mirror
      * @param aTypeMirror type of the "a" value
      * @param bTypeMirror type of the "b" value
-     * @param aSet annotations in the "a" value
-     * @param bSet annotations in the "b" value
      * @param backup value to use if no most specific value is found
-     * @param mostSpecific set to which the most specific value is added
      */
-    public MostSpecificVisitor(
-        TypeMirror result,
-        TypeMirror aTypeMirror,
-        TypeMirror bTypeMirror,
-        Set<AnnotationMirror> aSet,
-        Set<AnnotationMirror> bSet,
-        V backup,
-        Set<AnnotationMirror> mostSpecific) {
-      super(result, aTypeMirror, bTypeMirror, aSet, bSet);
+    public MostSpecificVisitor(TypeMirror aTypeMirror, TypeMirror bTypeMirror, V backup) {
       this.aTypeMirror = aTypeMirror;
       this.bTypeMirror = bTypeMirror;
-      this.mostSpecific = mostSpecific;
       if (backup != null) {
         this.backupSet = backup.getAnnotations();
         // this.backupTypeMirror = backup.getUnderlyingType();
@@ -328,7 +311,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected void visitAnnotationExistInBothSets(
+    protected @Nullable AnnotationMirror combineTwoAnnotations(
         AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (analysis
@@ -337,63 +320,57 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           && analysis
               .getTypeFactory()
               .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
-        // Both types have qualifier parameters, so the annotations must be exact.
+        // Both types have qualifier parameters, so they are related by invariance rather than
+        // subtyping.
         if (hierarchy.isSubtype(a, b) && hierarchy.isSubtype(b, a)) {
-          mostSpecific.add(b);
-        } else {
-          AnnotationMirror backup = getBackUpAnnoIn(top);
-          if (backup != null) {
-            mostSpecific.add(backup);
-          }
+          return b;
         }
+      } else if (hierarchy.isSubtype(a, b)) {
+        return a;
+      } else if (hierarchy.isSubtype(b, a)) {
+        return b;
+      }
+      return getBackUpAnnoIn(top);
+    }
+
+    @Override
+    protected @Nullable AnnotationMirror combineNoAnnotations(
+        AnnotatedTypeVariable aAtv,
+        AnnotatedTypeVariable bAtv,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos) {
+      if (canCombinedSetBeMissingAnnos) {
+        return null;
       } else {
-        if (hierarchy.isSubtype(a, b)) {
-          mostSpecific.add(a);
-        } else if (hierarchy.isSubtype(b, a)) {
-          mostSpecific.add(b);
-        } else {
-          AnnotationMirror backup = getBackUpAnnoIn(top);
-          if (backup != null) {
-            mostSpecific.add(backup);
-          }
-        }
+        AnnotationMirror aUB = aAtv.getEffectiveAnnotationInHierarchy(top);
+        AnnotationMirror bUB = bAtv.getEffectiveAnnotationInHierarchy(top);
+        return combineTwoAnnotations(aUB, bUB, top);
       }
     }
 
     @Override
-    protected void visitNeitherAnnotationExistsInBothSets(
-        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
-      if (canBeMissingAnnotations(result)) {
-        // don't add an annotation
-      } else {
-        AnnotationMirror aUB = aAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-        AnnotationMirror bUB = bAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-        visitAnnotationExistInBothSets(aUB, bUB, top);
-      }
-    }
+    protected @Nullable AnnotationMirror combineOneAnnotation(
+        AnnotationMirror annotation,
+        AnnotatedTypeVariable typeVar,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos) {
 
-    @Override
-    protected void visitAnnotationExistInOneSet(
-        AnnotationMirror anno, AnnotatedTypeVariable atv, AnnotationMirror top) {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-      AnnotationMirror upperBound = atv.getEffectiveAnnotationInHierarchy(top);
+      AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
 
-      if (!canBeMissingAnnotations(result)) {
-        visitAnnotationExistInBothSets(anno, upperBound, top);
-        return;
+      if (!canCombinedSetBeMissingAnnos) {
+        return combineTwoAnnotations(annotation, upperBound, top);
       }
       Set<AnnotationMirror> lBSet =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, atv);
+          AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
       AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
-      if (hierarchy.isSubtype(upperBound, anno)) {
+      if (hierarchy.isSubtype(upperBound, annotation)) {
         // no anno is more specific than anno
-      } else if (hierarchy.isSubtype(anno, lowerBound)) {
-        mostSpecific.add(anno);
+        return null;
+      } else if (hierarchy.isSubtype(annotation, lowerBound)) {
+        return annotation;
       } else {
-        AnnotationMirror backup = getBackUpAnnoIn(top);
-        if (backup != null) {
-          mostSpecific.add(backup);
-        }
+        return getBackUpAnnoIn(top);
       }
     }
   }
@@ -403,8 +380,30 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return upperBound(other, false);
   }
 
-  public V widenUpperBound(@Nullable V other) {
-    return upperBound(other, true);
+  /**
+   * Compute an upper bound of two values that is wider than the least upper bound of the two
+   * values. Used to jump to a higher abstraction to allow faster termination of the fixed point
+   * computations in {@link Analysis}.
+   *
+   * <p>A particular analysis might not require widening and should implement this method by calling
+   * leastUpperBound.
+   *
+   * <p><em>Important</em>: This method must fulfill the following contract:
+   *
+   * <ul>
+   *   <li>Does not change {@code this}.
+   *   <li>Does not change {@code previous}.
+   *   <li>Returns a fresh object which is not aliased yet.
+   *   <li>Returns an object of the same (dynamic) type as {@code this}, even if the signature is
+   *       more permissive.
+   *   <li>Is commutative.
+   * </ul>
+   *
+   * @param previous must be the previous value
+   * @return an upper bound of two values that is wider than the least upper bound of the two values
+   */
+  public V widenUpperBound(@Nullable V previous) {
+    return upperBound(previous, true);
   }
 
   private V upperBound(@Nullable V other, boolean shouldWiden) {
@@ -414,42 +413,45 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       return v;
     }
     ProcessingEnvironment processingEnv = analysis.getTypeFactory().getProcessingEnv();
-    Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
     TypeMirror lubTypeMirror =
         TypesUtils.leastUpperBound(
             this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
 
-    LubVisitor lubVisitor =
-        new LubVisitor(
-            lubTypeMirror,
+    ValueLub valueLub = new ValueLub(shouldWiden);
+    Set<AnnotationMirror> lub =
+        valueLub.combineSets(
             this.getUnderlyingType(),
-            other.getUnderlyingType(),
             this.getAnnotations(),
+            other.getUnderlyingType(),
             other.getAnnotations(),
-            lub,
-            shouldWiden);
-    lubVisitor.visit();
+            canBeMissingAnnotations(lubTypeMirror));
     return analysis.createAbstractValue(lub, lubTypeMirror);
   }
 
-  class LubVisitor extends AnnotationSetAndTypeMirrorVisitor {
-    Set<AnnotationMirror> lubSet;
-    boolean widen;
+  /**
+   * Computes the least upper bound or, if {@code shouldWiden} is true, an upper bounds of two sets
+   * of annotations. The computation accounts for sets that are missing annotations in hierarchies.
+   */
+  protected class ValueLub extends AnnotationSetCombiner {
 
-    public LubVisitor(
-        TypeMirror result,
-        TypeMirror aTypeMirror,
-        TypeMirror bTypeMirror,
-        Set<AnnotationMirror> aSet,
-        Set<AnnotationMirror> bSet,
-        Set<AnnotationMirror> lubSet,
-        boolean shouldWiden) {
-      super(result, aTypeMirror, bTypeMirror, aSet, bSet);
-      this.lubSet = lubSet;
+    /**
+     * If true, this class computes an upper bound; if false, this class computes the least upper
+     * bound.
+     */
+    private final boolean widen;
+
+    /**
+     * Creates a {@link ValueLub}.
+     *
+     * @param shouldWiden if true, this class computes an upper bound
+     */
+    public ValueLub(boolean shouldWiden) {
       this.widen = shouldWiden;
     }
 
-    private AnnotationMirror computeUpperBound(AnnotationMirror a, AnnotationMirror b) {
+    @Override
+    protected @Nullable AnnotationMirror combineTwoAnnotations(
+        AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (widen) {
         return hierarchy.widenedUpperBound(a, b);
@@ -459,104 +461,273 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected void visitAnnotationExistInBothSets(
-        AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
-      lubSet.add(computeUpperBound(a, b));
-    }
-
-    @Override
-    protected void visitNeitherAnnotationExistsInBothSets(
-        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
-      if (canBeMissingAnnotations(result)) {
+    protected @Nullable AnnotationMirror combineNoAnnotations(
+        AnnotatedTypeVariable aAtv,
+        AnnotatedTypeVariable bAtv,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos) {
+      if (canCombinedSetBeMissingAnnos) {
         // don't add an annotation
+        return null;
       } else {
-        AnnotationMirror aUB = aAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-        AnnotationMirror bUB = bAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-        lubSet.add(computeUpperBound(aUB, bUB));
+        AnnotationMirror aUB = aAtv.getEffectiveAnnotationInHierarchy(top);
+        AnnotationMirror bUB = bAtv.getEffectiveAnnotationInHierarchy(top);
+        return combineTwoAnnotations(aUB, bUB, top);
       }
     }
 
     @Override
-    protected void visitAnnotationExistInOneSet(
-        AnnotationMirror anno, AnnotatedTypeVariable atv, AnnotationMirror top) {
+    protected @Nullable AnnotationMirror combineOneAnnotation(
+        AnnotationMirror annotation,
+        AnnotatedTypeVariable typeVar,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos) {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-      AnnotationMirror upperBound = atv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-      if (!canBeMissingAnnotations(result)) {
-        lubSet.add(computeUpperBound(anno, upperBound));
-      } else {
+      if (canCombinedSetBeMissingAnnos) {
+        // anno is the primary annotation on the use of a type variable. typeVar is a use of the
+        // same type variable that does not have a primary annotation. The lub of the two type
+        // variables is computed as follows. If anno is a subtype (or equal) to the annotation on
+        // the lower bound of typeVar, then typeVar is the lub, so no annotation is added to lubset.
+        // If anno is a supertype of the annotation on the lower bound of typeVar, then the lub is
+        // typeVar with a primary annotation of lub(anno, upperBound), where upperBound is the
+        // annotation on the upper bound of typeVar.
         Set<AnnotationMirror> lBSet =
-            AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, atv);
+            AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
         AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
-        if (!hierarchy.isSubtype(anno, lowerBound)) {
-          lubSet.add(computeUpperBound(anno, upperBound));
+        if (hierarchy.isSubtype(annotation, lowerBound)) {
+          return null;
+        } else {
+          return combineTwoAnnotations(
+              annotation, typeVar.getEffectiveAnnotationInHierarchy(top), top);
         }
+      } else {
+        return combineTwoAnnotations(
+            annotation, typeVar.getEffectiveAnnotationInHierarchy(top), top);
       }
     }
   }
 
   /**
-   * Iterates through two sets of AnnotationMirrors by hierarchy and calls one of three methods
-   * depending on whether an annotation exists for the hierarchy in each set. Also, passes a {@link
-   * AnnotatedTypeVariable} if an annotation does not exist.
+   * Compute the greatest lower bound of two values.
+   *
+   * <p><em>Important</em>: This method must fulfill the following contract:
+   *
+   * <ul>
+   *   <li>Does not change {@code this}.
+   *   <li>Does not change {@code other}.
+   *   <li>Returns a fresh object which is not aliased yet.
+   *   <li>Returns an object of the same (dynamic) type as {@code this}, even if the signature is
+   *       more permissive.
+   *   <li>Is commutative.
+   * </ul>
+   *
+   * @param other another value
+   * @return the greatest lower bound of two values
    */
-  protected abstract class AnnotationSetAndTypeMirrorVisitor {
-    TypeMirror result;
+  public V greatestLowerBound(@Nullable V other) {
+    if (other == null) {
+      @SuppressWarnings("unchecked")
+      V v = (V) this;
+      return v;
+    }
+    ProcessingEnvironment processingEnv = analysis.getTypeFactory().getProcessingEnv();
+    TypeMirror glbTypeMirror =
+        TypesUtils.greatestLowerBound(
+            this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
 
-    private AnnotatedTypeVariable aAtv;
-    private AnnotatedTypeVariable bAtv;
-    private Set<AnnotationMirror> aSet;
-    private Set<AnnotationMirror> bSet;
+    ValueGlb valueGlb = new ValueGlb();
+    Set<AnnotationMirror> glb =
+        valueGlb.combineSets(
+            this.getUnderlyingType(),
+            this.getAnnotations(),
+            other.getUnderlyingType(),
+            other.getAnnotations(),
+            canBeMissingAnnotations(glbTypeMirror));
+    return analysis.createAbstractValue(glb, glbTypeMirror);
+  }
 
-    protected AnnotationSetAndTypeMirrorVisitor(
-        TypeMirror result,
-        TypeMirror aTypeMirror,
-        TypeMirror bTypeMirror,
-        Set<AnnotationMirror> aSet,
-        Set<AnnotationMirror> bSet) {
-      this.result = result;
-      this.aSet = aSet;
-      this.bSet = bSet;
-      this.aAtv = getEffectTypeVar(aTypeMirror);
-      this.bAtv = getEffectTypeVar(bTypeMirror);
+  /**
+   * Computes the GLB of two sets of annotations. The computation accounts for sets that are missing
+   * annotations in hierarchies.
+   */
+  protected class ValueGlb extends AnnotationSetCombiner {
+
+    @Override
+    protected @Nullable AnnotationMirror combineTwoAnnotations(
+        AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
+      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+      return hierarchy.greatestLowerBound(a, b);
     }
 
-    void visit() {
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-      Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
-      for (AnnotationMirror top : tops) {
-        AnnotationMirror a = hierarchy.findAnnotationInHierarchy(aSet, top);
-        AnnotationMirror b = hierarchy.findAnnotationInHierarchy(bSet, top);
-        if (a != null && b != null) {
-          visitAnnotationExistInBothSets(a, b, top);
-        } else if (a != null) {
-          visitAnnotationExistInOneSet(a, bAtv, top);
-        } else if (b != null) {
-          visitAnnotationExistInOneSet(b, aAtv, top);
-        } else {
-          visitNeitherAnnotationExistsInBothSets(aAtv, bAtv, top);
-        }
+    @Override
+    protected @Nullable AnnotationMirror combineNoAnnotations(
+        AnnotatedTypeVariable aAtv,
+        AnnotatedTypeVariable bAtv,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos) {
+      if (canCombinedSetBeMissingAnnos) {
+        // don't add an annotation
+        return null;
+      } else {
+        AnnotationMirror aUB = aAtv.getEffectiveAnnotationInHierarchy(top);
+        AnnotationMirror bUB = bAtv.getEffectiveAnnotationInHierarchy(top);
+        return combineTwoAnnotations(aUB, bUB, top);
       }
     }
 
-    protected abstract void visitAnnotationExistInBothSets(
+    @Override
+    protected @Nullable AnnotationMirror combineOneAnnotation(
+        AnnotationMirror annotation,
+        AnnotatedTypeVariable typeVar,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos) {
+      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+      if (canCombinedSetBeMissingAnnos) {
+        // anno is the primary annotation on the use of a type variable. typeVar is a use of the
+        // same type variable that does not have a primary annotation. The glb of the two type
+        // variables is computed as follows. If anno is a supertype (or equal) to the annotation on
+        // the upper bound of typeVar, then typeVar is the glb, so no annotation is added to glbset.
+        // If anno is a subtype of the annotation on the upper bound of typeVar, then the glb is
+        // typeVar with a primary annotation of glb(anno, lowerBound), where lowerBound is the
+        // annotation on the lower bound of typeVar.
+        AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
+        if (hierarchy.isSubtype(upperBound, annotation)) {
+          return null;
+        } else {
+          Set<AnnotationMirror> lBSet =
+              AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
+          AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
+          return combineTwoAnnotations(annotation, lowerBound, top);
+        }
+      } else {
+        return combineTwoAnnotations(
+            annotation, typeVar.getEffectiveAnnotationInHierarchy(top), top);
+      }
+    }
+  }
+
+  /**
+   * Combines two sets of AnnotationMirrors by hierarchy.
+   *
+   * <p>Subclasses must define how to combine sets by implementing the following methods:
+   *
+   * <ol>
+   *   <li>{@code #combineTwoAnnotations(AnnotationMirror, AnnotationMirror, AnnotationMirror)}
+   *   <li>{@code #combineOneAnnotation(AnnotationMirror, AnnotatedTypeVariable, AnnotationMirror,
+   *       boolean)}
+   *   <li>{@code #combineNoAnnotations(AnnotatedTypeVariable, AnnotatedTypeVariable,
+   *       AnnotationMirror, boolean)}
+   * </ol>
+   *
+   * If a set is missing an annotation in a hierarchy, and if the combined set can be missing an
+   * annotation, then there must be a TypeVariable for the set that can be used to find annotations
+   * on its bounds.
+   */
+  protected abstract class AnnotationSetCombiner {
+
+    /**
+     * Combines the two sets.
+     *
+     * @param aTypeMirror the type mirror associated with {@code aSet}
+     * @param aSet a set of annotation mirrors
+     * @param bTypeMirror the type mirror associated with {@code bSet}
+     * @param bSet a set of annotation mirrors
+     * @param canCombinedSetBeMissingAnnos whether or not the combined set can be missing
+     *     annotations
+     * @return the combined sets
+     */
+    protected Set<AnnotationMirror> combineSets(
+        TypeMirror aTypeMirror,
+        Set<AnnotationMirror> aSet,
+        TypeMirror bTypeMirror,
+        Set<AnnotationMirror> bSet,
+        boolean canCombinedSetBeMissingAnnos) {
+
+      AnnotatedTypeVariable aAtv = getEffectTypeVar(aTypeMirror);
+      AnnotatedTypeVariable bAtv = getEffectTypeVar(bTypeMirror);
+      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+      Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
+      Set<AnnotationMirror> combinedSets = AnnotationUtils.createAnnotationSet();
+      for (AnnotationMirror top : tops) {
+        AnnotationMirror a = hierarchy.findAnnotationInHierarchy(aSet, top);
+        AnnotationMirror b = hierarchy.findAnnotationInHierarchy(bSet, top);
+        AnnotationMirror result;
+        if (a != null && b != null) {
+          result = combineTwoAnnotations(a, b, top);
+        } else if (a != null) {
+          result = combineOneAnnotation(a, bAtv, top, canCombinedSetBeMissingAnnos);
+        } else if (b != null) {
+          result = combineOneAnnotation(b, aAtv, top, canCombinedSetBeMissingAnnos);
+        } else {
+          result = combineNoAnnotations(aAtv, bAtv, top, canCombinedSetBeMissingAnnos);
+        }
+        if (result != null) {
+          combinedSets.add(result);
+        }
+      }
+      return combinedSets;
+    }
+
+    /**
+     * Returns the result of combining the two annotations. This method is called when an annotation
+     * exists in both sets for the hierarchy whose top is {@code top}.
+     *
+     * @param a an annotation in the hierarchy
+     * @param b an annotation in the hierarchy
+     * @param top the top annotation in the hierarchy
+     * @return the result of combining the two annotations or null if no combination exists
+     */
+    protected abstract @Nullable AnnotationMirror combineTwoAnnotations(
         AnnotationMirror a, AnnotationMirror b, AnnotationMirror top);
 
-    protected abstract void visitNeitherAnnotationExistsInBothSets(
-        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top);
+    /**
+     * Returns the primary annotation that result from of combining the two {@link
+     * AnnotatedTypeVariable}. If the result has not primary annotation, the {@code null} is
+     * returned. This method is called when no annotation exists in either sets for the hierarchy
+     * whose top is {@code top}.
+     *
+     * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
+     * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy
+     * @param top the top annotation in the hierarchy
+     * @param canCombinedSetBeMissingAnnos whether or not
+     * @return the result of combining the two type variables, which may be null
+     */
+    protected abstract @Nullable AnnotationMirror combineNoAnnotations(
+        AnnotatedTypeVariable aAtv,
+        AnnotatedTypeVariable bAtv,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos);
 
-    protected abstract void visitAnnotationExistInOneSet(
-        AnnotationMirror anno, AnnotatedTypeVariable atv, AnnotationMirror top);
+    /**
+     * Returns the result of combining {@code annotation} with {@code typeVar}.
+     *
+     * <p>This is called when an annotation exists for the hierarchy in on set, but not the other.
+     *
+     * @param annotation an annotation
+     * @param typeVar a type variable that does not have a primary annotation in the hierarchy
+     * @param top the top annotation of the hierarchy
+     * @param canCombinedSetBeMissingAnnos whether or not
+     * @return the result of combining {@code annotation} with {@code typeVar}
+     */
+    protected abstract @Nullable AnnotationMirror combineOneAnnotation(
+        AnnotationMirror annotation,
+        AnnotatedTypeVariable typeVar,
+        AnnotationMirror top,
+        boolean canCombinedSetBeMissingAnnos);
   }
 
   /**
    * Returns the AnnotatedTypeVariable associated with the given TypeMirror or null.
    *
-   * <p>If TypeMirror is a type variable, then the AnnotatedTypeVariable return is the declaration
-   * of that TypeMirror. If the TypeMirror is a wildcard that extends a type variable, the
-   * AnnotatedTypeVariable return is the declaration of that type variable. Otherwise, null is
-   * returned.
+   * <p>If {@code typeMirror} is a type variable, then the {@link AnnotatedTypeVariable} of its
+   * declaration is returned. If {@code typeMirror} is a wildcard whose extends bounds is a type
+   * variable, then the {@link AnnotatedTypeVariable} for its declaration is returned. Otherwise,
+   * {@code null} is returned.
+   *
+   * @param typeMirror a type mirror
+   * @return the AnnotatedTypeVariable associated with the given TypeMirror or null
    */
-  private AnnotatedTypeVariable getEffectTypeVar(TypeMirror typeMirror) {
+  private @Nullable AnnotatedTypeVariable getEffectTypeVar(@Nullable TypeMirror typeMirror) {
     if (typeMirror == null) {
       return null;
     } else if (typeMirror.getKind() == TypeKind.WILDCARD) {

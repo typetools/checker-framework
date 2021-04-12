@@ -1,8 +1,21 @@
-Version 3.12.1 (May 3, 2021)
+Version 3.13.0 (May 3, 2021)
 ----------------------------
 
-Forthcoming.
+**User-visible changes:**
 
+The Checker Framework no longer crashes on code that contains binding
+variables (introduced in Java 14 for `instanceof` pattern matching), and
+such variables are reflected in the control flow graph (CFG).  Thanks to
+Chris Day for this change.  However, note that the Checker Framework only
+has full support for Java 8 and Java 11.
+
+**Implementation details:**
+
+Method renamings:
+ * `DependentTypesHelper.atReturnType` => `atMethodBody`
+
+**Closed issues:**
+#4410
 
 Version 3.12.0 (April 1, 2021)
 ------------------------------
@@ -24,7 +37,7 @@ defaulted to an empty array.
 **Implementation details:**
 
 A precondition or normal postcondition annotation's `value` element must have
-type `String[]`, not `String`.  A conditinoal postcondition annotation's
+type `String[]`, not `String`.  A conditional postcondition annotation's
 `expression` element must have type `String[]`, not `String`.  These changes
 will not affect users (any programmer-written annotation that was legal before
 will still be legal), but it may affect checker implementations.

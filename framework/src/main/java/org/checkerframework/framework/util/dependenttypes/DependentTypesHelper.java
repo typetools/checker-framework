@@ -268,7 +268,8 @@ public class DependentTypesHelper {
    * Viewpoint-adapts a method or constructor invocation.
    *
    * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
-   * type annotations. This method viewpoint-adapts the dependent type annotations.
+   * type annotations. (For example, type variables have been substituted and polymorphic qualifiers
+   * have been resolved.) This method viewpoint-adapts the dependent type annotations.
    *
    * @param methodType type of the method or constructor invocation; is side-effected by this method
    * @param tree invocation of the method or constructor
@@ -337,14 +338,14 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Viewpoint-adapts the Java expressions in annotations written on the return type of the method
-   * declaration to the body of the method. This means the parameter syntax, e.g. "#2", is converted
-   * to the names of the parameter.
+   * Viewpoint-adapts the Java expressions in annotations written on the signature of the method
+   * declaration (for example, a return type) to the body of the method. This means the parameter
+   * syntax, e.g. "#2", is converted to the names of the parameter.
    *
-   * @param atm the method return type; is side-effected by this method
+   * @param atm a type at the method signature; is side-effected by this method
    * @param methodDeclTree a method declaration
    */
-  public void atReturnType(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
+  public void atMethodBody(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
     if (!hasDependentType(atm)) {
       return;
     }
@@ -1103,7 +1104,7 @@ public class DependentTypesHelper {
   /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
   private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
       new SimpleAnnotatedTypeScanner<>(
-          (type, unused) -> {
+          (type, __) -> {
             for (AnnotationMirror annotationMirror : type.getAnnotations()) {
               if (isExpressionAnno(annotationMirror)) {
                 return true;
