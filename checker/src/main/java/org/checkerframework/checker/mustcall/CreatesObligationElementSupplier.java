@@ -14,16 +14,16 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public interface CreatesObligationElementSupplier {
 
   /**
-   * Get the element for a single CreatesObligation annotation.
+   * Returns the CreatesObligation.value field/element.
    *
-   * @return the element
+   * @return the CreatesObligation.value field/element
    */
   ExecutableElement getCreatesObligationValueElement();
 
   /**
-   * Get the element for a list CreatesObligation annotation.
+   * Returns the CreatesObligation.List.value field/element.
    *
-   * @return the element
+   * @return the CreatesObligation.List.value field/element
    */
   ExecutableElement getCreatesObligationListValueElement();
 }

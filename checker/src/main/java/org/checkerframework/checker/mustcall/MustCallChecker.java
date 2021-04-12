@@ -6,8 +6,8 @@ import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * This typechecker ensures that {@link MustCall} annotations are consistent with one another. The
- * Object Construction Checker verifies that the given methods are actually called.
+ * This typechecker ensures that {@code @}{@link MustCall} annotations are consistent with one
+ * another. The Object Construction Checker verifies that the given methods are actually called.
  */
 @StubFiles({
   "Socket.astub",

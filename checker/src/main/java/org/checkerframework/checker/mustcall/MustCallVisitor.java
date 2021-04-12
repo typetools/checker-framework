@@ -25,7 +25,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The visitor for the Must Call checker. This visitor is similar to BaseTypeVisitor, but overrides
+ * The visitor for the Must Call Checker. This visitor is similar to BaseTypeVisitor, but overrides
  * methods that don't work well with the MustCall type hierarchy because it doesn't use the top type
  * as the default type.
  */
@@ -61,8 +61,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   public boolean isValidUse(
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
     // MustCallAlias annotations are always permitted on type uses, because these will be validated
-    // by the
-    // Object Construction Checker's -AcheckMustCall algorithm.
+    // by the Object Construction Checker's -AcheckMustCall algorithm.
     if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
       useType.removeAnnotationByClass(MustCallAlias.class);
     }
@@ -74,10 +73,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       MethodInvocationTree node,
       AnnotatedTypeMirror methodDefinitionReceiver,
       AnnotatedTypeMirror methodCallReceiver) {
-    // Receivers cannot have must-call obligations - it doesn't make sense. If
-    // the receiver of a method were to have a non-empty must-call obligation,
-    // then actually the method **IS** a must-call method! So skipping this check is
-    // always sound.
+    // It does not make sense for receivers to have must-call obligations. If the receiver of a
+    // method were to have a non-empty must-call obligation, then actually the method **IS** a
+    // must-call method! So skipping this check is always sound.
     return true;
   }
 
@@ -136,7 +134,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   /**
    * This method typically issues a warning if the result type of the constructor is not top,
-   * because in top-default type systems that indicates a potential problem. The must call checker
+   * because in top-default type systems that indicates a potential problem. The Must Call Checker
    * does not need this warning, because it expects the type of all constructors to be {@code
    * MustCall({})} (by default) or some other {@code MustCall} type, not the top type.
    *

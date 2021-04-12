@@ -5,11 +5,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** Primitive types always have no must-call obligations. */
+/** Primitive types and {@code String} always have no must-call obligations. */
 public class MustCallTypeAnnotator extends TypeAnnotator {
 
   /**
-   * Create a type annotator.
+   * Create a MustCallTypeAnnotator.
    *
    * @param typeFactory the type factory
    */

@@ -48,7 +48,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The annotated type factory for the must call checker. Primarily responsible for the subtyping
+ * The annotated type factory for the Must Call Checker. Primarily responsible for the subtyping
  * rules between @MustCall annotations.
  */
 public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
@@ -65,17 +65,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
   /**
    * A cache of locations at which an inconsistent.mustcall.subtype error has already been issued,
-   * to avoid issuing duplicate errors. Reset with each compilation unit.
+   * to avoid issuing duplicate errors. Cleared with each compilation unit.
    */
-  private final Set<Element> elementsIssuedInconsistentMustCallSubtypeErrors =
-      new HashSet<>(this.getCacheSize());
+  private final Set<Element> elementsIssuedInconsistentMustCallSubtypeErrors = new HashSet<>();
 
   /**
    * Map from trees representing expressions to the temporary variables that represent them in the
    * store.
    */
-  /* package-private */ HashMap<Tree, LocalVariableNode> tempVars =
-      new HashMap<>(this.getCacheSize());
+  /* package-private */ HashMap<Tree, LocalVariableNode> tempVars = new HashMap<>();
 
   /** The MustCall.value field/element. */
   final ExecutableElement mustCallValueElement =
@@ -151,7 +149,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   // Package private to permit usage from the visitor in the common assignment check.
   /* package-private */ AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
-    // shortcut for easy paths
     if (anno == null || AnnotationUtils.areSame(anno, BOTTOM)) {
       return BOTTOM;
     } else if (!AnnotationUtils.areSameByName(
@@ -160,10 +157,13 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
     List<String> values =
         AnnotationUtils.getElementValueArray(anno, mustCallValueElement, String.class);
-    if (!values.contains("close")) {
+    if (values.remove("close")) {
+      // Remove more occurrences of "close" if it appeared multiple times.
+      while (values.remove("close")) {}
+      return createMustCall(values);
+    } else {
       return anno;
     }
-    return createMustCall(values.stream().filter(s -> !"close".equals(s)).toArray(String[]::new));
   }
 
   /**
@@ -176,7 +176,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
-  /** Treat non-owning method parameters as @MustCallUnknown when the method is called. */
+  /** Treat non-owning method parameters as @MustCallUnknown (top) when the method is called. */
   @Override
   public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
     ExecutableElement declaration;
@@ -200,10 +200,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Changes the type of each parameter not annotated as @Owning to top. Also replaces the component
-   * type of the varargs array, if applicable.
+   * Changes the type of each parameter not annotated as @Owning to @MustCallUnknown (top). Also
+   * replaces the component type of the varargs array, if applicable.
    *
-   * <p>Note that this method is not responsible for handling receivers, which can never be owning.
+   * <p>This method is not responsible for handling receivers, which can never be owning.
    *
    * @param declaration a method or constructor declaration
    * @param type the method or constructor's type
@@ -240,9 +240,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             AnnotationUtils.getElementValueArray(
                 inheritableMustCall, inheritableMustCallValueElement, String.class);
         AnnotationMirror inheritedMCAnno = createMustCall(mustCallVal.toArray(new String[0]));
-        // Ensure that there isn't an inconsistent, user-written @MustCall annotation and
-        // issue an error if there is. Otherwise, replace the implicit @MustCall({}) with
-        // the inherited must-call annotation.
+        // Issue an error if there is an inconsistent, user-written @MustCall annotation.
+        // Otherwise, replace the implicit @MustCall({}) with the inherited must-call annotation.
         AnnotationMirror writtenMCAnno = type.getAnnotationInHierarchy(this.TOP);
         if (writtenMCAnno != null
             && !this.getQualifierHierarchy().isSubtype(inheritedMCAnno, writtenMCAnno)) {
@@ -299,9 +298,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Get the element for a single CreatesObligation annotation.
+   * Returns the CreatesObligation.value field/element.
    *
-   * @return the element
+   * @return the CreatesObligation.value field/element
    */
   @Override
   public ExecutableElement getCreatesObligationValueElement() {
@@ -309,9 +308,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Get the element for a list CreatesObligation annotation.
+   * Returns the CreatesObligation.List.value field/element.
    *
-   * @return the element
+   * @return the CreatesObligation.List.value field/element
    */
   @Override
   public ExecutableElement getCreatesObligationListValueElement() {
@@ -322,11 +321,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * The TreeAnnotator for the MustCall type system. This tree annotator treats non-owning method
    * parameters as bottom, regardless of their declared type, when they appear in the body of the
    * method. Doing so is safe because being non-owning means, by definition, that their must-call
-   * obligations are only relevant at the call site.
+   * obligations are only relevant in the callee.
    */
   private class MustCallTreeAnnotator extends TreeAnnotator {
     /**
-     * Create a MustCallTreeAnnotator
+     * Create a MustCallTreeAnnotator.
      *
      * @param mustCallAnnotatedTypeFactory the type factory
      */
