@@ -144,13 +144,16 @@ To illustrate, a checker for MyProp must be laid out as follows:
 \begin{Verbatim}
 myPackage/
   | qual/                               type qualifiers
-  | MyPropChecker.java                  [optional] interface to the compiler
+  | MyPropChecker.java                  interface to the compiler
   | MyPropVisitor.java                  [optional] type rules
   | MyPropAnnotatedTypeFactory.java     [optional] type introduction and dataflow rules
 \end{Verbatim}
 %
-Note that \<MyPropChecker.java> is required unless you are building on the
-Subtyping Checker.
+\<MyPropChecker.java> is occasionally optional, such as if you are building
+on the Subtyping Checker.  You may wish to put the \<qual/> directory in a
+separate Maven/Gradle project, if you want to create an artifacts
+containing just the qualifiers (similar to the Checker Framework's
+\<checker-qual> artifact).
 
 Sections~\ref{creating-typequals}--\ref{creating-dataflow} describe
 the individual components of a type system as written using the Checker
