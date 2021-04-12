@@ -743,6 +743,15 @@ the stub files anywhere that is convenient.  However, please consider
 providing your stub files to the checker author, so that other users can
 also benefit from the stub files you wrote.
 
+Stub files distributed with a checker appear in the same diretory as the
+checker implementation (the \<*Checker.java> file, see
+Section~\ref{creating-parts-of-a-checker}).  For example, in the Checker
+Framework they appear in files such as
+\begin{Verbatim}
+checker/src/main/java/org/checkerframework/checker/regex/apache-xerces.astub
+checker/src/main/java/org/checkerframework/checker/signature/javaparser.astub
+\end{Verbatim}
+
 If you are distributing stub files with a checker implementation, you must
 configure your build system to copy the stub files into the distributed jar for
 your checker.  Here are instructions if you are using the Checker Framework
