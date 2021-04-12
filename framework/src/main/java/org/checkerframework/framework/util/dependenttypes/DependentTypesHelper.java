@@ -1106,7 +1106,7 @@ public class DependentTypesHelper {
   /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
   private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
       new SimpleAnnotatedTypeScanner<>(
-          (type, unused) -> {
+          (type, __) -> {
             for (AnnotationMirror annotationMirror : type.getAnnotations()) {
               if (isExpressionAnno(annotationMirror)) {
                 return true;

@@ -492,10 +492,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     Set<Node> existing = treeLookupMap.get(tree);
     if (existing == null) {
       treeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
-    } else if (!existing.contains(node)) {
-      existing.add(node);
     } else {
-      // Nothing to do if existing already contains the Node.
+      existing.add(node);
     }
 
     Tree enclosingParens = parenMapping.get(tree);
@@ -536,10 +534,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     Set<Node> existing = convertedTreeLookupMap.get(tree);
     if (existing == null) {
       convertedTreeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
-    } else if (!existing.contains(node)) {
-      existing.add(node);
     } else {
-      // Nothing to do if existing already contains the Node.
+      existing.add(node);
     }
   }
 
