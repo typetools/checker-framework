@@ -173,7 +173,7 @@ public class MustCallTransfer extends CFTransfer {
     AnnotationMirror createsObligationList =
         atypeFactory.getDeclAnnotation(n.getTarget().getMethod(), CreatesObligation.List.class);
     if (createsObligationList != null) {
-      // Handle a set of create obligation annotations.
+      // Handle a set of CreatesObligation annotations.
       List<AnnotationMirror> createsObligations =
           AnnotationUtils.getElementValueArray(
               createsObligationList,
