@@ -93,8 +93,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Object... extraArgs) {
     if (TreeUtils.elementFromTree(varTree).getKind() == ElementKind.RESOURCE_VARIABLE) {
       // Use the extraArgs array to signal to later stages of the common assignment check that this
-      // is in a
-      // resource variable context.
+      // is in a resource variable context.
       Object[] newExtraArgs = Arrays.copyOf(extraArgs, extraArgs.length + 1);
       newExtraArgs[newExtraArgs.length - 1] = ElementKind.RESOURCE_VARIABLE;
       super.commonAssignmentCheck(varTree, valueExp, errorKey, newExtraArgs);
@@ -104,10 +103,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * If the LHS has been marked as a resource variable, then the standard common assignment check is
-   * skipped and a check that does not include "close" is substituted. Resource variables are marked
-   * by {@link #commonAssignmentCheck(Tree, ExpressionTree, String, Object...)} using the extraArgs
-   * parameter.
+   * If the LHS is a resource variable, then the last element of {@code extraArgs} is
+   * ElementKind.RESOURCE_VARIABLE.
    */
   @Override
   protected void commonAssignmentCheck(
@@ -117,6 +114,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     if (extraArgs.length >= 1 && extraArgs[extraArgs.length - 1] == ElementKind.RESOURCE_VARIABLE) {
+      // The LHS has been marked as a resource variable.  Skip the standard common assignment check;
+      // instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
       AnnotationMirror valAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
       if (atypeFactory
@@ -161,9 +160,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   /**
    * Change the default for exception parameter lower bounds to bottom (the default), to prevent
    * false positives. This is unsound; see the discussion on
-   * https://github.com/typetools/checker-framework/issues/3839. TODO: change checking of throws
-   * clauses to require that the thrown exception is @MustCall({}). This would probably eliminate
-   * most of the same false positives, without adding undue false positives.
+   * https://github.com/typetools/checker-framework/issues/3839.
+   *
+   * <p>TODO: change checking of throws clauses to require that the thrown exception
+   * is @MustCall({}). This would probably eliminate most of the same false positives, without
+   * adding undue false positives.
    *
    * @return a set containing only the @MustCall({}) annotation
    */

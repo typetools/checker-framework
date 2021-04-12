@@ -45,7 +45,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class MustCallTransfer extends CFTransfer {
 
-  /** TreeBuilder for building new AST nodes. */
+  /** For building new AST nodes. */
   private final TreeBuilder treeBuilder;
 
   /** The type factory. */
@@ -151,20 +151,20 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /**
-   * If the given method invocation node is a CreatesObligation method, then gets the
-   * JavaExpressions corresponding to the targets. If any expression is unparseable, this method
-   * uses the type factory's error reporting inferface to throw an error and returns the empty set.
-   * Also return the empty set if the given method is not a CreatesObligation method.
+   * Returns the arguments of the @CreatesObligation annotation on the invoked method, as
+   * JavaExpressions. Returns the empty set if the given method has no @CreatesObligation
+   * annotation.
+   *
+   * <p>If any expression is unparseable, this method reports an error and returns the empty set.
    *
    * @param n a method invocation
    * @param atypeFactory the type factory to report errors and parse the expression string
-   *     recomputation.
+   *     recomputation
    * @param supplier a type factory that can supply the executable elements for CreatesObligation
    *     and CreatesObligation.List's value elements. Usually, you should just pass atypeFactory
    *     again. The arguments are different so that the given type factory's adherence to both
    *     protocols are checked by the type system.
-   * @return a list of JavaExpressions representing the targets, if the method is a
-   *     CreatesObligation method and the targets are parseable; the empty set otherwise.
+   * @return the arguments of the method's @CreatesObligation annotation, or the empty set
    */
   public static Set<JavaExpression> getCreatesObligationExpressions(
       MethodInvocationNode n,

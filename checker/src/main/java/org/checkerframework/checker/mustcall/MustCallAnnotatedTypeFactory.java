@@ -157,9 +157,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
     List<String> values =
         AnnotationUtils.getElementValueArray(anno, mustCallValueElement, String.class);
-    if (values.remove("close")) {
-      // Remove more occurrences of "close" if it appeared multiple times.
-      while (values.remove("close")) {}
+    // Use `removeAll` because `remove` only removes the first occurrence.
+    if (values.removeAll(Collections.singletonList("close"))) {
       return createMustCall(values);
     } else {
       return anno;
