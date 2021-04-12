@@ -91,6 +91,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -122,16 +123,11 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.Contract;
+import org.checkerframework.framework.util.*;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
-import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
-import org.checkerframework.framework.util.JavaParserUtil;
-import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -221,6 +217,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
+  ExecutableElement sideEffectsOnlyValueElement;
+
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
    *     TypeHierarchy#isSubtype})
@@ -248,6 +246,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
+    sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, checker.getProcessingEnvironment());
   }
 
   /**
@@ -1018,11 +1018,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (body == null) {
       return;
     } else {
-      SideEffectsOnlyAnnoChecker.checkSideEffectsOnly(body, atypeFactory);
+      @Nullable Element methodDeclElem = TreeUtils.elementFromTree(node);
+      AnnotationMirror sefOnlyAnnotation =
+          atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
+      if (sefOnlyAnnotation == null) {
+        return;
+      }
+      List<String> sideEffectsOnlyExpressionStrings =
+          AnnotationUtils.getElementValueArray(
+              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+      List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
+      for (String st : sideEffectsOnlyExpressionStrings) {
+        try {
+          JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, node, checker);
+          sideEffectsOnlyExpressions.add(exprJe);
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+          checker.report(st, ex.getDiagMessage());
+          return;
+        }
+      }
+
+      if (sideEffectsOnlyExpressions.isEmpty()) {
+        return;
+      }
+
+      SideEffectsOnlyAnnoChecker.SideEffectsOnlyResult sefOnlyResult =
+          SideEffectsOnlyAnnoChecker.checkSideEffectsOnly(
+              body, atypeFactory, sideEffectsOnlyExpressions);
+
+      List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getSeOnlyResult();
+      if (!seOnlyIncorrectExprs.isEmpty()) {
+        for (Pair<Tree, JavaExpression> s : seOnlyIncorrectExprs)
+          checker.reportError(s.first, "incorrect.sideeffectsonly", s.second.toString());
+      }
     }
-    //    if (!r.isPure(kinds)) {
-    //      reportPurityErrors(r, node, kinds);
-    //    }
   }
 
   /**
