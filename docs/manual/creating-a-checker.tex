@@ -149,11 +149,11 @@ myPackage/
   | MyPropAnnotatedTypeFactory.java     [optional] type introduction and dataflow rules
 \end{Verbatim}
 %
-\<MyPropChecker.java> is occasionally optional, such as if you are building
-on the Subtyping Checker.  You may wish to put the \<qual/> directory in a
-separate Maven/Gradle project, if you want to create an artifacts
+\<MyPropChecker.java> is occasionally optional, such as if you are
+building on the Subtyping Checker.  If you want to create an artifact
 containing just the qualifiers (similar to the Checker Framework's
-\<checker-qual> artifact).
+\<checker-qual> artifact), you should put the \<qual/> directory in a
+separate Maven module or Gradle subproject.
 
 Sections~\ref{creating-typequals}--\ref{creating-dataflow} describe
 the individual components of a type system as written using the Checker
