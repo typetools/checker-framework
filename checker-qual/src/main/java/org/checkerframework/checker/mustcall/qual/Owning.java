@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
  * Annotation indicating that ownership should be transferred to the parameter, field, or return
  * type (when written on a method), for the purposes of Must Call checking.
  *
+ * Method return types are treated as if they have this annotation by default unless
+ * they are annotated as {@link NotOwning}.
+ *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
