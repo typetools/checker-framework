@@ -2706,7 +2706,7 @@ public class AnnotationFileParser {
       if (warnings.add(warning)) {
         processingEnv
             .getMessager()
-            .printMessage(javax.tools.Diagnostic.Kind.WARNING, fileAndLine(astNode) + warning);
+            .printMessage(javax.tools.Diagnostic.Kind.NOTE, fileAndLine(astNode) + warning);
       }
     }
   }
