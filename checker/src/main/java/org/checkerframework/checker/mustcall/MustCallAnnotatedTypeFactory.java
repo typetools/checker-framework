@@ -224,7 +224,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
     if (declaration.isVarArgs()) {
       // also modify the component type of a varargs array
-      AnnotatedTypeMirror varargsType = ((AnnotatedArrayType) parameterTypes.get(parameterTypes.size() - 1)).getComponentType();
+      AnnotatedTypeMirror varargsType =
+          ((AnnotatedArrayType) parameterTypes.get(parameterTypes.size() - 1)).getComponentType();
       if (!varargsType.hasAnnotation(POLY)) {
         varargsType.replaceAnnotation(TOP);
       }
@@ -282,15 +283,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Cache of the MustCall annotations that have actually been created. Most programs only
-   * actually require a few MustCall annotations (e.g. MustCall() and MustCall("close")).
+   * Cache of the MustCall annotations that have actually been created. Most programs only actually
+   * require a few MustCall annotations (e.g. MustCall() and MustCall("close")).
    */
   private Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
 
   /**
    * Creates a {@link MustCall} annotation whose values are the given strings.
    *
-   * This internal version bypasses the cache, and is only used for new annotations.
+   * <p>This internal version bypasses the cache, and is only used for new annotations.
    *
    * @param val the methods that should be called
    * @return an annotation indicating that the given methods should be called
@@ -309,18 +310,18 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Fetches the store from the results of dataflow for block. If useBlock is true, then the store
-   * after block is returned; if useBlock is false, the store before succ is returned.
+   * Fetches the store from the results of dataflow for first. If afterFirstStore is true, then the
+   * store after first is returned; if afterFirstStore is false, the store before succ is returned.
    *
-   * @param useBlock whether to use the store after the block itself or the store before its
+   * @param afterFirstStore whether to use the store after the first block or the store before its
    *     successor, succ
-   * @param block a block
-   * @param succ block's successor
+   * @param first a block
+   * @param succ first's successor
    * @return the appropriate CFStore, populated with MustCall annotations, from the results of
    *     running dataflow
    */
-  public CFStore getStoreForBlock(boolean useBlock, Block block, Block succ) {
-    return useBlock ? flowResult.getStoreAfter(block) : flowResult.getStoreBefore(succ);
+  public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
+    return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
   }
 
   /**
@@ -344,10 +345,17 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * The TreeAnnotator for the MustCall type system. This tree annotator treats non-owning method
-   * parameters as bottom, regardless of their declared type, when they appear in the body of the
-   * method. Doing so is safe because being non-owning means, by definition, that their must-call
-   * obligations are only relevant in the callee.
+   * The TreeAnnotator for the MustCall type system.
+   *
+   * <p>This tree annotator treats non-owning method parameters as bottom, regardless of their
+   * declared type, when they appear in the body of the method. Doing so is safe because being
+   * non-owning means, by definition, that their must-call obligations are only relevant in the
+   * callee. (This behavior is disabled if the -AnoLightweightOwnership option is passed to the
+   * checker.)
+   *
+   * <p>The tree annotator also changes the type of resource variables to remove "close" from their
+   * must-call types, because the try-with-resources statement guarantees that close() is called on
+   * all such variables.
    */
   private class MustCallTreeAnnotator extends TreeAnnotator {
     /**

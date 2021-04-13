@@ -43,15 +43,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   @Override
   public Void visitReturn(ReturnTree node, Void p) {
     // Only check return types if ownership is being transferred.
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
-    // enclosingMethod is null if this return site is inside a lambda. TODO: handle lambdas more
-    // precisely?
-    if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP) && enclosingMethod != null) {
-      ExecutableElement methodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
-      AnnotationMirror notOwningAnno = atypeFactory.getDeclAnnotation(methodElt, NotOwning.class);
-      if (notOwningAnno != null) {
-        // skip return type subtyping check, because not-owning pointer means OCC won't check anyway
-        return null;
+    if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
+      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
+      // enclosingMethod is null if this return site is inside a lambda. TODO: handle lambdas more
+      // precisely?
+      if (enclosingMethod != null) {
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
+        AnnotationMirror notOwningAnno = atypeFactory.getDeclAnnotation(methodElt, NotOwning.class);
+        if (notOwningAnno != null) {
+          // skip return type subtyping check, because not-owning pointer means OCC won't check
+          // anyway
+          return null;
+        }
       }
     }
     return super.visitReturn(node, p);
@@ -74,8 +77,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       AnnotatedTypeMirror methodDefinitionReceiver,
       AnnotatedTypeMirror methodCallReceiver) {
     // It does not make sense for receivers to have must-call obligations. If the receiver of a
-    // method were to have a non-empty must-call obligation, then actually the method **IS** a
-    // must-call method! So skipping this check is always sound.
+    // method were to have a non-empty must-call obligation, then actually this method should
+    // be part of the must-call annotation on the class declaration! So skipping this check is
+    // always sound.
     return true;
   }
 
@@ -125,6 +129,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       } else {
         // Remove the resource variable entry, since otherwise the rest of the framework could
         // interpret it as a format string (which is how extraArgs is usually used).
+        // Note that in this case, the rest of the common assignment check should fail (barring
+        // an exception), but it's preferable to allow the whole process to continue to
+        // avoid duplicating error-issuing code here. This code therefore falls-through
+        // to the code below.
         extraArgs = Arrays.copyOf(extraArgs, extraArgs.length - 1);
       }
     }

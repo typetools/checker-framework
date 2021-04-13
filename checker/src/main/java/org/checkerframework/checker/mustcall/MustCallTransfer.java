@@ -5,10 +5,8 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -70,7 +68,7 @@ public class MustCallTransfer extends CFTransfer {
 
     updateStoreWithTempVar(result, n);
     if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_ACCUMULATION_FRAMES)) {
-      Set<JavaExpression> targetExprs =
+      List<JavaExpression> targetExprs =
           getCreatesObligationExpressions(n, atypeFactory, atypeFactory);
       for (JavaExpression targetExpr : targetExprs) {
         AnnotationMirror defaultType =
@@ -159,19 +157,19 @@ public class MustCallTransfer extends CFTransfer {
    *
    * @param n a method invocation
    * @param atypeFactory the type factory to report errors and parse the expression string
-   *     recomputation
    * @param supplier a type factory that can supply the executable elements for CreatesObligation
    *     and CreatesObligation.List's value elements. Usually, you should just pass atypeFactory
    *     again. The arguments are different so that the given type factory's adherence to both
    *     protocols are checked by the type system.
-   * @return the arguments of the method's @CreatesObligation annotation, or the empty set
+   * @return the arguments of the method's @CreatesObligation annotation, or an empty list
    */
-  public static Set<JavaExpression> getCreatesObligationExpressions(
+  public static List<JavaExpression> getCreatesObligationExpressions(
       MethodInvocationNode n,
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
       CreatesObligationElementSupplier supplier) {
     AnnotationMirror createsObligationList =
         atypeFactory.getDeclAnnotation(n.getTarget().getMethod(), CreatesObligation.List.class);
+    List<JavaExpression> results = new ArrayList<>(1);
     if (createsObligationList != null) {
       // Handle a set of CreatesObligation annotations.
       List<AnnotationMirror> createsObligations =
@@ -179,23 +177,23 @@ public class MustCallTransfer extends CFTransfer {
               createsObligationList,
               supplier.getCreatesObligationListValueElement(),
               AnnotationMirror.class);
-      Set<JavaExpression> results = new HashSet<>();
       for (AnnotationMirror co : createsObligations) {
         JavaExpression expr = getCreatesObligationExpression(co, n, atypeFactory, supplier);
-        if (expr != null) {
+        if (expr != null && !results.contains(expr)) {
           results.add(expr);
         }
       }
-      return results;
     }
     AnnotationMirror createsObligation =
         atypeFactory.getDeclAnnotation(n.getTarget().getMethod(), CreatesObligation.class);
-    if (createsObligation == null) {
-      return Collections.emptySet();
+    if (createsObligation != null) {
+      JavaExpression expr =
+          getCreatesObligationExpression(createsObligation, n, atypeFactory, supplier);
+      if (expr != null && !results.contains(expr)) {
+        results.add(expr);
+      }
     }
-    JavaExpression expr =
-        getCreatesObligationExpression(createsObligation, n, atypeFactory, supplier);
-    return expr != null ? Collections.singleton(expr) : Collections.emptySet();
+    return results;
   }
 
   /**
