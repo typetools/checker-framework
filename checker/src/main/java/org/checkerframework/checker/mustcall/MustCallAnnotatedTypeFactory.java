@@ -9,10 +9,12 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -99,7 +101,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   public MustCallAnnotatedTypeFactory(final BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallUnknown.class);
-    BOTTOM = createMustCall();
+    BOTTOM = createMustCall(Collections.emptyList());
     POLY = AnnotationBuilder.fromClass(elements, PolyMustCall.class);
     addAliasedTypeAnnotation(InheritableMustCall.class, MustCall.class, true);
     if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
@@ -209,21 +211,22 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private void changeNonOwningParameterTypesToTop(
       ExecutableElement declaration, AnnotatedExecutableType type) {
-    for (int i = 0; i < type.getParameterTypes().size(); i++) {
+    List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
+    for (int i = 0; i < parameterTypes.size(); i++) {
       Element paramDecl = declaration.getParameters().get(i);
       if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
           || getDeclAnnotation(paramDecl, Owning.class) == null) {
-        AnnotatedTypeMirror paramType = type.getParameterTypes().get(i);
+        AnnotatedTypeMirror paramType = parameterTypes.get(i);
         if (!paramType.hasAnnotation(POLY)) {
           paramType.replaceAnnotation(TOP);
         }
-        if (declaration.isVarArgs() && i == type.getParameterTypes().size() - 1) {
-          // also modify the component type of a varargs array
-          AnnotatedTypeMirror varargsType = ((AnnotatedArrayType) paramType).getComponentType();
-          if (!varargsType.hasAnnotation(POLY)) {
-            varargsType.replaceAnnotation(TOP);
-          }
-        }
+      }
+    }
+    if (declaration.isVarArgs()) {
+      // also modify the component type of a varargs array
+      AnnotatedTypeMirror varargsType = ((AnnotatedArrayType) parameterTypes.get(parameterTypes.size() - 1)).getComponentType();
+      if (!varargsType.hasAnnotation(POLY)) {
+        varargsType.replaceAnnotation(TOP);
       }
     }
   }
@@ -238,7 +241,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         List<String> mustCallVal =
             AnnotationUtils.getElementValueArray(
                 inheritableMustCall, inheritableMustCallValueElement, String.class);
-        AnnotationMirror inheritedMCAnno = createMustCall(mustCallVal.toArray(new String[0]));
+        AnnotationMirror inheritedMCAnno = createMustCall(mustCallVal);
         // Issue an error if there is an inconsistent, user-written @MustCall annotation.
         // Otherwise, replace the implicit @MustCall({}) with the inherited must-call annotation.
         AnnotationMirror writtenMCAnno = type.getAnnotationInHierarchy(this.TOP);
@@ -268,7 +271,31 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param val the methods that should be called
    * @return an annotation indicating that the given methods should be called
    */
-  public AnnotationMirror createMustCall(final String... val) {
+  public AnnotationMirror createMustCall(final List<String> val) {
+    if (mustCallAnnotations.containsKey(val)) {
+      return mustCallAnnotations.get(val);
+    } else {
+      AnnotationMirror result = createMustCallImpl(val.toArray(new String[0]));
+      mustCallAnnotations.put(val, result);
+      return result;
+    }
+  }
+
+  /**
+   * Cache of the MustCall annotations that have actually been created. Most programs only
+   * actually require a few MustCall annotations (e.g. MustCall() and MustCall("close")).
+   */
+  private Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
+
+  /**
+   * Creates a {@link MustCall} annotation whose values are the given strings.
+   *
+   * This internal version bypasses the cache, and is only used for new annotations.
+   *
+   * @param val the methods that should be called
+   * @return an annotation indicating that the given methods should be called
+   */
+  private AnnotationMirror createMustCallImpl(final String[] val) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MustCall.class);
     Arrays.sort(val);
     builder.setValue("value", val);

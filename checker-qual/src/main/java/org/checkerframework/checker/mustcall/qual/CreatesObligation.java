@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.JavaExpression;
 
 /**
  * Indicates that the method resets the must-call type on the target (the value argument) to the
- * greatest lower bound of its current must-call type and its declared must-call type. This
+ * least upper bound of its current must-call type and its declared must-call type. This
  * effectively undoes flow-sensitive type refinement.
  *
  * <p>When calling a method annotated as {@code @CreatesObligation("}<em>target</em>{@code ")}, the
@@ -49,7 +49,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  *
  * A client of {@code SocketContainer} is permitted to call {@code reset()} arbitrarily many times.
  * Each time it does so, a new {@code Socket} might be created, so only after the last call to
- * {@code reset()} may a {@code SocketContainer}'s must-call obligation of "stop" be fulfilled. The
+ * {@code reset()} is a client permitted to fulfill a {@code SocketContainer}'s must-call obligation of "stop". The
  * {@code @CreatesObligation} annotation on reset's declaration enforces this requirement: at any
  * call to {@code reset()}, all called-methods information about the receiver is removed from the
  * store of the Must Call Checker and the store of the Called Methods Checker, so the client has to
