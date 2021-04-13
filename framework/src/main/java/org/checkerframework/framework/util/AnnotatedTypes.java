@@ -781,6 +781,12 @@ public class AnnotatedTypes {
         TypesUtils.greatestLowerBound(
             type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
 
+    if (types.isSameType(type1.getUnderlyingType(), glbJava)) {
+      return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
+    } else if (types.isSameType(type2.getUnderlyingType(), glbJava)) {
+      return glbSubtype(atypeFactory.getQualifierHierarchy(), type2, type1);
+    }
+
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(
@@ -815,7 +821,7 @@ public class AnnotatedTypes {
 
   /**
    * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
-   * underlying java types are in a subtying relationship. The annotations need no
+   * underlying java types are in a subtyping relationship.
    *
    * @param qualifierHierarchy QualifierHierarchy
    * @param subtype annotated types whose underlying type is a subtype of {@code supertype}
