@@ -1149,10 +1149,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // the type variable must not implement the interface.
       if (upperBound.getKind() == TypeKind.INTERSECTION) {
         Types types = checker.getTypeUtils();
-        for (AnnotatedTypeMirror ub : ((AnnotatedIntersectionType) upperBound).getBounds()) {
+        for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) upperBound).getBounds()) {
+          // Make sure the upper bound is no wildcard or type variable
+          while (bound.getKind() == TypeKind.TYPEVAR || bound.getKind() == TypeKind.WILDCARD) {
+            if (bound.getKind() == TypeKind.TYPEVAR) {
+              bound = ((AnnotatedTypeVariable) bound).getUpperBound();
+            }
+            if (bound.getKind() == TypeKind.WILDCARD) {
+              bound = ((AnnotatedWildcardType) bound).getExtendsBound();
+            }
+          }
           if (TypesUtils.isErasedSubtype(
-                  ub.getUnderlyingType(), supertype.getUnderlyingType(), types)
-              && isPrimarySubtype(ub, supertype)) {
+                  bound.getUnderlyingType(), supertype.getUnderlyingType(), types)
+              && isPrimarySubtype(bound, supertype)) {
             return true;
           }
         }
