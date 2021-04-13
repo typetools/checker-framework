@@ -1,11 +1,9 @@
 package org.checkerframework.checker.mustcall;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.javacutil.TypesUtils;
 
-/** Primitive types and {@code String} always have no must-call obligations. */
+/** Primitive types always have no must-call obligations. */
 public class MustCallTypeAnnotator extends TypeAnnotator {
 
   /**
@@ -15,14 +13,6 @@ public class MustCallTypeAnnotator extends TypeAnnotator {
    */
   protected MustCallTypeAnnotator(MustCallAnnotatedTypeFactory typeFactory) {
     super(typeFactory);
-  }
-
-  @Override
-  public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
-    if (TypesUtils.isString(type.getUnderlyingType())) {
-      type.replaceAnnotation(((MustCallAnnotatedTypeFactory) typeFactory).BOTTOM);
-    }
-    return super.visitDeclared(type, aVoid);
   }
 
   @Override

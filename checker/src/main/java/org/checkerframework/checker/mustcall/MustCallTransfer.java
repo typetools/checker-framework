@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesObligation;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -19,6 +20,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
@@ -50,6 +52,12 @@ public class MustCallTransfer extends CFTransfer {
   private MustCallAnnotatedTypeFactory atypeFactory;
 
   /**
+   * A cache for the default type for java.lang.String, to avoid needing to look it up for every
+   * implicit string conversion.
+   */
+  private @MonotonicNonNull AnnotationMirror defaultStringType;
+
+  /**
    * Create a MustCallTransfer.
    *
    * @param analysis the analysis
@@ -59,6 +67,26 @@ public class MustCallTransfer extends CFTransfer {
     atypeFactory = (MustCallAnnotatedTypeFactory) analysis.getTypeFactory();
     ProcessingEnvironment env = atypeFactory.getChecker().getProcessingEnvironment();
     treeBuilder = new TreeBuilder(env);
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitStringConversion(
+      StringConversionNode n, TransferInput<CFValue, CFStore> p) {
+    // Implicit String conversions should assume that the String's type is
+    // whatever the default for String is, not that the conversion is polymorphic.
+    TransferResult<CFValue, CFStore> result = super.visitStringConversion(n, p);
+    AnnotationMirror defaultStringType =
+        this.defaultStringType != null
+            ? this.defaultStringType
+            : atypeFactory
+                .getAnnotatedType(TypesUtils.getTypeElement(n.getType()))
+                .getAnnotationInHierarchy(atypeFactory.TOP);
+    LocalVariableNode temp = getOrCreateTempVar(n);
+    if (temp != null) {
+      JavaExpression localExp = JavaExpression.fromNode(temp);
+      insertIntoStores(result, localExp, defaultStringType);
+    }
+    return result;
   }
 
   @Override

@@ -127,27 +127,6 @@ than \<@MustCall>, unless the class is \<final>.
 %% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
 %% Call Checker.
 
-
-\sectionAndLabel{Strings cannot have must-call obligations}{must-call-impl}
-
-This type system should not be used to track a must-call obligation for a \<String>, because it treats all
-String concatenations as having the type \<@MustCall(\{\})>.  (It does so
-even if you change the annotated JDK or a stub file to add a
-\<@MustCall(...)>\@ annotation to the declaration of \<String>.)
-
-This special-casing is because an object is sometimes implicitly converted
-to a \<String>, which inherits the object's annotations.
-Consider the following example:
-\begin{Verbatim}
-    @MustCall("close") Socket sock = ...;
-    String str = "here is sock.toString(): " + sock;
-\end{Verbatim}
-\noindent
-Without special-casing string concatenations, the type of
-\<str> would be \<@MustCall(\{"close"\})>.  This is not unsound, but it
-does lead to imprecision since the string does not need to be closed.
-
-
 \sectionAndLabel{Type parameters with implicit vs explicit bounds sometimes cause (fixable) false positives}{must-call-type-params}
 
 The defaulting rules for \<@MustCall> sometimes produce unexpected checker
