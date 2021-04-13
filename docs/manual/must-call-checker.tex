@@ -127,11 +127,12 @@ than \<@MustCall>, unless the class is \<final>.
 %% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
 %% Call Checker.
 
-\sectionAndLabel{Type parameters with implicit vs explicit bounds sometimes cause (fixable) false positives}{must-call-type-params}
+\sectionAndLabel{Type parameter bounds often need to be annotated}{must-call-type-params}
 
 The defaulting rules for \<@MustCall> sometimes produce unexpected checker
 warnings in code that uses type parameters with implicit upper bounds
-(i.e., without an \<extends> clause).  You can correct the code
+(i.e., without an \<extends> clause) because of the Checker Framework's
+CLIMB-to-top rules (Section~\ref{climb-to-top}).  You can correct the code
 by adding an explicit bound. For example, consider the following
 example (from
 \href{https://github.com/plume-lib/plume-util}{plume-lib/plume-util}) of a
@@ -164,7 +165,10 @@ error: [type.argument.type.incompatible] incompatible type argument for type par
 \end{smaller}
 
 The important mismatch here is that \<Partitioner> has explicit bounds, but \<MultiRandSelector>
-does not. You could eliminate this false positive by either:
+does not. As Section~\ref{climb-to-top} explains, these locations have different default annotations:
+an implicit bound is a CLIMB-to-top location (and therefore defaults to top), while an explicit bound
+defaults to bottom (i.e. \<@MustCall({}), the default type in the type system).
+You could eliminate this false positive by either:
 \begin{itemize}
 \item adding an explicit bound to \<MultiRandSelector>, changing its declaration to \<class MultiRandSelector<T extends Object>>, or
 \item removing the explicit bound from \<Partition>, changing its declaration to \<interface Partition<ELEMENT, CLASS>>.
