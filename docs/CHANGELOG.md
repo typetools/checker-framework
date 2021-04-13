@@ -1033,7 +1033,7 @@ Added a @QualifierArgument annotation to be used on pre- and postcondition
 
 Added new type @InternalFormForNonArray to the Signature Checker
 
-Moved annotated libraries from checker/lib/*.jar to the Central Repository:
+Moved annotated libraries from checker/lib/*.jar to the Maven Central Repository:
 https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
 
 Moved the Javadoc stub file from checker/lib/javadoc.astub to
