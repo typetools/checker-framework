@@ -447,7 +447,7 @@ For some other libraries, the Checker Framework developers have provided an
 annotated version of the library.
 The annotated libraries appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
-  \<org.checkerframework.annotatedlib> group in the Central Repository}.
+  \<org.checkerframework.annotatedlib> group in the Maven Central Repository}.
 The annotated library has \emph{identical} behavior to the upstream,
 unannotated version; the source code is identical other than added
 annotations.
@@ -462,7 +462,7 @@ and
 java-getopt.
 If the library you are interested in does not appear
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{in
-  the Central Repository}, you can contribute by annotating it, which will
+  the Maven Central Repository}, you can contribute by annotating it, which will
 help you and all other Checker Framework users; see
 \chapterpageref{annotating-libraries}.)
 
@@ -472,7 +472,7 @@ To use an annotated library:
 \item
 If your project stores \<.jar> files locally, then
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{download
-  the \<.jar> file from the Central Repository}.
+  the \<.jar> file from the Maven Central Repository}.
 
 \item
 If your project manages dependencies using a tool such as Gradle or Maven,
@@ -1194,8 +1194,8 @@ This method crashes if \<null> is passed to it:
 
 \noindent
 Therefore, the type of \<arg>
-should be \<@NonNull Object> (which you can write as just \<Object> due to
-defaulting).  The Nullness Checker (\chapterpageref{nullness-checker})
+should be \<@NonNull Object> (which you can write as just \<Object>, because
+\<@NonNull> is the default).  The Nullness Checker (\chapterpageref{nullness-checker})
 prevents null pointer exceptions by warning you whenever a client passes a
 value that might cause \<m1> to crash.
 
@@ -1231,11 +1231,11 @@ different stack trace.  In order to prevent all exceptions in your program
 caused by null pointers, you need to prevent those thrown by methods like
 \<requireNonNull>.
 
-(Here is a counterargument that the formal parameter should be annotated as
-\refqualclass{checker/nullness/qual}{Nullable}:  passing \code{null} has a
+(One might argue that the formal parameter should be annotated as
+\refqualclass{checker/nullness/qual}{Nullable} because passing \code{null} has a
 well-defined semantics (throw an exception) and such an execution may be
 possible if your program has a bug.  However, it is never the programmer's
-intent for \<null> to flow there; preventing such bugs is the purpose of
+intent for \<null> to flow there.  Preventing such bugs is the purpose of
 the Nullness Checker.)
 
 A method like \<requireNonNull> is useless for making your code correct,
@@ -1254,14 +1254,17 @@ crash due to use of a non-present Optional value.  Therefore, the receiver
 of
 \<orElseThrow> is annotated as
 \refqualclass{checker/optional/qual}{Present},
-and the optional Checker issues a warning if the client calls
+and the Optional Checker issues a warning if the client calls
 \<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
 
 
-\paragraphAndLabel{Permitting crashes in called methods}
-You can make a checker warn you about crashes in your own code, but ignore
-crashes that occur in library code.  This invalidates the checker's
-guarantee that your program will not crash.
+\paragraphAndLabel{Permitting crashes in called methods}{annotate-normal-behavior-skip-libraries}
+You can make a checker ignore crashes in library code (such as
+\<assertNotNull()>) that occur as a result of misuse by your code.
+This invalidates the checker's guarantee that your program will not crash.
+(Programmers and users typically care about all crashes, no matter which
+method is at the top of the call stack when the exception is thrown.)
+The checker will still warn you about crashes in your own code.
 
 \begin{itemize}
 \item
@@ -1271,6 +1274,11 @@ guarantee that your program will not crash.
   A stub file (Section~\ref{stub}) can override the library's annotations,
   for one or more methods.
 \end{itemize}
+
+Methods like JUnit's \<assertNotNull()> are typically called only in test
+code, not in your main program.  You may wish to perform type-checking only
+on your main program, and then the annotation on \<assertNotNull()> is
+irrelevant to you.
 
 
 \subsubsectionAndLabel{Methods that sometimes crash when passed certain values}{annotate-normal-behavior-sometimes-crash}
