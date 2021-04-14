@@ -4728,7 +4728,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedDeclaredType capturedType =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(capturedTypeMirror, this, false);
     capturedType.getTypeArguments(); // initialize the type arguments
-    capturedType.enclosingType = uncapturedType.enclosingType.deepCopy();
+    if (uncapturedType.enclosingType != null) {
+      capturedType.enclosingType = uncapturedType.enclosingType.deepCopy();
+    }
 
     AnnotatedDeclaredType typeDeclaration =
         (AnnotatedDeclaredType) getAnnotatedType(uncapturedType.getUnderlyingType().asElement());
