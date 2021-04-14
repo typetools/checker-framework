@@ -986,7 +986,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       reportPurityErrors(r, node, kinds);
     }
 
-    if (suggestPureMethods) {
+    if (suggestPureMethods && !TreeUtils.isSynthetic(node)) {
       // Issue a warning if the method is pure, but not annotated as such.
       EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
       additionalKinds.removeAll(kinds);
