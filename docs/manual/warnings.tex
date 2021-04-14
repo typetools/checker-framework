@@ -116,9 +116,6 @@ Checker, for which you use the annotation name; see
 Section~\ref{subtyping-using}.)
 Sometimes, a checker honors multiple \emph{checkername} arguments; use
 the \code{-AshowSuppressWarningsStrings} command-line option to see them.
-Using \code{"allcheckers"} as the checkername applies to all checkers; this is not
-recommended, except for messages common to all checkers such as
-purity-related messages when using \<-AcheckPurityAnnotations>.
 
 The argument \emph{messagekey} is the message key for the error.
 Each warning message from the compiler gives the most specific
@@ -148,6 +145,14 @@ example, to suppress a warning with message key
 We recommend using
 the longest possible message key; a short message might suppress more
 warnings than you expect.
+
+The checkername \<"allcheckers"> means all checkers.  Using this is not
+recommended, except for messages common to all checkers such as
+purity-related messages when using \<-AcheckPurityAnnotations>.  If you use
+\<"allcheckers">, you run some checker that does not issue any warnings,
+and you suply the \<-AwarnUnneededSuppressions> command-line argument, then
+the Checker Framework will issue an unsuppressable \<unneeded.suppression>
+warning.
 
 The special messagekey ``\<all>'' means to suppress all warnings.
 
