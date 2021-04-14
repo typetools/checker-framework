@@ -986,6 +986,7 @@ task checkBasicStyle(group: 'Format') {
             'securerandom.*',
             'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
             'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
+            'checker/nullness/junit-assertions.astub',
             'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
