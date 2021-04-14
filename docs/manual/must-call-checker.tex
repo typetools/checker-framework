@@ -167,7 +167,7 @@ error: [type.argument.type.incompatible] incompatible type argument for type par
 The important mismatch here is that \<Partitioner> has explicit bounds, but \<MultiRandSelector>
 does not. As Section~\ref{climb-to-top} explains, these locations have different default annotations:
 an implicit bound is a CLIMB-to-top location (and therefore defaults to top), while an explicit bound
-defaults to bottom (i.e. \<@MustCall({}), the default type in the type system).
+defaults to bottom (i.e. \<@MustCall(\{\})>, the default type in the type system).
 You could eliminate this false positive by either:
 \begin{itemize}
 \item adding an explicit bound to \<MultiRandSelector>, changing its declaration to \<class MultiRandSelector<T extends Object>>, or
