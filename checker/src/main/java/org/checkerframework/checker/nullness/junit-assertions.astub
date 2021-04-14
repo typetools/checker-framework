@@ -10,8 +10,10 @@
 
 package org.junit.jupiter.api;
 
+/*
 import static org.apiguardian.api.API.Status.EXPERIMENTAL;
 import static org.apiguardian.api.API.Status.STABLE;
+*/
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -22,10 +24,12 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/*
 import org.apiguardian.api.API;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.function.ThrowingSupplier;
 import org.opentest4j.MultipleFailuresError;
+*/
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -73,7 +77,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @see org.opentest4j.AssertionFailedError
  * @see Assumptions
  */
+/*
 @API(status = STABLE, since = "5.0")
+*/
 public class Assertions {
 
 	/**
