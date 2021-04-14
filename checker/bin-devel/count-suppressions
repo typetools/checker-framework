@@ -49,8 +49,8 @@ fi
 # Diagnostics
 # echo "regex=${regex}"
 
-greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
-countedreasons=$(mktemp /tmp/count-suppressions.XXXXXX)
+greplines=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d%H%M%S)"-XXX)
+countedreasons=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d%H%M%S)"-XXX)
 
 # These are the two types of matching lines:
 #  * "checkername" or "chekername:..."

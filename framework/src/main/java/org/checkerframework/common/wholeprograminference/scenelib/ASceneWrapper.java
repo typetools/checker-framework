@@ -25,8 +25,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -145,15 +145,13 @@ public class ASceneWrapper {
       try {
         switch (outputFormat) {
           case STUB:
-            // For stub files, pass in the checker to compute contracts on the fly;
-            // precomputing yields incorrect annotations, most likely due to nested
-            // classes.
+            // For stub files, pass in the checker to compute contracts on the fly; precomputing
+            // yields incorrect annotations, most likely due to nested classes.
             SceneToStubWriter.write(this, filepath, checker);
             break;
           case JAIF:
-            // For .jaif files, precompute contracts because the Annotation File
-            // Utilities knows nothing about (and cannot depend on) the Checker
-            // Framework.
+            // For .jaif files, precompute contracts because the Annotation File Utilities knows
+            // nothing about (and cannot depend on) the Checker Framework.
             for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
               AClass aClass = classEntry.getValue();
               for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
@@ -161,7 +159,7 @@ public class ASceneWrapper {
                 List<AnnotationMirror> contractAnnotationMirrors =
                     checker.getTypeFactory().getContractAnnotations(aMethod);
                 List<Annotation> contractAnnotations =
-                    SystemUtil.mapList(
+                    CollectionsPlume.mapList(
                         AnnotationConverter::annotationMirrorToAnnotation,
                         contractAnnotationMirrors);
                 aMethod.contracts = contractAnnotations;

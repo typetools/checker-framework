@@ -15,8 +15,7 @@ public class UnusedTypes {
   public Object ppt;
 
   protected @Prototype UnusedTypes() {
-    // It should be legal to initialize an unused field to null in the
-    // constructor.
+    // It should be legal to initialize an unused field to null in the constructor.
     this.ppt = null;
   }
 }

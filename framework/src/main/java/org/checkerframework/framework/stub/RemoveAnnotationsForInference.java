@@ -36,7 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -81,8 +81,7 @@ public class RemoveAnnotationsForInference {
     try {
       ClassPath cp = ClassPath.from(RemoveAnnotationsForInference.class.getClassLoader());
       for (ClassPath.ClassInfo ci : cp.getTopLevelClasses()) {
-        // There is no way to determine whether `ci` represents an annotation, without
-        // loading it.
+        // There is no way to determine whether `ci` represents an annotation, without loading it.
         // I could filter using a heuristic: only include classes in a package named "qual".
         simpleToFullyQualified.put(ci.getSimpleName(), ci.getName());
       }
@@ -417,7 +416,8 @@ public class RemoveAnnotationsForInference {
       return false;
     }
     List<String> checkerNames =
-        SystemUtil.mapList(RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
+        CollectionsPlume.mapList(
+            RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
     // "allcheckers" suppresses all warnings.
     if (checkerNames.contains("allcheckers")) {
       return true;

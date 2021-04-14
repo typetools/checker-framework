@@ -2,7 +2,7 @@ package org.checkerframework.checker.test.junit;
 
 // Test case for issue 723.
 // https://github.com/typetools/checker-framework/issues/723
-// This exists to just run the I18nFormatterLubGlbChecker
+// This exists to just run the I18nFormatterLubGlbChecker.
 
 import java.io.File;
 import java.util.List;

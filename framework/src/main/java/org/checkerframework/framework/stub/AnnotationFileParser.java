@@ -3,7 +3,6 @@ package org.checkerframework.framework.stub;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Position;
 import com.github.javaparser.Problem;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -98,6 +97,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -213,8 +213,7 @@ public class AnnotationFileParser {
   @Nullable List<AnnotationExpr> packageAnnos;
 
   // The following variables are stored in the AnnotationFileParser because otherwise they would
-  // need to be
-  // passed through everywhere, which would be verbose.
+  // need to be passed through everywhere, which would be verbose.
 
   /**
    * The name of the type that is currently being parsed. After processing a package declaration but
@@ -324,7 +323,7 @@ public class AnnotationFileParser {
    * @param packageElement a package
    * @return a map from annotation name to TypeElement
    */
-  private Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
+  public static Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
     return createNameToAnnotationMap(ElementFilter.typesIn(packageElement.getEnclosedElements()));
   }
 
@@ -335,7 +334,7 @@ public class AnnotationFileParser {
    * @param typeElement a type
    * @return a map from annotation name to TypeElement
    */
-  private Map<String, TypeElement> annosInType(TypeElement typeElement) {
+  public static Map<String, TypeElement> annosInType(TypeElement typeElement) {
     return createNameToAnnotationMap(ElementFilter.typesIn(typeElement.getEnclosedElements()));
   }
 
@@ -345,7 +344,7 @@ public class AnnotationFileParser {
    * @param typeElements the elements whose annotations to retrieve
    * @return a map from annotation names (both fully-qualified and simple names) to TypeElement
    */
-  private Map<String, TypeElement> createNameToAnnotationMap(List<TypeElement> typeElements) {
+  public static Map<String, TypeElement> createNameToAnnotationMap(List<TypeElement> typeElements) {
     Map<String, TypeElement> result = new HashMap<>();
     for (TypeElement typeElm : typeElements) {
       if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
@@ -608,7 +607,7 @@ public class AnnotationFileParser {
     if (debugAnnotationFileParser) {
       stubDebug(String.format("parsing stub file %s", filename));
     }
-    stubUnit = StaticJavaParser.parseStubUnit(inputStream);
+    stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
     // getAllAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
@@ -1359,8 +1358,7 @@ public class AnnotationFileParser {
     }
     recordDeclAnnotationFromAnnotationFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
-    // AnnotationFileParser parses all annotations in type annotation position as type
-    // annotations
+    // AnnotationFileParser parses all annotations in type annotation position as type annotations
     recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), decl);
     AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
@@ -2154,8 +2152,7 @@ public class AnnotationFileParser {
     TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
     if (annoTypeElt == null) {
       // If the annotation was not imported, then #getAllAnnotations did not add it to the
-      // allAnnotations field. This code adds the annotation when it is encountered
-      // (i.e. here).
+      // allAnnotations field. This code adds the annotation when it is encountered (i.e. here).
       // Note that this does not call AnnotationFileParser#getTypeElement to avoid a spurious
       // diagnostic if the annotation is actually unknown.
       annoTypeElt = elements.getTypeElement(annoNameFq);
@@ -2580,7 +2577,7 @@ public class AnnotationFileParser {
    * @param key a key
    * @param value the value to associate with the key, if the key isn't already in the map
    */
-  private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
+  public static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
     if (key == null) {
       throw new BugInCF("AnnotationFileParser: key is null for value " + value);
     }
@@ -2639,7 +2636,7 @@ public class AnnotationFileParser {
    * @param <K> the key type for the maps
    * @param <V> the value type for the maps
    */
-  private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
+  public static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
     for (Map.Entry<K, V> e2 : m2.entrySet()) {
       putIfAbsent(m, e2.getKey(), e2.getValue());
     }

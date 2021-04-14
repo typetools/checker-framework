@@ -1,6 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
@@ -58,6 +57,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -351,7 +351,7 @@ public class WholeProgramInferenceJavaParserStorage
 
     CompilationUnit root;
     try {
-      root = StaticJavaParser.parse(new File(path));
+      root = JavaParserUtil.parseCompilationUnit(new File(path));
     } catch (FileNotFoundException e) {
       throw new BugInCF("Failed to read Java file " + path, e);
     }
@@ -571,11 +571,10 @@ public class WholeProgramInferenceJavaParserStorage
       try {
         FileWriter writer = new FileWriter(outputPath);
 
-        // JavaParser can output using lexical preserving printing, which writes the file
-        // such that its formatting is close to the original source file it was parsed from
-        // as possible. Currently, this feature is very buggy and crashes when adding
-        // annotations in certain locations. This implementation could be used instead if
-        // it's fixed in JavaParser.
+        // JavaParser can output using lexical preserving printing, which writes the file such that
+        // its formatting is close to the original source file it was parsed from as
+        // possible. Currently, this feature is very buggy and crashes when adding annotations in
+        // certain locations. This implementation could be used instead if it's fixed in JavaParser.
         // LexicalPreservingPrinter.print(root.declaration, writer);
 
         PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
@@ -990,8 +989,7 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (returnType != null) {
-        // If a return type exists, then the declaration must be a method, not a
-        // constructor.
+        // If a return type exists, then the declaration must be a method, not a constructor.
         WholeProgramInferenceJavaParserStorage.transferAnnotations(
             returnType, declaration.asMethodDeclaration().getType());
       }

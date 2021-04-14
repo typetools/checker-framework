@@ -37,9 +37,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * a corresponding JavaParser node. These trees are excluded.
  *
  * <p>The primary purpose is to test the {@link JointJavacJavaParserVisitor} class when the
- * -AcheckJavaParserVisitor flag is used. That class traverses a javac tree and JavaParser AST
- * simultaneously, so the trees this class stores can be used to test if the entirety of the javac
- * tree was visited.
+ * -AajavaChecks flag is used. That class traverses a javac tree and JavaParser AST simultaneously,
+ * so the trees this class stores can be used to test if the entirety of the javac tree was visited.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   /** The set of trees that should be matched to a JavaParser node when visiting both. */
@@ -177,9 +176,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
   @Override
   public Void visitIf(IfTree tree, Void p) {
-    // In an if statement, javac stores the condition as a parenthesized expression, which has
-    // no corresponding JavaParserNode, so remove the parenthesized expression, but not its
-    // child.
+    // In an if statement, javac stores the condition as a parenthesized expression, which has no
+    // corresponding JavaParserNode, so remove the parenthesized expression, but not its child.
     Void result = super.visitIf(tree, p);
     trees.remove(tree.getCondition());
     return result;
@@ -330,9 +328,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
     // Javac expands the keyword "var" in a variable declaration to its inferred type.
-    // JavaParser has a special "var" construct, so they won't match. If a javac type was
-    // generated this way, then it won't have a position in source code so in that case we don't
-    // add it.
+    // JavaParser has a special "var" construct, so they won't match. If a javac type was generated
+    // this way, then it won't have a position in source code so in that case we don't add it.
     if (((JCExpression) tree.getType()).pos == Position.NOPOS) {
       return null;
     }

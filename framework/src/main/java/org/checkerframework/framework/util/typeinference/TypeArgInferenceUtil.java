@@ -58,11 +58,11 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** Miscellaneous utilities to help in type argument inference. */
 public class TypeArgInferenceUtil {
@@ -94,7 +94,7 @@ public class TypeArgInferenceUtil {
     }
 
     List<AnnotatedTypeMirror> argTypes =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (Tree arg) -> {
               AnnotatedTypeMirror argType = typeFactory.getAnnotatedType(arg);
               if (TypesUtils.isPrimitive(argType.getUnderlyingType())) {
@@ -342,7 +342,7 @@ public class TypeArgInferenceUtil {
       AnnotatedTypeMirror type, AnnotatedExecutableType methodType) {
     final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
     final List<TypeVariable> typeVars =
-        SystemUtil.mapList(
+        CollectionsPlume.mapList(
             (AnnotatedTypeVariable annotatedTypeVar) ->
                 (TypeVariable)
                     TypeAnnotationUtils.unannotatedType(annotatedTypeVar.getUnderlyingType()),
