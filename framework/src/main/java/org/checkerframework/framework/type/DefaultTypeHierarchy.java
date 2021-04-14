@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -896,6 +897,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype)) {
         // two unannotated uses of the same type parameter are of the same type
         return true;
+      } else if (subtypeHasAnno) {
+        Set<AnnotationMirror> superLBs =
+            AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, supertype);
+        AnnotationMirror superLB =
+            qualifierHierarchy.findAnnotationInHierarchy(superLBs, currentTop);
+        return qualifierHierarchy.isSubtype(subtype.getAnnotationInHierarchy(currentTop), superLB);
+      } else if (supertypeHasAnno) {
+        return qualifierHierarchy.isSubtype(
+            subtype.getEffectiveAnnotationInHierarchy(currentTop),
+            supertype.getAnnotationInHierarchy(currentTop));
 
       } else if (subtype.getUpperBound().getKind() == TypeKind.INTERSECTION) {
         // This case happens when a type has an intersection bound.  e.g.,
