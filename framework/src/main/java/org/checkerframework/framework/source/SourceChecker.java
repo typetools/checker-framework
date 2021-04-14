@@ -1539,7 +1539,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Helper method to find the parent of a lint key. The lint hierarchy level is donated by a colon
+   * Helper method to find the parent of a lint key. The lint hierarchy level is denoted by a colon
    * ':'. 'all' is the root for all hierarchy.
    *
    * <pre>
@@ -1555,8 +1555,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private String parentOfOption(String name) {
     if (name.equals("all")) {
       return null;
-    } else if (name.contains(":")) {
-      return name.substring(0, name.lastIndexOf(':'));
+    }
+    int colonIndex = name.lastIndexOf(':');
+    if (colonIndex != -1) {
+      return name.substring(0, colonIndex);
     } else {
       return "all";
     }

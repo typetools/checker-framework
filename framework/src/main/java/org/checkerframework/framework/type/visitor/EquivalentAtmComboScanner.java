@@ -224,14 +224,17 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
       return recordFor1.get(type2);
     }
 
+    /**
+     * Add a new pair to the history.
+     *
+     * @param type1 the first type
+     * @param type2 the second type
+     * @param ret the result
+     */
     public void add(
         final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, final RETURN_TYPE ret) {
-      IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
-      if (recordFor1 == null) {
-        recordFor1 = new IdentityHashMap<>();
-        visits.put(type1, recordFor1);
-      }
-
+      IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 =
+          visits.computeIfAbsent(type1, __ -> new IdentityHashMap<>());
       recordFor1.put(type2, ret);
     }
   }

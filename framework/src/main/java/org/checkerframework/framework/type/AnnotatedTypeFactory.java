@@ -1131,7 +1131,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // **********************************************************************
 
   /**
-   * Returns the int supplied to the checker via the atfCacheSize option or the default cache size.
+   * Returns the size for LRU caches. It is either the value supplied via the {@code -AatfCacheSize}
+   * option or the default cache size.
    *
    * @return cache size passed as argument to checker or DEFAULT_CACHE_SIZE
    */
@@ -4771,12 +4772,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (!shouldCache) {
       return AnnotationUtils.areSameByName(am, annoClass.getCanonicalName());
     }
-    String canonicalName = annotationClassNames.get(annoClass);
-    if (canonicalName == null) {
-      canonicalName = annoClass.getCanonicalName();
-      assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
-      annotationClassNames.put(annoClass, canonicalName);
-    }
+    @SuppressWarnings("nullness") // assume getCanonicalName returns non-null
+    String canonicalName = annotationClassNames.computeIfAbsent(annoClass, Class::getCanonicalName);
     return AnnotationUtils.areSameByName(am, canonicalName);
   }
 

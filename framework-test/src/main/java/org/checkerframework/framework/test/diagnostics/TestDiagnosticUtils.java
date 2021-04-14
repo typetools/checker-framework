@@ -211,8 +211,9 @@ public class TestDiagnosticUtils {
     String filename = "";
     if (noMsgText) {
       if (!retainAllLines(trimmed)) {
-        if (trimmed.contains(System.lineSeparator())) {
-          trimmed = trimmed.substring(0, trimmed.indexOf(System.lineSeparator()));
+        int lineSepPos = trimmed.indexOf(System.lineSeparator());
+        if (lineSepPos != -1) {
+          trimmed = trimmed.substring(0, lineSepPos);
         }
 
         int extensionPos = trimmed.indexOf(".java:");
