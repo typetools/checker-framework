@@ -20,6 +20,7 @@ public class PuritySuggestionsClass {
 
   // class with a pure constructor
   private static class PureClass {
+    @SideEffectFree
     public PureClass() {}
   }
 
