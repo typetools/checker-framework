@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -415,37 +414,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   protected boolean isContainedByBoundType(
       AnnotatedTypeMirror inside, BoundType outside, boolean canBeCovariant) {
-    if (BoundType.isBoundType(inside)) {
-      BoundType insideBoundType = new BoundType(inside);
-      if (!insideBoundType.hasExplicitLowerBound && !outside.hasExplicitLowerBound) {
-        // Both inside and outside have a lower bound of null type, but the annotations on the
-        // bounds may differ.  If canBeCovariant is true, ignore the difference. Otherwise, check
-        // that the annotations on the lower bound of outside are subtypes of the annotations on the
-        // lower bound of inside. Then recur on the upper bound of inside.
-        return (canBeCovariant || isSubtype(outside.lower, insideBoundType.lower))
-            && isContainedByBoundType(insideBoundType.upper, outside, canBeCovariant);
-      } else {
-        // One of the two have an explicit super bound, so check the upper bounds.
-        // Recur on the lower inside bound. If canBeCovariant, don't check the lower
-        // bound.
-        return isSubtype(insideBoundType.upper, outside.upper)
-            && (canBeCovariant || isContainedByBoundType(insideBoundType.lower, outside, false));
-      }
-    }
-
-    if (BoundType.isBoundType(outside.upper)) {
-      BoundType outsideUpper = new BoundType(outside.upper);
-      Set<AnnotationMirror> setA =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, outsideUpper.lower);
-      Set<AnnotationMirror> setB =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, outside.lower);
-      Set<? extends AnnotationMirror> glb = qualifierHierarchy.greatestLowerBounds(setA, setB);
-      addToLowestBound(outside.lower, glb);
-      return isContainedByBoundType(inside, outsideUpper, canBeCovariant);
-    } else if (BoundType.isBoundType(outside.lower)) {
-      BoundType outsideLower = new BoundType(outside.lower);
-      return isContainedByBoundType(inside, outsideLower, canBeCovariant);
-    } else {
+    try {
       if (canBeCovariant) {
         if (outside.hasExplicitLowerBound) {
           return isSubtype(outside.lower, inside);
@@ -454,31 +423,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         }
       }
       return isSubtype(outside.lower, inside) && isSubtype(inside, outside.upper);
+    } catch (Throwable ex) {
+      return false;
     }
-  }
-
-  /**
-   * Add {@code annos} to the lowest bound of {@code type}.
-   *
-   * @param type annotated type
-   * @param annos annotations
-   */
-  private void addToLowestBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
-    AnnotatedTypeMirror lowestBound = type;
-    while (lowestBound.getKind() == TypeKind.TYPEVAR
-        || lowestBound.getKind() == TypeKind.WILDCARD) {
-      switch (lowestBound.getKind()) {
-        case TYPEVAR:
-          lowestBound = ((AnnotatedTypeVariable) lowestBound).getLowerBound();
-          break;
-        case WILDCARD:
-          lowestBound = ((AnnotatedWildcardType) lowestBound).getSuperBound();
-          break;
-        default:
-          throw new BugInCF("addToLowestBound: bad lowestBound " + lowestBound + " in " + type);
-      }
-    }
-    lowestBound.replaceAnnotations(annos);
   }
 
   /**
