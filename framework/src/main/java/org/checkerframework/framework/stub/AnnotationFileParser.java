@@ -81,6 +81,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -158,6 +159,9 @@ public class AnnotationFileParser {
    * Whether to print warnings about stub files that are redundant with annotations from bytecode.
    */
   private final boolean warnIfStubRedundantWithBytecode;
+
+  /** Whether to print stub file warnings as Diagnostic.Kind.NOTE rather than as warnings. */
+  private final boolean stubWarnNote;
 
   /** Whether to print verbose debugging messages. */
   private final boolean debugAnnotationFileParser;
@@ -299,6 +303,7 @@ public class AnnotationFileParser {
     this.warnIfStubRedundantWithBytecode =
         options.containsKey("stubWarnIfRedundantWithBytecode")
             && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
+    this.stubWarnNote = options.containsKey("stubWarnNote");
     this.debugAnnotationFileParser = options.containsKey("stubDebug");
 
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
@@ -2706,7 +2711,7 @@ public class AnnotationFileParser {
       if (warnings.add(warning)) {
         processingEnv
             .getMessager()
-            .printMessage(javax.tools.Diagnostic.Kind.NOTE, fileAndLine(astNode) + warning);
+            .printMessage(Diagnostic.Kind.NOTE, fileAndLine(astNode) + warning);
       }
     }
   }
@@ -2721,7 +2726,9 @@ public class AnnotationFileParser {
     if (warnings.add(warning) && debugAnnotationFileParser) {
       processingEnv
           .getMessager()
-          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+          .printMessage(
+              stubWarnNote ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING,
+              "AnnotationFileParser: " + warning);
     }
   }
 

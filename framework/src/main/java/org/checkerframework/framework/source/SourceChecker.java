@@ -251,6 +251,8 @@ import org.plumelib.util.UtilPlume;
   // Whether to print warnings about stub files that are redundant with the annotations from
   // bytecode.
   "stubWarnIfRedundantWithBytecode",
+  // Whether to issue a NOTE rather than a WARNING for -AstubWarn* command-line options
+  "stubWarnNote",
   // With this option, annotations in stub files are used EVEN IF THE SOURCE FILE IS
   // PRESENT. Only use this option when you intend to store types in stub files rather than
   // directly in source code, such as during whole-program inference. The annotations in the
