@@ -11,6 +11,7 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.SystemUtil;
 
+/** A store that records information about constant values. */
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
   /** Information about variables gathered so far. */

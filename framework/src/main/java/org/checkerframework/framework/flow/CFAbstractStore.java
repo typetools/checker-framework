@@ -119,6 +119,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /* Initialization */
   /* --------------------------------------------------------- */
 
+  /**
+   * Creates a new CFAbstractStore.
+   *
+   * @param analysis the analysis class this store belongs to
+   * @param sequentialSemantics should the analysis use sequential Java semantics?
+   */
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
     // TODO: Can we save space by starting these maps smaller than the default of 16?
