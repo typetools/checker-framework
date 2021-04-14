@@ -37,6 +37,12 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   /** The set of fields that have the 'invariant' annotation, and their value. */
   protected final Map<FieldAccess, V> invariantFields;
 
+  /**
+   * Creates a new InitializationStore.
+   *
+   * @param initializedFields the set of fields that are initialized
+   * @param sequentialSemantics should the analysis use sequential Java semantics?
+   */
   public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     super(analysis, sequentialSemantics);
     initializedFields = new HashSet<>(4);
