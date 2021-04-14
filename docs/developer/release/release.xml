@@ -87,9 +87,6 @@
                 with="checker-framework-${release.ver}.zip"/>
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
@@ -116,20 +113,11 @@
                        match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
         <replaceregexp file="${checker}/../build-common.properties" byline="true"
                        match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
-
-        <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.tutorial}/webpages/security-error-cmd.html" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>
