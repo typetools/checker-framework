@@ -40,7 +40,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   /**
    * Creates a new InitializationStore.
    *
-   * @param initializedFields the set of fields that are initialized
+   * @param analysis the analysis class this store belongs to
    * @param sequentialSemantics should the analysis use sequential Java semantics?
    */
   public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
