@@ -10,7 +10,9 @@ public class Issue3791 {
   abstract static class MyInterfaceMyClass<D extends MyInterface, E extends MyClass<? super D>> {}
 
   void method(MyInterfaceMyClass<?, ?> param) {
-    @SuppressWarnings("unchecked")
+    // TODO: Should we open an issue for this?
+    // See code is reject by Eclipse and should be reject by javac.
+    @SuppressWarnings({"unchecked", "type.argument.type.incompatible"})
     MyInterfaceMyClass<?, SubMyClass<?>> local = (MyInterfaceMyClass<?, SubMyClass<?>>) param;
   }
 }
