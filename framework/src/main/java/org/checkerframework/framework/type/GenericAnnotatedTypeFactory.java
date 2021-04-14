@@ -1693,7 +1693,7 @@ public abstract class GenericAnnotatedTypeFactory<
   @Override
   public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
     AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-    dependentTypesHelper.atReturnType(returnType, m);
+    dependentTypesHelper.atMethodBody(returnType, m);
     return returnType;
   }
 

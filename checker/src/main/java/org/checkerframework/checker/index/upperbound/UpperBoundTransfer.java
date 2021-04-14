@@ -667,8 +667,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       sameLenSequences =
           AnnotationUtils.getElementValueArray(
               sameLenAnno, atypeFactory.sameLenValueElement, String.class);
-      if (!sameLenSequences.contains(sequenceJe.toString())) {
-        sameLenSequences.add(sequenceJe.toString());
+      String sequenceString = sequenceJe.toString();
+      if (!sameLenSequences.contains(sequenceString)) {
+        sameLenSequences.add(sequenceString);
       }
     }
 

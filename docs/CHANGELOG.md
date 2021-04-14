@@ -1,8 +1,24 @@
-Version 3.12.1 (May 3, 2021)
+Version 3.13.0 (May 3, 2021)
 ----------------------------
 
-Forthcoming.
+**User-visible changes:**
 
+The Checker Framework no longer crashes on code that contains binding
+variables (introduced in Java 14 for `instanceof` pattern matching), and
+such variables are reflected in the control flow graph (CFG).  Thanks to
+Chris Day for this change.  However, note that the Checker Framework only
+has full support for Java 8 and Java 11.
+
+Removed the StubGenerator section from the manual, because changes in JDK 11
+have broken the StubGenerator program.
+
+**Implementation details:**
+
+Method renamings:
+ * `DependentTypesHelper.atReturnType` => `atMethodBody`
+
+**Closed issues:**
+#4410
 
 Version 3.12.0 (April 1, 2021)
 ------------------------------
@@ -24,7 +40,7 @@ defaulted to an empty array.
 **Implementation details:**
 
 A precondition or normal postcondition annotation's `value` element must have
-type `String[]`, not `String`.  A conditinoal postcondition annotation's
+type `String[]`, not `String`.  A conditional postcondition annotation's
 `expression` element must have type `String[]`, not `String`.  These changes
 will not affect users (any programmer-written annotation that was legal before
 will still be legal), but it may affect checker implementations.
@@ -1017,7 +1033,7 @@ Added a @QualifierArgument annotation to be used on pre- and postcondition
 
 Added new type @InternalFormForNonArray to the Signature Checker
 
-Moved annotated libraries from checker/lib/*.jar to the Central Repository:
+Moved annotated libraries from checker/lib/*.jar to the Maven Central Repository:
 https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
 
 Moved the Javadoc stub file from checker/lib/javadoc.astub to

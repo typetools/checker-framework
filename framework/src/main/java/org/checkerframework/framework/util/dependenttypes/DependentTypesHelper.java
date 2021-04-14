@@ -338,14 +338,14 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Viewpoint-adapts the Java expressions in annotations written on the return type of the method
-   * declaration to the body of the method. This means the parameter syntax, e.g. "#2", is converted
-   * to the names of the parameter.
+   * Viewpoint-adapts the Java expressions in annotations written on the signature of the method
+   * declaration (for example, a return type) to the body of the method. This means the parameter
+   * syntax, e.g. "#2", is converted to the names of the parameter.
    *
-   * @param atm the method return type; is side-effected by this method
+   * @param atm a type at the method signature; is side-effected by this method
    * @param methodDeclTree a method declaration
    */
-  public void atReturnType(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
+  public void atMethodBody(AnnotatedTypeMirror atm, MethodTree methodDeclTree) {
     if (!hasDependentType(atm)) {
       return;
     }
@@ -1104,7 +1104,7 @@ public class DependentTypesHelper {
   /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
   private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
       new SimpleAnnotatedTypeScanner<>(
-          (type, unused) -> {
+          (type, __) -> {
             for (AnnotationMirror annotationMirror : type.getAnnotations()) {
               if (isExpressionAnno(annotationMirror)) {
                 return true;
