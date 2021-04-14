@@ -22,6 +22,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
@@ -404,7 +405,7 @@ public abstract class UBQualifier {
         Set<OffsetEquation> oldEquations = map.get(sequenceName);
         Set<OffsetEquation> newEquations = new HashSet<>(SystemUtil.mapCapacity(oldEquations));
         for (OffsetEquation offsetEquation : oldEquations) {
-          equations.add(new OffsetEquation(offsetEquation));
+          newEquations.add(new OffsetEquation(offsetEquation));
         }
         result.put(sequenceName, newEquations);
       }

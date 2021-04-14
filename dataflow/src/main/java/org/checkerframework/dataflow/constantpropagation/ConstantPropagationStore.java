@@ -9,6 +9,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.javacutil.SystemUtil;
 
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
