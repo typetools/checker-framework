@@ -436,7 +436,8 @@ type-checkers for all the annotations that you have written.
 \subsectionAndLabel{Using annotated libraries}{annotated-libraries-using}
 
 When your code uses a library that is not currently being compiled, the
-Checker Framework looks up the library's annotations in its class files.
+Checker Framework looks up the library's annotations in its class files or
+in a stub file.
 
 Some projects are already distributed with type annotations by their
 maintainers, so you do not need to do anything special.
@@ -444,8 +445,26 @@ An example is all the libraries in \url{https://github.com/plume-lib/}.
 Over time, this should become more common.
 
 For some other libraries, the Checker Framework developers have provided an
-annotated version of the library.
-The annotated libraries appear in
+annotated version of the library, either as a stub file or as compiled class files.
+(If some library is not available in either of these forms,
+you can contribute by annotating it, which will
+help you and all other Checker Framework users; see
+\chapterpageref{annotating-libraries}.)
+
+Some stub files are used automatically by a checker, without any action on
+your part.  For others, you must pass the \<-Astubs=...> command-line argument.
+As a special case, if an \<.astub> file appears in
+\<checker/resources/>, then pass the command-line option
+use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
+The ``\<checker.jar>'' should be literal --- don't provide a path.
+This special syntax only works for ``\<checker.jar>''.
+%% TODO:
+% (Examples of such libraries are:
+% This list appears here to make it searchable/discoverable.
+% ...
+% .)
+
+The annotated libraries that are provided as class files appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Maven Central Repository}.
 The annotated library has \emph{identical} behavior to the upstream,
@@ -459,12 +478,7 @@ commons-csv,
 commons-io,
 guava,
 and
-java-getopt.
-If the library you are interested in does not appear
-\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{in
-  the Maven Central Repository}, you can contribute by annotating it, which will
-help you and all other Checker Framework users; see
-\chapterpageref{annotating-libraries}.)
+java-getopt.)
 
 To use an annotated library:
 
@@ -509,11 +523,6 @@ available in \<org.checkerframework.annotatedlib>, then
 % running your code, you can use either the annotated library or the regular
 % distributed version of the library --- they behave identically.
 
-There is one special case.  If an \<.astub> file is shipped with the
-Checker Framework in \<checker/resources/>, then you can
-use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
-The ``\<checker.jar>'' should be literal --- don't provide a path.
-(This special syntax only works for ``\<checker.jar>''.)
 
 
 \subsectionAndLabel{Summary of command-line options}{checker-options}
@@ -1546,14 +1555,14 @@ same methodology in different words.
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
-% LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
+% LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle m1
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
 % LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
-% LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
+% LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext m2
 % LocalWords:  AignoreRawTypeArguments AsuggestPureMethods ApermitMissingJdk
 % LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
 % LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
@@ -1576,5 +1585,6 @@ same methodology in different words.
 % LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
-% LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
+% LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors AutoValue
 % LocalWords:  specification'' AwarnUnneededSuppressionsExceptions
+% LocalWords:  requireNonNull
