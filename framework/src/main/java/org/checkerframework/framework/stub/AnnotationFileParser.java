@@ -161,7 +161,7 @@ public class AnnotationFileParser {
   private final boolean warnIfStubRedundantWithBytecode;
 
   /** The diagnostic kind for stub file warnings: NOTE or WARNING. */
-  private final boolean stubWarnDiagnosticKind;
+  private final Diagnostic.Kind stubWarnDiagnosticKind;
 
   /** Whether to print verbose debugging messages. */
   private final boolean debugAnnotationFileParser;
