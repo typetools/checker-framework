@@ -468,9 +468,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return null;
     }
 
-    List<AnnotatedTypeParameterBounds> bounds = atypeFactory.typeVariablesFromUse(type, element);
     AnnotatedDeclaredType capturedType =
         (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type);
+    List<AnnotatedTypeParameterBounds> bounds =
+        atypeFactory.typeVariablesFromUse(capturedType, element);
 
     visitor.checkTypeArguments(
         tree,
