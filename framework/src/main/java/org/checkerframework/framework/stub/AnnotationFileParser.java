@@ -160,8 +160,8 @@ public class AnnotationFileParser {
    */
   private final boolean warnIfStubRedundantWithBytecode;
 
-  /** Whether to print stub file warnings as Diagnostic.Kind.NOTE rather than as warnings. */
-  private final boolean stubWarnNote;
+  /** The diagnostic kind for stub file warnings: NOTE or WARNING. */
+  private final boolean stubWarnDiagnosticKind;
 
   /** Whether to print verbose debugging messages. */
   private final boolean debugAnnotationFileParser;
@@ -303,7 +303,8 @@ public class AnnotationFileParser {
     this.warnIfStubRedundantWithBytecode =
         options.containsKey("stubWarnIfRedundantWithBytecode")
             && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
-    this.stubWarnNote = options.containsKey("stubWarnNote");
+    this.stubWarnDiagnosticKind =
+        options.containsKey("stubWarnNote") ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
     this.debugAnnotationFileParser = options.containsKey("stubDebug");
 
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
@@ -2711,7 +2712,7 @@ public class AnnotationFileParser {
       if (warnings.add(warning)) {
         processingEnv
             .getMessager()
-            .printMessage(Diagnostic.Kind.NOTE, fileAndLine(astNode) + warning);
+            .printMessage(stubWarnDiagnosticKind, fileAndLine(astNode) + warning);
       }
     }
   }
@@ -2726,9 +2727,7 @@ public class AnnotationFileParser {
     if (warnings.add(warning) && debugAnnotationFileParser) {
       processingEnv
           .getMessager()
-          .printMessage(
-              stubWarnNote ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING,
-              "AnnotationFileParser: " + warning);
+          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
     }
   }
 
