@@ -234,6 +234,52 @@ public class SystemUtil {
     return result;
   }
 
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param numElements the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(int numElements) {
+    // Equivalent to: (int) (numElements / 0.75) + 1
+    // where 0.75 is the default load factor.
+    return (numElements * 4 / 3) + 1;
+  }
+
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param c a collection whose size is the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(Collection c) {
+    return mapCapacity(c.size());
+  }
+
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param m a map whose size is the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(Map m) {
+    return mapCapacity(m.size());
+  }
+
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param s a set whose size is the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(Set s) {
+    return mapCapacity(s.size());
+  }
+
   ///
   /// Deprecated methods
   ///

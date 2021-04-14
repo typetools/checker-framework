@@ -23,7 +23,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
   /** Create an empty exceptional block. */
   public ExceptionBlockImpl() {
     super(BlockType.EXCEPTION_BLOCK);
-    exceptionalSuccessors = new LinkedHashMap<>();
+    exceptionalSuccessors = new LinkedHashMap<>(2);
   }
 
   /** Set the node. */

@@ -39,8 +39,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
   public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     super(analysis, sequentialSemantics);
-    initializedFields = new HashSet<>();
-    invariantFields = new HashMap<>();
+    initializedFields = new HashSet<>(4);
+    invariantFields = new HashMap<>(4);
   }
 
   /**

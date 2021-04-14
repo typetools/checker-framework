@@ -121,6 +121,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
+    // TODO: Can we save space by starting these maps smaller than the default of 16?
     localVariableValues = new HashMap<>();
     thisValue = null;
     fieldValues = new HashMap<>();
@@ -226,7 +227,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (sideEffectsUnrefineAliases) {
         fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
       } else {
-        Map<FieldAccess, V> newFieldValues = new HashMap<>();
+        Map<FieldAccess, V> newFieldValues = new HashMap<>(fieldValues);
         for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
           FieldAccess fieldAccess = e.getKey();
           V otherVal = e.getValue();

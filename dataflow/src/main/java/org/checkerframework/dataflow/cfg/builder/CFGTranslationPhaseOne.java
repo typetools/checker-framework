@@ -387,8 +387,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     exceptionalExitLabel = new Label();
     tryStack = new TryStack(exceptionalExitLabel);
     returnTargetL = new TryFinallyScopeCell(regularExitLabel);
-    breakLabels = new HashMap<>();
-    continueLabels = new HashMap<>();
+    breakLabels = new HashMap<>(2);
+    continueLabels = new HashMap<>(2);
     returnNodes = new ArrayList<>();
     declaredClasses = new ArrayList<>();
     declaredLambdas = new ArrayList<>();

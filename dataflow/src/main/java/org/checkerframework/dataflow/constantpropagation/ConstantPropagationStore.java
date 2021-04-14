@@ -56,7 +56,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
 
   @Override
   public ConstantPropagationStore leastUpperBound(ConstantPropagationStore other) {
-    Map<Node, Constant> newContents = new LinkedHashMap<>();
+    Map<Node, Constant> newContents = new LinkedHashMap<>(contents.size() + other.contents.size());
 
     // go through all of the information of the other class
     for (Map.Entry<Node, Constant> e : other.contents.entrySet()) {
@@ -142,13 +142,14 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
   @Override
   public String toString() {
     // only output local variable information
-    Map<Node, Constant> smallerContents = new LinkedHashMap<>();
+    Map<Node, Constant> contentsWithoutLocalVars =
+        new LinkedHashMap<>(SystemUtil.mapCapacity(contents));
     for (Map.Entry<Node, Constant> e : contents.entrySet()) {
       if (e.getKey() instanceof LocalVariableNode) {
-        smallerContents.put(e.getKey(), e.getValue());
+        contentsWithoutLocalVars.put(e.getKey(), e.getValue());
       }
     }
-    return smallerContents.toString();
+    return contentsWithoutLocalVars.toString();
   }
 
   @Override

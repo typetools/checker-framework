@@ -256,7 +256,7 @@ public class AnnotationFileParser {
      * than in the real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getQualifiedName.
      */
-    public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>();
+    public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>(1);
 
     /**
      * Map from a method element to all the fake overrides of it. Given a key {@code ee}, the fake
@@ -264,7 +264,7 @@ public class AnnotationFileParser {
      * {@code ee.getReceiverType()}.
      */
     public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
-        new HashMap<>();
+        new HashMap<>(1);
   }
 
   /**
