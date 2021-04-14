@@ -24,7 +24,10 @@ To verify that you are using the compiler you think you are, you can add
 \code{-version} to the command line.  For instance, instead of running
 \code{javac -g MyFile.java}, you can run \code{javac \underline{-version} -g
   MyFile.java}.  Then, javac will print out its version number in addition
-to doing its normal processing.
+to doing its normal processing.  Note that if you are running under Java 8,
+\<$CHECKERFRAMEWORK/bin/javac -version> prints ``javac (version info
+not available)'' because it uses the Error Prone compiler which does not
+provide version information.
 
 \end{itemize}
 
