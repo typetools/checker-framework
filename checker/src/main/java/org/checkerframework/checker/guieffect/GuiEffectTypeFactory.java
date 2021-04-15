@@ -513,12 +513,12 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       checker.reportWarning(
           errorNode,
           "override.effect.warning.inheritance",
-          overridingMethod,
           declaringType,
-          uiOverriden.toString(),
-          uiOverriden.getEnclosingElement().asType().toString(),
-          safeOverriden.toString(),
-          safeOverriden.getEnclosingElement().asType().toString());
+          overridingMethod,
+          uiOverriden.getEnclosingElement().asType(),
+          uiOverriden,
+          safeOverriden.getEnclosingElement().asType(),
+          safeOverriden);
     }
 
     Effect min =

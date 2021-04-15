@@ -3721,10 +3721,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checker.reportError(
             overriderTree,
             msgKey,
-            overrider,
             overriderType,
-            overridden,
+            overrider,
             overriddenType,
+            overridden,
             subPurity,
             superPurity);
       }
