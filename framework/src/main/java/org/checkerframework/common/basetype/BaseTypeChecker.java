@@ -478,7 +478,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     if (subcheckers == null) {
       // Instantiate the checkers this one depends on, if any.
       LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker> checkerMap =
-          new LinkedHashMap<>();
+          new LinkedHashMap<>(1);
 
       immediateSubcheckers = instantiateSubcheckers(checkerMap);
 
