@@ -540,6 +540,7 @@ You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings except those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
 the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
+You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
 regular expression that matches class names (not file names) for which warnings and errors
@@ -589,6 +590,7 @@ class, or suppress all errors and warnings except those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} or \code{-AonlyUses} command-line option,
 see~\ref{askipuses}.)
+You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
 regular expression that matches class names (not file names) in whose definition warnings and errors
@@ -596,6 +598,8 @@ should be suppressed.
 Or, set the \code{-AonlyDefs} command-line option to a
 regular expression that matches class names (not file names) whose
 definitions should be type-checked.
+(This is somewhat similar to NullAway's
+\<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
 
 For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line

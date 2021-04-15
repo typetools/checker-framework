@@ -1047,8 +1047,10 @@ yet examine that type.
 Start annotating classes at the leaves of the call tree ---
 that is,
 start with classes/packages that have few dependencies on other
-code.  Annotate supertypes before you
-annotated classes that extend or implement them.
+code.  (Sections~\ref{askipuses} and~\ref{askipdefs} give ways to skip
+checking of some files, directories, or packages.)
+Annotate supertypes before you
+annotate classes that extend or implement them.
 The reason for this rule is that it is
 easiest to annotate a class if the code it depends on has already been
 annotated.
