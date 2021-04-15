@@ -3816,10 +3816,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               "methodref.receiver.invalid",
               overriderReceiver,
               overriddenReceiver,
-              overrider,
               overriderType,
-              overridden,
-              overriddenType);
+              overrider,
+              overriddenType,
+              overridden);
         }
         return success;
       }
@@ -3876,8 +3876,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             receiverArg,
             receiverDecl,
             receiverArg,
-            overrider,
-            overriderType);
+            overriderType,
+            overrider);
       }
 
       return success;
