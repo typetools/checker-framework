@@ -814,10 +814,21 @@ Some command-line options make the stub parser issue more warnings:
   other classes from the same package are present.
   Useful if a package spans more than one jar.
 
+\item[\<-AstubWarnIfRedundantWithBytecode>]
+  Warn if a stub file entry is redundant with bytecode information.  The
+  warning means that the stub file's type is the same as the bytecode type,
+  so that entry in the stub file is not necessary.
+
 %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
 % \item[\<-AstubWarnIfOverwritesBytecode>]
 %   Warn whenever some element of a
 %   stub file overwrites annotations contained in bytecode.
+
+\item[\<-AstubWarnNote>]
+  Issue a ``note'', not a warning, for the \<-AstubWarn*> command-line
+  arguments.  A warning prevents further compilation, but a note permits
+  compilation to proceed.
+
 \end{description}
 
 Finally,
