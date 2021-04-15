@@ -485,8 +485,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
           "override.sideeffect.invalid",
           overriderTree,
           enclosingType,
-          overriddenMethodType,
           overriddenType,
+          overriddenMethodType,
           null,
           null);
     }

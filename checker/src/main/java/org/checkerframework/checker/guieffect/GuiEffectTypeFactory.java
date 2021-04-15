@@ -468,18 +468,18 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
           checker.reportError(
               errorNode,
               "override.effect.invalid",
-              overridingMethod,
               declaringType,
-              safeOverriden,
-              overriddenType);
+              overridingMethod,
+              overriddenType,
+              safeOverriden);
         } else if (isPolyUI) {
           checker.reportError(
               errorNode,
               "override.effect.invalid.polymorphic",
-              overridingMethod,
               declaringType,
-              safeOverriden,
-              overriddenType);
+              overridingMethod,
+              overriddenType,
+              safeOverriden);
         }
       } else if (eff.isUI()) {
         uiOverriden = overriddenMethodElt;
@@ -497,10 +497,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             checker.reportError(
                 errorNode,
                 "override.effect.invalid.nonui",
-                overridingMethod,
                 declaringType,
-                polyOverriden,
-                overriddenType);
+                overridingMethod,
+                overriddenType,
+                polyOverriden);
           }
         }
       }
