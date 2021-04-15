@@ -676,22 +676,23 @@ Type-checking modes:  enable/disable functionality
 
 Partially-annotated libraries
 \begin{itemize}
+
 % \item \<-AprintUnannotatedMethods>
 %   List library methods that need to be annotated; see
 %   Section~\ref{annotating-libraries}.
+
 \item \<-Astubs>
   List of stub files or directories; see Section~\ref{stub-using}.
-\item \<-AstubWarnIfNotFound>
-  Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
-\item \<-AstubWarnIfNotFoundIgnoresClasses>
-  Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
-%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
-% \item \<-AstubWarnIfOverwritesBytecode>
-%   Warn if a stub file entry overwrite bytecode information; see
-%   Section~\ref{stub-using}.
-\item \<-AstubWarnIfRedundantWithBytecode>
-  Warn if a stub file entry is redundant with bytecode information; see
-  Section~\ref{stub-using}.
+
+\item
+  \<-AstubWarnIfNotFound>,
+  \<-AstubWarnIfNotFoundIgnoresClasses>,
+  %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+  %  \<-AstubWarnIfOverwritesBytecode>,
+  \<-AstubWarnIfRedundantWithBytecode>,
+  \<-AstubWarnNote>,
+  Warn about problems with stub files; see Section~\ref{stub-using}.
+
 \item \<-AmergeStubsWithSource>
   If both a stub file and a source file for a class are available, trust
   both and use the greatest lower bound of their annotations. The default
@@ -699,12 +700,14 @@ Partially-annotated libraries
   source is available. See Section~\ref{stub-multiple-specifications}.
   % note to maintainers: GLB of the two types was chosen to support
   % using this flag in combination with \<-Ainfer=stubs>.
+
 % This item is repeated above:
 \item \<-AuseConservativeDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
   \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
+
 \end{itemize}
 
 Debugging
@@ -1551,7 +1554,7 @@ same methodology in different words.
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
+% LocalWords:  callees Xmx unconfuse fenum propkey forName
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
 % LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
 % LocalWords:  AignoreRawTypeArguments AsuggestPureMethods ApermitMissingJdk
