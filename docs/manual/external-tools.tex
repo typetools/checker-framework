@@ -217,7 +217,7 @@ that your Ant file already contains a compilation target that uses the
 
 \begin{enumerate}
 \item
-Set the \code{jsr308javac} property:
+Set the \code{cfJavac} property:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -228,7 +228,7 @@ Set the \code{jsr308javac} property:
   <condition property="cfJavac" value="javac.bat" else="javac">
     <os family="windows" />
   </condition>
-  <presetdef name="jsr308.javac">
+  <presetdef name="cf.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
       <compilerarg value="-implicit:class"/>
@@ -249,15 +249,15 @@ indicated in this example:
   <target name="check-nullness"
           description="Check for null pointer dereferences"
           depends="clean,...">
-    <!-- use jsr308.javac instead of javac -->
-    <jsr308.javac ... >
+    <!-- use cf.javac instead of javac -->
+    <cf.javac ... >
       <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
       <!-- optional, to not check uses of library methods:
         <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/>
       -->
       <compilerarg line="-Xmaxerrs 10000"/>
       ...
-    </jsr308.javac>
+    </cf.javac>
   </target>
 \end{Verbatim}
 %BEGIN LATEX
@@ -277,7 +277,7 @@ name it whatever you like.
 This section explains each part of the Ant task.
 
 \begin{enumerate}
-\item Definition of \code{jsr308.javac}:
+\item Definition of \code{cf.javac}:
 
 The \code{fork} field of the \code{javac} task
 ensures that an external \code{javac} program is called.  Otherwise, Ant will run
@@ -1177,7 +1177,7 @@ annotation processor output will appear in the editor.
 
 \begin{enumerate}
 \item
-Set the \code{jsr308javac} property:
+Set the \code{cfJavac} property:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -1188,7 +1188,7 @@ Set the \code{jsr308javac} property:
   <condition property="cfJavac" value="javac.bat" else="javac">
     <os family="windows" />
   </condition>
-  <presetdef name="jsr308.javac">
+  <presetdef name="cf.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
       <compilerarg value="-implicit:class"/>
@@ -1201,7 +1201,7 @@ Set the \code{jsr308javac} property:
 
 \item
 Override the \code{-init-macrodef-javac-with-processors} target to
-use \code{jsr308.javac} instead of \code{javac} and to run the checker.
+use \code{cf.javac} instead of \code{javac} and to run the checker.
 In this example, a nullness checker is run:
 
 %BEGIN LATEX
@@ -1227,7 +1227,7 @@ In this example, a nullness checker is run:
             <property location="${build.dir}/empty" name="empty.dir"/>
             <mkdir dir="${empty.dir}"/>
             <mkdir dir="@{apgeneratedsrcdir}"/>
-            <jsr308.javac debug="@{debug}" deprecation="${javac.deprecation}"
+            <cf.javac debug="@{debug}" deprecation="${javac.deprecation}"
                     destdir="@{destdir}" encoding="${source.encoding}"
                     excludes="@{excludes}" fork="${javac.fork}"
                     includeantruntime="false" includes="@{includes}"
@@ -1256,7 +1256,7 @@ In this example, a nullness checker is run:
                 <compilerarg line="-Xmaxerrs 10000"/>
                 <compilerarg line="-Xmaxwarns 10000"/>
                 <customize/>
-            </jsr308.javac>
+            </cf.javac>
         </sequential>
     </macrodef>
   </target>
@@ -1340,7 +1340,7 @@ lists type inference tools.
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle cp
-% LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
+% LocalWords:  compilerArgs Xbootclasspath mvn
 % LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
 % LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk

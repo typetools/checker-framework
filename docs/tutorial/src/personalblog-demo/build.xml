@@ -9,7 +9,7 @@
   </condition>
 
 
-  <presetdef name="jsr308.javac">
+  <presetdef name="cf.javac">
     <javac fork="yes" executable="${checker-framework}/checker/bin/${cfJavac}" encoding="UTF-8">
       <compilerarg value="-version"/>
       <compilerarg value="-implicit:class"/>
@@ -30,21 +30,21 @@
           description="Check for tainting errors as they come up"
           depends="clean">
     <mkdir dir="bin"/>
-    <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+    <cf.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
       <compilerarg value="-processor"/>
       <compilerarg value="org.checkerframework.checker.tainting.TaintingChecker"/>
-    </jsr308.javac>
+    </cf.javac>
   </target>
 
   <target name="check-tainting-all"
           description="Check for tainting errors in all files"
           depends="clean">
     <mkdir dir="bin"/>
-    <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+    <cf.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
       <compilerarg value="-processor"/>
       <compilerarg value="org.checkerframework.checker.tainting.TaintingChecker"/>
       <compilerarg value="-Awarns"/>
-    </jsr308.javac>
+    </cf.javac>
   </target>
 
   <target name="clean">
