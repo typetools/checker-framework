@@ -1281,9 +1281,10 @@ The checker will still warn you about crashes in your own code.
   A stub file (Section~\ref{stub}) can override the library's annotations,
   for one or more methods.
 \item
-  Don't type-check clients.  JUnit's \<assertNotNull()> is typically called
-  only in test code, not in your main program.  If you type-check only your
-  main program, then the annotation on \<assertNotNull()> is irrelevant.
+  Don't type-check clients of the method.  For example, JUnit's
+  \<assertNotNull()> is typically called only in test code; its clients are
+  the tests.  If you type-check only your main program, then the annotation
+  on \<assertNotNull()> is irrelevant.
 \end{itemize}
 
 
