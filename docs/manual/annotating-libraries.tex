@@ -814,10 +814,21 @@ Some command-line options make the stub parser issue more warnings:
   other classes from the same package are present.
   Useful if a package spans more than one jar.
 
+\item[\<-AstubWarnIfRedundantWithBytecode>]
+  Warn if a stub file entry is redundant with bytecode information.  The
+  warning means that the stub file's type is the same as the bytecode type,
+  so that entry in the stub file is not necessary.
+
 %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
 % \item[\<-AstubWarnIfOverwritesBytecode>]
 %   Warn whenever some element of a
 %   stub file overwrites annotations contained in bytecode.
+
+\item[\<-AstubWarnNote>]
+  Issue a ``note'', not a warning, for the \<-AstubWarn*> command-line
+  arguments.  A warning prevents further compilation, but a note permits
+  compilation to proceed.
+
 \end{description}
 
 Finally,
@@ -960,18 +971,14 @@ Here is an example invocation:
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
 
 Sometimes, it may seem that a checker is treating a library as unannotated
-even though the library has annotations.  The compiler has two flags that
-may help you in determining whether library files are read, and if they are
-read whether the library's annotations are parsed.
+even though the library has annotations.  The compiler has a flags that
+may help you in determining which library files are read.
 
 \begin{description}
 \item \<-verbose>
   Outputs info about compile phases --- when the compiler
   reads/parses/attributes/writes any file.  Also outputs the classpath and
   sourcepath paths.
-\item \<-XDTA:parser> (which is equivalent to \<-XDTA:reader> plus \<-XDTA:writer>)
-  Sets the internal \<debugJSR308> flag, which outputs information about
-  reading and writing.
 \end{description}
 
 A syntax error in a stub file or the annotated JDK can lead to the file
@@ -985,7 +992,7 @@ being silently ignored.  A typo in an annotation name, or a missing
 % LocalWords: CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords: Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 % LocalWords: Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
-% LocalWords: enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
+% LocalWords: enableForgroundNdefPush BCEL getopt jdk8
 % LocalWords: NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 % LocalWords: AuseConservativeDefaultsForUnannotatedCode buildfile qual
 % LocalWords: AprintUnannotatedMethods checkername AskipDefs bcel mkdir
