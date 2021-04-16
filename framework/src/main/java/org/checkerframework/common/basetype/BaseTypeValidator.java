@@ -293,7 +293,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     if (TreeUtils.isClassTree(tree)) {
       visitedNodes.put(type, null);
-      visitClassTypeParameterBounds(type, (ClassTree) tree);
+      visitClassTypeParameters(type, (ClassTree) tree);
       return null;
     }
 
@@ -355,14 +355,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     return null;
   }
 
-  protected void visitClassTypeParameterBounds(AnnotatedDeclaredType type, ClassTree tree) {
+  protected void visitClassTypeParameters(AnnotatedDeclaredType type, ClassTree tree) {
     AnnotatedDeclaredType capturedType =
         (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type);
     for (int i = 0, size = capturedType.getTypeArguments().size(); i < size; i++) {
       AnnotatedTypeVariable typeParameter =
           (AnnotatedTypeVariable) capturedType.getTypeArguments().get(i);
       TypeParameterTree typeParameterTree = tree.getTypeParameters().get(i);
-      visitTypeParameterBounds(typeParameter, typeParameterTree);
+      visit(typeParameter, typeParameterTree);
     }
   }
 

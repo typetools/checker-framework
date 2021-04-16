@@ -81,7 +81,8 @@ public class BoundsInitializer {
       }
 
       final AnnotatedTypeMirror typeArg =
-          AnnotatedTypeMirror.createType(javaTypeArg, declaredType.atypeFactory, false);
+          AnnotatedTypeMirror.createType(
+              javaTypeArg, declaredType.atypeFactory, declaredType.isDeclaration());
       if (typeArg.getKind() == TypeKind.WILDCARD) {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) typeArg;
         wildcardType.setTypeVariable(typeElement.getTypeParameters().get(i));

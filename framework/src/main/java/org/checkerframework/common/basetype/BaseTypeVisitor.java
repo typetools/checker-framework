@@ -498,13 +498,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Tree ext = classTree.getExtendsClause();
     if (ext != null) {
-      validateTypeOf(ext);
+      for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
+        if (superType.getUnderlyingType().asElement().getKind().isClass()) {
+          validateType(ext, superType);
+        }
+      }
     }
 
     List<? extends Tree> impls = classTree.getImplementsClause();
     if (impls != null) {
       for (Tree im : impls) {
-        validateTypeOf(im);
+        for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
+          if (superType.getUnderlyingType().asElement().getKind().isInterface()
+              && types.isSameType(superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
+            validateType(im, superType);
+          }
+        }
       }
     }
 
@@ -1336,8 +1345,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   @Override
   public Void visitTypeParameter(TypeParameterTree node, Void p) {
-    validateTypeOf(node);
-
     if (node.getBounds().size() > 1) {
       // The upper bound of the type parameter is an intersection
       AnnotatedTypeVariable type =
@@ -1345,6 +1352,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) type.getUpperBound();
       checkExplicitAnnotationsOnIntersectionBounds(intersection, node.getBounds());
     }
+    if (TreeUtils.isClassTree(getCurrentPath().getParentPath().getLeaf())) {
+      return null;
+    }
+    validateTypeOf(node);
 
     return super.visitTypeParameter(node, p);
   }
