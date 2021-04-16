@@ -1,11 +1,13 @@
 package org.checkerframework.common.basetype;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +23,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -288,6 +291,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // the type isn't the top level, so always do the check.
     checkTopLevelDeclaredOrPrimitiveType = true;
 
+    if (TreeUtils.isClassTree(tree)) {
+      visitedNodes.put(type, null);
+      visitClassTypeParameterBounds(type, (ClassTree) tree);
+      return null;
+    }
+
     /*
      * Try to reconstruct the ParameterizedTypeTree from the given tree.
      * TODO: there has to be a nicer way to do this...
@@ -344,6 +353,34 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // return super.visitDeclared(type, tree);
 
     return null;
+  }
+
+  protected void visitClassTypeParameterBounds(AnnotatedDeclaredType type, ClassTree tree) {
+    AnnotatedDeclaredType capturedType =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type);
+    for (int i = 0, size = capturedType.getTypeArguments().size(); i < size; i++) {
+      AnnotatedTypeVariable typeParameter =
+          (AnnotatedTypeVariable) capturedType.getTypeArguments().get(i);
+      TypeParameterTree typeParameterTree = tree.getTypeParameters().get(i);
+      visitTypeParameterBounds(typeParameter, typeParameterTree);
+    }
+  }
+
+  protected void visitTypeParameterBounds(
+      AnnotatedTypeVariable typeParameter, TypeParameterTree typeParameterTree) {
+    List<? extends Tree> boundTrees = typeParameterTree.getBounds();
+    if (boundTrees.size() == 1) {
+      visit(typeParameter.getUpperBound(), boundTrees.get(0));
+    } else if (boundTrees.size() == 0) {
+      // The upper bound is implicitly Object
+      visit(typeParameter.getUpperBound(), typeParameterTree);
+    } else {
+      AnnotatedIntersectionType intersectionType =
+          (AnnotatedIntersectionType) typeParameter.getUpperBound();
+      for (int j = 0; j < intersectionType.getBounds().size(); j++) {
+        visit(intersectionType.getBounds().get(j), boundTrees.get(j));
+      }
+    }
   }
 
   private Pair<ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
@@ -493,8 +530,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     if (type.isDeclaration() && !areBoundsValid(type.getUpperBound(), type.getLowerBound())) {
       reportInvalidBounds(type, tree);
     }
-
-    return super.visitTypeVariable(type, tree);
+    if (!(tree instanceof TypeParameterTree)) {
+      return super.visitTypeVariable(type, tree);
+    }
+    TypeParameterTree typeParameterTree = (TypeParameterTree) tree;
+    visitedNodes.put(type, defaultResult);
+    visitTypeParameterBounds(type, typeParameterTree);
+    visitedNodes.put(type, defaultResult);
+    return null;
   }
 
   @Override

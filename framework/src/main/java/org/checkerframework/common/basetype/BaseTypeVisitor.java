@@ -1337,12 +1337,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitTypeParameter(TypeParameterTree node, Void p) {
     validateTypeOf(node);
-    // Check the bounds here and not with every TypeParameterTree.
-    // For the latter, we only need to check annotations on the type variable itself.
-    // Why isn't this covered by the super call?
-    for (Tree tpb : node.getBounds()) {
-      validateTypeOf(tpb);
-    }
 
     if (node.getBounds().size() > 1) {
       // The upper bound of the type parameter is an intersection
