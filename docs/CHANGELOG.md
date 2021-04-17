@@ -23,6 +23,7 @@ Method renamings:
 **Closed issues:**
 #4410
 
+
 Version 3.12.0 (April 1, 2021)
 ------------------------------
 
