@@ -2,7 +2,7 @@ package org.checkerframework.common.basetype;
 
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -96,7 +96,6 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
-import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -340,7 +339,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
     try (InputStream reader = root.getSourceFile().openInputStream()) {
       CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader);
-      JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
+      JavaParserUtil.concatenateAddedStringLiterals(javaParserRoot);
       new JointVisitorWithDefaultAction() {
         @Override
         public void defaultAction(Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
@@ -387,8 +386,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     CompilationUnit astWithoutAnnotations = originalAst.clone();
-    JavaParserUtils.clearAnnotations(astWithoutAnnotations);
-    String withoutAnnotations = new PrettyPrinter().print(astWithoutAnnotations);
+    JavaParserUtil.clearAnnotations(astWithoutAnnotations);
+    String withoutAnnotations = new DefaultPrettyPrinter().print(astWithoutAnnotations);
 
     String withAnnotations;
     try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {

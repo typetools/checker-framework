@@ -47,7 +47,7 @@ public class AnnotationFileStore {
       try {
         CompilationUnit root = JavaParserUtil.parseCompilationUnit(location);
         for (TypeDeclaration<?> type : root.getTypes()) {
-          String name = JavaParserUtils.getFullyQualifiedName(type, root);
+          String name = JavaParserUtil.getFullyQualifiedName(type, root);
 
           if (!annotationFiles.containsKey(name)) {
             annotationFiles.put(name, new ArrayList<>());
