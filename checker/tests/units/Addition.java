@@ -15,6 +15,7 @@ import org.checkerframework.checker.units.qual.Time;
 import org.checkerframework.checker.units.qual.cd;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kN;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
@@ -31,6 +32,7 @@ import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.checker.units.util.UnitsTools;
 
 public class Addition {
@@ -146,6 +148,11 @@ public class Addition {
     @N int aNewton = 5 * UnitsTools.N;
     @N int bNewton = 5 * UnitsTools.N;
     @N int sNewton = aNewton + bNewton;
+
+    // Kilonewton
+    @kN int aKilonewton = 5 * UnitsTools.kN;
+    @kN int bKilonewton = 5 * UnitsTools.kN;
+    @kN int sKilonewton = aKilonewton + bKilonewton;
 
     // Second
     @s int aSecond = 5 * UnitsTools.s;
@@ -315,9 +322,17 @@ public class Addition {
     @s int aSecond = 5 * UnitsTools.s;
     @s int bSecond = 5 * UnitsTools.s;
 
+    // Metric Ton
+    @t int aMetricTon = 5 * UnitsTools.t;
+    @t int bMetricTon = 5 * UnitsTools.t;
+
     // Newton
     @N int aNewton = 5 * UnitsTools.N;
     @N int bNewton = 5 * UnitsTools.N;
+
+    // Kilonewton
+    @kN int aKilonewton = 5 * UnitsTools.kN;
+    @kN int bKilonewton = 5 * UnitsTools.kN;
 
     // Units
     // Amperes
@@ -399,5 +414,13 @@ public class Addition {
     // Newton
     // :: error: (assignment.type.incompatible)
     sKilogram = aNewton + bNewton;
+
+    // Kilonewton
+    // :: error: (assignment.type.incompatible)
+    @kN int sKilonewton = aKilonewton + bNewton;
+
+    // Metric Ton
+    // :: error: (assignment.type.incompatible)
+    @N int sNewton = aNewton + bMetricTon;
   }
 }

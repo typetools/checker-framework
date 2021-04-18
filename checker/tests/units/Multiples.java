@@ -2,6 +2,7 @@ import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kN;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
@@ -16,6 +17,7 @@ import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.checker.units.util.UnitsTools;
 
 public class Multiples {
@@ -65,6 +67,28 @@ public class Multiples {
     // :: error: (assignment.type.incompatible)
     mm = notmm;
     mm = alsomm;
+
+    // N
+    @N int N = 5 * UnitsTools.N;
+    @N(Prefix.one)
+    int alsoN = N;
+    @N(Prefix.giga)
+    // :: error: (assignment.type.incompatible)
+    int notN = N;
+    // :: error: (assignment.type.incompatible)
+    N = notN;
+    N = alsoN;
+
+    // kN
+    @kN int kN = 5 * UnitsTools.kN;
+    @N(Prefix.kilo)
+    int alsokN = kN;
+    @N(Prefix.giga)
+    // :: error: (assignment.type.incompatible)
+    int notkN = kN;
+    // :: error: (assignment.type.incompatible)
+    kN = notkN;
+    kN = alsokN;
 
     // s
     @s int s = 5 * UnitsTools.s;
@@ -167,6 +191,10 @@ public class Multiples {
 
     // mPERs2 * kg = N
     @N int alsoforce = accel * mass;
+
+    @t int massMetricTons = 50 * UnitsTools.t;
+    @kN int forceKiloNewtons = massMetricTons * accel;
+    forceKiloNewtons = accel * massMetricTons;
 
     // s * s * mPERs2 = m
     // TODO: fix checker so it is insensitive to order of operations as long as final results'

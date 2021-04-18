@@ -3,6 +3,7 @@ import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.Volume;
 import org.checkerframework.checker.units.qual.degrees;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
 import org.checkerframework.checker.units.qual.km3;
@@ -14,6 +15,7 @@ import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.checker.units.util.UnitsTools;
 
 public class BasicUnits {
@@ -118,6 +120,10 @@ public class BasicUnits {
     speed /= 2;
 
     speed = (speed /= 2);
+
+    @kg int kiloGrams = 1000 * UnitsTools.kg;
+    @t int metricTons = UnitsTools.fromKiloGramToMetricTon(kiloGrams);
+    kiloGrams = UnitsTools.fromMetricTonToKiloGram(metricTons);
   }
 
   void prefixOutputTest() {

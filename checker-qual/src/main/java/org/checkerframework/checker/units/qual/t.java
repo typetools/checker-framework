@@ -8,15 +8,15 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Newton.
+ * Metric ton.
  *
  * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf(Force.class)
+@SubtypeOf(Mass.class)
 @SuppressWarnings("checkstyle:typename")
-public @interface N {
+public @interface t {
   Prefix value() default Prefix.one;
 }

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Newton.
+ * Kilonewton.
  *
  * @checker_framework.manual #units-checker Units Checker
  */
@@ -16,7 +16,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Force.class)
+@UnitsMultiple(quantity = N.class, prefix = Prefix.kilo)
 @SuppressWarnings("checkstyle:typename")
-public @interface N {
-  Prefix value() default Prefix.one;
-}
+public @interface kN {}

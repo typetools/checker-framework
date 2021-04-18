@@ -8,6 +8,7 @@ import org.checkerframework.checker.units.qual.cd;
 import org.checkerframework.checker.units.qual.degrees;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kN;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
@@ -25,6 +26,7 @@ import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 // TODO: add fromTo methods for all useful unit combinations.
@@ -88,6 +90,7 @@ public class UnitsTools {
   // Mass
   public static final @g int g = 1;
   public static final @kg int kg = 1;
+  public static final @t int t = 1;
 
   public static @kg int fromGramToKiloGram(@g int g) {
     return g / 1000;
@@ -97,8 +100,25 @@ public class UnitsTools {
     return kg * 1000;
   }
 
+  public static @t int fromKiloGramToMetricTon(@kg int kg) {
+    return kg / 1000;
+  }
+
+  public static @kg int fromMetricTonToKiloGram(@t int t) {
+    return t * 1000;
+  }
+
   // Force
   public static final @N int N = 1;
+  public static final @kN int kN = 1;
+
+  public static @kN int fromNewtonToKiloNewton(@N int N) {
+    return N / 1000;
+  }
+
+  public static @N int fromKiloNewtonToNewton(@kN int kN) {
+    return kN * 1000;
+  }
 
   // Speed
   public static final @mPERs int mPERs = 1;

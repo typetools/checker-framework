@@ -16,6 +16,7 @@ import org.checkerframework.checker.units.qual.Volume;
 import org.checkerframework.checker.units.qual.cd;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kN;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
@@ -32,6 +33,7 @@ import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.checker.units.util.UnitsTools;
 
 public class SubtractionUnits {
@@ -67,6 +69,11 @@ public class SubtractionUnits {
     @K int aKelvin = 5 * UnitsTools.K;
     @K int bKelvin = 5 * UnitsTools.K;
     @K int sKelvin = aKelvin - bKelvin;
+
+    // Kilonewton
+    @kN int aKilonewton = 5 * UnitsTools.kN;
+    @kN int bKilonewton = 5 * UnitsTools.kN;
+    @kN int sKiloewton = aKilonewton - bKilonewton;
 
     // Kilogram
     @kg int aKilogram = 5 * UnitsTools.kg;
@@ -271,6 +278,10 @@ public class SubtractionUnits {
     @K int aKelvin = 5 * UnitsTools.K;
     @K int bKelvin = 5 * UnitsTools.K;
 
+    // Kilonewton
+    @kN int aKilonewton = 5 * UnitsTools.kN;
+    @kN int bKilonewton = 5 * UnitsTools.kN;
+
     // Kilogram
     @kg int aKilogram = 5 * UnitsTools.kg;
     @kg int bKilogram = 5 * UnitsTools.kg;
@@ -334,6 +345,10 @@ public class SubtractionUnits {
     // Second
     @s int aSecond = 5 * UnitsTools.s;
     @s int bSecond = 5 * UnitsTools.s;
+
+    // Metric Tons
+    @t int aMetricTon = 5 * UnitsTools.t;
+    @t int bMetricTon = 5 * UnitsTools.t;
 
     // Newton
     @N int aNewton = 5 * UnitsTools.N;
@@ -427,5 +442,13 @@ public class SubtractionUnits {
     // Newton
     // :: error: (assignment.type.incompatible)
     sKilogram = aNewton - bNewton;
+
+    // Kilonewton
+    // :: error: (assignment.type.incompatible)
+    @kN int sKilonewton = aKilonewton - bNewton;
+
+    // Metric Ton
+    // :: error: (assignment.type.incompatible)
+    @N int sNewton = aNewton - bMetricTon;
   }
 }

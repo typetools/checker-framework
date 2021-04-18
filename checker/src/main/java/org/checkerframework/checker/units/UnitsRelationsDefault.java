@@ -20,6 +20,7 @@ import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** Default relations between SI units. */
@@ -31,10 +32,10 @@ public class UnitsRelationsDefault implements UnitsRelations {
   protected AnnotationMirror m2, km2, mm2, m3, km3, mm3, mPERs, mPERs2;
 
   /** Derived SI units with special names */
-  protected AnnotationMirror N;
+  protected AnnotationMirror N, kN;
 
   /** Non-SI units */
-  protected AnnotationMirror h, kmPERh;
+  protected AnnotationMirror h, kmPERh, t;
 
   /** The Element Utilities from the Units Checker's processing environment. */
   protected Elements elements;
@@ -69,7 +70,9 @@ public class UnitsRelationsDefault implements UnitsRelations {
 
     g = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, g.class);
     kg = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, g.class, Prefix.kilo);
-    N = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, N.class);
+    t = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, t.class);
+    N = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, N.class);
+    kN = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, N.class, Prefix.kilo);
 
     return this;
   }
@@ -125,6 +128,9 @@ public class UnitsRelationsDefault implements UnitsRelations {
     } else if (havePairOfUnitsIgnoringOrder(lht, kg, rht, mPERs2)) {
       // kg * mPERs2 or mPERs2 * kg = N
       return N;
+    } else if (havePairOfUnitsIgnoringOrder(lht, t, rht, mPERs2)) {
+      // t * mPERs2 or mPERs2 * t = kN
+      return kN;
     } else {
       return null;
     }
@@ -188,6 +194,15 @@ public class UnitsRelationsDefault implements UnitsRelations {
       } else if (UnitsRelationsTools.hasSpecificUnit(rht, mPERs2)) {
         // N / mPERs2 => kg
         return kg;
+      }
+      return null;
+    } else if (UnitsRelationsTools.hasSpecificUnit(lht, kN)) {
+      if (UnitsRelationsTools.hasSpecificUnit(rht, t)) {
+        // kN / t => mPERs2
+        return mPERs2;
+      } else if (UnitsRelationsTools.hasSpecificUnit(rht, mPERs2)) {
+        // kN / mPERs2 => t
+        return t;
       }
       return null;
     } else {
