@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Mass.class)
+// TODO: support arbitrary factors?
+// @UnitsMultiple(quantity=kg.class, factor=1000)
 @SuppressWarnings("checkstyle:typename")
-public @interface t {
-  Prefix value() default Prefix.one;
-}
+public @interface t {}
