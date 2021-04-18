@@ -24,24 +24,17 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** Default relations between SI units. */
 public class UnitsRelationsDefault implements UnitsRelations {
-  /** SI units. */
-  protected AnnotationMirror m,
-      km,
-      mm,
-      m2,
-      km2,
-      mm2,
-      m3,
-      km3,
-      mm3,
-      s,
-      h,
-      mPERs,
-      kmPERh,
-      mPERs2,
-      g,
-      kg,
-      N;
+  /** SI base units. */
+  protected AnnotationMirror m, km, mm, s, g, kg;
+
+  /** Derived SI units without special names */
+  protected AnnotationMirror m2, km2, mm2, m3, km3, mm3, mPERs, mPERs2;
+
+  /** Derived SI units with special names */
+  protected AnnotationMirror N;
+
+  /** Non-SI units */
+  protected AnnotationMirror h, kmPERh;
 
   /** The Element Utilities from the Units Checker's processing environment. */
   protected Elements elements;
