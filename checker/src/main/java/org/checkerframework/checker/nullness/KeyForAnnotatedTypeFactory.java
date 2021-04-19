@@ -65,11 +65,15 @@ public class KeyForAnnotatedTypeFactory
   /** Moves annotations from one side of a pseudo-assignment to the other. */
   private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
-  /** If true, assume the argument to Map.get is always a key for the receiver map. */
+  /**
+   * If true, assume the argument to Map.get is always a key for the receiver map. This is set by
+   * the `-AassumeKeyFor` command-line argument. However, if the Nullness Checker is being run, then
+   * `-AassumeKeyFor` disables the Map Key Checker.
+   */
   private final boolean assumeKeyFor;
 
   /**
-   * Create a new KeyForAnnotatedTypeFactory.
+   * Creates a new KeyForAnnotatedTypeFactory.
    *
    * @param checker the associated checker
    */

@@ -84,8 +84,10 @@ public class NullnessTransfer
           ? extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>>
       nullnessTypeFactory;
 
-  /** The type factory for the map key analysis. */
-  protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
+  /**
+   * The type factory for the map key analysis, or null if the Map Key Checker should not be run.
+   */
+  protected final @Nullable KeyForAnnotatedTypeFactory keyForTypeFactory;
 
   /** Create a new NullnessTransfer for the given analysis. */
   public NullnessTransfer(NullnessAnalysis analysis) {

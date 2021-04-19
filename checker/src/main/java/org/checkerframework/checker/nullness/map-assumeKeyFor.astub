@@ -1,3 +1,6 @@
+// This stub file is used by the Nullness Checker when
+// the user supplies the `-AassumeKeyFor` command-line option.
+
 package java.util;
 
 public interface Map<K, V> {

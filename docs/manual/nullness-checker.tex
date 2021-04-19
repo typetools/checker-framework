@@ -115,6 +115,13 @@ by the Checker Framework.
   If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
   the checker will trust \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
   annotations. See Section~\ref{nullness-collection-toarray} for a discussion.
+
+\item
+  \label{nullness-assumeKeyFor}%
+  If you supply the \code{-AassumeKeyFor} command-line option, then the
+  checker will unsoundly assume that the argument to \<Map.get> is a key
+  for the receiver map.  It will not do any checking of
+  \refqualclass{checker/nullness/qual}{KeyFor} and related qualifiers.
 \end{itemize}
 
 \item
@@ -329,9 +336,9 @@ If either of these two conditions is violated, then \<mymap.get(mykey)> has
 the possibility of returning \<null>.
 
 The command-line argument \<-AassumeKeyFor> makes the Nullness Checker not
-run the Map Key Checker.  The Nullness Checker
-unsoundly assumes that the argument to \<Map.get> is a key for the receiver
-map.  That is, the second condition above is always considered to be \<true>.
+run the Map Key Checker.  The Nullness Checker will unsoundly assume that
+the argument to \<Map.get> is a key for the receiver map.  That is, the
+second condition above is always considered to be \<true>.
 
 
 \sectionAndLabel{Writing nullness annotations}{writing-nullness-annotations}
