@@ -328,6 +328,11 @@ are satisfied:
 If either of these two conditions is violated, then \<mymap.get(mykey)> has
 the possibility of returning \<null>.
 
+The command-line argument \<-AassumeKeyFor> makes the Map Key Checker
+unsoundly assume that the argument to \<Map.get> is a key for the receiver
+map.  That is, the second condition above is always considered to be \<true>.
+
+
 \sectionAndLabel{Writing nullness annotations}{writing-nullness-annotations}
 
 \subsectionAndLabel{Implicit qualifiers}{nullness-implicit-qualifiers}
@@ -2088,7 +2093,7 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
-% LocalWords:  UnderInitialization getComponentType AsuppressWarnings
+% LocalWords:  UnderInitialization getComponentType AsuppressWarnings util
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
 % LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''
 % LocalWords:  dereferenced dereference Dereferencing initializers astub
@@ -2097,4 +2102,4 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
 % LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
 % LocalWords:  ConcurrentHashMap permitClearProperty setProperties
-% LocalWords:  clearProperty
+% LocalWords:  clearProperty AassumeKeyFor
