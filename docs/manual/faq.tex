@@ -67,6 +67,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
 \\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
+\\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -1230,6 +1231,47 @@ Here are examples that use both a declaration annotation and a type annotation:
 Note that the type annotation describes the value, and the declaration annotation says something about the method or use of the field.
 
 As a matter of style, declaration annotations are written on their own line, and type annotations are written directly before the type, on the same line.
+
+
+\label{declaration-annotations-moved} % temporary, for backward compatibility
+\subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
+
+When a declaration annotation is an alias for a type annotation, the
+Checker Framework may move the annotation before replacing it by the
+canonical version. (If the declaration annotation is in an \<org.checkerframework>
+package, it is not moved.)
+
+For example,
+
+\begin{Verbatim}
+  import android.support.annotation.NonNull;
+  ...
+  @NonNull Object [] returnsArray();
+\end{Verbatim}
+
+\noindent
+is treated as if the programmer had written
+
+\begin{Verbatim}
+  import org.checkerframework.checker.nullness.qual.NonNull;
+  ...
+  Object @NonNull [] returnsArray();
+\end{Verbatim}
+
+\noindent
+because Android's \<@NonNull> annotation is a declaration annotation, which
+is understood to apply to the top-level return type of the annotated method.
+
+When possible, you should use type annotations rather than declaration
+annotations.
+
+Users who are using old Java 5--7 declaration annotations (for instance,
+from the FindBugs tool, which has not been maintained since 2015) can use annotations in
+package \<org.checkerframework.checker.nullness.compatqual> to avoid name
+conflicts.  These are available in package
+\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
+on Maven Central.  Once the users are ready to upgrade to Java 8+ type
+annotations, those compatibility annotations are no longer necessary.
 
 
 \sectionAndLabel{Semantics of type annotations}{faq-semantics-section}
