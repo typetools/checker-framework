@@ -140,6 +140,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
   /** Supported options for this checker. */
   private @MonotonicNonNull Set<String> supportedOptions = null;
 
+  /** Options passed to this checker. */
+  private @MonotonicNonNull Map<String, String> options = null;
+
   /**
    * TreePathCacher to share between instances. Initialized either in getTreePathCacher (which is
    * also called from instantiateSubcheckers).
@@ -814,13 +817,45 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
   @Override
   public Map<String, String> getOptions() {
-    Map<String, String> options = new HashMap<>(super.getOptions());
+    if (this.options == null) {
+      Map<String, String> options = new HashMap<>(super.getOptions());
 
-    for (BaseTypeChecker checker : getSubcheckers()) {
-      options.putAll(checker.getOptions());
+      for (BaseTypeChecker checker : getSubcheckers()) {
+        options.putAll(checker.getOptions());
+      }
+      this.options = Collections.unmodifiableMap(options);
     }
 
-    return options;
+    return this.options;
+  }
+
+  /**
+   * Like {@link #getOptions}, but only includes options provided to this checker. Does not include
+   * those passed to subcheckers.
+   */
+  public Map<String, String> getOptionsNoSubcheckers() {
+    return super.getOptions();
+  }
+
+  /**
+   * Like {@link #hasOption}, but checks whether the given option is provided to this checker. Does
+   * not consider those passed to subcheckers.
+   *
+   * @param name the name of the option to check
+   * @return true if the option name was provided to this checker, false otherwise
+   */
+  public final boolean hasOptionNoSubcheckers(String name) {
+    return getOptionsNoSubcheckers().containsKey(name);
+  }
+
+  /**
+   * Return a list of additional stub files to be treated as if they had been written in a
+   * {@code @StubFiles} annotation.
+   *
+   * @return stub files to be treated as if they had been written in a {@code @StubFiles} annotation
+   */
+  public List<String> getExtraStubFiles() {
+    return new ArrayList<>();
   }
 
   @Override

@@ -199,6 +199,8 @@ public class KeyForAnnotatedTypeFactory
    * @return whether or not the expression is a key for the map
    */
   public boolean isKeyForMap(String mapExpression, ExpressionTree tree) {
+    // This test only has an effect if the Map Key Checker is being run on its own.  If the Nullness
+    // Checker is being run, then -AassumeKeyFor disables the Map Key Checker.
     if (assumeKeyFor) {
       return true;
     }

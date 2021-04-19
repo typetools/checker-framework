@@ -1,0 +1,6 @@
+package java.util;
+
+public interface Map<K, V> {
+    // No `@Nullable` on the return type.
+    V get(Map<K, V> this, Object key);
+}

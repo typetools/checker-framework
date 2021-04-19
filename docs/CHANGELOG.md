@@ -3,8 +3,9 @@ Version 3.13.0 (May 3, 2021)
 
 **User-visible changes:**
 
-Command-line argument -AassumeKeyFor makes the Map Key Checker unsoundly
-assume that the argument to `Map.get` is a key for the receiver map.
+Command-line argument -AassumeKeyFor makes the Nullness Checker and Map Key
+Checker unsoundly assume that the argument to `Map.get` is a key for the
+receiver map.
 
 The Checker Framework no longer crashes on code that contains binding
 variables (introduced in Java 14 for `instanceof` pattern matching), and
@@ -25,6 +26,7 @@ Method renamings:
 
 **Closed issues:**
 #4410
+
 
 Version 3.12.0 (April 1, 2021)
 ------------------------------
