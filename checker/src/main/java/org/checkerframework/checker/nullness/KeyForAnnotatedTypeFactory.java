@@ -68,7 +68,11 @@ public class KeyForAnnotatedTypeFactory
   /** If true, assume the argument to Map.get is always a key for the receiver map. */
   private final boolean assumeKeyFor;
 
-  /** Create a new KeyForAnnotatedTypeFactory. */
+  /**
+   * Create a new KeyForAnnotatedTypeFactory.
+   *
+   * @param checker the associated checker
+   */
   public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
 
