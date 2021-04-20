@@ -28,10 +28,9 @@ map.  This is like declaring the \<Map.get> method as \<V get(Object key)>
 rather than \<@Nullable V get(Object key)>.  (Just changing the JDK
 declaration would not work, however, because the Map Key Checker has
 special-case logic for \<Map.get>.  This is different than suppressing
-warnings, because it changes a method's return type and still checks
-explicitly-written \<@KeyFor> annotations.  This is not the same as
-assuming that the return value is \<@NonNull>, because the map's value type
-might be \<@Nullable>, as in \code{Map<String, @Nullable Integer>}.
+warnings, because it changes a method's return type.  This is not the same
+as assuming that the return value is \<@NonNull>, because the map's value
+type might be \<@Nullable>, as in \code{Map<String, @Nullable Integer>}.
 
 
 \sectionAndLabel{Map key annotations}{map-key-annotations}
