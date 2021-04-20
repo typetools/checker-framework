@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util;
 
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.Problem;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
@@ -34,6 +35,7 @@ import com.sun.tools.javac.code.Type.ClassType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -147,16 +149,22 @@ public class JavaExpressionParseUtil {
     try {
       expr = JavaParserUtil.parseExpression(expressionWithParameterNames);
     } catch (ParseProblemException e) {
-      String extra = ".";
-      if (!e.getProblems().isEmpty()) {
-        String message = e.getProblems().get(0).getMessage();
+      e.printStackTrace(System.out);
+      StringJoiner extra = new StringJoiner("; ");
+      for (Problem p : e.getProblems()) {
+        String message = p.getMessage();
         int newLine = message.indexOf(System.lineSeparator());
         if (newLine != -1) {
           message = message.substring(0, newLine);
         }
-        extra = ". Error message: " + message;
+        extra.add(" Error message: " + message);
       }
-      throw constructJavaExpressionParseError(expression, "the expression did not parse" + extra);
+      String expressionString =
+          expression.equals(expressionWithParameterNames)
+              ? expression
+              : expression + "' parsed as '" + expressionWithParameterNames;
+      throw constructJavaExpressionParseError(
+          expressionString, "the expression did not parse." + extra);
     }
 
     JavaExpression result =
