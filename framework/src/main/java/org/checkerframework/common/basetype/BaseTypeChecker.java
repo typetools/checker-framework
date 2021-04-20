@@ -208,9 +208,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @return true if reflection should be resolved
    */
   public boolean shouldResolveReflection() {
-    // Because this method is indirectly called by getSubcheckers and this.getOptions or
-    // this.hasOption also call getSubcheckers, super.getOptions is called here.
-    return super.getOptions().containsKey("resolveReflection");
+    return hasOptionNoSubcheckers("resolveReflection");
   }
 
   /**
