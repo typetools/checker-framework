@@ -273,15 +273,20 @@ give unexpected results.
   expressive, or suppress the warning.
 
   If you are able to express your entire proof as annotations, then look at
-  the Checker Framework error messages.  One possibility is that the errors
-  indicate that your proof was incomplete or incorrect.  Maybe your proof
-  implicitly depended on some fact you didn't write down, such as ``method
-  \<m> has no side effects.''  In this case, you should revise your proof
-  and add more annotations to your Java code.  Another possibility is that
-  your proof is incorrect, and the errors indicate where.  Another
-  possibility is that there is a bug in the type-checker.  In this case,
-  you should report it to the maintainers, giving your proof and explaining
-  why the type-checker should be able to make the same inferences that you did.
+  the Checker Framework error messages.
+  \begin{itemize}
+  \item
+    Perhaps your proof was incomplete or incorrect.  Your proof might
+    depend on some fact you didn't write down, such as ``method
+    \<m> has no side effects.''  In this case, you should revise your proof
+    and add more annotations to your Java code.
+  \item
+    Perhaps your proof is incorrect, and the errors indicate where.
+  \item
+    Perhaps there is a bug in the type-checker.  In this case,
+    you should report it to the maintainers, giving your proof and explaining
+    why the type-checker should be able to make the same inferences that you did.
+  \end{itemize}
 
   Recall that the Checker Framework does modular verification,
   one procedure at a time; it observes the specifications, but not the

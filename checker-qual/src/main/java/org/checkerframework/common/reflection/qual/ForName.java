@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * Annotation for methods like {@code Class.forName}. Their signature is
  *
  * <pre><code>
- * &nbsp;@ClassVal("name") Class method(@ForName String name) {...}
+ * &nbsp;@ClassVal("name") Class method(@BinaryName String name) {...}
  * </code></pre>
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution

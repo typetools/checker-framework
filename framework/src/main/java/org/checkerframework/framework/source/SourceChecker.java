@@ -1624,7 +1624,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.emptyMap();
     }
 
-    Map<String, String> activeOpts = new HashMap<>();
+    Map<String, String> activeOpts = new HashMap<>(SystemUtil.mapCapacity(options));
 
     for (Map.Entry<String, String> opt : options.entrySet()) {
       String key = opt.getKey();
