@@ -536,8 +536,11 @@ For example, you can use
 
 \noindent
 to pass different lint options to the Nullness and GUI Effect Checkers.  A
-downside is that, in this example, each of the checkers will issue one
-``The following options were not recognized by any processor'' warning.
+downside is that, in this example, the Nullness Checker will issue a
+``The following options were not recognized by any processor'' warning
+about the second option and the GUI Effect Checker will issue a
+``The following options were not recognized by any processor'' warning
+about the first option.
 
 % This list should be kept in sync with file
 % framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java

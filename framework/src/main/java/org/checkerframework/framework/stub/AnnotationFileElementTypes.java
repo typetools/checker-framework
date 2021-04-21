@@ -36,6 +36,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
@@ -118,6 +119,8 @@ public class AnnotationFileElementTypes {
    *       directory
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker
+   *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
+   *       listed in @StubFiles annotation)
    *   <li>Stub files provided via stubs system property
    *   <li>Stub files provided via stubs environment variable
    *   <li>Stub files provided via stubs compiler option
@@ -131,7 +134,7 @@ public class AnnotationFileElementTypes {
    */
   public void parseStubFiles() {
     parsing = true;
-    SourceChecker checker = factory.getChecker();
+    BaseTypeChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     // 1. jdk.astub
     // Only look in .jar files, and parse it right away.
@@ -173,19 +176,22 @@ public class AnnotationFileElementTypes {
       Collections.addAll(allAnnotationFiles, stubFilesAnnotation.value());
     }
 
-    // 4. Stub files provided via stubs system property
+    // 4. Stub files returned by the `getExtraStubFiles()` method
+    allAnnotationFiles.addAll(checker.getExtraStubFiles());
+
+    // 5. Stub files provided via stubs system property
     String stubsProperty = System.getProperty("stubs");
     if (stubsProperty != null) {
       Collections.addAll(allAnnotationFiles, stubsProperty.split(File.pathSeparator));
     }
 
-    // 5. Stub files provided via stubs environment variable
+    // 6. Stub files provided via stubs environment variable
     String stubEnvVar = System.getenv("stubs");
     if (stubEnvVar != null) {
       Collections.addAll(allAnnotationFiles, stubEnvVar.split(File.pathSeparator));
     }
 
-    // 6. Stub files provided via stubs command-line option
+    // 7. Stub files provided via stubs command-line option
     String stubsOption = checker.getOption("stubs");
     if (stubsOption != null) {
       Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
