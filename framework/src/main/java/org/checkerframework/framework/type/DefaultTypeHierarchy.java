@@ -24,7 +24,6 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -286,62 +285,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Represents a wildcard or captured wildcard. Use this to avoid the need for special-case code
-   * for {@link AnnotatedWildcardType} and {@link AnnotatedTypeVariable}.
-   */
-  protected static class BoundType {
-
-    /** Lower bound. */
-    protected final AnnotatedTypeMirror lower;
-
-    /** Upper bound. */
-    protected final AnnotatedTypeMirror upper;
-
-    /**
-     * Whether this has an explicit lower bound that is not the null type; in other words, whether
-     * the source code syntax of this contains "super". Because BoundTypes can represent captured
-     * types, if a bound type has an explicit lower bound, its upper bound may be {@code Object} or
-     * any other type that is a supertype of the lower bound.
-     */
-    protected final boolean hasExplicitLowerBound;
-
-    /**
-     * Creates a bound type.
-     *
-     * @param type a wildcard or a captured wildcard
-     */
-    protected BoundType(AnnotatedTypeMirror type) {
-      if (type.getKind() == TypeKind.WILDCARD) {
-        AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
-        this.lower = wildcardType.getSuperBound();
-        this.upper = wildcardType.getExtendsBound();
-      } else if (TypesUtils.isCaptured(type.getUnderlyingType())) {
-        AnnotatedTypeVariable typeVariable = (AnnotatedTypeVariable) type;
-        this.lower = typeVariable.getLowerBound();
-        this.upper = typeVariable.getUpperBound();
-      } else {
-        throw new BugInCF("Unexpected: %s", type);
-      }
-      this.hasExplicitLowerBound = lower.getKind() != TypeKind.NULL;
-    }
-
-    /**
-     * Returns true if {@code type} is a wildcard or captured wildcard.
-     *
-     * @param type type to check
-     * @return true if {@code type} is a wildcard or captured wildcard
-     */
-    protected static boolean isBoundType(AnnotatedTypeMirror type) {
-      return type.getKind() == TypeKind.WILDCARD || TypesUtils.isCaptured(type.getUnderlyingType());
-    }
-
-    @Override
-    public String toString() {
-      return "[ extends " + upper + " super " + lower + ']';
-    }
-  }
-
-  /**
    * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
    * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
    *
@@ -364,13 +307,32 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       return true;
     }
-    if (BoundType.isBoundType(outside)) {
+    if (outside.getKind() == TypeKind.WILDCARD
+        || TypesUtils.isCaptured(outside.getUnderlyingType())) {
       Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
       if (previousResult != null) {
         return previousResult;
       }
       areEqualVisitHistory.put(inside, outside, currentTop, true);
-      boolean result = isContainedByBoundType(inside, new BoundType(outside), canBeCovariant);
+      boolean result;
+      if (outside.getKind() == TypeKind.WILDCARD) {
+        AnnotatedWildcardType outsideWildcard = (AnnotatedWildcardType) outside;
+        result =
+            isContainedByBoundType(
+                inside,
+                outsideWildcard.getSuperBound(),
+                outsideWildcard.getExtendsBound(),
+                canBeCovariant);
+      } else {
+        AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
+        result =
+            isContainedByBoundType(
+                inside,
+                outsideTypeVar.getLowerBound(),
+                outsideTypeVar.getUpperBound(),
+                canBeCovariant);
+      }
+
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
     }
@@ -387,22 +349,26 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * explanation.
    *
    * @param inside a possibly-contained type
-   * @param outside a possibly-containing type
+   * @param outsideLower the lower bound of the possibly-containing type
+   * @param outsideUpper a the upper bound of the possibly-containing type
    * @param canBeCovariant whether or not type arguments are allowed to be covariant
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
    */
   protected boolean isContainedByBoundType(
-      AnnotatedTypeMirror inside, BoundType outside, boolean canBeCovariant) {
+      AnnotatedTypeMirror inside,
+      AnnotatedTypeMirror outsideLower,
+      AnnotatedTypeMirror outsideUpper,
+      boolean canBeCovariant) {
     try {
       if (canBeCovariant) {
-        if (outside.hasExplicitLowerBound) {
-          return isSubtype(outside.lower, inside);
+        if (outsideLower.getKind() != TypeKind.NULL) {
+          return isSubtype(outsideLower, inside);
         } else {
-          return isSubtype(inside, outside.upper);
+          return isSubtype(inside, outsideUpper);
         }
       }
-      return isSubtype(outside.lower, inside) && isSubtype(inside, outside.upper);
+      return isSubtype(outsideLower, inside) && isSubtype(inside, outsideUpper);
     } catch (Throwable ex) {
       return false;
     }
@@ -928,7 +894,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
     if (TypesUtils.isCaptured(subtype.getUnderlyingType())
         && TypesUtils.isCaptured(supertype.getUnderlyingType())) {
-      return isContainedByBoundType(subtype, new BoundType(supertype), false);
+      // TODO: Can this be removed?
+      return isContainedByBoundType(
+          subtype, supertype.getLowerBound(), supertype.getUpperBound(), false);
     }
 
     if (supertype.getLowerBound().getKind() != TypeKind.NULL) {
