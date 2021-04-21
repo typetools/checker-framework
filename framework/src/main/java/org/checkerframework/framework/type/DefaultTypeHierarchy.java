@@ -308,6 +308,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       return true;
     }
     if (outside.getKind() == TypeKind.WILDCARD
+        // TODO: tests fail with out this, but I don't understand why.
         || TypesUtils.isCaptured(outside.getUnderlyingType())) {
       Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
       if (previousResult != null) {
