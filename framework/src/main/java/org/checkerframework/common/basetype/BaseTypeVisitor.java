@@ -986,8 +986,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       reportPurityErrors(r, node, kinds);
     }
 
-    // This may make a suggestion about an implicit default constructor, which is not considered
-    // synthetic.
     if (suggestPureMethods && !TreeUtils.isSynthetic(node)) {
       // Issue a warning if the method is pure, but not annotated as such.
       EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
