@@ -351,17 +351,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * another declared type only if all of the type arguments of the declared type "contain" the
    * corresponding type arguments of the subtype.
    *
-   * <p>The containment algorithm implemented here is slightly different that what is presented in
-   * the JLS. The Checker Framework checks that method arguments are subtype of the method
-   * parameters that have been viewpoint-adapted to the call site. Java does not do this check;
-   * instead, it checks if an applicable method exists. By checking that method arguments are
-   * subtypes of viewpoint-adapted parameters, the Checker Framework gives better error messages.
-   * However, viewpoint-adapting parameters leads to types that Java does not account for in the
-   * containment algorithm, namely wildcards with upper or lower bounds that are captured types. In
-   * these cases, our algorithm calls containment recursively on the captured type bound. (Note, it
-   * must recur rather than call isSubtype because the inside type may be in between the bounds of
-   * the upper or lower bound. For example: outside: ? extends ? extends Object inside: String)
-   *
    * @param inside a possibly-contained type
    * @param outside a possibly-containing type
    * @param canBeCovariant whether or not type arguments are allowed to be covariant
@@ -396,16 +385,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}. See
    * {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)} for a full
    * explanation.
-   *
-   * <p>Roughly, the algorithm works as follows (assuming {@code canBeCovariant} is false):
-   *
-   * <ul>
-   *   <li>If inside is a bound type, recur on the explicit bound.
-   *   <li>If one of outside's bounds is itself a bound type, recur on that bound.
-   *   <li>Otherwise, return {@code outside.lower <: inside && inside <: outside.upper}.
-   * </ul>
-   *
-   * If {@code canBeCovariant} is true, then the checks on lower bounds return true.
    *
    * @param inside a possibly-contained type
    * @param outside a possibly-containing type
@@ -570,18 +549,28 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 covariantAnno, covariantValueElement, Integer.class);
 
     // JLS: 4.10.2. Subtyping among Class and Interface Types
-    // 3th  set of bullets
+    // 3th paragraph
     if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
       return true;
     }
-    // 4th
+    // 4th paragraph
     AnnotatedDeclaredType capturedSubtype =
         (AnnotatedDeclaredType) subtype.atypeFactory.applyCaptureConversion(subtype);
     return isContainedMany(
         capturedSubtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes);
   }
 
-  private boolean isContainedMany(
+  /**
+   * Calls {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)} on the two
+   * lists of type arguments. Returns true the type argument in {@code supertypeTypeArgs} contains
+   * the type argument at the same index in {@code subtypeTypeArgs}.
+   *
+   * @param subtypeTypeArgs subtype arguments
+   * @param supertypeTypeArgs supertype arguments
+   * @param covariantArgIndexes with the type argument is covariant
+   * @return whether {@code supertypeTypeArgs} contain {@code subtypeTypeArgs}
+   */
+  protected boolean isContainedMany(
       List<? extends AnnotatedTypeMirror> subtypeTypeArgs,
       List<? extends AnnotatedTypeMirror> supertypeTypeArgs,
       List<Integer> covariantArgIndexes) {
@@ -589,14 +578,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
       AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
       boolean covariant = covariantArgIndexes != null && covariantArgIndexes.contains(i);
-
-      boolean result = isContainedBy(subTypeArg, superTypeArg, covariant);
-
-      if (!result) {
+      if (!isContainedBy(subTypeArg, superTypeArg, covariant)) {
         return false;
       }
     }
-
     return true;
   }
 
