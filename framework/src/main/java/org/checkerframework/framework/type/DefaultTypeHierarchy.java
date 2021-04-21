@@ -569,14 +569,28 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             : AnnotationUtils.getElementValueArray(
                 covariantAnno, covariantValueElement, Integer.class);
 
+    // JLS: 4.10.2. Subtyping among Class and Interface Types
+    // 3th  set of bullets
+    if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
+      return true;
+    }
+    // 4th
     AnnotatedDeclaredType capturedSubtype =
         (AnnotatedDeclaredType) subtype.atypeFactory.applyCaptureConversion(subtype);
+    return isContainedMany(
+        capturedSubtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes);
+  }
+
+  private boolean isContainedMany(
+      List<? extends AnnotatedTypeMirror> subtypeTypeArgs,
+      List<? extends AnnotatedTypeMirror> supertypeTypeArgs,
+      List<Integer> covariantArgIndexes) {
     for (int i = 0; i < supertypeTypeArgs.size(); i++) {
       AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
-      AnnotatedTypeMirror capturedSubTypeArg = capturedSubtype.getTypeArguments().get(i);
+      AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
       boolean covariant = covariantArgIndexes != null && covariantArgIndexes.contains(i);
 
-      boolean result = isContainedBy(capturedSubTypeArg, superTypeArg, covariant);
+      boolean result = isContainedBy(subTypeArg, superTypeArg, covariant);
 
       if (!result) {
         return false;

@@ -414,10 +414,22 @@ public class BoundsInitializer {
       typeVarToStructure.put(type.getUnderlyingType(), typeVarStruct);
       RecursiveTypeStructure parentStructure = this.currentStructure;
 
+      Map<TypeVariable, AnnotatedTypeMirror> hold = new HashMap<>();
+      if (TypesUtils.isCaptured(type.getUnderlyingType())) {
+        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
+            new ArrayList<>(typevars.entrySet())) {
+          if (!type.atypeFactory.types.isSameType(
+              entry.getKey(), entry.getValue().underlyingType)) {
+            hold.put(entry.getKey(), entry.getValue());
+            typevars.remove(entry.getKey(), entry.getValue());
+          }
+        }
+      }
       this.currentStructure = typeVarStruct;
       initializeUpperBound(type);
       initializeLowerBound(type);
       this.currentStructure = parentStructure;
+      typevars.putAll(hold);
 
       return null;
     }
