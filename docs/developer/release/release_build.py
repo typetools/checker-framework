@@ -473,7 +473,7 @@ def main(argv):
     # Each project has a set of files that are updated for release. Usually these updates include new
     # release date and version information. All changed files are committed and pushed to the intermediate
     # repositories. Keep this in mind if you have any changed files from steps 1d, 4, or 5. Edits to the
-    # scripts in the jsr308-release/scripts directory will never be checked in.
+    # scripts in the cf-release/scripts directory will never be checked in.
 
     print_step("Build Step 7: Commit projects to intermediate repos.")  # AUTO
     commit_to_interm_projects(cf_version)

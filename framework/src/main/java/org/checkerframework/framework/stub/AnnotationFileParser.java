@@ -81,6 +81,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -158,6 +159,9 @@ public class AnnotationFileParser {
    * Whether to print warnings about stub files that are redundant with annotations from bytecode.
    */
   private final boolean warnIfStubRedundantWithBytecode;
+
+  /** The diagnostic kind for stub file warnings: NOTE or WARNING. */
+  private final Diagnostic.Kind stubWarnDiagnosticKind;
 
   /** Whether to print verbose debugging messages. */
   private final boolean debugAnnotationFileParser;
@@ -256,7 +260,7 @@ public class AnnotationFileParser {
      * than in the real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getQualifiedName.
      */
-    public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>();
+    public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>(1);
 
     /**
      * Map from a method element to all the fake overrides of it. Given a key {@code ee}, the fake
@@ -264,7 +268,7 @@ public class AnnotationFileParser {
      * {@code ee.getReceiverType()}.
      */
     public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
-        new HashMap<>();
+        new HashMap<>(1);
   }
 
   /**
@@ -299,6 +303,8 @@ public class AnnotationFileParser {
     this.warnIfStubRedundantWithBytecode =
         options.containsKey("stubWarnIfRedundantWithBytecode")
             && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
+    this.stubWarnDiagnosticKind =
+        options.containsKey("stubWarnNote") ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
     this.debugAnnotationFileParser = options.containsKey("stubDebug");
 
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
@@ -2706,7 +2712,7 @@ public class AnnotationFileParser {
       if (warnings.add(warning)) {
         processingEnv
             .getMessager()
-            .printMessage(javax.tools.Diagnostic.Kind.WARNING, fileAndLine(astNode) + warning);
+            .printMessage(stubWarnDiagnosticKind, fileAndLine(astNode) + warning);
       }
     }
   }
