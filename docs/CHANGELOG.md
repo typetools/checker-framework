@@ -1,6 +1,14 @@
 Version 3.13.0 (May 3, 2021)
 ----------------------------
 
+**Survey:**
+
+If you use the Checker Framework, please answer a 3-question survey about what
+version of Java you use.  It will take less than 1 minute to complete.  Please
+answer it at
+https://docs.google.com/forms/d/1Bbt34c_3nDItHsBnmEfumoyrR-Zxhvo3VTHucXwfMcQ .
+Thanks!
+
 **User-visible changes:**
 
 Command-line argument -AassumeKeyFor makes the Nullness Checker and Map Key
