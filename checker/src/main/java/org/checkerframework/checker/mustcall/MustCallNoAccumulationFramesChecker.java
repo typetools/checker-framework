@@ -4,11 +4,10 @@ import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * This copy of the Must Call Checker is identical, except that it does not load the stub files at
- * initialization that treat unconnected sockets as @MustCall({}). See
- * SocketAccumulationFrames.astub.
+ * This copy of the Must Call Checker is identical, except that it does not load the stub files that
+ * treat unconnected sockets as {@code @MustCall({})}. See SocketAccumulationFrames.astub.
  *
- * <p>The only difference is the contents of the @StubFiles annotation, below.
+ * <p>The only difference is the contents of the @StubFiles annotation.
  */
 @StubFiles({
   "Socket.astub",
