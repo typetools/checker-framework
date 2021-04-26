@@ -536,7 +536,8 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the given method is synthetic.
+   * Returns true if the given method is synthetic. Also returns true if the method is a generated
+   * default constructor, which does not appear in source code but is not considered synthetic.
    *
    * @param ee a method or constructor element
    * @return true iff the given method is synthetic
@@ -544,7 +545,7 @@ public final class TreeUtils {
   public static boolean isSynthetic(ExecutableElement ee) {
     MethodSymbol ms = (MethodSymbol) ee;
     long mod = ms.flags();
-    // GENERATEDCONSTR is for generated constructors, which seem not to have SYNTHETIC set.
+    // GENERATEDCONSTR is for generated constructors, which do not have SYNTHETIC set.
     return (mod & (Flags.SYNTHETIC | Flags.GENERATEDCONSTR)) != 0;
   }
 

@@ -3,11 +3,18 @@ Version 3.13.0 (May 3, 2021)
 
 **User-visible changes:**
 
+Command-line argument -AassumeKeyFor makes the Nullness Checker and Map Key
+Checker unsoundly assume that the argument to `Map.get` is a key for the
+receiver map.
+
 The Checker Framework no longer crashes on code that contains binding
 variables (introduced in Java 14 for `instanceof` pattern matching), and
 such variables are reflected in the control flow graph (CFG).  Thanks to
 Chris Day for this change.  However, note that the Checker Framework only
 has full support for Java 8 and Java 11.
+
+New command-line argument `-AstubWarnNote` makes stub file warnings notes
+rather than warnings.
 
 Removed the StubGenerator section from the manual, because changes in JDK 11
 have broken the StubGenerator program.
@@ -19,6 +26,7 @@ Method renamings:
 
 **Closed issues:**
 #4410
+
 
 Version 3.12.0 (April 1, 2021)
 ------------------------------

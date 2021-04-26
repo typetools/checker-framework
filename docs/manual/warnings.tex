@@ -540,6 +540,7 @@ You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings except those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
 the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
+You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
 regular expression that matches class names (not file names) for which warnings and errors
@@ -589,6 +590,7 @@ class, or suppress all errors and warnings except those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} or \code{-AonlyUses} command-line option,
 see~\ref{askipuses}.)
+You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
 regular expression that matches class names (not file names) in whose definition warnings and errors
@@ -596,6 +598,8 @@ should be suppressed.
 Or, set the \code{-AonlyDefs} command-line option to a
 regular expression that matches class names (not file names) whose
 definitions should be type-checked.
+(This is somewhat similar to NullAway's
+\<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
 
 For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
@@ -736,114 +740,12 @@ suppressing warnings issued by the Fenum Checker
 (Section~\ref{units-suppressing}).
 
 
-
-\htmlhr
-\chapterAndLabel{Handling legacy code}{legacy-code}
-
-Section~\ref{get-started-with-legacy-code} describes a methodology for
-applying annotations to legacy code.  This chapter tells you what to do if,
-for some reason, you cannot change your code in such a way as to eliminate
-a checker warning.
-
-Also recall that you can convert checker errors into warnings via the
-\code{-Awarns} command-line option; see Section~\ref{checker-options}.
-
-
-\sectionAndLabel{Checking partially-annotated programs:  handling unannotated code}{unannotated-code}
-
-Sometimes, you wish to type-check only part of your program.
-You might focus on the most mission-critical or error-prone part of your
-code.  When you start to use a checker, you may not wish to annotate
-your entire program right away.
-% Not having source code is *not* a reason.
-You may not have
-enough knowledge to annotate poorly-documented libraries that your program uses.
-
-If annotated code uses unannotated code, then the checker may issue
-warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) will
-warn whenever an unannotated method result is used in a non-null context:
-
-\begin{Verbatim}
-  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
-\end{Verbatim}
-
-If the call \emph{can} return null, you should fix the bug in your program by
-removing the \refqualclass{checker/nullness/qual}{NonNull} annotation in your own program.
-
-If the library call \emph{never} returns null,
-there are several ways to eliminate the compiler warnings.
-\begin{enumerate}
-\item Annotate \code{unannotated\_method} in full.  This approach provides
-  the strongest guarantees, but may require you to annotate additional
-  methods that \code{unannotated\_method} calls.  See
-  Chapter~\ref{annotating-libraries} for a discussion of how to annotate
-  libraries for which you have no source code.
-\item Annotate only the signature of \code{unannotated\_method}, and
-  suppress warnings in its body.  Two ways to suppress the warnings are via a
-  \code{@SuppressWarnings} annotation or by not running the checker on that
-  file (see Chapter~\ref{suppressing-warnings}).
-\item Suppress all warnings related to uses of \code{unannotated\_method}
-  via the \code{skipUses} processor option
-  (see Section~\ref{askipuses}).
-  Since this can suppress more warnings than you may expect,
-  it is usually better to annotate at least the method's signature.  If you
-  choose the boundary between the annotated and unannotated code wisely,
-  then you only have to annotate the signatures of a limited number of
-  classes/methods
-  (e.g., the public interface to a library or package).
-
-\end{enumerate}
-
-Chapter~\ref{annotating-libraries} discusses adding annotations to
-signatures when you do not have source code available.
-Chapter~\ref{suppressing-warnings} discusses suppressing warnings.
-
-\subsectionAndLabel{Declaration annotations}{declaration-annotations-moved}
-
-When a declaration annotation is an alias for a type annotation, then the
-Checker Framework may move the annotation before replacing it by the
-canonical version. (If the declaration annotation is in an \<org.checkerframework>
-package, it is not moved.)
-
-For example,
-
-\begin{Verbatim}
-  import android.support.annotation.NonNull;
-  ...
-  @NonNull Object [] returnsArray();
-\end{Verbatim}
-
-\noindent
-is treated as if the programmer had written
-
-\begin{Verbatim}
-  import org.checkerframework.checker.nullness.qual.NonNull;
-  ...
-  Object @NonNull [] returnsArray();
-\end{Verbatim}
-
-\noindent
-because Android's \<@NonNull> annotation is a declaration annotation, which
-is understood to apply to the top-level return type of the annotated method.
-
-When possible, you should use type annotations rather than declaration
-annotations.
-
-Users who are using old Java 5--7 declaration annotations (for instance,
-from the FindBugs tool, which is no longer maintained) can use annotations in
-package \<org.checkerframework.checker.nullness.compatqual> to avoid name
-conflicts.  These are available in package
-\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
-on Maven Central.  Once the users are ready to upgrade to Java 8+ type
-annotations, those compatibility annotations are no longer necessary.
-
-
 % LocalWords:  quals skipUses un AskipUses Alint annotationname javac's Awarns
 % LocalWords:  Xlint dotequals castNonNull XDTA Formatter jsr subpart
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
-% LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr
+% LocalWords:  AskipDefs mypackage Makefile PLXCOMP expr
 %  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
 %  LocalWords:  ing warningkey redundantNullComparison qual proc Decl
 %  LocalWords:  lastsinglesuppression classfiles AwarnUnneededSuppressions
