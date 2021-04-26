@@ -52,7 +52,8 @@ class SupertypeFinder {
   public static List<AnnotatedDeclaredType> directSupertypes(AnnotatedDeclaredType type) {
     SupertypeFindingVisitor supertypeFindingVisitor =
         new SupertypeFindingVisitor(type.atypeFactory);
-    List<AnnotatedDeclaredType> supertypes = supertypeFindingVisitor.visitDeclared(type, null);
+    List<AnnotatedDeclaredType> supertypes =
+        supertypeFindingVisitor.visitDeclared(type.asUse(), null);
     type.atypeFactory.postDirectSuperTypes(type, supertypes);
     return supertypes;
   }

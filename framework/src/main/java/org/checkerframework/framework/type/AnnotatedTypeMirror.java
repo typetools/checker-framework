@@ -4,7 +4,9 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -922,6 +924,26 @@ public abstract class AnnotatedTypeMirror {
       // setTypeArguments calls asUse on all the new type arguments.
       result.setTypeArguments(typeArgs);
 
+      // If "this" is a type declaration with a type variable that references itself, i.e. MyClass<T
+      // extends List<T>>.
+      // The type variable is a declaration, i.e. the first T, but the reference to the type
+      // variable is a use, i.e the second T.  When
+      // "this" is converted to a use, then both type variables are uses and should be the same
+      // object.  The code below does this.
+      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(typeArgs.size());
+      for (AnnotatedTypeMirror typeArgs : result.getTypeArguments()) {
+        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArgs;
+        mapping.put(typeVar.getUnderlyingType(), typeVar);
+      }
+      for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
+        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArg;
+        AnnotatedTypeMirror upperBound =
+            atypeFactory
+                .getTypeVarSubstitutor()
+                .substituteWithoutCopyingTypeArguments(mapping, typeVar.getUpperBound());
+        typeVar.setUpperBound(upperBound);
+      }
+
       return result;
     }
 
@@ -935,7 +957,6 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param ts the type arguments
      */
-    // WMD
     public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
       if (ts == null || ts.isEmpty()) {
         typeArgs = Collections.emptyList();
