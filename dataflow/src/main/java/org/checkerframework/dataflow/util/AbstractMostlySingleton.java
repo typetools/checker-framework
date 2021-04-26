@@ -137,7 +137,7 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
   }
 
   @Override
-  public <S> @PolyNull S[] toArray(@PolyNull S[] a) {
+  public <S> @Nullable S[] toArray(@PolyNull S[] a) {
     throw new UnsupportedOperationException();
   }
 
