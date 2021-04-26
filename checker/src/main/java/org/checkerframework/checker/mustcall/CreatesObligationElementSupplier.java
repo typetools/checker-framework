@@ -12,7 +12,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * GenericAnnotatedTypeFactory, CreatesObligationElementSupplier)} is called. This interface is
  * needed so any type factory with these elements can be used to call that method, not just the
  * MustCallAnnotatedTypeFactory (in particular, the consistency checker needs to be able to call
- * that method with both the ObjectConstruction/ CalledMethods type factory and the MustCall type
+ * that method with both the ObjectConstruction/CalledMethods type factory and the MustCall type
  * factory).
  */
 public interface CreatesObligationElementSupplier {
