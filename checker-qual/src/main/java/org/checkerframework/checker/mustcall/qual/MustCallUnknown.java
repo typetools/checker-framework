@@ -8,8 +8,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The top qualifier in the Must Call type hierarchy. It represents a type that might have an
- * obligation to call any set (even an infinite set!) of methods, and therefore represents every
- * object. This type should rarely be written by a programmer.
+ * obligation to call any set (even an infinite set!) of methods. This type contains every object.
+ * This type should rarely be written by a programmer.
  *
  * <p>The Object Construction Checker cannot verify that the property represented by this annotation
  * is enforced; that is, the Object Construction Checker will always issue a warning when the value
