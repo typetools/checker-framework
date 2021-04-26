@@ -115,13 +115,10 @@ public class AccumulationTransfer extends CFTransfer {
   private void insertIntoStores(
       TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
     if (result.containsTwoStores()) {
-      CFStore thenStore = result.getThenStore();
-      CFStore elseStore = result.getElseStore();
-      thenStore.insertValue(target, newAnno);
-      elseStore.insertValue(target, newAnno);
+      result.getThenStore().insertValue(target, newAnno);
+      result.getElseStore().insertValue(target, newAnno);
     } else {
-      CFStore store = result.getRegularStore();
-      store.insertValue(target, newAnno);
+      result.getRegularStore().insertValue(target, newAnno);
     }
   }
 }

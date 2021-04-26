@@ -129,12 +129,13 @@ public class MustCallTransfer extends CFTransfer {
    */
   private void lubWithStoreValue(CFStore store, JavaExpression expr, AnnotationMirror defaultType) {
     CFValue value = store.getValue(expr);
-    CFValue defaultTypeAsValue = analysis.createSingleAnnotationValue(defaultType, expr.getType());
+    CFValue defaultTypeAsCFValue =
+        analysis.createSingleAnnotationValue(defaultType, expr.getType());
     CFValue newValue;
     if (value == null) {
-      newValue = defaultTypeAsValue;
+      newValue = defaultTypeAsCFValue;
     } else {
-      newValue = value.leastUpperBound(defaultTypeAsValue);
+      newValue = value.leastUpperBound(defaultTypeAsCFValue);
     }
     store.clearValue(expr);
     store.insertValue(expr, newValue);
@@ -166,13 +167,10 @@ public class MustCallTransfer extends CFTransfer {
   public void insertIntoStores(
       TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
     if (result.containsTwoStores()) {
-      CFStore thenStore = result.getThenStore();
-      CFStore elseStore = result.getElseStore();
-      thenStore.insertValue(target, newAnno);
-      elseStore.insertValue(target, newAnno);
+      result.getThenStore().insertValue(target, newAnno);
+      result.getElseStore().insertValue(target, newAnno);
     } else {
-      CFStore store = result.getRegularStore();
-      store.insertValue(target, newAnno);
+      result.getRegularStore().insertValue(target, newAnno);
     }
   }
 
@@ -225,27 +223,27 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /**
-   * Parses a single CreatesObligation annotation. See {@link
+   * Parses a single CreatesObligation annotation. Clients should use {@link
    * #getCreatesObligationExpressions(MethodInvocationNode, GenericAnnotatedTypeFactory,
-   * CreatesObligationElementSupplier)}, which should always be used instead by clients.
+   * CreatesObligationElementSupplier)} instead.
    *
-   * @param createsObligation a create obligation annotation
-   * @param n the method invocation of a reset method
-   * @param atypeFactory the type factory.
+   * @param createsObligation a @CreatesObligation annotation
+   * @param n the invocation of a reset method
+   * @param atypeFactory the type factory
    * @param supplier a type factory that can supply the executable elements for CreatesObligation
    *     and CreatesObligation.List's value elements. Usually, you should just pass atypeFactory
    *     again. The arguments are different so that the given type factory's adherence to both
    *     protocols are checked by the type system.
-   * @return the java expression representing the target, or null if the target is unparseable
+   * @return the Java expression representing the target, or null if the target is unparseable
    */
   private static @Nullable JavaExpression getCreatesObligationExpression(
       AnnotationMirror createsObligation,
       MethodInvocationNode n,
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
       CreatesObligationElementSupplier supplier) {
-    // Unfortunately, there is no way to avoid passing "this" here. The default must be hard-coded
-    // into the client, such as here. That is the price for the efficiency of not having to query
-    // the annotation definition (such queries are expensive).
+    // Unfortunately, there is no way to avoid passing the default string "this" here. The default
+    // must be hard-coded into the client, such as here. That is the price for the efficiency of not
+    // having to query the annotation definition (such queries are expensive).
     String targetStrWithoutAdaptation =
         AnnotationUtils.getElementValue(
             createsObligation, supplier.getCreatesObligationValueElement(), String.class, "this");

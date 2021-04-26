@@ -69,7 +69,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * A cache of locations at which an inconsistent.mustcall.subtype error has already been issued,
    * to avoid issuing duplicate errors. Cleared with each compilation unit.
    */
-  private final Set<Element> elementsIssuedInconsistentMustCallSubtypeErrors = new HashSet<>();
+  private final Set<Element> issuedInconsistentMustCallSubtype = new HashSet<>();
 
   /**
    * Map from trees representing expressions to the temporary variables that represent them in the
@@ -114,10 +114,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
     super.setRoot(root);
-    elementsIssuedInconsistentMustCallSubtypeErrors.clear();
-    // TODO: this should probably be guarded by isSafeToClearSharedCFG from
-    // GenericAnnotatedTypeFactory, but this works here because we know the MCC is always the first
-    // subchecker that's sharing tempvars.
+    issuedInconsistentMustCallSubtype.clear();
+    // TODO: This should probably be guarded by isSafeToClearSharedCFG from
+    // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
+    // always the first subchecker that's sharing tempvars.
     tempVars.clear();
   }
 
@@ -248,7 +248,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         AnnotationMirror writtenMCAnno = type.getAnnotationInHierarchy(this.TOP);
         if (writtenMCAnno != null
             && !this.getQualifierHierarchy().isSubtype(inheritedMCAnno, writtenMCAnno)) {
-          if (!elementsIssuedInconsistentMustCallSubtypeErrors.contains(elt)
+          if (!issuedInconsistentMustCallSubtype.contains(elt)
               && !this.checker.shouldSkipUses(elt)) {
             checker.reportError(
                 elt,
@@ -256,7 +256,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 elt.getSimpleName(),
                 writtenMCAnno,
                 inheritableMustCall);
-            elementsIssuedInconsistentMustCallSubtypeErrors.add(elt);
+            issuedInconsistentMustCallSubtype.add(elt);
           }
         } else {
           type.replaceAnnotation(inheritedMCAnno);
@@ -267,39 +267,34 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Creates a {@link MustCall} annotation whose values are the given strings.
-   *
-   * @param val the methods that should be called
-   * @return an annotation indicating that the given methods should be called
-   */
-  public AnnotationMirror createMustCall(final List<String> val) {
-    if (mustCallAnnotations.containsKey(val)) {
-      return mustCallAnnotations.get(val);
-    } else {
-      AnnotationMirror result = createMustCallImpl(val.toArray(new String[0]));
-      mustCallAnnotations.put(val, result);
-      return result;
-    }
-  }
-
-  /**
-   * Cache of the MustCall annotations that have actually been created. Most programs only actually
-   * require a few MustCall annotations (e.g. MustCall() and MustCall("close")).
+   * Cache of the MustCall annotations that have actually been created. Most programs require few
+   * distinct MustCall annotations (e.g. MustCall() and MustCall("close")).
    */
   private Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
 
   /**
    * Creates a {@link MustCall} annotation whose values are the given strings.
    *
-   * <p>This internal version bypasses the cache, and is only used for new annotations.
-   *
    * @param val the methods that should be called
    * @return an annotation indicating that the given methods should be called
    */
-  private AnnotationMirror createMustCallImpl(final String[] val) {
+  public AnnotationMirror createMustCall(final List<String> val) {
+    return mustCallAnnotations.computeIfAbsent(val, this::createMustCallImpl);
+  }
+
+  /**
+   * Creates a {@link MustCall} annotation whose values are the given strings.
+   *
+   * <p>This internal version bypasses the cache, and is only used for new annotations.
+   *
+   * @param methodList the methods that should be called
+   * @return an annotation indicating that the given methods should be called
+   */
+  private AnnotationMirror createMustCallImpl(List<String> methodList) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MustCall.class);
-    Arrays.sort(val);
-    builder.setValue("value", val);
+    String[] methodArray = methodList.toArray(new String[methodList.size()]);
+    Arrays.sort(methodArray);
+    builder.setValue("value", methodArray);
     return builder.build();
   }
 
@@ -310,8 +305,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Fetches the store from the results of dataflow for first. If afterFirstStore is true, then the
-   * store after first is returned; if afterFirstStore is false, the store before succ is returned.
+   * Fetches the store from the results of dataflow for {@code first}. If afterFirstStore is true,
+   * then the store after {@code first} is returned; if afterFirstStore is false, the store before
+   * {@code succ} is returned.
    *
    * @param afterFirstStore whether to use the store after the first block or the store before its
    *     successor, succ
@@ -367,8 +363,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       super(mustCallAnnotatedTypeFactory);
     }
 
-    // When they appear in the body of a method or constructor, treat non-owning parameters
-    // as bottom regardless of their declared type.
     @Override
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromTree(node);

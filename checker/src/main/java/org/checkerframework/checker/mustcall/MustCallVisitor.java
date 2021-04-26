@@ -51,8 +51,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
         AnnotationMirror notOwningAnno = atypeFactory.getDeclAnnotation(methodElt, NotOwning.class);
         if (notOwningAnno != null) {
-          // skip return type subtyping check, because not-owning pointer means OCC won't check
-          // anyway
+          // Skip return type subtyping check, because not-owning pointer means Object Construction
+          // Checker won't check anyway.
           return null;
         }
       }
