@@ -450,7 +450,7 @@ For some other libraries, the Checker Framework developers have provided an
 annotated version of the library.
 The annotated libraries appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
-  \<org.checkerframework.annotatedlib> group in the Central Repository}.
+  \<org.checkerframework.annotatedlib> group in the Maven Central Repository}.
 The annotated library has \emph{identical} behavior to the upstream,
 unannotated version; the source code is identical other than added
 annotations.
@@ -465,7 +465,7 @@ and
 java-getopt.
 If the library you are interested in does not appear
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{in
-  the Central Repository}, you can contribute by annotating it, which will
+  the Maven Central Repository}, you can contribute by annotating it, which will
 help you and all other Checker Framework users; see
 \chapterpageref{annotating-libraries}.)
 
@@ -475,7 +475,7 @@ To use an annotated library:
 \item
 If your project stores \<.jar> files locally, then
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{download
-  the \<.jar> file from the Central Repository}.
+  the \<.jar> file from the Maven Central Repository}.
 
 \item
 If your project manages dependencies using a tool such as Gradle or Maven,
@@ -539,8 +539,11 @@ For example, you can use
 
 \noindent
 to pass different lint options to the Nullness and GUI Effect Checkers.  A
-downside is that, in this example, each of the checkers will issue one
-``The following options were not recognized by any processor'' warning.
+downside is that, in this example, the Nullness Checker will issue a
+``The following options were not recognized by any processor'' warning
+about the second option and the GUI Effect Checker will issue a
+``The following options were not recognized by any processor'' warning
+about the first option.
 
 % This list should be kept in sync with file
 % framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
@@ -679,22 +682,23 @@ Type-checking modes:  enable/disable functionality
 
 Partially-annotated libraries
 \begin{itemize}
+
 % \item \<-AprintUnannotatedMethods>
 %   List library methods that need to be annotated; see
 %   Section~\ref{annotating-libraries}.
+
 \item \<-Astubs>
   List of stub files or directories; see Section~\ref{stub-using}.
-\item \<-AstubWarnIfNotFound>
-  Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
-\item \<-AstubWarnIfNotFoundIgnoresClasses>
-  Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
-%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
-% \item \<-AstubWarnIfOverwritesBytecode>
-%   Warn if a stub file entry overwrite bytecode information; see
-%   Section~\ref{stub-using}.
-\item \<-AstubWarnIfRedundantWithBytecode>
-  Warn if a stub file entry is redundant with bytecode information; see
-  Section~\ref{stub-using}.
+
+\item
+  \<-AstubWarnIfNotFound>,
+  \<-AstubWarnIfNotFoundIgnoresClasses>,
+  %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+  %  \<-AstubWarnIfOverwritesBytecode>,
+  \<-AstubWarnIfRedundantWithBytecode>,
+  \<-AstubWarnNote>,
+  Warn about problems with stub files; see Section~\ref{stub-using}.
+
 \item \<-AmergeStubsWithSource>
   If both a stub file and a source file for a class are available, trust
   both and use the greatest lower bound of their annotations. The default
@@ -702,12 +706,14 @@ Partially-annotated libraries
   source is available. See Section~\ref{stub-multiple-specifications}.
   % note to maintainers: GLB of the two types was chosen to support
   % using this flag in combination with \<-Ainfer=stubs>.
+
 % This item is repeated above:
 \item \<-AuseConservativeDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
   \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
+
 \end{itemize}
 
 Debugging
@@ -1035,23 +1041,30 @@ annotate your whole program at first.
 
 It is easiest to add annotations if you know the code or the
 code contains documentation.  While adding annotations, you will spend most of your time
-understanding the code, and very little time actually writing annotations
+understanding the code, and less time actually writing annotations
 or running the checker.
 
-When annotating, be systematic; we recommend
-annotating an entire class at a time (not just some of the methods)
-so that you don't lose track of your work or redo work.  For example,
-working class-by-class avoids confusion about whether an unannotated type
-means you determined that the default is desirable, or it means you didn't
-yet examine that type.
+Don't annotate the whole program, but work module by module.
 Start annotating classes at the leaves of the call tree ---
 that is,
 start with classes/packages that have few dependencies on other
-code.  Annotate supertypes before you
-annotated classes that extend or implement them.
+code.
+Annotate supertypes before you
+annotate classes that extend or implement them.
 The reason for this rule is that it is
 easiest to annotate a class if the code it depends on has already been
 annotated.
+Sections~\ref{askipuses} and~\ref{askipdefs} give ways to skip
+checking of some files, directories, or packages.
+Section~\ref{unannotated-code} gives advice about handling calls from
+annotated code into unannotated code.
+
+When annotating, be systematic; we recommend
+annotating an entire class or module at a time (not just some of the methods)
+so that you don't lose track of your work or redo work.  For example,
+working class-by-class avoids confusion about whether an unannotated type use
+means you determined that the default is desirable, or it means you didn't
+yet examine that type use.
 
 Don't overuse pluggable type-checking.  If the regular Java type system can
 verify a property using Java subclasses, then that is a better choice than
@@ -1093,19 +1106,15 @@ Then, fix bugs in code and add/modify annotations as necessary.
 % documentation.
 Don't get discouraged if you see many type-checker warnings at first.
 Often, adding just a few missing annotations will eliminate many warnings,
-and you'll be surprised how fast the process goes overall.
+and you'll be surprised how fast the process goes overall (assuming that
+you understand the code, of course).
 
-You may wonder about the effect of adding a given annotation (that is, of
-changing the specification for a given method or class):  how many
-other specification changes (added annotations) will it require, and will
-it conflict with other code?  It's best to reason about the desired design,
-but you can also do an experiment.
-Suppose you are considering adding an annotation to a method parameter.
-One approach is to manually examine all callees.
-A more automated approach is to save the checker
-output before adding the annotation, and to compare it to the checker
-output after adding the annotation.  This helps you to focus on the
-specific consequences of your change.
+It is usually not a good idea to experiment with adding and removing
+annotations in order to understand their effect.  It is better to reason
+about the desired design.  However, to avoid having to manually examine all
+callees, a more automated approach is to save the checker output before
+changing an annotation, then compare it to the checker output after
+changing the annotation.
 
 Chapter~\ref{annotating-libraries} tells you how to annotate libraries that
 your code uses.  Section~\ref{handling-warnings} and
@@ -1117,8 +1126,8 @@ to eliminate checker warnings by adding annotations.
 
 Avoid complex code, which is more error-prone.  If you write your code to
 be simple and clear enough for the type-checker to verify, then it will
-also be easier for programmers to understand.  A sneaky side benefit of
-verifying your code is improving your code's structure.
+also be easier for programmers to understand.  When you verify your code, a
+side benefit is improving your code's structure.
 
 Your code should compile cleanly under the regular Java compiler.  As a
 specific example, your code should not use raw types like \code{List}; use
@@ -1197,8 +1206,8 @@ This method crashes if \<null> is passed to it:
 
 \noindent
 Therefore, the type of \<arg>
-should be \<@NonNull Object> (which you can write as just \<Object> due to
-defaulting).  The Nullness Checker (\chapterpageref{nullness-checker})
+should be \<@NonNull Object> (which you can write as just \<Object>, because
+\<@NonNull> is the default).  The Nullness Checker (\chapterpageref{nullness-checker})
 prevents null pointer exceptions by warning you whenever a client passes a
 value that might cause \<m1> to crash.
 
@@ -1213,8 +1222,9 @@ Here is another method:
 \end{Verbatim}
 
 Method \<m2> behaves just like \<m1> in that it throws
-\<NullPointerException> if a client passes \<null>.  Therefore, a checker
-should issue the same warning if a client might pass \<null>.
+\<NullPointerException> if a client passes \<null>.  Therefore, their
+specifications should be identical (the argument is \<@NonNull>), so the
+checker will issue the same warning if a client might pass \<null>.
 
 The same argument applies to any method that is guaranteed to throw an exception
 if it receives \code{null} as an argument.  Examples include:
@@ -1231,14 +1241,14 @@ Their formal parameter type is annotated as \<@NonNull>, because otherwise the
 program might crash.  Adding a call to a method like \<requireNonNull>
 never prevents a crash:  your code still crashes, but with a slightly
 different stack trace.  In order to prevent all exceptions in your program
-caused by null pointers, you need to prevent those thrown by methods like
+caused by null pointers, you need to prevent those thrown by methods including
 \<requireNonNull>.
 
-(Here is a counterargument that the formal parameter should be annotated as
-\refqualclass{checker/nullness/qual}{Nullable}:  passing \code{null} has a
+(One might argue that the formal parameter should be annotated as
+\refqualclass{checker/nullness/qual}{Nullable} because passing \code{null} has a
 well-defined semantics (throw an exception) and such an execution may be
 possible if your program has a bug.  However, it is never the programmer's
-intent for \<null> to flow there; preventing such bugs is the purpose of
+intent for \<null> to flow there.  Preventing such bugs is the purpose of
 the Nullness Checker.)
 
 A method like \<requireNonNull> is useless for making your code correct,
@@ -1257,14 +1267,17 @@ crash due to use of a non-present Optional value.  Therefore, the receiver
 of
 \<orElseThrow> is annotated as
 \refqualclass{checker/optional/qual}{Present},
-and the optional Checker issues a warning if the client calls
+and the Optional Checker issues a warning if the client calls
 \<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
 
 
-\paragraphAndLabel{Permitting crashes in called methods}
-You can make a checker warn you about crashes in your own code, but ignore
-crashes that occur in library code.  This invalidates the checker's
-guarantee that your program will not crash.
+\paragraphAndLabel{Permitting crashes in called methods}{annotate-normal-behavior-skip-libraries}
+You can make a checker ignore crashes in library code (such as
+\<assertNotNull()>) that occur as a result of misuse by your code.
+This invalidates the checker's guarantee that your program will not crash.
+(Programmers and users typically care about all crashes, no matter which
+method is at the top of the call stack when the exception is thrown.)
+The checker will still warn you about crashes in your own code.
 
 \begin{itemize}
 \item
@@ -1273,6 +1286,11 @@ guarantee that your program will not crash.
 \item
   A stub file (Section~\ref{stub}) can override the library's annotations,
   for one or more methods.
+\item
+  Don't type-check clients of the method.  For example, JUnit's
+  \<assertNotNull()> is typically called only in test code; its clients are
+  the tests.  If you type-check only your main program, then the annotation
+  on \<assertNotNull()> is irrelevant.
 \end{itemize}
 
 
@@ -1376,14 +1394,17 @@ annotations at all are needed on type parameters such as \code{E} in \<MultiSet>
 \subsectionAndLabel{What to do if a checker issues a warning about your code}{handling-warnings}
 
 When you run a type-checker on your code, it is likely to issue warnings or
-errors.  Don't panic!  There are three general causes for the warnings:
+errors.  Don't panic!
+If you have trouble understanding a Checker Framework warning message, you
+can search for its text in this manual.
+There are three general causes for the warnings:
 
-\begin{itemize}
-\item
+\begin{description}
+\item[You found a bug]
   There is a bug in your code, such as a possible null dereference.  Fix
   your code to prevent that crash.
 
-\item
+\item[Wrong annotations]
   The annotations are too strong (they are incorrect) or too weak (they
   are imprecise).  Improve the
   annotations, usually by writing more annotations in order to better
@@ -1396,139 +1417,183 @@ errors.  Don't panic!  There are three general causes for the warnings:
   Sometimes you need to improve annotations in a library that your program
   uses (see \chapterpageref{annotating-libraries}).
 
-\item
+\item[Type-checker weakness]
   There is a weakness in the type-checker.  Your code is safe --- it never
   suffers the error at run time --- but the checker cannot prove this fact.
-  (It is not omniscient, and it works modularly:  when type-checking a
+  (The checker is not omniscient, and it works modularly:  when type-checking a
   method \<m>, it relies on the types, but not the code, of variables and
   methods used by \<m>.)
 
   If possible, rewrite your code to be simpler for the checker to analyze;
   this is likely to make it easier for people to understand, too.
   If that is not possible, suppress the warning (see
-  Chapter~\ref{suppressing-warnings}); be sure to include a code
+  \chapterpageref{suppressing-warnings}); be sure to include a code
   comment explaining how you know the code is correct even though the
   type-checker cannot deduce that fact.
 
   (Do not add an \<if> test that can never fail, just to suppress a
   warning.  Adding a gratuitous \<if> clutters the code and confuses
   readers.  A reader should assume that every \<if> condition can evaluate to true
-  or false.  It can be acceptable to add an \<if> test that throws a
+  or false.  There is one exception to this rule:  an \<if> test may have a
+  condition that you think will never evaluate to true, if its body just throws a
   descriptive error message.)
-\end{itemize}
+\end{description}
 
 For each warning issued by the checker, you need to determine which of the
 above categories it falls into.  Here is an effective methodology to do so.
 It relies mostly on manual code examination, but you may also find it
 useful to write test cases for your code or do other kinds of analysis, to
 verify your reasoning.
-
-\begin{enumerate}
-\item
-  Write an explanation of why your code is correct and it
-  never suffers the error at run time.  In other words, this is an English proof
-  that the type-checker's warning is incorrect.
-
-  Don't skip any steps in your proof.
-  (For example, don't write an unsubstantiated claim such as ``\<x> is
-  non-null here''; instead, give a justification.)
-  Don't let your reasoning rely on
-  facts that you do not write down explicitly.  For example, remember that
-  calling a method might change the values of object fields; your proof
-  might need to state that certain methods have no side effects.
-
-  If you cannot write a proof, then there is a bug
-  in your code (you should fix the bug) or your code is too complex for you
-  to understand (you should improve its documentation and/or design).
-
-\item
-  Translate the proof into annotations.  Here are some examples.
-
-  \begin{itemize}
-  \item
-    If your proof includes ``variable \<x> is never \<null>
-    at run time'', then annotate \<x>'s type with
-    \refqualclass{checker/nullness/qual}{NonNull}.
-  \item
-    If your proof
-    includes ``method \<foo> always returns a legal regular expression'',
-    then annotate \<foo>'s return type with
-    \refqualclass{checker/regex/qual}{Regex}.
-  \item
-    If your proof includes ``if method \<join>'s first argument is
-    non-null, then \<join> returns a non-null result'', then annotate
-    \<join>'s first parameter and return type with
-    \refqualclass{checker/nullness/qual}{PolyNull}.
-  \item
-    If your proof includes ``method \<processOptions> has already been called and it
-    set field \<tz1>'', then annotate \<processOptions>'s declaration with
-    \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNull}{"tz1"}.
-  \item
-    If your proof includes ``method \<isEmpty> returned false, so its
-    argument must have been non-null'', then annotate \<isEmpty>'s
-    declaration with
-    \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNullIf}{expression="\#1",result=false}.
-  \item
-    If your proof includes ``method \<m> has no side effects'',
-    then annotate \<m>'s declaration with
-    \refqualclass{dataflow/qual}{SideEffectFree}.
-  \item
-    If your proof includes ``each call to method \<m> returns the same value'',
-    then annotate \<m>'s declaration with
-    \refqualclass{dataflow/qual}{Deterministic}.
-  \end{itemize}
-
-  All of these are examples of correcting weaknesses in the annotations you wrote.
-  The Checker Framework provides many other powerful annotations; you may
-  be surprised how many proofs you can express in annotations.
-  If you need to annotate a method that is defined in a
-  library that your code uses, see \chapterpageref{annotating-libraries}.
-
-  Don't omit any parts of your proof.  When the Checker Framework analyzes
-  a method, it examines only the specifications (not the implementations)
-  of other methods.
-
-  If there are complex facts in your proof that cannot be expressed as
-  annotations, then that is a weakness in the type-checker.  For example,
-  the Nullness Checker cannot express ``in list \<lst>, elements stored at
-  even indices are always non-\<null>, but elements stored at odd elements
-  might be \<null>.''  In this case, you have two choices.
-  %
-  First, you can suppress the warning
-  (\chapterpageref{suppressing-warnings}); be sure to write a comment
-  explaining your reasoning for suppressing the warning.  You may wish to
-  submit a feature request (Section~\ref{reporting-bugs}) asking for
-  annotations that handle your use case.
-  %
-  Second, you can rewrite the code to make the proof simpler;
-  in the above example, it might be better to use a list of pairs
-  rather than a heterogeneous list.
-
-\item
-  At this point, all the steps in your proof have been formalized as
-  annotations.  Re-run the checker and repeat the process for any new or
-  remaining warnings.
-
-  If every step of your proof can be expressed in annotations, but the
-  checker cannot make one of the deductions (it cannot follow one of the
-  steps), then that is a weakness in the type-checker.  First, double-check
-  your reasoning.  Then, suppress the warning, along with a comment
-  explaining your reasoning (\chapterpageref{suppressing-warnings}).
-  The comment is an excerpt from your English proof, and the proof guides
-  you to the best place to suppress the warning.
-  Finally, please submit a bug report so that the checker can be improved
-  in the future (Section~\ref{reporting-bugs}).
-
-\end{enumerate}
-
-If you have trouble understanding a Checker Framework warning message, you
-can search for its text in this manual.
-
-Also see
+(Also see
 Section~\ref{common-problems-typechecking} and
 Chapter~\ref{troubleshooting}, Troubleshooting.
 In particular, Section~\ref{common-problems-typechecking} explains this
-same methodology in different words.
+same methodology in different words.)
+
+
+\paragraphAndLabel{Step 1: Explain correctness:  write a proof}{handling-warnings-step1}
+Write an explanation of why your code is correct and it
+never suffers the error at run time.  In other words, this is an informal proof
+that the type-checker's warning is incorrect.  Write it in natural language
+(e.g., English).
+
+Don't skip any steps in your proof.
+(For example, don't write an unsubstantiated claim such as ``\<x> is
+non-null here''; instead, give a justification.)
+Don't let your reasoning rely on
+facts that you do not write down explicitly.  For example, remember that
+calling a method might change the values of object fields; your proof
+might need to state that certain methods have no side effects.
+
+If you cannot write a proof, then there is a bug
+in your code (you should fix the bug) or your code is too complex for you
+to understand (you should improve its documentation and/or design).
+
+
+\paragraphAndLabel{Step 2: Translate the proof into annotations.}{handling-warnings-step2}
+Here are some examples of the translation.
+
+\begin{itemize}
+\item
+  If your proof includes ``variable \<x> is never \<null>
+  at run time'', then annotate \<x>'s type with
+  \refqualclass{checker/nullness/qual}{NonNull}.
+\item
+  If your proof
+  includes ``method \<foo> always returns a legal regular expression'',
+  then annotate \<foo>'s return type with
+  \refqualclass{checker/regex/qual}{Regex}.
+\item
+  If your proof includes ``if method \<join>'s first argument is
+  non-null, then \<join> returns a non-null result'', then annotate
+  \<join>'s first parameter and return type with
+  \refqualclass{checker/nullness/qual}{PolyNull}.
+\item
+  If your proof includes ``method \<processOptions> has already been called and it
+  set field \<tz1>'', then annotate \<processOptions>'s declaration with
+  \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNull}{"tz1"}.
+\item
+  If your proof includes ``method \<isEmpty> returned false, so its
+  argument must have been non-null'', then annotate \<isEmpty>'s
+  declaration with
+  \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNullIf}{expression="\#1",result=false}.
+\item
+  If your proof includes ``method \<m> has no side effects'',
+  then annotate \<m>'s declaration with
+  \refqualclass{dataflow/qual}{SideEffectFree}.
+\item
+  If your proof includes ``each call to method \<m> returns the same value'',
+  then annotate \<m>'s declaration with
+  \refqualclass{dataflow/qual}{Deterministic}.
+\end{itemize}
+
+All of these are examples of correcting weaknesses in the annotations you wrote.
+The Checker Framework provides many other powerful annotations; you may
+be surprised how many proofs you can express in annotations.
+If you need to annotate a method that is defined in a
+library that your code uses, see \chapterpageref{annotating-libraries}.
+
+Don't omit any parts of your proof.  When the Checker Framework analyzes
+a method, it examines only the specifications (not the implementations)
+of other methods.
+
+If there are complex facts in your proof that cannot be expressed as
+annotations, then that is a weakness in the type-checker.  For example,
+the Nullness Checker cannot express ``in list \<lst>, elements stored at
+even indices are always non-\<null>, but elements stored at odd elements
+might be \<null>.''  In this case, you have two choices.
+%
+First, you can suppress the warning
+(\chapterpageref{suppressing-warnings}); be sure to write a comment
+explaining your reasoning for suppressing the warning.  You may wish to
+submit a feature request (Section~\ref{reporting-bugs}) asking for
+annotations that handle your use case.
+%
+Second, you can rewrite the code to make the proof simpler;
+in the above example, it might be better to use a list of pairs
+rather than a heterogeneous list.
+
+\paragraphAndLabel{Step 3: Re-run the checker}{handling-warnings-step3}
+At this point, all the steps in your proof have been formalized as
+annotations.  Re-run the checker and repeat the process for any new or
+remaining warnings.
+
+If every step of your proof can be expressed in annotations, but the
+checker cannot make one of the deductions (it cannot follow one of the
+steps), then that is a weakness in the type-checker.  First, double-check
+your reasoning.  Then, suppress the warning, along with a comment
+explaining your reasoning (\chapterpageref{suppressing-warnings}).
+The comment is an excerpt from your informal proof, and the proof guides
+you to the best place to suppress the warning.
+Please submit a bug report so that the checker can be improved
+in the future (Section~\ref{reporting-bugs}).
+
+
+
+
+\subsectionAndLabel{Calls to unannotated code (legacy libraries)}{unannotated-code}
+
+Sometimes, you wish to type-check only part of your program.
+You might focus on the most mission-critical or error-prone part of your
+code.  When you start to use a checker, you may not wish to annotate
+your entire program right away.
+% Not having source code is *not* a reason.
+You may not have
+enough knowledge to annotate poorly-documented libraries that your program uses.
+Or, the code you are annotating may call into unannotated libraries.
+
+If annotated code uses unannotated code, then the checker may issue
+warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) will
+warn whenever an unannotated method result is used in a non-null context:
+
+\begin{Verbatim}
+  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
+\end{Verbatim}
+
+If the call \emph{can} return null, you should fix the bug in your program by
+removing the \refqualclass{checker/nullness/qual}{NonNull} annotation in your own program.
+
+If the call \emph{never} returns null, you have two choices:  annotate the library
+or suppress warnings.
+\begin{enumerate}
+\item To annotate the library:
+  \begin{itemize}
+  \item
+    If the unannotated code is in your program, you can write annotations
+    but not type-check them yet.  Two ways to prevent the type-checking are
+    via a \code{@SuppressWarnings} annotation
+    (Section~\ref{suppresswarnings-annotation}) or by not running the
+    checker on that file, for example via the \<-AskipDefs> command-line
+    option (Section~\ref{askipdefs}).
+  \item
+    To annotate a library whose source code you do not have or cannot
+    change, see Chapter~\ref{annotating-libraries}.
+  \end{itemize}
+\item To suppress all warnings related to uses of
+  \code{unannotated\_method}, use the \code{-AskipUses} command-line option
+  (see Section~\ref{askipuses}).  Beware:  a carelessly-written regular
+  expression may suppress more warnings than you intend.
+\end{enumerate}
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
@@ -1546,7 +1611,7 @@ same methodology in different words.
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
+% LocalWords:  callees Xmx unconfuse fenum propkey forName
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
 % LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
 % LocalWords:  AignoreRawTypeArguments AsuggestPureMethods ApermitMissingJdk

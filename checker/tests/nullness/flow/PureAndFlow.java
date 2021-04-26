@@ -51,12 +51,10 @@ public abstract class PureAndFlow {
   class Cons {
     @org.checkerframework.dataflow.qual.Pure
     // :: warning: (purity.deterministic.constructor)
-    // :: error: (purity.not.deterministic.not.sideeffectfree.call)
     Cons(String s) {}
 
     @org.checkerframework.dataflow.qual.Deterministic
     // :: warning: (purity.deterministic.constructor)
-    // :: error: (purity.not.deterministic.call)
     Cons(int i) {}
   }
 }

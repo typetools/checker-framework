@@ -3,6 +3,10 @@ Version 3.13.0 (May 3, 2021)
 
 **User-visible changes:**
 
+Command-line argument -AassumeKeyFor makes the Nullness Checker and Map Key
+Checker unsoundly assume that the argument to `Map.get` is a key for the
+receiver map.
+
 The Must Call Checker over-approximates the methods that an object must call
 before it is de-allocated.
 
@@ -12,6 +16,12 @@ such variables are reflected in the control flow graph (CFG).  Thanks to
 Chris Day for this change.  However, note that the Checker Framework only
 has full support for Java 8 and Java 11.
 
+New command-line argument `-AstubWarnNote` makes stub file warnings notes
+rather than warnings.
+
+Removed the StubGenerator section from the manual, because changes in JDK 11
+have broken the StubGenerator program.
+
 **Implementation details:**
 
 Method renamings:
@@ -19,6 +29,7 @@ Method renamings:
 
 **Closed issues:**
 #4410
+
 
 Version 3.12.0 (April 1, 2021)
 ------------------------------
@@ -1033,7 +1044,7 @@ Added a @QualifierArgument annotation to be used on pre- and postcondition
 
 Added new type @InternalFormForNonArray to the Signature Checker
 
-Moved annotated libraries from checker/lib/*.jar to the Central Repository:
+Moved annotated libraries from checker/lib/*.jar to the Maven Central Repository:
 https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
 
 Moved the Javadoc stub file from checker/lib/javadoc.astub to

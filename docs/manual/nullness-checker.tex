@@ -115,6 +115,13 @@ by the Checker Framework.
   If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
   the checker will trust \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
   annotations. See Section~\ref{nullness-collection-toarray} for a discussion.
+
+\item
+  \label{nullness-assumeKeyFor}%
+  If you supply the \code{-AassumeKeyFor} command-line option, then the
+  checker will unsoundly assume that the argument to \<Map.get> is a key
+  for the receiver map.  It will not do any checking of
+  \refqualclass{checker/nullness/qual}{KeyFor} and related qualifiers.
 \end{itemize}
 
 \item
@@ -327,6 +334,12 @@ are satisfied:
 \noindent
 If either of these two conditions is violated, then \<mymap.get(mykey)> has
 the possibility of returning \<null>.
+
+The command-line argument \<-AassumeKeyFor> makes the Nullness Checker not
+run the Map Key Checker.  The Nullness Checker will unsoundly assume that
+the argument to \<Map.get> is a key for the receiver map.  That is, the
+second condition above is always considered to be \<true>.
+
 
 \sectionAndLabel{Writing nullness annotations}{writing-nullness-annotations}
 
@@ -2088,7 +2101,7 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
-% LocalWords:  UnderInitialization getComponentType AsuppressWarnings
+% LocalWords:  UnderInitialization getComponentType AsuppressWarnings util
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
 % LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''
 % LocalWords:  dereferenced dereference Dereferencing initializers astub
@@ -2097,4 +2110,4 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
 % LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
 % LocalWords:  ConcurrentHashMap permitClearProperty setProperties
-% LocalWords:  clearProperty
+% LocalWords:  clearProperty AassumeKeyFor

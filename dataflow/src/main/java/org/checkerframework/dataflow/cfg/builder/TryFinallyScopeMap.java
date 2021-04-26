@@ -18,7 +18,7 @@ class TryFinallyScopeMap extends HashMap<Name, Label> {
 
   /** Create a new TryFinallyScopeMap. */
   protected TryFinallyScopeMap() {
-    this.accessedNames = new LinkedHashMap<>();
+    this.accessedNames = new LinkedHashMap<>(2);
   }
 
   @Override
