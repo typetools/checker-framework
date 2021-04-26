@@ -51,11 +51,13 @@ public class LowerBoundDefaulting {
     @LbTop MyArrayList<@LbImplicit ? extends @LbTop String> iebLowerBoundCompatible = iebList;
   }
 
+  // :: error: (type.argument.type.incompatible)
   public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) {
     // should fail because @LbExplicit is below @LbTop
     // :: error: (assignment.type.incompatible)
     @LbTop MyArrayList<@LbTop ? super @LbTop String> iebLowerBoundIncompatible = elbList;
 
+    // :: error: (type.argument.type.incompatible)
     @LbTop MyArrayList<@LbTop ? super @LbExplicit String> iebLowerBoundStillIncompatible = elbList;
 
     // :: error: (assignment.type.incompatible)
