@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation indicating that ownership should not be transferred to the parameter, field, or return
- * type (when this is written on a method), for the purposes of Must Call checking.
+ * Annotation indicating that ownership should not be transferred to the annotated parameter, field,
+ * or (when this is written on a method) return type, for the purposes of Must Call checking.
  *
  * <p>Parameters and fields are treated as if they have this annotation by default unless they have
  * {@link Owning}.

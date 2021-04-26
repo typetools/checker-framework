@@ -11,9 +11,10 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * Indicates that the method resets the must-call type on the target (the value argument) to the
- * least upper bound of its current must-call type and its declared must-call type. This effectively
- * undoes flow-sensitive type refinement.
+ * Indicates that the method resets the target's must-call type to its declared type. This
+ * effectively undoes flow-sensitive type refinement. The target is the {@code value}
+ * argument/element. More precisely, the method resets the target's must-call type to the least
+ * upper bound of its current must-call type and its declared must-call type.
  *
  * <p>When calling a method annotated as {@code @CreatesObligation("}<em>target</em>{@code ")}, the
  * expression {@code target} must not have type {@code @}{@link CalledMethods}{@code ({})}. That is,
@@ -48,12 +49,13 @@ import org.checkerframework.framework.qual.JavaExpression;
  * </pre>
  *
  * A client of {@code SocketContainer} is permitted to call {@code reset()} arbitrarily many times.
- * Each time it does so, a new {@code Socket} might be created, so only after the last call to
- * {@code reset()} is a client permitted to fulfill a {@code SocketContainer}'s must-call obligation
- * of "stop". The {@code @CreatesObligation} annotation on reset's declaration enforces this
- * requirement: at any call to {@code reset()}, all called-methods information about the receiver is
- * removed from the store of the Must Call Checker and the store of the Called Methods Checker, so
- * the client has to "start over" as if a fresh {@code SocketContainer} object had been created.
+ * Each time it does so, a new {@code Socket} might be created. A {@code SocketContainer}'s
+ * must-call obligation of "stop" is fulfilled only if {@code stop()} is called after the last call
+ * to {@code reset()}. The {@code @CreatesObligation} annotation on {@code reset()}'s declaration
+ * enforces this requirement: at any call to {@code reset()}, all called-methods information about
+ * the receiver is removed from the store of the Must Call Checker and the store of the Called
+ * Methods Checker, so the client has to "start over" as if a fresh {@code SocketContainer} object
+ * had been created.
  *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */

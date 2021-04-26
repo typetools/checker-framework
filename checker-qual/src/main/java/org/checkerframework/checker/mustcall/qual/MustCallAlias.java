@@ -20,8 +20,7 @@ import java.lang.annotation.Target;
  * &#64;MustCall("close")
  * class Socket {
  *   &#64;MustCallAlias OutputStream getOutputStream(&#64;MustCallAlias Socket this) { ... }
- * }
- * </pre>
+ * }</pre>
  *
  * Calling {@code close()} on the returned {@code OutputStream} will close the underlying socket,
  * but the Socket may also be closed directly, which has the same effect.
