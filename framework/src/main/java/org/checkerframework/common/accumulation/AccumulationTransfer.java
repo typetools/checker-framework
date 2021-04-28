@@ -104,21 +104,4 @@ public class AccumulationTransfer extends CFTransfer {
       }
     }
   }
-
-  /**
-   * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
-   *
-   * @param result the TransferResult holding the stores to modify
-   * @param target the receiver whose value should be modified
-   * @param newAnno the new value
-   */
-  private void insertIntoStores(
-      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
-    if (result.containsTwoStores()) {
-      result.getThenStore().insertValue(target, newAnno);
-      result.getElseStore().insertValue(target, newAnno);
-    } else {
-      result.getRegularStore().insertValue(target, newAnno);
-    }
-  }
 }

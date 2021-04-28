@@ -1313,4 +1313,22 @@ public abstract class CFAbstractTransfer<
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
   }
+
+  /**
+   * Inserts newAnno as the value into all stores (conditional or not) in the result for node. This
+   * is a utility method for subclasses.
+   *
+   * @param result the TransferResult holding the stores to modify
+   * @param target the receiver whose value should be modified
+   * @param newAnno the new value
+   */
+  public static void insertIntoStores(
+      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
+    if (result.containsTwoStores()) {
+      result.getThenStore().insertValue(target, newAnno);
+      result.getElseStore().insertValue(target, newAnno);
+    } else {
+      result.getRegularStore().insertValue(target, newAnno);
+    }
+  }
 }

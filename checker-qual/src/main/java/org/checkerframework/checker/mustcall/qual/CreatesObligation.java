@@ -32,6 +32,9 @@ import org.checkerframework.framework.qual.JavaExpression;
  * <pre>
  * &#64;MustCall("stop")
  * class SocketContainer {
+ *     // Note that @MustCall("close") is the default type for java.net.Socket, but it
+ *     // is included on the next line for illustrative purposes. This example would function
+ *     // identically if that qualifier were omitted.
  *     private @Owning @MustCall("close") Socket socket = ...;
  *
  *     &#64;EnsuresCalledMethods(value="this.socket", methods="close")

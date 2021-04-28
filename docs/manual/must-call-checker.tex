@@ -69,9 +69,8 @@ call \<foo>, \<bar>, both, or neither; it cannot not represent an object that ne
 to call some other method.
 
 The default type in unannotated code is \<@MustCall(\{\})>.
-A completely unannotated program will always type-check without warnings.
-For the Must Call Checker to be useful, the programmer should supply at least one non-empty
-\<@MustCall> annotation, either in source code or in a stub file.
+A completely unannotated program will always type-check without warnings (so long as it
+does not use any classes in the annotated JDK, such as those that implement \<java.io.Closeable>).
 
 
 \sectionAndLabel{Writing \<@MustCall>/\<@InheritableMustCall> on a class}{must-call-on-class}

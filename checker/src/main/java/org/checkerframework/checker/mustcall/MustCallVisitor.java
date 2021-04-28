@@ -6,7 +6,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -65,10 +64,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
     // MustCallAlias annotations are always permitted on type uses, because these will be validated
     // by the Object Construction Checker's -AcheckMustCall algorithm.
+    AnnotatedDeclaredType useTypeCopy = useType.deepCopy();
     if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
-      useType.removeAnnotationByClass(MustCallAlias.class);
+      useTypeCopy.removeAnnotationByClass(MustCallAlias.class);
     }
-    return super.isValidUse(declarationType, useType, tree);
+    return super.isValidUse(declarationType, useTypeCopy, tree);
   }
 
   @Override
@@ -84,10 +84,23 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Mark (using the extraArgs parameter) any assignments where the LHS is a resource variable, so
-   * that close doesn't need to be considered. See {@link
-   * #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String, Object...)} for
-   * the code that uses and removes the marks.
+   * This boolean is used to communicate between different levels of the common assignment check
+   * whether a given check is being carried out on a (pseudo-)assignment to a resource variable. In
+   * those cases, close doesn't need to be considered when doing the check, since close will always
+   * be called by Java.
+   *
+   * <p>The check for whether the LHS is a resource variable can only be carried out on the element,
+   * but the effect needs to happen at the stage where the type is available (i.e. close needs to be
+   * removed from the type). Thus, this variable is used to communicate that a resource variable was
+   * detected on the LHS.
+   */
+  private boolean commonAssignmentCheckOnResourceVariable = false;
+
+  /**
+   * Mark (using the {@link #commonAssignmentCheckOnResourceVariable} field of this class) any
+   * assignments where the LHS is a resource variable, so that close doesn't need to be considered.
+   * See {@link #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String,
+   * Object...)} for the code that uses and removes the mark.
    */
   @Override
   protected void commonAssignmentCheck(
@@ -96,19 +109,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     if (TreeUtils.elementFromTree(varTree).getKind() == ElementKind.RESOURCE_VARIABLE) {
-      // Use the extraArgs array to signal to later stages of the common assignment check that this
-      // is in a resource variable context.
-      Object[] newExtraArgs = Arrays.copyOf(extraArgs, extraArgs.length + 1);
-      newExtraArgs[newExtraArgs.length - 1] = ElementKind.RESOURCE_VARIABLE;
-      super.commonAssignmentCheck(varTree, valueExp, errorKey, newExtraArgs);
-    } else {
-      super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+      commonAssignmentCheckOnResourceVariable = true;
     }
+    super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   /**
-   * If the LHS is a resource variable, then the last element of {@code extraArgs} is
-   * ElementKind.RESOURCE_VARIABLE.
+   * Iff the LHS is a resource variable, then {@link #commonAssignmentCheckOnResourceVariable} will
+   * be true. This method guarantees that {@link #commonAssignmentCheckOnResourceVariable} will be
+   * false when it returns.
    */
   @Override
   protected void commonAssignmentCheck(
@@ -117,7 +126,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    if (extraArgs.length >= 1 && extraArgs[extraArgs.length - 1] == ElementKind.RESOURCE_VARIABLE) {
+    if (commonAssignmentCheckOnResourceVariable) {
+      commonAssignmentCheckOnResourceVariable = false;
       // The LHS has been marked as a resource variable.  Skip the standard common assignment check;
       // instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
@@ -126,16 +136,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           .getQualifierHierarchy()
           .isSubtype(atypeFactory.withoutClose(valAnno), atypeFactory.withoutClose(varAnno))) {
         return;
-      } else {
-        // Remove the resource variable entry, since otherwise the rest of the framework could
-        // interpret it as a format string (which is how extraArgs is usually used).
-        // Note that in this case, the rest of the common assignment check should fail (barring
-        // an exception), but it's preferable to allow the whole process to continue to
-        // avoid duplicating error-issuing code here. This code therefore falls-through
-        // to the code below.
-        extraArgs = Arrays.copyOf(extraArgs, extraArgs.length - 1);
       }
+      // Note that in this case, the rest of the common assignment check should fail (barring
+      // an exception), but it's preferable to allow the whole process to continue to
+      // avoid duplicating error-issuing code here.
     }
+    // commonAssignmentCheckOnResourceVariable is already false, so no need to set it.
     super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
