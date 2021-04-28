@@ -522,6 +522,11 @@ available in \<org.checkerframework.annotatedlib>, then
 % running your code, you can use either the annotated library or the regular
 % distributed version of the library --- they behave identically.
 
+There is one special case.  If an \<.astub> file is shipped with the
+Checker Framework in \<checker/resources/>, then you can
+use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
+The ``\<checker.jar>'' should be literal --- don't provide a path.
+(This special syntax only works for ``\<checker.jar>''.)
 
 
 \subsectionAndLabel{Summary of command-line options}{checker-options}
