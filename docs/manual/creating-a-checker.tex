@@ -1774,6 +1774,12 @@ You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main
 class, so that they will also be automatically used.
+
+When a stub file should be used by multiple checkers (for example, if it
+contains purity annotations), the stub file should appear in directory
+\<checker/src/main/resources/>.  It will appear at the top level of the
+\<checker.jar> file.
+
 \end{itemize}
 
 
