@@ -10,11 +10,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * <p>The only difference is the contents of the @StubFiles annotation.
  */
 @StubFiles({
-  "Socket.astub",
   "NotOwning.astub",
-  "Stream.astub",
-  "NoObligationGenerics.astub",
-  "NoObligationStreams.astub",
   "Reflection.astub",
 })
 @SupportedOptions({MustCallChecker.NO_ACCUMULATION_FRAMES})

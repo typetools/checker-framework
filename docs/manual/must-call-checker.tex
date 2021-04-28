@@ -130,6 +130,13 @@ a declaration annotation.
 %% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
 %% Call Checker.
 
+\sectionAndLabel{Assumptions about reflection}{must-call-reflection}
+
+The Must Call Checker is unsound with respect to reflection: it assumes
+that objects instantiated reflectively do not have must-call obligations (i.e. that their
+type is \<@MustCall({})>. If the checker is run with \<-AresolveReflection>, then
+this assumption applies only to types that cannot be resolved.
+
 \sectionAndLabel{Type parameter bounds often need to be annotated}{must-call-type-params}
 
 In an unannotated program, there may be mismatches between defaulted type
