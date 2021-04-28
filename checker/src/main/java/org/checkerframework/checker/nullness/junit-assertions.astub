@@ -1,0 +1,593 @@
+package org.junit.jupiter.api;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+public class Assertions {
+
+	public static <V> V fail();
+
+	public static <V> V fail(String message);
+
+	public static <V> V fail(String message, Throwable cause);
+
+	public static <V> V fail(Throwable cause);
+
+	public static <V> V fail(Supplier<String> messageSupplier);
+
+	public static void assertTrue(boolean condition);
+
+	public static void assertTrue(boolean condition, Supplier<String> messageSupplier);
+
+	public static void assertTrue(BooleanSupplier booleanSupplier);
+
+	public static void assertTrue(BooleanSupplier booleanSupplier, String message);
+
+	public static void assertTrue(boolean condition, String message);
+
+	public static void assertTrue(BooleanSupplier booleanSupplier, Supplier<String> messageSupplier);
+
+	public static void assertFalse(boolean condition);
+
+	public static void assertFalse(boolean condition, String message);
+
+	public static void assertFalse(boolean condition, Supplier<String> messageSupplier);
+
+	public static void assertFalse(BooleanSupplier booleanSupplier);
+
+	public static void assertFalse(BooleanSupplier booleanSupplier, String message);
+
+	public static void assertFalse(BooleanSupplier booleanSupplier, Supplier<String> messageSupplier);
+
+	public static void assertNull(@Nullable Object actual);
+
+	public static void assertNull(@Nullable Object actual, String message);
+
+	public static void assertNull(@Nullable Object actual, Supplier<String> messageSupplier);
+
+	public static void assertNotNull(Object actual);
+
+	public static void assertNotNull(Object actual, String message);
+
+	public static void assertNotNull(Object actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(short expected, short actual);
+
+	public static void assertEquals(short expected, Short actual);
+
+	public static void assertEquals(Short expected, short actual);
+
+	public static void assertEquals(@Nullable Short expected, @Nullable Short actual);
+
+	public static void assertEquals(short expected, short actual, String message);
+
+	public static void assertEquals(short expected, Short actual, String message);
+
+	public static void assertEquals(Short expected, short actual, String message);
+
+	public static void assertEquals(@Nullable Short expected, @Nullable Short actual, String message);
+
+	public static void assertEquals(short expected, short actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(short expected, Short actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(Short expected, short actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Short expected, @Nullable Short actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(byte expected, byte actual);
+
+	public static void assertEquals(byte expected, Byte actual);
+
+	public static void assertEquals(Byte expected, byte actual);
+
+	public static void assertEquals(@Nullable Byte expected, @Nullable Byte actual);
+
+	public static void assertEquals(byte expected, byte actual, String message);
+
+	public static void assertEquals(byte expected, Byte actual, String message);
+
+	public static void assertEquals(Byte expected, byte actual, String message);
+
+	public static void assertEquals(@Nullable Byte expected, @Nullable Byte actual, String message);
+
+	public static void assertEquals(byte expected, byte actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(byte expected, Byte actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(Byte expected, byte actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Byte expected, @Nullable Byte actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(int expected, int actual);
+
+	public static void assertEquals(int expected, Integer actual);
+
+	public static void assertEquals(Integer expected, int actual);
+
+	public static void assertEquals(@Nullable Integer expected, @Nullable Integer actual);
+
+	public static void assertEquals(int expected, int actual, String message);
+
+	public static void assertEquals(int expected, Integer actual, String message);
+
+	public static void assertEquals(Integer expected, int actual, String message);
+
+	public static void assertEquals(@Nullable Integer expected, @Nullable Integer actual, String message);
+
+	public static void assertEquals(int expected, int actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(int expected, Integer actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(Integer expected, int actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Integer expected, @Nullable Integer actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(long expected, long actual);
+
+	public static void assertEquals(long expected, Long actual);
+
+	public static void assertEquals(Long expected, long actual);
+
+	public static void assertEquals(@Nullable Long expected, @Nullable Long actual);
+
+	public static void assertEquals(long expected, long actual, String message);
+
+	public static void assertEquals(long expected, Long actual, String message);
+
+	public static void assertEquals(Long expected, long actual, String message);
+
+	public static void assertEquals(@Nullable Long expected, @Nullable Long actual, String message);
+
+	public static void assertEquals(long expected, long actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(long expected, Long actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(Long expected, long actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Long expected, @Nullable Long actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(float expected, float actual);
+
+	public static void assertEquals(float expected, Float actual);
+
+	public static void assertEquals(Float expected, float actual);
+
+	public static void assertEquals(@Nullable Float expected, @Nullable Float actual);
+
+	public static void assertEquals(float expected, float actual, String message);
+
+	public static void assertEquals(float expected, Float actual, String message);
+
+	public static void assertEquals(Float expected, float actual, String message);
+
+	public static void assertEquals(@Nullable Float expected, @Nullable Float actual, String message);
+
+	public static void assertEquals(float expected, float actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(float expected, Float actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(Float expected, float actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Float expected, @Nullable Float actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(float expected, float actual, float delta);
+
+	public static void assertEquals(float expected, float actual, float delta, String message);
+
+	public static void assertEquals(float expected, float actual, float delta, Supplier<String> messageSupplier);
+
+	public static void assertEquals(double expected, double actual);
+
+	public static void assertEquals(double expected, Double actual);
+
+	public static void assertEquals(Double expected, double actual);
+
+	public static void assertEquals(@Nullable Double expected, @Nullable Double actual);
+
+	public static void assertEquals(double expected, double actual, String message);
+
+	public static void assertEquals(double expected, Double actual, String message);
+
+	public static void assertEquals(Double expected, double actual, String message);
+
+	public static void assertEquals(@Nullable Double expected, @Nullable Double actual, String message);
+
+	public static void assertEquals(double expected, double actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(double expected, Double actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(Double expected, double actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Double expected, @Nullable Double actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(double expected, double actual, double delta);
+
+	public static void assertEquals(double expected, double actual, double delta, String message);
+
+	public static void assertEquals(double expected, double actual, double delta, Supplier<String> messageSupplier);
+
+	public static void assertEquals(char expected, char actual);
+
+	public static void assertEquals(char expected, Character actual);
+
+	public static void assertEquals(Character expected, char actual);
+
+	public static void assertEquals(@Nullable Character expected, @Nullable Character actual);
+
+	public static void assertEquals(char expected, char actual, String message);
+
+	public static void assertEquals(char expected, Character actual, String message);
+
+	public static void assertEquals(Character expected, char actual, String message);
+
+	public static void assertEquals(@Nullable Character expected, @Nullable Character actual, String message);
+
+	public static void assertEquals(char expected, char actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(char expected, Character actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(Character expected, char actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Character expected, @Nullable Character actual, Supplier<String> messageSupplier);
+
+	public static void assertEquals(@Nullable Object expected, @Nullable Object actual);
+
+	public static void assertEquals(@Nullable Object expected, @Nullable Object actual, String message);
+
+	public static void assertEquals(@Nullable Object expected, @Nullable Object actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(boolean @Nullable [] expected, boolean @Nullable [] actual);
+
+	public static void assertArrayEquals(boolean @Nullable [] expected, boolean @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(boolean @Nullable [] expected, boolean @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(char @Nullable [] expected, char @Nullable [] actual);
+
+	public static void assertArrayEquals(char @Nullable [] expected, char @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(char @Nullable [] expected, char @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(byte @Nullable [] expected, byte @Nullable [] actual);
+
+	public static void assertArrayEquals(byte @Nullable [] expected, byte @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(byte @Nullable [] expected, byte @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(short @Nullable [] expected, short @Nullable [] actual);
+
+	public static void assertArrayEquals(short @Nullable [] expected, short @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(short @Nullable [] expected, short @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(int @Nullable [] expected, int @Nullable [] actual);
+
+	public static void assertArrayEquals(int @Nullable [] expected, int @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(int @Nullable [] expected, int @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(long @Nullable [] expected, long @Nullable [] actual);
+
+	public static void assertArrayEquals(long @Nullable [] expected, long @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(long @Nullable [] expected, long @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(float @Nullable [] expected, float @Nullable [] actual);
+
+	public static void assertArrayEquals(float @Nullable [] expected, float @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(float @Nullable [] expected, float @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(float[] expected, float[] actual, float delta);
+
+	public static void assertArrayEquals(float[] expected, float[] actual, float delta, String message);
+
+	public static void assertArrayEquals(float[] expected, float[] actual, float delta,
+                                             Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(double @Nullable [] expected, double @Nullable [] actual);
+
+	public static void assertArrayEquals(double @Nullable [] expected, double @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(double @Nullable [] expected, double @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(double[] expected, double[] actual, double delta);
+
+	public static void assertArrayEquals(double[] expected, double[] actual, double delta, String message);
+
+	public static void assertArrayEquals(double[] expected, double[] actual, double delta,
+                                             Supplier<String> messageSupplier);
+
+	public static void assertArrayEquals(Object @Nullable [] expected, Object @Nullable [] actual);
+
+	public static void assertArrayEquals(Object @Nullable [] expected, Object @Nullable [] actual, String message);
+
+	public static void assertArrayEquals(Object @Nullable [] expected, Object @Nullable [] actual, Supplier<String> messageSupplier);
+
+	public static void assertIterableEquals(@Nullable Iterable<?> expected, @Nullable Iterable<?> actual);
+
+	public static void assertIterableEquals(@Nullable Iterable<?> expected, @Nullable Iterable<?> actual, String message);
+
+	public static void assertIterableEquals(@Nullable Iterable<?> expected, @Nullable Iterable<?> actual,
+                                                Supplier<String> messageSupplier);
+
+	public static void assertLinesMatch(List<String> expectedLines, List<String> actualLines);
+
+	public static void assertLinesMatch(List<String> expectedLines, List<String> actualLines, String message);
+
+	public static void assertLinesMatch(List<String> expectedLines, List<String> actualLines,
+                                            Supplier<String> messageSupplier);
+
+	public static void assertLinesMatch(Stream<String> expectedLines, Stream<String> actualLines);
+
+	public static void assertLinesMatch(Stream<String> expectedLines, Stream<String> actualLines, String message);
+
+	public static void assertLinesMatch(Stream<String> expectedLines, Stream<String> actualLines,
+                                            Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(byte unexpected, byte actual);
+
+	public static void assertNotEquals(byte unexpected, Byte actual);
+
+	public static void assertNotEquals(Byte unexpected, byte actual);
+
+	public static void assertNotEquals(Byte unexpected, Byte actual);
+
+	public static void assertNotEquals(byte unexpected, byte actual, String message);
+
+	public static void assertNotEquals(byte unexpected, Byte actual, String message);
+
+	public static void assertNotEquals(Byte unexpected, byte actual, String message);
+
+	public static void assertNotEquals(Byte unexpected, Byte actual, String message);
+
+	public static void assertNotEquals(byte unexpected, byte actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(byte unexpected, Byte actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Byte unexpected, byte actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Byte unexpected, Byte actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(short unexpected, short actual);
+
+	public static void assertNotEquals(short unexpected, Short actual);
+
+	public static void assertNotEquals(Short unexpected, short actual);
+
+	public static void assertNotEquals(Short unexpected, Short actual);
+
+	public static void assertNotEquals(short unexpected, short actual, String message);
+
+	public static void assertNotEquals(short unexpected, Short actual, String message);
+
+	public static void assertNotEquals(Short unexpected, short actual, String message);
+
+	public static void assertNotEquals(Short unexpected, Short actual, String message);
+
+	public static void assertNotEquals(short unexpected, short actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(short unexpected, Short actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Short unexpected, short actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Short unexpected, Short actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(int unexpected, int actual);
+
+	public static void assertNotEquals(int unexpected, Integer actual);
+
+	public static void assertNotEquals(Integer unexpected, int actual);
+
+	public static void assertNotEquals(Integer unexpected, Integer actual);
+
+	public static void assertNotEquals(int unexpected, int actual, String message);
+
+	public static void assertNotEquals(int unexpected, Integer actual, String message);
+
+	public static void assertNotEquals(Integer unexpected, int actual, String message);
+
+	public static void assertNotEquals(Integer unexpected, Integer actual, String message);
+
+	public static void assertNotEquals(int unexpected, int actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(int unexpected, Integer actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Integer unexpected, int actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Integer unexpected, Integer actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(long unexpected, long actual);
+
+	public static void assertNotEquals(long unexpected, Long actual);
+
+	public static void assertNotEquals(Long unexpected, long actual);
+
+	public static void assertNotEquals(Long unexpected, Long actual);
+
+	public static void assertNotEquals(long unexpected, long actual, String message);
+
+	public static void assertNotEquals(long unexpected, Long actual, String message);
+
+	public static void assertNotEquals(Long unexpected, long actual, String message);
+
+	public static void assertNotEquals(Long unexpected, Long actual, String message);
+
+	public static void assertNotEquals(long unexpected, long actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(long unexpected, Long actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Long unexpected, long actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Long unexpected, Long actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(float unexpected, float actual);
+
+	public static void assertNotEquals(float unexpected, Float actual);
+
+	public static void assertNotEquals(Float unexpected, float actual);
+
+	public static void assertNotEquals(Float unexpected, Float actual);
+
+	public static void assertNotEquals(float unexpected, float actual, String message);
+
+	public static void assertNotEquals(float unexpected, Float actual, String message);
+
+	public static void assertNotEquals(Float unexpected, float actual, String message);
+
+	public static void assertNotEquals(Float unexpected, Float actual, String message);
+
+	public static void assertNotEquals(float unexpected, float actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(float unexpected, Float actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Float unexpected, float actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Float unexpected, Float actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(float unexpected, float actual, float delta);
+
+	public static void assertNotEquals(float unexpected, float actual, float delta, String message);
+
+	public static void assertNotEquals(float unexpected, float actual, float delta, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(double unexpected, double actual);
+
+	public static void assertNotEquals(double unexpected, Double actual);
+
+	public static void assertNotEquals(Double unexpected, double actual);
+
+	public static void assertNotEquals(Double unexpected, Double actual);
+
+	public static void assertNotEquals(double unexpected, double actual, String message);
+
+	public static void assertNotEquals(double unexpected, Double actual, String message);
+
+	public static void assertNotEquals(Double unexpected, double actual, String message);
+
+	public static void assertNotEquals(Double unexpected, Double actual, String message);
+
+	public static void assertNotEquals(double unexpected, double actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(double unexpected, Double actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Double unexpected, double actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Double unexpected, Double actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(double unexpected, double actual, double delta);
+
+	public static void assertNotEquals(double unexpected, double actual, double delta, String message);
+
+	public static void assertNotEquals(double unexpected, double actual, double delta,
+                                           Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(char unexpected, char actual);
+
+	public static void assertNotEquals(char unexpected, Character actual);
+
+	public static void assertNotEquals(Character unexpected, char actual);
+
+	public static void assertNotEquals(Character unexpected, Character actual);
+
+	public static void assertNotEquals(char unexpected, char actual, String message);
+
+	public static void assertNotEquals(char unexpected, Character actual, String message);
+
+	public static void assertNotEquals(Character unexpected, char actual, String message);
+
+	public static void assertNotEquals(Character unexpected, Character actual, String message);
+
+	public static void assertNotEquals(char unexpected, char actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(char unexpected, Character actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Character unexpected, char actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(Character unexpected, Character actual, Supplier<String> messageSupplier);
+
+	public static void assertNotEquals(@Nullable Object unexpected, @Nullable Object actual);
+
+	public static void assertNotEquals(@Nullable Object unexpected, @Nullable Object actual, String message);
+
+	public static void assertNotEquals(@Nullable Object unexpected, @Nullable Object actual, Supplier<String> messageSupplier);
+
+	public static void assertSame(Object expected, Object actual);
+
+	public static void assertSame(Object expected, Object actual, String message);
+
+	public static void assertSame(Object expected, Object actual, Supplier<String> messageSupplier);
+
+	public static void assertNotSame(Object unexpected, Object actual);
+
+	public static void assertNotSame(Object unexpected, Object actual, String message);
+
+	public static void assertNotSame(Object unexpected, Object actual, Supplier<String> messageSupplier);
+
+	public static void assertAll(Executable... executables) throws MultipleFailuresError;
+
+	public static void assertAll(String heading, Executable... executables) throws MultipleFailuresError;
+
+	public static void assertAll(Collection<Executable> executables) throws MultipleFailuresError;
+
+	public static void assertAll(String heading, Collection<Executable> executables) throws MultipleFailuresError;
+
+	public static void assertAll(Stream<Executable> executables) throws MultipleFailuresError;
+
+	public static void assertAll(String heading, Stream<Executable> executables) throws MultipleFailuresError;
+
+	public static <T extends Throwable> T assertThrows(Class<T> expectedType, Executable executable);
+
+	public static <T extends Throwable> T assertThrows(Class<T> expectedType, Executable executable, String message);
+
+	public static <T extends Throwable> T assertThrows(Class<T> expectedType, Executable executable,
+                                                           Supplier<String> messageSupplier);
+
+	public static void assertDoesNotThrow(Executable executable);
+
+	public static void assertDoesNotThrow(Executable executable, String message);
+
+	public static void assertDoesNotThrow(Executable executable, Supplier<String> messageSupplier);
+
+	public static <T> T assertDoesNotThrow(ThrowingSupplier<T> supplier);
+
+	public static <T> T assertDoesNotThrow(ThrowingSupplier<T> supplier, String message);
+
+	public static <T> T assertDoesNotThrow(ThrowingSupplier<T> supplier, Supplier<String> messageSupplier);
+
+	public static void assertTimeout(Duration timeout, Executable executable);
+
+	public static void assertTimeout(Duration timeout, Executable executable, String message);
+
+	public static void assertTimeout(Duration timeout, Executable executable, Supplier<String> messageSupplier);
+
+	public static <T> T assertTimeout(Duration timeout, ThrowingSupplier<T> supplier);
+
+	public static <T> T assertTimeout(Duration timeout, ThrowingSupplier<T> supplier, String message);
+
+	public static <T> T assertTimeout(Duration timeout, ThrowingSupplier<T> supplier,
+                                          Supplier<String> messageSupplier);
+
+	public static void assertTimeoutPreemptively(Duration timeout, Executable executable);
+
+	public static void assertTimeoutPreemptively(Duration timeout, Executable executable, String message);
+
+	public static void assertTimeoutPreemptively(Duration timeout, Executable executable,
+                                                     Supplier<String> messageSupplier);
+
+	public static <T> T assertTimeoutPreemptively(Duration timeout, ThrowingSupplier<T> supplier);
+
+	public static <T> T assertTimeoutPreemptively(Duration timeout, ThrowingSupplier<T> supplier, String message);
+
+	public static <T> T assertTimeoutPreemptively(Duration timeout, ThrowingSupplier<T> supplier,
+                                                      Supplier<String> messageSupplier);
+}

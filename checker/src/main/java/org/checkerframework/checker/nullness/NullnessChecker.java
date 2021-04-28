@@ -8,6 +8,7 @@ import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
@@ -34,6 +35,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
 @SupportedOptions({"assumeKeyFor"})
+@StubFiles({"junit-assertions.astub"})
 public class NullnessChecker extends InitializationChecker {
 
   /** Should we be strict about initialization of {@link MonotonicNonNull} variables? */
