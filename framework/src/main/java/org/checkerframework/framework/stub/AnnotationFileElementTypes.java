@@ -121,9 +121,7 @@ public class AnnotationFileElementTypes {
    *       the checker
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
    *       listed in @StubFiles annotation)
-   *   <li>Stub files provided via stubs system property
-   *   <li>Stub files provided via stubs environment variable
-   *   <li>Stub files provided via stubs compiler option
+   *   <li>Stub files provided via {@code -Astubs} compiler option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
@@ -166,8 +164,6 @@ public class AnnotationFileElementTypes {
       parsing = true;
     }
 
-    // Stub files specified via stubs compiler option, stubs system property,
-    // stubs env. variable, or @StubFiles
     List<String> allAnnotationFiles = new ArrayList<>();
 
     // 3. Stub files listed in @StubFiles annotation on the checker
@@ -179,19 +175,7 @@ public class AnnotationFileElementTypes {
     // 4. Stub files returned by the `getExtraStubFiles()` method
     allAnnotationFiles.addAll(checker.getExtraStubFiles());
 
-    // 5. Stub files provided via stubs system property
-    String stubsProperty = System.getProperty("stubs");
-    if (stubsProperty != null) {
-      Collections.addAll(allAnnotationFiles, stubsProperty.split(File.pathSeparator));
-    }
-
-    // 6. Stub files provided via stubs environment variable
-    String stubEnvVar = System.getenv("stubs");
-    if (stubEnvVar != null) {
-      Collections.addAll(allAnnotationFiles, stubEnvVar.split(File.pathSeparator));
-    }
-
-    // 7. Stub files provided via stubs command-line option
+    // 5. Stub files provided via -Astubs command-line option
     String stubsOption = checker.getOption("stubs");
     if (stubsOption != null) {
       Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
